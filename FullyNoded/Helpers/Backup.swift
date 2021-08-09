@@ -9,123 +9,259 @@
 import Foundation
 
 class BackupiCloud {
+    
+    static func encryptValuesForiCloud(_ encryptionKey: Data, _ existingLocalEntity: [String:Any], _ entity: ENTITY) -> [String:Any] {
+        var item = existingLocalEntity
+        item.removeValue(forKey: "watching")
         
-    static func backup(completion: @escaping ((Bool)) -> Void) {
-        var dataToBackup = [String:Any]()
+        for (key, value) in item {
+            switch value {
+            case let string as String:
+                if !(entity == .newNodes && key == "label") {
+                    if let encrypted = Crypto.encryptForBackup(encryptionKey, string.utf8) {
+                        item["\(key)"] = encrypted
+                    }
+                }
+                
+            case let data as Data:
+                if let decrypted = Crypto.decrypt(data) {
+                    if let encrypted = Crypto.encryptForBackup(encryptionKey, decrypted) {
+                        item["\(key)"] = encrypted
+                    }
+                }
+            default:
+                break
+            }
+        }
+        
+        return item
+    }
+        
+    static func backup(encryptionKey: Data, completion: @escaping ((backedup: Bool, message: String?)) -> Void) {
+        print("backup")
+        var saved = true
         
         let entities:[ENTITY] = [
             .authKeys,
             .newNodes,
-            .peers,
             .signers,
-            .transactions,
-            .utxos,
             .wallets
         ]
         
-        for (x, entity) in entities.enumerated() {
-            CoreDataService.retrieveEntity(entityName: entity) { dictArray in
-                guard let dictArray = dictArray else { return }
+        for (e, entity) in entities.enumerated() {
+            var backupEntity:ENTITY_BACKUP!
+            
+            switch entity {
+            case .authKeys:
+                backupEntity = .authKeys
+            case .newNodes:
+                backupEntity = .nodes
+            case .signers:
+                backupEntity = .signers
+            case .wallets:
+                backupEntity = .wallets
+            default:
+                break
+            }
+            
+            CoreDataService.retrieveEntity(entityName: entity) { localEntities in
                 
-                var newArray = [[String:Any]]()
-                newArray = dictArray
-                
-                DispatchQueue.global(qos: .background).async {
-                    for (i, dict) in dictArray.enumerated() {
-                        for (key, value) in dict {
-                            if key == "watching" {
-                                if let array = value as? NSArray {
-                                    var encryptedArray = [Data]()
-                                    for (d, descriptor) in array.enumerated() {
-                                        if let encrypted = Crypto.encryptForBackup((descriptor as! String).utf8) {
-                                            encryptedArray.append(encrypted)
-                                            if d + 1 == array.count {
-                                                newArray[i]["\(key)"] = encryptedArray
-                                            }
-                                        }
-                                    }
-                                }
-                            } else if let string = value as? String {
-                                if !(entity == .newNodes && key == "label") {
-                                    if let encrypted = Crypto.encryptForBackup(string.utf8) {
-                                        newArray[i]["\(key)"] = encrypted
-                                    }
-                                }
-                            } else if let data = value as? Data {
-                                if let decrypted = Crypto.decrypt(data) {
-                                    if let encrypted = Crypto.encryptForBackup(decrypted) {
-                                        newArray[i]["\(key)"] = encrypted
-                                    }
-                                }
+                if let localEntities = localEntities, localEntities.count > 0 {
+                    
+                    func saveDict(_ dict: [String:Any], _ index: Int, _ name: ENTITY_BACKUP) {
+                        print("saveDict: \(dict)")
+                        CoreDataiCloud.saveEntity(entity: name, dict: dict) { success in
+                            if !success {
+                                saved = false
                             }
-                            
-                            if i + 1 == dictArray.count {
-                                var newKey:ENTITY_BACKUP!
-                                
-                                switch entity {
-                                case .authKeys:
-                                    newKey = .authKeys
-                                case .newNodes:
-                                    newKey = .nodes
-                                case .peers:
-                                    newKey = .peers
-                                case .signers:
-                                    newKey = .signers
-                                case .transactions:
-                                    newKey = .transactions
-                                case .utxos:
-                                    newKey = .utxos
-                                case .wallets:
-                                    newKey = .wallets
-                                }
-                                
-                                dataToBackup["\(newKey.rawValue)"] = newArray
-                                
-                                if x + 1 == entities.count {
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                        save(dataToBackup, completion: completion)
-                                    }
-                                }
+
+                            if e + 1 == entities.count && index + 1 == localEntities.count  {
+                                completion((saved, nil))
                             }
                         }
                     }
+                    
+                    CoreDataiCloud.retrieveEntity(entity: backupEntity) { existingCloudEntities in
+                        
+                        for (i, existingLocalEntity) in localEntities.enumerated() {
+                            
+                            if let existingCloudEntities = existingCloudEntities, existingCloudEntities.count > 0 {
+                                var exists = false
+                                
+                                for (x, existingCloudEntity) in existingCloudEntities.enumerated() {
+                                    if let id = existingCloudEntity["id"] as? UUID, let idToBackup = existingLocalEntity["id"] as? UUID, id == idToBackup {
+                                        exists = true
+                                        print("\(entity) exists already...")
+                                    }
+                                    
+                                    if x + 1 == existingCloudEntities.count && !exists {
+                                        let encryptedDict = encryptValuesForiCloud(encryptionKey, existingLocalEntity, entity)
+                                        saveDict(encryptedDict, i, backupEntity)
+                                    } else if x + 1 == existingCloudEntities.count && e + 1 == entities.count && i + 1 == localEntities.count {
+                                        completion((saved, nil))
+                                    }
+                                }
+                                
+                            } else {
+                                //nothing on icloud back it all up
+                                let encryptedDict = encryptValuesForiCloud(encryptionKey, existingLocalEntity, entity)
+                                saveDict(encryptedDict, i, backupEntity)
+                            }
+                        }
+                    }
+                } else {
+                    print("nothing to backup")
+                    completion((true, "No data to backup."))
                 }
             }
         }
     }
     
-    static func save(_ dataToBackup: [String:Any], completion: @escaping ((Bool)) -> Void) {
-        for (key, value) in dataToBackup {
-            var savedAll = true
-            if let dictArray = value as? [[String:Any]], let entity = ENTITY_BACKUP(rawValue: key) {
-                for (i, dict) in dictArray.enumerated() {
-                    CoreDataiCloud.deleteEntity(entity: entity) { deleted in
-                        if deleted {
-                            CoreDataiCloud.saveEntity(entity: entity, dict: dict) { saved in
-                                if !saved {
-                                    savedAll = false
-                                }
-                                if i + 1 == dictArray.count {
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                        completion((savedAll))
-                                    }
-                                }
-                            }
-                        }
-                    }
+    static func convertDataToRecoverIntoArrays(_ dataToRecover: [String:Any]) -> [[[String:Any]]]? {
+        guard !dataToRecover.isEmpty else { return nil }
+        
+        var authKeys = [[String:Any]]()
+        var nodes = [[String:Any]]()
+        var signers = [[String:Any]]()
+        var wallets = [[String:Any]]()
+        
+        for (key, value) in dataToRecover {
+            guard let entity = ENTITY(rawValue: key) else { print("not an entity"); return nil }
+            
+            guard let dictArray = value as? [[String:Any]] else { print("not an array of dicts"); return nil }
+            
+            switch entity {
+            case .authKeys:
+                authKeys = dictArray
+            case .newNodes:
+                nodes = dictArray
+            case .signers:
+                signers = dictArray
+            case .wallets:
+                wallets = dictArray
+            default:
+                break
+            }
+        }
+        
+        return [authKeys, nodes, signers, wallets]
+    }
+    
+    static func saveEntityLocal(_ name: ENTITY, _ entities: [[String:Any]], completion: @escaping ((success:Bool, message: String?)) -> Void) {
+        var saved = true
+        
+        func saveDict(_ dict: [String:Any], _ index: Int) {
+            CoreDataService.saveEntity(dict: dict, entityName: name) { success in
+                if !success {
+                    saved = false
+                }
+
+                if index + 1 == entities.count {
+                    completion((saved, nil))
                 }
             }
         }
+        
+        for (i, dict) in entities.enumerated() {
+            var nothingToSave = false
+            CoreDataService.retrieveEntity(entityName: name) { existingEntities in
+                if let existingEntities = existingEntities, existingEntities.count > 0 {
+                    var exists = false
+                    for (x, existingEntity) in existingEntities.enumerated() {
+                        if let id = existingEntity["id"] as? UUID, let idToSave = dict["id"] as? UUID , id == idToSave {
+                                exists = true
+                            nothingToSave = true
+                        }
+                        
+                        if x + 1 == existingEntities.count {
+                            
+                            if !exists {
+                                nothingToSave = false
+                                if i + 1 == entities.count {
+                                    saveDict(dict, i)
+                                }
+                                
+                            } else if i + 1 == entities.count {
+                                if nothingToSave {
+                                    completion((true, "Local data already synced with recovery data."))
+                                } else {
+                                    completion((true, "Recovered ✓"))
+                                }
+                                
+                            }
+                        }
+                    }
+                } else if i + 1 == entities.count {
+                    saveDict(dict, i)
+                }
+            }
+        }
+    }
+        
+    static func saveRecoveredDataLocally(_ dataToRecover: [String:Any], completion: @escaping ((recovered: Bool, message: String?)) -> Void) {
+        if !dataToRecover.isEmpty {
+            if let entitiesToRecover = convertDataToRecoverIntoArrays(dataToRecover) {
+                var backedUp = true
+                var messageToReturn = ""
+                
+                for (i, entities) in entitiesToRecover.enumerated() {
+                    
+                    if !entities.isEmpty {
+                        switch i {
+                        case 0:
+                            saveEntityLocal(.authKeys, entities) { (success, mess) in
+                                if !success {
+                                    backedUp = false
+                                }
+                                messageToReturn = mess ?? ""
+                            }
+                        case 1:
+                            saveEntityLocal(.newNodes, entities) { (success, mess) in
+                                if !success {
+                                    backedUp = false
+                                }
+                                messageToReturn = mess ?? ""
+                            }
+                        case 2:
+                            saveEntityLocal(.signers, entities) { (success, mess) in
+                                if !success {
+                                    backedUp = false
+                                }
+                                messageToReturn = mess ?? ""
+                            }
+                        case 3:
+                            saveEntityLocal(.wallets, entities) { (success, mess) in
+                                if !success {
+                                    backedUp = false
+                                }
+                                messageToReturn = mess ?? ""
+                            }
+                        default:
+                            break
+                        }
+                    }
+                    
+                    if i + 1 == entities.count {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                            print("messageToReturn: \(messageToReturn)")
+                            completion((backedUp, messageToReturn))
+                        }
+                    }
+                }
+            } else {
+                completion((false, "Error converting recovery data into arrays."))
+            }
+        } else {
+            completion((false, "No data exists in iCloud."))
+        }
+        
     }
     
     static func destroy(completion: @escaping ((Bool)) -> Void) {
         let entities:[ENTITY_BACKUP] = [
             .authKeys,
             .nodes,
-            .peers,
             .signers,
-            .transactions,
-            .utxos,
             .wallets
         ]
         
@@ -140,6 +276,100 @@ class BackupiCloud {
                 if i + 1 == entities.count {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         completion((deletedAll))
+                    }
+                }
+            }
+        }
+    }
+    
+    static func recover(passwordHash: Data, completion: @escaping ((recovered: Bool, message: String?)) -> Void) {
+        print("recover")
+        var dataToRecover = [String:Any]()
+        
+        let entities:[ENTITY_BACKUP] = [
+            .authKeys,
+            .nodes,
+            .signers,
+            .wallets
+        ]
+        
+        for (x, entity) in entities.enumerated() {
+            CoreDataiCloud.retrieveEntity(entity: entity) { dictArray in
+                if let dictArray = dictArray, dictArray.count > 0 {
+                    var newArray = [[String:Any]]()
+                    
+                    for (i, dict) in dictArray.enumerated() {
+                        var item = dict
+                        item.removeValue(forKey: "watching")
+                        
+                            for (key, value) in item {
+                                if let data = value as? Data {
+                                    
+                                    switch key {
+                                    case "publicKey",
+                                         "label",
+                                         "name",
+                                         "changeDescriptor",
+                                         "receiveDescriptor",
+                                         "type":
+                                        
+                                        if !(entity == .nodes && key == "label") {
+                                            if let decrypted = Crypto.decryptForBackup(passwordHash, data), let string = decrypted.utf8 {
+                                                item["\(key)"] = string
+                                            }
+                                        }
+                                        
+                                    case "privateKey",
+                                         "cert",
+                                         "macaroon",
+                                         "onionAddress",
+                                         "rpcpassword",
+                                         "rpcuser",
+                                         "passphrase",
+                                         "words":
+                                        
+                                        if let decrypted = Crypto.decryptForBackup(passwordHash, data) {
+                                            if let encrypted = Crypto.encrypt(decrypted) {
+                                                item["\(key)"] = encrypted
+                                            }
+                                        }
+                                        
+                                    default:
+                                        break
+                                    }
+                                }
+                            }
+                        
+                            newArray.append(item)
+                            
+                            if i + 1 == dictArray.count {
+                                var newKey:ENTITY!
+                                
+                                switch entity {
+                                case .authKeys:
+                                    newKey = .authKeys
+                                case .nodes:
+                                    newKey = .newNodes
+                                case .signers:
+                                    newKey = .signers
+                                case .wallets:
+                                    newKey = .wallets
+                                }
+                                
+                                dataToRecover["\(newKey.rawValue)"] = newArray
+                                
+                                if x + 1 == entities.count {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                                        saveRecoveredDataLocally(dataToRecover, completion: completion)
+                                    }
+                                }
+                            }
+                    }
+                } else {
+                    if x + 1 == entities.count {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                            saveRecoveredDataLocally(dataToRecover, completion: completion)
+                        }
                     }
                 }
             }

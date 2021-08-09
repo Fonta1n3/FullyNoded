@@ -25,7 +25,4 @@ public enum ENTITY_BACKUP: String {
     case authKeys = "AuthKeys_"
     case signers = "Signers_"
     case wallets = "Wallets_"
-    case peers = "Peers_"
-    case utxos = "Utxos_"
-    case transactions = "Transactions_"
 }

@@ -5867,15 +5867,28 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                     <action selector="showGuideAction:" destination="B99-yZ-naR" eventType="touchUpInside" id="gLf-qJ-WNO"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="UFY-wL-O3m">
+                                <rect key="frame" x="67" y="582" width="241" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="241" id="2O6-yZ-vES"/>
+                                    <constraint firstAttribute="height" constant="40" id="LiW-9J-G1x"/>
+                                </constraints>
+                                <state key="normal" title="  recover from iCloud" image="icloud.and.arrow.down" catalog="system"/>
+                                <connections>
+                                    <action selector="recoverAction:" destination="B99-yZ-naR" eventType="touchUpInside" id="lh5-11-Kow"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="uUf-aQ-0bN"/>
                         <color key="backgroundColor" red="0.050706155598163605" green="0.058625258505344391" blue="0.071102283895015717" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="UFY-wL-O3m" firstAttribute="centerX" secondItem="B9e-yr-KMo" secondAttribute="centerX" id="8Mp-hf-PNm"/>
                             <constraint firstItem="qBh-RP-hWz" firstAttribute="top" secondItem="DTI-AZ-owi" secondAttribute="bottom" constant="7.5" id="ACa-qM-sgb"/>
                             <constraint firstItem="uUf-aQ-0bN" firstAttribute="trailing" secondItem="qBh-RP-hWz" secondAttribute="trailing" constant="16" id="HV2-84-YUw"/>
                             <constraint firstItem="DTI-AZ-owi" firstAttribute="leading" secondItem="uUf-aQ-0bN" secondAttribute="leading" constant="16" id="RC6-xc-GeH"/>
                             <constraint firstItem="qBh-RP-hWz" firstAttribute="leading" secondItem="uUf-aQ-0bN" secondAttribute="leading" constant="16" id="gOe-Le-cG0"/>
                             <constraint firstItem="DTI-AZ-owi" firstAttribute="top" secondItem="uUf-aQ-0bN" secondAttribute="top" constant="11" id="kzr-7F-vnw"/>
+                            <constraint firstItem="UFY-wL-O3m" firstAttribute="top" secondItem="4Lc-CO-CxA" secondAttribute="bottom" constant="8" symbolic="YES" id="nGo-sx-SQx"/>
                             <constraint firstItem="4Lc-CO-CxA" firstAttribute="top" secondItem="qBh-RP-hWz" secondAttribute="bottom" constant="12" id="s6S-H3-wnk"/>
                             <constraint firstItem="4Lc-CO-CxA" firstAttribute="centerX" secondItem="B9e-yr-KMo" secondAttribute="centerX" id="y0W-9T-Qx7"/>
                         </constraints>
@@ -7632,8 +7645,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="Cd3-qW-ujG"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="CQp-9r-70w"/>
-        <segue reference="7UD-TA-0Dv"/>
+        <segue reference="07E-4w-Zh7"/>
+        <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="7PS-EL-3d2"/>
         <segue reference="Ikt-mc-dmE"/>
@@ -7664,6 +7677,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="folder" catalog="system" width="128" height="97"/>
         <image name="gear" catalog="system" width="128" height="119"/>
         <image name="hifispeaker" catalog="system" width="111" height="128"/>
+        <image name="icloud.and.arrow.down" catalog="system" width="128" height="112"/>
         <image name="info.circle" catalog="system" width="128" height="121"/>
         <image name="link" catalog="system" width="128" height="122"/>
         <image name="lock" catalog="system" width="128" height="128"/>

@@ -93,7 +93,7 @@ class CoreDataiCloud {
         }
     }
     
-    class func retrieveEntity(entity: ENTITY_BACKUP, completion: @escaping ((entity: [[String:Any]]?, errorDescription: String?)) -> Void) {
+    class func retrieveEntity(entity: ENTITY_BACKUP, completion: @escaping (([[String:Any]]?)) -> Void) {
         DispatchQueue.main.async {
             let context = CoreDataiCloud.viewContext
             var fetchRequest:NSFetchRequest<NSFetchRequestResult>? = NSFetchRequest<NSFetchRequestResult>(entityName: entity.rawValue)
@@ -104,15 +104,15 @@ class CoreDataiCloud {
                 if fetchRequest != nil {
                     if let results = try context.fetch(fetchRequest!) as? [[String:Any]] {
                         fetchRequest = nil
-                        completion((results, nil))
+                        completion((results))
                     } else {
                         fetchRequest = nil
-                        completion((nil, "error fetching entity"))
+                        completion((nil))
                     }
                 }
             } catch {
                 fetchRequest = nil
-                completion((nil, "Error fetching QR"))
+                completion((nil))
             }
         }
     }
