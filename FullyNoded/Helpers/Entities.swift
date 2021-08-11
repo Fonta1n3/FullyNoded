@@ -19,3 +19,10 @@ public enum ENTITY: String {
     case utxos = "Utxos"
     case transactions = "Transactions"
 }
+
+public enum ENTITY_BACKUP: String {
+    case nodes = "Nodes_"
+    case authKeys = "AuthKeys_"
+    case signers = "Signers_"
+    case wallets = "Wallets_"
+}

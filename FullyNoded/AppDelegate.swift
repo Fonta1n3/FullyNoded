@@ -36,20 +36,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(_ application: UIApplication) {}
 
     func applicationWillEnterForeground(_ application: UIApplication) {
-//        if KeyChain.getData("UnlockPassword") != nil {
-//            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-//            let loginVC = storyboard.instantiateViewController(withIdentifier: "LogIn")
-//            let topVC = self.window?.rootViewController?.topViewController()
-//            if topVC!.restorationIdentifier != "LogIn" {
-//                topVC!.present(loginVC, animated: true, completion: nil)
-//            }
-//        }
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {}
 
     func applicationWillTerminate(_ application: UIApplication) {
         self.saveContext()
+        //CoreDataiCloud.saveContext()
     }
 
     // MARK: - Core Data stack
@@ -92,8 +85,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             } catch {
                 // Replace this implementation with code to handle the error appropriately.
                 // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+                #if DEBUG
                 let nserror = error as NSError
                 fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+                #endif
             }
         }
     }

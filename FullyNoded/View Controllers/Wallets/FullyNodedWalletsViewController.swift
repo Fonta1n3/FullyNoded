@@ -37,11 +37,11 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         fxRateLabel.alpha = 0
         fxRateLabel.text = ""
         existingActiveWalletName = UserDefaults.standard.object(forKey: "walletName") as? String ?? ""
-        spinner.addConnectingView(vc: self, description: "getting total balance...")
         initialLoad = true
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        spinner.addConnectingView(vc: self, description: "getting total balance...")
         getBitcoinCoreWallets()
     }
     
@@ -124,7 +124,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     
     private func loadTotalBalance() {
         if !initialLoad {
-            spinner.addConnectingView(vc: self, description: "getting total balance...")
+            spinner.label.text = "getting total balance..."
         }
         
         FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in

@@ -27,6 +27,18 @@ enum Crypto {
         return P256.Signing.PrivateKey().rawRepresentation
     }
     
+    static func encryptForBackup(_ key: Data, _ data: Data) -> Data? {
+        return try? ChaChaPoly.seal(data, using: SymmetricKey(data: key)).combined
+    }
+    
+    static func decryptForBackup(_ key: Data, _ data: Data) -> Data? {
+        guard let box = try? ChaChaPoly.SealedBox.init(combined: data) else {
+                return nil
+        }
+        
+        return try? ChaChaPoly.open(box, using: SymmetricKey(data: key))
+    }
+    
     static func encrypt(_ data: Data) -> Data? {
         guard let key = KeyChain.getData("privateKey") else { return nil }
         
@@ -77,7 +89,7 @@ enum Crypto {
         // Goal is to replace this with a get request to my own server behind an authenticated v3 onion
         guard KeyChain.getData("blindingKey") == nil else { return true }
         
-        guard let pk = Data(base64Encoded: "NZdDCNBFTDqKPrUG9V80g0iVemSXLL0CuaWj12xqD00=") else { return false }
+        guard let pk = Data(base64Encoded: "") else { return false }
 
         return KeyChain.set(pk, forKey: "blindingKey")
     }

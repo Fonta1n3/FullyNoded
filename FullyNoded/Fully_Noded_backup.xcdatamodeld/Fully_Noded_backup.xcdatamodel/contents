@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="18154" systemVersion="20B29" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="AuthKeys_" representedClassName="AuthKeys_" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="privateKey" optional="YES" attributeType="Binary"/>
+        <attribute name="publicKey" optional="YES" attributeType="Binary"/>
+    </entity>
+    <entity name="Nodes_" representedClassName="Nodes_" syncable="YES" codeGenerationType="class">
+        <attribute name="cert" optional="YES" attributeType="Binary"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="isActive" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="isLightning" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="label" optional="YES" attributeType="Binary"/>
+        <attribute name="macaroon" optional="YES" attributeType="Binary"/>
+        <attribute name="onionAddress" optional="YES" attributeType="Binary"/>
+        <attribute name="rpcpassword" optional="YES" attributeType="Binary"/>
+        <attribute name="rpcuser" optional="YES" attributeType="Binary"/>
+        <attribute name="uncleJim" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="Peers_" representedClassName="Peers_" syncable="YES" codeGenerationType="class">
+        <attribute name="alias" optional="YES" attributeType="Binary"/>
+        <attribute name="color" optional="YES" attributeType="Binary"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="label" optional="YES" attributeType="Binary"/>
+        <attribute name="pubkey" optional="YES" attributeType="Binary"/>
+        <attribute name="uri" optional="YES" attributeType="Binary"/>
+    </entity>
+    <entity name="Signers_" representedClassName="Signers_" syncable="YES" codeGenerationType="class">
+        <attribute name="added" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="label" optional="YES" attributeType="Binary"/>
+        <attribute name="passphrase" optional="YES" attributeType="Binary"/>
+        <attribute name="words" optional="YES" attributeType="Binary"/>
+    </entity>
+    <entity name="Transactions_" representedClassName="Transactions_" syncable="YES" codeGenerationType="class">
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="fiatCurrency" optional="YES" attributeType="Binary"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="label" optional="YES" attributeType="Binary"/>
+        <attribute name="memo" optional="YES" attributeType="Binary"/>
+        <attribute name="originFxRate" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="txid" optional="YES" attributeType="String"/>
+        <attribute name="walletId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="Utxos_" representedClassName="Utxos_" syncable="YES" codeGenerationType="class">
+        <attribute name="address" optional="YES" attributeType="Binary"/>
+        <attribute name="amount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="confirmations" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="confs" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="desc" optional="YES" attributeType="Binary"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="label" optional="YES" attributeType="Binary"/>
+        <attribute name="safe" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="solvable" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="spendable" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="txid" optional="YES" attributeType="Binary"/>
+        <attribute name="vout" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="walletId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="Wallets_" representedClassName="Wallets_" syncable="YES" codeGenerationType="class">
+        <attribute name="account" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="blockheight" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="changeDescriptor" optional="YES" attributeType="Binary"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="index" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="label" optional="YES" attributeType="Binary"/>
+        <attribute name="maxIndex" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="name" optional="YES" attributeType="Binary"/>
+        <attribute name="receiveDescriptor" optional="YES" attributeType="Binary"/>
+        <attribute name="type" optional="YES" attributeType="Binary"/>
+        <attribute name="watching" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData"/>
+    </entity>
+    <elements>
+        <element name="AuthKeys_" positionX="-54" positionY="-18" width="128" height="74"/>
+        <element name="Nodes_" positionX="-36" positionY="54" width="128" height="179"/>
+        <element name="Peers_" positionX="-18" positionY="117" width="128" height="119"/>
+        <element name="Signers_" positionX="0" positionY="135" width="128" height="104"/>
+        <element name="Transactions_" positionX="18" positionY="144" width="128" height="149"/>
+        <element name="Utxos_" positionX="36" positionY="180" width="128" height="224"/>
+        <element name="Wallets_" positionX="-9" positionY="144" width="128" height="194"/>
+    </elements>
+</model>

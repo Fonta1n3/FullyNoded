@@ -122,7 +122,6 @@ class MainMenuViewController: UIViewController {
         }
     }
     
-    
     @IBAction func goToTools(_ sender: Any) {
         goToToolsCheck()
     }
@@ -655,7 +654,7 @@ class MainMenuViewController: UIViewController {
                 
                 self.feeInfo = FeeInfo(dictionary: response)
                 self.mainMenu.reloadSections(IndexSet(arrayLiteral: 11, 1), with: .fade)
-                self.removeLoader()
+                self.removeLoader()                
             }
         }
     }
