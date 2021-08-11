@@ -18,10 +18,6 @@
 	</array>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
-	<key>com.apple.security.application-groups</key>
-	<array>
-		<string>group.com.fontaine.fullynoded</string>
-	</array>
 	<key>com.apple.security.assets.pictures.read-write</key>
 	<true/>
 	<key>com.apple.security.device.camera</key>
@@ -34,9 +30,5 @@
 	<true/>
 	<key>com.apple.security.personal-information.photos-library</key>
 	<true/>
-	<key>keychain-access-groups</key>
-	<array>
-		<string>$(AppIdentifierPrefix)com.fontaine.FullyNoded</string>
-	</array>
 </dict>
 </plist>

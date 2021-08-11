@@ -116,57 +116,5 @@ class CoreDataiCloud {
             }
         }
     }
-        
-//    class func updateEntity(id: UUID, keyToUpdate: String, newValue: Any, completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
-//        DispatchQueue.main.async {
-//            let context = CoreDataiCloud.viewContext
-//            var fetchRequest:NSFetchRequest<NSManagedObject>? = NSFetchRequest<NSManagedObject>(entityName: "QR")
-//            fetchRequest?.returnsObjectsAsFaults = false
-//
-//            do {
-//                if fetchRequest != nil {
-//                    var results:[NSManagedObject]? = try context.fetch(fetchRequest!)
-//                    if results != nil {
-//                        if results!.count > 0 {
-//                            var success = false
-//                            for (i, data) in results!.enumerated() {
-//                                if id == data.value(forKey: "id") as? UUID {
-//                                    data.setValue(newValue, forKey: keyToUpdate)
-//                                    do {
-//                                        try context.save()
-//                                        success = true
-//
-//                                    } catch {
-//                                        success = false
-//
-//                                    }
-//                                }
-//                                if i + 1 == results!.count {
-//                                    fetchRequest = nil
-//                                    results = nil
-//                                    if success {
-//                                        #if DEBUG
-//                                        print("updated successfully")
-//                                        #endif
-//                                        completion((true, nil))
-//
-//                                    } else {
-//                                        completion((false, "error editing"))
-//
-//                                    }
-//                                }
-//                            }
-//                        } else {
-//                            completion((false, "no results"))
-//
-//                        }
-//                    }
-//                }
-//            } catch {
-//                completion((false, "failed"))
-//
-//            }
-//        }
-//    }
     
 }
