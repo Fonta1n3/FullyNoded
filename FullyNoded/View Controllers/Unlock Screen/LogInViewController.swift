@@ -25,6 +25,8 @@ class LogInViewController: UIViewController, UITextFieldDelegate, ASAuthorizatio
     var secondsRemaining = 2
     var tapGesture:UITapGestureRecognizer!
     var resetButton = UIButton()
+    var isRessetting = false
+    var initialLoad = true
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -81,32 +83,35 @@ class LogInViewController: UIViewController, UITextFieldDelegate, ASAuthorizatio
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        lockView.addSubview(imageView)
-        lockView.addSubview(passwordInput)
-        passwordInput.removeGestureRecognizer(tapGesture)
-        addNextButton(inputView: passwordInput)
+        if initialLoad {
+            initialLoad = false
+            lockView.addSubview(imageView)
+            lockView.addSubview(passwordInput)
+            passwordInput.removeGestureRecognizer(tapGesture)
+            addNextButton(inputView: passwordInput)
 
-        let ud = UserDefaults.standard
+            let ud = UserDefaults.standard
 
-        if ud.object(forKey: "bioMetricsDisabled") == nil {
-            touchIDButton.removeFromSuperview()
-            lockView.addSubview(touchIDButton)
-        }
+            if ud.object(forKey: "bioMetricsDisabled") == nil {
+                touchIDButton.removeFromSuperview()
+                lockView.addSubview(touchIDButton)
+            }
 
-        showUnlockScreen()
+            showUnlockScreen()
 
-        DispatchQueue.main.async {
-            UIImpactFeedbackGenerator().impactOccurred()
-        }
+            DispatchQueue.main.async {
+                UIImpactFeedbackGenerator().impactOccurred()
+            }
 
-        if ud.object(forKey: "bioMetricsDisabled") == nil {
-            authenticationWithTouchID()
-        }
+            if ud.object(forKey: "bioMetricsDisabled") == nil {
+                authenticationWithTouchID()
+            }
 
-        configureTimeoutLabel()
+            configureTimeoutLabel()
 
-        if timeToDisable > 2.0 {
-            disable()
+            if timeToDisable > 2.0 {
+                disable()
+            }
         }
     }
     
@@ -133,7 +138,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate, ASAuthorizatio
             guard let self = self else { return }
             
             let alert = UIAlertController(title: "⚠️ Reset app password?",
-                                          message: "THIS DELETES ALL DATA AND COMPLETELY WIPES THE APP! Force quit the app and reopen.",
+                                          message: "THIS DELETES ALL DATA AND COMPLETELY WIPES THE APP! Force quit the app and reopen the app after this action.",
                                           preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Reset", style: .destructive, handler: { [weak self] action in
