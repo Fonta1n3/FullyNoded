@@ -38,7 +38,6 @@ class BackupiCloud {
     }
         
     static func backup(encryptionKey: Data, completion: @escaping ((backedup: Bool, message: String?)) -> Void) {
-        print("backup")
         var saved = true
         
         let entities:[ENTITY] = [
@@ -69,7 +68,6 @@ class BackupiCloud {
                 if let localEntities = localEntities, localEntities.count > 0 {
                     
                     func saveDict(_ dict: [String:Any], _ index: Int, _ name: ENTITY_BACKUP) {
-                        print("saveDict: \(dict)")
                         CoreDataiCloud.saveEntity(entity: name, dict: dict) { success in
                             if !success {
                                 saved = false
@@ -91,7 +89,6 @@ class BackupiCloud {
                                 for (x, existingCloudEntity) in existingCloudEntities.enumerated() {
                                     if let id = existingCloudEntity["id"] as? UUID, let idToBackup = existingLocalEntity["id"] as? UUID, id == idToBackup {
                                         exists = true
-                                        print("\(entity) exists already...")
                                     }
                                     
                                     if x + 1 == existingCloudEntities.count && !exists {
@@ -110,7 +107,6 @@ class BackupiCloud {
                         }
                     }
                 } else {
-                    print("nothing to backup")
                     completion((true, "No data to backup."))
                 }
             }
@@ -147,53 +143,40 @@ class BackupiCloud {
         return [authKeys, nodes, signers, wallets]
     }
     
-    static func saveEntityLocal(_ name: ENTITY, _ entities: [[String:Any]], completion: @escaping ((success:Bool, message: String?)) -> Void) {
+    static func saveEntityLocal(_ name: ENTITY, _ entity: [String:Any], completion: @escaping ((success:Bool, didSaveSomething: Bool)) -> Void) {
         var saved = true
+        var didSaveSomething = false
         
-        func saveDict(_ dict: [String:Any], _ index: Int) {
+        func saveDict(_ dict: [String:Any]) {
             CoreDataService.saveEntity(dict: dict, entityName: name) { success in
                 if !success {
                     saved = false
+                } else {
+                    didSaveSomething = true
                 }
-
-                if index + 1 == entities.count {
-                    completion((saved, nil))
-                }
+                
+                completion((saved, didSaveSomething))
             }
         }
         
-        for (i, dict) in entities.enumerated() {
-            var nothingToSave = false
-            CoreDataService.retrieveEntity(entityName: name) { existingEntities in
-                if let existingEntities = existingEntities, existingEntities.count > 0 {
-                    var exists = false
-                    for (x, existingEntity) in existingEntities.enumerated() {
-                        if let id = existingEntity["id"] as? UUID, let idToSave = dict["id"] as? UUID , id == idToSave {
-                                exists = true
-                            nothingToSave = true
-                        }
-                        
-                        if x + 1 == existingEntities.count {
-                            
-                            if !exists {
-                                nothingToSave = false
-                                if i + 1 == entities.count {
-                                    saveDict(dict, i)
-                                }
-                                
-                            } else if i + 1 == entities.count {
-                                if nothingToSave {
-                                    completion((true, "Local data already synced with recovery data."))
-                                } else {
-                                    completion((true, "Recovered ✓"))
-                                }
-                                
-                            }
+        CoreDataService.retrieveEntity(entityName: name) { existingEntities in
+            if let existingEntities = existingEntities, existingEntities.count > 0 {
+                var exists = false
+                for (x, existingEntity) in existingEntities.enumerated() {
+                    if let id = existingEntity["id"] as? UUID, let idToSave = entity["id"] as? UUID , id == idToSave {
+                        exists = true
+                    }
+                    
+                    if x + 1 == existingEntities.count {
+                        if !exists {
+                            saveDict(entity)
+                        } else {
+                            completion((true, false))
                         }
                     }
-                } else if i + 1 == entities.count {
-                    saveDict(dict, i)
                 }
+            } else {
+                saveDict(entity)
             }
         }
     }
@@ -202,49 +185,78 @@ class BackupiCloud {
         if !dataToRecover.isEmpty {
             if let entitiesToRecover = convertDataToRecoverIntoArrays(dataToRecover) {
                 var backedUp = true
-                var messageToReturn = ""
+                var somethingWasSaved = false
                 
                 for (i, entities) in entitiesToRecover.enumerated() {
+                    
+                    func finished() {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                            var mess = "Data was recovered."
+                            if !somethingWasSaved {
+                                mess = "No data to recover."
+                            }
+                            completion((backedUp, mess))
+                        }
+                    }
                     
                     if !entities.isEmpty {
                         switch i {
                         case 0:
-                            saveEntityLocal(.authKeys, entities) { (success, mess) in
-                                if !success {
-                                    backedUp = false
+                            for entity in entities {
+                                saveEntityLocal(.authKeys, entity) { (success, didSave) in
+                                    if !success {
+                                        backedUp = false
+                                    }
+                                    if didSave {
+                                        somethingWasSaved = true
+                                    }
                                 }
-                                messageToReturn = mess ?? ""
                             }
+                            
                         case 1:
-                            saveEntityLocal(.newNodes, entities) { (success, mess) in
-                                if !success {
-                                    backedUp = false
+                            for entity in entities {
+                                saveEntityLocal(.newNodes, entity) { (success, didSave) in
+                                    if !success {
+                                        backedUp = false
+                                    }
+                                    if didSave {
+                                        somethingWasSaved = true
+                                    }
                                 }
-                                messageToReturn = mess ?? ""
                             }
                         case 2:
-                            saveEntityLocal(.signers, entities) { (success, mess) in
-                                if !success {
-                                    backedUp = false
+                            for entity in entities {
+                                saveEntityLocal(.signers, entity) { (success, didSave) in
+                                    if !success {
+                                        backedUp = false
+                                    }
+                                    if didSave {
+                                        somethingWasSaved = true
+                                    }
                                 }
-                                messageToReturn = mess ?? ""
                             }
                         case 3:
-                            saveEntityLocal(.wallets, entities) { (success, mess) in
-                                if !success {
-                                    backedUp = false
+                            if entities.count > 0 {
+                                for (x, entity) in entities.enumerated() {
+                                    saveEntityLocal(.wallets, entity) { (success, didSave) in
+                                        if !success {
+                                            backedUp = false
+                                        }
+                                        
+                                        if didSave {
+                                            somethingWasSaved = true
+                                        }
+                                        
+                                        if x + 1 == entities.count {
+                                            finished()
+                                        }
+                                    }
                                 }
-                                messageToReturn = mess ?? ""
+                            } else {
+                                finished()
                             }
                         default:
                             break
-                        }
-                    }
-                    
-                    if i + 1 == entities.count {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-                            print("messageToReturn: \(messageToReturn)")
-                            completion((backedUp, messageToReturn))
                         }
                     }
                 }
@@ -254,7 +266,6 @@ class BackupiCloud {
         } else {
             completion((false, "No data exists in iCloud."))
         }
-        
     }
     
     static func destroy(completion: @escaping ((Bool)) -> Void) {
@@ -283,7 +294,6 @@ class BackupiCloud {
     }
     
     static func recover(passwordHash: Data, completion: @escaping ((recovered: Bool, message: String?)) -> Void) {
-        print("recover")
         var dataToRecover = [String:Any]()
         
         let entities:[ENTITY_BACKUP] = [

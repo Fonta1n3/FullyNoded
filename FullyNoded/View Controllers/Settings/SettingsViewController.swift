@@ -429,11 +429,11 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             let tit = "Create/update iCloud backup?"
             
-            let mess = "Create an independent, encrypted iCloud database using a password of your choice. If you already created a backup this updates the existing backup, it will only add new data, nothing will be deleted or overwritten.\n\nIf you forget your encryption password this backup will be completely useless! The encryption password is never saved anywhere in any form! YOU MUST SAVE IT OFFLINE IN ORDER TO RECOVER YOUR BACKUP!\n\nThis backs up signers, nodes, wallets, and Tor auth keys."
+            let mess = "Create an independent, encrypted iCloud database using a password of your choice. If you already created a backup this updates it.\n\nIf you forget your encryption password this backup will be completely useless! YOU MUST SAVE THE ENCRYPTION PASSWORD OFFLINE IN ORDER TO RECOVER YOUR BACKUP\n\nThis backs up signers, nodes, wallets, and Tor auth keys."
             
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
             
-            alert.addAction(UIAlertAction(title: "Create iCloud backup", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "Create/update backup", style: .default, handler: { action in
                 self.confirmiCloudEnable()
             }))
             
@@ -491,7 +491,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             
-            let enable = UIAlertAction(title: "Create", style: .default) { [weak self] alertAction in
+            let enable = UIAlertAction(title: "Create/update", style: .default) { [weak self] alertAction in
                 guard let self = self else { return }
                 
                 let text = (alert.textFields![0] as UITextField).text
@@ -545,7 +545,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
-                UserDefaults.standard.setValue(true, forKey: "iCloudBackup")
+                showAlert(vc: self, title: "", message: "Encrypted iCloud backup updated ✓")
                 self.settingsTable.reloadSections(IndexSet(arrayLiteral: 1), with: .none)
             }
         }
@@ -556,7 +556,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             guard let self = self else { return }
             
             let title = "Recover iCloud backup?"
-            let message = "Input the encryption password that was used when you created this backup."
+            let message = "Input the encryption password that was used when you created this backup. Inputting the incorrect password here means your recovery data will get bricked."
             
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             
@@ -564,10 +564,13 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 guard let self = self else { return }
                 
                 let text = (alert.textFields![0] as UITextField).text
+                let confirmText = (alert.textFields![1] as UITextField).text
                 
                 guard let text = text,
+                      let confirmText = confirmText,
+                      text == confirmText,
                       let hash = self.hash(text) else {
-                    showAlert(vc: self, title: "", message: "Incorrect password.")
+                    showAlert(vc: self, title: "", message: "Passwords don't match.")
                     
                     return
                 }
@@ -590,6 +593,12 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             alert.addTextField { textField in
                 textField.placeholder = "encryption password"
+                textField.isSecureTextEntry = true
+                textField.keyboardAppearance = .dark
+            }
+            
+            alert.addTextField { textField in
+                textField.placeholder = "confirm password"
                 textField.isSecureTextEntry = true
                 textField.keyboardAppearance = .dark
             }

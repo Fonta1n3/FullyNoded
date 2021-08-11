@@ -11,6 +11,7 @@ import AVFoundation
 
 class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
+    let spinner = ConnectingView()
     var selectedNode:[String:Any]?
     let cd = CoreDataService()
     var createNew = Bool()
@@ -20,7 +21,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var isHost = Bool()
     var hostname: String?
     let imagePicker = UIImagePickerController()
-    var alertStyle = UIAlertController.Style.alert
     var scanNow = false
     
     @IBOutlet weak var certField: UITextField!
@@ -52,6 +52,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         saveButton.clipsToBounds = true
         saveButton.layer.cornerRadius = 8
         header.text = "Node Credentials"
+        navigationController?.delegate = self
         
         if isLightning {
             addressHeaderOutlet.text = "Address: (xxx.onion:8080 or 127.0.0.1:8080)"
@@ -67,6 +68,102 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         if scanNow {
             segueToScanNow()
         }
+    }
+    
+    @IBAction func recoverAction(_ sender: Any) {
+        confirmiCloudRecovery()
+    }
+    
+    private func confirmiCloudRecovery() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Recover iCloud backup?"
+            let message = "You need to input the same encryption password that was used when you created the backup. If the incorrect password is entered your data will not be decrypted."
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let recover = UIAlertAction(title: "Recover", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                let text = (alert.textFields![0] as UITextField).text
+                let confirm = (alert.textFields![0] as UITextField).text
+                
+                guard let text = text,
+                      let confirm = confirm,
+                      text == confirm,
+                      let hash = self.hash(text) else {
+                    showAlert(vc: self, title: "", message: "Passwords don't match!")
+                    
+                    return
+                }
+                
+                self.spinner.addConnectingView(vc: self, description: "recovering...")
+                
+                BackupiCloud.recover(passwordHash: hash) { [weak self] (recovered, errorMess) in
+                    guard let self = self else { return }
+                    
+                    let message = errorMess ?? ""
+                    
+                    if message.contains("No data exists in iCloud") {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                            BackupiCloud.recover(passwordHash: hash) { [weak self] (recovered, errorMess) in
+                                guard let self = self else { return }
+                                
+                                self.spinner.removeConnectingView()
+                                
+                                if recovered {
+                                    DispatchQueue.main.async { [weak self] in
+                                        guard let self = self else { return }
+                                        
+                                        self.navigationController?.popViewController(animated: true)
+                                        NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+                                    }
+                                } else {
+                                    showAlert(vc: self, title: "", message: "Recovery failed... \(errorMess ?? "")")
+                                }
+                            }
+                        }
+                    } else {
+                        self.spinner.removeConnectingView()
+                        
+                        if recovered {
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
+                                
+                                self.navigationController?.popViewController(animated: true)
+                                NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+                            }
+                        } else {
+                            showAlert(vc: self, title: "", message: "Recovery failed... \(errorMess ?? "")")
+                        }
+                    }
+                }
+            }
+            
+            alert.addTextField { textField in
+                textField.placeholder = "encryption password"
+                textField.isSecureTextEntry = true
+                textField.keyboardAppearance = .dark
+            }
+            
+            alert.addTextField { textField in
+                textField.placeholder = "confirm password"
+                textField.isSecureTextEntry = true
+                textField.keyboardAppearance = .dark
+            }
+            
+            alert.addAction(recover)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            alert.addAction(cancel)
+            
+            self.present(alert, animated:true, completion: nil)
+        }
+    }
+    
+    private func hash(_ text: String) -> Data? {
+        return Data(hexString: Crypto.sha256hash(text))
     }
     
     @IBAction func showGuideAction(_ sender: Any) {
@@ -459,7 +556,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     if nodes!.count > 1 {
                         vc.deActivateNodes(nodes: nodes!) {
                             DispatchQueue.main.async { [unowned vc = self] in
-                                let alert = UIAlertController(title: "Node added successfully ✓", message: "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node.", preferredStyle: self.alertStyle)
+                                let alert = UIAlertController(title: "Node added successfully ✓", message: "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node.", preferredStyle: .alert)
                                 alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                     DispatchQueue.main.async { [unowned vc = self] in
                                         NotificationCenter.default.post(name: .refreshNode, object: nil)
@@ -473,7 +570,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     } else {
                         if !vc.createNew {
                             DispatchQueue.main.async { [unowned vc = self] in
-                                let alert = UIAlertController(title: "Node updated successfully", message: "Your node has been updated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection using your updated node credentials.", preferredStyle: self.alertStyle)
+                                let alert = UIAlertController(title: "Node updated successfully", message: "Your node has been updated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection using your updated node credentials.", preferredStyle: .alert)
                                 alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                     DispatchQueue.main.async { [unowned vc = self] in
                                         NotificationCenter.default.post(name: .refreshNode, object: nil)
@@ -485,7 +582,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                             }
                         } else {
                            DispatchQueue.main.async { [unowned vc = self] in
-                            let alert = UIAlertController(title: "Node added successfully ✓", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: self.alertStyle)
+                            let alert = UIAlertController(title: "Node added successfully ✓", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: .alert)
                                 alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                     DispatchQueue.main.async { [unowned vc = self] in
                                         NotificationCenter.default.post(name: .refreshNode, object: nil)
@@ -500,7 +597,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 } else {
                     if !vc.createNew {
                         DispatchQueue.main.async { [unowned vc = self] in
-                            let alert = UIAlertController(title: "Node updated successfully", message: "Your node has been updated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection using your updated node credentials.", preferredStyle: self.alertStyle)
+                            let alert = UIAlertController(title: "Node updated successfully", message: "Your node has been updated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection using your updated node credentials.", preferredStyle: .alert)
                             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                 DispatchQueue.main.async { [unowned vc = self] in
                                     vc.navigationController?.popViewController(animated: true)
@@ -511,7 +608,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         }
                     } else {
                        DispatchQueue.main.async { [unowned vc = self] in
-                        let alert = UIAlertController(title: "Node added successfully ✓", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: self.alertStyle)
+                        let alert = UIAlertController(title: "Node added successfully ✓", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: .alert)
                             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                 DispatchQueue.main.async { [unowned vc = self] in
                                     vc.navigationController?.popViewController(animated: true)
