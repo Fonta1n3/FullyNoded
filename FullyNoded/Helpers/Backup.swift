@@ -40,6 +40,21 @@ class BackupiCloud {
     static func backup(encryptionKey: Data, completion: @escaping ((backedup: Bool, message: String?)) -> Void) {
         var saved = true
         
+        let sha = Crypto.sha256hash(encryptionKey)
+        
+        if let existing = KeyChain.getData("iCloudSHA") {
+            guard existing == Crypto.sha256hash(sha) else {
+                completion((false, "Provided encryption key does not match last used encryption key."))
+                return
+            }
+            
+        } else {
+            guard KeyChain.set(Crypto.sha256hash(sha), forKey: "iCloudSHA") else {
+                completion((false, "Unable to save hash..."))
+                return
+            }
+        }
+        
         let entities:[ENTITY] = [
             .authKeys,
             .newNodes,
@@ -294,6 +309,21 @@ class BackupiCloud {
     }
     
     static func recover(passwordHash: Data, completion: @escaping ((recovered: Bool, message: String?)) -> Void) {
+        let sha = Crypto.sha256hash(passwordHash)
+        
+        if let existing = KeyChain.getData("iCloudSHA") {
+            guard existing == Crypto.sha256hash(sha) else {
+                completion((false, "Provided encryption key does not match last used encryption key."))
+                return
+            }
+            
+        } else {
+            guard KeyChain.set(Crypto.sha256hash(sha), forKey: "iCloudSHA") else {
+                completion((false, "Unable to save hash..."))
+                return
+            }
+        }
+        
         var dataToRecover = [String:Any]()
         
         let entities:[ENTITY_BACKUP] = [

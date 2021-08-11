@@ -385,7 +385,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 case 3:
                     confirmiCloudRecovery()
                 case 4:
-                    promptToDisableiCloud()
+                    promptToDeleteiCloud()
                 default:
                     break
                 }
@@ -442,7 +442,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    private func promptToDisableiCloud() {
+    private func promptToDeleteiCloud() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -460,6 +460,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     self.spinner.removeConnectingView()
                     
                     if destroyed {
+                        let _ = KeyChain.remove(key: "iCloudSHA")
+                        
                         showAlert(vc: self, title: "", message: "iCloud backup deleted.")
                         
                         DispatchQueue.main.async { [weak self] in
