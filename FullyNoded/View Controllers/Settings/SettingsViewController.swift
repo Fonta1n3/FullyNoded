@@ -701,7 +701,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                                 
                                 for (u, utxo) in utxos.enumerated() {
                                     let utxoStr = UtxosStruct(dictionary: utxo)
-                                    processedUtxoArray[u]["id"] = utxoStr.id!.uuidString
+                                    
+                                    if let uxtoArrayId = processedUtxoArray[u]["id"] as? UUID {
+                                        processedUtxoArray[u]["id"] = uxtoArrayId.uuidString
+                                    }
                                     
                                     if let walletid = utxoStr.walletId {
                                         processedUtxoArray[u]["walletId"] = walletid.uuidString
@@ -728,9 +731,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         let fileManager = FileManager.default
         let fileURL = fileManager.temporaryDirectory.appendingPathComponent("wallets.fullynoded")
         
-        guard let json = file.json() else { return }
+        guard let json = file.json() else { showAlert(vc: self, title: "", message: "Unable to convert your backup data into json..."); return }
         
-        try? json.dataUsingUTF8StringEncoding.write(to: fileURL)
+        try? json.utf8.write(to: fileURL)
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
