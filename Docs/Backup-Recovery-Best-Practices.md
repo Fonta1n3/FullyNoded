@@ -72,7 +72,7 @@ or utxos. This is ideal for people who worry about losing xpubs for their multi-
 
 ***Signers must be backed up offline on a piece of paper or metal***
 
-To make a wallet spednable you can either recover via iCloud, QR code or wallet file
+To make a wallet spendable you can either recover via iCloud, QR code or wallet file
 and then simply add the appropriate signer to the app by navigating to `Signers` >
 `+` and inputting the words one at a time or pasting all of them in one go. Of course you
 must pay special attention to whether you added a passphrase to that seed in order for
