@@ -19,7 +19,7 @@ Example without node label:
 `btcrpc://rpcuser:rpcpassword@kjhfefe.onion:8332?`
 
 For C-Lightning simply specify the correct prefix and FN will do the rest:<br/>
-`clightning-rpc://rpcuser:rpcpassword@kjhfefe.onion:1312?label=BTCPay%20C-Lightning`
+`clightning-rpc://rpcuser:rpcpassword@xxxx.onion:8080?label=BTCPay%20C-Lightning`
 For more info on supporting c-lightning see [Lightning.md](./Docs/Lightning.md)
 
 **The rpcuser and rpcpassword are the http-user (lightning by default) and http-pass you specify in the clightning config when using the supported c-lightning http [plugin](https://github.com/Start9Labs/c-lightning-http-plugin), 1312 is the HS port, again you may customize the port with http-port in the lightning config in conjunction with the http plugin.**
