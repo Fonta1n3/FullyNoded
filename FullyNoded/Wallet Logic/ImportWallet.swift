@@ -14,7 +14,7 @@ class ImportWallet {
     static var processedWatching = [String]()
     static var isColdcard = false
     static var isRecovering = false
-    static var version:Int = 0
+    static var version:Double = 0.0
     static var isHot = false
             
     class func accountMap(_ accountMap: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
@@ -47,7 +47,7 @@ class ImportWallet {
         
         self.version = version.bitcoinVersion
         
-        if self.version >= 21 {
+        if self.version >= 21.0 {
             wallet["type"] = "Native-Descriptor"
             keypool = false
         } else {
@@ -486,6 +486,7 @@ class ImportWallet {
                 }
                 
                 let params = "[{ \"desc\": \"\(desc)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"watching\", \"keypool\": false, \"internal\": false }], {\"rescan\": false}"
+                
                 importMultiDesc(params: params) { (success, errorMessage) in
                     if success {
                         processedWatching.append(desc)

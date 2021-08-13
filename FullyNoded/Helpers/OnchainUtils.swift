@@ -100,13 +100,8 @@ class OnchainUtils {
     }
     
     static func rescanNow(from: String, completion: @escaping ((started: Bool, message: String?)) -> Void) {
-        Reducer.makeCommand(command: .rescanblockchain, param: "0") { (_, message) in
-            if let message = message, message.contains("Wallet is currently rescanning. Abort existing rescan or wait.") {
-                completion((true, nil))
-            } else {
-                completion((true, message))
-            }
-        }
+        Reducer.makeCommand(command: .rescanblockchain, param: "\(from)") { (_, _) in }
+        completion((true, nil))
     }
      
 }

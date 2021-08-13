@@ -179,11 +179,10 @@ public extension String {
         return Double(self)! / 1000.0
     }
     
-    var bitcoinVersion: Int {
+    var bitcoinVersion: Double {
         var versionString = String(self.dropFirst())
         versionString = String(versionString.dropFirst())
-        versionString = versionString.replacingOccurrences(of: ".", with: "")
-        return Int(versionString)!
+        return Double(versionString)!
     }
     
     var btcToSats: String {

@@ -897,67 +897,65 @@ class NodeLogic {
     class func parseTransactions(transactions: NSArray) {
         arrayToReturn.removeAll()
         
-        //activeWallet { activeWallet in
-            var transactionArray = [[String:Any]]()
+        var transactionArray = [[String:Any]]()
+        
+        for (t, item) in transactions.enumerated() {
             
-            for (t, item) in transactions.enumerated() {
+            if let transaction = item as? NSDictionary {
+                var toRemove = false
+                var label = String()
+                var replaced_by_txid = String()
                 
-                if let transaction = item as? NSDictionary {
-                    var toRemove = false
-                    var label = String()
-                    var replaced_by_txid = String()
+                let address = transaction["address"] as? String ?? ""
+                let amount = transaction["amount"] as? Double ?? 0.0
+                let amountString = amount.avoidNotation
+                let confsCheck = transaction["confirmations"] as? Int ?? 0
+                
+                //                    if confsCheck < 0 {
+                //                        toRemove = true
+                //                    }
+                
+                let confirmations = String(confsCheck)
+                
+                if let replaced_by_txid_check = transaction["replaced_by_txid"] as? String {
+                    replaced_by_txid = replaced_by_txid_check
                     
-                    let address = transaction["address"] as? String ?? ""
-                    let amount = transaction["amount"] as? Double ?? 0.0
-                    let amountString = amount.avoidNotation
-                    let confsCheck = transaction["confirmations"] as? Int ?? 0
-                    
-                    if confsCheck < 0 {
-                        //toRemove = true
+                    if replaced_by_txid != "" {
+                        toRemove = true
                     }
-                    
-                    let confirmations = String(confsCheck)
-                    
-                    if let replaced_by_txid_check = transaction["replaced_by_txid"] as? String {
-                        replaced_by_txid = replaced_by_txid_check
-                        
-                        if replaced_by_txid != "" {
-                            toRemove = true
-                        }
-                    }
-                    
-                    if let labelCheck = transaction["label"] as? String {
-                        label = labelCheck
-                        if labelCheck == "" || labelCheck == "," {
-                            label = ""
-                        }
-                    } else {
+                }
+                
+                if let labelCheck = transaction["label"] as? String {
+                    label = labelCheck
+                    if labelCheck == "" || labelCheck == "," {
                         label = ""
                     }
-                    
-                    let secondsSince = transaction["time"] as? Double ?? 0.0
-                    let rbf = transaction["bip125-replaceable"] as? String ?? ""
-                    let txID = transaction["txid"] as? String ?? ""
-                    
-                    let date = Date(timeIntervalSince1970: secondsSince)
-                    dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
-                    let dateString = dateFormatter.string(from: date)
-                    
-                    func finishParsingTxs() {
-                        if t + 1 == transactions.count {
-                            for (i, tx) in transactionArray.enumerated() {
-                                if let _ = tx["amount"] as? String {
-                                    if let amount = Double(tx["amount"] as! String) {
-                                        if let txID = tx["txID"] as? String {
-                                            for (x, transaction) in transactionArray.enumerated() {
-                                                if let amountToCompare = Double(transaction["amount"] as! String) {
-                                                    if x != i && txID == (transaction["txID"] as! String) {
-                                                        if amount + amountToCompare == 0 && amount > 0 {
-                                                            transactionArray[i]["selfTransfer"] = true
-                                                            
-                                                        } else if amount + amountToCompare == 0 && amount < 0 {
-                                                            transactionArray[i]["remove"] = true
-                                                        }
+                } else {
+                    label = ""
+                }
+                
+                let secondsSince = transaction["time"] as? Double ?? 0.0
+                let rbf = transaction["bip125-replaceable"] as? String ?? ""
+                let txID = transaction["txid"] as? String ?? ""
+                
+                let date = Date(timeIntervalSince1970: secondsSince)
+                dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
+                let dateString = dateFormatter.string(from: date)
+                
+                func finishParsingTxs() {
+                    if t + 1 == transactions.count {
+                        for (i, tx) in transactionArray.enumerated() {
+                            if let _ = tx["amount"] as? String {
+                                if let amount = Double(tx["amount"] as! String) {
+                                    if let txID = tx["txID"] as? String {
+                                        for (x, transaction) in transactionArray.enumerated() {
+                                            if let amountToCompare = Double(transaction["amount"] as! String) {
+                                                if x != i && txID == (transaction["txID"] as! String) {
+                                                    if amount + amountToCompare == 0 && amount > 0 {
+                                                        transactionArray[i]["selfTransfer"] = true
+                                                        
+                                                    } else if amount + amountToCompare == 0 && amount < 0 {
+                                                        transactionArray[i]["remove"] = true
                                                     }
                                                 }
                                             }
@@ -965,85 +963,85 @@ class NodeLogic {
                                     }
                                 }
                             }
-                                                    
-                            for tx in transactionArray {
-                                if let remove = tx["remove"] as? Bool {
-                                    if !remove {
-                                        arrayToReturn.append(tx)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    let amountSats = amountString.btcToSats
-                    let amountBtc = amountString.doubleValue.avoidNotation
-                    let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
-                    let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
-                                    
-                    transactionArray.append([
-                        "address": address,
-                        "amountBtc": amountBtc,
-                        "amountSats": amountSats,
-                        "amountFiat": amountFiat,
-                        "confirmations": confirmations,
-                        "label": label,
-                        "date": dateString,
-                        "rbf": rbf,
-                        "txID": txID,
-                        "replacedBy": replaced_by_txid,
-                        "selfTransfer": false,
-                        "remove": toRemove,
-                        "onchain": true,
-                        "isLightning": false,
-                        "sortDate": date
-                    ])
-                    
-                    func saveLocally() {
-                        var labelToSave = "no transaction label"
-                        
-                        if label != "" {
-                            labelToSave = label
                         }
                         
-                        let dict = [
-                            "txid":txID,
-                            "id":UUID(),
-                            "memo":"no transaction memo",
-                            "date":date,
-                            "label":labelToSave
-                        ] as [String:Any]
-                        
-                        CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
-                    }
-                    
-                    CoreDataService.retrieveEntity(entityName: .transactions) { txs in
-                        guard let txs = txs, txs.count > 0 else {
-                            saveLocally()
-                            finishParsingTxs()
-                            return
-                        }
-                        
-                        var alreadySaved = false
-                        
-                        for (i, tx) in txs.enumerated() {
-                            let txStruct = TransactionStruct(dictionary: tx)
-                            if txStruct.txid == txID {
-                                alreadySaved = true
-                            }
-                            if i + 1 == txs.count {
-                                if !alreadySaved {
-                                    saveLocally()
-                                }
-                                
-                                if t + 1 == transactions.count {
-                                    finishParsingTxs()
+                        for tx in transactionArray {
+                            if let remove = tx["remove"] as? Bool {
+                                if !remove {
+                                    arrayToReturn.append(tx)
                                 }
                             }
                         }
                     }
                 }
+                
+                let amountSats = amountString.btcToSats
+                let amountBtc = amountString.doubleValue.avoidNotation
+                let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
+                let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
+                
+                transactionArray.append([
+                    "address": address,
+                    "amountBtc": amountBtc,
+                    "amountSats": amountSats,
+                    "amountFiat": amountFiat,
+                    "confirmations": confirmations,
+                    "label": label,
+                    "date": dateString,
+                    "rbf": rbf,
+                    "txID": txID,
+                    "replacedBy": replaced_by_txid,
+                    "selfTransfer": false,
+                    "remove": toRemove,
+                    "onchain": true,
+                    "isLightning": false,
+                    "sortDate": date
+                ])
+                
+                func saveLocally() {
+                    var labelToSave = "no transaction label"
+                    
+                    if label != "" {
+                        labelToSave = label
+                    }
+                    
+                    let dict = [
+                        "txid":txID,
+                        "id":UUID(),
+                        "memo":"no transaction memo",
+                        "date":date,
+                        "label":labelToSave
+                    ] as [String:Any]
+                    
+                    CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
+                }
+                
+                CoreDataService.retrieveEntity(entityName: .transactions) { txs in
+                    guard let txs = txs, txs.count > 0 else {
+                        saveLocally()
+                        finishParsingTxs()
+                        return
+                    }
+                    
+                    var alreadySaved = false
+                    
+                    for (i, tx) in txs.enumerated() {
+                        let txStruct = TransactionStruct(dictionary: tx)
+                        if txStruct.txid == txID {
+                            alreadySaved = true
+                        }
+                        if i + 1 == txs.count {
+                            if !alreadySaved {
+                                saveLocally()
+                            }
+                            
+                            if t + 1 == transactions.count {
+                                finishParsingTxs()
+                            }
+                        }
+                    }
+                }
             }
-        //}
+        }
     }
 }

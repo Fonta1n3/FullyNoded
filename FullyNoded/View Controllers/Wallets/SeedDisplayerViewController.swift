@@ -18,7 +18,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     var name = ""
     var coinType = "0"
     var blockheight:Int64!
-    var version:Int = 0
+    var version:Double = 0.0
     
     override func viewDidLoad() {
         super.viewDidLoad()

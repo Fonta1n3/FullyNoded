@@ -1300,16 +1300,15 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
             
             alert.addAction(UIAlertAction(title: "Offchain", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
-                
-                self.showOffchain = true
-                self.showOnchain = false
-                
+                                
                 for (i, tx) in self.transactionArray.enumerated() {
                     if let isOnchain = tx["onchain"] as? Bool, !isOnchain, let isLightning = tx["isLightning"] as? Bool, isLightning {
                         self.offchainTxArray.append(tx)
                     }
                     
-                    if i + 1 == self.transactionArray.count {
+                    if i + 1 == self.transactionArray.count, self.offchainTxArray.count > 0 {
+                        self.showOffchain = true
+                        self.showOnchain = false
                         self.reloadTable()
                     }
                 }
@@ -1317,20 +1316,18 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
             
             alert.addAction(UIAlertAction(title: "Onchain", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
-                
-                self.showOnchain = true
-                self.showOffchain = false
-                
+                                
                 for (i, tx) in self.transactionArray.enumerated() {
                     if let isOnchain = tx["onchain"] as? Bool, isOnchain, let isLightning = tx["isLightning"] as? Bool, !isLightning {
                         self.onchainTxArray.append(tx)
                     }
                     
-                    if i + 1 == self.transactionArray.count {
+                    if i + 1 == self.transactionArray.count, self.onchainTxArray.count > 0 {
+                        self.showOnchain = true
+                        self.showOffchain = false
                         self.reloadTable()
                     }
                 }
-                
             }))
             
             alert.addAction(UIAlertAction(title: "Show all", style: .default, handler: { [weak self] action in
