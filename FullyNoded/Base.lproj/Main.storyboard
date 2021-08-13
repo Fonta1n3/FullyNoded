@@ -4252,6 +4252,16 @@ xxxxx</string>
                                     <constraint firstItem="PBP-HA-t9R" firstAttribute="leading" secondItem="3Du-u4-MHg" secondAttribute="leading" id="udi-n6-Mee"/>
                                 </constraints>
                             </stackView>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="0zs-Jb-ZYp">
+                                <rect key="frame" x="270" y="66" width="89" height="32"/>
+                                <segments>
+                                    <segment title="btc"/>
+                                    <segment title="sats"/>
+                                </segments>
+                                <connections>
+                                    <action selector="switchDenominationsAction:" destination="Xxg-Pp-vvN" eventType="valueChanged" id="gC1-dC-QvJ"/>
+                                </connections>
+                            </segmentedControl>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="luY-Vj-OjD"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -4260,7 +4270,9 @@ xxxxx</string>
                             <constraint firstItem="luY-Vj-OjD" firstAttribute="bottom" secondItem="j37-Bz-6py" secondAttribute="bottom" constant="36" id="5ZU-Od-RTY"/>
                             <constraint firstItem="UHH-mB-RWH" firstAttribute="leading" secondItem="luY-Vj-OjD" secondAttribute="leading" constant="16" id="GPM-mF-Ya1"/>
                             <constraint firstItem="jcJ-Y0-mDC" firstAttribute="top" secondItem="luY-Vj-OjD" secondAttribute="top" constant="20" id="GnP-bQ-SAL"/>
+                            <constraint firstItem="luY-Vj-OjD" firstAttribute="trailing" secondItem="0zs-Jb-ZYp" secondAttribute="trailing" constant="16" id="HBM-KK-NkE"/>
                             <constraint firstItem="3Du-u4-MHg" firstAttribute="leading" secondItem="luY-Vj-OjD" secondAttribute="leading" constant="16" id="VHf-c0-Tzu"/>
+                            <constraint firstItem="3Du-u4-MHg" firstAttribute="top" secondItem="0zs-Jb-ZYp" secondAttribute="bottom" constant="8" id="XUd-Dx-mK9"/>
                             <constraint firstItem="luY-Vj-OjD" firstAttribute="bottom" secondItem="UHH-mB-RWH" secondAttribute="bottom" constant="36" id="fmf-Bi-fXf"/>
                             <constraint firstItem="luY-Vj-OjD" firstAttribute="trailing" secondItem="j37-Bz-6py" secondAttribute="trailing" constant="16" id="lnI-0M-vO7"/>
                             <constraint firstItem="3Du-u4-MHg" firstAttribute="top" secondItem="jcJ-Y0-mDC" secondAttribute="bottom" constant="7.5" id="min-4M-g6g"/>
@@ -4273,6 +4285,7 @@ xxxxx</string>
                         <outlet property="addressImageView" destination="FV2-M9-4i0" id="VWQ-ws-xth"/>
                         <outlet property="addressOutlet" destination="5Ca-4Z-dsq" id="jU0-vq-Na3"/>
                         <outlet property="amountField" destination="qFH-Vc-Ghn" id="hTO-DQ-Qnr"/>
+                        <outlet property="denominationControl" destination="0zs-Jb-ZYp" id="JUA-dA-yCb"/>
                         <outlet property="fieldsBackground" destination="0BT-sN-BLU" id="ecl-N7-HqF"/>
                         <outlet property="invoiceBackground" destination="It9-Q4-iaP" id="Jkn-Nz-XYJ"/>
                         <outlet property="invoiceText" destination="u7K-Aq-iOi" id="Bu1-01-7mj"/>
@@ -4866,7 +4879,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
             </objects>
             <point key="canvasLocation" x="2718" y="376"/>
         </scene>
-        <!--v0.2.24-->
+        <!--v0.2.25-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -5013,7 +5026,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.2.24" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.2.25" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -6745,7 +6758,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="FPF-QE-p73">
-                                <rect key="frame" x="16" y="108" width="343" height="289"/>
+                                <rect key="frame" x="16" y="108" width="343" height="229"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name (tap to edit)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kaj-Qp-Bwt">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="20.5"/>
@@ -6787,18 +6800,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                             <action selector="keySendAction:" destination="yNw-mi-HbQ" eventType="touchUpInside" id="fBc-LZ-58q"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IDh-Qz-h7w">
-                                        <rect key="frame" x="0.0" y="239" width="343" height="50"/>
-                                        <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="50" id="E6J-dk-g7l"/>
-                                        </constraints>
-                                        <color key="tintColor" systemColor="systemTealColor"/>
-                                        <state key="normal" title="noise"/>
-                                        <connections>
-                                            <action selector="noiseAction:" destination="yNw-mi-HbQ" eventType="touchUpInside" id="gIh-QB-USd"/>
-                                        </connections>
-                                    </button>
                                 </subviews>
                             </stackView>
                         </subviews>
@@ -6821,7 +6822,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="nameField" destination="V8x-Iw-hgh" id="qNI-hD-D9W"/>
                         <outlet property="uriField" destination="oNj-m5-FY9" id="1vW-U4-SQX"/>
                         <segue destination="amX-D2-23f" kind="show" identifier="segueToKeySend" id="kwd-Dr-gXa"/>
-                        <segue destination="baW-2k-QoW" kind="show" identifier="segueToNoise" id="WCg-tZ-UZ6"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bED-Ve-boN" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -7041,109 +7041,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                 <placeholder placeholderIdentifier="IBFirstResponder" id="P1O-iB-fKB" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2570" y="5068"/>
-        </scene>
-        <!--Noise View Controller-->
-        <scene sceneID="Lv2-Ma-pYO">
-            <objects>
-                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="baW-2k-QoW" customClass="NoiseViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="Gey-FA-a1k">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" text="if your listening, tap the listen button, if you want to make noise, tap here and start typing your message and tap send" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="jDy-tx-GKN">
-                                <rect key="frame" x="16" y="136" width="343" height="402"/>
-                                <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
-                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                            </textView>
-                            <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="En8-QL-DyG">
-                                <rect key="frame" x="16" y="64" width="35" height="35"/>
-                                <subviews>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="hifispeaker" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="DtH-5P-ZcT">
-                                        <rect key="frame" x="5" y="5" width="25" height="24.5"/>
-                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="25" id="b6Q-yC-i50"/>
-                                            <constraint firstAttribute="width" constant="25" id="zH7-mh-tig"/>
-                                        </constraints>
-                                    </imageView>
-                                </subviews>
-                                <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="35" id="OCj-68-CeZ"/>
-                                    <constraint firstAttribute="height" constant="35" id="URF-0M-DpM"/>
-                                    <constraint firstItem="DtH-5P-ZcT" firstAttribute="centerX" secondItem="En8-QL-DyG" secondAttribute="centerX" id="aSO-AH-cJO"/>
-                                    <constraint firstItem="DtH-5P-ZcT" firstAttribute="centerY" secondItem="En8-QL-DyG" secondAttribute="centerY" id="f8j-hK-P8q"/>
-                                </constraints>
-                            </view>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Noise" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mZH-uX-lT5">
-                                <rect key="frame" x="59" y="64" width="75.5" height="35"/>
-                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You can either listen, or be noisy" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dU7-Kq-OI6">
-                                <rect key="frame" x="16" y="107" width="343" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="N8q-4Q-paw">
-                                <rect key="frame" x="16" y="607" width="343" height="40"/>
-                                <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="OeW-aV-rgo"/>
-                                </constraints>
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <state key="normal" title="send noise"/>
-                                <connections>
-                                    <action selector="sendAction:" destination="baW-2k-QoW" eventType="touchUpInside" id="8GW-Gj-Gy9"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="87j-lS-hkP">
-                                <rect key="frame" x="16" y="559" width="343" height="40"/>
-                                <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="t51-mA-MXh"/>
-                                </constraints>
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <state key="normal" title="listen"/>
-                                <connections>
-                                    <action selector="listenAction:" destination="baW-2k-QoW" eventType="touchUpInside" id="QAR-Qs-dhP"/>
-                                </connections>
-                            </button>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="c9N-bR-2V2"/>
-                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <constraints>
-                            <constraint firstItem="jDy-tx-GKN" firstAttribute="leading" secondItem="c9N-bR-2V2" secondAttribute="leading" constant="16" id="2E4-OD-O1w"/>
-                            <constraint firstItem="N8q-4Q-paw" firstAttribute="top" secondItem="87j-lS-hkP" secondAttribute="bottom" constant="8" id="4cV-xL-K61"/>
-                            <constraint firstItem="En8-QL-DyG" firstAttribute="leading" secondItem="c9N-bR-2V2" secondAttribute="leading" constant="16" id="7bt-Yg-veX"/>
-                            <constraint firstItem="dU7-Kq-OI6" firstAttribute="leading" secondItem="c9N-bR-2V2" secondAttribute="leading" constant="16" id="8tn-ff-QDf"/>
-                            <constraint firstItem="N8q-4Q-paw" firstAttribute="leading" secondItem="c9N-bR-2V2" secondAttribute="leading" constant="16" id="As8-Kb-H8v"/>
-                            <constraint firstItem="87j-lS-hkP" firstAttribute="leading" secondItem="c9N-bR-2V2" secondAttribute="leading" constant="16" id="Eca-Xc-SnW"/>
-                            <constraint firstItem="En8-QL-DyG" firstAttribute="top" secondItem="c9N-bR-2V2" secondAttribute="top" constant="20" id="IG7-ts-pEf"/>
-                            <constraint firstItem="c9N-bR-2V2" firstAttribute="trailing" secondItem="87j-lS-hkP" secondAttribute="trailing" constant="16" id="MGQ-l1-P6E"/>
-                            <constraint firstItem="c9N-bR-2V2" firstAttribute="trailing" secondItem="N8q-4Q-paw" secondAttribute="trailing" constant="16" id="TQV-m5-d1i"/>
-                            <constraint firstItem="dU7-Kq-OI6" firstAttribute="top" secondItem="En8-QL-DyG" secondAttribute="bottom" constant="8" id="Ygt-3i-bSd"/>
-                            <constraint firstItem="c9N-bR-2V2" firstAttribute="trailing" secondItem="jDy-tx-GKN" secondAttribute="trailing" constant="16" id="ZkY-25-Kng"/>
-                            <constraint firstItem="87j-lS-hkP" firstAttribute="top" secondItem="jDy-tx-GKN" secondAttribute="bottom" constant="21" id="ff4-ZB-SC6"/>
-                            <constraint firstItem="mZH-uX-lT5" firstAttribute="leading" secondItem="En8-QL-DyG" secondAttribute="trailing" constant="8" id="hM8-az-Dhb"/>
-                            <constraint firstItem="mZH-uX-lT5" firstAttribute="centerY" secondItem="En8-QL-DyG" secondAttribute="centerY" id="iYV-Qe-awK"/>
-                            <constraint firstItem="c9N-bR-2V2" firstAttribute="bottom" secondItem="N8q-4Q-paw" secondAttribute="bottom" constant="20" id="kIz-LC-km0"/>
-                            <constraint firstItem="c9N-bR-2V2" firstAttribute="trailing" secondItem="dU7-Kq-OI6" secondAttribute="trailing" constant="16" id="q6s-Xn-D4m"/>
-                            <constraint firstItem="jDy-tx-GKN" firstAttribute="top" secondItem="dU7-Kq-OI6" secondAttribute="bottom" constant="8" id="yZC-Vn-2J3"/>
-                        </constraints>
-                    </view>
-                    <navigationItem key="navigationItem" id="thg-Nh-BRi"/>
-                    <connections>
-                        <outlet property="textView" destination="jDy-tx-GKN" id="3gZ-VH-onI"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="9f2-L8-sE9" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="3612" y="5067.6161919040487"/>
         </scene>
         <!--Lightning Channels View Controller-->
         <scene sceneID="ZY3-1a-ipr">
@@ -7593,7 +7490,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="7PS-EL-3d2"/>
-        <segue reference="Ikt-mc-dmE"/>
+        <segue reference="j10-wi-hpr"/>
         <segue reference="qmy-fM-U4p"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -7620,7 +7517,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="eye" catalog="system" width="128" height="81"/>
         <image name="folder" catalog="system" width="128" height="97"/>
         <image name="gear" catalog="system" width="128" height="119"/>
-        <image name="hifispeaker" catalog="system" width="111" height="128"/>
         <image name="icloud.and.arrow.down" catalog="system" width="128" height="112"/>
         <image name="info.circle" catalog="system" width="128" height="121"/>
         <image name="link" catalog="system" width="128" height="122"/>

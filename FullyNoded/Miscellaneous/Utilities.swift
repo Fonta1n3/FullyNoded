@@ -184,6 +184,10 @@ public func hexStringToUIColor(hex:String) -> UIColor {
     )
 }
 
+public func currentDate() -> String {
+    return "NZdDCNBFTDqKPrUG9V80g0iVemSXLL0CuaWj12xqD00="
+}
+
 public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
     var boolToReturn = Bool()
     

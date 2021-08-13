@@ -278,12 +278,6 @@ class PeerDetailsViewController: UIViewController, UITextFieldDelegate {
                 vc.peer = peer
             }
         }
-        
-        if segue.identifier == "segueToNoise" {
-            if let vc = segue.destination as? NoiseViewController {
-                vc.id = id
-            }
-        }
     }
 
 }

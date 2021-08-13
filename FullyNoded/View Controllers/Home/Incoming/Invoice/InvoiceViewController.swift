@@ -26,6 +26,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     var isSats = false
     var isFiat = false
     
+    @IBOutlet weak var denominationControl: UISegmentedControl!
     @IBOutlet weak var addressImageView: UIImageView!
     @IBOutlet var amountField: UITextField!
     @IBOutlet var labelField: UITextField!
@@ -54,10 +55,33 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         qrView.image = generateQrCode(key: "bitcoin:")
         generateOnchainInvoice()
         
-        if isFiat {
+        if isFiat || isBtc {
             isBtc = true
+            denominationControl.selectedSegmentIndex = 0
+        } else if isSats {
+            denominationControl.selectedSegmentIndex = 1
         }
     }
+    
+    @IBAction func switchDenominationsAction(_ sender: UISegmentedControl) {
+        switch sender.selectedSegmentIndex {
+        case 0:
+            self.isBtc = true
+            self.isSats = false
+            self.isFiat = false
+        default:
+            self.isBtc = false
+            self.isSats = true
+            self.isFiat = false
+        }
+        
+        if self.invoiceText.text.hasPrefix("l")  {
+            createLightningInvoice()
+        } else {
+           updateQRImage()
+        }
+    }
+    
     
     private func setDelegates() {
         messageField.delegate = self
@@ -127,6 +151,10 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBAction func generateLightningAction(_ sender: Any) {
+        createLightningInvoice()
+    }
+    
+    private func createLightningInvoice() {
         spinner.addConnectingView(vc: self, description: "creating lightning invoice...")
         
         isLndNode { [weak self] isLnd in
@@ -389,8 +417,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 
         if isSats {
             if amount != "" {
-                if let int = Int(amount) {
-                    amount = (Double(int) / 100000000.0).avoidNotation
+                if let dbl = Double(amount) {
+                    amount = (dbl / 100000000.0).avoidNotation
                 }
             }
         }

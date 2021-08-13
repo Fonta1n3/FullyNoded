@@ -1509,9 +1509,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             vc.doneBlock = { [weak self] confirmed in
                 guard let self = self else { return }
                 
-                self.spinner.addConnectingView(vc: self, description: "paying lightning invoice...")
-                
                 if confirmed {
+                    self.spinner.addConnectingView(vc: self, description: "paying lightning invoice...")
+                    
                     if let userSpecifiedAmount = self.invoice!["userSpecifiedAmount"] as? String {
                         self.payLightningNow(invoice: self.invoiceString, msat: Int(userSpecifiedAmount)!, dict: self.invoice!)
                     } else {
