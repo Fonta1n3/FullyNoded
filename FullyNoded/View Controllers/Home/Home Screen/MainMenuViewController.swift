@@ -732,6 +732,14 @@ class MainMenuViewController: UIViewController {
         }
     }
     
+    private func timeStamp() {
+        if KeyChain.getData(timestampData) == nil {
+            if let currentDate = Data(base64Encoded: currentDate()) {
+                let _ = KeyChain.set(currentDate, forKey: timestampData)
+            }
+        }
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         switch segue.identifier {
@@ -910,6 +918,8 @@ extension MainMenuViewController: OnionManagerDelegate {
             self?.progressView.isHidden = true
             self?.blurView.isHidden = true
         }
+        
+        timeStamp()
     }
     
     func torConnDifficulties() {

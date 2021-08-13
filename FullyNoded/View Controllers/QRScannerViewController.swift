@@ -315,11 +315,10 @@ class QRScannerViewController: UIViewController {
             if lowercased.hasPrefix("ur:crypto-output") || lowercased.hasPrefix("ur:crypto-account") || lowercased.hasPrefix("ur:crypto-hdkey") {
                 hasScanned = true
                 stopScanning(text)
-            } else if lowercased.hasPrefix("xprv") || lowercased.hasPrefix("tprv") || lowercased.hasPrefix("vprv") || lowercased.hasPrefix("yprv") || lowercased.hasPrefix("zprv") || lowercased.hasPrefix("uprv") || lowercased.hasPrefix("xpub") || lowercased.hasPrefix("tpub") || lowercased.hasPrefix("vpub") || lowercased.hasPrefix("ypub") || lowercased.hasPrefix("zpub") || lowercased.hasPrefix("upub") {
-                
+            } else if isExtendedKey(lowercased) || isDescriptor(lowercased) {
                 hasScanned = true
                 stopScanning(text)
-                
+                                
             } else if let data = text.data(using: .utf8) {
                 do {
                     let accountMap = try JSONSerialization.jsonObject(with: data, options: []) as! [String:Any]
@@ -363,6 +362,22 @@ class QRScannerViewController: UIViewController {
                     vc.onAddressDoneBlock!(text)
                 }
             }
+        }
+    }
+    
+    private func isExtendedKey(_ lowercased: String) -> Bool {
+        if lowercased.hasPrefix("xprv") || lowercased.hasPrefix("tprv") || lowercased.hasPrefix("vprv") || lowercased.hasPrefix("yprv") || lowercased.hasPrefix("zprv") || lowercased.hasPrefix("uprv") || lowercased.hasPrefix("xpub") || lowercased.hasPrefix("tpub") || lowercased.hasPrefix("vpub") || lowercased.hasPrefix("ypub") || lowercased.hasPrefix("zpub") || lowercased.hasPrefix("upub") {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    private func isDescriptor(_ lowercased: String) -> Bool {
+        if lowercased.hasPrefix("wsh") || lowercased.hasPrefix("pkh") || lowercased.hasPrefix("sh") || lowercased.hasPrefix("combo") || lowercased.hasPrefix("wpkh") || lowercased.hasPrefix("addr") || lowercased.hasPrefix("multi") || lowercased.hasPrefix("sortedmulti") {
+            return true
+        } else {
+            return false
         }
     }
     

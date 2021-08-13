@@ -11,16 +11,12 @@ import AVFoundation
 
 class CreateFullyNodedWalletViewController: UIViewController, UINavigationControllerDelegate, UIDocumentPickerDelegate {
     
-    @IBOutlet weak var uploadOutlet: UIButton!
     @IBOutlet weak var multiSigOutlet: UIButton!
     @IBOutlet weak var singleSigOutlet: UIButton!
-    @IBOutlet weak var importOutlet: UIButton!
-    @IBOutlet weak var importXpubOutlet: UIButton!
-    @IBOutlet weak var importDescOutlet: UIButton!
     
+    var isDescriptor = false
     var onDoneBlock:(((Bool)) -> Void)?
     var spinner = ConnectingView()
-    var alertStyle = UIAlertController.Style.actionSheet
     var ccXfp = ""
     var xpub = ""
     var deriv = ""
@@ -30,35 +26,90 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         super.viewDidLoad()
         navigationController?.delegate = self
         singleSigOutlet.layer.cornerRadius = 8
-        importDescOutlet.layer.cornerRadius = 8
-        //recoveryOutlet.layer.cornerRadius = 8
-        importOutlet.layer.cornerRadius = 8
         multiSigOutlet.layer.cornerRadius = 8
-        uploadOutlet.layer.cornerRadius = 8
-        importXpubOutlet.layer.cornerRadius = 8
-        if (UIDevice.current.userInterfaceIdiom == .pad) {
-          alertStyle = UIAlertController.Style.alert
-        }
-        checkPasteboard()
     }
     
-    @IBAction func importXpubAction(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            self?.performSegue(withIdentifier: "segueToImportXpub", sender: self)
-        }
-    }
-    
-    @IBAction func importDescriptorAction(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
+    @IBAction func pasteAction(_ sender: Any) {
+        if let data = UIPasteboard.general.data(forPasteboardType: "com.apple.traditional-mac-plain-text") {
+            guard let string = String(bytes: data, encoding: .utf8) else {
+                showAlert(vc: self, title: "", message: "Looks like you do not have valid text on your clipboard.")
+                return
+            }
             
-            self.performSegue(withIdentifier: "segueToImportDescriptor", sender: self)
+            processPastedString(string)
+        } else if let string = UIPasteboard.general.string {
+           processPastedString(string)
+        } else {
+            showAlert(vc: self, title: "", message: "Not a supported import item. Please let us know about it so we can add it.")
         }
     }
     
-    @IBAction func uploadFileAction(_ sender: Any) {
+    private func isExtendedKey(_ lowercased: String) -> Bool {
+        if lowercased.hasPrefix("xprv") || lowercased.hasPrefix("tprv") || lowercased.hasPrefix("vprv") || lowercased.hasPrefix("yprv") || lowercased.hasPrefix("zprv") || lowercased.hasPrefix("uprv") || lowercased.hasPrefix("xpub") || lowercased.hasPrefix("tpub") || lowercased.hasPrefix("vpub") || lowercased.hasPrefix("ypub") || lowercased.hasPrefix("zpub") || lowercased.hasPrefix("upub") {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    private func isDescriptor(_ lowercased: String) -> Bool {
+        if lowercased.hasPrefix("wsh") || lowercased.hasPrefix("pkh") || lowercased.hasPrefix("sh") || lowercased.hasPrefix("combo") || lowercased.hasPrefix("wpkh") || lowercased.hasPrefix("addr") || lowercased.hasPrefix("multi") || lowercased.hasPrefix("sortedmulti") {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    private func processPastedString(_ string: String) {
+        let processed = string.condenseWhitespace()
+        let lowercased = processed.lowercased()
+        
+        if isExtendedKey(lowercased) {
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.isDescriptor = false
+                self.extendedKey = processed
+                self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
+            }
+            
+        } else if lowercased.hasPrefix("ur:") {
+            let (descriptors, error) = URHelper.parseUr(urString: lowercased)
+            
+            guard error == nil, let descriptors = descriptors else {
+                showAlert(vc: self, title: "Error", message: error!)
+                return
+            }
+            
+            var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
+            
+            if descriptors.count > 1 {
+                self.prompToChoosePrimaryDesc(descriptors: descriptors)
+            } else {
+                accountMap["descriptor"] = descriptors[0]
+                self.importAccountMap(accountMap)
+            }
+        } else if isDescriptor(lowercased) {
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.isDescriptor = true
+                self.extendedKey = processed
+                self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
+            }
+            
+        } else if let data = processed.data(using: .utf8) {
+            if let accountMap = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] {
+                promptToImportAccountMap(dict: accountMap)
+            }
+        }
+    }
+    
+    @IBAction func fileAction(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Upload a file?", message: "Here you can upload files from your Hardware Wallets to easily create Fully Noded Wallet's", preferredStyle: vc.alertStyle)
+            let alert = UIAlertController(title: "Upload a file?", message: "Here you can upload files from your Hardware Wallets to easily create Fully Noded Wallet's", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Upload", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
@@ -82,6 +133,13 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
+    @IBAction func scanQrAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToScanner", sender: self)
+        }
+    }
     
     @IBAction func automaticAction(_ sender: Any) {
         guard let _ = KeyChain.getData("UnlockPassword") else {
@@ -110,19 +168,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             guard let self = self else { return }
             
             self.performSegue(withIdentifier: "segueToCreateMultiSig", sender: self)
-        }
-    }
-    
-    @IBAction func howHelp(_ sender: Any) {
-//        let message = "You have the option to either create a Fully Noded Wallet or a Recovery Wallet, to read more about recovery tap it and then tap the help button in the recovery view. Fully Noded single sig wallets are BIP84 but watch for and can sign for all address types, you may create invoices in any address format and still spend your funds. You will get a 12 word BIP39 recovery phrase to backup, these seed words are encrypted and stored using your devices secure enclave (no passphrase). Your node ONLY holds public keys. Your device will be able to sign for any derivation path and the encrypted seed is stored independently of your wallet. With Fully Noded your node will build an unsigned psbt then the device will sign it locally, acting like a hardware wallet, we then pass it back to your node as a fully signed raw transaction for broadcasting."
-//        showAlert(vc: self, title: "Fully Noded Wallet", message: message)
-    }
-    
-    @IBAction func importAction(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.performSegue(withIdentifier: "segueToScanner", sender: self)
         }
     }
     
@@ -269,7 +314,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Import your Unchained Capital multi sig wallet?", message: "Looks like you selected a multi sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "Import your Unchained Capital multi sig wallet?", message: "Looks like you selected a multi sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { action in
                 self.importAccountMap(dict)
@@ -285,7 +330,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Import your multi sig wallet?", message: "Looks like you selected a multi sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "Import your multi sig wallet?", message: "Looks like you selected a multi sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { action in
                 self.importAccountMap(dict)
@@ -325,7 +370,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Import your CoboVault single sig?", message: "Looks like you selected a CoboVault single sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "Import your CoboVault single sig?", message: "Looks like you selected a CoboVault single sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { action in
                 self.importAccountMap(accountMap)
@@ -341,7 +386,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Import your Electrum multisig wallet?", message: "Looks like you selected an Electrum wallet backup file. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "Import your Electrum multisig wallet?", message: "Looks like you selected an Electrum wallet backup file. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { action in
                 guard let accountMap = self.convertElectrumToAccountMap(dict) else {
@@ -447,7 +492,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     private func promptToImportColdcardMsig(_ xfp: String, _ xpub: String, _ deriv: String) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Create a multisig with your Coldcard?", message: "You have uploaded a Coldcard multisig file, this action allows you to easily create a wallet with your Coldcard and Fully Noded.", preferredStyle: vc.alertStyle)
+            let alert = UIAlertController(title: "Create a multisig with your Coldcard?", message: "You have uploaded a Coldcard multisig file, this action allows you to easily create a wallet with your Coldcard and Fully Noded.", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { action in
                 DispatchQueue.main.async { [unowned vc = self] in
@@ -466,7 +511,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     private func promptToImportColdcardSingleSig(_ coldcard: [String:Any]) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Create a single sig with your Coldcard?", message: "You have uploaded a Coldcard single sig file, this action will recreate your Coldcard wallet on Fully Noded using its xpubs.", preferredStyle: vc.alertStyle)
+            let alert = UIAlertController(title: "Create a single sig with your Coldcard?", message: "You have uploaded a Coldcard single sig file, this action will recreate your Coldcard wallet on Fully Noded using its xpubs.", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { action in
                 DispatchQueue.main.async {
@@ -478,20 +523,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = vc.view
             vc.present(alert, animated: true, completion: nil)
-        }
-    }
-    
-    private func checkPasteboard() {
-        let pastboard = UIPasteboard.general
-        if let text = pastboard.string {
-            if let data = text.data(using: .utf8) {
-                do {
-                    let accountMap = try JSONSerialization.jsonObject(with: data, options: []) as! [String:Any]
-                    promptToImportAccountMap(dict: accountMap)
-                } catch {
-                    
-                }
-            }
         }
     }
     
@@ -538,7 +569,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     private func promptToImportAccountMap(dict: [String:Any]) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Import wallet?", message: "Looks like you have selected a valid wallet format ✓", preferredStyle: vc.alertStyle)
+            let alert = UIAlertController(title: "Import wallet?", message: "Looks like you have selected a valid wallet format ✓", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { [unowned vc = self] action in
                 vc.importAccountMap(dict)
             }))
@@ -565,7 +596,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     func prompToChoosePrimaryDesc(descriptors: [String]) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Select primary address format.", message: "You are adding multiple descriptors which is great, but you need to choose one to be the primary descriptor we use to derive receive addresses.", preferredStyle: vc.alertStyle)
+            let alert = UIAlertController(title: "Select primary address format.", message: "You are adding multiple descriptors which is great, but you need to choose one to be the primary descriptor we use to derive receive addresses.", preferredStyle: .alert)
             
             for (i, descriptor) in descriptors.enumerated() {
                 let descParser = DescriptorParser()
@@ -600,25 +631,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         }
                     }
                     
-                    vc.onQuickConnectDoneBlock = { [weak self] url in
-                        guard let url = url else { return }
-                        
-                        QuickConnect.addNode(uncleJim: false, url: url) { (success, errorMessage) in
-                            guard success else {
-                                showAlert(vc: self, title: "There was an issue", message: errorMessage ?? "error adding that wallet")
-                                return
-                            }
-                            
-                            DispatchQueue.main.async { [weak self] in
-                                guard let self = self else { return }
-                                
-                                self.spinner.removeConnectingView()
-                                self.onDoneBlock!(true)
-                                self.navigationController?.popViewController(animated: true)
-                            }
-                        }
-                    }
-                    
                     vc.onAddressDoneBlock = { [weak self] item in
                         guard let self = self else { return }
                         
@@ -628,11 +640,22 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         
                         let lowercased = item.lowercased()
                         
-                        if lowercased.hasPrefix("xprv") || lowercased.hasPrefix("tprv") || lowercased.hasPrefix("vprv") || lowercased.hasPrefix("yprv") || lowercased.hasPrefix("zprv") || lowercased.hasPrefix("uprv") || lowercased.hasPrefix("xpub") || lowercased.hasPrefix("tpub") || lowercased.hasPrefix("vpub") || lowercased.hasPrefix("ypub") || lowercased.hasPrefix("zpub") || lowercased.hasPrefix("upub") {
+                        if self.isExtendedKey(lowercased) {
                             
                             DispatchQueue.main.async { [weak self] in
                                 guard let self = self else { return }
                                 
+                                self.isDescriptor = false
+                                self.extendedKey = item
+                                self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
+                            }
+                            
+                        } else if self.isDescriptor(lowercased) {
+                            
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
+                                
+                                self.isDescriptor = true
                                 self.extendedKey = item
                                 self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
                             }
@@ -656,8 +679,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         }
                     }
                 }
-            } else {
-                // Fallback on earlier versions
             }
         }
         
@@ -677,7 +698,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         
         if segue.identifier == "segueToImportXpub" {
             if let vc = segue.destination as? ImportXpubViewController {
-                vc.isDescriptor = false
+                vc.isDescriptor = self.isDescriptor
                 vc.extKey = self.extendedKey
             }
         }

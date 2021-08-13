@@ -363,7 +363,9 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             
             guard let address = response as? String else {
                 self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: errorMessage ?? "error fecthing address")
+                
+                showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error fetching address")
+                
                 return
             }
             

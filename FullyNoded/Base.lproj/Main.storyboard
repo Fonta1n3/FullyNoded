@@ -3677,7 +3677,7 @@ xxxxx</string>
                                 </constraints>
                             </imageView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="11" translatesAutoresizingMaskIntoConstraints="NO" id="6zG-h6-wiF">
-                                <rect key="frame" x="16" y="122" width="343" height="319"/>
+                                <rect key="frame" x="16" y="122" width="343" height="99"/>
                                 <subviews>
                                     <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GO8-o8-fXl">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
@@ -3705,58 +3705,6 @@ xxxxx</string>
                                             <action selector="createMultiSigAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="43H-WF-yRT"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5fe-JI-HkZ">
-                                        <rect key="frame" x="0.0" y="110" width="343" height="44"/>
-                                        <color key="backgroundColor" red="0.12129447610000001" green="0.12922456860000001" blue="0.14169979099999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="44" id="gZf-di-IBG"/>
-                                        </constraints>
-                                        <state key="normal" title="import via QR">
-                                            <color key="titleColor" systemColor="systemTealColor"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="importAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="3Zs-Bg-kQ6"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sq7-S4-6wN">
-                                        <rect key="frame" x="0.0" y="165" width="343" height="44"/>
-                                        <color key="backgroundColor" red="0.12129447610000001" green="0.12922456860000001" blue="0.14169979099999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="44" id="aEN-7b-FIU"/>
-                                        </constraints>
-                                        <state key="normal" title="import via file">
-                                            <color key="titleColor" systemColor="systemTealColor"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="uploadFileAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="jc3-Bs-S1B"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="r0W-2T-fur">
-                                        <rect key="frame" x="0.0" y="220" width="343" height="44"/>
-                                        <color key="backgroundColor" red="0.12129447610000001" green="0.12922456860000001" blue="0.14169979099999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="44" id="YEq-6I-4nT"/>
-                                        </constraints>
-                                        <state key="normal" title="import xpub or xprv">
-                                            <color key="titleColor" systemColor="systemTealColor"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="importXpubAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="Mwc-2J-ang"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qes-ql-qAL">
-                                        <rect key="frame" x="0.0" y="275" width="343" height="44"/>
-                                        <color key="backgroundColor" red="0.12129447610000001" green="0.12922456860000001" blue="0.14169979099999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="44" id="5ag-s6-ZtN"/>
-                                        </constraints>
-                                        <state key="normal" title="import via descriptor">
-                                            <color key="titleColor" systemColor="systemTealColor"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="importDescriptorAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="8LU-cb-HSk"/>
-                                        </connections>
-                                    </button>
                                 </subviews>
                             </stackView>
                         </subviews>
@@ -3774,20 +3722,30 @@ xxxxx</string>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="5rs-4G-uHB">
-                        <barButtonItem key="rightBarButtonItem" image="questionmark.circle" catalog="system" id="3qP-4a-tPW">
-                            <color key="tintColor" systemColor="systemTealColor"/>
-                            <connections>
-                                <action selector="howHelp:" destination="0gR-Gj-FSR" id="mph-Yi-YdH"/>
-                            </connections>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem image="qrcode.viewfinder" catalog="system" id="kDw-94-ivS">
+                                <color key="tintColor" red="0.34901961679999999" green="0.77647060160000003" blue="0.97254908080000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <connections>
+                                    <action selector="scanQrAction:" destination="0gR-Gj-FSR" id="Et8-Ih-pHL"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="folder" catalog="system" id="KPq-qx-s5Y">
+                                <color key="tintColor" red="0.34901961679999999" green="0.77647060160000003" blue="0.97254908080000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <connections>
+                                    <action selector="fileAction:" destination="0gR-Gj-FSR" id="ZYq-bO-VDV"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="doc.on.clipboard" catalog="system" id="O6q-Km-Thf">
+                                <color key="tintColor" red="0.34901961679999999" green="0.77647060160000003" blue="0.97254908080000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <connections>
+                                    <action selector="pasteAction:" destination="0gR-Gj-FSR" id="VYg-fG-GpG"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <connections>
-                        <outlet property="importDescOutlet" destination="qes-ql-qAL" id="ods-77-nvd"/>
-                        <outlet property="importOutlet" destination="5fe-JI-HkZ" id="UlE-sQ-oBY"/>
-                        <outlet property="importXpubOutlet" destination="r0W-2T-fur" id="HDH-av-qeo"/>
                         <outlet property="multiSigOutlet" destination="ewF-ze-dkg" id="EXb-It-bRN"/>
                         <outlet property="singleSigOutlet" destination="GO8-o8-fXl" id="6Gi-pM-wjc"/>
-                        <outlet property="uploadOutlet" destination="sq7-S4-6wN" id="8nR-5e-d5s"/>
                         <segue destination="Yhd-sD-SB5" kind="show" identifier="segueToSeedWords" id="AJq-aA-dsj"/>
                         <segue destination="pBQ-SK-r7u" kind="show" identifier="seguToManualCreation" id="tT8-Fn-Z1b"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanner" id="1fQ-PG-chF"/>

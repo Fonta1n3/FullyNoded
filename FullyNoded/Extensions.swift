@@ -491,6 +491,10 @@ public extension UIDevice {
     
 }
 
+public var timestampData: String {
+    return "blindingKey"
+}
+
 //extension DispatchQueue {
 //    static func background(delay: Double = 0.0, background: (()->Void)? = nil, completion: (() -> Void)? = nil) {
 //        DispatchQueue.global(qos: .background).async {
