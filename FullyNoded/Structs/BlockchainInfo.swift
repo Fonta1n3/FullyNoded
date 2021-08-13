@@ -17,8 +17,9 @@ public struct BlockchainInfo: CustomStringConvertible {
     let progress:String
     let pruned:Bool
     let actualProgress:Double
-    init(dictionary: [String: Any]) {
-        
+    let pruneheight:Int
+    
+    init(_ dictionary: [String: Any]) {
         self.network = dictionary["chain"] as? String ?? ""
         self.blockheight = dictionary["blocks"] as? Int ?? 0
         self.difficulty = dictionary["difficulty"] as? String ?? ""
@@ -26,7 +27,7 @@ public struct BlockchainInfo: CustomStringConvertible {
         self.progress = dictionary["progress"] as? String ?? ""
         self.pruned = dictionary["pruned"] as? Bool ?? false
         self.actualProgress = dictionary["actualProgress"] as? Double ?? 0.0
-        
+        self.pruneheight = dictionary["pruneheight"] as? Int ?? 0
     }
     
     public var description: String {

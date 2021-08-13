@@ -25,6 +25,8 @@
 		0A1F110926A2783000BE2707 /* Asset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F110426A2783000BE2707 /* Asset.swift */; };
 		0A1F110C26A278C100BE2707 /* ModelObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F110B26A278C100BE2707 /* ModelObject.swift */; };
 		0A1F111026A2791B00BE2707 /* ModelObjectType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F110F26A2791B00BE2707 /* ModelObjectType.swift */; };
+		0A212D8B26C66A9600BF6FD4 /* OnchainUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212D8A26C66A9600BF6FD4 /* OnchainUtils.swift */; };
+		0A212D8D26C66B1800BF6FD4 /* DescriptorInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212D8C26C66B1800BF6FD4 /* DescriptorInfo.swift */; };
 		0A21442C26B4282300123EAC /* PromptForAuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */; };
 		0A3013D8266B361E004DA35C /* LndRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3013D7266B361E004DA35C /* LndRpc.swift */; };
 		0A590357269875CD00510626 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590356269875CB00510626 /* Extensions.swift */; };
@@ -137,7 +139,6 @@
 		D09A330724A982F3009FA0B2 /* FullyNodedWalletsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330624A982F2009FA0B2 /* FullyNodedWalletsViewController.swift */; };
 		D09A330924A98EE1009FA0B2 /* WalletDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330824A98EE1009FA0B2 /* WalletDetailViewController.swift */; };
 		D09A330D24A9B10E009FA0B2 /* BIP39WordList.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330C24A9B10E009FA0B2 /* BIP39WordList.swift */; };
-		D09A330F24A9B853009FA0B2 /* RecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330E24A9B853009FA0B2 /* RecoveryViewController.swift */; };
 		D09A331124AC4BF6009FA0B2 /* DescriptorParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A331024AC4BF6009FA0B2 /* DescriptorParser.swift */; };
 		D09A331324AC4C93009FA0B2 /* Descriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A331224AC4C93009FA0B2 /* Descriptor.swift */; };
 		D09F9E4C24B0673C006B588C /* SignersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09F9E4B24B0673C006B588C /* SignersViewController.swift */; };
@@ -227,6 +228,8 @@
 		0A1F110426A2783000BE2707 /* Asset.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Asset.swift; sourceTree = "<group>"; };
 		0A1F110B26A278C100BE2707 /* ModelObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelObject.swift; sourceTree = "<group>"; };
 		0A1F110F26A2791B00BE2707 /* ModelObjectType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelObjectType.swift; sourceTree = "<group>"; };
+		0A212D8A26C66A9600BF6FD4 /* OnchainUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnchainUtils.swift; sourceTree = "<group>"; };
+		0A212D8C26C66B1800BF6FD4 /* DescriptorInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DescriptorInfo.swift; sourceTree = "<group>"; };
 		0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptForAuthViewController.swift; sourceTree = "<group>"; };
 		0A3013D7266B361E004DA35C /* LndRpc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LndRpc.swift; sourceTree = "<group>"; };
 		0A590356269875CB00510626 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
@@ -342,7 +345,6 @@
 		D09A330624A982F2009FA0B2 /* FullyNodedWalletsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullyNodedWalletsViewController.swift; sourceTree = "<group>"; };
 		D09A330824A98EE1009FA0B2 /* WalletDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDetailViewController.swift; sourceTree = "<group>"; };
 		D09A330C24A9B10E009FA0B2 /* BIP39WordList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BIP39WordList.swift; sourceTree = "<group>"; };
-		D09A330E24A9B853009FA0B2 /* RecoveryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryViewController.swift; sourceTree = "<group>"; };
 		D09A331024AC4BF6009FA0B2 /* DescriptorParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DescriptorParser.swift; sourceTree = "<group>"; };
 		D09A331224AC4C93009FA0B2 /* Descriptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Descriptor.swift; sourceTree = "<group>"; };
 		D09F9E4B24B0673C006B588C /* SignersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignersViewController.swift; sourceTree = "<group>"; };
@@ -642,6 +644,7 @@
 				0A3013D7266B361E004DA35C /* LndRpc.swift */,
 				0A9834BE26BBC93F00BAB74E /* CoreDataiCloud.swift */,
 				0A9834C326BBCCB300BAB74E /* Backup.swift */,
+				0A212D8A26C66A9600BF6FD4 /* OnchainUtils.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -715,6 +718,7 @@
 				D093E2A625A59B9C0038B59A /* TransactionStruct.swift */,
 				0A59035C269B0CA700510626 /* InvoiceStruct.swift */,
 				0A77138526AE5E85005CC23D /* WalletInfo.swift */,
+				0A212D8C26C66B1800BF6FD4 /* DescriptorInfo.swift */,
 			);
 			path = Structs;
 			sourceTree = "<group>";
@@ -919,7 +923,6 @@
 				D09A330024A848DA009FA0B2 /* SeedDisplayerViewController.swift */,
 				D09A330624A982F2009FA0B2 /* FullyNodedWalletsViewController.swift */,
 				D09A330824A98EE1009FA0B2 /* WalletDetailViewController.swift */,
-				D09A330E24A9B853009FA0B2 /* RecoveryViewController.swift */,
 				D09F9E4B24B0673C006B588C /* SignersViewController.swift */,
 				D09F9E4F24B1BAC3006B588C /* SignerDetailViewController.swift */,
 				D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */,
@@ -1190,6 +1193,7 @@
 				D0DBC7062501CEFE00F6787C /* VerifyTransactionViewController.swift in Sources */,
 				D0855FCA22B0CEA800DBBFC2 /* CreatePSBT.swift in Sources */,
 				0A1F110726A2783000BE2707 /* KeyType.swift in Sources */,
+				0A212D8B26C66A9600BF6FD4 /* OnchainUtils.swift in Sources */,
 				D02094F3225936D2002E8E7A /* ConnectingView.swift in Sources */,
 				D09F9E5224B1F8DE006B588C /* AddSignerViewController.swift in Sources */,
 				D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */,
@@ -1277,7 +1281,6 @@
 				D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */,
 				D0257E6524D6C5F5000EB854 /* LightningRPC.swift in Sources */,
 				D00F851D2494A616008D7CD3 /* TorAuthViewController.swift in Sources */,
-				D09A330F24A9B853009FA0B2 /* RecoveryViewController.swift in Sources */,
 				D0C20EDA24A6E46E00C62AA4 /* Uptime.swift in Sources */,
 				D09A330124A848DA009FA0B2 /* SeedDisplayerViewController.swift in Sources */,
 				D06D788F25B817E100769157 /* Lifehash.swift in Sources */,
@@ -1292,6 +1295,7 @@
 				D0EDDF1124972CEF00657931 /* InvoiceSettingsViewController.swift in Sources */,
 				D069051F24EA6C1F007F939D /* LightningPeersViewController.swift in Sources */,
 				0A1F111026A2791B00BE2707 /* ModelObjectType.swift in Sources */,
+				0A212D8D26C66B1800BF6FD4 /* DescriptorInfo.swift in Sources */,
 				D084960422EBCD3B003FE8EB /* GetInfoViewController.swift in Sources */,
 				D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */,
 				D0E54DD525207A1C00BD859E /* UTXOs.swift in Sources */,
@@ -1457,7 +1461,7 @@
 		D00B9A3A2111427200E8B95A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-4";
+				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-6";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNoded.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -1494,7 +1498,7 @@
 		D00B9A3B2111427200E8B95A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-4";
+				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-6";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNodedRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";

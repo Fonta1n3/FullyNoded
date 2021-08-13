@@ -65,7 +65,6 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     }
     
     func getValues() {
-        //To do: create struct for import dict
         let str = ImportStruct(dictionary: dict)
         label = str.label
     }
@@ -79,7 +78,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 self.connectingView.removeConnectingView()
                 displayAlert(viewController: self,
                              isError: true,
-                             message: "Invalid key!")
+                             message: "Invalid key.")
             }
         }
         
@@ -100,8 +99,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 }
                 
                 let param = "\"\(key)\", \"\(label)\", false"
-                
-                self.executeNodeCommand(method: .importprivkey, param: param)
+                self.importPrivKey(param: param)
                 
             case _ where prefix.hasPrefix("1"),
                  _ where prefix.hasPrefix("3"),
@@ -116,12 +114,19 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                     self.connectingView.addConnectingView(vc: self, description: "Importing Address")
                 }
                 
-                let param = "[{ \"scriptPubKey\": { \"address\": \"\(key)\" }, \"label\": \"\(label)\", \"timestamp\": \"now\", \"watchonly\": true, \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
-                
-                isAddress = true
-                
-                self.executeNodeCommand(method: .importmulti, param: param)
-                
+                activeWallet { wallet in
+                    guard let wallet = wallet else {
+                        showAlert(vc: self, title: "", message: "Only available for FN wallets.")
+                        return
+                    }
+                    
+                    if wallet.type == WalletType.descriptor.stringValue {
+                        self.importDescriptor(key: key)
+                    } else {
+                        self.importDescriptor(key: key)
+                    }
+                }
+
             default:
                 showError()
             }
@@ -131,76 +136,66 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    private func importmulti(key: String) {
+        let param = "[{ \"scriptPubKey\": { \"address\": \"\(key)\" }, \"label\": \"\(self.label)\", \"timestamp\": \"now\", \"watchonly\": true, \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
+        
+        OnchainUtils.importMulti(param) { (imported, message) in
+            if imported {
+                self.triggerRescan()
+            } else {
+                self.connectingView.removeConnectingView()
+                showAlert(vc: self, title: "", message: message ?? "unknown error importmulti")
+            }
+        }
+    }
+    
+    private func importDescriptor(key: String) {
+        OnchainUtils.getDescriptorInfo("addr(\(key))") { (descriptorInfo, message) in
+            if let message = message, message != "" {
+                self.connectingView.removeConnectingView()
+                showAlert(vc: self, title: "", message: message)
+            }
+            
+            guard let descriptorInfo = descriptorInfo else {
+                self.connectingView.removeConnectingView()
+                showAlert(vc: self, title: "", message: "Missing values.")
+                
+                return
+            }
+            
+            let param = "[{\"desc\": \"\(descriptorInfo.descriptor)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"\(self.label)\"}]"
+            
+            OnchainUtils.importDescriptors(param) { (imported, message) in
+                self.connectingView.removeConnectingView()
+                
+                if imported {
+                    showAlert(vc: self, title: "Imported ✓", message: message ?? "")
+                } else {
+                    showAlert(vc: self, title: "Import failed.", message: message ?? "")
+                }
+            }
+        }
+    }
+    
     private func triggerRescan() {
         connectingView.addConnectingView(vc: self, description: "starting rescan...")
         
-        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
-            guard let self = self else { return }
+        OnchainUtils.rescan { (started, message) in
+            self.connectingView.removeConnectingView()
             
-            guard let dict = response as? NSDictionary, let pruned = dict["pruned"] as? Bool else {
-                self.connectingView.removeConnectingView()
-                displayAlert(viewController: self, isError: true, message: "Error checking pruned status: \(errorMessage ?? "unknown")")
-                return
+            if started {
+                showAlert(vc: self, title: "", message: message ?? "Rescanning blockchain to look up historic transactions and balances.")
+            } else {
+                showAlert(vc: self, title: "", message: message ?? "Rescan failed...")
             }
-            
-            guard pruned else {
-                self.rescanFrom(0)
-                return
-            }
-            
-            guard let pruneheight = dict["pruneheight"] as? Int else {
-                self.connectingView.removeConnectingView()
-                displayAlert(viewController: self, isError: true, message: "Error checking prune height: \(errorMessage ?? "unknown")")
-                return
-            }
-            
-            self.rescanFrom(pruneheight)
         }
     }
     
-    private func rescanFrom(_ height: Int) {
-        Reducer.makeCommand(command: .rescanblockchain, param: "\(height)") { (_, _) in }
-        
-        DispatchQueue.main.async {
-            self.navigationController?.popToRootViewController(animated: true)
-        }
-        
-        showAlert(vc: self, title: "Key swept!", message: "Your node is rescanning the blockchain to detect historic transactions, your balance will not show until this process completes. It can take up to an hour for a non pruned node.")
-    }
-    
-    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
-            vc.connectingView.removeConnectingView()
+    private func importPrivKey(param: String) {
+        Reducer.makeCommand(command: .importprivkey, param: param) { (response, errorMessage) in
+            self.connectingView.removeConnectingView()
             if errorMessage == nil {
-                switch method {
-                case .importprivkey:
-                    self.triggerRescan()
-                    
-                case .importmulti:
-                    if let result = response as? NSArray {
-                        let success = (result[0] as! NSDictionary)["success"] as! Bool
-                        if success {
-                            self.triggerRescan()
-                        } else {
-                            let error = ((result[0] as! NSDictionary)["error"] as! NSDictionary)["message"] as! String
-                            displayAlert(viewController: self, isError: true, message: error)
-                        }
-                        if let warnings = (result[0] as! NSDictionary)["warnings"] as? NSArray {
-                            if warnings.count > 0 {
-                                for warning in warnings {
-                                    let warn = warning as! String
-                                    DispatchQueue.main.async { [unowned vc = self] in
-                                        let alert = UIAlertController(title: "Warning", message: warn, preferredStyle: .alert)
-                                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                                        vc.present(alert, animated: true, completion: nil)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                default:
-                    break
-                }
+                self.triggerRescan()
             } else {
                 DispatchQueue.main.async {
                     guard var errorMess = errorMessage else { return }

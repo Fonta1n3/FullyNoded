@@ -242,19 +242,13 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     private func importmulti(param: String, utxo: UtxosStruct, label: String) {
-        Reducer.makeCommand(command: .importmulti, param: param) { [weak self] (response, errorMessage) in
-            guard let self = self else { return }
-            
-            guard let result = response as? NSArray,
-                let dict = result[0] as? NSDictionary,
-                let success = dict["success"] as? Bool,
-                success else {
+        OnchainUtils.importMulti(param) { (imported, message) in
+            if imported {
+                self.updateLocally(utxo: utxo, label: label)
+            } else {
                 self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Something went wrong...", message: "error: \(errorMessage ?? "unknown error")")
-                return
+                showAlert(vc: self, title: "Something went wrong...", message: "error: \(message ?? "unknown error")")
             }
-            
-            self.updateLocally(utxo: utxo, label: label)
         }
     }
     

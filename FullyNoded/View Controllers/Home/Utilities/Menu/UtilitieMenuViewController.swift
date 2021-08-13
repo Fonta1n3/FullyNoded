@@ -339,45 +339,16 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
     private func rescan() {
         connectingView.addConnectingView(vc: self, description: "starting rescan...")
         
-        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
-            guard let self = self else { return }
-            
+        OnchainUtils.rescan { (started, message) in
             self.connectingView.removeConnectingView()
             
-            guard let dict = response as? NSDictionary, let pruned = dict["pruned"] as? Bool else {
-                displayAlert(viewController: self, isError: true, message: "Error checking pruned status: \(errorMessage ?? "unknown")")
+            guard started else {
+                showAlert(vc: self, title: "", message: message ?? "Unknown error rescanning.")
+                
                 return
             }
             
-            guard pruned else {
-                self.rescanFrom(0)
-                return
-            }
-            
-            guard let pruneheight = dict["pruneheight"] as? Int else {
-                displayAlert(viewController: self, isError: true, message: "Error checking prune height: \(errorMessage ?? "unknown")")
-                return
-            }
-            
-            self.rescanFrom(pruneheight)
-        }
-    }
-    
-    private func rescanFrom(_ height: Int) {
-        Reducer.makeCommand(command: .rescanblockchain, param: "\(height)") { [weak self] (response, errorMessage) in
-            guard let self = self else { return }
-            
-            self.connectingView.removeConnectingView()
-            
-            if errorMessage != nil {
-                if errorMessage!.contains("Wallet is currently rescanning. Abort existing rescan or wait.") {
-                    showAlert(vc: self, title: "", message: "Rescan started ✓")
-                } else {
-                    displayAlert(viewController: self, isError: true, message: "Error rescanning: \(errorMessage!)")
-                }
-            } else if response != nil {
-                showAlert(vc: self, title: "", message: "Rescan started ✓")
-            }
+            showAlert(vc: self, title: "", message: "Rescan started ✓")
         }
     }
     

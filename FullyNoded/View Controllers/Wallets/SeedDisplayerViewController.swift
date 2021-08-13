@@ -299,16 +299,13 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func importMulti(params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .importmulti, param: params) { (response, errorDescription) in
-            guard let result = response as? NSArray,
-                result.count > 0,
-                let dict = result[0] as? NSDictionary,
-                let success = dict["success"] as? Bool else {
+        OnchainUtils.importMulti(params) { (imported, message) in
+            if imported {
+                completion((imported, message))
+            } else {
                 UserDefaults.standard.removeObject(forKey: "walletName")
-                    completion((false, errorDescription ?? "unknown error importing your keys"))
-                    return
+                completion((false, message ?? "unknown error importing your keys"))
             }
-            completion((success, errorDescription))
         }
     }
     

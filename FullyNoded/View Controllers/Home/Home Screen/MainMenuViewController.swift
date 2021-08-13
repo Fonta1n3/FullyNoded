@@ -526,7 +526,7 @@ class MainMenuViewController: UIViewController {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
-                self.blockchainInfo = BlockchainInfo(dictionary: response)
+                self.blockchainInfo = BlockchainInfo(response)
                 self.mainMenu.reloadSections(IndexSet(arrayLiteral: 0, 3, 5, 7, 8, 9), with: .fade)
                 self.getPeerInfo()
             }

@@ -921,19 +921,13 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                 
                 self.updateSpinnerText(text: "starting a rescan...")
                 
-                Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
-                    if let dict = response as? NSDictionary {
-                        if let pruned = dict["pruned"] as? Bool {
-                            if pruned {
-                                if let pruneHeight = dict["pruneheight"] as? Int {
-                                    Reducer.makeCommand(command: .rescanblockchain, param: "\(pruneHeight)") { (_, _) in }
-                                }
-                            } else {
-                                Reducer.makeCommand(command: .rescanblockchain, param: "") { (_, _) in }
-                            }
-                        }
+                OnchainUtils.rescan { [weak self] (started, message) in
+                    guard let self = self else { return }
+                    
+                    if started {
+                        self.spinner.removeConnectingView()
                     } else {
-                        self?.showError(error: "Error starting a rescan, your wallet has not been saved. Please check your connection to your node and try again.")
+                        self.showError(error: "Error starting a rescan, your wallet has not been saved. Please check your connection to your node and try again.")
                     }
                 }
             }))
@@ -945,13 +939,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func importMulti(params: String, completion: @escaping ((Bool)) -> Void) {
-        Reducer.makeCommand(command: .importmulti, param: params) { (response, errorDescription) in
-            guard let result = response as? NSArray, result.count > 0, let dict = result[0] as? NSDictionary, let success = dict["success"] as? Bool else {
-                completion(false)
-                return
-            }
-            
-            completion((success))
+        OnchainUtils.importMulti(params) { (imported, message) in
+            completion((imported))
         }
     }
     

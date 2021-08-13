@@ -413,20 +413,8 @@ class ImportWallet {
     }
     
     class func getDescriptorInfo(desc: String, completion: @escaping ((desc: String?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(desc)\"") { (response, errorMessage) in
-            guard let dict = response as? NSDictionary, let pubKeyDescriptor = dict["descriptor"] as? String else {
-                completion((nil, errorMessage ?? "error getting descriptor info"))
-                return
-            }
-            
-            if let hasprivatekeys = dict["hasprivatekeys"] as? Bool, hasprivatekeys, let checksum = dict["checksum"] as? String {
-                // its an xprv so we need to do some fanangling...
-                let privkeyDesc = desc + "#" + checksum
-                completion((privkeyDesc, nil))
-                
-            } else {
-                completion((pubKeyDescriptor, nil))
-            }
+        OnchainUtils.getDescriptorInfo("\(desc)") { (descriptorInfo, message) in
+            completion((descriptorInfo?.descriptor, message))
         }
     }
     
@@ -471,23 +459,11 @@ class ImportWallet {
     
     class func rescan(wallet: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
         if !isRecovering {
-            Reducer.makeCommand(command: .getblockchaininfo, param: "") { (response, errorMessage) in
-                guard let dict = response as? NSDictionary, let pruned = dict["pruned"] as? Bool else {
-                    completion((false, errorMessage ?? "error getting blockchain info"))
-                    return
-                }
-                
-                if pruned {
-                    guard let pruneHeight = dict["pruneheight"] as? Int else {
-                        completion((false, errorMessage ?? "error getting prune height"))
-                        return
-                    }
-                    
-                    Reducer.makeCommand(command: .rescanblockchain, param: "\(pruneHeight)") { (_, _) in }
+            OnchainUtils.rescan { (started, message) in
+                if started {
                     saveLocally(wallet: wallet, completion: completion)
                 } else {
-                    Reducer.makeCommand(command: .rescanblockchain, param: "") { (_, _) in }
-                    saveLocally(wallet: wallet, completion: completion)
+                    completion((false, message ?? "error rescanning"))
                 }
             }
         } else {
@@ -496,16 +472,8 @@ class ImportWallet {
     }
     
     class func importMultiDesc(params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .importmulti, param: params) { (response, errorDescription) in
-            guard let result = response as? NSArray, result.count > 0,
-                let dict = result[0] as? NSDictionary,
-                let success = dict["success"] as? Bool,
-                success else {
-                    completion((false, errorDescription ?? "unknown error importing your keys"))
-                    return
-            }
-            
-            completion((success, nil))
+        OnchainUtils.importMulti(params) { (imported, message) in
+            completion((imported, message))
         }
     }
     
