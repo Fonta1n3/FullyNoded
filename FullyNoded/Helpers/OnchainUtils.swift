@@ -9,6 +9,7 @@
 import Foundation
 
 class OnchainUtils {
+    
     static func getDescriptorInfo(_ desc: String, completion: @escaping ((descriptorInfo: DescriptorInfo?, message: String?)) -> Void) {
         Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(desc)\"") { (response, message) in
             guard let response = response as? [String:Any] else {
