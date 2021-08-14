@@ -342,14 +342,14 @@ class MainMenuViewController: UIViewController {
         switch Section(rawValue: indexPath.section) {
         case .verificationProgress:
             if blockchainInfo != nil {
-                if blockchainInfo.progress == "Fully verified" {
+                if blockchainInfo.progressString == "Fully verified" {
                     background.backgroundColor = .systemGreen
                     icon.image = UIImage(systemName: "checkmark.seal")
                 } else {
                     background.backgroundColor = .systemRed
                     icon.image = UIImage(systemName: "exclamationmark.triangle")
                 }
-                label.text = blockchainInfo.progress
+                label.text = blockchainInfo.progressString
                 chevron.alpha = 1
             }
             
@@ -423,7 +423,7 @@ class MainMenuViewController: UIViewController {
             
         case .miningDifficulty:
             if blockchainInfo != nil {
-                label.text = blockchainInfo.difficulty
+                label.text = blockchainInfo.diffString
                 icon.image = UIImage(systemName: "slider.horizontal.3")
                 background.backgroundColor = .systemBlue
                 chevron.alpha = 0
@@ -490,47 +490,88 @@ class MainMenuViewController: UIViewController {
     
     func loadTableData() {
         displayAlert(viewController: self, isError: false, message: "bitcoin-cli getblockchaininfo")
-        NodeLogic.loadBlockchainInfo { [weak self] (response, errorMessage) in
+        
+        OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
             guard let self = self else { return }
             
-            guard let response = response else {
-                self.removeLoader()
+            guard let blockchainInfo = blockchainInfo else {
                 
-                guard let errorMessage = errorMessage else {
+                guard let message = message else {
                     displayAlert(viewController: self, isError: true, message: "unknown error")
                     return
                 }
                 
-                if errorMessage.contains("Loading block index") || errorMessage.contains("Verifying") || errorMessage.contains("Rewinding") {
+                if message.contains("Loading block index") || message.contains("Verifying") || message.contains("Rewinding") || message.contains("Rescanning") {
                     showAlert(vc: self, title: "", message: "Your node is still getting warmed up! Wait 15 seconds and tap the refresh button to try again")
                     
-                } else if errorMessage.contains("Could not connect to the server.") {
+                } else if message.contains("Could not connect to the server.") {
                     showAlert(vc: self, title: "", message: "Looks like your node is not on, make sure it is running and try again.")
                     
-                } else if errorMessage.contains("unknown error") {
+                } else if message.contains("unknown error") {
                     showAlert(vc: self, title: "", message: "We got a strange response from your node, first of all make 100% sure your credentials are correct, if they are then your node could be overloaded... Either wait a few minutes and try again or reboot Tor on your node, if that fails reboot your node too, force quit Fully Noded and open it again.")
                     
-                } else if errorMessage.contains("timed out") || errorMessage.contains("The Internet connection appears to be offline") {
+                } else if message.contains("timed out") || message.contains("The Internet connection appears to be offline") {
                     showAlert(vc: self, title: "", message: "Hmmm we are not getting a response from your node, you can try rebooting Tor on your node and force quitting Fully Noded and reopening it, that generally fixes the issue.")
                     
-                } else if errorMessage.contains("Unable to decode the response") {
+                } else if message.contains("Unable to decode the response") {
                     showAlert(vc: self, title: "", message: "There was an issue... This can mean your node is busy doing an intense task like rescanning or syncing whoich may be preventing it from responding to commands. If that is the case then just wait a few minutes and try again. As a last resort try rebooting your node and Fully Noded.")
-                    
-                } else {
-                    displayAlert(viewController: self, isError: true, message: errorMessage)
                 }
                 
                 return
             }
+                        
+            self.removeLoader()
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
-                self.blockchainInfo = BlockchainInfo(response)
+                self.blockchainInfo = blockchainInfo
                 self.mainMenu.reloadSections(IndexSet(arrayLiteral: 0, 3, 5, 7, 8, 9), with: .fade)
                 self.getPeerInfo()
             }
         }
+            
+//        NodeLogic.loadBlockchainInfo { [weak self] (response, errorMessage) in
+//            guard let self = self else { return }
+//            
+//            guard let blockchainInfo = response else {
+//                self.removeLoader()
+//                
+//                guard let errorMessage = errorMessage else {
+//                    displayAlert(viewController: self, isError: true, message: "unknown error")
+//                    return
+//                }
+//                
+//                if errorMessage.contains("Loading block index") || errorMessage.contains("Verifying") || errorMessage.contains("Rewinding") {
+//                    showAlert(vc: self, title: "", message: "Your node is still getting warmed up! Wait 15 seconds and tap the refresh button to try again")
+//                    
+//                } else if errorMessage.contains("Could not connect to the server.") {
+//                    showAlert(vc: self, title: "", message: "Looks like your node is not on, make sure it is running and try again.")
+//                    
+//                } else if errorMessage.contains("unknown error") {
+//                    showAlert(vc: self, title: "", message: "We got a strange response from your node, first of all make 100% sure your credentials are correct, if they are then your node could be overloaded... Either wait a few minutes and try again or reboot Tor on your node, if that fails reboot your node too, force quit Fully Noded and open it again.")
+//                    
+//                } else if errorMessage.contains("timed out") || errorMessage.contains("The Internet connection appears to be offline") {
+//                    showAlert(vc: self, title: "", message: "Hmmm we are not getting a response from your node, you can try rebooting Tor on your node and force quitting Fully Noded and reopening it, that generally fixes the issue.")
+//                    
+//                } else if errorMessage.contains("Unable to decode the response") {
+//                    showAlert(vc: self, title: "", message: "There was an issue... This can mean your node is busy doing an intense task like rescanning or syncing whoich may be preventing it from responding to commands. If that is the case then just wait a few minutes and try again. As a last resort try rebooting your node and Fully Noded.")
+//                    
+//                } else {
+//                    displayAlert(viewController: self, isError: true, message: errorMessage)
+//                }
+//                
+//                return
+//            }
+//            
+//            DispatchQueue.main.async { [weak self] in
+//                guard let self = self else { return }
+//                
+//                self.blockchainInfo = blockchainInfo
+//                self.mainMenu.reloadSections(IndexSet(arrayLiteral: 0, 3, 5, 7, 8, 9), with: .fade)
+//                self.getPeerInfo()
+//            }
+//        }
     }
     
     private func getPeerInfo() {
@@ -1030,7 +1071,7 @@ extension MainMenuViewController: UITableViewDelegate {
                     detailImageTint = .systemRed
                     detailImage = UIImage(systemName: "exclamationmark.triangle")!
                 }
-                detailSubheaderText = "\(blockchainInfo.actualProgress * 100)%"
+                detailSubheaderText = blockchainInfo.progressString
                 detailTextDescription = """
                 Don't trust, verify!
                 

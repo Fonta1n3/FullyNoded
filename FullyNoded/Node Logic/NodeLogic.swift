@@ -160,16 +160,6 @@ class NodeLogic {
         }
     }
     
-    class func loadBlockchainInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .getblockchaininfo, param: "") { (response, errorMessage) in
-            if let blockchainInfo = response as? NSDictionary {
-                parseBlockchainInfo(blockchainInfo: blockchainInfo, completion: completion)
-            } else {
-                completion((nil, errorMessage ?? ""))
-            }
-        }
-    }
-    
     class func getPeerInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         Reducer.makeCommand(command: .getpeerinfo, param: "") { (response, errorMessage) in
             if let peerInfo = response as? NSArray {
@@ -812,43 +802,6 @@ class NodeLogic {
         let exahashesPerSecond = hashesPerSecond / 1000000000000000000
         miningInfoToReturn["networkhashps"] = Int(exahashesPerSecond).withCommas
         completion((miningInfoToReturn, nil))
-    }
-    
-    class func parseBlockchainInfo(blockchainInfo: NSDictionary, completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        var blockchainInfoToReturn = [String:Any]()
-        
-        if let currentblockheight = blockchainInfo["blocks"] as? Int {
-            blockchainInfoToReturn["blocks"] = currentblockheight
-        }
-        
-        if let difficultyCheck = blockchainInfo["difficulty"] as? Double {
-            blockchainInfoToReturn["difficulty"] = "difficulty \(Int(difficultyCheck / 1000000000000).withCommas) trillion"
-        }
-        
-        if let sizeCheck = blockchainInfo["size_on_disk"] as? Int {
-            blockchainInfoToReturn["size"] = "\(sizeCheck/1000000000)gb blockchain"
-        }
-        
-        if let progressCheck = blockchainInfo["verificationprogress"] as? Double {
-            blockchainInfoToReturn["actualProgress"] = progressCheck
-            if progressCheck > 0.9999 {
-                blockchainInfoToReturn["progress"] = "Fully verified"
-            } else {
-                blockchainInfoToReturn["progress"] = "\(Int(progressCheck*100))% verified"
-            }
-        }
-        
-        if let chain = blockchainInfo["chain"] as? String {
-            blockchainInfoToReturn["chain"] = "\(chain) chain"
-            UserDefaults.standard.set(chain, forKey: "chain")
-            
-        }
-        
-        if let pruned = blockchainInfo["pruned"] as? Bool {
-            blockchainInfoToReturn["pruned"] = pruned
-        }
-        
-        completion((blockchainInfoToReturn, nil))
     }
     
     class func parsePeerInfo(peerInfo: NSArray, completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {

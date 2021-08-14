@@ -190,6 +190,24 @@ public extension String {
     }
 }
 
+public extension BlockchainInfo {
+    var size: String {
+        return "\(self.size_on_disk/1000000000) gb"
+    }
+    
+    var progressString: String {
+        if self.verificationprogress > 0.9999 {
+            return "Fully verified"
+        } else {
+            return "\(Int(self.verificationprogress*100))% verified"
+        }
+    }
+    
+    var diffString: String {
+        return "difficulty \(Int(self.difficulty / 1000000000000).withCommas) trillion"
+    }
+}
+
 public extension Notification.Name {
     static let refreshNode = Notification.Name(rawValue: "refreshNode")
     static let refreshWallet = Notification.Name(rawValue: "refreshWallet")
