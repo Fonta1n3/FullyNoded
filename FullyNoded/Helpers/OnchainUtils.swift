@@ -103,5 +103,18 @@ class OnchainUtils {
         Reducer.makeCommand(command: .rescanblockchain, param: "\(from)") { (_, _) in }
         completion((true, nil))
     }
+    
+    static func createWallet(param: String, completion: @escaping ((name: String?, message: String?)) -> Void) {
+        Reducer.makeCommand(command: .createwallet, param: param) { (response, errorMessage) in
+            guard let response = response as? [String:Any] else {
+                completion((nil, errorMessage))
+                return
+            }
+                        
+            let warning = response["warning"] as? String
+            let walletName = response["name"] as? String
+            completion((walletName, warning))
+        }
+    }
      
 }

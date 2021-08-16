@@ -165,28 +165,28 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         if self.version >= 21 {
             param += ", true, true"
         }
-
-        Reducer.makeCommand(command: .createwallet, param: param) { [weak self] (response, errorMessage) in
+        
+        OnchainUtils.createWallet(param: param) { [weak self] (name, message) in
             guard let self = self else { return }
-
-            guard let dict = response as? NSDictionary,
-                let name = dict["name"] as? String else {
-                    self.showError(error: "Error creating wallet on your node: \(errorMessage ?? "unknown")")
-                    return
+            
+            if let name = name {
+                UserDefaults.standard.set(name, forKey: "walletName")
+                
+                if self.version >= 21 {
+                    self.importDescriptors(name, fingerprint, xpub, self.primDesc, completion: completion)
+                } else {
+                    self.importKeys(name, fingerprint, xpub, self.primDesc, completion: completion)
+                }
             }
             
-            if self.version >= 21 {
-                self.importDescriptors(name, fingerprint, xpub, self.primDesc, completion: completion)
-            } else {
-                self.importKeys(name, fingerprint, xpub, self.primDesc, completion: completion)
+            if let message = message {
+                showAlert(vc: self, title: "Warning", message: message)
             }
         }
     }
     
     private func importDescriptors(_ name: String, _ fingerprint: String, _ xpub: String, _ desc: String, completion: @escaping ((Bool)) -> Void) {
         self.name = name
-        UserDefaults.standard.set(name, forKey: "walletName")
-        
         let changeDesc = self.changeDescriptor(fingerprint, xpub)
         
         self.getDescriptorInfo(desc: desc) { completePrimDesc in
@@ -234,7 +234,6 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     
     private func importKeys(_ name: String, _ fingerprint: String, _ xpub: String, _ desc: String, completion: @escaping ((Bool)) -> Void) {
         self.name = name
-        UserDefaults.standard.set(name, forKey: "walletName")
         
         self.importPrimaryKeys(desc: desc) { [weak self] (success, errorMessage) in
             guard let self = self else { return }

@@ -95,34 +95,24 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate, UINavi
         view.endEditing(true)
     }
     
-    private func createWallet(param: String) {
-        Reducer.makeCommand(command: .createwallet, param: param) { [weak self] (response, errorMessage) in
+    func createWallet(param: String) {
+        OnchainUtils.createWallet(param: param) { [weak self] (name, message) in
             guard let self = self else { return }
             
-            guard let dict = response as? NSDictionary else {
+            if let name = name {
+                UserDefaults.standard.set(name, forKey: "walletName")
+                
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
-                    self.connectingView.removeConnectingView()
-                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
+                    NotificationCenter.default.post(name: .refreshWallet, object: nil)
+                    self.walletCreatedSuccess()
                 }
-                return
             }
             
-            self.handleWalletCreation(response: dict)
-        }
-    }
-    
-    func handleWalletCreation(response: NSDictionary) {
-        let name = response["name"] as! String
-        let ud = UserDefaults.standard
-        ud.set(name, forKey: "walletName")
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            NotificationCenter.default.post(name: .refreshWallet, object: nil)
-            self.textField.text = ""
-            self.walletCreatedSuccess()
+            if let message = message {
+                showAlert(vc: self, title: "Warning", message: message)
+            }
         }
     }
     
@@ -130,6 +120,7 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate, UINavi
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
+            self.textField.text = ""
             self.connectingView.removeConnectingView()
             
             let alert = UIAlertController(title: "Wallet created successfully", message: "Your wallet is automatically activated, the Wallet tab is now refreshing, tap Done to go back", preferredStyle: self.alertStyle)

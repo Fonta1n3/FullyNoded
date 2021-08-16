@@ -68,6 +68,7 @@ public struct BlockchainInfo: CustomStringConvertible {
     init(_ dictionary: [String: Any]) {
         network = dictionary["chain"] as? String ?? ""
         blockheight = dictionary["blocks"] as? Int ?? 0
+        UserDefaults.standard.set(blockheight, forKey: "blockheight")
         difficulty = Int(dictionary["difficulty"] as! Double)
         size_on_disk = Int(dictionary["size_on_disk"] as! UInt64)
         progress = dictionary["progress"] as? String ?? ""

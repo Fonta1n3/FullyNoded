@@ -326,13 +326,8 @@ class ImportWallet {
             param += ", true, true"
         }
         
-        Reducer.makeCommand(command: .createwallet, param: param) { (response, errorMessage) in
-            guard let dict = response as? NSDictionary, let name = dict["name"] as? String else {
-                completion((nil, errorMessage))
-                return
-            }
-            
-            completion((name, nil))
+        OnchainUtils.createWallet(param: param) { (name, message) in
+            completion((name, message))
         }
     }
     
@@ -343,29 +338,10 @@ class ImportWallet {
     }
     
     class func importDescriptors(_ params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .importdescriptors, param: params) { (response, errorMessage) in
-            guard let responseArray = response as? [[String:Any]] else {
-                completion((false, "Error importing descriptors: \(errorMessage ?? "unknown error")"))
-                return
-            }
-            
-            for (i, response) in responseArray.enumerated() {
-                guard let success = response["success"] as? Bool, success else {
-                    var errorMessage = "Error importing descriptors."
-                    
-                    if let error = response["error"] as? [String:Any], let message = error["message"] as? String {
-                        errorMessage = "Error importing descriptors: \(message)"
-                    }
-                    
-                    completion((false, errorMessage))
-                    return
-                }
-                
-                if i + 1 == responseArray.count {
-                    completion((true, nil))
-                }
-            }
-        }
+        
+        OnchainUtils.importDescriptors(params) { (imported, message) in
+            completion((imported, message))
+        }        
     }
     
     class func importReceiveDesc(_ recDesc: String, _ label: String, _ keypool: Bool, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
