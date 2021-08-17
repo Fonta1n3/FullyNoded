@@ -580,7 +580,6 @@
 				D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */,
 				0A590356269875CB00510626 /* Extensions.swift */,
 				0A9834C826BC3CF500BAB74E /* Backup.xcdatamodeld */,
-				0A212D9026C75E1B00BF6FD4 /* Join Market */,
 			);
 			path = FullyNoded;
 			sourceTree = "<group>";
@@ -913,6 +912,7 @@
 		D0A519B5226B3DA000860D5C /* Wallet Logic */ = {
 			isa = PBXGroup;
 			children = (
+				0A212D9026C75E1B00BF6FD4 /* Join Market */,
 				D0A519B8226C212C00860D5C /* SendUTXO.swift */,
 				D0855FC922B0CEA800DBBFC2 /* CreatePSBT.swift */,
 				D0806B4422EE9FBA002C20A1 /* TXChain.swift */,

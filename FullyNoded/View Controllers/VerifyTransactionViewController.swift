@@ -814,7 +814,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     if let utxos = utxos, utxos.count > 0 {
                         var parseIt = false
                         for (i, utxo) in utxos.enumerated() {
-                            let utxoStr = UtxosStruct(dictionary: utxo)
+                            let utxoStr = Utxo(utxo)
                             
                             // only parse inputs for utxos we own if dealing with blind psbt
                             if utxoStr.txid == txid, utxoStr.vout == vout, (utxoStr.solvable ?? false) {

@@ -798,12 +798,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func sweepWallet(_ receivingAddress: String) {
-        Reducer.makeCommand(command: .listunspent, param: "0") { [weak self] (response, errorMessage) in
+        OnchainUtils.listUnspent(param: "0") { [weak self] (utxos, message) in
             guard let self = self else { return }
             
-            guard let resultArray = response as? [[String:Any]] else {
+            guard let utxos = utxos else {
                 self.spinner.removeConnectingView()
-                displayAlert(viewController: self, isError: true, message: errorMessage ?? "error fetching utxo's")
+                displayAlert(viewController: self, isError: true, message: message ?? "error fetching utxo's")
                 return
             }
             
@@ -812,22 +812,20 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             var amount = Double()
             var spendFromCold = Bool()
             
-            for utxo in resultArray {
-                let utxoStr = UtxosStruct(dictionary: utxo)
-                
-                if !utxoStr.spendable! {
+            for utxo in utxos {
+                if !utxo.spendable! {
                     spendFromCold = true
                 }
                 
-                amount += utxoStr.amount!
+                amount += utxo.amount!
                 
-                guard utxoStr.confs! > 0 else {
+                guard utxo.confs! > 0 else {
                     self.spinner.removeConnectingView()
                     showAlert(vc: self, title: "Ooops", message: "You have unconfirmed utxo's, wait till they get a confirmation before trying to sweep them.")
                     return
                 }
                 
-                inputArray.append(utxoStr.input)
+                inputArray.append(utxo.input)
             }
             
             inputs = inputArray.processedInputs

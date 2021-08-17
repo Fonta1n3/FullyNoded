@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 
-public extension UtxosStruct {
+public extension Utxo {
     var input: String {
         return "{\"txid\":\"\(self.txid)\",\"vout\": \(self.vout),\"sequence\": 1}"
     }

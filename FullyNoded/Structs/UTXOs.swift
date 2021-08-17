@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 
-public struct UtxosStruct: CustomStringConvertible {
+public struct Utxo: CustomStringConvertible {
     
     let id: UUID?
     var label: String?
@@ -32,8 +32,9 @@ public struct UtxosStruct: CustomStringConvertible {
     let amountFiat: String?
     let amountSats: String?
     let lifehash: UIImage?
+    let dict: [String:Any]
     
-    init(dictionary: [String: Any]) {
+    init(_ dictionary: [String: Any]) {
         id = dictionary["id"] as? UUID
         label = dictionary["label"] as? String
         address = dictionary["address"] as? String
@@ -55,6 +56,7 @@ public struct UtxosStruct: CustomStringConvertible {
         amountFiat = dictionary["amountFiat"] as? String
         amountSats = dictionary["amountSats"] as? String
         lifehash = dictionary["lifehash"] as? UIImage
+        dict = dictionary
     }
     
     public var description: String {

@@ -9,15 +9,15 @@
 import UIKit
 
 protocol UTXOCellDelegate: AnyObject {
-    func didTapToLock(_ utxo: UtxosStruct)
-    func didTapToEditLabel(_ utxo: UtxosStruct)
-    func didTapToFetchOrigin(_ utxo: UtxosStruct)
+    func didTapToLock(_ utxo: Utxo)
+    func didTapToEditLabel(_ utxo: Utxo)
+    func didTapToFetchOrigin(_ utxo: Utxo)
 }
 
 class UTXOCell: UITableViewCell {
     
     static let identifier = "UTXOCell"
-    private var utxo: UtxosStruct!
+    private var utxo: Utxo!
     private var isLocked: Bool!
     private unowned var delegate: UTXOCellDelegate!
     
@@ -75,7 +75,7 @@ class UTXOCell: UITableViewCell {
         selectionStyle = .none
     }
     
-    func configure(utxo: UtxosStruct, isLocked: Bool, fxRate: Double?, isSats: Bool, isBtc: Bool, isFiat: Bool, delegate: UTXOCellDelegate) {
+    func configure(utxo: Utxo, isLocked: Bool, fxRate: Double?, isSats: Bool, isBtc: Bool, isFiat: Bool, delegate: UTXOCellDelegate) {
         self.utxo = utxo
         self.isLocked = isLocked
         self.delegate = delegate

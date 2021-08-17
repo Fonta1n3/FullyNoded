@@ -116,5 +116,29 @@ class OnchainUtils {
             completion((walletName, warning))
         }
     }
+    
+    static func listUnspent(param: String, completion: @escaping ((utxos: [Utxo]?, message: String?)) -> Void) {
+        Reducer.makeCommand(command: .listunspent, param: param) { (response, errorMessage) in
+            guard let response = response as? [[String:Any]] else {
+                completion((nil, errorMessage))
+                return
+            }
+            
+            guard response.count > 0 else {
+                completion(([], nil))
+                return
+            }
+            
+            var utxosToReturn = [Utxo]()
+            
+            for (i, dict) in response.enumerated() {
+                utxosToReturn.append(Utxo(dict))
+                
+                if i + 1 == response.count {
+                    completion((utxosToReturn, nil))
+                }
+            }
+        }
+    }
      
 }

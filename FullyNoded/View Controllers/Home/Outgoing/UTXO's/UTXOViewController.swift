@@ -12,9 +12,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
     private var amountTotal = 0.0
     private let refresher = UIRefreshControl()
-    private var unlockedUtxos = [UtxosStruct]()
+    private var unlockedUtxos = [Utxo]()
     private var inputArray = [String]()
-    private var selectedUTXOs = [UtxosStruct]()
+    private var selectedUTXOs = [Utxo]()
     private var spinner = ConnectingView()
     private var isUnsigned = false
     private var wallet:Wallet?
@@ -182,7 +182,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func editLabel(_ utxo: UtxosStruct) {
+    private func editLabel(_ utxo: Utxo) {
         guard let address = utxo.address, let isHot = utxo.spendable else {
             showAlert(vc: self, title: "Ooops", message: "We not have an address or info on whether that utxo is watch-only or not.")
             return
@@ -233,7 +233,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func importdesc(params: String, utxo: UtxosStruct, label: String) {
+    private func importdesc(params: String, utxo: Utxo, label: String) {
         Reducer.makeCommand(command: .importdescriptors, param: params) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -241,7 +241,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func importmulti(param: String, utxo: UtxosStruct, label: String) {
+    private func importmulti(param: String, utxo: Utxo, label: String) {
         OnchainUtils.importMulti(param) { (imported, message) in
             if imported {
                 self.updateLocally(utxo: utxo, label: label)
@@ -252,7 +252,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func updateLocally(utxo: UtxosStruct, label: String) {
+    private func updateLocally(utxo: Utxo, label: String) {
         func saved() {
             showAlert(vc: self, title: "Label updated ✅", message: "")
             
@@ -270,7 +270,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
             
             for savedUtxo in savedUtxos {
-                let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
+                let savedUtxoStr = Utxo(savedUtxo)
                 
                 if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout {
                     CoreDataService.update(id: savedUtxoStr.id!, keyToUpdate: "label", newValue: label as Any, entity: .utxos) { _ in }
@@ -281,7 +281,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func lock(_ utxo: UtxosStruct) {
+    private func lock(_ utxo: Utxo) {
         spinner.addConnectingView(vc: self, description: "locking...")
         
         let param = "false, [{\"txid\":\"\(utxo.txid)\",\"vout\":\(utxo.vout)}]"
@@ -356,12 +356,12 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             self.addSpinner()
         }
         
-        Reducer.makeCommand(command: .listunspent, param: "0") { [weak self] (response, errorMessage) in
+        OnchainUtils.listUnspent(param: "0") { [weak self] (utxos, message) in
             guard let self = self else { return }
             
-            guard let utxos = response as? NSArray else {
+            guard let utxos = utxos else {
                 self.finishedLoading()
-                showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error fecthing your utxos")
+                showAlert(vc: self, title: "Error", message: message ?? "unknown error fecthing your utxos")
                 return
             }
             
@@ -378,7 +378,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 var originValue:String?
                 var amountFiat:String?
                 
-                guard var utxoDict = utxo as? [String:Any] else { return }
+                var utxoDict = utxo.dict
                 
                 if let wallet = self.wallet {
                     if wallet.type == WalletType.descriptor.stringValue {
@@ -389,8 +389,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 }
                 
                 func finish() {
-                    let utxoStr = UtxosStruct(dictionary: utxoDict)
-                    self.unlockedUtxos.append(utxoStr)
+                    self.unlockedUtxos.append(utxo)
                     
                     if i + 1 == utxos.count {
                         self.unlockedUtxos = self.unlockedUtxos.sorted { $0.confs ?? 0 < $1.confs ?? 0 }
@@ -408,7 +407,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                                 
                                 func loopSavedUtxos() {
                                     for (s, savedUtxo) in savedUtxos.enumerated() {
-                                        let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
+                                        let savedUtxoStr = Utxo(savedUtxo)
                                         
                                         /// We always use the Bitcoin Core address label as the utxo label, when recovering with a new node the user will see the
                                         /// label the user added via Fully Noded. Fully Noded automatically saves the utxo labels.
@@ -450,11 +449,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 }
                 
                 let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
-                let amountBtc = utxoDict["amount"] as! Double
-                let address = utxoDict["address"] as! String
+                let amountBtc = utxo.amount!
                 utxoDict["amountSats"] = amountBtc.sats
-                let lifehash = LifeHash.image(address)
-                utxoDict["lifehash"] = lifehash
+                utxoDict["lifehash"] = LifeHash.image(utxo.address ?? "")
                 
                 CoreDataService.retrieveEntity(entityName: .transactions) { txs in
                     if let txs = txs, txs.count > 0 {
@@ -462,7 +459,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                         for (i, tx) in txs.enumerated() {
                             let txStruct = TransactionStruct(dictionary: tx)
                             
-                            if txStruct.txid == utxoDict["txid"] as! String {
+                            if txStruct.txid == utxo.txid {
                                 dateToSave = txStruct.date
                                 txUUID = txStruct.id
                                 
@@ -533,7 +530,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func fetchOriginRate(_ utxo: UtxosStruct) {
+    private func fetchOriginRate(_ utxo: Utxo) {
         guard let date = utxo.date, let id = utxo.txUUID else {
             showAlert(vc: self, title: "", message: "Date or saved tx UUID missing.")
             return
@@ -607,15 +604,15 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
 
 extension UTXOViewController: UTXOCellDelegate {
     
-    func didTapToLock(_ utxo: UtxosStruct) {
+    func didTapToLock(_ utxo: Utxo) {
         lock(utxo)
     }
     
-    func didTapToEditLabel(_ utxo: UtxosStruct) {
+    func didTapToEditLabel(_ utxo: Utxo) {
         editLabel(utxo)
     }
     
-    func didTapToFetchOrigin(_ utxo: UtxosStruct) {
+    func didTapToFetchOrigin(_ utxo: Utxo) {
         fetchOriginRate(utxo)
     }
     

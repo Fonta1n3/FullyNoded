@@ -27,16 +27,16 @@ class NodeLogic {
     }
     
     class func listUnspent(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .listunspent, param: "0") { (response, errorMessage) in
-            if let utxos = response as? NSArray {
+        OnchainUtils.listUnspent(param: "0") { (utxos, message) in
+            if let utxos = utxos {
                 parseUtxos(utxos: utxos)
                 getLightningBalances(completion: completion)
-            } else if errorMessage != nil {
-                if errorMessage!.contains("Method not found") {
+            } else if message != nil {
+                if message!.contains("Method not found") {
                     walletDisabled = true
                     completion((nil, "wallet disabled"))
                 } else {
-                    completion((nil, errorMessage ?? ""))
+                    completion((nil, message ?? "Error getting utxos."))
                 }
             }
         }
@@ -665,7 +665,7 @@ class NodeLogic {
         }
     }
     
-    private class func saveUtxoLocally(_ utxo: UtxosStruct) {
+    private class func saveUtxoLocally(_ utxo: Utxo) {
         activeWallet { wallet in
             // Only save utxos for Fully Noded wallets
             guard let wallet = wallet else { return }
@@ -676,7 +676,7 @@ class NodeLogic {
                     var updateLabel = false
                     
                     for (i, savedUtxo) in savedUtxos.enumerated() {
-                        let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
+                        let savedUtxoStr = Utxo(savedUtxo)
                         
                         if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout {
                             alreadySaved = true
@@ -709,7 +709,7 @@ class NodeLogic {
         }
     }
     
-    class private func saveUtxo(_ utxo: UtxosStruct, _ wallet: Wallet) {
+    class private func saveUtxo(_ utxo: Utxo, _ wallet: Wallet) {
         var dict = [String:Any]()
         dict["txid"] = utxo.txid
         dict["vout"] = utxo.vout
@@ -731,19 +731,16 @@ class NodeLogic {
         }
     }
     
-    class func parseUtxos(utxos: NSArray) {
+    class func parseUtxos(utxos: [Utxo]) {
         var amount = 0.0
         var indexArray = [Int]()
         
         for (x, utxo) in utxos.enumerated() {
-            let utxoDict = utxo as! NSDictionary
-            let utxoStr = UtxosStruct(dictionary: utxo as! [String:Any])
-            saveUtxoLocally(utxoStr)
+            saveUtxoLocally(utxo)
             
-            let balance = utxoDict["amount"] as! Double
-            amount += balance
+            amount += utxo.amount!
             
-            if let desc = utxoDict["desc"] as? String {
+            if let desc = utxo.desc {
                 let p = DescriptorParser()
                 let str = p.descriptor(desc)
                 var paths:[String]!

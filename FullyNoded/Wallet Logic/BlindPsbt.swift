@@ -27,12 +27,13 @@ class BlindPsbt {
         }
         
         func getNow(recipient: String) {
-            Reducer.makeCommand(command: .listunspent, param: "") { (response, errorMessage) in
-                guard let utxos = response as? [[String:Any]], utxos.count > 0 else {
-                    completion((nil, "No inputs to spend."))
+            OnchainUtils.listUnspent(param: "") { (utxos, message) in
+//            Reducer.makeCommand(command: .listunspent, param: "") { (response, errorMessage) in
+                guard let utxos = utxos, utxos.count > 0 else {
+                    completion((nil, "No inputs to spend. Utxos need at least 1 confirmation."))
                     return
                 }
-                
+//
                 var totalInputAmount = 0.0
                 var type:ScriptPubKey.ScriptType!
                 
@@ -57,18 +58,16 @@ class BlindPsbt {
                         if !wallet.receiveDescriptor.hasPrefix("combo") {
                             
                             for (i, utxo) in utxos.enumerated() {
-                                let utxoStr = UtxosStruct(dictionary: utxo)
-                                
                                 var solvable = false
-                                if let solvableCheck = utxoStr.solvable {
+                                if let solvableCheck = utxo.solvable {
                                     solvable = solvableCheck
                                 }
                                 
                                 if solvable {
                                     
                                     func append() {
-                                        totalInputAmount += utxoStr.amount!
-                                        inputArray.append(utxoStr.input)
+                                        totalInputAmount += utxo.amount!
+                                        inputArray.append(utxo.input)
                                                                                 
                                         if i + 1 == utxos.count {
                                             finish()
@@ -80,7 +79,7 @@ class BlindPsbt {
                                         return
                                     }
                                     
-                                    guard let inputAddress = try? Address(string: utxoStr.address ?? "") else {
+                                    guard let inputAddress = try? Address(string: utxo.address ?? "") else {
                                         completion((nil, "Input address invalid."))
                                         return
                                     }
@@ -93,7 +92,7 @@ class BlindPsbt {
                                         var rule = true
                                         
                                         if strict {
-                                            rule = amountBtc == utxoStr.amount!
+                                            rule = amountBtc == utxo.amount!
                                         } else {
                                             totalInputsAllowed = 2
                                         }
@@ -105,10 +104,10 @@ class BlindPsbt {
                                                 
                                                 if inputArray.count > 0 {
                                                     for (x, input) in inputArray.enumerated() {
-                                                        if input.contains(utxoStr.txid) && strict {
+                                                        if input.contains(utxo.txid) && strict {
                                                             inputExists = true
                                                         }
-                                                        if input == utxoStr.input {
+                                                        if input == utxo.input {
                                                             inputExists = true
                                                         }
                                                         
@@ -123,9 +122,9 @@ class BlindPsbt {
                                                 func checkExisitingInputs() {
                                                     if let inputsToJoin = inputsToJoin, inputsToJoin.count > 0 {
                                                         for (y, inputToJoin) in inputsToJoin.enumerated() {
-                                                            if inputToJoin == utxoStr.input {
+                                                            if inputToJoin == utxo.input {
                                                                 inputExists = true
-                                                            } else if inputToJoin.contains(utxoStr.txid) && strict {
+                                                            } else if inputToJoin.contains(utxo.txid) && strict {
                                                                 inputExists = true
                                                             }
                                                             

@@ -10,7 +10,7 @@ import UIKit
 
 class LockedViewController: UIViewController {
     
-    private var lockedUtxos = [UtxosStruct]()
+    private var lockedUtxos = [Utxo]()
     let spinner = ConnectingView()
     var selectedVout = Int()
     var selectedTxid = ""
@@ -67,7 +67,7 @@ class LockedViewController: UIViewController {
                     return
                 }
                 
-                let utxoStruct = UtxosStruct(dictionary: utxoDict)
+                let utxoStruct = Utxo(utxoDict)
                 self.lockedUtxos.append(utxoStruct)
             }
             
@@ -78,7 +78,7 @@ class LockedViewController: UIViewController {
                 }
                 
                 for savedLockedUtxo in savedLockedUtxos {
-                    let savedUtxoStruct = UtxosStruct(dictionary: savedLockedUtxo)
+                    let savedUtxoStruct = Utxo(savedLockedUtxo)
                     let savedUtxoOutpoint = savedUtxoStruct.txid + "\(savedUtxoStruct.vout)"
                     var isSaved = false
                     
@@ -98,7 +98,7 @@ class LockedViewController: UIViewController {
         }
     }
     
-    private func unlock(_ utxo: UtxosStruct) {
+    private func unlock(_ utxo: Utxo) {
         spinner.addConnectingView(vc: self, description: "unlocking...")
         let param = "true, [{\"txid\":\"\(utxo.txid)\",\"vout\":\(utxo.vout)}]"
         
@@ -139,15 +139,15 @@ class LockedViewController: UIViewController {
 
 extension LockedViewController: UTXOCellDelegate {
     
-    func didTapToLock(_ utxo: UtxosStruct) {
+    func didTapToLock(_ utxo: Utxo) {
         unlock(utxo)
     }
     
-    func didTapToEditLabel(_ utxo: UtxosStruct) {}
+    func didTapToEditLabel(_ utxo: Utxo) {}
     
-    func didTapToFetchOrigin(_ utxo: UtxosStruct) {}
+    func didTapToFetchOrigin(_ utxo: Utxo) {}
     
-//    func didTapInfoFor(_ utxo: UtxosStruct) {
+//    func didTapInfoFor(_ utxo: Utxo) {
 //        performSegue(withIdentifier: "getUTXOinfo", sender: utxo)
 //    }
     

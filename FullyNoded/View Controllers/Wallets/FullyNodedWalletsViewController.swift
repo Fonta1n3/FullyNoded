@@ -143,20 +143,20 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
             let walletStruct = Wallet(dictionary: wallet)
             UserDefaults.standard.set(walletStruct.name, forKey: "walletName")
             
-            Reducer.makeCommand(command: .listunspent, param: "0") { [weak self] (response, errorMessage) in
+            OnchainUtils.listUnspent(param: "0") { [weak self] (utxos, message) in
                 guard let self = self else { return }
                 
-                guard let utxos = response as? NSArray else {
+                guard let utxos = utxos else {
                     self.spinner.removeConnectingView()
                     
-                    guard let errorMessage = errorMessage else {
-                        showAlert(vc: self, title: "Ooops", message: "There was an unknown error getting your balances")
+                    guard let message = message else {
+                        showAlert(vc: self, title: "", message: "There was an unknown error getting your balances.")
                         UserDefaults.standard.set(self.existingActiveWalletName, forKey: "walletName")
                         self.initialLoad = false
                         return
                     }
                     
-                    showAlert(vc: self, title: "Ooops", message: "There was an error getting your balances: \(errorMessage)")
+                    showAlert(vc: self, title: "", message: "There was an error getting your balances: \(message).")
                     UserDefaults.standard.set(self.existingActiveWalletName, forKey: "walletName")
                     self.initialLoad = false
                     return
@@ -164,9 +164,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                 
                 if utxos.count > 0 {
                     for (x, utxo) in utxos.enumerated() {
-                        let utxoDict = utxo as! NSDictionary
-                        let balance = utxoDict["amount"] as! Double
-                        self.totalBtcBalance += balance
+                        self.totalBtcBalance += utxo.amount!
                         
                         if x + 1 == utxos.count {
                             self.index += 1

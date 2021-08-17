@@ -26,59 +26,14 @@ class JoinMarket {
     static var index = 0
     static var descriptors = ""
     static var plain = [String()]
-    static var primDesc = ""
-    static var changeDesc = ""
     static var wallet:[String:Any] = [:]
 
-    static func desc(_ mixDepth: Int, _ xfp: String, _ xpub: String, _ child: Int) -> String {
-        return "wpkh([\(xfp)/0/\(mixDepth)]\(xpub)/\(child)/*)"
-    }
-    
-    static func xpub(_ mixDepth: Int, _ mk: String) -> String? {
-        return Keys.xpub(path: "m/0/\(mixDepth)", masterKey: mk)
-    }
-    
-    static func importDescsParam(_ desc: String, _ active: Bool, _ intern: Bool) -> String {
-        return "{\"desc\": \"\(desc)\", \"active\": \(active), \"range\": [0,500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": \(intern)}"
-    }
-    
-    static func masterKey(_ words: String, _ coinType: String, _ passphrase: String) -> String? {
-        return Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase)
-    }
-    
-    static func fingerprint(_ masterKey: String) -> String? {
-        return Keys.fingerprint(masterKey: masterKey)
-    }
-    
-    static func version() -> String? {
-        return UserDefaults.standard.object(forKey: "version") as? String
-    }
-    
-    static func walletName(_ primDesc: String) -> String {
-        return "FullyNoded-JoinMarket-\(Crypto.sha256hash(primDesc))"
-    }
-    
-    static func createWallParam(_ name: String) -> String {
-        return "\"\(name)\", true, true, \"\", true, true, true"
-    }
-
-    class func createWallet() {
-        guard let words = Keys.seed(),
-              let mk = masterKey(words, "1", ""),
-              let xfp = fingerprint(mk),
-              let xpub0 = xpub(0, mk),
+    class func descriptors(_ mk: String, _ xfp: String, completion: @escaping ((descriptors: String?, dict: [String:Any]?)) -> Void) {
+        guard let xpub0 = xpub(0, mk),
               let xpub1 = xpub(1, mk),
               let xpub2 = xpub(2, mk),
               let xpub3 = xpub(3, mk),
-              let xpub4 = xpub(4, mk),
-              let version = version() else { return }
-        
-        guard let encrypted = Crypto.encrypt(words.utf8) else { return }
-        
-        let dict:[String:Any] = ["id":UUID(), "words":encrypted]
-        
-        CoreDataService.saveEntity(dict: dict, entityName: .signers) { success in
-            guard success else { return }
+              let xpub4 = xpub(4, mk) else { return }
             
             plain = [
                 desc(0, xfp, xpub0, 0),
@@ -93,39 +48,44 @@ class JoinMarket {
                 desc(4, xfp, xpub4, 1)
             ]
             
-            let walletName = walletName(desc(0, xfp, xpub0, 0))
-            let param = createWallParam(walletName)
-            
-            OnchainUtils.createWallet(param: param) { (name, message) in
-                if let name = name {
-                    wallet["name"] = name
-                    UserDefaults.standard.set(name, forKey: "walletName")
-                    
-                    if version.bitcoinVersion >= 21 {
-                        getDescriptorInfo(i: 0, desc: plain[0])
-                    }
-                }
-            }
-        }
+        getDescriptorInfo(i: 0, desc: plain[0], completion: completion)
     }
 
-    static func getDescriptorInfo(i: Int, desc: String) {
+    static func getDescriptorInfo(i: Int, desc: String, completion: @escaping ((descriptors: String?, dict: [String:Any]?)) -> Void) {
         if i <= 9 {
             OnchainUtils.getDescriptorInfo(desc) { (descriptorInfo, message) in
                 guard let descriptorInfo = descriptorInfo else { return }
                 
-                let active = (i == 0)
                 let intern = !(i % 2 == 0)
                 
-                if active {
-                    wallet["receiveDescriptor"] = descriptorInfo.descriptor
+                guard let encryptedDesc = Crypto.encrypt(descriptorInfo.descriptor.utf8) else { return }
+                
+                switch i {
+                case 0:
+                    wallet["mixDepthZeroExt"] = encryptedDesc
+                case 1:
+                    wallet["mixDepthZeroInt"] = encryptedDesc
+                case 2:
+                    wallet["mixDepthOneExt"] = encryptedDesc
+                case 3:
+                    wallet["mixDepthOneInt"] = encryptedDesc
+                case 4:
+                    wallet["mixDepthTwoExt"] = encryptedDesc
+                case 5:
+                    wallet["mixDepthTwoInt"] = encryptedDesc
+                case 6:
+                    wallet["mixDepthThreeExt"] = encryptedDesc
+                case 7:
+                    wallet["mixDepthThreeInt"] = encryptedDesc
+                case 8:
+                    wallet["mixDepthFourExt"] = encryptedDesc
+                case 9:
+                    wallet["mixDepthFourInt"] = encryptedDesc
+                default:
+                    break
                 }
                 
-                if i == 1 {
-                    wallet["changeDescriptor"] = descriptorInfo.descriptor
-                }
-                
-                let param = importDescsParam(descriptorInfo.descriptor, active, intern)
+                let param = importDescsParam(descriptorInfo.descriptor, false, intern)
                 
                 if i > 0 {
                     descriptors += ", \(param)"
@@ -134,45 +94,75 @@ class JoinMarket {
                 }
                 
                 if i == 9 {
-                    getDescriptorInfo(i: 10, desc: "")
+                    wallet["mixIndexes"] = [[0,0], [0,0], [0,0], [0,0], [0,0]]
+                    completion((descriptors, wallet))
                 } else {
                     index += 1
-                    getDescriptorInfo(i: index, desc: plain[index])
-                }
-            }
-        } else {
-            OnchainUtils.importDescriptors("[\(descriptors)]") { (imported, message) in
-                if imported {
-                    saveWallet()
-                } else {
-                    UserDefaults.standard.removeObject(forKey: "walletName")
+                    getDescriptorInfo(i: index, desc: plain[index], completion: completion)
                 }
             }
         }
     }
     
-    static func saveWallet() {
-        wallet["id"] = UUID()
-        wallet["label"] = "Join Market"
-        wallet["type"] = "JoinMarket"
-        wallet["maxIndex"] = Int64(500)
-        wallet["index"] = Int64(0)
-        wallet["blockheight"] = Int64(UserDefaults.standard.object(forKey: "blockheight") as? Int ?? 0)
-        wallet["account"] = 0
-        
-        CoreDataService.saveEntity(dict: wallet, entityName: .wallets) { success in
-            if success {
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+    static func desc(_ mixDepth: Int, _ xfp: String, _ xpub: String, _ child: Int) -> String {
+        return "wpkh([\(xfp)/0/\(mixDepth)]\(xpub)/\(child)/*)"
+    }
+    
+    static func xpub(_ mixDepth: Int, _ mk: String) -> String? {
+        return Keys.xpub(path: "m/0/\(mixDepth)", masterKey: mk)
+    }
+    
+    static func importDescsParam(_ desc: String, _ active: Bool, _ intern: Bool) -> String {
+        return "{\"desc\": \"\(desc)\", \"active\": \(active), \"range\": [0,500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": \(intern)}"
+    }
+    
+    // MARK: Sync address data
+    static func getReceiveAddress() {
+        // get utxos and see last used for our external mixdepths
+        OnchainUtils.listUnspent(param: "") { (utxos, message) in
+            guard let utxos = utxos, utxos.count > 0 else { return }
+            
+            for utxo in utxos {
+                if let desc = utxo.desc {
+                    let dp = DescriptorParser()
+                    let ds = dp.descriptor(desc)
+                    
+                    let origin = ds.prefix
+                    print("origin: \(origin)")
+                                        
+                    guard let index = getIndex(origin) else { return }
+                                        
+                    if origin.contains("/0/0/0/") || origin.contains("/1/0/0/") {
+                        print("mix depth 0 utxo external address at index: \(index)")
+                    } else if origin.contains("/0/1/0/") || origin.contains("/1/1/0/") {
+                        print("mix depth 1 utxo external address at index: \(index)")
+                    } else if origin.contains("/0/2/0/") || origin.contains("/1/2/0/") {
+                        print("mix depth 2 utxo external address at index: \(index)")
+                    } else if origin.contains("/0/3/0/") || origin.contains("/1/3/0/") {
+                        print("mix depth 3 utxo external address at index: \(index)")
+                    } else if origin.contains("/0/4/0/") || origin.contains("/1/4/0/") {
+                        print("mix depth 4 utxo external address at index: \(index)")
+                    } else {
+                        print("non mixing path index: \(index)")
+                    }
                 }
-                
-                print("saved jm wallet")
-                
-            } else {
-                UserDefaults.standard.removeObject(forKey: "walletName")
             }
         }
     }
+    
+    private class func getIndex(_ origin: String) -> Int? {
+        var index:Int?
+        var processed = origin.replacingOccurrences(of: "[", with: "")
+        processed = processed.replacingOccurrences(of: "]", with: "")
+        let arr = processed.split(separator: "/")
+        for (i, item) in arr.enumerated() {
+            if i + 1 == arr.count {
+                index = Int(item)
+            }
+        }
+        return index
+    }
+    
 }
 
 
@@ -278,17 +268,17 @@ class JoinMarket {
 
 // MARK: WALLET OBJECT
 
-/// addr_cache:     a dict, with each entry of format Bitcoin address: (mixing depth, external/internal flag, index). The external/internal flag is 0/1 and the index is the index of the address on                                                the branch. Note that the address itself is not persisted, only the index of the first unused key (and address) on each specific branch (see here).
+/// addr_cache:     a dict, with each entry of format Bitcoin address: (mixing depth, external/internal flag, index). The external/internal flag is 0/1 and the index is the index of the address on  the branch. Note that the address itself is not persisted, only the index of the first unused key (and address) on each specific branch (see here).
 ///
-/// unspent:    unspent is a dict, with each entry of format utxo: {'address': address, 'value': amount in satoshis}, where utxo has format txid:n as usual in Bitcoin wallets. This is the fundamental data                           structure that Joinmarket uses to decide which coins to spend in joins.
+/// unspent:    unspent is a dict, with each entry of format utxo: {'address': address, 'value': amount in satoshis}, where utxo has format txid:n as usual in Bitcoin wallets. This is the fundamental data structure that Joinmarket uses to decide which coins to spend in joins.
 ///
 /// seed: master xprv
 ///
 /// gaplimit: default is 6
 ///
-/// keys: is a list of pairs of parent keys that are used to generate the individual branches, i.e. it has the form: [(key for mixdepth 0 external branch, key for mixdepth 0 internal branch), (key for                        mixdepth 1 external branch, key for mixdepth 1 internal branch), ...]
+/// keys: is a list of pairs of parent keys that are used to generate the individual branches, i.e. it has the form: [(key for mixdepth 0 external branch, key for mixdepth 0 internal branch), (key for mixdepth 1 external branch, key for mixdepth 1 internal branch), ...]
 ///
-/// index: this (too generically named!) is a list of pairs of pointers into each of the branches, marking the first unused address in that branch, format [[a,b],[c,d]...] with each letter standing for a                     positive integer. Note that this is persisted to file storage to prevent address reuse in case of failures
+/// index: this (too generically named!) is a list of pairs of pointers into each of the branches, marking the first unused address in that branch, format [[a,b],[c,d]...] with each letter standing for a positive integer. Note that this is persisted to file storage to prevent address reuse in case of failures
 
 // MARK: WALLET PERSISTANCE
 

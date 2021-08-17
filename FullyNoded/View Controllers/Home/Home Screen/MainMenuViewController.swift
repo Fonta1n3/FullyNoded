@@ -654,7 +654,6 @@ class MainMenuViewController: UIViewController {
                 self.feeInfo = FeeInfo(dictionary: response)
                 self.mainMenu.reloadSections(IndexSet(arrayLiteral: 11, 1), with: .fade)
                 self.removeLoader()
-                JoinMarket.createWallet()
             }
         }
     }

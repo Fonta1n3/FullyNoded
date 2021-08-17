@@ -420,7 +420,7 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
                     self.loadBalances()
                     return
                 }
-                
+                                
                 self.wallet = wallet
                 self.existingWallet = wallet.name
                 self.walletLabel = wallet.label
