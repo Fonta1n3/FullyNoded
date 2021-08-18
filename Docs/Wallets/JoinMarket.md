@@ -17,7 +17,8 @@ WIP
 Example `bitcoin-cli` command for new Fully Noded single sig default wallet:
 
 ```
-{"jsonrpc":"1.0","id":"80758B3E-CEF0-4330-A2E4-49D29F553C74","method":"importdescriptors","params":[[{"desc": "wpkh([e15fb5b0/84'/1'/0']tpubDCw9rnRn7vdJGRLHxc67Keq4NUqFLbWpRxMsBf9YFvstLjJkis2pdNsPwAAA25zGLYrkRHDEjZ2DJhxK9qFiFJQf7P7qLSdHYunUpQZtgLa/0/*)#mu3n5jxf", "active": true, "range": [0,2500], "next_index": 0, "timestamp": "now", "internal": false}, 
+{"jsonrpc":"1.0","id":"80758B3E-CEF0-4330-A2E4-49D29F553C74","method":"importdescriptors","params":[
+[{"desc": "wpkh([e15fb5b0/84'/1'/0']tpubDCw9rnRn7vdJGRLHxc67Keq4NUqFLbWpRxMsBf9YFvstLjJkis2pdNsPwAAA25zGLYrkRHDEjZ2DJhxK9qFiFJQf7P7qLSdHYunUpQZtgLa/0/*)#mu3n5jxf", "active": true, "range": [0,2500], "next_index": 0, "timestamp": "now", "internal": false}, 
 {"desc": "wpkh([e15fb5b0/84'/1'/0']tpubDCw9rnRn7vdJGRLHxc67Keq4NUqFLbWpRxMsBf9YFvstLjJkis2pdNsPwAAA25zGLYrkRHDEjZ2DJhxK9qFiFJQf7P7qLSdHYunUpQZtgLa/1/*)#2g5jf8k3", "active": true, "range": [0,2500], "next_index": 0, "timestamp": "now", "internal": true}, 
 {"desc": "wpkh([e15fb5b0/0/0]tpubDBbCP4LCwv2oyomaDcPMSEk7twZ4YTZ84a9YACUSgbMnAPUmMtWgucRLJiqYqJF12MaQBj177wDTYVSzSkv1eyFJuK2neqNWzb9vDw8X5Sw/0/*)#a42mvpmy", "active": false, "range": [0,500], "next_index": 0, "timestamp": "now", "internal": false}, 
 {"desc": "wpkh([e15fb5b0/0/0]tpubDBbCP4LCwv2oyomaDcPMSEk7twZ4YTZ84a9YACUSgbMnAPUmMtWgucRLJiqYqJF12MaQBj177wDTYVSzSkv1eyFJuK2neqNWzb9vDw8X5Sw/1/*)#vp0635tu", "active": false, "range": [0,500], "next_index": 0, "timestamp": "now", "internal": true}, 
