@@ -103,7 +103,7 @@ enum Crypto {
             return nil
         }
 
-        return Data(bytes)
+        return Crypto.sha256hash(Crypto.sha256hash(Crypto.sha256hash(Data(bytes))))
     }
     
 //    static func rpcAuth() {

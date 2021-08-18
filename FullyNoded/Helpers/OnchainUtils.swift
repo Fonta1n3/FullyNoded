@@ -140,5 +140,16 @@ class OnchainUtils {
             }
         }
     }
+    
+    static func deriveAddresses(param: String, completion: @escaping ((addresses: [String]?, message: String?)) -> Void) {
+        Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
+            guard let addresses = response as? [String] else {
+                completion((nil, errorMessage))
+                return
+            }
+            
+            completion((addresses, errorMessage))
+        }
+    }
      
 }

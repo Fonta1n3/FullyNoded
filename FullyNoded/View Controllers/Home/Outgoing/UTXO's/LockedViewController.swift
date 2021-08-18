@@ -147,6 +147,8 @@ extension LockedViewController: UTXOCellDelegate {
     
     func didTapToFetchOrigin(_ utxo: Utxo) {}
     
+    func didTapToMix(_ utxo: Utxo) {}
+    
 //    func didTapInfoFor(_ utxo: Utxo) {
 //        performSegue(withIdentifier: "getUTXOinfo", sender: utxo)
 //    }

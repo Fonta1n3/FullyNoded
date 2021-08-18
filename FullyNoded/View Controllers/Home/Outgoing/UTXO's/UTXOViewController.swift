@@ -19,6 +19,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private var isUnsigned = false
     private var wallet:Wallet?
     private var psbt:String?
+    private var depositAddress:String?
     var fxRate:Double?
     var isBtc = false
     var isSats = false
@@ -338,6 +339,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
+            JoinMarket.syncAddresses()
             self.updateSelectedUtxos()
             self.tableView.isUserInteractionEnabled = true
             self.tableView.reloadData()
@@ -570,6 +572,24 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
         }
     }
+    
+    private func mix(_ utxo: Utxo) {
+        JoinMarket.getDepositAddress { [weak self] address in
+            guard let self = self else { return }
+            
+            guard let address = address else { return }
+                        
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.inputArray.append(utxo.input)
+                self.depositAddress = address
+                self.amountTotal = 0.0
+                
+                self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
+            }
+        }
+    }
             
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
@@ -587,6 +607,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             vc.inputArray = inputArray
             vc.utxoTotal = amountTotal
+            vc.address = depositAddress ?? ""
             
         case "segueToBroadcasterFromUtxo":
             guard let vc = segue.destination as? VerifyTransactionViewController, let psbt = psbt else { fallthrough }
@@ -614,6 +635,10 @@ extension UTXOViewController: UTXOCellDelegate {
     
     func didTapToFetchOrigin(_ utxo: Utxo) {
         fetchOriginRate(utxo)
+    }
+    
+    func didTapToMix(_ utxo: Utxo) {
+        mix(utxo)
     }
     
 }

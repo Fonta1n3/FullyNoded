@@ -10,7 +10,7 @@ import Foundation
 
 // MARK: GENERAL WALLET ARCH
  
-/// Default wallet account:   m/0
+/// Default wallet account:   m/0 **mainnet and testnet**
 ///
 /// Wallet branches:            m/0/mixdepth/[external/internal]
 ///
@@ -20,7 +20,7 @@ import Foundation
 
 ///                  Note that all of the keys are of the non-hardened type.
 
-/// wsh()
+/// Format:                          native segwit p2wpkh
 
 class JoinMarket {
     static var index = 0
@@ -117,36 +117,97 @@ class JoinMarket {
     }
     
     // MARK: Sync address data
-    static func getReceiveAddress() {
-        // get utxos and see last used for our external mixdepths
-        OnchainUtils.listUnspent(param: "") { (utxos, message) in
-            guard let utxos = utxos, utxos.count > 0 else { return }
+    static func syncAddresses() {
+        activeWallet { wallet in
+            guard let wallet = wallet, wallet.mixIndexes != nil else { return }
             
-            for utxo in utxos {
-                if let desc = utxo.desc {
-                    let dp = DescriptorParser()
-                    let ds = dp.descriptor(desc)
-                    
-                    let origin = ds.prefix
-                    print("origin: \(origin)")
-                                        
-                    guard let index = getIndex(origin) else { return }
-                                        
-                    if origin.contains("/0/0/0/") || origin.contains("/1/0/0/") {
-                        print("mix depth 0 utxo external address at index: \(index)")
-                    } else if origin.contains("/0/1/0/") || origin.contains("/1/1/0/") {
-                        print("mix depth 1 utxo external address at index: \(index)")
-                    } else if origin.contains("/0/2/0/") || origin.contains("/1/2/0/") {
-                        print("mix depth 2 utxo external address at index: \(index)")
-                    } else if origin.contains("/0/3/0/") || origin.contains("/1/3/0/") {
-                        print("mix depth 3 utxo external address at index: \(index)")
-                    } else if origin.contains("/0/4/0/") || origin.contains("/1/4/0/") {
-                        print("mix depth 4 utxo external address at index: \(index)")
-                    } else {
-                        print("non mixing path index: \(index)")
+            // get utxos and see last used index mixdepths
+            OnchainUtils.listUnspent(param: "") { (utxos, message) in
+                guard let utxos = utxos, utxos.count > 0 else { return }
+                
+                for utxo in utxos {
+                    if let desc = utxo.desc {
+                        let dp = DescriptorParser()
+                        let ds = dp.descriptor(desc)
+                        
+                        let origin = ds.prefix
+                        print("origin: \(origin)")
+                        
+                        guard let index = getIndex(origin) else { return }
+                        
+                        switch origin {
+                        case _ where origin.contains("/0/0/0/") || origin.contains("/1/0/0/"):
+                            print("mix depth 0 utxo external address at index: \(index)")
+                            
+                            parse(wallet, 0, 0, index)
+                            
+                        case _ where origin.contains("/0/1/0/") || origin.contains("/1/1/0/"):
+                            print("mix depth 1 utxo external address at index: \(index)")
+                            
+                            parse(wallet, 1, 0, index)
+                            
+                        case _ where origin.contains("/0/2/0/") || origin.contains("/1/2/0/"):
+                            print("mix depth 2 utxo external address at index: \(index)")
+                            
+                            parse(wallet, 2, 0, index)
+                            
+                        case _ where origin.contains("/0/3/0/") || origin.contains("/1/3/0/"):
+                            print("mix depth 3 utxo external address at index: \(index)")
+                            
+                            parse(wallet, 3, 0, index)
+                            
+                        case _ where origin.contains("/0/4/0/") || origin.contains("/1/4/0/"):
+                            print("mix depth 4 utxo external address at index: \(index)")
+                            
+                            parse(wallet, 4, 0, index)
+                            
+                        case _ where origin.contains("/0/0/1/") || origin.contains("/1/0/1/"):
+                            print("mix depth 0 utxo internal address at index: \(index)")
+                            
+                            parse(wallet, 0, 1, index)
+                            
+                        case _ where origin.contains("/0/1/1/") || origin.contains("/1/1/1/"):
+                            print("mix depth 1 utxo internal address at index: \(index)")
+                            
+                            parse(wallet, 1, 1, index)
+                            
+                        case _ where origin.contains("/0/2/1/") || origin.contains("/1/2/1/"):
+                            print("mix depth 2 utxo internal address at index: \(index)")
+                            
+                            parse(wallet, 2, 1, index)
+                            
+                        case _ where origin.contains("/0/3/1/") || origin.contains("/1/3/1/"):
+                            print("mix depth 3 utxo internal address at index: \(index)")
+                            
+                            parse(wallet, 3, 1, index)
+                            
+                        case _ where origin.contains("/0/4/1/") || origin.contains("/1/4/1/"):
+                            print("mix depth 4 utxo internal address at index: \(index)")
+                            
+                            parse(wallet, 4, 1, index)
+                            
+                        default:
+                            print("non mixing path index: \(index)")
+                        }
                     }
                 }
             }
+        }
+    }
+    
+    private class func parse(_ wallet: Wallet, _ depth: Int, _ int: Int, _ new: Int) {
+        var array = wallet.mixIndexes!
+        let existing = array[depth][int]
+        
+        if existing < new {
+            array[depth][int] = new
+            updateIndex(wallet, array)
+        }
+    }
+    
+    private class func updateIndex(_ wallet: Wallet, _ array: [[Int]]) {
+        CoreDataService.update(id: wallet.id, keyToUpdate: "mixIndexes", newValue: array, entity: .wallets) { updated in
+            print("updated: \(updated)")
         }
     }
     
@@ -161,6 +222,137 @@ class JoinMarket {
             }
         }
         return index
+    }
+    
+    static func getDepositAddress(completion: @escaping ((String?)) -> Void) {
+        activeWallet { wallet in
+            guard let wallet = wallet, let mixIndexes = wallet.mixIndexes else { return }
+                        
+            for (i, mixdepth) in mixIndexes.enumerated() {
+                let externalIndex = mixdepth[0]
+                
+                if externalIndex < 500 {
+                    fetchReceiveAddress(i, wallet, externalIndex, completion: completion)
+                    break
+                }
+            }
+        }
+    }
+    
+    static func getChangeAddress(completion: @escaping ((String?)) -> Void) {
+        activeWallet { wallet in
+            guard let wallet = wallet, let mixIndexes = wallet.mixIndexes else { return }
+                        
+            for (i, mixdepth) in mixIndexes.enumerated() {
+                let internalIndex = mixdepth[1]
+                
+                if internalIndex < 500 {
+                    fetchChangeAddress(i, wallet, internalIndex, completion: completion)
+                    break
+                }
+            }
+        }
+    }
+    
+    private class func decrypted(_ data: Data) -> String? {
+        guard let decrypted = Crypto.decrypt(data),
+              let string = decrypted.utf8 else {
+            return nil
+        }
+        
+        return string
+    }
+    
+    private class func fetchReceiveAddress(_ mixdepth: Int, _ wallet: Wallet, _ index: Int, completion: @escaping ((String?)) -> Void) {
+        var desc = ""
+        
+        switch mixdepth {
+        case 0:
+            guard let data = wallet.mixDepthZeroExt,
+                  let decrypted = decrypted(data) else { return }
+            
+            desc = decrypted
+            
+        case 1:
+            guard let data = wallet.mixDepthOneExt,
+                  let decrypted = decrypted(data) else { return }
+            
+            desc = decrypted
+            
+        case 2:
+            guard let data = wallet.mixDepthTwoExt,
+                  let decrypted = decrypted(data) else { return }
+            
+            desc = decrypted
+            
+        case 3:
+            guard let data = wallet.mixDepthThreeExt,
+                  let decrypted = decrypted(data) else { return }
+            
+            desc = decrypted
+            
+        case 4:
+            guard let data = wallet.mixDepthFourExt,
+                  let decrypted = decrypted(data) else { return }
+            
+            desc = decrypted
+        default:
+            break
+        }
+        
+        let param = "\"\(desc)\", [\(index),\(index)]"
+        
+        OnchainUtils.deriveAddresses(param: param) { (addresses, message) in
+            guard let addresses = addresses, addresses.count > 0 else {
+                completion((nil))
+                return
+            }
+            
+            print("mix depth: \(mixdepth)\nindex: \(index)\ndeposit address: \(addresses[0])")
+            completion((addresses[0]))
+        }
+    }
+    
+    private class func fetchChangeAddress(_ mixdepth: Int, _ wallet: Wallet, _ index: Int, completion: @escaping ((String?)) -> Void) {
+        var desc = ""
+        
+        switch mixdepth {
+        case 0:
+            guard let data = wallet.mixDepthZeroInt,
+                  let decrypted = decrypted(data) else { return }
+            
+            desc = decrypted
+        case 1:
+            guard let data = wallet.mixDepthOneInt,
+                  let decrypted = decrypted(data) else { return }
+            
+            desc = decrypted
+        case 2:
+            guard let data = wallet.mixDepthTwoInt,
+                  let decrypted = decrypted(data) else { return }
+            
+            desc = decrypted
+        case 3:
+            guard let data = wallet.mixDepthThreeInt,
+                  let decrypted = decrypted(data) else { return }
+            
+            desc = decrypted
+        case 4:
+            guard let data = wallet.mixDepthFourInt,
+                  let decrypted = decrypted(data) else { return }
+            
+            desc = decrypted
+        default:
+            break
+        }
+        
+        let param = "\"\(desc)\", [\(index),\(index)]"
+        
+        OnchainUtils.deriveAddresses(param: param) { (addresses, message) in
+            guard let addresses = addresses, addresses.count > 0 else { return }
+            
+            print("mix depth: \(mixdepth)\nindex: \(index)\nchange address: \(addresses[0])")
+        }
     }
     
 }

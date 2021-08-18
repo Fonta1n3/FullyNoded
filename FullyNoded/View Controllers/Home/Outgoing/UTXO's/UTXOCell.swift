@@ -12,6 +12,7 @@ protocol UTXOCellDelegate: AnyObject {
     func didTapToLock(_ utxo: Utxo)
     func didTapToEditLabel(_ utxo: Utxo)
     func didTapToFetchOrigin(_ utxo: Utxo)
+    func didTapToMix(_ utxo: Utxo)
 }
 
 class UTXOCell: UITableViewCell {
@@ -270,4 +271,9 @@ class UTXOCell: UITableViewCell {
     @IBAction func fetchOriginTapped(_ sender: Any) {
         delegate.didTapToFetchOrigin(utxo)
     }
+    
+    @IBAction func mixButtonTapped(_ sender: Any) {
+        delegate.didTapToMix(utxo)
+    }
+    
 }

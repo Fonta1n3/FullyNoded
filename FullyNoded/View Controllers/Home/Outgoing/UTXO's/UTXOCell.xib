@@ -52,10 +52,18 @@
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="14" translatesAutoresizingMaskIntoConstraints="NO" id="Ve0-ya-z95">
-                                <rect key="frame" x="158.5" y="8" width="70.5" height="23"/>
+                                <rect key="frame" x="120.5" y="8" width="108.5" height="23"/>
                                 <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iSa-z3-Lqe">
+                                        <rect key="frame" x="0.0" y="0.0" width="24" height="23"/>
+                                        <color key="tintColor" red="0.34901961679999999" green="0.77647060160000003" blue="0.97254908080000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <state key="normal" image="arrow.triangle.2.circlepath" catalog="system"/>
+                                        <connections>
+                                            <action selector="mixButtonTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="SdW-vb-Yr1"/>
+                                        </connections>
+                                    </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nt0-Dg-BtN">
-                                        <rect key="frame" x="0.0" y="0.0" width="30" height="23"/>
+                                        <rect key="frame" x="38" y="0.0" width="30" height="23"/>
                                         <color key="tintColor" systemColor="systemTealColor"/>
                                         <state key="normal" image="rectangle.and.paperclip" catalog="system">
                                             <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="large"/>
@@ -65,7 +73,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lOQ-5R-kEw">
-                                        <rect key="frame" x="44" y="0.0" width="26.5" height="23"/>
+                                        <rect key="frame" x="82" y="0.0" width="26.5" height="23"/>
                                         <color key="tintColor" systemColor="systemTealColor"/>
                                         <state key="normal" image="lock.open" catalog="system">
                                             <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="large"/>
@@ -307,6 +315,7 @@
         </tableViewCell>
     </objects>
     <resources>
+        <image name="arrow.triangle.2.circlepath" catalog="system" width="128" height="101"/>
         <image name="lock.open" catalog="system" width="128" height="110"/>
         <image name="rectangle.and.paperclip" catalog="system" width="128" height="99"/>
         <image name="whiteCheck.png" width="2048" height="2048"/>

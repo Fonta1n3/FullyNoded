@@ -172,6 +172,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         slider.addTarget(self, action: #selector(didFinishSliding(_:)), for: .valueChanged)
         
         amountInput.text = ""
+        addressInput.text = address
     }
     
     @IBAction func switchCoinSelectionAction(_ sender: Any) {
