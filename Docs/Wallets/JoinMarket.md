@@ -9,7 +9,7 @@
 * Utxos on the BIP84 keys will have a `mix` button which allows you to deposit to external addresses for any JM mixdepth
 
 WIP
-* Confirmation of a utxo on external deposit address will trigger a `taker` transaction initiation
+* Confirmation of a utxo on external deposit address will trigger...
 * This is clearly better suited for desktop environments as the taker bot will run on the device
 * If using a mobile device plug it in and disable auto lock
 

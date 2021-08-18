@@ -224,6 +224,7 @@ class JoinMarket {
         return index
     }
     
+    //SourceJMTx
     static func getDepositAddress(completion: @escaping ((String?)) -> Void) {
         activeWallet { wallet in
             guard let wallet = wallet, let mixIndexes = wallet.mixIndexes else { return }
@@ -355,6 +356,32 @@ class JoinMarket {
         }
     }
     
+    static func connectToPit() {
+        let user = IRCUser(username: "fullynoded", realName: "satoshi nakamoto", nick: "WIP")
+        let server = IRCServer.connect("ncwkrwxpq2ikcngxq3dy2xctuheniggtqeibvgofixpzvrwpa77tozqd.onion", port: 6667, user: user)
+        let _ = server.join("joinmarket-pit")
+    }
+    
+    class func receivedServerMessage(_ message: String) {
+        print("received server message: \(message)")
+    }
+    
+    class func receivedChannelMessage(_ message: String) {
+        print("received channel message: \(message)")
+    }
+    
+}
+
+extension JoinMarket: IRCServerDelegate {
+    func didRecieveMessage(_ server: IRCServer, message: String) {
+        JoinMarket.receivedServerMessage(message)
+    }
+}
+
+extension JoinMarket: IRCChannelDelegate {
+    func didRecieveMessage(_ channel: IRCChannel, message: String) {
+        JoinMarket.receivedChannelMessage(message)
+    }
 }
 
 
@@ -457,6 +484,12 @@ class JoinMarket {
 /// Each liquidity provider sends a single output (with size identical to that of the destination output) to a new address in the next mixdepth, wrapping back to the first (that is, the mixdepth in BIP32 branch zero) upon reaching max_mix_depth.
 ///
 /// The logic of this is fairly straightforward, and central to how Joinmarket works, so make sure to understand it: the coinjoin outputs of a transaction must not be reused with any of the inputs to that same transaction, or any other output that can be connected with them, as this would allow fairly trivial linkage. Merging such outputs is avoided by picking the inputs for a transaction only from a single mixdepth (although both internal and external branches can be used).
+
+// MARK: SourceJMTx
+///This is usually an ordinary bitcoin transaction paying into an unused address on an external branch for any one of the mixdepths of the wallet. As such it has no special joinmarket structure; it will usually have a change output, which will go back to the wallet funding this one. It could, however, be a payment from another joinmarket wallet, although most users will not be using more than one joinmarket wallet. This doesn't affect the analysis, in any case.
+
+// MARK: (Canonical) CJMTx
+///CJMTx The most fundamental type of joinmarket transaction involves neither a 'source' nor a 'sink', but only spends from this joinmarket wallet to itself, in conjunction with joining counterparties. The coinjoin output goes to a new address on the internal branch of the next mixdepth, as was described in the previous section.
 
 // MARK: WALLET OBJECT
 

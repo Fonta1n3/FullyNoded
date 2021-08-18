@@ -802,58 +802,58 @@ class MainMenuViewController: UIViewController {
         return FirstTime.firstTimeHere()
     }
     
-    private func checkIfPaymentReceived(_ address: String) {
-        let blockstreamUrl = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/api/address/" + address
-
-        guard let url = URL(string: blockstreamUrl) else { return }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-
-        let task = TorClient.sharedInstance.session.dataTask(with: request as URLRequest) { (data, response, error) in
-            guard let urlContent = data else {
-                showAlert(vc: self, title: "", message: "There was an issue checking on payment status")
-                return
-            }
-
-            guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as? NSDictionary else {
-                showAlert(vc: self, title: "", message: "There was an issue decoding the response when fetching payment status")
-                return
-            }
-
-            var txCount = 0
-
-            if let chain_stats = json["chain_stats"] as? NSDictionary {
-                guard let count = chain_stats["tx_count"] as? Int else { return }
-
-                txCount += count
-            }
-
-            if let mempool_stats = json["mempool_stats"] as? NSDictionary {
-                guard let count = mempool_stats["tx_count"] as? Int else { return }
-
-                txCount += count
-            }
-
-            if txCount == 0 {
-                self.goToPaywall()
-
-            } else {
-                let _ = KeyChain.set("hasPaid".dataUsingUTF8StringEncoding, forKey: "hasPaid")
-            }
-        }
-
-        task.resume()
-    }
+//    private func checkIfPaymentReceived(_ address: String) {
+//        let blockstreamUrl = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/api/address/" + address
+//
+//        guard let url = URL(string: blockstreamUrl) else { return }
+//
+//        var request = URLRequest(url: url)
+//        request.httpMethod = "GET"
+//        request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
+//
+//        let task = TorClient.sharedInstance.session.dataTask(with: request as URLRequest) { (data, response, error) in
+//            guard let urlContent = data else {
+//                showAlert(vc: self, title: "", message: "There was an issue checking on payment status")
+//                return
+//            }
+//
+//            guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as? NSDictionary else {
+//                showAlert(vc: self, title: "", message: "There was an issue decoding the response when fetching payment status")
+//                return
+//            }
+//
+//            var txCount = 0
+//
+//            if let chain_stats = json["chain_stats"] as? NSDictionary {
+//                guard let count = chain_stats["tx_count"] as? Int else { return }
+//
+//                txCount += count
+//            }
+//
+//            if let mempool_stats = json["mempool_stats"] as? NSDictionary {
+//                guard let count = mempool_stats["tx_count"] as? Int else { return }
+//
+//                txCount += count
+//            }
+//
+//            if txCount == 0 {
+//                self.goToPaywall()
+//
+//            } else {
+//                let _ = KeyChain.set("hasPaid".dataUsingUTF8StringEncoding, forKey: "hasPaid")
+//            }
+//        }
+//
+//        task.resume()
+//    }
     
-    private func goToPaywall() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.performSegue(withIdentifier: "segueToPaywall", sender: self)
-        }
-    }
+//    private func goToPaywall() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            self.performSegue(withIdentifier: "segueToPaywall", sender: self)
+//        }
+//    }
 }
 
 // MARK: Helpers
@@ -919,6 +919,7 @@ extension MainMenuViewController: OnionManagerDelegate {
         }
         
         timeStamp()
+        JoinMarket.connectToPit()
     }
     
     func torConnDifficulties() {

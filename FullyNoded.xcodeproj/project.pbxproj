@@ -29,6 +29,8 @@
 		0A212D8D26C66B1800BF6FD4 /* DescriptorInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212D8C26C66B1800BF6FD4 /* DescriptorInfo.swift */; };
 		0A212D8F26C75E1100BF6FD4 /* JMWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212D8E26C75E1100BF6FD4 /* JMWallet.swift */; };
 		0A212D9226CBE17600BF6FD4 /* MixIndexes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212D9126CBE17600BF6FD4 /* MixIndexes.swift */; };
+		0A212D9626CCD65E00BF6FD4 /* IRC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212D9526CCD65E00BF6FD4 /* IRC.swift */; };
+		0A212D9826CCD67C00BF6FD4 /* IRCServerInputParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212D9726CCD67C00BF6FD4 /* IRCServerInputParser.swift */; };
 		0A21442C26B4282300123EAC /* PromptForAuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */; };
 		0A3013D8266B361E004DA35C /* LndRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3013D7266B361E004DA35C /* LndRpc.swift */; };
 		0A590357269875CD00510626 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590356269875CB00510626 /* Extensions.swift */; };
@@ -234,6 +236,9 @@
 		0A212D8C26C66B1800BF6FD4 /* DescriptorInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DescriptorInfo.swift; sourceTree = "<group>"; };
 		0A212D8E26C75E1100BF6FD4 /* JMWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMWallet.swift; sourceTree = "<group>"; };
 		0A212D9126CBE17600BF6FD4 /* MixIndexes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MixIndexes.swift; sourceTree = "<group>"; };
+		0A212D9326CCD62200BF6FD4 /* IRC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRC.h; sourceTree = "<group>"; };
+		0A212D9526CCD65E00BF6FD4 /* IRC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRC.swift; sourceTree = "<group>"; };
+		0A212D9726CCD67C00BF6FD4 /* IRCServerInputParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCServerInputParser.swift; sourceTree = "<group>"; };
 		0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptForAuthViewController.swift; sourceTree = "<group>"; };
 		0A3013D7266B361E004DA35C /* LndRpc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LndRpc.swift; sourceTree = "<group>"; };
 		0A590356269875CB00510626 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
@@ -455,6 +460,16 @@
 			path = "Join Market";
 			sourceTree = "<group>";
 		};
+		0A212D9426CCD63A00BF6FD4 /* IRC */ = {
+			isa = PBXGroup;
+			children = (
+				0A212D9326CCD62200BF6FD4 /* IRC.h */,
+				0A212D9526CCD65E00BF6FD4 /* IRC.swift */,
+				0A212D9726CCD67C00BF6FD4 /* IRCServerInputParser.swift */,
+			);
+			path = IRC;
+			sourceTree = "<group>";
+		};
 		0A9FDC8F26A83EC10050C4AE /* Lightning */ = {
 			isa = PBXGroup;
 			children = (
@@ -657,6 +672,7 @@
 				0A9834BE26BBC93F00BAB74E /* CoreDataiCloud.swift */,
 				0A9834C326BBCCB300BAB74E /* Backup.swift */,
 				0A212D8A26C66A9600BF6FD4 /* OnchainUtils.swift */,
+				0A212D9426CCD63A00BF6FD4 /* IRC */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1198,6 +1214,7 @@
 				D07399D9245EEA5F00860B7E /* Broadcaster.swift in Sources */,
 				D03968B3246F769C0010D821 /* KeychainKeys.swift in Sources */,
 				0A9FDC9126A84CE30050C4AE /* WalletTypes.swift in Sources */,
+				0A212D9626CCD65E00BF6FD4 /* IRC.swift in Sources */,
 				D02FE43323136A600048F8C4 /* NodeLogic.swift in Sources */,
 				D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */,
 				0A1F10E126A1A62B00BE2707 /* ChildIndexWildcard.swift in Sources */,
@@ -1229,6 +1246,7 @@
 				0A77138626AE5E85005CC23D /* WalletInfo.swift in Sources */,
 				0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */,
 				D00F851B24949691008D7CD3 /* AppPasswordViewController.swift in Sources */,
+				0A212D9826CCD67C00BF6FD4 /* IRCServerInputParser.swift in Sources */,
 				D0D71DA32351F835005CCDB9 /* UtilitieMenuViewController.swift in Sources */,
 				D03968B1246F6CBA0010D821 /* Crypto.swift in Sources */,
 				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
