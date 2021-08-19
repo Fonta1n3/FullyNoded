@@ -91,6 +91,9 @@ public class IRCServer {
     
     private func read() {
         task.readData(ofMinLength: 0, maxLength: 9999, timeout: 0) { (data, atEOF, error) in
+            print("data: \(data)")
+            print("error: \(error)")
+            
             guard let data = data, let message = String(data: data, encoding: .utf8) else {
                 return
             }

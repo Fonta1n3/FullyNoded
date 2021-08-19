@@ -10,6 +10,11 @@ import Foundation
 import LibWally
 
 enum Keys {
+    static func privKeyToPubKey(_ privKey: Data) -> String? {
+        guard let key = try? Key(privKey, network: .mainnet) else { return nil }
+        
+        return key.pubKey.data.hexString
+    }
     
     static func validMnemonic(_ words: String) -> Bool {
         guard let _ = try? BIP39Mnemonic(words: words) else { return false }
@@ -40,7 +45,7 @@ enum Keys {
         let status = SecRandomCopyBytes(kSecRandomDefault, bytesCount, &randomBytes)
         
         if status == errSecSuccess {
-            let data = Data(randomBytes)
+            let data = Crypto.sha256hash(Crypto.sha256hash(Crypto.sha256hash(Data(randomBytes))))
             let entropy = BIP39Mnemonic.Entropy(data)
             if let mnemonic = try? BIP39Mnemonic(entropy: entropy) {
                 words = mnemonic.description
