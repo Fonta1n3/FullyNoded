@@ -357,7 +357,7 @@ class JoinMarket {
     }
     
     static func connectToPit() {
-        guard let nick = nick() else {
+        guard let nick = randomNick() else {
             print("nick not derived.")
             return
         }
@@ -366,13 +366,10 @@ class JoinMarket {
                            realName: randomString(length: 8),
                            nick: nick)
         
-        let darkscience = IRCServer.connect("darkirc6tqgpnwd3blln3yfv5ckl47eg7llfxkmtovrv7c7iwohhb6ad.onion", port: 6697, user: user)
-        let channel_darkscience = darkscience.join("joinmarket-pit")
-        channel_darkscience.send("hello world")
-        
-        let hackint = IRCServer.connect("ncwkrwxpq2ikcngxq3dy2xctuheniggtqeibvgofixpzvrwpa77tozqd.onion", port: 6667, user: user)
-        let channel_hackint = hackint.join("joinmarket-pit")
-        channel_hackint.send("hello world")
+        let _ = IRCServer.connect("darkirc6tqgpnwd3blln3yfv5ckl47eg7llfxkmtovrv7c7iwohhb6ad.onion", port: 6667, user: user)
+        //let _ = IRCServer.connect("ncwkrwxpq2ikcngxq3dy2xctuheniggtqeibvgofixpzvrwpa77tozqd.onion", port: 6667, user: user)
+        //let server = IRCServer.connect("irc.darkscience.net", port: 6697, user: user)
+        //let server = IRCServer.connect("irc.hackint.org", port: 6697, user: user)
     }
     
     class func receivedServerMessage(_ message: String) {
@@ -383,7 +380,7 @@ class JoinMarket {
         print("received channel message: \(message)")
     }
     
-    private class func nick() -> String? {
+    private class func randomNick() -> String? {
         guard let secret = Crypto.secretNick(),
               let pubkey = Keys.privKeyToPubKey(secret),
               let data = Data(hexString: Crypto.sha256hash(pubkey)) else { return nil }
@@ -391,7 +388,7 @@ class JoinMarket {
         let firstTen = data.subdata(in: Range(0...9))
         var b58 = Base58.encode([UInt8](firstTen))
         
-        if (b58.count + 2) < 16 {
+        if b58.count < 14 {
             for _ in 0 ... (15 - b58.count) {
                 b58 += "O"
             }

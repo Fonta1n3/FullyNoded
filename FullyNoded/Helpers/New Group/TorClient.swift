@@ -165,7 +165,12 @@ class TorClient: NSObject, URLSessionDelegate {
     }
     
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        guard let trust = challenge.protectionSpace.serverTrust else { return }
+        
+        guard let trust = challenge.protectionSpace.serverTrust else {
+            print("did not receive trust")
+            return
+        }
+        
         let credential = URLCredential(trust: trust)
         
         if let certificate = cert,

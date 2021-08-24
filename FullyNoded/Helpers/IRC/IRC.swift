@@ -70,12 +70,14 @@ public class IRCServer {
     }
     
     private var buffer = [String]()
-    private var session = TorClient.sharedInstance.session
+    private let session = TorClient.sharedInstance.session
     private var task: URLSessionStreamTask!
     private var channels = [IRCChannel]()
+    private var user: IRCUser
+    private var timer:Timer?
     
-    public required init(hostname: String, port: Int, user: IRCUser, session: URLSession) {
-        self.session = session
+    public required init(hostname: String, port: Int, user: IRCUser) {
+        self.user = user
         
         task = session.streamTask(withHostName: hostname, port: port)
         task.resume()
@@ -85,18 +87,21 @@ public class IRCServer {
         send("NICK \(user.nick)")
     }
     
-    public class func connect(_ hostname: String, port: Int, user: IRCUser, session: URLSession = URLSession.shared) -> Self {
-        return self.init(hostname: hostname, port: port, user: user, session: session)
+    public class func connect(_ hostname: String, port: Int, user: IRCUser) -> Self {
+        return self.init(hostname: hostname, port: port, user: user)
     }
     
     private func read() {
-        task.readData(ofMinLength: 0, maxLength: 9999, timeout: 0) { (data, atEOF, error) in
-            print("data: \(data)")
-            print("error: \(error)")
-            
+        task.readData(ofMinLength: 0, maxLength: 9999, timeout: 60) { (data, atEOF, error) in
             guard let data = data, let message = String(data: data, encoding: .utf8) else {
+                if let error = error {
+                    print("error: \(error.localizedDescription)")
+                }
+                
                 return
             }
+            
+            print("message: \(message)")
             
             for line in message.split(separator: "\r\n") {
                 self.processLine(String(line))
@@ -108,54 +113,85 @@ public class IRCServer {
     
     private func processLine(_ message: String) {
         let input = IRCServerInputParser.parseServerMessage(message)
+        
         switch input {
         case .serverMessage(_, let message):
-            print(message)
             if let delegate = self.delegate {
                 delegate.didRecieveMessage(self, message: message)
             } else {
                 self.buffer.append(message)
             }
+            
         case .joinMessage(let user, let channelName):
-            self.channels.forEach({ (channel) in
+            channels.forEach({ (channel) in
                 if channel.name == channelName {
                     channel.receive("\(user) joined \(channelName)")
                 }
             })
+            
         case .channelMessage(let channelName, let user, let message):
-            self.channels.forEach({ (channel) in
+            channels.forEach({ (channel) in
                 if channel.name == channelName {
                     channel.receive("\(user): \(message)")
                 }
             })
+            
         case .userList(let channelName, let users):
-            self.channels.forEach({ (channel) in
+            channels.forEach({ (channel) in
                 if channel.name == channelName {
                     users.forEach({ (user) in
                         channel.receive("\(user) joined")
                     })
                 }
             })
+            
+        case .ping(message):
+            send(message.pong)
+            
+        case .endOfMOTD(message: message):
+            joinNow()
+            
+            
         default:
             print("Unknown: \(message)")
         }
     }
     
     public func send(_ message: String) {
-        task.write((message + "\r\n").data(using: .utf8)!, timeout: 0) { (error) in
+        task.write((message + "\r\n").data(using: .utf8)!, timeout: 10) { error in
             if let error = error {
-                print("Failed to send: \(String(describing: error))")
+                print("Failed to send: \(message)\n\(String(describing: error.localizedDescription))")
             } else {
-                print("Sent!")
+                print("sent message: \(message)")
             }
         }
     }
     
-    public func join(_ channelName: String) -> IRCChannel {
-        send("JOIN #\(channelName)")
-        let channel = IRCChannel(name: channelName, server: self)
+    private func joinNow() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            guard let self = self else { return }
+            
+            let _ = self.join()
+        }
+    }
+    
+    private func join() -> IRCChannel {
+        send("JOIN #joinmarket-pit")
+        send("MODE \(user.nick) +B")
+        send("MODE \(user.nick) -R")
+        let channel = IRCChannel(name: "joinmarket-pit", server: self)
         channels.append(channel)
+        setTimer()
         return channel
+    }
+    
+    private func setTimer() {
+        self.timer = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(self.keepAlive), userInfo: nil, repeats: true)
+        
+    }
+    
+    @objc func keepAlive() {
+        self.send("PING \(randomString(length: 10))")
     }
 }
 

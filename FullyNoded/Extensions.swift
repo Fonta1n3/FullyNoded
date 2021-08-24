@@ -103,6 +103,10 @@ public extension Int {
 }
 
 public extension String {
+    var pong: String {
+        return self.replacingOccurrences(of: "PING", with: "PONG")
+    }
+    
     var btc: String {
         return self + " btc"
     }

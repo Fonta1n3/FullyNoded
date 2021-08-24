@@ -919,7 +919,7 @@ extension MainMenuViewController: OnionManagerDelegate {
         }
         
         timeStamp()
-        JoinMarket.connectToPit()
+        //JoinMarket.connectToPit()
     }
     
     func torConnDifficulties() {
