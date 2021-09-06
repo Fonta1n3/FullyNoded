@@ -2264,11 +2264,11 @@ xxxxx</string>
             <objects>
                 <viewController storyboardIdentifier="QRDisplayer" useStoryboardIdentifierAsRestorationIdentifier="YES" id="GlR-4A-eAx" customClass="QRDisplayerViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="1Ax-bN-O8E">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="574"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
-                                <rect key="frame" x="16" y="422" width="343" height="132"/>
+                                <rect key="frame" x="16" y="422" width="343" height="225"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
@@ -7478,16 +7478,16 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="qed-hl-jG5"/>
-        <segue reference="Fvb-gy-rb3"/>
-        <segue reference="DLx-HT-rGm"/>
+        <segue reference="UBf-qr-XYG"/>
+        <segue reference="dhu-ZV-762"/>
+        <segue reference="4g3-DC-Q5z"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="Cd3-qW-ujG"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
         <segue reference="1fQ-PG-chF"/>
-        <segue reference="8MS-xS-DMP"/>
+        <segue reference="if0-NE-c9T"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="7PS-EL-3d2"/>
         <segue reference="j10-wi-hpr"/>

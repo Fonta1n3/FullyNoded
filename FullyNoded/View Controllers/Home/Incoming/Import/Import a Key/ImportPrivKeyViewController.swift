@@ -42,7 +42,6 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
-        getValues()
     }
     
     
@@ -62,11 +61,6 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     
     @objc func dismissKeyboard(_ sender: Any) {
         textField.resignFirstResponder()
-    }
-    
-    func getValues() {
-        let str = ImportStruct(dictionary: dict)
-        label = str.label
     }
     
     func parseKey(key: String) {

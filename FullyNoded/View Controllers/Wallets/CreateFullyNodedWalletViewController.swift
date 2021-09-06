@@ -599,8 +599,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             let alert = UIAlertController(title: "Select primary address format.", message: "You are adding multiple descriptors which is great, but you need to choose one to be the primary descriptor we use to derive receive addresses.", preferredStyle: .alert)
             
             for (i, descriptor) in descriptors.enumerated() {
-                let descParser = DescriptorParser()
-                let descStr = descParser.descriptor(descriptor)
+                let descStr = Descriptor(descriptor)
                 
                 alert.addAction(UIAlertAction(title: descStr.format, style: .default, handler: { [weak self] action in
                     guard let self = self else { return }

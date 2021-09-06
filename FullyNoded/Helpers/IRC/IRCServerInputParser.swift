@@ -9,6 +9,10 @@ import Foundation
 
 struct IRCServerInputParser {
     
+    // MARK: Example !orderbook response
+    
+    // :J53e4hHsY9qVniYa!~J53e4hHsY@reid-kmg.07u.39.84.IP PRIVMSG J5ETF5dtzTkn1SGB :!sw0reloffer 0 1041735 2297121166 0 0.000018 035f6d1db12174d17636124b7ff99a48202a52ae30202c77a60fbb1a7fc41eb3fa MEUCIQDgt6AY5UAK/jttwy0EUknf1rP5hx34SEp04rum/ejCogIgblJmQ/HDgB9VimQnukUDdWFVNclCEpvUy6R8GonVODk= ~
+    
     static func parseServerMessage(_ message: String) -> IRCServerInput? {
         
         switch message {
@@ -23,27 +27,47 @@ struct IRCServerInputParser {
             if let firstSpaceIndex = message.firstIndex(of: " ") {
                 let source = message[..<firstSpaceIndex]
                 let rest = message[firstSpaceIndex...].trimmingCharacters(in: .whitespacesAndNewlines)
-                print(source)
+                //print(source)
+                
+                print("rest: \(rest)")
+                //PRIVMSG J55dwWZtXgVNVckn :!sw0reloffer 0 27300 1130638816 0 0.002500!tbond //8wRAIgUuRfeUYW0TBwlcX8+Bvg5wwE8+DxU1sLfgyPF1sgVq8CIGmhg1XemT9F/JsKtd27T53FC2tUdiix31IgX6LUe6VU//8wRAIgISN5peEJQSU/1ZYkH+e1TkInxPSg5w2WMb06YFMqe0MCIBekR60FkxUv7WmX1KPL/FaIvM4evZqMd0D0mPWTqT1AA/W43SXCmM4IQhnZvCNqiYvPojY4zu3n+25rmv3PkFNkWgEC8vlSXYrSw94MW1gt7q95LTdDS+Yx4AS/vG4Q1DNLY5/UA0Fvqnggve8D3+OoOb36dI+9ZLrWt5vE4IsfH2f7tQAAAAAArJZi 036b7dd4ca556b7c6549fdde88a3b9f84846 ;
                 
                 if rest.hasPrefix("PRIVMSG") {
                     let remaining = rest[rest.index(message.startIndex, offsetBy: 8)...]
+                    print("remaining: \(remaining)")
                     
-                    if remaining.hasPrefix("#") {
-                        let split = remaining.components(separatedBy: ":")
-                        let channel = split[0].trimmingCharacters(in: CharacterSet(charactersIn: " #"))
-                        let user = source.components(separatedBy: "!")[0].trimmingCharacters(in: CharacterSet(charactersIn: ":"))
-                        let message = split[1]
+                    //nick, ordertype, oid, minsize, maxsize, txfee, cjfee
+                    
+                    //J5Etzdoiyh2NRMLR :!sw0absoffer 0 3574 18462061 0 3955 02f688091f596d4e1b7f00f7e3721865f073dd1ffbc7a0be8212138f1c88cd5a74 MEQCIFH3XPQgpBsFZoHVvHe4dTTpKpUmlhWfMw2Hv381fi0qAiBIzTESxvoY/q7jG2zqCVam/BrR0DLc9pKlJx+mHCYlFA== ~
+                    
+                    let messageArray = remaining.split(separator: " ")
+                    
+                    if messageArray.count > 2 {
+                        let command = messageArray[1]
+                        print("command: \(command)")
                         
-                        return .channelMessage(channel: channel, user: user, message: message)
+                        switch command {
+                        case ":!sw0reloffer":
+                            print("sw0reloffer: \(message)")
+                            return .sw0reloffer(message: message)
+                        case ":!sw0absoffer":
+                            print("sw0absoffer: \(message)")
+                            return .sw0absoffer(message: message)
+                        default:
+                            break
+                        }
                     }
+                    
                 } else if rest.hasPrefix("JOIN") {
                     let user = source.components(separatedBy: "!")[0].trimmingCharacters(in: CharacterSet(charactersIn: ":"))
                     let channel = rest[rest.index(message.startIndex, offsetBy: 5)...].trimmingCharacters(in: CharacterSet(charactersIn: "# "))
                     return .joinMessage(user: user, channel: channel)
-                } else {
-                    let server = source.trimmingCharacters(in: CharacterSet(charactersIn: ": "))
                     
-                    // :development.irc.roundwallsoftware.com 353 mukman = #clearlyafakechannel :mukman @sgoodwin\r\n:development.irc.roundwallsoftware.com 366 mukman #clearlyafakechannel :End of /NAMES list.
+                } else if rest.hasPrefix("PONG") {
+                    return .pong(message: message)
+                    
+                }/* else {
+                    let server = source.trimmingCharacters(in: CharacterSet(charactersIn: ": "))
                     
                     if rest.hasSuffix(":End of /NAMES list.") {
                         let scanner = Scanner(string: rest)
@@ -69,7 +93,7 @@ struct IRCServerInputParser {
                     } else {
                         return .serverMessage(server: server, message: rest)
                     }
-                }
+                }*/
             } else if !message.hasPrefix("PRIVMSG") && !message.hasPrefix("JOIN") {
 //                let server = message.trimmingCharacters(in: CharacterSet(charactersIn: ": "))
 //                let serverMessage = message.components(separatedBy: ":")[1]
@@ -88,11 +112,14 @@ struct IRCServerInputParser {
 enum IRCServerInput: Equatable {
     case unknown(raw: String)
     case ping(message: String)
+    case pong(message: String)
     case serverMessage(server: String, message: String)
     case channelMessage(channel: String, user: String, message: String)
     case joinMessage(user: String, channel: String)
     case userList(channel: String, users: [String])
     case endOfMOTD(message: String)
+    case sw0absoffer(message: String)
+    case sw0reloffer(message: String)
 }
 
 func ==(lhs: IRCServerInput, rhs: IRCServerInput) -> Bool{

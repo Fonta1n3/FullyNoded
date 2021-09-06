@@ -24,7 +24,7 @@ class ImportWallet {
             prefix = "Coldcard"
         }
         var keypool = Bool()
-        let descriptorParser = DescriptorParser()
+        //let descriptorParser = DescriptorParser()
         var primDescriptor = accountMap["descriptor"] as! String
         let blockheight = accountMap["blockheight"] as! Int
         let label = accountMap["label"] as! String
@@ -36,7 +36,7 @@ class ImportWallet {
         wallet["maxIndex"] = 2500
         wallet["index"] = 0
         
-        var descStruct = descriptorParser.descriptor(primDescriptor)
+        var descStruct = Descriptor(primDescriptor)//descriptorParser.descriptor(primDescriptor)
         isHot = descStruct.isHot
         
         guard let version = UserDefaults.standard.object(forKey: "version") as? String else {
@@ -63,7 +63,7 @@ class ImportWallet {
         primDescriptor = primDescriptor.replacingOccurrences(of: "'", with: "h")
         let arr = primDescriptor.split(separator: "#")
         primDescriptor = "\(arr[0])"
-        descStruct = descriptorParser.descriptor(primDescriptor)
+        descStruct = Descriptor(primDescriptor)
         
         // If the descriptor is multisig, we sort the keys lexicographically
         if descStruct.isMulti {

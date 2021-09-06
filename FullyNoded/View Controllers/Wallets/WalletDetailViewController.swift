@@ -239,8 +239,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func parseWords(_ decryptedData: Data, _ signer: SignerStruct) {
-        let descriptorParser = DescriptorParser()
-        let descriptor = descriptorParser.descriptor(self.wallet.receiveDescriptor)
+        let descriptor = Descriptor(self.wallet.receiveDescriptor)
         guard let words = String(bytes: decryptedData, encoding: .utf8) else { return }
         
         if signer.passphrase != nil {
@@ -876,8 +875,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func importDescriptors(index: Int, maxRange: Int, descriptorsToImport: [String]) {
-        let descriptorParser = DescriptorParser()
-        let descriptorStruct = descriptorParser.descriptor(wallet.receiveDescriptor)
+        //let descriptorParser = DescriptorParser()
+        let descriptorStruct = Descriptor(wallet.receiveDescriptor)//descriptorParser.descriptor(wallet.receiveDescriptor)
         var keypool = true
         
         if descriptorStruct.isMulti {

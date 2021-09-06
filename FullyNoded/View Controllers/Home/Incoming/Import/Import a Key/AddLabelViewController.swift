@@ -51,19 +51,14 @@ class AddLabelViewController: UIViewController, UITextFieldDelegate {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
-        dict["label"] = textField.text!
-        
         switch segue.identifier {
-            
         case "importPrivKey":
             if let vc = segue.destination as? ImportPrivKeyViewController {
                 vc.dict = dict
+                vc.label = textField.text ?? ""
             }
-            
         default:
-            
             break
-            
         }
     }
 

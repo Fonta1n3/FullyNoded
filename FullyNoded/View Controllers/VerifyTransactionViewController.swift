@@ -1677,8 +1677,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 outputIsOursImage.image = UIImage(systemName: "checkmark.circle.fill")
                 
                 if self.wallet != nil {
-                    let dp = DescriptorParser()
-                    let ds = dp.descriptor(self.wallet!.receiveDescriptor)
+                    let ds = Descriptor(self.wallet!.receiveDescriptor)
                     if ds.isHot {
                         signableImageView.image = UIImage(systemName: "checkmark.square.fill")
                         signableBackgroundView.backgroundColor = .systemGreen

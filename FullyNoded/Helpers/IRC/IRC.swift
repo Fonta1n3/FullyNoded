@@ -74,7 +74,11 @@ public class IRCServer {
     private var task: URLSessionStreamTask!
     private var channels = [IRCChannel]()
     private var user: IRCUser
-    private var timer:Timer?
+    private var timer: Timer?
+    private var pingMessage = ""
+    public var alive = false
+    public var absOffers = [JMOffer]()
+    public var relOffers = [JMOffer]()
     
     public required init(hostname: String, port: Int, user: IRCUser) {
         self.user = user
@@ -136,21 +140,29 @@ public class IRCServer {
                 }
             })
             
-        case .userList(let channelName, let users):
-            channels.forEach({ (channel) in
-                if channel.name == channelName {
-                    users.forEach({ (user) in
-                        channel.receive("\(user) joined")
-                    })
-                }
-            })
-            
         case .ping(message):
             send(message.pong)
+            
+        case .pong(message: message):
+            if message.contains(pingMessage) {
+                alive = true
+            }
             
         case .endOfMOTD(message: message):
             joinNow()
             
+        case .sw0absoffer(message: message):
+            print("append absoffer")
+            let offer = JMOffer(message)
+            absOffers.append(offer)
+            
+        case .sw0reloffer(message: message):
+            print("append reloffer")
+            let offer = JMOffer(message)
+            relOffers.append(offer)
+            
+        case .unknown(raw: message):
+            print("unknown message type: \(message)")
             
         default:
             print("Unknown: \(message)")
@@ -158,7 +170,7 @@ public class IRCServer {
     }
     
     public func send(_ message: String) {
-        task.write((message + "\r\n").data(using: .utf8)!, timeout: 10) { error in
+        task.write((message + "\r\n").data(using: .utf8)!, timeout: 20) { error in
             if let error = error {
                 print("Failed to send: \(message)\n\(String(describing: error.localizedDescription))")
             } else {
@@ -176,13 +188,31 @@ public class IRCServer {
     }
     
     private func join() -> IRCChannel {
-        send("JOIN #joinmarket-pit")
+        send("JOIN #joinmarket-pit-test")
         send("MODE \(user.nick) +B")
         send("MODE \(user.nick) -R")
-        let channel = IRCChannel(name: "joinmarket-pit", server: self)
+        let channel = IRCChannel(name: "joinmarket-pit-test", server: self)
         channels.append(channel)
         setTimer()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 7.0) { [weak self] in
+            guard let self = self else { return }
+            
+            print("fire off didConnect")
+            self.delegate?.didConnect(self)
+            self.exportOffers()
+        }
+        
         return channel
+    }
+    
+    private func exportOffers() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
+            guard let self = self else { return }
+            
+            print("fire off offers")
+            self.delegate?.offers(self)
+        }
     }
     
     private func setTimer() {
@@ -191,14 +221,16 @@ public class IRCServer {
     }
     
     @objc func keepAlive() {
-        self.send("PING \(randomString(length: 10))")
+        self.pingMessage = randomString(length: 10)
+        self.send("PING \(pingMessage)")
     }
 }
 
-public protocol IRCServerDelegate {
+public protocol IRCServerDelegate: AnyObject {
     func didRecieveMessage(_ server: IRCServer, message: String)
+    func didConnect(_ server: IRCServer)
+    func offers(_ server: IRCServer)
 }
-
 
 public protocol IRCChannelDelegate {
     func didRecieveMessage(_ channel: IRCChannel, message: String)

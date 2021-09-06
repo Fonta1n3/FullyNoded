@@ -195,8 +195,7 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
             
             for (w, wallet) in wallets.enumerated() {
                 let walletStruct = Wallet(dictionary: wallet)
-                let p = DescriptorParser()
-                let descriptor = p.descriptor(walletStruct.receiveDescriptor)
+                let descriptor = Descriptor(walletStruct.receiveDescriptor)
                 
                 if descriptor.isMulti {
                     for (x, xpub) in descriptor.multiSigKeys.enumerated() {

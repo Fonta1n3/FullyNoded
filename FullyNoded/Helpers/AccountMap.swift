@@ -23,8 +23,7 @@ class AccountMap {
         }
         
         // Don't show xprvs in backup QR incase user imported an xprv
-        let dp = DescriptorParser()
-        let ds = dp.descriptor(primDesc)
+        let ds = Descriptor(primDesc)
         
         if ds.isHot && !ds.isMulti {
             if let key = try? HDKey(base58: ds.accountXprv) {

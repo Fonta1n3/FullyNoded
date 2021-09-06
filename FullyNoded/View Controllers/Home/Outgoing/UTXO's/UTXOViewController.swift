@@ -384,8 +384,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 
                 if let wallet = self.wallet {
                     if wallet.type == WalletType.descriptor.stringValue {
-                        let dp = DescriptorParser()
-                        let dStruct = dp.descriptor(wallet.receiveDescriptor)
+                        let dStruct = Descriptor(wallet.receiveDescriptor)
                         utxoDict["spendable"] = dStruct.isHot
                     }
                 }
@@ -574,21 +573,72 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     private func mix(_ utxo: Utxo) {
-        JoinMarket.getDepositAddress { [weak self] address in
-            guard let self = self else { return }
-            
-            guard let address = address else { return }
+//        JoinMarket.getDepositAddress { [weak self] address in
+//            guard let self = self else { return }
+//
+//            guard let address = address else { return }
+//
+//            DispatchQueue.main.async { [weak self] in
+//                guard let self = self else { return }
+//
+//                self.inputArray.append(utxo.input)
+//                self.depositAddress = address
+//                self.amountTotal = 0.0
+//
+//                self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
+//            }
+//        }
+        let jm = JoinMarketPit.sharedInstance
+        let taker = Taker.shared
+        print("jm.absOffers.count: \(jm.absOffers.count)")
+        print("jm.relOffers.count: \(jm.relOffers.count)")
+        
+        if jm.absOffers.count > 0 {
+            jm.absOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
+            jm.absOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
+        }
+        
+        if jm.relOffers.count > 0 {
+            jm.relOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
+            jm.relOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
+        }
                         
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
+        guard let amount = utxo.amount else { print("failing here"); return }
+        
+        let satsToMix = Int(amount * 100000000.0)
+        
+        var idealAbsOffers = jm.absOffers
+        
+        for (i, absOffer) in jm.absOffers.enumerated() {
+            if (satsToMix > absOffer.minSize ?? 0 && satsToMix < absOffer.maxSize ?? 0) {
+                idealAbsOffers.append(absOffer)
+            }
+            
+            if i + 1 == jm.absOffers.count {
+                print("ideal absoffer: \(idealAbsOffers[0].raw)")
                 
-                self.inputArray.append(utxo.input)
-                self.depositAddress = address
-                self.amountTotal = 0.0
-                
-                self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
+                taker.handshake(idealAbsOffers[0], utxo) { response in
+                    print("handshake response: \(response ?? "empty")")
+                }
             }
         }
+        
+        var idealRelOffers = jm.relOffers
+        
+        for (i, relOffer) in jm.relOffers.enumerated() {
+            if (satsToMix > relOffer.minSize ?? 0 && satsToMix < relOffer.maxSize ?? 0) {
+                idealRelOffers.append(relOffer)
+            }
+            
+            if i + 1 == jm.relOffers.count {
+                print("ideal reloffer: \(idealRelOffers[0].raw)")
+                
+                taker.handshake(idealRelOffers[0], utxo) { response in
+                    print("handshake response: \(response ?? "empty")")
+                }
+            }
+        }
+        
     }
             
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

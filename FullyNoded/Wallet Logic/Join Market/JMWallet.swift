@@ -29,6 +29,7 @@ class JoinMarket {
     static var wallet:[String:Any] = [:]
 
     class func descriptors(_ mk: String, _ xfp: String, completion: @escaping ((descriptors: String?, dict: [String:Any]?)) -> Void) {
+        
         guard let xpub0 = xpub(0, mk),
               let xpub1 = xpub(1, mk),
               let xpub2 = xpub(2, mk),
@@ -127,11 +128,9 @@ class JoinMarket {
                 
                 for utxo in utxos {
                     if let desc = utxo.desc {
-                        let dp = DescriptorParser()
-                        let ds = dp.descriptor(desc)
+                        let ds = Descriptor(desc)
                         
                         let origin = ds.prefix
-                        print("origin: \(origin)")
                         
                         guard let index = getIndex(origin) else { return }
                         
@@ -355,61 +354,9 @@ class JoinMarket {
             print("mix depth: \(mixdepth)\nindex: \(index)\nchange address: \(addresses[0])")
         }
     }
-    
-    static func connectToPit() {
-        guard let nick = randomNick() else {
-            print("nick not derived.")
-            return
-        }
-        
-        let user = IRCUser(username: randomString(length: 10),
-                           realName: randomString(length: 8),
-                           nick: nick)
-        
-        let _ = IRCServer.connect("darkirc6tqgpnwd3blln3yfv5ckl47eg7llfxkmtovrv7c7iwohhb6ad.onion", port: 6667, user: user)
-        //let _ = IRCServer.connect("ncwkrwxpq2ikcngxq3dy2xctuheniggtqeibvgofixpzvrwpa77tozqd.onion", port: 6667, user: user)
-        //let server = IRCServer.connect("irc.darkscience.net", port: 6697, user: user)
-        //let server = IRCServer.connect("irc.hackint.org", port: 6697, user: user)
-    }
-    
-    class func receivedServerMessage(_ message: String) {
-        print("received server message: \(message)")
-    }
-    
-    class func receivedChannelMessage(_ message: String) {
-        print("received channel message: \(message)")
-    }
-    
-    private class func randomNick() -> String? {
-        guard let secret = Crypto.secretNick(),
-              let pubkey = Keys.privKeyToPubKey(secret),
-              let data = Data(hexString: Crypto.sha256hash(pubkey)) else { return nil }
-                
-        let firstTen = data.subdata(in: Range(0...9))
-        var b58 = Base58.encode([UInt8](firstTen))
-        
-        if b58.count < 14 {
-            for _ in 0 ... (15 - b58.count) {
-                b58 += "O"
-            }
-        }
-                
-        return "J5" + b58
-    }
-    
 }
 
-extension JoinMarket: IRCServerDelegate {
-    func didRecieveMessage(_ server: IRCServer, message: String) {
-        JoinMarket.receivedServerMessage(message)
-    }
-}
 
-extension JoinMarket: IRCChannelDelegate {
-    func didRecieveMessage(_ channel: IRCChannel, message: String) {
-        JoinMarket.receivedChannelMessage(message)
-    }
-}
 
 
 

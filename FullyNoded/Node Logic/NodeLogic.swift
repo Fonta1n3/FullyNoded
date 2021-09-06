@@ -741,8 +741,7 @@ class NodeLogic {
             amount += utxo.amount!
             
             if let desc = utxo.desc {
-                let p = DescriptorParser()
-                let str = p.descriptor(desc)
+                let str = Descriptor(desc)
                 var paths:[String]!
                 
                 if str.isMulti {

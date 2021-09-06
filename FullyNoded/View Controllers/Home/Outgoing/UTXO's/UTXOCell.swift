@@ -133,7 +133,7 @@ class UTXOCell: UITableViewCell {
             } else if isBtc {
                 amountLabel.text = amount.btc
             } else if isSats {
-                amountLabel.text = utxo.amountSats!
+                amountLabel.text = amount.sats
             }
             
             if amount <= 0.00010000 {

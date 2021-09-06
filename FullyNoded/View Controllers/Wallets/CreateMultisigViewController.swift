@@ -444,9 +444,8 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 showError()
             }
         } else if extendedKey.hasPrefix("[") {
-            let p = DescriptorParser()
             let hack = "wpkh(\(extendedKey))"
-            let descriptor = p.descriptor(hack)
+            let descriptor = Descriptor(hack)
             let key = descriptor.accountXpub
             let fingerprint = descriptor.fingerprint
             

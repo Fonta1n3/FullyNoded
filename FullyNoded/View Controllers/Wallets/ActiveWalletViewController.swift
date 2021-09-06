@@ -916,7 +916,7 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
                     return
                 }
                 
-                guard errorMessage.contains("Wallet file not specified (must request wallet RPC through") else {
+                guard errorMessage.contains("Wallet file not specified (must request wallet RPC through") || errorMessage.contains("No wallet is loaded") else {
                     displayAlert(viewController: self, isError: true, message: errorMessage)
                     return
                 }

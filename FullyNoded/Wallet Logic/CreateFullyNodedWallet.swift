@@ -239,9 +239,8 @@ enum Keys {
             for (i, wallet) in wallets.enumerated() {
                 let walletStruct = Wallet(dictionary: wallet)
                 let desc = walletStruct.receiveDescriptor
-                let descParser = DescriptorParser()
-                let descStr = descParser.descriptor(desc)
-                let providedDescStr = descParser.descriptor(descriptor)
+                let descStr = Descriptor(desc)
+                let providedDescStr = Descriptor(descriptor)
                 
                 if let type = addressType(descStr) {
                     if !providedDescStr.isMulti && path != "no key path" {

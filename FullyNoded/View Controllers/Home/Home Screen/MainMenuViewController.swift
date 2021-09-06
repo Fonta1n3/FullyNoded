@@ -109,7 +109,7 @@ class MainMenuViewController: UIViewController {
             }
         }
     }
-    
+        
     @IBAction func lockAction(_ sender: Any) {
         if KeyChain.getData("UnlockPassword") != nil {
             showUnlockScreen()
@@ -919,7 +919,15 @@ extension MainMenuViewController: OnionManagerDelegate {
         }
         
         timeStamp()
-        //JoinMarket.connectToPit()
+        
+        let jmPit = JoinMarketPit.sharedInstance
+        jmPit.connect()
+        
+        jmPit.connectedToPit = { connected in
+            if connected {
+                jmPit.getOrderBook()
+            }
+        }
     }
     
     func torConnDifficulties() {
