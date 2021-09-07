@@ -10,6 +10,16 @@ import Foundation
 import LibWally
 
 enum Keys {
+    
+    // Used for encrypting JM comms
+    static func randomPrivKey() -> Data? {
+        guard let seed = Keys.seed(),
+              let mk = Keys.masterKey(words: seed, coinType: "0", passphrase: ""),
+              let hdkey = try? HDKey(base58: mk) else { return nil }
+        
+        return hdkey.privKey?.data
+    }
+    
     static func privKeyToPubKey(_ privKey: Data) -> String? {
         guard let key = try? Key(privKey, network: .mainnet) else { return nil }
         
@@ -22,7 +32,7 @@ enum Keys {
         return true
     }
     
-    static func vaildPath(_ path: String) -> Bool {
+    static func validPath(_ path: String) -> Bool {
         guard let _ = try? BIP32Path(string: path) else { return false }
         
         return true

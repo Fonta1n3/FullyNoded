@@ -187,11 +187,24 @@ public class IRCServer {
         }
     }
     
+    enum Channel: String {
+        case testnet = "#joinmarket-pit-test"
+        case mainnet = "#joinmarket-pit"
+    }
+    
     private func join() -> IRCChannel {
-        send("JOIN #joinmarket-pit-test")
+        var channelString = Channel.mainnet.rawValue
+        let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+        
+        if chain == "test" {
+            channelString = Channel.testnet.rawValue
+        }
+        
+        send("JOIN \(channelString)")
         send("MODE \(user.nick) +B")
         send("MODE \(user.nick) -R")
-        let channel = IRCChannel(name: "joinmarket-pit-test", server: self)
+        
+        let channel = IRCChannel(name: channelString, server: self)
         channels.append(channel)
         setTimer()
         

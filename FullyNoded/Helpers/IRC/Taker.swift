@@ -58,17 +58,30 @@ class Taker: NSObject {
     private override init() {}
     
     func handshake(_ offer: JMOffer, _ utxo: Utxo, completion: @escaping ((String?) -> Void)) {
+        //!fill <order id> <coinjoin amount> <taker encryption pubkey>
+        
         //!auth <input utxo pubkey> <btc sig of taker encryption pubkey using input utxo pubkey>
-        guard let server = JoinMarketPit.sharedInstance.server else { return }
+        
+        guard let privkey = Keys.randomPrivKey(),
+              let pubkey = Keys.privKeyToPubKey(privkey),
+              let server = JoinMarketPit.sharedInstance.server,
+              let maker = offer.maker,
+              let oid = offer.oid,
+              let desc = utxo.desc,
+              let cjAmount = utxo.amount else { return }
+        
+        
         server.delegate = self
-        
-        guard let maker = offer.maker, let desc = utxo.desc else { return }
-        
+                
         let pk = Descriptor(desc).pubkey
         
         completion("maker: \(maker), pubkey: \(pk)")
+        let amount = Int(cjAmount * 100000000)
         
-        //server.send("PRIVMSG \(maker)")
+        let fill = "PRIVMSG \(maker) :!fill \(oid) \(amount) \(pubkey)"
+        print("fill message: \(fill)")
+        
+        server.send(fill)
     }
 
 }

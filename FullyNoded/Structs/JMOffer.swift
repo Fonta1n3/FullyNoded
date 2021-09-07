@@ -71,7 +71,12 @@ public struct JMOffer: CustomStringConvertible {
             }
             
             pubkey = "\(array[9])"
-            encMessage = "\(array[10])"
+            if array.count > 10 {
+                encMessage = "\(array[10])"
+            } else {
+                encMessage = nil
+            }
+            
         } else {
             maker = nil
             host = nil

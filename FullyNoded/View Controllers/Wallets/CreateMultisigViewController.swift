@@ -337,7 +337,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     
     private func derivationProcessed() -> String? {
         guard let text = derivationField.text?.replacingOccurrences(of: "’", with: "'"),
-            Keys.vaildPath(text.replacingOccurrences(of: "’", with: "'")) else {
+            Keys.validPath(text.replacingOccurrences(of: "’", with: "'")) else {
             return nil
         }
         

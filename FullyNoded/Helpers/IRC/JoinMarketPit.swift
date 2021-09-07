@@ -23,13 +23,25 @@ class JoinMarketPit: NSObject {
         case hackInt = "ncwkrwxpq2ikcngxq3dy2xctuheniggtqeibvgofixpzvrwpa77tozqd.onion"
     }
     
+    enum Channel: String {
+        case testnet = "#joinmarket-pit-test"
+        case mainnet = "#joinmarket-pit"
+    }
+    
     func connect() {
         server = JoinMarketPit.server()
         server.delegate = self
     }
     
     func getOrderBook() {
-        server.send("PRIVMSG #joinmarket-pit-test :!orderbook")
+        var channel = Channel.mainnet.rawValue
+        let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+        
+        if chain == "test" {
+            channel = Channel.testnet.rawValue
+        }
+        
+        server.send("PRIVMSG \(channel) :!orderbook")
     }
     
     private class func server() -> IRCServer {
@@ -50,7 +62,7 @@ class JoinMarketPit: NSObject {
                 
         let firstTen = data.subdata(in: Range(0...9))
         var b58 = Base58.encode([UInt8](firstTen))
-        
+        // somehting not right, occasionally get: J5dFCyELwJ8groGOOO (18 chars)
         if b58.count < 14 {
             for _ in 0 ... (15 - b58.count) {
                 b58 += "O"

@@ -17,6 +17,9 @@ struct IRCServerInputParser {
         
         switch message {
         
+        // MARK: todo handle erroneous nick
+        //:Erroneous Nickname
+        
         case _ where message.contains("End of /MOTD command") || message.contains("Welcome to Darkscience"):
             return .endOfMOTD(message: message)
             
