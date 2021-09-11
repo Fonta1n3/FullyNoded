@@ -62,24 +62,24 @@ class Taker: NSObject {
         
         //!auth <input utxo pubkey> <btc sig of taker encryption pubkey using input utxo pubkey>
         
-        guard let privkey = Keys.randomPrivKey(),
-              let pubkey = Keys.privKeyToPubKey(privkey),
-              let server = JoinMarketPit.sharedInstance.server,
-              let maker = offer.maker,
-              let oid = offer.oid,
-              let desc = utxo.desc,
-              let cjAmount = utxo.amount else { return }
+        guard let privkey = Keys.randomPrivKey() else { print("privkey failing"); return }
+        guard let pubkey = Keys.privKeyToPubKey(privkey) else { print("pubkey failing"); return }
+        guard let server = JoinMarketPit.sharedInstance.server else { print("server failing"); return }
+        let maker = offer.maker
+        guard let oid = offer.oid else { print("oid failing"); return }
+        guard let desc = utxo.desc else { print("desc failing"); return }
+        guard let cjAmount = utxo.amount else { print("cjamount failing"); return }
         
         
         server.delegate = self
                 
-        let pk = Descriptor(desc).pubkey
+        //let pk = Descriptor(desc).pubkey
         
-        completion("maker: \(maker), pubkey: \(pk)")
+        //completion("maker: \(maker), pubkey: \(pk)")
         let amount = Int(cjAmount * 100000000)
         
         let fill = "PRIVMSG \(maker) :!fill \(oid) \(amount) \(pubkey)"
-        print("fill message: \(fill)")
+        //print("fill message: \(fill)")
         
         server.send(fill)
     }

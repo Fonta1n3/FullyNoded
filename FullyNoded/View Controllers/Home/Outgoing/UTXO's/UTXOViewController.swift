@@ -593,6 +593,11 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         print("jm.absOffers.count: \(jm.absOffers.count)")
         print("jm.relOffers.count: \(jm.relOffers.count)")
         
+        guard jm.absOffers.count > 0 || jm.relOffers.count > 0 else {
+            showAlert(vc: self, title: "", message: "No offers...")
+            return
+        }
+        
         if jm.absOffers.count > 0 {
             jm.absOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
             jm.absOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
@@ -615,10 +620,17 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
             
             if i + 1 == jm.absOffers.count {
-                print("ideal absoffer: \(idealAbsOffers[0].raw)")
+                //print("ideal absoffer: \(idealAbsOffers[0].raw)")
                 
-                taker.handshake(idealAbsOffers[0], utxo) { response in
-                    print("handshake response: \(response ?? "empty")")
+                if idealAbsOffers.count > 4 {
+                    for i in 0...4 {
+                        let offer = idealAbsOffers[i]
+                        print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
+                        
+                        taker.handshake(offer, utxo) { _ in
+                            //print("handshake response: \(response ?? "empty")")
+                        }
+                    }
                 }
             }
         }
@@ -631,10 +643,17 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
             
             if i + 1 == jm.relOffers.count {
-                print("ideal reloffer: \(idealRelOffers[0].raw)")
+                //print("ideal reloffer: \(idealRelOffers[0].raw)")
                 
-                taker.handshake(idealRelOffers[0], utxo) { response in
-                    print("handshake response: \(response ?? "empty")")
+                if idealRelOffers.count > 4 {
+                    for i in 0...4 {
+                        let offer = idealRelOffers[i]
+                        print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
+                        
+                        taker.handshake(idealRelOffers[i], utxo) { response in
+                            //print("handshake response: \(response ?? "empty")")
+                        }
+                    }
                 }
             }
         }

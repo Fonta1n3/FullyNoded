@@ -151,14 +151,12 @@ public class IRCServer {
         case .endOfMOTD(message: message):
             joinNow()
             
-        case .sw0absoffer(message: message):
+        case .sw0absoffer(let offer):
             print("append absoffer")
-            let offer = JMOffer(message)
             absOffers.append(offer)
             
-        case .sw0reloffer(message: message):
+        case .sw0reloffer(let offer):
             print("append reloffer")
-            let offer = JMOffer(message)
             relOffers.append(offer)
             
         case .unknown(raw: message):

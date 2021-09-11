@@ -18,8 +18,10 @@ public struct JMOffer: CustomStringConvertible {
     
     // :J55vjw11pKVRCCWf!J55vjw11pK@tor.darkscience.net PRIVMSG J5Cga4zDqdTdpeh6 :!sw0reloffer 0 449999 64402488 3 0.00001!tbond //8wRAIgEWoOltbN3xoq8nAewaIKjeQhyfAfMIVClr1OJIAaDoECIG1rNafW+WIgOfeIx2r9Ho0r0PqRhsQMzbMPXxCjYBnX/zBFAiEA6hnCm+KyubLR8UhPYMCpe1JPip3ME8Uj6Ws1uKLOo70CIFeus7CMcwqjHMGqtXik8lxV7LGjpFLAPEoVfNkn7u4jAzD0qlTcO2aoov0IMFoE8ESZgauy3Ez+/3JLbeWdWY+BAQQDIYS4vtLGzuMiH+VcdIt7YfjQxUE2yDDM2i5NKbuVtVYN6IOu0Ii7lTxMdplHyxw+blFd5CkL9RY0EUFKftzBBAEAAACAwi5h 02522b154bcd1087ab31e35d54ca7cc625060f
     
-    let maker:String?
-    let host:String?
+    // This is failing: :J5DbkkCqGnfSNmHt!J5DbkkCqGn@tor.darkscience.net PRIVMSG J5EBCzgQ5yCUz1vZ :!sw0absoffer 0 100000 99999999 0 0!sw0reloffer 1 100000000 3110768682 0 0.00001999!tbond //8wRAIgYPXdaA+L8CVTJ9itwNR/5VRa58UnAL/3fmN2CNNGzYkCIBJK9QVVFAcPlcG6CGWSAUH9GZakEQl22X5VmqgxnJkq//8wRAIgbwPGbSAU+/NjXtTCwLbhmcWhl970j8GN/ud6RSGzNwACIDl2yqBuXutJC0/kQQ/4BQl7jMQkPTc7qJOvr789oOanAu0BqJgOvV6JTTxtpkVfCAQ+hcqA8ppftqmw1aE/V4m8WwEC/lU55H6vN7C0Up9irJZwTyEdWjbXVB6rP4otWR52452byAZsS/040/cQQAL6/M8gTSUMkcZ7rcCXPlqjnVXKmwAAAAAAz
+    
+    let maker:String
+    //let host:String?
     let oid: Int?
     let isAbs: Bool?
     let isRel: Bool?
@@ -30,70 +32,38 @@ public struct JMOffer: CustomStringConvertible {
     let cjFee: Int?
     let pubkey: String?
     let encMessage: String?
-    let tbond: String?
+    //let tbond: String?
     let raw: String
     
-    init(_ message: String) {
-        let array = message.split(separator: " ")
+    init(_ dict: [String:String]) {
+        maker = dict["maker"]!
+        raw = dict["offer"]!
         
-        // single offers - with or without tbond
-        if array.count == 12 || array.count == 10 {
-            let item = "\(array[0])".replacingOccurrences(of: ":", with: "")
-            let subarray = item.split(separator: "!")
-            
-            if subarray.count == 2 {
-                maker = "\(subarray[0])"
-                host = "\(subarray[1])"
-            } else {
-                maker = nil
-                host = nil
-            }
-            
-            let typeRaw = "\(array[3])".replacingOccurrences(of: ":!", with: "")
-            isNativeSegwit = typeRaw.hasPrefix("sw0")
-            
-            let processed = typeRaw.replacingOccurrences(of: "sw0", with: "")
-            isAbs = processed == "absoffer"
-            isRel = processed == "reloffer"
-            
-            oid = Int(array[4])
-            minSize = Int(array[5])
-            maxSize = Int(array[6])
-            txFee = Int(array[7])
-            
-            if array[8].contains("!tbond") {
-                let subarray = "\(array[8])".split(separator: "!")
-                cjFee = Int("\(subarray[0])".replacingOccurrences(of: "!", with: ""))
-                tbond = "\(subarray[1] + " " + array[9])"
-            } else {
-                cjFee = Int(array[8])
-                tbond = nil
-            }
-            
-            pubkey = "\(array[9])"
-            if array.count > 10 {
-                encMessage = "\(array[10])"
-            } else {
-                encMessage = nil
-            }
-            
+        let array = raw.split(separator: " ")
+                    
+        let type = array[0]
+        isNativeSegwit = type.hasPrefix("sw0")
+        
+        isAbs = type.contains("absoffer")
+        isRel = type.contains("reloffer")
+        
+        oid = Int(array[1])
+        minSize = Int(array[2])
+        maxSize = Int(array[3])
+        txFee = Int(array[4])
+        cjFee = Int(array[5])
+        
+        if array.count > 6 {
+            pubkey = "\(array[6])"
         } else {
-            maker = nil
-            host = nil
-            oid = nil
-            minSize = nil
-            maxSize = nil
-            txFee = nil
-            cjFee = nil
-            isNativeSegwit = nil
-            isRel = nil
-            isAbs = nil
             pubkey = nil
-            encMessage = nil
-            tbond = nil
         }
         
-        raw = message
+        if array.count > 7 {
+            encMessage = "\(array[7])"
+        } else {
+            encMessage = nil
+        }
     }
     
     public var description: String {

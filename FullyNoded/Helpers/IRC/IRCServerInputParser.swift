@@ -30,36 +30,61 @@ struct IRCServerInputParser {
             if let firstSpaceIndex = message.firstIndex(of: " ") {
                 let source = message[..<firstSpaceIndex]
                 let rest = message[firstSpaceIndex...].trimmingCharacters(in: .whitespacesAndNewlines)
-                //print(source)
+                //source = :J5AjwrSeb4Dvpf29!J5AjwrSeb4@tor.darkscience.net
+                let sourceChunks = source.split(separator: "!")
                 
-                print("rest: \(rest)")
-                //PRIVMSG J55dwWZtXgVNVckn :!sw0reloffer 0 27300 1130638816 0 0.002500!tbond //8wRAIgUuRfeUYW0TBwlcX8+Bvg5wwE8+DxU1sLfgyPF1sgVq8CIGmhg1XemT9F/JsKtd27T53FC2tUdiix31IgX6LUe6VU//8wRAIgISN5peEJQSU/1ZYkH+e1TkInxPSg5w2WMb06YFMqe0MCIBekR60FkxUv7WmX1KPL/FaIvM4evZqMd0D0mPWTqT1AA/W43SXCmM4IQhnZvCNqiYvPojY4zu3n+25rmv3PkFNkWgEC8vlSXYrSw94MW1gt7q95LTdDS+Yx4AS/vG4Q1DNLY5/UA0Fvqnggve8D3+OoOb36dI+9ZLrWt5vE4IsfH2f7tQAAAAAArJZi 036b7dd4ca556b7c6549fdde88a3b9f84846 ;
-                
-                if rest.hasPrefix("PRIVMSG") {
-                    let remaining = rest[rest.index(message.startIndex, offsetBy: 8)...]
-                    print("remaining: \(remaining)")
+                if sourceChunks.count == 2 {
+                    let maker = "\(sourceChunks[0])".replacingOccurrences(of: ":", with: "")
                     
-                    //nick, ordertype, oid, minsize, maxsize, txfee, cjfee
+                    let offerChunks = rest.split(separator: "!")
+                    //offerChunks[0] = "PRIVMSG J55dwWZtXgVNVckn :"
+                    //offerChunks[1] = "sw0reloffer 0 27300 1130638816 0 0.002500"
+                    //offerChunks[2] = "tbond //8wRAIgUuRfeUYW0TBwlcX8+Bvg5wwE8+DxU1sLfgyPF1sgVq8CIGmhg1XemT9F/JsKtd27T53FC2tUdiix31IgX6LUe6VU//8wRAIgISN5peEJQSU/1ZYkH+e1TkInxPSg5w2WMb06YFMqe0MCIBekR60FkxUv7WmX1KPL/FaIvM4evZqMd0D0mPWTqT1AA/W43SXCmM4IQhnZvCNqiYvPojY4zu3n+25rmv3PkFNkWgEC8vlSXYrSw94MW1gt7q95LTdDS+Yx4AS/vG4Q1DNLY5/UA0Fvqnggve8D3+OoOb36dI+9ZLrWt5vE4IsfH2f7tQAAAAAArJZi 036b7dd4ca556b7c6549fdde88a3b9f84846 ;"
                     
-                    //J5Etzdoiyh2NRMLR :!sw0absoffer 0 3574 18462061 0 3955 02f688091f596d4e1b7f00f7e3721865f073dd1ffbc7a0be8212138f1c88cd5a74 MEQCIFH3XPQgpBsFZoHVvHe4dTTpKpUmlhWfMw2Hv381fi0qAiBIzTESxvoY/q7jG2zqCVam/BrR0DLc9pKlJx+mHCYlFA== ~
-                    
-                    let messageArray = remaining.split(separator: " ")
-                    
-                    if messageArray.count > 2 {
-                        let command = messageArray[1]
-                        print("command: \(command)")
-                        
-                        switch command {
-                        case ":!sw0reloffer":
-                            print("sw0reloffer: \(message)")
-                            return .sw0reloffer(message: message)
-                        case ":!sw0absoffer":
-                            print("sw0absoffer: \(message)")
-                            return .sw0absoffer(message: message)
-                        default:
-                            break
+                    for (i, chunk) in offerChunks.enumerated() {
+                        if i > 0 {
+                            switch chunk {
+                            case _ where chunk.hasPrefix("sw0reloffer"):
+                                return .sw0reloffer(offer: JMOffer(["maker": maker, "offer": "\(chunk)"]))
+                            case _ where chunk.hasPrefix("sw0absoffer"):
+                                return .sw0absoffer(offer: JMOffer(["maker": maker, "offer": "\(chunk)"]))
+                            default:
+                                break
+                            }
                         }
                     }
+                    
+                    //print("rest: \(rest)")
+                    //PRIVMSG J55dwWZtXgVNVckn :!sw0reloffer 0 27300 1130638816 0 0.002500!tbond //8wRAIgUuRfeUYW0TBwlcX8+Bvg5wwE8+DxU1sLfgyPF1sgVq8CIGmhg1XemT9F/JsKtd27T53FC2tUdiix31IgX6LUe6VU//8wRAIgISN5peEJQSU/1ZYkH+e1TkInxPSg5w2WMb06YFMqe0MCIBekR60FkxUv7WmX1KPL/FaIvM4evZqMd0D0mPWTqT1AA/W43SXCmM4IQhnZvCNqiYvPojY4zu3n+25rmv3PkFNkWgEC8vlSXYrSw94MW1gt7q95LTdDS+Yx4AS/vG4Q1DNLY5/UA0Fvqnggve8D3+OoOb36dI+9ZLrWt5vE4IsfH2f7tQAAAAAArJZi 036b7dd4ca556b7c6549fdde88a3b9f84846 ;
+                    
+//                    if rest.hasPrefix("PRIVMSG") && rest.count > 7 {
+//                        let remaining = rest[rest.index(message.startIndex, offsetBy: 8)...]
+//                        print("remaining: \(remaining)")
+//
+//                        //nick, ordertype, oid, minsize, maxsize, txfee, cjfee
+//
+//                        //J5Etzdoiyh2NRMLR :!sw0absoffer 0 3574 18462061 0 3955 02f688091f596d4e1b7f00f7e3721865f073dd1ffbc7a0be8212138f1c88cd5a74 MEQCIFH3XPQgpBsFZoHVvHe4dTTpKpUmlhWfMw2Hv381fi0qAiBIzTESxvoY/q7jG2zqCVam/BrR0DLc9pKlJx+mHCYlFA== ~
+//
+//                        let messageArray = remaining.split(separator: " ")
+//
+//                        if messageArray.count > 2 {
+//                            let command = messageArray[1]
+//                            print("command: \(command)")
+//
+//                            switch command {
+//                            case ":!sw0reloffer":
+//                                print("sw0reloffer: \(message)")
+//                                return .sw0reloffer(message: message)
+//                            case ":!sw0absoffer":
+//                                print("sw0absoffer: \(message)")
+//                                return .sw0absoffer(message: message)
+//                            default:
+//                                break
+//                            }
+//                        }
+//                }
+                
+                
                     
                 } else if rest.hasPrefix("JOIN") {
                     let user = source.components(separatedBy: "!")[0].trimmingCharacters(in: CharacterSet(charactersIn: ":"))
@@ -97,13 +122,13 @@ struct IRCServerInputParser {
                         return .serverMessage(server: server, message: rest)
                     }
                 }*/
-            } else if !message.hasPrefix("PRIVMSG") && !message.hasPrefix("JOIN") {
+            }/* else if !message.hasPrefix("PRIVMSG") && !message.hasPrefix("JOIN") {
 //                let server = message.trimmingCharacters(in: CharacterSet(charactersIn: ": "))
 //                let serverMessage = message.components(separatedBy: ":")[1]
 //                return .serverMessage(server: server, message: serverMessage)
                 
                 print("unknown message type: \(message)")
-            }
+            }*/
         default:
             return .unknown(raw: message)
         }
@@ -121,8 +146,8 @@ enum IRCServerInput: Equatable {
     case joinMessage(user: String, channel: String)
     case userList(channel: String, users: [String])
     case endOfMOTD(message: String)
-    case sw0absoffer(message: String)
-    case sw0reloffer(message: String)
+    case sw0absoffer(offer: JMOffer)
+    case sw0reloffer(offer: JMOffer)
 }
 
 func ==(lhs: IRCServerInput, rhs: IRCServerInput) -> Bool{
