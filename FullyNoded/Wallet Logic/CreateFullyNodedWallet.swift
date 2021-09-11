@@ -50,12 +50,13 @@ enum Keys {
     
     static func seed() -> String? {
         var words: String?
-        let bytesCount = 16
+        let bytesCount = 32
         var randomBytes = [UInt8](repeating: 0, count: bytesCount)
         let status = SecRandomCopyBytes(kSecRandomDefault, bytesCount, &randomBytes)
         
         if status == errSecSuccess {
-            let data = Crypto.sha256hash(Crypto.sha256hash(Crypto.sha256hash(Data(randomBytes))))
+            var data = Crypto.sha256hash(Crypto.sha256hash(Crypto.sha256hash(Data(randomBytes))))
+            data = data.subdata(in: Range(0...15))
             let entropy = BIP39Mnemonic.Entropy(data)
             if let mnemonic = try? BIP39Mnemonic(entropy: entropy) {
                 words = mnemonic.description

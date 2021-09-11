@@ -178,10 +178,11 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 } else {
                     self.importKeys(name, fingerprint, xpub, self.primDesc, completion: completion)
                 }
-            }
-            
-            if let message = message {
-                showAlert(vc: self, title: "Warning", message: message)
+            } else {
+                if let message = message {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "Error", message: message)
+                }
             }
         }
     }
@@ -319,7 +320,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     
     private func saveWallet(type: WalletType) {
         dict["id"] = UUID()
-        dict["label"] = type.stringValue
+        dict["label"] = "Single sig"
         dict["changeDescriptor"] = changeDesc
         dict["receiveDescriptor"] = primDesc
         dict["type"] = type.stringValue
