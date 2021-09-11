@@ -1218,7 +1218,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         let paymentHash = dict["payment_hash"] as? String ?? ""
         let paymentHashData = Data(hexString: paymentHash)!.base64EncodedString()
         let ext = "\(destination)/\(amount)"
-        let query:[String:Any] = ["fee_limit.fixed":"1"]
+        let query:[String:Any] = ["fee_limit.percent":"1"]
         
         LndRpc.sharedInstance.command(.queryroutes, nil, ext, query) { [weak self] (response, error) in
             guard let self = self else { return }
@@ -1260,7 +1260,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func payInvoiceLND(invoice: String, sats: Int, dict: [String:Any]) {
-        let param:[String:Any] = ["payment_request":invoice,"fee_limit":["fixed":"1"], "allow_self_payment":true, "amt": "\(sats)"]
+        let param:[String:Any] = ["payment_request":invoice,"fee_limit":["percent":"1"], "allow_self_payment":true, "amt": "\(sats)"]
+        
         LndRpc.sharedInstance.command(.payinvoice, param, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
 
@@ -1290,7 +1291,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
             guard let self = self else { return }
             
-            var dict:[String:Any] = ["txid":hash, "id":UUID(), "memo":memo, "date":Date(), "label":"Fully Noded ⚡️ payment", "fiatCurrency": self.fiatCurrency]
+            var dict:[String:Any] = ["txid": hash,
+                                     "id": UUID(),
+                                     "memo": memo,
+                                     "date": Date(),
+                                     "label": "Fully Noded ⚡️ payment",
+                                     "fiatCurrency": self.fiatCurrency]
             
             self.spinner.removeConnectingView()
             

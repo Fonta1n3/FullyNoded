@@ -21,6 +21,44 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
         configureTapGesture()
     }
     
+    @IBAction func pasteAction(_ sender: Any) {
+        guard let amountText = amountField.text, let _ = Int(amountText) else {
+            showAlert(vc: self, title: "Add a valid commitment amount", message: "")
+            return
+        }
+        
+        guard let uri = UIPasteboard.general.string else {
+            showAlert(vc: self, title: "", message: "No text on your clipboard.")
+            return
+        }
+        
+        var id:String!
+        var port:String?
+        var ip:String!
+        
+        if uri.contains("@") {
+            let arr = uri.split(separator: "@")
+            
+            guard arr.count > 0 else { return }
+            
+            let arr1 = "\(arr[1])".split(separator: ":")
+            id = "\(arr[0])"
+            ip = "\(arr1[0])"
+            
+            guard arr1.count > 0 else { return }
+            
+            if arr1.count >= 2 {
+                port = "\(arr1[1])"
+            }
+            
+            self.addChannel(id: id, ip: ip, port: port)
+            
+        } else {
+            showAlert(vc: self, title: "Incomplete URI", message: "The URI must include an address.")
+        }
+    }
+    
+    
     @IBAction func scanNowAction(_ sender: Any) {
         guard let amountText = amountField.text, let _ = Int(amountText) else {
             spinner.removeConnectingView()

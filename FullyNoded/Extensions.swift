@@ -120,11 +120,11 @@ public extension String {
         }
         
         if dbl < 1.0 {
-            return dbl.avoidNotation
+            return dbl.avoidNotation + " sat"
         } else if dbl == 1.0 {
             return "1 sat"
         } else {
-            return "\(Int(dbl)) sats"
+            return "\(dbl) sats"
         }
     }
     
@@ -168,10 +168,11 @@ public extension String {
     
     var satsToBtc: Double {
         var processed = "\(self)".replacingOccurrences(of: ",", with: "")
+        processed = processed.replacingOccurrences(of: ".", with: "")
         processed = processed.replacingOccurrences(of: "-", with: "")
         processed = processed.replacingOccurrences(of: "+", with: "")
         processed = processed.replacingOccurrences(of: "sats", with: "").condenseWhitespace()
-        let btc = processed.doubleValue / 100000000.0
+        let btc = Double(processed)! / 100000000.0
         return btc
     }
     
@@ -357,7 +358,7 @@ public extension Double {
         if dbl < 1.0 {
             return "\(symbol)\(dbl.avoidNotation)"
         } else {
-            return "\(symbol)\(Int(dbl).withCommas)"
+            return "\(symbol)\(dbl.withCommas)"
         }
     }
     

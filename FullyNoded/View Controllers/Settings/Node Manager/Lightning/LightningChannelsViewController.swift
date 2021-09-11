@@ -87,6 +87,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         }
     }
     
+    
     @IBAction func addChannel(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             self?.performSegue(withIdentifier: "segueToCreateChannel", sender: self)

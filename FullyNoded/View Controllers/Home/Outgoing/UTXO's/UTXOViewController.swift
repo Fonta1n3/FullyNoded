@@ -588,6 +588,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
 //                self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
 //            }
 //        }
+        
+        
+        
         let jm = JoinMarketPit.sharedInstance
         let taker = Taker.shared
         print("jm.absOffers.count: \(jm.absOffers.count)")
@@ -643,7 +646,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
             
             if i + 1 == jm.relOffers.count {
-                //print("ideal reloffer: \(idealRelOffers[0].raw)")
+                print("ideal reloffer: \(idealRelOffers[0].raw)")
                 
                 if idealRelOffers.count > 4 {
                     for i in 0...4 {
