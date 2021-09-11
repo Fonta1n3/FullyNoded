@@ -12,6 +12,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
 
     @IBOutlet weak var savedOutlet: UIButton!
     @IBOutlet weak var textView: UITextView!
+    
     var spinner = ConnectingView()
     var primDesc = ""
     var changeDesc = ""
@@ -51,7 +52,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                     return
             }
             
-            if chain == "test" {
+            if chain != "main" {
                 self.coinType = "1"
             }
             
