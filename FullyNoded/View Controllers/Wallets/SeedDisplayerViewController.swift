@@ -19,7 +19,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     var name = ""
     var coinType = "0"
     var blockheight:Int64!
-    var version:Double = 0.0
+    var version:Int = 0
     var dict = [String:Any]()
     
     override func viewDidLoad() {
@@ -61,14 +61,14 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             }
             
             // check if version is at least 0.21.0 to use native descriptors
-            guard let version = UserDefaults.standard.object(forKey: "version") as? String else {
+            guard let version = UserDefaults.standard.object(forKey: "version") as? Int else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Version unknown.", message: "In order to create a wallet we need to know which version of Bitcoin Core you are running, please go the the home screen and refresh then try to create this wallet again.")
                 
                 return
             }
             
-            self.version = version.bitcoinVersion
+            self.version = version
             self.getWords()
         }
     }
@@ -136,7 +136,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             if success {
                 var type:WalletType
                 
-                if self.version >= 21 {
+                if self.version >= 210100 {
                     type = .descriptor
                 } else {
                     type = .single
@@ -164,7 +164,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         let walletName = "FullyNoded-\(Crypto.sha256hash(primDesc))"
         var param = "\"\(walletName)\", true, true, \"\", true"
         
-        if self.version >= 21 {
+        if self.version >= 210100 {
             param += ", true, true"
         }
         
@@ -174,7 +174,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             if let name = name {
                 UserDefaults.standard.set(name, forKey: "walletName")
                 
-                if self.version >= 21 {
+                if self.version >= 210100 {
                     self.importDescriptors(name, fingerprint, xpub, self.primDesc, mk, completion: completion)
                 } else {
                     self.importKeys(name, fingerprint, xpub, self.primDesc, completion: completion)

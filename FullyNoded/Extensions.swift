@@ -184,12 +184,6 @@ public extension String {
         return Double(self)! / 1000.0
     }
     
-    var bitcoinVersion: Double {
-        var versionString = String(self.dropFirst())
-        versionString = String(versionString.dropFirst())
-        return Double(versionString)!
-    }
-    
     var btcToSats: String {
         return (Int(self.doubleValue * 100000000.0)).avoidNotation
     }

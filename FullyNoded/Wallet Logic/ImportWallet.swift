@@ -14,7 +14,7 @@ class ImportWallet {
     static var processedWatching = [String]()
     static var isColdcard = false
     static var isRecovering = false
-    static var version:Double = 0.0
+    static var version:Int = 0
     static var isHot = false
             
     class func accountMap(_ accountMap: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
@@ -24,7 +24,6 @@ class ImportWallet {
             prefix = "Coldcard"
         }
         var keypool = Bool()
-        //let descriptorParser = DescriptorParser()
         var primDescriptor = accountMap["descriptor"] as! String
         let blockheight = accountMap["blockheight"] as! Int
         let label = accountMap["label"] as! String
@@ -36,18 +35,18 @@ class ImportWallet {
         wallet["maxIndex"] = 2500
         wallet["index"] = 0
         
-        var descStruct = Descriptor(primDescriptor)//descriptorParser.descriptor(primDescriptor)
+        var descStruct = Descriptor(primDescriptor)
         isHot = descStruct.isHot
         
-        guard let version = UserDefaults.standard.object(forKey: "version") as? String else {
+        guard let version = UserDefaults.standard.object(forKey: "version") as? Int else {
             completion((false, "Version unknown. In order to create a wallet we need to know which version of Bitcoin Core you are running, please go the the home screen and refresh then try to create this wallet again."))
             
             return
         }
         
-        self.version = version.bitcoinVersion
+        self.version = version
         
-        if self.version >= 21.0 {
+        if self.version >= 210100 {
             wallet["type"] = "Native-Descriptor"
             keypool = false
         } else {
@@ -143,7 +142,7 @@ class ImportWallet {
                 wallet["name"] = name
                 UserDefaults.standard.set(wallet["name"] as! String, forKey: "walletName")
                 
-                if version.bitcoinVersion >= 21 {
+                if version >= 210100 {
                     importPrimaryDescriptors(recDesc, changeDesc) { (success, errorMessage) in
                         guard success else {
                             UserDefaults.standard.removeObject(forKey: "walletName")
@@ -322,7 +321,7 @@ class ImportWallet {
     class func createWallet(_ walletName: String, completion: @escaping ((name: String?, errorMessage: String?)) -> Void) {
         var param = "\"\(walletName)\", \(!isHot), true, \"\", true"
         
-        if version >= 21 {
+        if version >= 210100 {
             param += ", true, true"
         }
         
@@ -338,7 +337,6 @@ class ImportWallet {
     }
     
     class func importDescriptors(_ params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        
         OnchainUtils.importDescriptors(params) { (imported, message) in
             completion((imported, message))
         }        
@@ -390,7 +388,18 @@ class ImportWallet {
     
     class func getDescriptorInfo(desc: String, completion: @escaping ((desc: String?, errorMessage: String?)) -> Void) {
         OnchainUtils.getDescriptorInfo("\(desc)") { (descriptorInfo, message) in
-            completion((descriptorInfo?.descriptor, message))
+            guard let descriptorInfo = descriptorInfo else {
+                completion((nil, message))
+                return
+            }
+            
+            let descStruct = Descriptor(desc)
+            
+            if descStruct.isHot {
+                completion((desc + "#" + descriptorInfo.checksum, message))
+            } else {
+                completion((descriptorInfo.descriptor, message))
+            }
         }
     }
     

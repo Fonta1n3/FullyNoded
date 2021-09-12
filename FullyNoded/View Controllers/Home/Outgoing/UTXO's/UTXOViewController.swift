@@ -164,7 +164,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     @IBAction private func createRaw(_ sender: Any) {
-        guard let version = UserDefaults.standard.object(forKey: "version") as? String, version.bitcoinVersion >= 21 else {
+        guard let version = UserDefaults.standard.object(forKey: "version") as? Int, version >= 210000 else {
             showAlert(vc: self, title: "Bitcoin Core needs to be updated",
                       message: "Manual utxo selection requires Bitcoin Core 0.21, please update and try again. If you already have 0.21 go to the home screen, refresh and load it completely then try again.")
             

@@ -20,6 +20,7 @@ public struct Descriptor: CustomStringConvertible {
     let isP2WPKH:Bool
     let isP2PKH:Bool
     let isP2SHP2WPKH:Bool
+    let isP2TR:Bool
     let network:String
     let multiSigKeys:[String]
     let multiSigPaths:[String]
@@ -35,6 +36,7 @@ public struct Descriptor: CustomStringConvertible {
     let fingerprint:String
     let prefix:String
     let pubkey:String
+    let isTaproot:Bool
     
     init(_ descriptor: String) {
         
@@ -47,6 +49,9 @@ public struct Descriptor: CustomStringConvertible {
             dictionary["isSpecter"] = false
             
         }
+        
+        isTaproot = descriptor.hasPrefix("tr(")
+        isP2TR = isTaproot
         
         if descriptor.contains("multi") {
             dictionary["isMulti"] = true
@@ -293,6 +298,10 @@ public struct Descriptor: CustomStringConvertible {
                                     dictionary["isP2SHP2WPKH"] = true
                                     dictionary["isAccount"] = true
                                     
+                                case "m/86'/0'/0'", "m/86'1'/0'":
+                                    dictionary["isBIP86"] = true
+                                    dictionary["isAccount"] = true
+                                    
                                 default:
                                     
                                     break
@@ -321,6 +330,8 @@ public struct Descriptor: CustomStringConvertible {
                     
                     if i == 0 {
                         switch item {
+                        case "tr":
+                            dictionary["format"] = "P2TR"
                         case "wsh":
                             dictionary["format"] = "P2WSH"
                             
