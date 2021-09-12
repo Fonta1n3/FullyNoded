@@ -281,6 +281,11 @@ public extension Data {
 }
 
 public extension Double {
+    func rounded(toPlaces places:Int) -> Double {
+        let divisor = pow(10.0, Double(places))
+        return (self * divisor).rounded() / divisor
+    }
+    
     var withCommas: String {
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = NumberFormatter.Style.decimal
@@ -358,7 +363,7 @@ public extension Double {
         if dbl < 1.0 {
             return "\(symbol)\(dbl.avoidNotation)"
         } else {
-            return "\(symbol)\(dbl.withCommas)"
+            return "\(symbol)\(dbl.rounded(toPlaces: 2).withCommas)"
         }
     }
     
