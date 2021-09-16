@@ -16,7 +16,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private var inputArray = [String]()
     private var selectedUTXOs = [Utxo]()
     private var spinner = ConnectingView()
-    private var isUnsigned = false
     private var wallet:Wallet?
     private var psbt:String?
     private var depositAddress:String?
@@ -186,10 +185,16 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     private func editLabel(_ utxo: Utxo) {
-        guard let address = utxo.address, let isHot = utxo.spendable else {
+        guard let wallet = self.wallet else { return }
+        
+        let descStruct = Descriptor(wallet.receiveDescriptor)
+        
+        guard let address = utxo.address else {
             showAlert(vc: self, title: "Ooops", message: "We do not have an address or info on whether that utxo is watch-only or not.")
             return
         }
+        
+        let isHot = descStruct.isHot
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -210,7 +215,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 self.spinner.addConnectingView(vc: self, description: "updating utxo label")
                 
                 // need to check if its a native descriptor wallet then add label
-                guard let wallet = self.wallet else { return }
                 
                 if wallet.type == WalletType.descriptor.stringValue {
                     guard let desc = utxo.desc else { return }
@@ -329,10 +333,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             amountTotal += utxo.amount ?? 0.0
             let input = "{\"txid\":\"\(utxo.txid)\",\"vout\": \(utxo.vout),\"sequence\": 1}"
             
-            if !(utxo.spendable ?? false) {
-                isUnsigned = true
-            }
-            
             inputArray.append(input)
         }
     }
@@ -383,13 +383,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 var amountFiat:String?
                 
                 var utxoDict = utxo.dict
-                
-//                if let wallet = self.wallet {
-//                    if wallet.type == WalletType.descriptor.stringValue {
-//                        let dStruct = Descriptor(wallet.receiveDescriptor)
-//                        utxoDict["spendable"] = dStruct.isHot
-//                    }
-//                }
                 
                 func finish() {
                     self.unlockedUtxos.append(Utxo(utxoDict))
