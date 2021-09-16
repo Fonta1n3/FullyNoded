@@ -78,6 +78,17 @@
         <attribute name="index" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="label" optional="YES" attributeType="String"/>
         <attribute name="maxIndex" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="mixDepthFourExt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthFourInt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthOneExt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthOneInt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthThreeExt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthThreeInt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthTwoExt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthTwoInt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthZeroExt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthZeroInt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixIndexes" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="receiveDescriptor" optional="YES" attributeType="String"/>
         <attribute name="type" optional="YES" attributeType="String"/>
@@ -92,6 +103,6 @@
         <element name="Signers" positionX="-27" positionY="189" width="128" height="104"/>
         <element name="Transactions" positionX="-36" positionY="279" width="128" height="149"/>
         <element name="Utxos" positionX="-36" positionY="234" width="128" height="238"/>
-        <element name="Wallets" positionX="-36" positionY="180" width="128" height="194"/>
+        <element name="Wallets" positionX="-36" positionY="180" width="128" height="359"/>
     </elements>
 </model>

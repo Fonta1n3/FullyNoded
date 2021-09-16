@@ -103,5 +103,53 @@ class OnchainUtils {
         Reducer.makeCommand(command: .rescanblockchain, param: "\(from)") { (_, _) in }
         completion((true, nil))
     }
+    
+    static func createWallet(param: String, completion: @escaping ((name: String?, message: String?)) -> Void) {
+        Reducer.makeCommand(command: .createwallet, param: param) { (response, errorMessage) in
+            guard let response = response as? [String:Any] else {
+                completion((nil, errorMessage))
+                return
+            }
+                        
+            let warning = response["warning"] as? String
+            let walletName = response["name"] as? String
+            completion((walletName, warning))
+        }
+    }
+    
+    static func listUnspent(param: String, completion: @escaping ((utxos: [Utxo]?, message: String?)) -> Void) {
+        Reducer.makeCommand(command: .listunspent, param: param) { (response, errorMessage) in
+            guard let response = response as? [[String:Any]] else {
+                completion((nil, errorMessage))
+                return
+            }
+            
+            guard response.count > 0 else {
+                completion(([], nil))
+                return
+            }
+            
+            var utxosToReturn = [Utxo]()
+            
+            for (i, dict) in response.enumerated() {
+                utxosToReturn.append(Utxo(dict))
+                
+                if i + 1 == response.count {
+                    completion((utxosToReturn, nil))
+                }
+            }
+        }
+    }
+    
+    static func deriveAddresses(param: String, completion: @escaping ((addresses: [String]?, message: String?)) -> Void) {
+        Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
+            guard let addresses = response as? [String] else {
+                completion((nil, errorMessage))
+                return
+            }
+            
+            completion((addresses, errorMessage))
+        }
+    }
      
 }

@@ -29,7 +29,7 @@
                                 </constraints>
                             </imageView>
                             <stackView opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="1000" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="wqB-Pa-JzN">
-                                <rect key="frame" x="237" y="8" width="68" height="43.5"/>
+                                <rect key="frame" x="237" y="8" width="68" height="29"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" tag="8" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="1600 Confs" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Y2N-Mq-EK6">
                                         <rect key="frame" x="0.0" y="0.0" width="68" height="14.5"/>
@@ -37,14 +37,8 @@
                                         <color key="textColor" systemColor="systemGreenColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" tag="10" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Spendable" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="wOA-wl-Py4">
-                                        <rect key="frame" x="0.0" y="14.5" width="68" height="14.5"/>
-                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="12"/>
-                                        <color key="textColor" systemColor="systemGreenColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
                                     <label opaque="NO" userInteractionEnabled="NO" tag="7" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Solvable" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="YnX-hr-prN">
-                                        <rect key="frame" x="0.0" y="29" width="68" height="14.5"/>
+                                        <rect key="frame" x="0.0" y="14.5" width="68" height="14.5"/>
                                         <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="12"/>
                                         <color key="textColor" systemColor="systemGreenColor"/>
                                         <nil key="highlightedColor"/>
@@ -52,10 +46,18 @@
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="14" translatesAutoresizingMaskIntoConstraints="NO" id="Ve0-ya-z95">
-                                <rect key="frame" x="158.5" y="8" width="70.5" height="23"/>
+                                <rect key="frame" x="120.5" y="8" width="108.5" height="23"/>
                                 <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iSa-z3-Lqe">
+                                        <rect key="frame" x="0.0" y="0.0" width="24" height="23"/>
+                                        <color key="tintColor" red="0.34901961679999999" green="0.77647060160000003" blue="0.97254908080000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <state key="normal" image="arrow.triangle.2.circlepath" catalog="system"/>
+                                        <connections>
+                                            <action selector="mixButtonTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="SdW-vb-Yr1"/>
+                                        </connections>
+                                    </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nt0-Dg-BtN">
-                                        <rect key="frame" x="0.0" y="0.0" width="30" height="23"/>
+                                        <rect key="frame" x="38" y="0.0" width="30" height="23"/>
                                         <color key="tintColor" systemColor="systemTealColor"/>
                                         <state key="normal" image="rectangle.and.paperclip" catalog="system">
                                             <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="large"/>
@@ -65,7 +67,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lOQ-5R-kEw">
-                                        <rect key="frame" x="44" y="0.0" width="26.5" height="23"/>
+                                        <rect key="frame" x="82" y="0.0" width="26.5" height="23"/>
                                         <color key="tintColor" systemColor="systemTealColor"/>
                                         <state key="normal" image="lock.open" catalog="system">
                                             <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="large"/>
@@ -296,17 +298,18 @@
                 <outlet property="labelButtonOutlet" destination="nt0-Dg-BtN" id="MCg-JG-KPm"/>
                 <outlet property="lifeHashImageView" destination="vRf-33-bgg" id="oAQ-Z2-rGX"/>
                 <outlet property="lockButtonOutlet" destination="lOQ-5R-kEw" id="0fn-uH-Dfd"/>
+                <outlet property="mixButtonOutlet" destination="iSa-z3-Lqe" id="XvI-2x-ZyD"/>
                 <outlet property="reusedBackground" destination="c4p-rj-n0M" id="El1-Bl-BG5"/>
                 <outlet property="reusedImageView" destination="tce-QW-MDj" id="F7Q-Lk-Pvs"/>
                 <outlet property="roundeBackgroundView" destination="pXx-EG-WdU" id="cqz-ve-Gga"/>
                 <outlet property="solvableLabel" destination="YnX-hr-prN" id="0c3-UX-pIm"/>
-                <outlet property="spendableLabel" destination="wOA-wl-Py4" id="0Ah-mK-A5K"/>
                 <outlet property="walletLabel" destination="U9a-DB-VDl" id="xYc-ZS-thw"/>
             </connections>
             <point key="canvasLocation" x="144.92753623188406" y="206.58482142857142"/>
         </tableViewCell>
     </objects>
     <resources>
+        <image name="arrow.triangle.2.circlepath" catalog="system" width="128" height="101"/>
         <image name="lock.open" catalog="system" width="128" height="110"/>
         <image name="rectangle.and.paperclip" catalog="system" width="128" height="99"/>
         <image name="whiteCheck.png" width="2048" height="2048"/>

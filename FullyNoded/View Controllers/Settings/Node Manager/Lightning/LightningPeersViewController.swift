@@ -102,7 +102,18 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
         LndRpc.sharedInstance.command(.listchannels, nil, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
             
-            guard let response = response, let channels = response["channels"] as? NSArray, channels.count > 0 else { return }
+            guard let response = response, let channels = response["channels"] as? NSArray, channels.count > 0 else {
+                self.fetchLocalPeers { _ in
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.peersTable.reloadData()
+                        self.spinner.removeConnectingView()
+                    }
+                }
+                
+                return
+            }
             
             for (c, channel) in channels.enumerated() {
                 let dict = channel as! [String:Any]

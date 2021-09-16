@@ -814,7 +814,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     if let utxos = utxos, utxos.count > 0 {
                         var parseIt = false
                         for (i, utxo) in utxos.enumerated() {
-                            let utxoStr = UtxosStruct(dictionary: utxo)
+                            let utxoStr = Utxo(utxo)
                             
                             // only parse inputs for utxos we own if dealing with blind psbt
                             if utxoStr.txid == txid, utxoStr.vout == vout, (utxoStr.solvable ?? false) {
@@ -1677,8 +1677,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 outputIsOursImage.image = UIImage(systemName: "checkmark.circle.fill")
                 
                 if self.wallet != nil {
-                    let dp = DescriptorParser()
-                    let ds = dp.descriptor(self.wallet!.receiveDescriptor)
+                    let ds = Descriptor(self.wallet!.receiveDescriptor)
                     if ds.isHot {
                         signableImageView.image = UIImage(systemName: "checkmark.square.fill")
                         signableBackgroundView.backgroundColor = .systemGreen

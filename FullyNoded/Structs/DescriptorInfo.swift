@@ -31,7 +31,8 @@ public struct DescriptorInfo: CustomStringConvertible {
         checksum = dictionary["checksum"] as! String
         
         if hasprivatekeys {
-            descriptor = (dictionary["descriptor"] as! String) + "#" + checksum
+            // (this required for versions prior to 22)
+            descriptor = (dictionary["descriptor"] as! String)//+ "#" + checksum
         } else {
             descriptor = (dictionary["descriptor"] as! String)
         }

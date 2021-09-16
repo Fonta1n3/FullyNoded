@@ -109,7 +109,7 @@ class MainMenuViewController: UIViewController {
             }
         }
     }
-    
+        
     @IBAction func lockAction(_ sender: Any) {
         if KeyChain.getData("UnlockPassword") != nil {
             showUnlockScreen()
@@ -517,11 +517,11 @@ class MainMenuViewController: UIViewController {
                     showAlert(vc: self, title: "", message: "There was an issue... This can mean your node is busy doing an intense task like rescanning or syncing whoich may be preventing it from responding to commands. If that is the case then just wait a few minutes and try again. As a last resort try rebooting your node and Fully Noded.")
                 }
                 
+                self.removeLoader()
+                
                 return
             }
-                        
-            self.removeLoader()
-            
+                                    
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
@@ -530,48 +530,6 @@ class MainMenuViewController: UIViewController {
                 self.getPeerInfo()
             }
         }
-            
-//        NodeLogic.loadBlockchainInfo { [weak self] (response, errorMessage) in
-//            guard let self = self else { return }
-//            
-//            guard let blockchainInfo = response else {
-//                self.removeLoader()
-//                
-//                guard let errorMessage = errorMessage else {
-//                    displayAlert(viewController: self, isError: true, message: "unknown error")
-//                    return
-//                }
-//                
-//                if errorMessage.contains("Loading block index") || errorMessage.contains("Verifying") || errorMessage.contains("Rewinding") {
-//                    showAlert(vc: self, title: "", message: "Your node is still getting warmed up! Wait 15 seconds and tap the refresh button to try again")
-//                    
-//                } else if errorMessage.contains("Could not connect to the server.") {
-//                    showAlert(vc: self, title: "", message: "Looks like your node is not on, make sure it is running and try again.")
-//                    
-//                } else if errorMessage.contains("unknown error") {
-//                    showAlert(vc: self, title: "", message: "We got a strange response from your node, first of all make 100% sure your credentials are correct, if they are then your node could be overloaded... Either wait a few minutes and try again or reboot Tor on your node, if that fails reboot your node too, force quit Fully Noded and open it again.")
-//                    
-//                } else if errorMessage.contains("timed out") || errorMessage.contains("The Internet connection appears to be offline") {
-//                    showAlert(vc: self, title: "", message: "Hmmm we are not getting a response from your node, you can try rebooting Tor on your node and force quitting Fully Noded and reopening it, that generally fixes the issue.")
-//                    
-//                } else if errorMessage.contains("Unable to decode the response") {
-//                    showAlert(vc: self, title: "", message: "There was an issue... This can mean your node is busy doing an intense task like rescanning or syncing whoich may be preventing it from responding to commands. If that is the case then just wait a few minutes and try again. As a last resort try rebooting your node and Fully Noded.")
-//                    
-//                } else {
-//                    displayAlert(viewController: self, isError: true, message: errorMessage)
-//                }
-//                
-//                return
-//            }
-//            
-//            DispatchQueue.main.async { [weak self] in
-//                guard let self = self else { return }
-//                
-//                self.blockchainInfo = blockchainInfo
-//                self.mainMenu.reloadSections(IndexSet(arrayLiteral: 0, 3, 5, 7, 8, 9), with: .fade)
-//                self.getPeerInfo()
-//            }
-//        }
     }
     
     private func getPeerInfo() {
@@ -695,7 +653,7 @@ class MainMenuViewController: UIViewController {
                 
                 self.feeInfo = FeeInfo(dictionary: response)
                 self.mainMenu.reloadSections(IndexSet(arrayLiteral: 11, 1), with: .fade)
-                self.removeLoader()                
+                self.removeLoader()
             }
         }
     }
@@ -844,58 +802,58 @@ class MainMenuViewController: UIViewController {
         return FirstTime.firstTimeHere()
     }
     
-    private func checkIfPaymentReceived(_ address: String) {
-        let blockstreamUrl = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/api/address/" + address
-
-        guard let url = URL(string: blockstreamUrl) else { return }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-
-        let task = TorClient.sharedInstance.session.dataTask(with: request as URLRequest) { (data, response, error) in
-            guard let urlContent = data else {
-                showAlert(vc: self, title: "", message: "There was an issue checking on payment status")
-                return
-            }
-
-            guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as? NSDictionary else {
-                showAlert(vc: self, title: "", message: "There was an issue decoding the response when fetching payment status")
-                return
-            }
-
-            var txCount = 0
-
-            if let chain_stats = json["chain_stats"] as? NSDictionary {
-                guard let count = chain_stats["tx_count"] as? Int else { return }
-
-                txCount += count
-            }
-
-            if let mempool_stats = json["mempool_stats"] as? NSDictionary {
-                guard let count = mempool_stats["tx_count"] as? Int else { return }
-
-                txCount += count
-            }
-
-            if txCount == 0 {
-                self.goToPaywall()
-
-            } else {
-                let _ = KeyChain.set("hasPaid".dataUsingUTF8StringEncoding, forKey: "hasPaid")
-            }
-        }
-
-        task.resume()
-    }
+//    private func checkIfPaymentReceived(_ address: String) {
+//        let blockstreamUrl = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/api/address/" + address
+//
+//        guard let url = URL(string: blockstreamUrl) else { return }
+//
+//        var request = URLRequest(url: url)
+//        request.httpMethod = "GET"
+//        request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
+//
+//        let task = TorClient.sharedInstance.session.dataTask(with: request as URLRequest) { (data, response, error) in
+//            guard let urlContent = data else {
+//                showAlert(vc: self, title: "", message: "There was an issue checking on payment status")
+//                return
+//            }
+//
+//            guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as? NSDictionary else {
+//                showAlert(vc: self, title: "", message: "There was an issue decoding the response when fetching payment status")
+//                return
+//            }
+//
+//            var txCount = 0
+//
+//            if let chain_stats = json["chain_stats"] as? NSDictionary {
+//                guard let count = chain_stats["tx_count"] as? Int else { return }
+//
+//                txCount += count
+//            }
+//
+//            if let mempool_stats = json["mempool_stats"] as? NSDictionary {
+//                guard let count = mempool_stats["tx_count"] as? Int else { return }
+//
+//                txCount += count
+//            }
+//
+//            if txCount == 0 {
+//                self.goToPaywall()
+//
+//            } else {
+//                let _ = KeyChain.set("hasPaid".dataUsingUTF8StringEncoding, forKey: "hasPaid")
+//            }
+//        }
+//
+//        task.resume()
+//    }
     
-    private func goToPaywall() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.performSegue(withIdentifier: "segueToPaywall", sender: self)
-        }
-    }
+//    private func goToPaywall() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            self.performSegue(withIdentifier: "segueToPaywall", sender: self)
+//        }
+//    }
 }
 
 // MARK: Helpers
@@ -961,6 +919,15 @@ extension MainMenuViewController: OnionManagerDelegate {
         }
         
         timeStamp()
+        
+//        let jmPit = JoinMarketPit.sharedInstance
+//        jmPit.connect()
+//        
+//        jmPit.connectedToPit = { connected in
+//            if connected {
+//                jmPit.getOrderBook()
+//            }
+//        }
     }
     
     func torConnDifficulties() {

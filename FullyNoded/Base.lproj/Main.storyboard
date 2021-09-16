@@ -2264,11 +2264,11 @@ xxxxx</string>
             <objects>
                 <viewController storyboardIdentifier="QRDisplayer" useStoryboardIdentifierAsRestorationIdentifier="YES" id="GlR-4A-eAx" customClass="QRDisplayerViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="1Ax-bN-O8E">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="574"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
-                                <rect key="frame" x="16" y="422" width="343" height="132"/>
+                                <rect key="frame" x="16" y="422" width="343" height="225"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
@@ -4879,7 +4879,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
             </objects>
             <point key="canvasLocation" x="2718" y="376"/>
         </scene>
-        <!--v0.2.25-->
+        <!--v0.2.26-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -5026,7 +5026,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.2.25" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.2.26" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -6099,7 +6099,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="To create the channel scan a QR code in the format of publickey@ip:port (standard URI format)." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bmf-3G-mD0">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="To create the channel scan or paste a QR code in the format of publickey@ip:port (standard URI format)." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bmf-3G-mD0">
                                 <rect key="frame" x="16" y="322" width="343" height="29"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -6113,11 +6113,27 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                     <constraint firstAttribute="width" constant="167" id="d26-R0-PRs"/>
                                 </constraints>
                                 <color key="tintColor" systemColor="systemTealColor"/>
-                                <state key="normal" title="  scan now" image="qrcode.viewfinder" catalog="system">
+                                <state key="normal" title="  scan" image="qrcode.viewfinder" catalog="system">
                                     <color key="titleColor" systemColor="systemTealColor"/>
                                 </state>
                                 <connections>
                                     <action selector="scanNowAction:" destination="Ccs-1J-WKN" eventType="touchUpInside" id="Rio-wy-aRF"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vh2-gq-tc4">
+                                <rect key="frame" x="104" y="414" width="167" height="40"/>
+                                <color key="backgroundColor" red="0.1215686351" green="0.1294117719" blue="0.1411764771" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="167" id="c8F-pG-1vo"/>
+                                    <constraint firstAttribute="height" constant="40" id="hcw-sC-HMX"/>
+                                </constraints>
+                                <color key="tintColor" red="0.34901961679999999" green="0.77647060160000003" blue="0.97254908080000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <state key="normal" title="  paste" image="doc.on.clipboard" catalog="system">
+                                    <color key="titleColor" red="0.34901961679999999" green="0.77647060160000003" blue="0.97254908080000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                </state>
+                                <connections>
+                                    <action selector="pasteAction:" destination="87K-Q0-lFo" eventType="touchUpInside" id="JGs-AE-F14"/>
+                                    <action selector="pasteAction:" destination="Ccs-1J-WKN" eventType="touchUpInside" id="LKC-pR-Jki"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -6127,11 +6143,13 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                             <constraint firstAttribute="trailing" secondItem="t7F-SI-0t5" secondAttribute="trailing" constant="16" id="1X1-56-DmX"/>
                             <constraint firstItem="dQ2-EQ-aje" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="1ed-H1-Zte"/>
                             <constraint firstItem="LVT-jy-ind" firstAttribute="top" secondItem="bmf-3G-mD0" secondAttribute="bottom" constant="15" id="34D-RD-igw"/>
+                            <constraint firstItem="vh2-gq-tc4" firstAttribute="centerX" secondItem="NUp-Zk-LeU" secondAttribute="centerX" id="4yq-TK-bK5"/>
                             <constraint firstItem="1Ed-BV-iZs" firstAttribute="top" secondItem="Dig-wA-gAJ" secondAttribute="top" constant="19" id="5wX-Yz-PHm"/>
                             <constraint firstItem="Dig-wA-gAJ" firstAttribute="trailing" secondItem="SRg-gq-aWa" secondAttribute="trailing" constant="16" id="9GU-Qr-1nb"/>
                             <constraint firstItem="Dig-wA-gAJ" firstAttribute="bottom" secondItem="gUo-3Y-mJY" secondAttribute="bottom" constant="20" id="CQC-aH-5FO"/>
                             <constraint firstItem="gUo-3Y-mJY" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="D6h-oV-aTT"/>
                             <constraint firstItem="SRg-gq-aWa" firstAttribute="top" secondItem="dQ2-EQ-aje" secondAttribute="bottom" constant="8" id="IQt-lS-vuN"/>
+                            <constraint firstItem="vh2-gq-tc4" firstAttribute="top" secondItem="LVT-jy-ind" secondAttribute="bottom" constant="8" symbolic="YES" id="JMM-rf-PhM"/>
                             <constraint firstItem="dQ2-EQ-aje" firstAttribute="top" secondItem="t7F-SI-0t5" secondAttribute="bottom" constant="29" id="Jtr-ti-TZk"/>
                             <constraint firstItem="Dig-wA-gAJ" firstAttribute="trailing" secondItem="bmf-3G-mD0" secondAttribute="trailing" constant="16" id="L82-V3-Fg0"/>
                             <constraint firstItem="1Ed-BV-iZs" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="LfY-OV-pCz"/>
@@ -6156,6 +6174,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="BWE-L0-Kij" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <exit id="87K-Q0-lFo" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
             <point key="canvasLocation" x="4653.6000000000004" y="2818.7406296851577"/>
         </scene>
@@ -7479,17 +7498,17 @@ COLD means no keys will be generated and no private keys can be imported.</strin
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="qed-hl-jG5"/>
-        <segue reference="Fvb-gy-rb3"/>
-        <segue reference="DLx-HT-rGm"/>
+        <segue reference="dhu-ZV-762"/>
+        <segue reference="4g3-DC-Q5z"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="Cd3-qW-ujG"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="1fQ-PG-chF"/>
-        <segue reference="8MS-xS-DMP"/>
+        <segue reference="hqP-uS-RkV"/>
+        <segue reference="if0-NE-c9T"/>
         <segue reference="yAt-Ra-aPH"/>
-        <segue reference="7PS-EL-3d2"/>
+        <segue reference="eLW-PX-CgI"/>
         <segue reference="j10-wi-hpr"/>
         <segue reference="qmy-fM-U4p"/>
     </inferredMetricsTieBreakers>

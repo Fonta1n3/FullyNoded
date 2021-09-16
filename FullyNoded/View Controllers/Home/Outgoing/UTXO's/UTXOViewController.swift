@@ -12,13 +12,13 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
     private var amountTotal = 0.0
     private let refresher = UIRefreshControl()
-    private var unlockedUtxos = [UtxosStruct]()
+    private var unlockedUtxos = [Utxo]()
     private var inputArray = [String]()
-    private var selectedUTXOs = [UtxosStruct]()
+    private var selectedUTXOs = [Utxo]()
     private var spinner = ConnectingView()
-    private var isUnsigned = false
     private var wallet:Wallet?
     private var psbt:String?
+    private var depositAddress:String?
     var fxRate:Double?
     var isBtc = false
     var isSats = false
@@ -42,6 +42,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             self.wallet = wallet
         }
+        
+        print("fxRate: \(fxRate)")
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -163,7 +165,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     @IBAction private func createRaw(_ sender: Any) {
-        guard let version = UserDefaults.standard.object(forKey: "version") as? String, version.bitcoinVersion >= 21 else {
+        guard let version = UserDefaults.standard.object(forKey: "version") as? Int, version >= 210000 else {
             showAlert(vc: self, title: "Bitcoin Core needs to be updated",
                       message: "Manual utxo selection requires Bitcoin Core 0.21, please update and try again. If you already have 0.21 go to the home screen, refresh and load it completely then try again.")
             
@@ -182,11 +184,17 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func editLabel(_ utxo: UtxosStruct) {
-        guard let address = utxo.address, let isHot = utxo.spendable else {
-            showAlert(vc: self, title: "Ooops", message: "We not have an address or info on whether that utxo is watch-only or not.")
+    private func editLabel(_ utxo: Utxo) {
+        guard let wallet = self.wallet else { return }
+        
+        let descStruct = Descriptor(wallet.receiveDescriptor)
+        
+        guard let address = utxo.address else {
+            showAlert(vc: self, title: "Ooops", message: "We do not have an address or info on whether that utxo is watch-only or not.")
             return
         }
+        
+        let isHot = descStruct.isHot
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -207,7 +215,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 self.spinner.addConnectingView(vc: self, description: "updating utxo label")
                 
                 // need to check if its a native descriptor wallet then add label
-                guard let wallet = self.wallet else { return }
                 
                 if wallet.type == WalletType.descriptor.stringValue {
                     guard let desc = utxo.desc else { return }
@@ -233,7 +240,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func importdesc(params: String, utxo: UtxosStruct, label: String) {
+    private func importdesc(params: String, utxo: Utxo, label: String) {
         Reducer.makeCommand(command: .importdescriptors, param: params) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -241,7 +248,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func importmulti(param: String, utxo: UtxosStruct, label: String) {
+    private func importmulti(param: String, utxo: Utxo, label: String) {
         OnchainUtils.importMulti(param) { (imported, message) in
             if imported {
                 self.updateLocally(utxo: utxo, label: label)
@@ -252,7 +259,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func updateLocally(utxo: UtxosStruct, label: String) {
+    private func updateLocally(utxo: Utxo, label: String) {
         func saved() {
             showAlert(vc: self, title: "Label updated ✅", message: "")
             
@@ -270,7 +277,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
             
             for savedUtxo in savedUtxos {
-                let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
+                let savedUtxoStr = Utxo(savedUtxo)
                 
                 if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout {
                     CoreDataService.update(id: savedUtxoStr.id!, keyToUpdate: "label", newValue: label as Any, entity: .utxos) { _ in }
@@ -281,7 +288,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func lock(_ utxo: UtxosStruct) {
+    private func lock(_ utxo: Utxo) {
         spinner.addConnectingView(vc: self, description: "locking...")
         
         let param = "false, [{\"txid\":\"\(utxo.txid)\",\"vout\":\(utxo.vout)}]"
@@ -326,10 +333,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             amountTotal += utxo.amount ?? 0.0
             let input = "{\"txid\":\"\(utxo.txid)\",\"vout\": \(utxo.vout),\"sequence\": 1}"
             
-            if !(utxo.spendable ?? false) {
-                isUnsigned = true
-            }
-            
             inputArray.append(input)
         }
     }
@@ -338,6 +341,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
+            //JoinMarket.syncAddresses()
             self.updateSelectedUtxos()
             self.tableView.isUserInteractionEnabled = true
             self.tableView.reloadData()
@@ -356,12 +360,12 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             self.addSpinner()
         }
         
-        Reducer.makeCommand(command: .listunspent, param: "0") { [weak self] (response, errorMessage) in
+        OnchainUtils.listUnspent(param: "0") { [weak self] (utxos, message) in
             guard let self = self else { return }
             
-            guard let utxos = response as? NSArray else {
+            guard let utxos = utxos else {
                 self.finishedLoading()
-                showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error fecthing your utxos")
+                showAlert(vc: self, title: "Error", message: message ?? "unknown error fecthing your utxos")
                 return
             }
             
@@ -378,19 +382,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 var originValue:String?
                 var amountFiat:String?
                 
-                guard var utxoDict = utxo as? [String:Any] else { return }
-                
-                if let wallet = self.wallet {
-                    if wallet.type == WalletType.descriptor.stringValue {
-                        let dp = DescriptorParser()
-                        let dStruct = dp.descriptor(wallet.receiveDescriptor)
-                        utxoDict["spendable"] = dStruct.isHot
-                    }
-                }
+                var utxoDict = utxo.dict
                 
                 func finish() {
-                    let utxoStr = UtxosStruct(dictionary: utxoDict)
-                    self.unlockedUtxos.append(utxoStr)
+                    self.unlockedUtxos.append(Utxo(utxoDict))
                     
                     if i + 1 == utxos.count {
                         self.unlockedUtxos = self.unlockedUtxos.sorted { $0.confs ?? 0 < $1.confs ?? 0 }
@@ -408,7 +403,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                                 
                                 func loopSavedUtxos() {
                                     for (s, savedUtxo) in savedUtxos.enumerated() {
-                                        let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
+                                        let savedUtxoStr = Utxo(savedUtxo)
                                         
                                         /// We always use the Bitcoin Core address label as the utxo label, when recovering with a new node the user will see the
                                         /// label the user added via Fully Noded. Fully Noded automatically saves the utxo labels.
@@ -450,11 +445,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 }
                 
                 let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
-                let amountBtc = utxoDict["amount"] as! Double
-                let address = utxoDict["address"] as! String
+                let amountBtc = utxo.amount!
                 utxoDict["amountSats"] = amountBtc.sats
-                let lifehash = LifeHash.image(address)
-                utxoDict["lifehash"] = lifehash
+                utxoDict["lifehash"] = LifeHash.image(utxo.address ?? "")
                 
                 CoreDataService.retrieveEntity(entityName: .transactions) { txs in
                     if let txs = txs, txs.count > 0 {
@@ -462,7 +455,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                         for (i, tx) in txs.enumerated() {
                             let txStruct = TransactionStruct(dictionary: tx)
                             
-                            if txStruct.txid == utxoDict["txid"] as! String {
+                            if txStruct.txid == utxo.txid {
                                 dateToSave = txStruct.date
                                 txUUID = txStruct.id
                                 
@@ -533,7 +526,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func fetchOriginRate(_ utxo: UtxosStruct) {
+    private func fetchOriginRate(_ utxo: Utxo) {
         guard let date = utxo.date, let id = utxo.txUUID else {
             showAlert(vc: self, title: "", message: "Date or saved tx UUID missing.")
             return
@@ -573,6 +566,97 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
         }
     }
+    
+    private func mix(_ utxo: Utxo) {
+//        JoinMarket.getDepositAddress { [weak self] address in
+//            guard let self = self else { return }
+//
+//            guard let address = address else { return }
+//
+//            DispatchQueue.main.async { [weak self] in
+//                guard let self = self else { return }
+//
+//                self.inputArray.append(utxo.input)
+//                self.depositAddress = address
+//                self.amountTotal = 0.0
+//
+//                self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
+//            }
+//        }
+        
+        
+        
+//        let jm = JoinMarketPit.sharedInstance
+//        let taker = Taker.shared
+//        print("jm.absOffers.count: \(jm.absOffers.count)")
+//        print("jm.relOffers.count: \(jm.relOffers.count)")
+//        
+//        guard jm.absOffers.count > 0 || jm.relOffers.count > 0 else {
+//            showAlert(vc: self, title: "", message: "No offers...")
+//            return
+//        }
+//        
+//        if jm.absOffers.count > 0 {
+//            jm.absOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
+//            jm.absOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
+//        }
+//        
+//        if jm.relOffers.count > 0 {
+//            jm.relOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
+//            jm.relOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
+//        }
+//                        
+//        guard let amount = utxo.amount else { print("failing here"); return }
+//        
+//        let satsToMix = Int(amount * 100000000.0)
+//        
+//        var idealAbsOffers = jm.absOffers
+//        
+//        for (i, absOffer) in jm.absOffers.enumerated() {
+//            if (satsToMix > absOffer.minSize ?? 0 && satsToMix < absOffer.maxSize ?? 0) {
+//                idealAbsOffers.append(absOffer)
+//            }
+//            
+//            if i + 1 == jm.absOffers.count {
+//                //print("ideal absoffer: \(idealAbsOffers[0].raw)")
+//                
+//                if idealAbsOffers.count > 4 {
+//                    for i in 0...4 {
+//                        let offer = idealAbsOffers[i]
+//                        print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
+//                        
+//                        taker.handshake(offer, utxo) { _ in
+//                            //print("handshake response: \(response ?? "empty")")
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        
+//        var idealRelOffers = jm.relOffers
+//        
+//        for (i, relOffer) in jm.relOffers.enumerated() {
+//            if (satsToMix > relOffer.minSize ?? 0 && satsToMix < relOffer.maxSize ?? 0) {
+//                idealRelOffers.append(relOffer)
+//            }
+//            
+//            if i + 1 == jm.relOffers.count {
+//                print("ideal reloffer: \(idealRelOffers[0].raw)")
+//                
+//                if idealRelOffers.count > 4 {
+//                    for i in 0...4 {
+//                        let offer = idealRelOffers[i]
+//                        print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
+//                        
+//                        taker.handshake(idealRelOffers[i], utxo) { response in
+//                            //print("handshake response: \(response ?? "empty")")
+//                        }
+//                    }
+//                }
+//            }
+//        }
+        
+    }
             
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
@@ -590,6 +674,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             vc.inputArray = inputArray
             vc.utxoTotal = amountTotal
+            vc.address = depositAddress ?? ""
             
         case "segueToBroadcasterFromUtxo":
             guard let vc = segue.destination as? VerifyTransactionViewController, let psbt = psbt else { fallthrough }
@@ -607,16 +692,20 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
 
 extension UTXOViewController: UTXOCellDelegate {
     
-    func didTapToLock(_ utxo: UtxosStruct) {
+    func didTapToLock(_ utxo: Utxo) {
         lock(utxo)
     }
     
-    func didTapToEditLabel(_ utxo: UtxosStruct) {
+    func didTapToEditLabel(_ utxo: Utxo) {
         editLabel(utxo)
     }
     
-    func didTapToFetchOrigin(_ utxo: UtxosStruct) {
+    func didTapToFetchOrigin(_ utxo: Utxo) {
         fetchOriginRate(utxo)
+    }
+    
+    func didTapToMix(_ utxo: Utxo) {
+        mix(utxo)
     }
     
 }

@@ -11,13 +11,28 @@ import LibWally
 
 enum Keys {
     
+    // Used for encrypting JM comms
+    static func randomPrivKey() -> Data? {
+        guard let seed = Keys.seed(),
+              let mk = Keys.masterKey(words: seed, coinType: "0", passphrase: ""),
+              let hdkey = try? HDKey(base58: mk) else { return nil }
+        
+        return hdkey.privKey?.data
+    }
+    
+    static func privKeyToPubKey(_ privKey: Data) -> String? {
+        guard let key = try? Key(privKey, network: .mainnet) else { return nil }
+        
+        return key.pubKey.data.hexString
+    }
+    
     static func validMnemonic(_ words: String) -> Bool {
         guard let _ = try? BIP39Mnemonic(words: words) else { return false }
         
         return true
     }
     
-    static func vaildPath(_ path: String) -> Bool {
+    static func validPath(_ path: String) -> Bool {
         guard let _ = try? BIP32Path(string: path) else { return false }
         
         return true
@@ -35,12 +50,13 @@ enum Keys {
     
     static func seed() -> String? {
         var words: String?
-        let bytesCount = 16
+        let bytesCount = 32
         var randomBytes = [UInt8](repeating: 0, count: bytesCount)
         let status = SecRandomCopyBytes(kSecRandomDefault, bytesCount, &randomBytes)
         
         if status == errSecSuccess {
-            let data = Data(randomBytes)
+            var data = Crypto.sha256hash(Crypto.sha256hash(Crypto.sha256hash(Data(randomBytes))))
+            data = data.subdata(in: Range(0...15))
             let entropy = BIP39Mnemonic.Entropy(data)
             if let mnemonic = try? BIP39Mnemonic(entropy: entropy) {
                 words = mnemonic.description
@@ -234,9 +250,8 @@ enum Keys {
             for (i, wallet) in wallets.enumerated() {
                 let walletStruct = Wallet(dictionary: wallet)
                 let desc = walletStruct.receiveDescriptor
-                let descParser = DescriptorParser()
-                let descStr = descParser.descriptor(desc)
-                let providedDescStr = descParser.descriptor(descriptor)
+                let descStr = Descriptor(desc)
+                let providedDescStr = Descriptor(descriptor)
                 
                 if let type = addressType(descStr) {
                     if !providedDescStr.isMulti && path != "no key path" {

@@ -172,6 +172,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         slider.addTarget(self, action: #selector(didFinishSliding(_:)), for: .valueChanged)
         
         amountInput.text = ""
+        addressInput.text = address
     }
     
     @IBAction func switchCoinSelectionAction(_ sender: Any) {
@@ -798,12 +799,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func sweepWallet(_ receivingAddress: String) {
-        Reducer.makeCommand(command: .listunspent, param: "0") { [weak self] (response, errorMessage) in
+        OnchainUtils.listUnspent(param: "0") { [weak self] (utxos, message) in
             guard let self = self else { return }
             
-            guard let resultArray = response as? [[String:Any]] else {
+            guard let utxos = utxos else {
                 self.spinner.removeConnectingView()
-                displayAlert(viewController: self, isError: true, message: errorMessage ?? "error fetching utxo's")
+                displayAlert(viewController: self, isError: true, message: message ?? "error fetching utxo's")
                 return
             }
             
@@ -812,22 +813,20 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             var amount = Double()
             var spendFromCold = Bool()
             
-            for utxo in resultArray {
-                let utxoStr = UtxosStruct(dictionary: utxo)
-                
-                if !utxoStr.spendable! {
+            for utxo in utxos {
+                if !utxo.spendable! {
                     spendFromCold = true
                 }
                 
-                amount += utxoStr.amount!
+                amount += utxo.amount!
                 
-                guard utxoStr.confs! > 0 else {
+                guard utxo.confs! > 0 else {
                     self.spinner.removeConnectingView()
                     showAlert(vc: self, title: "Ooops", message: "You have unconfirmed utxo's, wait till they get a confirmation before trying to sweep them.")
                     return
                 }
                 
-                inputArray.append(utxoStr.input)
+                inputArray.append(utxo.input)
             }
             
             inputs = inputArray.processedInputs
@@ -1219,7 +1218,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         let paymentHash = dict["payment_hash"] as? String ?? ""
         let paymentHashData = Data(hexString: paymentHash)!.base64EncodedString()
         let ext = "\(destination)/\(amount)"
-        let query:[String:Any] = ["fee_limit.fixed":"1"]
+        let query:[String:Any] = ["fee_limit.percent":"1"]
         
         LndRpc.sharedInstance.command(.queryroutes, nil, ext, query) { [weak self] (response, error) in
             guard let self = self else { return }
@@ -1261,7 +1260,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func payInvoiceLND(invoice: String, sats: Int, dict: [String:Any]) {
-        let param:[String:Any] = ["payment_request":invoice,"fee_limit":["fixed":"1"], "allow_self_payment":true, "amt": "\(sats)"]
+        let param:[String:Any] = ["payment_request":invoice,"fee_limit":["percent":"1"], "allow_self_payment":true, "amt": "\(sats)"]
+        
         LndRpc.sharedInstance.command(.payinvoice, param, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
 
@@ -1291,7 +1291,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
             guard let self = self else { return }
             
-            var dict:[String:Any] = ["txid":hash, "id":UUID(), "memo":memo, "date":Date(), "label":"Fully Noded ⚡️ payment", "fiatCurrency": self.fiatCurrency]
+            var dict:[String:Any] = ["txid": hash,
+                                     "id": UUID(),
+                                     "memo": memo,
+                                     "date": Date(),
+                                     "label": "Fully Noded ⚡️ payment",
+                                     "fiatCurrency": self.fiatCurrency]
             
             self.spinner.removeConnectingView()
             

@@ -700,7 +700,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                                 processedUtxoArray = utxos
                                 
                                 for (u, utxo) in utxos.enumerated() {
-                                    let utxoStr = UtxosStruct(dictionary: utxo)
+                                    let utxoStr = Utxo(utxo)
                                     
                                     if let uxtoArrayId = processedUtxoArray[u]["id"] as? UUID {
                                         processedUtxoArray[u]["id"] = uxtoArrayId.uuidString

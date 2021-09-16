@@ -63,8 +63,7 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
                     
                     guard let desc = walletDict["descriptor"] as? String else { return }
                     
-                    let descriptorParser = DescriptorParser()
-                    let descStr = descriptorParser.descriptor(desc)
+                    let descStr = Descriptor(desc)
                     if descStr.chain == "Mainnet" {
                         mainnetWallets.append(walletDict)
                     } else if descStr.chain == "Testnet" {

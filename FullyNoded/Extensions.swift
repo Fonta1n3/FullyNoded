@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 
-public extension UtxosStruct {
+public extension Utxo {
     var input: String {
         return "{\"txid\":\"\(self.txid)\",\"vout\": \(self.vout),\"sequence\": 1}"
     }
@@ -103,6 +103,10 @@ public extension Int {
 }
 
 public extension String {
+    var pong: String {
+        return self.replacingOccurrences(of: "PING", with: "PONG")
+    }
+    
     var btc: String {
         return self + " btc"
     }
@@ -116,11 +120,11 @@ public extension String {
         }
         
         if dbl < 1.0 {
-            return dbl.avoidNotation
+            return dbl.avoidNotation + " sat"
         } else if dbl == 1.0 {
             return "1 sat"
         } else {
-            return "\(Int(dbl)) sats"
+            return "\(dbl) sats"
         }
     }
     
@@ -164,10 +168,11 @@ public extension String {
     
     var satsToBtc: Double {
         var processed = "\(self)".replacingOccurrences(of: ",", with: "")
+        processed = processed.replacingOccurrences(of: ".", with: "")
         processed = processed.replacingOccurrences(of: "-", with: "")
         processed = processed.replacingOccurrences(of: "+", with: "")
         processed = processed.replacingOccurrences(of: "sats", with: "").condenseWhitespace()
-        let btc = processed.doubleValue / 100000000.0
+        let btc = Double(processed)! / 100000000.0
         return btc
     }
     
@@ -177,12 +182,6 @@ public extension String {
     
     var msatToSat: Double {
         return Double(self)! / 1000.0
-    }
-    
-    var bitcoinVersion: Double {
-        var versionString = String(self.dropFirst())
-        versionString = String(versionString.dropFirst())
-        return Double(versionString)!
     }
     
     var btcToSats: String {
@@ -276,6 +275,11 @@ public extension Data {
 }
 
 public extension Double {
+    func rounded(toPlaces places:Int) -> Double {
+        let divisor = pow(10.0, Double(places))
+        return (self * divisor).rounded() / divisor
+    }
+    
     var withCommas: String {
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = NumberFormatter.Style.decimal
@@ -353,7 +357,7 @@ public extension Double {
         if dbl < 1.0 {
             return "\(symbol)\(dbl.avoidNotation)"
         } else {
-            return "\(symbol)\(Int(dbl).withCommas)"
+            return "\(symbol)\(dbl.rounded(toPlaces: 2).withCommas)"
         }
     }
     

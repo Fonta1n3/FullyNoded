@@ -103,7 +103,19 @@ enum Crypto {
             return nil
         }
 
-        return Data(bytes)
+        return Crypto.sha256hash(Crypto.sha256hash(Crypto.sha256hash(Data(bytes))))
+    }
+    
+    static func secretNick() -> Data? {
+        var bytes = [UInt8](repeating: 0, count: 16)
+        let result = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+
+        guard result == errSecSuccess else {
+            print("Problem generating random bytes")
+            return nil
+        }
+
+        return Crypto.sha256hash(Crypto.sha256hash(Crypto.sha256hash(Data(bytes))))
     }
     
 //    static func rpcAuth() {

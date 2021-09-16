@@ -9,15 +9,16 @@
 import UIKit
 
 protocol UTXOCellDelegate: AnyObject {
-    func didTapToLock(_ utxo: UtxosStruct)
-    func didTapToEditLabel(_ utxo: UtxosStruct)
-    func didTapToFetchOrigin(_ utxo: UtxosStruct)
+    func didTapToLock(_ utxo: Utxo)
+    func didTapToEditLabel(_ utxo: Utxo)
+    func didTapToFetchOrigin(_ utxo: Utxo)
+    func didTapToMix(_ utxo: Utxo)
 }
 
 class UTXOCell: UITableViewCell {
     
     static let identifier = "UTXOCell"
-    private var utxo: UtxosStruct!
+    private var utxo: Utxo!
     private var isLocked: Bool!
     private unowned var delegate: UTXOCellDelegate!
     
@@ -45,6 +46,7 @@ class UTXOCell: UITableViewCell {
     @IBOutlet private weak var fiatLabel: UILabel!
     @IBOutlet private weak var reusedBackground: UIView!
     @IBOutlet private weak var reusedImageView: UIImageView!
+    @IBOutlet private weak var mixButtonOutlet: UIButton!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -52,6 +54,8 @@ class UTXOCell: UITableViewCell {
         layer.borderColor = UIColor.lightGray.cgColor
         layer.borderWidth = 0.5
         layer.cornerRadius = 8
+        
+        mixButtonOutlet.alpha = 0
         
         roundeBackgroundView.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
@@ -75,7 +79,7 @@ class UTXOCell: UITableViewCell {
         selectionStyle = .none
     }
     
-    func configure(utxo: UtxosStruct, isLocked: Bool, fxRate: Double?, isSats: Bool, isBtc: Bool, isFiat: Bool, delegate: UTXOCellDelegate) {
+    func configure(utxo: Utxo, isLocked: Bool, fxRate: Double?, isSats: Bool, isBtc: Bool, isFiat: Bool, delegate: UTXOCellDelegate) {
         self.utxo = utxo
         self.isLocked = isLocked
         self.delegate = delegate
@@ -132,7 +136,7 @@ class UTXOCell: UITableViewCell {
             } else if isBtc {
                 amountLabel.text = amount.btc
             } else if isSats {
-                amountLabel.text = utxo.amountSats!
+                amountLabel.text = amount.sats
             }
             
             if amount <= 0.00010000 {
@@ -204,19 +208,20 @@ class UTXOCell: UITableViewCell {
             confirmationsLabel.textColor = .lightGray
         }
         
-        if utxo.spendable != nil {
-            if utxo.spendable! {
-                spendableLabel.text = "Node hot"
-                spendableLabel.textColor = .systemGreen
-            } else {
-                spendableLabel.text = "Node cold"
-                spendableLabel.textColor = .systemBlue
-
-            }
-        } else {
-            spendableLabel.text = "?"
-            spendableLabel.textColor = .lightGray
-        }
+//        if utxo.spendable != nil {
+//            print("utxo.spendable: \(utxo.spendable)")
+//            if utxo.spendable! {
+//                spendableLabel.text = "Node hot"
+//                spendableLabel.textColor = .systemGreen
+//            } else {
+//                spendableLabel.text = "Node cold"
+//                spendableLabel.textColor = .systemBlue
+//
+//            }
+//        } else {
+//            spendableLabel.text = "?"
+//            spendableLabel.textColor = .lightGray
+//        }
         
         if let lifehash = utxo.lifehash {
             lifeHashImageView.image = lifehash
@@ -270,4 +275,9 @@ class UTXOCell: UITableViewCell {
     @IBAction func fetchOriginTapped(_ sender: Any) {
         delegate.didTapToFetchOrigin(utxo)
     }
+    
+    @IBAction func mixButtonTapped(_ sender: Any) {
+        delegate.didTapToMix(utxo)
+    }
+    
 }

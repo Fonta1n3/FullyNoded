@@ -161,12 +161,12 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             }
             
         case 1:
-            if KeyChain.getData("userIdentifier") == nil {
-                add2fa()
-            } else {
-                promptToDisable2fa()
-            }
-            //showAlert(vc: self, title: "", message: "This feature is not available for the dmg.")
+//            if KeyChain.getData("userIdentifier") == nil {
+//                add2fa()
+//            } else {
+//                promptToDisable2fa()
+//            }
+            showAlert(vc: self, title: "", message: "This feature is not available for the dmg.")
         case 2:
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.performSegue(withIdentifier: "addPasswordSegue", sender: vc)
@@ -270,10 +270,12 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         
         guard let twofaVC = storyboard.instantiateViewController(identifier: "2FA") as? PromptForAuthViewController else {
-                return
+            return
         }
         
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
             twofaVC.modalPresentationStyle = .fullScreen
             self.present(twofaVC, animated: true, completion: nil)
         }
@@ -303,7 +305,9 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     func executNodeCommand(method: BTC_CLI_COMMAND, param: Any) {
         let connectingView = ConnectingView()
         connectingView.addConnectingView(vc: self, description: "")
-        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+        Reducer.makeCommand(command: method, param: param) { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
             if errorMessage == nil {
                 switch method {
                 case .encryptwallet:
@@ -313,15 +317,15 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                     }
                     
                 case .walletlock:
-                    displayAlert(viewController: self, isError: false, message: "Wallet encrypted")
+                    showAlert(vc: self, title: "", message: "Wallet encrypted 🔐")
                     connectingView.removeConnectingView()
                     
                 case .walletpassphrase:
-                    displayAlert(viewController: self, isError: false, message: "Wallet decrypted for 10 minutes only")
+                    showAlert(vc: self, title: "", message: "Wallet decrypted 🔓 for 10 minutes.")
                     connectingView.removeConnectingView()
                     
                 case .walletpassphrasechange:
-                    displayAlert(viewController: self, isError: false, message: "Passphrase updated")
+                    showAlert(vc: self, title: "", message: "Passphrase updated ✓")
                     connectingView.removeConnectingView()
                     
                 default:
@@ -329,7 +333,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                 }
             } else {
                 connectingView.removeConnectingView()
-                displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
+                displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
             }
         }
     }
@@ -338,8 +342,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         DispatchQueue.main.async { [unowned vc = self] in
             let title = "Encrypt Wallet"
             let message = "Please choose a passphrase\n\nYOU MUST REMEMBER THIS PASSPHRASE\n\nwithout it you will not be able to spend your bitcoin"
-            let style = UIAlertController.Style.alert
-            let alert = UIAlertController(title: title, message: message, preferredStyle: style)
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             let encrypt = UIAlertAction(title: "Encrypt", style: .default) { [unowned vc = self] (alertAction) in
                 let textField1 = (alert.textFields![0] as UITextField).text
                 let textField2 = (alert.textFields![1] as UITextField).text
@@ -375,8 +378,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         DispatchQueue.main.async { [unowned vc = self] in
             let title = "Decrypt Wallet"
             let message = "Enter your passphrase\n\nThis will decrypt your wallet for 10 minutes\n\nAfter 10 minutes you will need to decrypt it again"
-            let style = UIAlertController.Style.alert
-            let alert = UIAlertController(title: title, message: message, preferredStyle: style)
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             let decrypt = UIAlertAction(title: "Decrypt", style: .default) { [unowned vc = self] (alertAction) in
                 let textField = (alert.textFields![0] as UITextField).text
                 if textField != "" {
@@ -399,8 +401,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         DispatchQueue.main.async { [unowned vc = self] in
             let title = "Change Passphrase"
             let message = "Enter your existing passphrase and then your new one"
-            let style = UIAlertController.Style.alert
-            let alert = UIAlertController(title: title, message: message, preferredStyle: style)
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             let update = UIAlertAction(title: "Update", style: .default) { [unowned vc = self] (alertAction) in
                 let textField1 = (alert.textFields![0] as UITextField).text
                 let textField2 = (alert.textFields![1] as UITextField).text

@@ -353,13 +353,17 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     private func abortRescan() {
-        Reducer.makeCommand(command: .abortrescan, param: "") { [unowned vc = self] (response, errorMessage) in
+        Reducer.makeCommand(command: .abortrescan, param: "") { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
             if errorMessage == nil {
-                displayAlert(viewController: vc, isError: false, message: "Rescan aborted")
+                showAlert(vc: self, title: "", message: "Rescan aborted")
             } else {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.connectingView.removeConnectingView()
-                    displayAlert(viewController: vc, isError: true, message: "Error: \(errorMessage!)")
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.connectingView.removeConnectingView()
+                    showAlert(vc: self, title: "", message: "Error: \(errorMessage!)")
                 }
             }
         }

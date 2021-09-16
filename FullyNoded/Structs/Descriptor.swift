@@ -20,6 +20,7 @@ public struct Descriptor: CustomStringConvertible {
     let isP2WPKH:Bool
     let isP2PKH:Bool
     let isP2SHP2WPKH:Bool
+    let isP2TR:Bool
     let network:String
     let multiSigKeys:[String]
     let multiSigPaths:[String]
@@ -34,8 +35,356 @@ public struct Descriptor: CustomStringConvertible {
     let isAccount:Bool
     let fingerprint:String
     let prefix:String
+    let pubkey:String
+    let isTaproot:Bool
     
-    init(dictionary: [String: Any]) {
+    init(_ descriptor: String) {
+        
+        var dictionary = [String:Any]()
+        
+        if descriptor.contains("&") {
+            dictionary["isSpecter"] = true
+            
+        } else {
+            dictionary["isSpecter"] = false
+            
+        }
+        
+        isTaproot = descriptor.hasPrefix("tr(")
+        isP2TR = isTaproot
+        
+        if descriptor.contains("multi") {
+            dictionary["isMulti"] = true
+            dictionary["isBIP67"] = descriptor.contains("sortedmulti")
+            
+            let arr = descriptor.split(separator: "(")
+            for (i, item) in arr.enumerated() {
+                if i == 0 {
+                    
+                    switch item {
+                    
+                    case "multi":
+                        dictionary["format"] = "Bare-multi"
+                        
+                    case "wsh":
+                        dictionary["format"] = "P2WSH"
+                        
+                    case "sh":
+                        if arr[1] == "wsh" {
+                            dictionary["format"] = "P2SH-P2WSH"
+                            
+                        } else {
+                            dictionary["format"] = "P2SH"
+                            
+                        }
+                        
+                    default:
+                        break
+                        
+                    }
+                    
+                }
+                
+                switch item {
+                
+                case "multi", "sortedmulti":
+                    let mofnarray = (arr[i + 1]).split(separator: ",")
+                    let numberOfKeys = mofnarray.count - 1
+                    dictionary["mOfNType"] = "\(mofnarray[0]) of \(numberOfKeys)"
+                    dictionary["sigsRequired"] = UInt(mofnarray[0])
+                    var keysWithPath = [String]()
+                    for (i, item) in mofnarray.enumerated() {
+                        if i != 0 {
+                            keysWithPath.append("\(item)")
+                        }
+                        if i + 1 == mofnarray.count {
+                            dictionary["keysWithPath"] = keysWithPath
+                        }
+                    }
+                    
+                    var fingerprints = [String]()
+                    var keyArray = [String]()
+                    var paths = [String]()
+                    var derivationArray = [String]()
+                    
+                    /// extracting the xpubs and their paths so we can derive the individual multisig addresses locally
+                    for key in keysWithPath {
+                        var path = String()
+                        if key.contains("/") {
+                            if key.contains("[") && key.contains("]") {
+                                // remove the bracket with deriv/fingerprint
+                                let arr = key.split(separator: "]")
+                                let rootPath = arr[0].replacingOccurrences(of: "[", with: "")
+                                
+                                let rootPathArr = rootPath.split(separator: "/")
+                                if rootPathArr.count > 0 {
+                                    fingerprints.append("[\(rootPathArr[0])]")
+                                }
+                                
+                                var deriv = "m"
+                                for (i, rootPathItem) in rootPathArr.enumerated() {
+                                    if i > 0 {
+                                        deriv += "/" + "\(rootPathItem)"
+                                    }
+                                }
+                                derivationArray.append(deriv)
+                                
+                                let processedKey = arr[1]
+                                // it has a path
+                                let pathArray = processedKey.split(separator: "/")
+                                for pathItem in pathArray {
+                                    if pathItem.contains("xpub") || pathItem.contains("tpub") || pathItem.contains("xprv") || pathItem.contains("tprv") {
+                                        keyArray.append("\(pathItem.replacingOccurrences(of: "))", with: ""))")
+                                    } else if pathItem.hasPrefix("0") {
+                                        var pubkey = ""
+                                        if pathItem.contains(")") {
+                                            let arr = pathItem.split(separator: ")")
+                                            pubkey = "\(arr[0])"
+                                        } else {
+                                            pubkey = "\(pathItem)"
+                                        }
+                                        if let pubkeyData = Data(hexString: pubkey) {
+                                            if pubkeyData.count == 33 || pubkeyData.count == 65 {
+                                                keyArray.append(pubkey)
+                                            }
+                                        }
+                                    } else {
+                                        if !pathItem.contains("*") {
+                                            if path == "" {
+                                                path = "\(pathItem)"
+                                            } else {
+                                                path += "/" + pathItem
+                                            }
+                                        } else {
+                                            paths.append(path)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    dictionary["derivationArray"] = derivationArray
+                    dictionary["multiSigKeys"] = keyArray
+                    dictionary["multiSigPaths"] = paths
+                    
+                    var processed = fingerprints.description.replacingOccurrences(of: "[\"", with: "")
+                    processed = processed.replacingOccurrences(of: "\"]", with: "")
+                    processed = processed.replacingOccurrences(of: "\"", with: "")
+                    dictionary["fingerprint"] = processed
+                    
+                    for deriv in derivationArray {
+                        switch deriv {
+                        
+                        case "m/48'/0'/0'/1'", "m/48'/1'/0'/1'":
+                            dictionary["isBIP44"] = false
+                            dictionary["isP2PKH"] = false
+                            dictionary["isBIP84"] = false
+                            dictionary["isP2WPKH"] = false
+                            dictionary["isBIP49"] = false
+                            dictionary["isP2SHP2WPKH"] = true
+                            dictionary["isWIP48"] = true
+                            dictionary["isAccount"] = true
+                            
+                        case "m/48'/0'/0'/2'", "m/48'/1'/0'/2'":
+                            dictionary["isBIP44"] = false
+                            dictionary["isP2PKH"] = false
+                            dictionary["isBIP84"] = false
+                            dictionary["isP2WPKH"] = true
+                            dictionary["isBIP49"] = false
+                            dictionary["isP2SHP2WPKH"] = false
+                            dictionary["isWIP48"] = true
+                            dictionary["isAccount"] = true
+                            
+                        case "m/44'/0'/0'", "m/44'/1'/0'":
+                            dictionary["isBIP44"] = true
+                            dictionary["isP2PKH"] = true
+                            dictionary["isBIP84"] = false
+                            dictionary["isP2WPKH"] = false
+                            dictionary["isBIP49"] = false
+                            dictionary["isP2SHP2WPKH"] = false
+                            dictionary["isAccount"] = true
+                            
+                        case "m/84'/0'/0'", "m/84'/1'/0'":
+                            dictionary["isBIP84"] = true
+                            dictionary["isP2WPKH"] = true
+                            dictionary["isBIP44"] = false
+                            dictionary["isP2PKH"] = false
+                            dictionary["isBIP49"] = false
+                            dictionary["isP2SHP2WPKH"] = false
+                            dictionary["isAccount"] = true
+                            
+                        case "m/49'/0'/0'", "m/49'/1'/0'":
+                            dictionary["isBIP49"] = true
+                            dictionary["isP2SHP2WPKH"] = true
+                            dictionary["isBIP44"] = false
+                            dictionary["isP2PKH"] = false
+                            dictionary["isBIP84"] = false
+                            dictionary["isP2WPKH"] = false
+                            dictionary["isAccount"] = true
+                            
+                        default:
+                            
+                            break
+                            
+                        }
+                        
+                    }
+                    
+                default:
+                    break
+                }
+            }
+            
+        } else {
+            
+            dictionary["isMulti"] = false
+            
+            if descriptor.contains("[") && descriptor.contains("]") {
+                
+                let arr1 = descriptor.split(separator: "[")
+                dictionary["keysWithPath"] = ["[" + "\(arr1[1])"]
+                let arr2 = arr1[1].split(separator: "]")
+                let derivation = arr2[0]
+                dictionary["prefix"] = "[\(derivation)]"
+                dictionary["fingerprint"] = "\((derivation.split(separator: "/"))[0])"
+                let extendedKeyWithPath = arr2[1]
+                let arr4 = extendedKeyWithPath.split(separator: "/")
+                let extendedKey = arr4[0]
+                if extendedKey.contains("tpub") || extendedKey.contains("xpub") {
+                    dictionary["accountXpub"] = "\(extendedKey.replacingOccurrences(of: ")", with: ""))"
+                } else if extendedKey.contains("tprv") || extendedKey.contains("xprv") {
+                    dictionary["accountXprv"] = "\(extendedKey.replacingOccurrences(of: ")", with: ""))"
+                } else {
+                    let subarray = extendedKey.split(separator: "#")
+                    if subarray.count == 2 {
+                        dictionary["pubkey"] = "\("\(subarray[0])".replacingOccurrences(of: ")", with: ""))"
+                    } else {
+                        dictionary["pubkey"] = "\(extendedKey.replacingOccurrences(of: ")", with: ""))"
+                    }
+                }
+                
+                let arr3 = derivation.split(separator: "/")
+                var path = "m"
+                
+                for (i, item) in arr3.enumerated() {
+                    switch i {
+                    
+                    case 1:
+                        path += "/" + item
+                        
+                    default:
+                        if i != 0 {
+                            path += "/" + item
+                            
+                            if i + 1 == arr3.count {
+                                
+                                dictionary["derivation"] = path
+                                
+                                switch path {
+                                
+                                case "m/44'/0'/0'", "m/44'/1'/0'":
+                                    dictionary["isBIP44"] = true
+                                    dictionary["isP2PKH"] = true
+                                    dictionary["isAccount"] = true
+                                    
+                                case "m/84'/0'/0'", "m/84'/1'/0'":
+                                    dictionary["isBIP84"] = true
+                                    dictionary["isP2WPKH"] = true
+                                    dictionary["isAccount"] = true
+                                    
+                                case "m/49'/0'/0'", "m/49'/1'/0'":
+                                    dictionary["isBIP49"] = true
+                                    dictionary["isP2SHP2WPKH"] = true
+                                    dictionary["isAccount"] = true
+                                    
+                                case "m/86'/0'/0'", "m/86'1'/0'":
+                                    dictionary["isBIP86"] = true
+                                    dictionary["isAccount"] = true
+                                    
+                                default:
+                                    
+                                    break
+                                    
+                                }
+                                
+                            }
+                            
+                        } else {
+                            break
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            }
+            
+            if descriptor.contains("combo") {
+                dictionary["format"] = "Combo"
+            } else {
+                let arr = descriptor.split(separator: "(")
+                
+                for (i, item) in arr.enumerated() {
+                    
+                    if i == 0 {
+                        switch item {
+                        case "tr":
+                            dictionary["format"] = "P2TR"
+                        case "wsh":
+                            dictionary["format"] = "P2WSH"
+                            
+                        case "wpkh":
+                            dictionary["format"] = "P2WPKH"
+                            dictionary["isP2WPKH"] = true
+                            
+                        case "sh":
+                            if arr[1] == "wpkh" {
+                                dictionary["format"] = "P2SH-P2WPKH"
+                                dictionary["isP2SHP2WPKH"] = true
+                            } else if arr[1] == "wsh" {
+                                dictionary["format"] = "P2SH-P2WSH"
+                            } else {
+                                dictionary["format"] = "P2SH"
+                            }
+                            
+                        case "pk":
+                            dictionary["format"] = "P2PK"
+                            
+                        case "pkh":
+                            dictionary["format"] = "P2PKH"
+                            dictionary["isP2PKH"] = true
+                            
+                        default:
+                            
+                            break
+                            
+                        }
+                    }
+                }
+            }
+        }
+        
+        if descriptor.contains("xpub") || descriptor.contains("xprv") {
+            dictionary["chain"] = "Mainnet"
+            dictionary["isHD"] = true
+            
+        } else if descriptor.contains("tpub") || descriptor.contains("tprv") {
+            dictionary["chain"] = "Testnet"
+            dictionary["isHD"] = true
+            
+        } else {
+            dictionary["isHD"] = false
+        }
+        
+        if descriptor.contains("xprv") || descriptor.contains("tprv") {
+            dictionary["isHot"] = true
+            
+        } else {
+            dictionary["isHot"] = false
+        }
+        
         format = dictionary["format"] as? String ?? ""
         mOfNType = dictionary["mOfNType"] as? String ?? ""
         isHot = dictionary["isHot"] as? Bool ?? false
@@ -62,6 +411,7 @@ public struct Descriptor: CustomStringConvertible {
         isAccount = dictionary["isAccount"] as? Bool ?? false
         fingerprint = dictionary["fingerprint"] as? String ?? ""
         prefix = dictionary["prefix"] as? String ?? ""
+        pubkey = dictionary["pubkey"] as? String ?? ""
     }
     
     public var description: String {

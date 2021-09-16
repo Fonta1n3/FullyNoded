@@ -12,13 +12,15 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
 
     @IBOutlet weak var savedOutlet: UIButton!
     @IBOutlet weak var textView: UITextView!
+    
     var spinner = ConnectingView()
     var primDesc = ""
     var changeDesc = ""
     var name = ""
     var coinType = "0"
     var blockheight:Int64!
-    var version:Double = 0.0
+    var version:Int = 0
+    var dict = [String:Any]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -50,7 +52,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                     return
             }
             
-            if chain == "test" {
+            if chain != "main" {
                 self.coinType = "1"
             }
             
@@ -59,14 +61,14 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             }
             
             // check if version is at least 0.21.0 to use native descriptors
-            guard let version = UserDefaults.standard.object(forKey: "version") as? String else {
+            guard let version = UserDefaults.standard.object(forKey: "version") as? Int else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Version unknown.", message: "In order to create a wallet we need to know which version of Bitcoin Core you are running, please go the the home screen and refresh then try to create this wallet again.")
                 
                 return
             }
             
-            self.version = version.bitcoinVersion
+            self.version = version
             self.getWords()
         }
     }
@@ -123,18 +125,18 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     
     private func getXpubFingerprint(masterKey: String) {
         guard let xpub = Keys.bip84AccountXpub(masterKey: masterKey, coinType: coinType, account: 0),
-            let fingerprint = Keys.fingerprint(masterKey: masterKey) else {
-                showError(error: "Error deriving fingerprint")
-                return
+              let fingerprint = Keys.fingerprint(masterKey: masterKey) else {
+            showError(error: "Error deriving fingerprint")
+            return
         }
         
-        createWallet(fingerprint: fingerprint, xpub: xpub) { [weak self] success in
+        createWallet(fingerprint: fingerprint, xpub: xpub, mk: masterKey) { [weak self] success in
             guard let self = self else { return }
             
             if success {
                 var type:WalletType
                 
-                if self.version >= 21 {
+                if self.version >= 210100 {
                     type = .descriptor
                 } else {
                     type = .single
@@ -156,76 +158,69 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         return "wpkh([\(fingerprint)/84h/\(coinType)h/0h]\(xpub)/1/*)"
     }
     
-    private func createWallet(fingerprint: String, xpub: String, completion: @escaping ((Bool)) -> Void) {
+    private func createWallet(fingerprint: String, xpub: String, mk: String, completion: @escaping ((Bool)) -> Void) {
         primDesc = primaryDescriptor(fingerprint, xpub)
         
         let walletName = "FullyNoded-\(Crypto.sha256hash(primDesc))"
         var param = "\"\(walletName)\", true, true, \"\", true"
         
-        if self.version >= 21 {
+        if self.version >= 210100 {
             param += ", true, true"
         }
-
-        Reducer.makeCommand(command: .createwallet, param: param) { [weak self] (response, errorMessage) in
+        
+        OnchainUtils.createWallet(param: param) { [weak self] (name, message) in
             guard let self = self else { return }
-
-            guard let dict = response as? NSDictionary,
-                let name = dict["name"] as? String else {
-                    self.showError(error: "Error creating wallet on your node: \(errorMessage ?? "unknown")")
-                    return
-            }
             
-            if self.version >= 21 {
-                self.importDescriptors(name, fingerprint, xpub, self.primDesc, completion: completion)
+            if let name = name {
+                UserDefaults.standard.set(name, forKey: "walletName")
+                
+                if self.version >= 210100 {
+                    self.importDescriptors(name, fingerprint, xpub, self.primDesc, mk, completion: completion)
+                } else {
+                    self.importKeys(name, fingerprint, xpub, self.primDesc, completion: completion)
+                }
             } else {
-                self.importKeys(name, fingerprint, xpub, self.primDesc, completion: completion)
+                if let message = message {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "Error", message: message)
+                }
             }
         }
     }
     
-    private func importDescriptors(_ name: String, _ fingerprint: String, _ xpub: String, _ desc: String, completion: @escaping ((Bool)) -> Void) {
+    private func importDescriptors(_ name: String, _ xfp: String, _ xpub: String, _ desc: String, _ mk: String, completion: @escaping ((Bool)) -> Void) {
         self.name = name
-        UserDefaults.standard.set(name, forKey: "walletName")
+        let changeDesc = self.changeDescriptor(xfp, xpub)
         
-        let changeDesc = self.changeDescriptor(fingerprint, xpub)
-        
-        self.getDescriptorInfo(desc: desc) { completePrimDesc in
-            guard let completePrimDesc = completePrimDesc else { completion(false); return }
+        OnchainUtils.getDescriptorInfo(desc) { (descriptorInfo, message) in
+            guard let recDescriptorInfo = descriptorInfo else { completion(false); return }
             
-            self.getDescriptorInfo(desc: changeDesc) { completeChangeDesc in
-                guard let completeChangeDesc = completeChangeDesc else { completion(false); return }
+            OnchainUtils.getDescriptorInfo(changeDesc) { (changeDescInfo, message) in
+                guard let changeDescInfo = changeDescInfo else { completion(false); return }
                 
-                self.changeDesc = completeChangeDesc
-                self.primDesc = completePrimDesc
+                self.changeDesc = changeDescInfo.descriptor
+                self.primDesc = recDescriptorInfo.descriptor
                 
-                let params = "[{\"desc\": \"\(completePrimDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": false}, {\"desc\": \"\(completeChangeDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": true}]"
-                
-                Reducer.makeCommand(command: .importdescriptors, param: params) { (response, errorMessage) in
-                    guard let responseArray = response as? [[String:Any]] else {
-                        UserDefaults.standard.removeObject(forKey: "walletName")
-                        self.showError(error: "Error importing descriptors: \(errorMessage ?? "unknown error")")
-                        
-                        return
-                    }
+                JoinMarket.descriptors(mk, xfp) { [weak self] (jMDescriptors, dict) in
+                    guard let self = self else { return }
                     
-                    for (i, response) in responseArray.enumerated() {
-                        guard let success = response["success"] as? Bool, success else {
-                            
-                            if let error = response["error"] as? [String:Any], let message = error["message"] as? String {
-                                UserDefaults.standard.removeObject(forKey: "walletName")
-                                self.showError(error: "Error importing descriptors: \(message)")
-                            } else {
-                                UserDefaults.standard.removeObject(forKey: "walletName")
-                                self.showError(error: "Error importing descriptors.")
-                            }
-                            
+                    guard let jMDescriptors = jMDescriptors, let dict = dict else { return }
+                    
+                    self.dict = dict
+                    
+                    let params = "[{\"desc\": \"\(self.primDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": false}, {\"desc\": \"\(self.changeDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": true}, \(jMDescriptors)]"
+                    
+                    OnchainUtils.importDescriptors(params) { [weak self] (imported, message) in
+                        guard let self = self else { return }
+                        
+                        guard imported else {
+                            UserDefaults.standard.removeObject(forKey: "walletName")
                             completion(false)
+                            self.showError(error: message ?? "Unknown error importing descriptors.")
                             return
                         }
                         
-                        if i + 1 == responseArray.count {
-                            completion(true)
-                        }
+                        completion(true)
                     }
                 }
             }
@@ -234,7 +229,6 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     
     private func importKeys(_ name: String, _ fingerprint: String, _ xpub: String, _ desc: String, completion: @escaping ((Bool)) -> Void) {
         self.name = name
-        UserDefaults.standard.set(name, forKey: "walletName")
         
         self.importPrimaryKeys(desc: desc) { [weak self] (success, errorMessage) in
             guard let self = self else { return }
@@ -326,9 +320,8 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func saveWallet(type: WalletType) {
-        var dict = [String:Any]()
         dict["id"] = UUID()
-        dict["label"] = type.stringValue
+        dict["label"] = "Single sig"
         dict["changeDescriptor"] = changeDesc
         dict["receiveDescriptor"] = primDesc
         dict["type"] = type.stringValue

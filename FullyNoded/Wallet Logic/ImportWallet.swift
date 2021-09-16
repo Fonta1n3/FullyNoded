@@ -14,7 +14,7 @@ class ImportWallet {
     static var processedWatching = [String]()
     static var isColdcard = false
     static var isRecovering = false
-    static var version:Double = 0.0
+    static var version:Int = 0
     static var isHot = false
             
     class func accountMap(_ accountMap: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
@@ -24,7 +24,6 @@ class ImportWallet {
             prefix = "Coldcard"
         }
         var keypool = Bool()
-        let descriptorParser = DescriptorParser()
         var primDescriptor = accountMap["descriptor"] as! String
         let blockheight = accountMap["blockheight"] as! Int
         let label = accountMap["label"] as! String
@@ -36,18 +35,18 @@ class ImportWallet {
         wallet["maxIndex"] = 2500
         wallet["index"] = 0
         
-        var descStruct = descriptorParser.descriptor(primDescriptor)
+        var descStruct = Descriptor(primDescriptor)
         isHot = descStruct.isHot
         
-        guard let version = UserDefaults.standard.object(forKey: "version") as? String else {
+        guard let version = UserDefaults.standard.object(forKey: "version") as? Int else {
             completion((false, "Version unknown. In order to create a wallet we need to know which version of Bitcoin Core you are running, please go the the home screen and refresh then try to create this wallet again."))
             
             return
         }
         
-        self.version = version.bitcoinVersion
+        self.version = version
         
-        if self.version >= 21.0 {
+        if self.version >= 210100 {
             wallet["type"] = "Native-Descriptor"
             keypool = false
         } else {
@@ -63,7 +62,7 @@ class ImportWallet {
         primDescriptor = primDescriptor.replacingOccurrences(of: "'", with: "h")
         let arr = primDescriptor.split(separator: "#")
         primDescriptor = "\(arr[0])"
-        descStruct = descriptorParser.descriptor(primDescriptor)
+        descStruct = Descriptor(primDescriptor)
         
         // If the descriptor is multisig, we sort the keys lexicographically
         if descStruct.isMulti {
@@ -143,7 +142,7 @@ class ImportWallet {
                 wallet["name"] = name
                 UserDefaults.standard.set(wallet["name"] as! String, forKey: "walletName")
                 
-                if version.bitcoinVersion >= 21 {
+                if version >= 210100 {
                     importPrimaryDescriptors(recDesc, changeDesc) { (success, errorMessage) in
                         guard success else {
                             UserDefaults.standard.removeObject(forKey: "walletName")
@@ -322,17 +321,12 @@ class ImportWallet {
     class func createWallet(_ walletName: String, completion: @escaping ((name: String?, errorMessage: String?)) -> Void) {
         var param = "\"\(walletName)\", \(!isHot), true, \"\", true"
         
-        if version >= 21 {
+        if version >= 210100 {
             param += ", true, true"
         }
         
-        Reducer.makeCommand(command: .createwallet, param: param) { (response, errorMessage) in
-            guard let dict = response as? NSDictionary, let name = dict["name"] as? String else {
-                completion((nil, errorMessage))
-                return
-            }
-            
-            completion((name, nil))
+        OnchainUtils.createWallet(param: param) { (name, message) in
+            completion((name, message))
         }
     }
     
@@ -343,29 +337,9 @@ class ImportWallet {
     }
     
     class func importDescriptors(_ params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .importdescriptors, param: params) { (response, errorMessage) in
-            guard let responseArray = response as? [[String:Any]] else {
-                completion((false, "Error importing descriptors: \(errorMessage ?? "unknown error")"))
-                return
-            }
-            
-            for (i, response) in responseArray.enumerated() {
-                guard let success = response["success"] as? Bool, success else {
-                    var errorMessage = "Error importing descriptors."
-                    
-                    if let error = response["error"] as? [String:Any], let message = error["message"] as? String {
-                        errorMessage = "Error importing descriptors: \(message)"
-                    }
-                    
-                    completion((false, errorMessage))
-                    return
-                }
-                
-                if i + 1 == responseArray.count {
-                    completion((true, nil))
-                }
-            }
-        }
+        OnchainUtils.importDescriptors(params) { (imported, message) in
+            completion((imported, message))
+        }        
     }
     
     class func importReceiveDesc(_ recDesc: String, _ label: String, _ keypool: Bool, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
@@ -414,7 +388,18 @@ class ImportWallet {
     
     class func getDescriptorInfo(desc: String, completion: @escaping ((desc: String?, errorMessage: String?)) -> Void) {
         OnchainUtils.getDescriptorInfo("\(desc)") { (descriptorInfo, message) in
-            completion((descriptorInfo?.descriptor, message))
+            guard let descriptorInfo = descriptorInfo else {
+                completion((nil, message))
+                return
+            }
+            
+            let descStruct = Descriptor(desc)
+            
+            if descStruct.isHot {
+                completion((desc + "#" + descriptorInfo.checksum, message))
+            } else {
+                completion((descriptorInfo.descriptor, message))
+            }
         }
     }
     

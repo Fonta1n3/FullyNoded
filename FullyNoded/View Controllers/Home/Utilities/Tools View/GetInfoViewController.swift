@@ -298,7 +298,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                                 if self.indexToParse == self.addressArray.count {
                                     self.setTextView(text: "\(self.infoArray)")
                                     if self.alertMessage != "" {
-                                        displayAlert(viewController: self, isError: false, message: self.alertMessage)
+                                        showAlert(vc: self, title: "", message: self.alertMessage)
                                     }
                                 }
                             } else {
@@ -328,7 +328,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             } else {
                 DispatchQueue.main.async {
                     self.spinner.removeConnectingView()
-                    displayAlert(viewController: self, isError: true, message: errorMessage!)
+                    showAlert(vc: self, title: "", message: errorMessage!)
                 }
             }
         }
