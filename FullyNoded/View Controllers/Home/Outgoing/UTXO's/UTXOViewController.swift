@@ -187,7 +187,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
     private func editLabel(_ utxo: Utxo) {
         guard let address = utxo.address, let isHot = utxo.spendable else {
-            showAlert(vc: self, title: "Ooops", message: "We not have an address or info on whether that utxo is watch-only or not.")
+            showAlert(vc: self, title: "Ooops", message: "We do not have an address or info on whether that utxo is watch-only or not.")
             return
         }
         
@@ -341,7 +341,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            JoinMarket.syncAddresses()
+            //JoinMarket.syncAddresses()
             self.updateSelectedUtxos()
             self.tableView.isUserInteractionEnabled = true
             self.tableView.reloadData()
@@ -384,12 +384,12 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 
                 var utxoDict = utxo.dict
                 
-                if let wallet = self.wallet {
-                    if wallet.type == WalletType.descriptor.stringValue {
-                        let dStruct = Descriptor(wallet.receiveDescriptor)
-                        utxoDict["spendable"] = dStruct.isHot
-                    }
-                }
+//                if let wallet = self.wallet {
+//                    if wallet.type == WalletType.descriptor.stringValue {
+//                        let dStruct = Descriptor(wallet.receiveDescriptor)
+//                        utxoDict["spendable"] = dStruct.isHot
+//                    }
+//                }
                 
                 func finish() {
                     self.unlockedUtxos.append(Utxo(utxoDict))
@@ -452,7 +452,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 }
                 
                 let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
-                print("currency: \(currency)")
                 let amountBtc = utxo.amount!
                 utxoDict["amountSats"] = amountBtc.sats
                 utxoDict["lifehash"] = LifeHash.image(utxo.address ?? "")
@@ -476,7 +475,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                                         var gain = currentFiatValue - originFiatValue
                                         
                                         if originFiatValue > 0 {
-                                            print("getting here")
                                             originValue = originFiatValue.fiatString
                                             
                                             if gain > 1.0 {
@@ -595,75 +593,75 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
         
         
-        let jm = JoinMarketPit.sharedInstance
-        let taker = Taker.shared
-        print("jm.absOffers.count: \(jm.absOffers.count)")
-        print("jm.relOffers.count: \(jm.relOffers.count)")
-        
-        guard jm.absOffers.count > 0 || jm.relOffers.count > 0 else {
-            showAlert(vc: self, title: "", message: "No offers...")
-            return
-        }
-        
-        if jm.absOffers.count > 0 {
-            jm.absOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
-            jm.absOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
-        }
-        
-        if jm.relOffers.count > 0 {
-            jm.relOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
-            jm.relOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
-        }
-                        
-        guard let amount = utxo.amount else { print("failing here"); return }
-        
-        let satsToMix = Int(amount * 100000000.0)
-        
-        var idealAbsOffers = jm.absOffers
-        
-        for (i, absOffer) in jm.absOffers.enumerated() {
-            if (satsToMix > absOffer.minSize ?? 0 && satsToMix < absOffer.maxSize ?? 0) {
-                idealAbsOffers.append(absOffer)
-            }
-            
-            if i + 1 == jm.absOffers.count {
-                //print("ideal absoffer: \(idealAbsOffers[0].raw)")
-                
-                if idealAbsOffers.count > 4 {
-                    for i in 0...4 {
-                        let offer = idealAbsOffers[i]
-                        print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
-                        
-                        taker.handshake(offer, utxo) { _ in
-                            //print("handshake response: \(response ?? "empty")")
-                        }
-                    }
-                }
-            }
-        }
-        
-        var idealRelOffers = jm.relOffers
-        
-        for (i, relOffer) in jm.relOffers.enumerated() {
-            if (satsToMix > relOffer.minSize ?? 0 && satsToMix < relOffer.maxSize ?? 0) {
-                idealRelOffers.append(relOffer)
-            }
-            
-            if i + 1 == jm.relOffers.count {
-                print("ideal reloffer: \(idealRelOffers[0].raw)")
-                
-                if idealRelOffers.count > 4 {
-                    for i in 0...4 {
-                        let offer = idealRelOffers[i]
-                        print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
-                        
-                        taker.handshake(idealRelOffers[i], utxo) { response in
-                            //print("handshake response: \(response ?? "empty")")
-                        }
-                    }
-                }
-            }
-        }
+//        let jm = JoinMarketPit.sharedInstance
+//        let taker = Taker.shared
+//        print("jm.absOffers.count: \(jm.absOffers.count)")
+//        print("jm.relOffers.count: \(jm.relOffers.count)")
+//        
+//        guard jm.absOffers.count > 0 || jm.relOffers.count > 0 else {
+//            showAlert(vc: self, title: "", message: "No offers...")
+//            return
+//        }
+//        
+//        if jm.absOffers.count > 0 {
+//            jm.absOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
+//            jm.absOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
+//        }
+//        
+//        if jm.relOffers.count > 0 {
+//            jm.relOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
+//            jm.relOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
+//        }
+//                        
+//        guard let amount = utxo.amount else { print("failing here"); return }
+//        
+//        let satsToMix = Int(amount * 100000000.0)
+//        
+//        var idealAbsOffers = jm.absOffers
+//        
+//        for (i, absOffer) in jm.absOffers.enumerated() {
+//            if (satsToMix > absOffer.minSize ?? 0 && satsToMix < absOffer.maxSize ?? 0) {
+//                idealAbsOffers.append(absOffer)
+//            }
+//            
+//            if i + 1 == jm.absOffers.count {
+//                //print("ideal absoffer: \(idealAbsOffers[0].raw)")
+//                
+//                if idealAbsOffers.count > 4 {
+//                    for i in 0...4 {
+//                        let offer = idealAbsOffers[i]
+//                        print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
+//                        
+//                        taker.handshake(offer, utxo) { _ in
+//                            //print("handshake response: \(response ?? "empty")")
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        
+//        var idealRelOffers = jm.relOffers
+//        
+//        for (i, relOffer) in jm.relOffers.enumerated() {
+//            if (satsToMix > relOffer.minSize ?? 0 && satsToMix < relOffer.maxSize ?? 0) {
+//                idealRelOffers.append(relOffer)
+//            }
+//            
+//            if i + 1 == jm.relOffers.count {
+//                print("ideal reloffer: \(idealRelOffers[0].raw)")
+//                
+//                if idealRelOffers.count > 4 {
+//                    for i in 0...4 {
+//                        let offer = idealRelOffers[i]
+//                        print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
+//                        
+//                        taker.handshake(idealRelOffers[i], utxo) { response in
+//                            //print("handshake response: \(response ?? "empty")")
+//                        }
+//                    }
+//                }
+//            }
+//        }
         
     }
             
