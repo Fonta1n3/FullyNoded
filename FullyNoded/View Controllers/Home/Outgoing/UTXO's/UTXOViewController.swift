@@ -43,6 +43,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             self.wallet = wallet
         }
+        
+        print("fxRate: \(fxRate)")
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -390,7 +392,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 }
                 
                 func finish() {
-                    self.unlockedUtxos.append(utxo)
+                    self.unlockedUtxos.append(Utxo(utxoDict))
                     
                     if i + 1 == utxos.count {
                         self.unlockedUtxos = self.unlockedUtxos.sorted { $0.confs ?? 0 < $1.confs ?? 0 }
@@ -450,6 +452,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 }
                 
                 let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+                print("currency: \(currency)")
                 let amountBtc = utxo.amount!
                 utxoDict["amountSats"] = amountBtc.sats
                 utxoDict["lifehash"] = LifeHash.image(utxo.address ?? "")
@@ -473,6 +476,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                                         var gain = currentFiatValue - originFiatValue
                                         
                                         if originFiatValue > 0 {
+                                            print("getting here")
                                             originValue = originFiatValue.fiatString
                                             
                                             if gain > 1.0 {

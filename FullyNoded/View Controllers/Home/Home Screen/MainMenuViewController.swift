@@ -517,11 +517,11 @@ class MainMenuViewController: UIViewController {
                     showAlert(vc: self, title: "", message: "There was an issue... This can mean your node is busy doing an intense task like rescanning or syncing whoich may be preventing it from responding to commands. If that is the case then just wait a few minutes and try again. As a last resort try rebooting your node and Fully Noded.")
                 }
                 
+                self.removeLoader()
+                
                 return
             }
-                        
-            self.removeLoader()
-            
+                                    
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
