@@ -108,16 +108,16 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                     self.connectingView.addConnectingView(vc: self, description: "Importing Address")
                 }
                 
-                activeWallet { wallet in
-                    guard let wallet = wallet else {
-                        showAlert(vc: self, title: "", message: "Only available for FN wallets.")
+                OnchainUtils.getWalletInfo { (walletInfo, message) in
+                    guard let walletInfo = walletInfo else {
+                        showAlert(vc: self, title: "Error", message: message ?? "Unknown error getting wallet info.")
                         return
                     }
                     
-                    if wallet.type == WalletType.descriptor.stringValue {
+                    if walletInfo.descriptors != 0 {
                         self.importDescriptor(key: key)
                     } else {
-                        self.importDescriptor(key: key)
+                        self.importmulti(key: key)
                     }
                 }
 

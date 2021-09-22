@@ -27,6 +27,7 @@ public struct WalletInfo: CustomStringConvertible {
     let locked: Bool
     let walletname: String
     //let walletversion: Int
+    let progress: Double?
     
     init(_ dictionary: [String: Any]) {
         //avoid_reuse = dictionary["avoid_reuse"] as? Bool ?? false
@@ -34,6 +35,12 @@ public struct WalletInfo: CustomStringConvertible {
         descriptors = dictionary["descriptors"] as? Int
         private_keys_enabled = dictionary["private_keys_enabled"] as! Bool
         scanning = (dictionary["scanning"] as? [String:Any] != nil)
+//        if scanning {
+//
+//        } else {
+//            progress = nil
+//        }
+        progress = (dictionary["scanning"] as? [String:Any])?["progress"] as? Double
         walletname = dictionary["walletname"] as! String
         locked = (dictionary["unlocked_until"] as? Int != nil)
     }
@@ -56,6 +63,10 @@ public struct WalletInfo: CustomStringConvertible {
          paytxfee = 0;
          "private_keys_enabled" = 1;
          scanning = 0;
+     scanning =         {
+         duration = 17;
+         progress = "0.1189073480362548";
+     }
          txcount = 11;
          "unconfirmed_balance" = 0;
          "unlocked_until" = 0;

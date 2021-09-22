@@ -1113,12 +1113,10 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
     }
     
     private func getWalletInfo() {
-        Reducer.makeCommand(command: .getwalletinfo, param: "") { [weak self] (response, errorMessage) in
+        OnchainUtils.getWalletInfo { [weak self] (walletInfo, message) in
             guard let self = self else { return }
             
-            guard let dict = response as? NSDictionary,
-                let scanning = dict["scanning"] as? NSDictionary,
-                let progress = scanning["progress"] as? Double else {
+            guard let progress = walletInfo?.progress else {
                 return
             }
             

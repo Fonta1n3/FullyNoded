@@ -9,6 +9,16 @@
 import Foundation
 
 class OnchainUtils {
+    static func getWalletInfo(completion: @escaping ((walletInfo: WalletInfo?, message: String?)) -> Void) {
+        Reducer.makeCommand(command: .getwalletinfo, param: "") { (response, message) in
+            guard let response = response as? [String:Any] else {
+                completion((nil, message ?? "Unknown error."))
+                return
+            }
+            
+            completion((WalletInfo(response), nil))
+        }
+    }
     
     static func getDescriptorInfo(_ desc: String, completion: @escaping ((descriptorInfo: DescriptorInfo?, message: String?)) -> Void) {
         Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(desc)\"") { (response, message) in

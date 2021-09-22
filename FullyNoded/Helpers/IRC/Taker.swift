@@ -58,7 +58,7 @@ class Taker: NSObject {
     private override init() {}
     
     func handshake(_ offer: JMOffer, _ utxo: Utxo, completion: @escaping ((String?) -> Void)) {
-        //!fill <order id> <coinjoin amount> <taker encryption pubkey>
+        //!fill <order id> <coinjoin amount> <taker encryption pubkey> <commitment>
         
         //!auth <input utxo pubkey> <btc sig of taker encryption pubkey using input utxo pubkey>
         
