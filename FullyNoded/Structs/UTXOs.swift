@@ -32,7 +32,7 @@ public struct Utxo: CustomStringConvertible {
     let amountFiat: String?
     let amountSats: String?
     let lifehash: UIImage?
-    let commitment: String?
+    var commitment: String?
     let dict: [String:Any]
     
     init(_ dictionary: [String: Any]) {

@@ -584,7 +584,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
 //            }
 //        }
         
-        
+        var utxoToMix = utxo
+        utxoToMix.commitment = "<insert code to creat commitment>"
         
         let jm = JoinMarketPit.sharedInstance
         let taker = Taker.shared
