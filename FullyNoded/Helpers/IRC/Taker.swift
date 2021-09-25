@@ -69,6 +69,7 @@ class Taker: NSObject {
         guard let oid = offer.oid else { print("oid failing"); return }
         guard let desc = utxo.desc else { print("desc failing"); return }
         guard let cjAmount = utxo.amount else { print("cjamount failing"); return }
+        guard let commitment = utxo.commitment else { print("commitment failing"); return }
         
         
         server.delegate = self
@@ -78,8 +79,7 @@ class Taker: NSObject {
         //completion("maker: \(maker), pubkey: \(pk)")
         let amount = Int(cjAmount * 100000000)
         
-        let fill = "PRIVMSG \(maker) :!fill \(oid) \(amount) \(pubkey)"
-        //print("fill message: \(fill)")
+        let fill = "PRIVMSG \(maker) :!fill \(oid) \(amount) \(pubkey) \(commitment)"
         
         server.send(fill)
     }

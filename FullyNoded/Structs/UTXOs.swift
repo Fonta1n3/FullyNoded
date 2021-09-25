@@ -32,6 +32,7 @@ public struct Utxo: CustomStringConvertible {
     let amountFiat: String?
     let amountSats: String?
     let lifehash: UIImage?
+    let commitment: String?
     let dict: [String:Any]
     
     init(_ dictionary: [String: Any]) {
@@ -56,6 +57,7 @@ public struct Utxo: CustomStringConvertible {
         amountFiat = dictionary["amountFiat"] as? String
         amountSats = dictionary["amountSats"] as? String
         lifehash = dictionary["lifehash"] as? UIImage
+        commitment = dictionary["commitment"] as? String
         dict = dictionary
     }
     
