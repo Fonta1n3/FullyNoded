@@ -416,7 +416,7 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
                 
                 guard let wallet = wallet else {
                     self.wallet = nil
-                    self.walletLabel = UserDefaults.standard.object(forKey: "walletName") as? String ?? "Default Wallet"
+                    self.walletLabel = UserDefaults.standard.object(forKey: "walletName") as? String ?? ""
                     self.loadBalances()
                     return
                 }
