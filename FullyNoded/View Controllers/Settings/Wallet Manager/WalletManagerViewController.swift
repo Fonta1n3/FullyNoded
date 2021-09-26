@@ -38,18 +38,18 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     
     @IBAction func unloadAction(_ sender: Any) {
         connectingView.addConnectingView(vc: self, description: "getting all loaded wallets...")
-        Reducer.makeCommand(command: .listwallets, param: "") { [weak self] (response, errorMessage) in
+        OnchainUtils.listWallets { [weak self] (wallets, message) in
             guard let self = self else { return }
             
-            guard let loadedWallets = response as? NSArray else {
+            guard let loadedWallets = wallets else {
                 self.connectingView.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: "There was an error getting your active wallets in order to deactivate them: \(errorMessage ?? "")")
+                showAlert(vc: self, title: "Error", message: "There was an error getting your active wallets in order to deactivate them: \(message ?? "")")
                 return
             }
             
             for (i, w) in loadedWallets.enumerated() {
-                if (w as! String) != "" {
-                    self.walletsToUnload.append(w as! String)
+                if w != "" {
+                    self.walletsToUnload.append(w)
                 }
                 if i + 1 == loadedWallets.count {
                     guard self.walletsToUnload.count > 0 else {
@@ -158,12 +158,12 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     
     private func getAllActiveWallets() {
         connectingView.addConnectingView(vc: self, description: "getting all loaded wallets...")
-        Reducer.makeCommand(command: .listwallets, param: "") { [weak self] (response, errorMessage) in
+        OnchainUtils.listWallets { [weak self] (wallets, message) in
             guard let self = self else { return }
             
-            guard let loadedWallets = response as? NSArray else {
+            guard let loadedWallets = wallets else {
                 self.connectingView.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: "There was an error getting your active wallets in order to deactivate them: \(errorMessage ?? "")")
+                showAlert(vc: self, title: "Error", message: "There was an error getting your active wallets in order to deactivate them: \(message ?? "")")
                 return
             }
             
@@ -173,8 +173,8 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
             }
             
             for (i, w) in loadedWallets.enumerated() {
-                if (w as! String) != "" {
-                    self.walletsToUnload.append(w as! String)
+                if w != "" {
+                    self.walletsToUnload.append(w)
                 }
                 if i + 1 == loadedWallets.count {
                     guard self.walletsToUnload.count > 0 else {

@@ -9,6 +9,17 @@
 import Foundation
 
 class OnchainUtils {
+    static func listWalletDir(completion: @escaping ((wallets: WalletDir?, message: String?)) -> Void) {
+        Reducer.makeCommand(command: .listwalletdir, param: "") { (response, errorMessage) in
+            guard let walletDir = response as? [[String:Any]] else {
+                completion((nil, errorMessage ?? "Unknown Error"))
+                return
+            }
+            
+            completion((WalletDir(walletDir), nil))
+        }
+    }
+    
     static func listWallets(completion: @escaping ((wallets: [String]?, message: String?)) -> Void) {
         Reducer.makeCommand(command: .listwallets, param: "") { (response, errorMessage) in
             guard let response = response as? [String] else {

@@ -953,22 +953,22 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
     }
     
     private func chooseWallet() {
-        OnchainUtils.listWallets { (coreWallets, message) in
-            guard let coreWallets = coreWallets, !coreWallets.isEmpty else { self.promptToCreateWallet(); return }
+        OnchainUtils.listWalletDir { (coreWallets, message) in
+            guard let coreWallets = coreWallets, !coreWallets.wallets.isEmpty else { self.promptToCreateWallet(); return }
             
             CoreDataService.retrieveEntity(entityName: .wallets) { localWallets in
                 guard let localWallets = localWallets, !localWallets.isEmpty else { self.promptToCreateWallet(); return }
                 
                 var walletExists = false
                 
-                for (i, coreWallet) in coreWallets.enumerated() {
+                for (i, coreWallet) in coreWallets.wallets.enumerated() {
                     for (x, localWallet) in localWallets.enumerated() {
                         let localWalletStruct = Wallet(dictionary: localWallet)
                         if coreWallet == localWalletStruct.name {
                             walletExists = true
                         }
                         
-                        if i + 1 == coreWallets.count && x + 1 == localWallets.count {
+                        if i + 1 == coreWallets.wallets.count && x + 1 == localWallets.count {
                             if walletExists {
                                 self.promptToChooseWallet()
                             } else {

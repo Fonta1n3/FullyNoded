@@ -35,6 +35,7 @@
 		0A212DE026DC863D00BF6FD4 /* JMOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212DDF26DC863D00BF6FD4 /* JMOffer.swift */; };
 		0A21442C26B4282300123EAC /* PromptForAuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */; };
 		0A3013D8266B361E004DA35C /* LndRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3013D7266B361E004DA35C /* LndRpc.swift */; };
+		0A337D012700316E00AD087F /* WalletDir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A337D002700316E00AD087F /* WalletDir.swift */; };
 		0A39459826E5951100CAF05F /* Taker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A39459726E5951100CAF05F /* Taker.swift */; };
 		0A590357269875CD00510626 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590356269875CB00510626 /* Extensions.swift */; };
 		0A59035A269B080700510626 /* ConfirmLightningPaymentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590359269B080700510626 /* ConfirmLightningPaymentViewController.swift */; };
@@ -241,6 +242,7 @@
 		0A212DDF26DC863D00BF6FD4 /* JMOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMOffer.swift; sourceTree = "<group>"; };
 		0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptForAuthViewController.swift; sourceTree = "<group>"; };
 		0A3013D7266B361E004DA35C /* LndRpc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LndRpc.swift; sourceTree = "<group>"; };
+		0A337D002700316E00AD087F /* WalletDir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDir.swift; sourceTree = "<group>"; };
 		0A39459726E5951100CAF05F /* Taker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Taker.swift; sourceTree = "<group>"; };
 		0A590356269875CB00510626 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		0A590359269B080700510626 /* ConfirmLightningPaymentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmLightningPaymentViewController.swift; sourceTree = "<group>"; };
@@ -742,6 +744,7 @@
 				0A212D8C26C66B1800BF6FD4 /* DescriptorInfo.swift */,
 				0A212D9126CBE17600BF6FD4 /* MixIndexes.swift */,
 				0A212DDF26DC863D00BF6FD4 /* JMOffer.swift */,
+				0A337D002700316E00AD087F /* WalletDir.swift */,
 			);
 			path = Structs;
 			sourceTree = "<group>";
@@ -1279,6 +1282,7 @@
 				D00B27BC255A27F300269B51 /* WalletURL.swift in Sources */,
 				D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */,
 				D07E0DE622F9168F00A81FA8 /* WalletManagerViewController.swift in Sources */,
+				0A337D012700316E00AD087F /* WalletDir.swift in Sources */,
 				D0384E34246AC53B002FEE94 /* base58.c in Sources */,
 				D011702824EBA3CE00ACC44B /* ChannelDetailViewController.swift in Sources */,
 				0A1F110626A2783000BE2707 /* HDKey.swift in Sources */,
