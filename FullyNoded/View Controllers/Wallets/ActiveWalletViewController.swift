@@ -953,10 +953,31 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
     }
     
     private func chooseWallet() {
-        CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
-            guard let wallets = wallets, wallets.count > 0 else { self.promptToCreateWallet(); return }
+        OnchainUtils.listWallets { (coreWallets, message) in
+            guard let coreWallets = coreWallets, !coreWallets.isEmpty else { self.promptToCreateWallet(); return }
             
-            self.promptToChooseWallet()
+            CoreDataService.retrieveEntity(entityName: .wallets) { localWallets in
+                guard let localWallets = localWallets, !localWallets.isEmpty else { self.promptToCreateWallet(); return }
+                
+                var walletExists = false
+                
+                for (i, coreWallet) in coreWallets.enumerated() {
+                    for (x, localWallet) in localWallets.enumerated() {
+                        let localWalletStruct = Wallet(dictionary: localWallet)
+                        if coreWallet == localWalletStruct.name {
+                            walletExists = true
+                        }
+                        
+                        if i + 1 == coreWallets.count && x + 1 == localWallets.count {
+                            if walletExists {
+                                self.promptToChooseWallet()
+                            } else {
+                                self.promptToCreateWallet()
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     
@@ -1131,7 +1152,10 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
             let alert = UIAlertController(title: "Looks like you have not yet created a Fully Noded wallet, tap create to get started, if you are not yet ready you can always tap the + button in the top left.", message: "", preferredStyle: self.alertStyle)
             
             alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { action in
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.tabBarController?.selectedIndex = 1
                     self.performSegue(withIdentifier: "createFullyNodedWallet", sender: self)
                 }
             }))
@@ -1149,7 +1173,12 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
             let alert = UIAlertController(title: "None of your wallets seem to be toggled on, please choose which wallet you want to use.", message: "", preferredStyle: self.alertStyle)
             
             alert.addAction(UIAlertAction(title: "Choose", style: .default, handler: { action in
-                self.goChooseWallet()
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.tabBarController?.selectedIndex = 1
+                    self.goChooseWallet()
+                }
             }))
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
