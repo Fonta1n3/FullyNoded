@@ -910,7 +910,7 @@ extension MainMenuViewController: OnionManagerDelegate {
         viewHasLoaded = true
         removeBackView()
         loadTable()
-        displayAlert(viewController: self, isError: false, message: "Tor finished bootstrapping")
+        displayAlert(viewController: self, isError: false, message: "Tor finished bootstrapping.")
         
         DispatchQueue.main.async { [weak self] in
             self?.torProgressLabel.isHidden = true
@@ -920,18 +920,18 @@ extension MainMenuViewController: OnionManagerDelegate {
         
         timeStamp()
         
-        let jmPit = JoinMarketPit.sharedInstance
-        jmPit.connect()
-        
-        jmPit.connectedToPit = { connected in
-            if connected {
-                jmPit.getOrderBook()
-            }
-        }
+//        let jmPit = JoinMarketPit.sharedInstance
+//        jmPit.connect()
+//
+//        jmPit.connectedToPit = { connected in
+//            if connected {
+//                jmPit.getOrderBook()
+//            }
+//        }
     }
     
     func torConnDifficulties() {
-        displayAlert(viewController: self, isError: true, message: "We are having issues connecting tor")
+        displayAlert(viewController: self, isError: true, message: "We are having issues connecting tor.")
         DispatchQueue.main.async { [weak self] in
             self?.torProgressLabel.isHidden = true
             self?.progressView.isHidden = true

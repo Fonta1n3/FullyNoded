@@ -185,7 +185,12 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
     }
     
-    private func importDescriptors(_ name: String, _ xfp: String, _ xpub: String, _ desc: String, _ mk: String, completion: @escaping ((success: Bool, message: String?)) -> Void) {
+    private func importDescriptors(_ name: String,
+                                   _ xfp: String,
+                                   _ xpub: String,
+                                   _ desc: String,
+                                   _ mk: String,
+                                   completion: @escaping ((success: Bool, message: String?)) -> Void) {
         self.name = name
         let changeDesc = self.changeDescriptor(xfp, xpub)
         
@@ -224,7 +229,11 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
     }
     
-    private func importKeys(_ name: String, _ fingerprint: String, _ xpub: String, _ desc: String, completion: @escaping ((success: Bool, message: String?)) -> Void) {
+    private func importKeys(_ name: String,
+                            _ fingerprint: String,
+                            _ xpub: String,
+                            _ desc: String,
+                            completion: @escaping ((success: Bool, message: String?)) -> Void) {
         self.name = name
         
         self.importPrimaryKeys(desc: desc) { [weak self] (success, errorMessage) in

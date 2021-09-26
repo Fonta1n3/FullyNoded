@@ -55,7 +55,7 @@ class UTXOCell: UITableViewCell {
         layer.borderWidth = 0.5
         layer.cornerRadius = 8
         
-        //mixButtonOutlet.alpha = 0
+        mixButtonOutlet.alpha = 0
         
         roundeBackgroundView.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
