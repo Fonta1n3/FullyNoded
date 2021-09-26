@@ -10,13 +10,19 @@ import Foundation
 
 public struct WalletDir: CustomStringConvertible {
     
-    var wallets:[String] = []
+    var wallets:[String]
     
-    init(_ dictArray: [[String: Any]]) {
-        for dict in dictArray {
+    init(_ dictArray: [String: Any]) {
+        var walletsToReturn:[String] = []
+        
+        let walletArray = dictArray["wallets"] as? [[String:Any]] ?? [[:]]
+        
+        for dict in walletArray {
             let name = dict["name"] as? String ?? ""
-            wallets.append(name)
+            walletsToReturn.append(name)
         }
+        
+        wallets = walletsToReturn
     }
     
     public var description: String {
