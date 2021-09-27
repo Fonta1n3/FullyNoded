@@ -2264,11 +2264,11 @@ xxxxx</string>
             <objects>
                 <viewController storyboardIdentifier="QRDisplayer" useStoryboardIdentifierAsRestorationIdentifier="YES" id="GlR-4A-eAx" customClass="QRDisplayerViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="1Ax-bN-O8E">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="574"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
-                                <rect key="frame" x="16" y="422" width="343" height="225"/>
+                                <rect key="frame" x="16" y="422" width="343" height="132"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
@@ -5814,40 +5814,42 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                     </button>
                                 </subviews>
                             </stackView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4Lc-CO-CxA">
-                                <rect key="frame" x="67" y="552" width="241" height="22"/>
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <state key="normal" title="   how to connect my node?" image="info.circle" catalog="system">
-                                    <color key="titleColor" systemColor="systemTealColor"/>
-                                </state>
-                                <connections>
-                                    <action selector="showGuideAction:" destination="B99-yZ-naR" eventType="touchUpInside" id="gLf-qJ-WNO"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="UFY-wL-O3m">
-                                <rect key="frame" x="67" y="582" width="241" height="40"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="241" id="2O6-yZ-vES"/>
-                                    <constraint firstAttribute="height" constant="40" id="LiW-9J-G1x"/>
-                                </constraints>
-                                <state key="normal" title="  recover from iCloud" image="icloud.and.arrow.down" catalog="system"/>
-                                <connections>
-                                    <action selector="recoverAction:" destination="B99-yZ-naR" eventType="touchUpInside" id="lh5-11-Kow"/>
-                                </connections>
-                            </button>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="FPE-UJ-v6V">
+                                <rect key="frame" x="67" y="561" width="241" height="49"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="UFY-wL-O3m">
+                                        <rect key="frame" x="0.0" y="0.0" width="241" height="22"/>
+                                        <color key="tintColor" systemColor="systemTealColor"/>
+                                        <state key="normal" title="  recover from iCloud" image="icloud.and.arrow.down" catalog="system">
+                                            <color key="titleColor" systemColor="systemTealColor"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="recoverAction:" destination="B99-yZ-naR" eventType="touchUpInside" id="lh5-11-Kow"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4Lc-CO-CxA">
+                                        <rect key="frame" x="0.0" y="27" width="241" height="22"/>
+                                        <color key="tintColor" systemColor="systemTealColor"/>
+                                        <state key="normal" title="   how to connect my node?" image="info.circle" catalog="system">
+                                            <color key="titleColor" systemColor="systemTealColor"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="showGuideAction:" destination="B99-yZ-naR" eventType="touchUpInside" id="gLf-qJ-WNO"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="uUf-aQ-0bN"/>
                         <color key="backgroundColor" red="0.050706155598163605" green="0.058625258505344391" blue="0.071102283895015717" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="UFY-wL-O3m" firstAttribute="centerX" secondItem="B9e-yr-KMo" secondAttribute="centerX" id="8Mp-hf-PNm"/>
                             <constraint firstItem="qBh-RP-hWz" firstAttribute="top" secondItem="DTI-AZ-owi" secondAttribute="bottom" constant="7.5" id="ACa-qM-sgb"/>
+                            <constraint firstItem="FPE-UJ-v6V" firstAttribute="centerX" secondItem="B9e-yr-KMo" secondAttribute="centerX" id="B1n-Pz-Mvf"/>
                             <constraint firstItem="uUf-aQ-0bN" firstAttribute="trailing" secondItem="qBh-RP-hWz" secondAttribute="trailing" constant="16" id="HV2-84-YUw"/>
                             <constraint firstItem="DTI-AZ-owi" firstAttribute="leading" secondItem="uUf-aQ-0bN" secondAttribute="leading" constant="16" id="RC6-xc-GeH"/>
+                            <constraint firstItem="FPE-UJ-v6V" firstAttribute="top" secondItem="qBh-RP-hWz" secondAttribute="bottom" constant="21" id="RkG-2i-H0x"/>
                             <constraint firstItem="qBh-RP-hWz" firstAttribute="leading" secondItem="uUf-aQ-0bN" secondAttribute="leading" constant="16" id="gOe-Le-cG0"/>
                             <constraint firstItem="DTI-AZ-owi" firstAttribute="top" secondItem="uUf-aQ-0bN" secondAttribute="top" constant="11" id="kzr-7F-vnw"/>
-                            <constraint firstItem="UFY-wL-O3m" firstAttribute="top" secondItem="4Lc-CO-CxA" secondAttribute="bottom" constant="8" symbolic="YES" id="nGo-sx-SQx"/>
-                            <constraint firstItem="4Lc-CO-CxA" firstAttribute="top" secondItem="qBh-RP-hWz" secondAttribute="bottom" constant="12" id="s6S-H3-wnk"/>
-                            <constraint firstItem="4Lc-CO-CxA" firstAttribute="centerX" secondItem="B9e-yr-KMo" secondAttribute="centerX" id="y0W-9T-Qx7"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="J9p-j8-H8t">
@@ -7505,8 +7507,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="Cd3-qW-ujG"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="hqP-uS-RkV"/>
-        <segue reference="if0-NE-c9T"/>
+        <segue reference="07E-4w-Zh7"/>
+        <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="eLW-PX-CgI"/>
         <segue reference="j10-wi-hpr"/>

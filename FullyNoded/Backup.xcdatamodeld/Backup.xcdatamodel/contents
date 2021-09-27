@@ -32,6 +32,16 @@
         <attribute name="index" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="label" optional="YES" attributeType="Binary"/>
         <attribute name="maxIndex" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="mixDepthFourExt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthFourInt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthOneExt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthOneInt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthThreeExt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthThreeInt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthTwoExt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthTwoInt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthZeroExt" optional="YES" attributeType="Binary"/>
+        <attribute name="mixDepthZeroInt" optional="YES" attributeType="Binary"/>
         <attribute name="name" optional="YES" attributeType="Binary"/>
         <attribute name="receiveDescriptor" optional="YES" attributeType="Binary"/>
         <attribute name="type" optional="YES" attributeType="Binary"/>
@@ -40,6 +50,6 @@
         <element name="AuthKeys_" positionX="-54" positionY="-9" width="128" height="74"/>
         <element name="Nodes_" positionX="-36" positionY="36" width="128" height="14"/>
         <element name="Signers_" positionX="0" positionY="54" width="128" height="14"/>
-        <element name="Wallets_" positionX="-9" positionY="45" width="128" height="179"/>
+        <element name="Wallets_" positionX="-9" positionY="45" width="128" height="14"/>
     </elements>
 </model>

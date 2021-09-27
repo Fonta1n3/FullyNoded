@@ -51,36 +51,31 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     
     private func getBitcoinCoreWallets() {
         bitcoinCoreWallets.removeAll()
-        Reducer.makeCommand(command: .listwalletdir, param: "") { [weak self] (response, errorMessage) in
+        OnchainUtils.listWalletDir { [weak self] (walletDir, message) in
             guard let self = self else { return }
             
-            guard let dict = response as? NSDictionary else {
-                DispatchQueue.main.async {
+            guard let walletDir = walletDir else {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
                     self.spinner.removeConnectingView()
                     self.initialLoad = false
-                    displayAlert(viewController: self, isError: true, message: "error getting wallets: \(errorMessage ?? "")")
+                    displayAlert(viewController: self, isError: true, message: "error getting wallets: \(message ?? "")")
                 }
                 return
             }
             
-            self.parseWallets(walletDict: dict)
+            self.parseWallets(wallets: walletDir.wallets)
         }
     }
     
-    private func parseWallets(walletDict: NSDictionary) {
-        guard let walletArr = walletDict["wallets"] as? NSArray else { self.spinner.removeConnectingView(); return }
+    private func parseWallets(wallets: [String]) {
+        guard !wallets.isEmpty else { self.spinner.removeConnectingView(); return }
         
-        for (i, wallet) in walletArr.enumerated() {
-            guard let walletDict = wallet as? NSDictionary,
-                  let walletName = walletDict["name"] as? String else {
-                self.initialLoad = false
-                self.spinner.removeConnectingView()
-                return
-            }
-            
+        for (i, walletName) in wallets.enumerated() {
             bitcoinCoreWallets.append(walletName)
             
-            if i + 1 == walletArr.count {
+            if i + 1 == wallets.count {
                 getFullyNodedWallets()
             }
         }
@@ -155,8 +150,9 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                         self.initialLoad = false
                         return
                     }
-                    
-                    showAlert(vc: self, title: "", message: "There was an error getting your balances: \(message).")
+                    if !message.contains("is already loaded") {
+                        showAlert(vc: self, title: "", message: "There was an error getting your balances: \(message).")
+                    }
                     UserDefaults.standard.set(self.existingActiveWalletName, forKey: "walletName")
                     self.initialLoad = false
                     return
