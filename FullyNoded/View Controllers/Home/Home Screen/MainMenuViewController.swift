@@ -515,6 +515,8 @@ class MainMenuViewController: UIViewController {
                     
                 } else if message.contains("Unable to decode the response") {
                     showAlert(vc: self, title: "", message: "There was an issue... This can mean your node is busy doing an intense task like rescanning or syncing whoich may be preventing it from responding to commands. If that is the case then just wait a few minutes and try again. As a last resort try rebooting your node and Fully Noded.")
+                } else {
+                    showAlert(vc: self, title: "Connection issue...", message: message)
                 }
                 
                 self.removeLoader()

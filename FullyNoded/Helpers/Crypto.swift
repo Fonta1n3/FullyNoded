@@ -118,18 +118,8 @@ enum Crypto {
         return Crypto.sha256hash(Crypto.sha256hash(Crypto.sha256hash(Data(bytes))))
     }
     
-//    static func rpcAuth() {
-//        guard let salt = generateRandomBytes(16),
-//            let password = generateRandomBytes(32) else { return }
-//
-//        let encodedPassword = password.base64EncodedData()
-//        let key256 = SymmetricKey(data: encodedPassword)
-//        let sha256MAC = HMAC<SHA256>.authenticationCode(for: salt, using: key256)
-//        let authenticationCodeData = Data(sha256MAC)
-//        print("rpcauth=FullyNoded:\(salt.hexString)$\(authenticationCodeData.hexString)")
-//        print("rpcpassword=\(password.urlSafeB64String)")
-//    }
-//
+   
+
 //    static func generateRandomBytes(_ bytes: Int) -> Data? {
 //        var keyData = Data(count: bytes)
 //        let result = keyData.withUnsafeMutableBytes {
@@ -144,30 +134,3 @@ enum Crypto {
 //    }
     
 }
-
-/*extension String {
-
-    /// Encodes or decodes into a base64url safe representation
-    ///
-    /// - Parameter on: Whether or not the string should be made safe for URL strings
-    /// - Returns: if `on`, then a base64url string; if `off` then a base64 string
-    func toggleBase64URLSafe(on: Bool) -> String {
-        if on {
-            // Make base64 string safe for passing into URL query params
-            let base64url = self.replacingOccurrences(of: "/", with: "_")
-                .replacingOccurrences(of: "+", with: "-")
-                .replacingOccurrences(of: "=", with: "")
-            return base64url
-        } else {
-            // Return to base64 encoding
-            var base64 = self.replacingOccurrences(of: "_", with: "/")
-                .replacingOccurrences(of: "-", with: "+")
-            // Add any necessary padding with `=`
-            if base64.count % 4 != 0 {
-                base64.append(String(repeating: "=", count: 4 - base64.count % 4))
-            }
-            return base64
-        }
-    }
-
-}*/
