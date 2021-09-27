@@ -36,11 +36,10 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     private func setCoinType() {
         spinner.addConnectingView(vc: self, description: "fetching chain type...")
         
-        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
+        OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
             guard let self = self else { return }
             
-            guard let dict = response as? NSDictionary,
-                let chain = dict["chain"] as? String else {
+            guard let blockchainInfo = blockchainInfo else {
                     self.showError(error: "Error getting blockchain info, please chack your connection to your node.")
                     
                     DispatchQueue.main.async { [weak self] in
@@ -52,13 +51,11 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                     return
             }
             
-            if chain != "main" {
+            if blockchainInfo.chain != "main" {
                 self.coinType = "1"
             }
             
-            if let blocks = dict["blocks"] as? Int {
-                self.blockheight = Int64(blocks)
-            }
+            self.blockheight = Int64(blockchainInfo.blocks)
             
             // check if version is at least 0.21.0 to use native descriptors
             guard let version = UserDefaults.standard.object(forKey: "version") as? Int else {
@@ -130,7 +127,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             return
         }
         
-        createWallet(fingerprint: fingerprint, xpub: xpub, mk: masterKey) { [weak self] success in
+        createWallet(fingerprint: fingerprint, xpub: xpub, mk: masterKey) { [weak self] (success, error) in
             guard let self = self else { return }
             
             if success {
@@ -145,7 +142,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 self.saveWallet(type: type)
             } else {
                 UserDefaults.standard.removeObject(forKey: "walletName")
-                self.showError(error: "Error creating wallet")
+                self.showError(error: "Error creating wallet: \(error ?? "Unknown error.")")
             }
         }
     }
@@ -158,7 +155,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         return "wpkh([\(fingerprint)/84h/\(coinType)h/0h]\(xpub)/1/*)"
     }
     
-    private func createWallet(fingerprint: String, xpub: String, mk: String, completion: @escaping ((Bool)) -> Void) {
+    private func createWallet(fingerprint: String, xpub: String, mk: String, completion: @escaping ((success: Bool, message: String?)) -> Void) {
         primDesc = primaryDescriptor(fingerprint, xpub)
         
         let walletName = "FullyNoded-\(Crypto.sha256hash(primDesc))"
@@ -188,15 +185,20 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
     }
     
-    private func importDescriptors(_ name: String, _ xfp: String, _ xpub: String, _ desc: String, _ mk: String, completion: @escaping ((Bool)) -> Void) {
+    private func importDescriptors(_ name: String,
+                                   _ xfp: String,
+                                   _ xpub: String,
+                                   _ desc: String,
+                                   _ mk: String,
+                                   completion: @escaping ((success: Bool, message: String?)) -> Void) {
         self.name = name
         let changeDesc = self.changeDescriptor(xfp, xpub)
         
         OnchainUtils.getDescriptorInfo(desc) { (descriptorInfo, message) in
-            guard let recDescriptorInfo = descriptorInfo else { completion(false); return }
+            guard let recDescriptorInfo = descriptorInfo else { completion((false, message)); return }
             
             OnchainUtils.getDescriptorInfo(changeDesc) { (changeDescInfo, message) in
-                guard let changeDescInfo = changeDescInfo else { completion(false); return }
+                guard let changeDescInfo = changeDescInfo else { completion((false, message)); return }
                 
                 self.changeDesc = changeDescInfo.descriptor
                 self.primDesc = recDescriptorInfo.descriptor
@@ -215,19 +217,23 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                         
                         guard imported else {
                             UserDefaults.standard.removeObject(forKey: "walletName")
-                            completion(false)
+                            completion((false, message))
                             self.showError(error: message ?? "Unknown error importing descriptors.")
                             return
                         }
                         
-                        completion(true)
+                        completion((true, nil))
                     }
                 }
             }
         }
     }
     
-    private func importKeys(_ name: String, _ fingerprint: String, _ xpub: String, _ desc: String, completion: @escaping ((Bool)) -> Void) {
+    private func importKeys(_ name: String,
+                            _ fingerprint: String,
+                            _ xpub: String,
+                            _ desc: String,
+                            completion: @escaping ((success: Bool, message: String?)) -> Void) {
         self.name = name
         
         self.importPrimaryKeys(desc: desc) { [weak self] (success, errorMessage) in
@@ -237,7 +243,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 self.importChangeKeys(desc: self.changeDescriptor(fingerprint, xpub)) { (changeImported, errorDesc) in
                     
                     if changeImported {
-                        completion(true)
+                        completion((true, nil))
                     } else {
                         UserDefaults.standard.removeObject(forKey: "walletName")
                         self.showError(error: "Error importing change keys: \(errorDesc ?? "unknown error")")

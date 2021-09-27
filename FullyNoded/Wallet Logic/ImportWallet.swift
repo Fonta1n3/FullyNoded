@@ -355,32 +355,29 @@ class ImportWallet {
     }
     
     class func walletExistsOnNode(_ hash: String, completion: @escaping ((String?)) -> Void) {
-        Reducer.makeCommand(command: .listwalletdir, param: "") { (response, errorMessage) in
-            if let wallets = response as? NSDictionary {
-                parseWallets(wallets, hash, completion: completion)
+        OnchainUtils.listWalletDir { (walletDir, message) in
+            if let walletDir = walletDir {
+                parseWallets(walletDir.wallets, hash, completion: completion)
             } else {
                 completion(nil)
             }
         }
     }
     
-    class func parseWallets(_ wallets: NSDictionary, _ hash: String, completion: @escaping ((String?)) -> Void) {
-        guard let walletArr = wallets["wallets"] as? NSArray, walletArr.count > 0 else {
+    class func parseWallets(_ wallets: [String], _ hash: String, completion: @escaping ((String?)) -> Void) {
+        guard !wallets.isEmpty else {
             completion(nil)
             return
         }
         
         var existingWallet: String?
         
-        for (i, wallet) in walletArr.enumerated() {
-            let walletDict = wallet as! NSDictionary
-            let walletName = walletDict["name"] as! String
-            
+        for (i, walletName) in wallets.enumerated() {
             if walletName.contains(hash) {
                 existingWallet = walletName
             }
             
-            if i + 1 == walletArr.count {
+            if i + 1 == wallets.count {
                 completion(existingWallet)
             }
         }

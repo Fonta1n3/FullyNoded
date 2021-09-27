@@ -515,6 +515,8 @@ class MainMenuViewController: UIViewController {
                     
                 } else if message.contains("Unable to decode the response") {
                     showAlert(vc: self, title: "", message: "There was an issue... This can mean your node is busy doing an intense task like rescanning or syncing whoich may be preventing it from responding to commands. If that is the case then just wait a few minutes and try again. As a last resort try rebooting your node and Fully Noded.")
+                } else {
+                    showAlert(vc: self, title: "Connection issue...", message: message)
                 }
                 
                 self.removeLoader()
@@ -910,7 +912,7 @@ extension MainMenuViewController: OnionManagerDelegate {
         viewHasLoaded = true
         removeBackView()
         loadTable()
-        displayAlert(viewController: self, isError: false, message: "Tor finished bootstrapping")
+        displayAlert(viewController: self, isError: false, message: "Tor finished bootstrapping.")
         
         DispatchQueue.main.async { [weak self] in
             self?.torProgressLabel.isHidden = true
@@ -922,7 +924,7 @@ extension MainMenuViewController: OnionManagerDelegate {
         
 //        let jmPit = JoinMarketPit.sharedInstance
 //        jmPit.connect()
-//        
+//
 //        jmPit.connectedToPit = { connected in
 //            if connected {
 //                jmPit.getOrderBook()
@@ -931,7 +933,7 @@ extension MainMenuViewController: OnionManagerDelegate {
     }
     
     func torConnDifficulties() {
-        displayAlert(viewController: self, isError: true, message: "We are having issues connecting tor")
+        displayAlert(viewController: self, isError: true, message: "We are having issues connecting tor.")
         DispatchQueue.main.async { [weak self] in
             self?.torProgressLabel.isHidden = true
             self?.progressView.isHidden = true

@@ -13,6 +13,7 @@ class BackupiCloud {
     static func encryptValuesForiCloud(_ encryptionKey: Data, _ existingLocalEntity: [String:Any], _ entity: ENTITY) -> [String:Any] {
         var item = existingLocalEntity
         item.removeValue(forKey: "watching")
+        item.removeValue(forKey: "mixIndexes")
         
         for (key, value) in item {
             switch value {
@@ -341,6 +342,7 @@ class BackupiCloud {
                     for (i, dict) in dictArray.enumerated() {
                         var item = dict
                         item.removeValue(forKey: "watching")
+                        item.removeValue(forKey: "mixIndexes")
                         
                             for (key, value) in item {
                                 if let data = value as? Data {

@@ -413,18 +413,18 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                                             if savedUtxoStr.txid == unlockedUtxo.txid && savedUtxoStr.vout == unlockedUtxo.vout && wallet.label != savedUtxoStr.label {
                                                 self.unlockedUtxos[i].label = savedUtxoStr.label
                                                 
-                                                if wallet.type == WalletType.descriptor.stringValue {
-                                                    guard let desc = unlockedUtxo.desc else { return }
-                                                    
-                                                    let params = "[{\"desc\": \"\(desc)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"\(savedUtxoStr.label ?? "")\"}]"
-                                                    
-                                                    Reducer.makeCommand(command: .importdescriptors, param: params) { (_, _) in }
-                                                    
-                                                } else {
-                                                    let param = "[{ \"scriptPubKey\": { \"address\": \"\(unlockedUtxo.address!)\" }, \"label\": \"\(savedUtxoStr.label ?? "")\", \"timestamp\": \"now\", \"watchonly\": true, \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
-                                                    
-                                                    Reducer.makeCommand(command: .importmulti, param: param) { (_, _) in }
-                                                }
+//                                                if wallet.type == WalletType.descriptor.stringValue {
+//                                                    guard let desc = unlockedUtxo.desc else { return }
+//
+//                                                    let params = "[{\"desc\": \"\(desc)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"\(savedUtxoStr.label ?? "")\"}]"
+//
+//                                                    Reducer.makeCommand(command: .importdescriptors, param: params) { (_, _) in }
+//
+//                                                } else {
+//                                                    let param = "[{ \"scriptPubKey\": { \"address\": \"\(unlockedUtxo.address!)\" }, \"label\": \"\(savedUtxoStr.label ?? "")\", \"timestamp\": \"now\", \"watchonly\": true, \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
+//
+//                                                    Reducer.makeCommand(command: .importmulti, param: param) { (_, _) in }
+//                                                }
                                             }
                                         }
                                         
@@ -584,8 +584,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
 //            }
 //        }
         
-        
-        
+//        var utxoToMix = utxo
+//        utxoToMix.commitment = "<insert code to creat commitment>"
+//        
 //        let jm = JoinMarketPit.sharedInstance
 //        let taker = Taker.shared
 //        print("jm.absOffers.count: \(jm.absOffers.count)")

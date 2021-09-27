@@ -9,6 +9,38 @@
 import Foundation
 
 class OnchainUtils {
+    static func listWalletDir(completion: @escaping ((wallets: WalletDir?, message: String?)) -> Void) {
+        Reducer.makeCommand(command: .listwalletdir, param: "") { (response, errorMessage) in
+            guard let walletDir = response as? [String:Any] else {
+                completion((nil, errorMessage ?? "Unknown Error"))
+                return
+            }
+            
+            completion((WalletDir(walletDir), nil))
+        }
+    }
+    
+    static func listWallets(completion: @escaping ((wallets: [String]?, message: String?)) -> Void) {
+        Reducer.makeCommand(command: .listwallets, param: "") { (response, errorMessage) in
+            guard let response = response as? [String] else {
+                completion((nil, errorMessage ?? "Unknown error."))
+                return
+            }
+            
+            completion((response, nil))
+        }
+    }
+    
+    static func getWalletInfo(completion: @escaping ((walletInfo: WalletInfo?, message: String?)) -> Void) {
+        Reducer.makeCommand(command: .getwalletinfo, param: "") { (response, message) in
+            guard let response = response as? [String:Any] else {
+                completion((nil, message ?? "Unknown error."))
+                return
+            }
+            
+            completion((WalletInfo(response), nil))
+        }
+    }
     
     static func getDescriptorInfo(_ desc: String, completion: @escaping ((descriptorInfo: DescriptorInfo?, message: String?)) -> Void) {
         Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(desc)\"") { (response, message) in

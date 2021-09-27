@@ -58,7 +58,7 @@ class Taker: NSObject {
     private override init() {}
     
     func handshake(_ offer: JMOffer, _ utxo: Utxo, completion: @escaping ((String?) -> Void)) {
-        //!fill <order id> <coinjoin amount> <taker encryption pubkey>
+        //!fill <order id> <coinjoin amount> <taker encryption pubkey> <commitment>
         
         //!auth <input utxo pubkey> <btc sig of taker encryption pubkey using input utxo pubkey>
         
@@ -69,6 +69,7 @@ class Taker: NSObject {
         guard let oid = offer.oid else { print("oid failing"); return }
         guard let desc = utxo.desc else { print("desc failing"); return }
         guard let cjAmount = utxo.amount else { print("cjamount failing"); return }
+        guard let commitment = utxo.commitment else { print("commitment failing"); return }
         
         
         server.delegate = self
@@ -78,8 +79,7 @@ class Taker: NSObject {
         //completion("maker: \(maker), pubkey: \(pk)")
         let amount = Int(cjAmount * 100000000)
         
-        let fill = "PRIVMSG \(maker) :!fill \(oid) \(amount) \(pubkey)"
-        //print("fill message: \(fill)")
+        let fill = "PRIVMSG \(maker) :!fill \(oid) \(amount) \(pubkey) \(commitment)"
         
         server.send(fill)
     }

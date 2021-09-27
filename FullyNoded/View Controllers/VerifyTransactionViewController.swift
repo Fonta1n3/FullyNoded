@@ -1947,32 +1947,28 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     func getBitcoinCoreWallets(_ address: String, _ int: Int) {
         bitcoinCoreWallets.removeAll()
-        Reducer.makeCommand(command: .listwalletdir, param: "") { [weak self] (response, errorMessage) in
+        OnchainUtils.listWalletDir { [weak self] (walletDir, message) in
             guard let self = self else { return }
             
-            guard let dict = response as? NSDictionary else {
+            guard let walletDir = walletDir else {
                 DispatchQueue.main.async {
                     self.spinner.removeConnectingView()
-                    displayAlert(viewController: self, isError: true, message: "error getting wallets: \(errorMessage ?? "")")
+                    displayAlert(viewController: self, isError: true, message: "error getting wallets: \(message ?? "")")
                 }
                 return
             }
             
-            self.parseWallets(dict, address, int)
+            self.parseWallets(walletDir.wallets, address, int)
         }
     }
     
-    private func parseWallets(_ walletDict: NSDictionary, _ address: String, _ int: Int) {
-        guard let walletArr = walletDict["wallets"] as? NSArray else { return }
+    private func parseWallets(_ wallets: [String], _ address: String, _ int: Int) {
+        guard !wallets.isEmpty else { return }
         
-        for (i, wallet) in walletArr.enumerated() {
-            guard let walletDict = wallet as? NSDictionary, let walletName = walletDict["name"] as? String else {
-                    return
-            }
-            
+        for (i, walletName) in wallets.enumerated() {
             bitcoinCoreWallets.append(walletName)
             
-            if i + 1 == walletArr.count {
+            if i + 1 == wallets.count {
                 getFullyNodedWallets(address, int)
             }
         }
