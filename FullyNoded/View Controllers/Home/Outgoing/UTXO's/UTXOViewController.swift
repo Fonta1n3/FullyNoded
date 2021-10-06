@@ -587,7 +587,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             // BigInt is already added to the project, just import the module to use it.
             // Once you have the commitment simply supply it as a string to the below line of code:
             
-            utxoToMix.commitment = "<insert commitment here>"
+            let privkeyValue = BigInt.init(privKey.map{String(format:"%02x",$0)}.joined())!
+            utxoToMix.commitment = generatePodle(priv: privkeyValue, u: desc).description
             
             let jm = JoinMarketPit.sharedInstance
             let taker = Taker.shared
