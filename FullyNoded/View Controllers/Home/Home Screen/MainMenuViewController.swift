@@ -922,14 +922,14 @@ extension MainMenuViewController: OnionManagerDelegate {
         
         timeStamp()
         
-//        let jmPit = JoinMarketPit.sharedInstance
-//        jmPit.connect()
-//
-//        jmPit.connectedToPit = { connected in
-//            if connected {
-//                jmPit.getOrderBook()
-//            }
-//        }
+        let jmPit = JoinMarketPit.sharedInstance
+        jmPit.connect()
+
+        jmPit.connectedToPit = { connected in
+            if connected {
+                jmPit.getOrderBook()
+            }
+        }
     }
     
     func torConnDifficulties() {
