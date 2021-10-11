@@ -205,32 +205,38 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
                 return
             }
             
+            guard outputs.count > 0 else {
+                self.setOnchainAmounts("0", "0")
+                return
+            }
+            
             var onchainConfirmed = 0
             var onchainUnconfirmed = 0
             
             for (i, output) in outputs.enumerated() {
-                if let value = output["value"] as? Int {
-                    
-                    if let status = output["status"] as? String {
-                        if status == "confirmed" {
-                            onchainConfirmed += value
-                        } else if status == "unconfirmed" {
-                            onchainUnconfirmed += value
-                        }
+                if let value = output["value"] as? Int, let status = output["status"] as? String {
+                    if status == "confirmed" {
+                        onchainConfirmed += value
+                    } else if status == "unconfirmed" {
+                        onchainUnconfirmed += value
                     }
                 }
                 
                 if i + 1 == outputs.count {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        self.onchainBalanceConf.text = "Onchain confirmed: " + onchainConfirmed.withCommas + " sats"
-                        self.onchainBalanceUnconfirmed.text = "Onchain unconfirmed: " + onchainUnconfirmed.withCommas + " sats"
-                        self.onchainBalanceConf.alpha = 1
-                        self.onchainBalanceUnconfirmed.alpha = 1
-                    }
+                    self.setOnchainAmounts(onchainConfirmed.withCommas, onchainUnconfirmed.withCommas)
                 }
             }
+        }
+    }
+    
+    private func setOnchainAmounts(_ confirmed: String, _ unconfirmed: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.onchainBalanceConf.text = "Onchain confirmed: " + confirmed + " sats"
+            self.onchainBalanceUnconfirmed.text = "Onchain unconfirmed: " + unconfirmed + " sats"
+            self.onchainBalanceConf.alpha = 1
+            self.onchainBalanceUnconfirmed.alpha = 1
         }
     }
     
@@ -320,21 +326,16 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     }
     
     private func getOnchainSpendableLND() {
-        LndRpc.sharedInstance.command(.walletbalance, nil, nil, nil) { (response, error) in
+        LndRpc.sharedInstance.command(.walletbalance, nil, nil, nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
             guard let response = response,
                   let confirmed_balance = response["confirmed_balance"] as? String,
                   let unconfirmed_balance = response["unconfirmed_balance"] as? String else {
                 return
             }
             
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.onchainBalanceConf.text = "Onchain confirmed: " + confirmed_balance.withCommas + " sats"
-                self.onchainBalanceUnconfirmed.text = "Onchain unconfirmed: " + unconfirmed_balance.withCommas + " sats"
-                self.onchainBalanceConf.alpha = 1
-                self.onchainBalanceUnconfirmed.alpha = 1
-            }
+            self.setOnchainAmounts(confirmed_balance.withCommas, unconfirmed_balance.withCommas)
         }
     }
     

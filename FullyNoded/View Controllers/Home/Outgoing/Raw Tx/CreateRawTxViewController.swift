@@ -295,14 +295,15 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     @IBAction func lightningWithdrawAction(_ sender: Any) {
         guard let item = addressInput.text, item != "" else {
-            promptToWithdrawalFromLightning()
+            showAlert(vc: self, title: "", message: "Add a recipient address first.")
+            
             return
         }
         
         if item.hasPrefix("lntb") || item.hasPrefix("lightning:") || item.hasPrefix("lnbc") || item.hasPrefix("lnbcrt") {
             decodeLighnting(invoice: item.replacingOccurrences(of: "lightning:", with: ""))
         } else {
-            promptToWithdrawalFromLightning()
+            promptToWithdrawalFromLightning(item)
         }
     }
     
@@ -367,17 +368,19 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         inputsString = ""
     }
     
-    private func promptToWithdrawalFromLightning() {
+    private func promptToWithdrawalFromLightning(_ recipient: String) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
+            var title = "Withdraw from lightning wallet?"
             var mess = "This action will withdraw the amount specified to the given address from your lightning wallet"
             
             if self.amountInput.text == "" || self.amountInput.text == "0" || self.amountInput.text == "0.0" {
-                mess = "This sweep action will withdraw the TOTAL onchain amount specified to the given address from your lightning wallet!"
+                title = "Withdraw ALL onchain funds from your ⚡️ wallet?\n"
+                mess = "This action will withdraw the TOTAL available onchain amount from your lightning internal onchain wallet to:\n\n\(recipient)"
             }
             
-            let alert = UIAlertController(title: "Withdraw from lightning wallet?", message: mess, preferredStyle: .alert)
+            let alert = UIAlertController(title: title, message: mess, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "Withdraw now", style: .default, handler: { action in
                 self.withdrawLightningSanity()
             }))
@@ -468,12 +471,17 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 return
             }
             
-            showAlert(vc: self, title: "Success ✅", message: "⚡️ Lightning wallet withdraw to \(address) completed ⚡️")
+            showAlert(vc: self, title: "Success ✓", message: "Lightning wallet withdraw to\n\n\(address)\n\ncompleted ⚡️")
         }
     }
     
     private func withdrawFromCL(address: String, sats: Int) {
-        let param = "\"\(address)\", \(sats)"
+        var param = "\"\(address)\", \(sats)"
+        
+        if sats == 0 {
+            param = "\"\(address)\", \"all\""
+        }
+        
         let commandId = UUID()
         
         LightningRPC.command(id: commandId, method: .withdraw, param: param) { [weak self] (uuid, response, errorDesc) in
@@ -486,7 +494,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 return
             }
             
-            showAlert(vc: self, title: "Success ✅", message: "⚡️ Lightning wallet withdraw to \(address) completed ⚡️")
+            showAlert(vc: self, title: "Success ✓", message: "Lightning wallet withdraw to\n\n\(address)\n\ncompleted ⚡️")
         }
     }
     
