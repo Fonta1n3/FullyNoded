@@ -547,7 +547,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
             self.addressInput.text = addr
             
-            showAlert(vc: self, title: "⚡️ Nice! ⚡️", message: "This is an address you can use to fund your lightning node with, its your first step in transacting on the lightning network.")
+            showAlert(vc: self, title: "⚡️ Lightning deposit address\n", message: "This is an address controlled by your Lightning node's internal onchain wallet. You can use it to fund your lightning node to open channels.\n\nTo fund channels directly from your active Fully Noded wallet you can navigate home > tap the ⚡️ button > Channels > + (c-lightning only).")
         }
     }
     

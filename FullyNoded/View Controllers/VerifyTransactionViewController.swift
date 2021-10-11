@@ -512,6 +512,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     return
                 }
                 
+                self.disableSendButton()
+                self.disableSignButton()
+                
                 showAlert(vc: self, title: "Success ⚡️", message: "Lightning channel funding complete.")
             }
         }
