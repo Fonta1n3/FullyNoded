@@ -205,17 +205,17 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
                 return
             }
             
-            var onchainConfirmed = 0.0
-            var onchainUnconfirmed = 0.0
+            var onchainConfirmed = 0
+            var onchainUnconfirmed = 0
             
             for (i, output) in outputs.enumerated() {
-                if let value = output["value"] as? String {
+                if let value = output["value"] as? Int {
                     
                     if let status = output["status"] as? String {
                         if status == "confirmed" {
-                            onchainConfirmed += value.doubleValue
+                            onchainConfirmed += value
                         } else if status == "unconfirmed" {
-                            onchainUnconfirmed += value.doubleValue
+                            onchainUnconfirmed += value
                         }
                     }
                 }
