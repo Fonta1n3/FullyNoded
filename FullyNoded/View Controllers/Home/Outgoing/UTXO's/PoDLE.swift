@@ -4,7 +4,7 @@ import CryptoKit
 
 class PoDLE {
 
-    func generatePodle(priv: BigInt, u: String, index: Int = 0) -> [String: String] {
+    static func generatePodle(priv: BigInt, u: String, index: Int = 0) -> [String: String] {
 
         let baseGen = secp256k1()
         let k: BigInt = BigInt(BigUInt.randomInteger(withExactWidth: 256))
@@ -55,7 +55,7 @@ class PoDLE {
                 "e": e.map{String(format:"%02x",$0)}.joined()]
     }
 
-    func getNUMS(index: Int) -> [String: BigInt] {
+    static func getNUMS(index: Int) -> [String: BigInt] {
         assert(index >= 0 && index<256, "index is out of bounds")
 
         let precompNUMS: [[String: BigInt]] = 
