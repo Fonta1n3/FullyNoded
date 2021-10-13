@@ -318,6 +318,10 @@ class QRScannerViewController: UIViewController {
             } else if isExtendedKey(lowercased) || isDescriptor(lowercased) {
                 hasScanned = true
                 stopScanning(text)
+                
+            } else if lowercased.hasPrefix("ur:bytes") {
+                hasScanned = false
+                processUrPsbt(text: lowercased)
                                 
             } else if let data = text.data(using: .utf8) {
                 do {

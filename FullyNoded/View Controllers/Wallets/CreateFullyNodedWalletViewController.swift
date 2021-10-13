@@ -171,6 +171,66 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
+    private func parseColdcardStyleTextFile(txt: String) -> [String:Any]? {
+        let myStrings = txt.components(separatedBy: .newlines)
+        var name = ""
+        var sigsRequired = ""
+        var deriv = ""
+        var keys = [String]()
+        var descriptor = ""
+        
+        for item in myStrings {
+            if item.contains("Name: ") {
+                name = item.replacingOccurrences(of: "Name: ", with: "")
+            } else if item.contains("Policy: ") {
+                let policy = item.replacingOccurrences(of: "Policy: ", with: "")
+                let arr = policy.split(separator: " ")
+                sigsRequired = "\(arr[0])"
+            } else if item.contains("Format: ") {
+                guard item.contains("P2WSH") else {
+                    showAlert(vc: self, title: "Unsupported policy", message: "Currently we only support p2wsh multisig imports.")
+                    return nil
+                }
+            } else if item.contains("Derivation: ") {
+                deriv = item.replacingOccurrences(of: "Derivation: ", with: "")
+            } else {
+                var processed = item.condenseWhitespace()
+                processed = processed.replacingOccurrences(of: "\n", with: "")
+                if processed != "" {
+                    keys.append(processed.replacingOccurrences(of: " ", with: ""))
+                }
+            }
+        }
+        
+        descriptor = "wsh(sortedmulti(\(sigsRequired),"
+        
+        for (i, key) in keys.enumerated() {
+            if !key.hasPrefix("#") {
+                let arr = key.split(separator: ":")
+                let xfp = "\(arr[0])"
+                let xpub = "\(arr[1])"
+                if !xpub.hasPrefix("xpub") && !xpub.hasPrefix("tpub") {
+                    guard let extKey = XpubConverter.convert(extendedKey: xpub) else {
+                        showAlert(vc: self, title: "Error", message: "There was a problem converting your extended key to an xpub.")
+                        return nil
+                    }
+                    
+                    descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(extKey)/0/*"
+                } else {
+                    descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(xpub)/0/*"
+                }
+                
+                if i < keys.count {
+                    descriptor += ","
+                } else {
+                    descriptor += "))"
+                }
+            }
+        }
+        
+        return ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
+    }
+    
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
             spinner.removeConnectingView()
@@ -186,64 +246,10 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 return
             }
             
-            let myStrings = txt.components(separatedBy: .newlines)
-            var name = ""
-            var sigsRequired = ""
-            var deriv = ""
-            var keys = [String]()
-            var descriptor = ""
-            
-            for item in myStrings {
-                if item.contains("Name: ") {
-                    name = item.replacingOccurrences(of: "Name: ", with: "")
-                } else if item.contains("Policy: ") {
-                    let policy = item.replacingOccurrences(of: "Policy: ", with: "")
-                    let arr = policy.split(separator: " ")
-                    sigsRequired = "\(arr[0])"
-                } else if item.contains("Format: ") {
-                    guard item.contains("P2WSH") else {
-                        showAlert(vc: self, title: "Unsupported policy", message: "Currently we only support p2wsh multisig imports.")
-                        return
-                    }
-                } else if item.contains("Derivation: ") {
-                    deriv = item.replacingOccurrences(of: "Derivation: ", with: "")
-                } else {
-                    var processed = item.condenseWhitespace()
-                    processed = processed.replacingOccurrences(of: "\n", with: "")
-                    if processed != "" {
-                        keys.append(processed.replacingOccurrences(of: " ", with: ""))
-                    }
-                }
+            if let accountMap = parseColdcardStyleTextFile(txt: txt) {
+                promptToImportCoboMultiSig(accountMap)
             }
             
-            descriptor = "wsh(sortedmulti(\(sigsRequired),"
-            
-            for (i, key) in keys.enumerated() {
-                if !key.hasPrefix("#") {
-                    let arr = key.split(separator: ":")
-                    let xfp = "\(arr[0])"
-                    let xpub = "\(arr[1])"
-                    if !xpub.hasPrefix("xpub") && !xpub.hasPrefix("tpub") {
-                        guard let extKey = XpubConverter.convert(extendedKey: xpub) else {
-                            showAlert(vc: self, title: "Error", message: "There was a problem converting your extended key to an xpub.")
-                            return
-                        }
-                        
-                        descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(extKey)/0/*"
-                    } else {
-                        descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(xpub)/0/*"
-                    }
-                    
-                    if i < keys.count {
-                        descriptor += ","
-                    } else {
-                        descriptor += "))"
-                    }
-                }
-            }
-            
-            let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
-            promptToImportCoboMultiSig(accountMap)
             /*
              Name: CV_85C39000_2-3
              Policy: 2 of 3
@@ -660,20 +666,34 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                             }
                             
                         } else if lowercased.hasPrefix("ur:") {
-                            let (descriptors, error) = URHelper.parseUr(urString: item)
-                            
-                            guard error == nil, let descriptors = descriptors else {
-                                showAlert(vc: self, title: "Error", message: error ?? "Unknown error decoding the QR code.")
-                                return
-                            }
-                            
-                            var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
-                            
-                            if descriptors.count > 1 {
-                                self.prompToChoosePrimaryDesc(descriptors: descriptors)
+                            if lowercased.hasPrefix("ur:bytes") {
+                                let (text, err) = URHelper.parseBlueWalletCoordinationSetup(lowercased)
+                                if let textFile = text {
+                                    if let accountMap = self.parseColdcardStyleTextFile(txt: textFile) {
+                                        self.importAccountMap(accountMap)
+                                    } else {
+                                        showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the text file into a descriptor.")
+                                    }
+                                } else {
+                                    showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the QR code.")
+                                }
+                                
                             } else {
-                                accountMap["descriptor"] = descriptors[0]
-                                self.importAccountMap(accountMap)
+                                let (descriptors, error) = URHelper.parseUr(urString: item)
+                                
+                                guard error == nil, let descriptors = descriptors else {
+                                    showAlert(vc: self, title: "Error", message: error ?? "Unknown error decoding the QR code.")
+                                    return
+                                }
+                                
+                                var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
+                                
+                                if descriptors.count > 1 {
+                                    self.prompToChoosePrimaryDesc(descriptors: descriptors)
+                                } else {
+                                    accountMap["descriptor"] = descriptors[0]
+                                    self.importAccountMap(accountMap)
+                                }
                             }
                         }
                     }
