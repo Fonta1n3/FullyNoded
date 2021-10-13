@@ -663,7 +663,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                             let (descriptors, error) = URHelper.parseUr(urString: item)
                             
                             guard error == nil, let descriptors = descriptors else {
-                                showAlert(vc: self, title: "Error", message: error!)
+                                showAlert(vc: self, title: "Error", message: error ?? "Unknown error decoding the QR code.")
                                 return
                             }
                             

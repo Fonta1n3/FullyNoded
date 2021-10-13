@@ -120,8 +120,6 @@ class URHelper {
             return parseMultisig(isBIP67: false, script: "wsh(multi())", cbor: embeddedCbor)
         case 407:
             return parseMultisig(isBIP67: true, script: "wsh(sortedmulti())", cbor: embeddedCbor)
-//        case 303:
-//            return parsePlainWSHCbor(taggedCbor: taggedCbor)
         default:
             return (nil, "Unsupported script. Fully Noded does not support single sig descriptors with multisig scripts.")
         }
@@ -147,12 +145,12 @@ class URHelper {
         case 407: // sortedmulti
             return parseMultisig(isBIP67: true, script: "sh", cbor: embeddedCbor)
             
-        case 404:
-            // sh(wpkh())
+        case 404: // sh(wpkh())
             return parseSHWPKHCbor(embeddedCbor: embeddedCbor)
-        case 303:
-            // sh()
+            
+        case 303: // sh()
             return (nil, "Fully Noded does not support multisig scripts for single sig descriptors.")
+            
         case 401:
             // sh(wsh())
             return (nil, "Fully Noded does not support multisig scripts for single sig descriptors.")
@@ -172,8 +170,6 @@ class URHelper {
             return parseMultisig(isBIP67: false, script: "sh(wsh(multi()))", cbor: embeddedCbor_)
         case 407:
             return parseMultisig(isBIP67: true, script: "sh(wsh(sortedmulti()))", cbor: embeddedCbor_)
-//        case 303:
-//            return parsePlainWSHCbor(taggedCbor: embeddedCbor)
         default:
             return (nil, "Unsupported script type. Fully Noded does not support multisig scripts for single sig descriptors.")
         }
@@ -307,7 +303,7 @@ class URHelper {
                 
             case 2:
                 guard case let CBOR.array(accounts) = value else { fallthrough }
-                                                
+                
                 for (i, elem) in accounts.enumerated() {
                     if case let CBOR.tagged(tag, taggedCbor) = elem {
                         
@@ -329,49 +325,28 @@ class URHelper {
                                         }
                                     }
                                     
-//                                case 303:
-//                                    // sh()
-//                                    if let key = try? HDKey_(taggedCBOR: taggedCbor),
-//                                       let origin = key.origin,
-//                                       let extKey = key.base58 {
-//
-//                                        if let _ = origin.sourceFingerprint {
-//                                            descriptorArray.append("sh([\(origin)]\(extKey)/0/*)")
-//                                        } else {
-//                                            descriptorArray.append("sh([_xfp_/\(origin)]\(extKey)/0/*)")
-//                                        }
-//                                    }
+                                case 303:
+                                    //sh()
+                                    let (descArray, errorCheck) = parseSHCbor(taggedCbor: embeddedCbor)
+                                    arrayToReturn = descArray
+                                    error = errorCheck
                             
-//                                case 401:
-//                                    // sh(wsh())
-//                                    if let key = try? HDKey_(taggedCBOR: embeddedCbor),
-//                                       let origin = key.origin,
-//                                       let extKey = key.base58 {
-//
-//                                        if let _ = origin.sourceFingerprint {
-//                                            descriptorArray.append("sh(wsh([\(origin)]\(extKey)/0/*))")
-//                                        } else {
-//                                            descriptorArray.append("sh(wsh([_xfp_/\(origin)]\(extKey)/0/*))")
-//                                        }
-//                                    }
+                                case 401:
+                                    // sh(wsh())
+                                    let (descArray, errorCheck) = parseSHWSHCbor(embeddedCbor: embeddedCbor)
+                                    arrayToReturn = descArray
+                                    error = errorCheck
                                     
                                 default:
                                     break
                                 }
                             }
                             
-//                        case 401:
-//                            // wsh()
-//                            if let key = try? HDKey_(taggedCBOR: taggedCbor),
-//                               let origin = key.origin,
-//                               let extKey = key.base58 {
-//
-//                                if let _ = origin.sourceFingerprint {
-//                                    descriptorArray.append("wsh([\(origin)]\(extKey)/0/*)")
-//                                } else {
-//                                    descriptorArray.append("wsh([_xfp_/\(origin)]\(extKey)/0/*)")
-//                                }
-//                            }
+                        case 401:
+                            // wsh()
+                            let (descArray, errorCheck) = parseWSHCbor(taggedCbor: taggedCbor)
+                            arrayToReturn = descArray
+                            error = errorCheck
                             
                         case 403:
                             // pkh()
