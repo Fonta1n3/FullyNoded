@@ -723,17 +723,17 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                                 let (text, err) = URHelper.parseBlueWalletCoordinationSetup(lowercased)
                                 if let textFile = text {
                                      if let dict = try? JSONSerialization.jsonObject(with: textFile.utf8, options: []) as? [String:Any] {
-                                        let sparrowStruct = SparrowWalletImport(dict)
+                                        let importStruct = WalletImport(dict)
                                         
                                         var descriptors:[String] = []
                                         
-                                        if let bip44 = sparrowStruct.bip44 {
+                                        if let bip44 = importStruct.bip44 {
                                             descriptors.append(bip44)
                                         }
-                                        if let bip49 = sparrowStruct.bip49 {
+                                        if let bip49 = importStruct.bip49 {
                                             descriptors.append(bip49)
                                         }
-                                        if let bip84 = sparrowStruct.bip84 {
+                                        if let bip84 = importStruct.bip84 {
                                             descriptors.append(bip84)
                                         }
 //                                        if let bip48 = sparrowStruct.bip48 {

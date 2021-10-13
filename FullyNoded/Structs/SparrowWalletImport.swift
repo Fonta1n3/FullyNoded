@@ -19,7 +19,15 @@ import Foundation
  
  "bip48_1": {"xpub": "xpub6FBvsG1d9MpNZwwqzk5edotvm4MphayYGcyqRh3SzexMH22yfcMLg9wUZM6ERxoN81Rhf398EG2cFop8ALGxtZTx1QqBzkFwYPrHMVSXDAE", "first": null, "deriv": "m/48'/0'/0'/1'", "xfp": "853B5F64", "name": "p2sh-p2wsh", "_pub": "Ypub6kvHJAQyrzvDqpJLmmLFfyLEepYXrZedW19j8MCskSAdxJR7gfuBPLTYPG1HzJgBm7cVH6joa8mfGG3TBFqvqHGDiDe1z4YRhrBoKymfYZL"}}*/
 
-public struct SparrowWalletImport: CustomStringConvertible {
+
+// MARK: SPECTER
+/*
+ {"keystore":
+ {"ckcc_xpub": "xpub6Bt9P4VShP7Pc3GPVooe256hJeT6z2FcMQ8bDrPt6asmf9VMBUPWps5kaQdyP9b7x1rq14EHqaDTFbAcBprUbGcX6ZtUDWV4K6bEAHZub1r", "xpub": "zpub6qYfzPqGzkCMJdedAXNtSFHheajzsGEcBdB2neBerbdXmM7ognie4zQ2cpZ9NxtxmJ6SW1RQktvZ2APjdDgWBjyiqFHKPL82rYiWwXGnKQx", "label": "Passport (542D0F73)", "ckcc_xfp": 1930374484, "type": "hardware", "hw_type": "passport", "derivation": "m/84'/0'/0'"},
+ "wallet_type": "standard", "use_encryption": false, "seed_version": 17}
+ */
+
+public struct WalletImport: CustomStringConvertible {
     
     let bip49:String?
     let bip44:String?
@@ -42,6 +50,17 @@ public struct SparrowWalletImport: CustomStringConvertible {
             bip44 =  "pkh([\(xfp)/44h/0h/0h]\(bip44Xpub)/0/*)"
             bip84 = "wpkh([\(xfp)/84h/0h/0h]\(bip84Xpub)/0/*)"
             bip48 = "wsh([\(xfp)/48h/0h/0h/2h]\(bip48Xpub)/0/*)"
+            
+        } else if let keystore = dictionary["keystore"] as? [String:Any],
+                  let xpub = keystore["ckcc_xpub"] as? String,
+                  let label = keystore["label"] as? String {
+            
+            let arr = label.split(separator: "(")
+            let xfp = "\(arr[1])".replacingOccurrences(of: ")", with: "")
+            bip84 = "wpkh([\(xfp)/84h/0h/0h]\(xpub)/0/*)"
+            bip49 = nil
+            bip44 = nil
+            bip48 = nil
             
         } else {
             bip49 = nil
