@@ -76,6 +76,7 @@ class Taker: NSObject {
         let amount = Int(cjAmount * 100000000)
         
         let fill = "PRIVMSG \(maker) :!fill \(oid) \(amount) \(pubkey) \(commitment)"
+        print("\(fill)")
         
         server.send(fill)
     }
@@ -84,7 +85,7 @@ class Taker: NSObject {
 
 extension Taker: IRCServerDelegate {
     func didRecieveMessage(_ server: IRCServer, message: String) {
-        print("message: \(message)")
+        print("received message: \(message)")
     }
     
     func didConnect(_ server: IRCServer) {

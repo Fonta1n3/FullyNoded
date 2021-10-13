@@ -38,6 +38,8 @@ enum Keys {
                 return
             }
             
+            var privKeyToReturn:Data?
+            
             for (i, encryptedSigner) in encryptedSigners.enumerated() {
                 let encryptedSignerStruct = SignerStruct(dictionary: encryptedSigner)
                 
@@ -81,11 +83,11 @@ enum Keys {
                         return
                     }
                     
-                    completion((privKey, nil))
-                    break
-                    
-                } else if i + 1 == encryptedSigner.count {
-                    completion((nil, "Looks like none of your signers can sign for that utxo. This feature only works with hot wallets for now."))
+                    privKeyToReturn = privKey
+                }
+                
+                if i + 1 == encryptedSigners.count {
+                    completion((privKeyToReturn, nil))
                 }
             }
         }

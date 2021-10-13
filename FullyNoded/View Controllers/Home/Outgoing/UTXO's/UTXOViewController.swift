@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import BigInt
 
 class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
@@ -568,7 +569,13 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private func mix(_ utxo: Utxo) {
         var utxoToMix = utxo
         
-        guard let desc = utxo.desc else { return }
+        guard let desc = utxo.desc else {
+            showAlert(vc: self,
+                      title: "Something went wrong...",
+                      message: "Unable to get a descriptor from your utxo.")
+            return
+        }
+        
         let descriptor = Descriptor(desc)
         
         Keys.privKey(descriptor.derivation, descriptor.pubkey) { (privKey, errorMessage) in
@@ -582,13 +589,14 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 return
             }
             
-            // MARK: RAJ TODO
-            // You will need to convert the privkey from data to a 256 bit integer and then supply it to your code for creating a commitment.
-            // BigInt is already added to the project, just import the module to use it.
-            // Once you have the commitment simply supply it as a string to the below line of code:
+            let bi = BigInt(privKey)
             
-            let privkeyValue = BigInt.init(privKey.map{String(format:"%02x",$0)}.joined())!
-            utxoToMix.commitment = generatePodle(priv: privkeyValue, u: desc).description
+            guard let commitment = PoDLE.generatePodle(priv: bi, u: desc)["commit"] else {
+                showAlert(vc: self, title: "Unable to derive commitment...", message: "")
+                return
+            }
+            
+            utxoToMix.commitment = commitment
             
             let jm = JoinMarketPit.sharedInstance
             let taker = Taker.shared
@@ -597,6 +605,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 showAlert(vc: self, title: "", message: "No offers...")
                 return
             }
+            
+            print("abs offers: \(jm.absOffers)")
+            print("rel offers: \(jm.relOffers)")
             
             if jm.absOffers.count > 0 {
                 jm.absOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
@@ -614,8 +625,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             var idealAbsOffers = jm.absOffers
             
+            
             for (i, absOffer) in jm.absOffers.enumerated() {
                 if (satsToMix > absOffer.minSize ?? 0 && satsToMix < absOffer.maxSize ?? 0) {
+                    print("append abs offer")
                     idealAbsOffers.append(absOffer)
                 }
                 
@@ -636,7 +649,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             var idealRelOffers = jm.relOffers
             
             for (i, relOffer) in jm.relOffers.enumerated() {
+                print("relOffer min size: \(relOffer.minSize)")
                 if (satsToMix > relOffer.minSize ?? 0 && satsToMix < relOffer.maxSize ?? 0) {
+                    print("append rel offer")
                     idealRelOffers.append(relOffer)
                 }
                 
