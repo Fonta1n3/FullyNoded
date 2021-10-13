@@ -424,12 +424,12 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             
         }
         
-        let accountMap = ["descriptor": desc, "blockheight": 0, "watching": [], "label": "Cobo Vault"] as [String : Any]
+        let accountMap = ["descriptor": desc, "blockheight": 0, "watching": [], "label": "Wallet import"] as [String : Any]
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Import your CoboVault single sig?", message: "Looks like you selected a CoboVault single sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Import single sig?", message: "Looks like you selected a single sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { action in
                 self.importAccountMap(accountMap)
@@ -660,7 +660,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             for (i, descriptor) in descriptors.enumerated() {
                 let descStr = Descriptor(descriptor)
                 
-                alert.addAction(UIAlertAction(title: descStr.format, style: .default, handler: { [weak self] action in
+                alert.addAction(UIAlertAction(title: descStr.scriptType, style: .default, handler: { [weak self] action in
                     guard let self = self else { return }
                     
                     self.setPrimDesc(descriptors: descriptors, descriptorToUseIndex: i)
@@ -722,8 +722,29 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                             if lowercased.hasPrefix("ur:bytes") {
                                 let (text, err) = URHelper.parseBlueWalletCoordinationSetup(lowercased)
                                 if let textFile = text {
-                                    if let accountMap = self.parseColdcardStyleTextFile(txt: textFile) {
+                                     if let dict = try? JSONSerialization.jsonObject(with: textFile.utf8, options: []) as? [String:Any] {
+                                        let sparrowStruct = SparrowWalletImport(dict)
+                                        
+                                        var descriptors:[String] = []
+                                        
+                                        if let bip44 = sparrowStruct.bip44 {
+                                            descriptors.append(bip44)
+                                        }
+                                        if let bip49 = sparrowStruct.bip49 {
+                                            descriptors.append(bip49)
+                                        }
+                                        if let bip84 = sparrowStruct.bip84 {
+                                            descriptors.append(bip84)
+                                        }
+//                                        if let bip48 = sparrowStruct.bip48 {
+//                                            descriptors.append(bip48)
+//                                        }
+                                        
+                                        self.prompToChoosePrimaryDesc(descriptors: descriptors)
+                                        
+                                     } else if let accountMap = self.parseColdcardStyleTextFile(txt: textFile) {
                                         self.importAccountMap(accountMap)
+                                            
                                     } else {
                                         showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the text file into a descriptor.")
                                     }

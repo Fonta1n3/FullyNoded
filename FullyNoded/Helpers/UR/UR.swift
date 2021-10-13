@@ -65,11 +65,10 @@ class URHelper {
     static func parseBlueWalletCoordinationSetup(_ urString: String) -> (text: String?, error: String?) {
         guard let ur = ur(urString), let decodedCbor = try? CBOR.decode(ur.cbor.bytes),
             case let CBOR.byteString(bytes) = decodedCbor,
-            let textFile = Data(bytes).utf8 else {
+            let text = Data(bytes).utf8 else {
                 return (nil, "Unable to decode the QR code into a text file.")
         }
-        
-        return (textFile, nil)
+        return (text, nil)
     }
     
     static func parseCryptoOutput(_ urString: String) -> (descriptors: [String]?, error: String?) {

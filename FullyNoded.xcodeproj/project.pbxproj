@@ -34,6 +34,7 @@
 		0A212DDE26D5DA9100BF6FD4 /* JoinMarketPit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212DDD26D5DA9100BF6FD4 /* JoinMarketPit.swift */; };
 		0A212DE026DC863D00BF6FD4 /* JMOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212DDF26DC863D00BF6FD4 /* JMOffer.swift */; };
 		0A21442C26B4282300123EAC /* PromptForAuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */; };
+		0A2B4D702716ABCB00B607EE /* SparrowWalletImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2B4D6F2716ABCB00B607EE /* SparrowWalletImport.swift */; };
 		0A3013D8266B361E004DA35C /* LndRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3013D7266B361E004DA35C /* LndRpc.swift */; };
 		0A337D012700316E00AD087F /* WalletDir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A337D002700316E00AD087F /* WalletDir.swift */; };
 		0A39459826E5951100CAF05F /* Taker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A39459726E5951100CAF05F /* Taker.swift */; };
@@ -241,6 +242,7 @@
 		0A212DDD26D5DA9100BF6FD4 /* JoinMarketPit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinMarketPit.swift; sourceTree = "<group>"; };
 		0A212DDF26DC863D00BF6FD4 /* JMOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMOffer.swift; sourceTree = "<group>"; };
 		0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptForAuthViewController.swift; sourceTree = "<group>"; };
+		0A2B4D6F2716ABCB00B607EE /* SparrowWalletImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparrowWalletImport.swift; sourceTree = "<group>"; };
 		0A3013D7266B361E004DA35C /* LndRpc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LndRpc.swift; sourceTree = "<group>"; };
 		0A337D002700316E00AD087F /* WalletDir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDir.swift; sourceTree = "<group>"; };
 		0A39459726E5951100CAF05F /* Taker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Taker.swift; sourceTree = "<group>"; };
@@ -745,6 +747,7 @@
 				0A212D9126CBE17600BF6FD4 /* MixIndexes.swift */,
 				0A212DDF26DC863D00BF6FD4 /* JMOffer.swift */,
 				0A337D002700316E00AD087F /* WalletDir.swift */,
+				0A2B4D6F2716ABCB00B607EE /* SparrowWalletImport.swift */,
 			);
 			path = Structs;
 			sourceTree = "<group>";
@@ -1244,6 +1247,7 @@
 				0A212D9826CCD67C00BF6FD4 /* IRCServerInputParser.swift in Sources */,
 				D0D71DA32351F835005CCDB9 /* UtilitieMenuViewController.swift in Sources */,
 				D03968B1246F6CBA0010D821 /* Crypto.swift in Sources */,
+				0A2B4D702716ABCB00B607EE /* SparrowWalletImport.swift in Sources */,
 				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
 				D02958D3234F82E000ED8F72 /* IdentityViewController.swift in Sources */,
 				0A1F10DB26A1A58100BE2707 /* GeneralError.swift in Sources */,

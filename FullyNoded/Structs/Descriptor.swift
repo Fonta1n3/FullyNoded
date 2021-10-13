@@ -8,6 +8,7 @@
 
 public struct Descriptor: CustomStringConvertible {
     
+    let scriptType:String
     let format:String
     let isHot:Bool
     let mOfNType:String
@@ -65,16 +66,20 @@ public struct Descriptor: CustomStringConvertible {
                     
                     case "multi":
                         dictionary["format"] = "Bare-multi"
+                        dictionary["scriptType"] = "Bare multisig"
                         
                     case "wsh":
                         dictionary["format"] = "P2WSH"
+                        dictionary["scriptType"] = "Segwit multisig"
                         
                     case "sh":
                         if arr[1] == "wsh" {
                             dictionary["format"] = "P2SH-P2WSH"
+                            dictionary["scriptType"] = "Nested multisig"
                             
                         } else {
                             dictionary["format"] = "P2SH"
+                            dictionary["scriptType"] = "Legacy multisig"
                             
                         }
                         
@@ -86,8 +91,9 @@ public struct Descriptor: CustomStringConvertible {
                 }
                 
                 switch item {
-                
+                                
                 case "multi", "sortedmulti":
+                    print("item: \(item)")
                     let mofnarray = (arr[i + 1]).split(separator: ",")
                     let numberOfKeys = mofnarray.count - 1
                     dictionary["mOfNType"] = "\(mofnarray[0]) of \(numberOfKeys)"
@@ -332,29 +338,37 @@ public struct Descriptor: CustomStringConvertible {
                         switch item {
                         case "tr":
                             dictionary["format"] = "P2TR"
+                            dictionary["scriptType"] = "Taproot"
                         case "wsh":
                             dictionary["format"] = "P2WSH"
+                            dictionary["scriptType"] = "Segwit multisig"
                             
                         case "wpkh":
                             dictionary["format"] = "P2WPKH"
                             dictionary["isP2WPKH"] = true
+                            dictionary["scriptType"] = "Segwit single-sig"
                             
                         case "sh":
                             if arr[1] == "wpkh" {
                                 dictionary["format"] = "P2SH-P2WPKH"
                                 dictionary["isP2SHP2WPKH"] = true
+                                dictionary["scriptType"] = "Nested single-sig"
                             } else if arr[1] == "wsh" {
                                 dictionary["format"] = "P2SH-P2WSH"
+                                dictionary["scriptType"] = "Segwit multisig"
                             } else {
                                 dictionary["format"] = "P2SH"
+                                dictionary["scriptType"] = "Legacy multisig"
                             }
                             
                         case "pk":
                             dictionary["format"] = "P2PK"
+                            dictionary["scriptType"] = "Public key"
                             
                         case "pkh":
                             dictionary["format"] = "P2PKH"
                             dictionary["isP2PKH"] = true
+                            dictionary["scriptType"] = "Legacy single-sig"
                             
                         default:
                             
@@ -386,6 +400,7 @@ public struct Descriptor: CustomStringConvertible {
         }
         
         format = dictionary["format"] as? String ?? ""
+        scriptType = dictionary["scriptType"] as? String ?? ""
         mOfNType = dictionary["mOfNType"] as? String ?? ""
         isHot = dictionary["isHot"] as? Bool ?? false
         chain = dictionary["chain"] as? String ?? ""
