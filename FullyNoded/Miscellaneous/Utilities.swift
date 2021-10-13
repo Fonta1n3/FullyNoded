@@ -220,7 +220,8 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
          .walletpassphrasechange,
          .walletlock,
          .psbtbumpfee,
-         .importdescriptors:
+         .importdescriptors,
+         .signmessage:
         boolToReturn = true
         
     default:
