@@ -193,7 +193,9 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 }
             } else if item.contains("Derivation: ") {
                 deriv = item.replacingOccurrences(of: "Derivation: ", with: "")
-            } else {
+            } else if item.hasPrefix("seed: ") && !item.hasPrefix("#") {
+                keys.append(item)
+            } else if !item.hasPrefix("#") {
                 var processed = item.condenseWhitespace()
                 processed = processed.replacingOccurrences(of: "\n", with: "")
                 if processed != "" {
@@ -205,14 +207,12 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         descriptor = "wsh(sortedmulti(\(sigsRequired),"
         
         for (i, key) in keys.enumerated() {
-            if !key.hasPrefix("#") {
-                let arr = key.split(separator: ":")
-                let xfp = "\(arr[0])"
-                let xpub = "\(arr[1])"
+            
+            func addKey(_ xpub: String, _ xfp: String) {
                 if !xpub.hasPrefix("xpub") && !xpub.hasPrefix("tpub") {
                     guard let extKey = XpubConverter.convert(extendedKey: xpub) else {
                         showAlert(vc: self, title: "Error", message: "There was a problem converting your extended key to an xpub.")
-                        return nil
+                        return
                     }
                     
                     descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(extKey)/0/*"
@@ -226,9 +226,63 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                     descriptor += "))"
                 }
             }
+            
+            if key.hasPrefix("seed: ") {
+                let words = key.replacingOccurrences(of: "seed: ", with: "")
+                
+                guard let encryptedData = Crypto.encrypt(words.utf8) else {
+                    showAlert(vc: self, title: "Unable to encrypt the seed words...", message: "Please let us know about this bug.")
+                    return nil
+                }
+                
+                saveSigner(encryptedSigner: encryptedData) { saved in
+                    guard saved else {
+                        showAlert(vc: self, title: "Unable to save the encrypted signer...", message: "Please let us know about this bug.")
+                        return
+                    }
+                }
+                
+                var coinType = "0"
+                
+                let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+                
+                if chain != "main" {
+                    coinType = "1"
+                }
+                
+                guard let mk = Keys.masterKey(words: words, coinType: coinType, passphrase: "") else {
+                    showAlert(vc: self, title: "Unable to derive the master key from the seed words...", message: "Please let us know about this bug.")
+                    return nil
+                }
+                
+                guard let xfp = Keys.fingerprint(masterKey: mk) else {
+                    showAlert(vc: self, title: "Unable to derive the fingerprint from the master key...", message: "Please let us know about this bug.")
+                    return nil
+                }
+                
+                guard let xpub = Keys.xpub(path: "m/48h/\(coinType)h/0h/2h", masterKey: mk) else {
+                    showAlert(vc: self, title: "Unable to derive the bip48 xpub from the master key...", message: "Please let us know about this bug.")
+                    return nil
+                }
+                
+                addKey(xpub, xfp)
+                
+            } else {
+                let arr = key.split(separator: ":")
+                let xfp = "\(arr[0])"
+                let xpub = "\(arr[1])"
+                addKey(xpub, xfp)
+            }
         }
         
         return ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
+    }
+    
+    private func saveSigner(encryptedSigner: Data, completion: @escaping ((Bool)) -> Void) {
+        let dict = ["id":UUID(), "words":encryptedSigner] as [String:Any]
+        CoreDataService.saveEntity(dict: dict, entityName: .signers) { success in
+            completion(success)
+        }
     }
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
@@ -285,7 +339,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         
                         if i + 1 == extendedPublicKeys.count {
                             descriptor += "))"
-                            print("descriptor: \(descriptor)")
                             let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
                             promptToImportUnchained(accountMap)
                         } else {
@@ -695,6 +748,8 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                                     self.importAccountMap(accountMap)
                                 }
                             }
+                        } else if let accountMap = self.parseColdcardStyleTextFile(txt: item) {
+                            self.importAccountMap(accountMap)
                         }
                     }
                 }

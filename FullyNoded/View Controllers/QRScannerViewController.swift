@@ -324,8 +324,7 @@ class QRScannerViewController: UIViewController {
                 processUrPsbt(text: lowercased)
                                 
             } else if let data = text.data(using: .utf8) {
-                do {
-                    let accountMap = try JSONSerialization.jsonObject(with: data, options: []) as! [String:Any]
+                if let accountMap = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] {
                     spinner.removeConnectingView()
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
@@ -336,7 +335,18 @@ class QRScannerViewController: UIViewController {
                             self.onImportDoneBlock!(accountMap)
                         }
                     }
-                } catch {
+                } else if text.hasPrefix("#") {
+                    spinner.removeConnectingView()
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+
+                        self.dismiss(animated: true) {
+                            self.stopScanner()
+                            self.avCaptureSession.stopRunning()
+                            self.onAddressDoneBlock!(text)
+                        }
+                    }
+                } else {
                     spinner.removeConnectingView()
                     showAlert(vc: self, title: "Error", message: "That does not seem to be an accepted wallet format.")
                 }

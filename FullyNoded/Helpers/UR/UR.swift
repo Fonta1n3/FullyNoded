@@ -56,9 +56,6 @@ class URHelper {
             
         case _ where lowercased.hasPrefix("ur:crypto-output"):
             return parseCryptoOutput(urString)
-            
-//        case _ where lowercased.hasPrefix("ur:bytes"):
-//                return parseBlueWalletCoordinationSetup(urString)
         
         default:
             return (nil, "Unsupported UR type. Please let us know about it on Twitter, Telegram or Github.")
