@@ -49,6 +49,15 @@ class LndRpc {
             
             let node = NodeStruct(dictionary: lightningNode)
             
+            if let encryptedCert = node.cert {
+                guard let decryptedCert = Crypto.decrypt(encryptedCert) else {
+                    completion((nil, "Error getting decrypting cert."))
+                    return
+                }
+                
+                self.torClient.cert = decryptedCert.base64EncodedData()
+            }
+            
             guard let encAddress = node.onionAddress else {
                 completion((nil, "Error getting node address."))
                 return
@@ -125,7 +134,7 @@ class LndRpc {
                 #if DEBUG
                 print("request: \(request)")
                 #endif
-            }            
+            }
             
             let task = self.torClient.session.dataTask(with: request as URLRequest) { (data, response, error) -> Void in
                 guard let urlContent = data,
