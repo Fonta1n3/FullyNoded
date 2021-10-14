@@ -136,7 +136,13 @@ class LndRpc {
                 #endif
             }
             
-            let task = self.torClient.session.dataTask(with: request as URLRequest) { (data, response, error) -> Void in
+            var sesh = URLSession(configuration: .default)
+            
+            if onionAddress.contains("onion") {
+                sesh = self.torClient.session
+            }
+            
+            let task = sesh.dataTask(with: request as URLRequest) { (data, response, error) -> Void in
                 guard let urlContent = data,
                       let json = try? JSONSerialization.jsonObject(with: urlContent, options: [.mutableContainers]) as? [String : Any] else {
                     
