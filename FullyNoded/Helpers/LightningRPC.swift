@@ -84,7 +84,13 @@ class LightningRPC {
             print("request: \("{\"jsonrpc\":\"2.0\",\"id\":\"\(id)\",\"method\":\"\(method.rawValue)\",\"params\":[\(param)]}")")
             #endif
             
-            let task = torClient.session.dataTask(with: request as URLRequest) { (data, response, error) in
+            var sesh = URLSession(configuration: .default)
+            
+            if onionAddress.contains("onion") {
+                sesh = self.torClient.session
+            }
+            
+            let task = sesh.dataTask(with: request as URLRequest) { (data, response, error) in
                 guard error == nil else {
                     #if DEBUG
                     print("error: \(error!.localizedDescription)")
