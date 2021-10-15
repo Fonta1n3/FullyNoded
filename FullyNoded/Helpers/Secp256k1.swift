@@ -88,9 +88,9 @@ class secp256k1 {
 
     func publicKey(priv: BigInt) -> BigInt // compressed
     {
-        var pubkey: Point = secp256k1.multiply(P: self.basePoint, s: priv)
-        var lastbyte: BigInt = (pubkey.y % 2 == 0 ? 2 : 3) * BigInt(2).power(256)
-        var compressed: BigInt = pubkey.x + lastbyte
+        let pubkey: Point = secp256k1.multiply(P: self.basePoint, s: priv)
+        let lastbyte: BigInt = (pubkey.y % 2 == 0 ? 2 : 3) * BigInt(2).power(256)
+        let compressed: BigInt = pubkey.x + lastbyte
         return compressed
     }
 }

@@ -46,12 +46,14 @@ class PoDLE {
         let e_value = BigInt.init(e.map{String(format:"%02x",$0)}.joined(), radix: 16)!
 
         let s = (k + (priv * e_value)%secp256k1.N)%secp256k1.N
+        var sig = s.serialize()
+        sig = sig.dropFirst(max(0, sig.count - 32))
 
         return ["utxo": u,
                 "P": P.map{String(format:"%02x",$0)}.joined(), 
                 "P2": P2.map{String(format:"%02x",$0)}.joined(), 
                 "commit": commit.map{String(format:"%02x",$0)}.joined(), 
-                "sig": String(s), 
+                "sig": sig.map{String(format:"%02x",$0)}.joined(),
                 "e": e.map{String(format:"%02x",$0)}.joined()]
     }
 
