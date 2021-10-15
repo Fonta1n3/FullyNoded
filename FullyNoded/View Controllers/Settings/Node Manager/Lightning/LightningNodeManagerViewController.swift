@@ -7,9 +7,8 @@
 //
 
 import UIKit
-import AuthenticationServices
 
-class LightningNodeManagerViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
+class LightningNodeManagerViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     @IBOutlet weak var iconBackground: UIView!
     let spinner = ConnectingView()
@@ -37,12 +36,27 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         initialLoad = true
         onchainBalanceConf.alpha = 0
         onchainBalanceUnconfirmed.alpha = 0
+        
+        authenticated = (KeyChain.getData("userIdentifier") == nil)
+        
+        guard authenticated else {
+            self.authenticateWith2FA { [weak self] response in
+                guard let self = self else { return }
+                
+                self.authenticated = response
+                
+                if !response {
+                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access Lightning node management unless you successfully authenticate with 2FA.")
+                } else {
+                    self.loadData()
+                }
+            }
+            return
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        if KeyChain.getData("userIdentifier") != nil && !authenticated {
-            show2fa()
-        } else {
+        if authenticated {
             loadData()
         }
     }
@@ -63,18 +77,6 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
             
             self.getInfo(node: node)
         }
-    }
-    
-    private func show2fa() {
-        let request = ASAuthorizationAppleIDProvider().createRequest()
-        let controller = ASAuthorizationController(authorizationRequests: [request])
-        controller.delegate = self
-        controller.presentationContextProvider = self
-        controller.performRequests()
-    }
-    
-    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return self.view.window!
     }
     
     private func promptToAddNode() {
@@ -449,36 +451,6 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         case 4:
             showPending = true
             goToChannels()
-        default:
-            break
-        }
-    }
-    
-    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-        switch authorization.credential {
-        case let appleIDCredential as ASAuthorizationAppleIDCredential:
-            let authorizationProvider = ASAuthorizationAppleIDProvider()
-            if let usernameData = KeyChain.getData("userIdentifier") {
-                if let username = String(data: usernameData, encoding: .utf8) {
-                    if username == appleIDCredential.user {
-                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
-                            guard let self = self else { return }
-                            
-                            switch state {
-                            case .authorized:
-                                self.authenticated = true
-                                self.loadData()
-                            case .revoked:
-                                fallthrough
-                            case .notFound:
-                                fallthrough
-                            default:
-                                break
-                            }
-                        }
-                    }
-                }
-            }
         default:
             break
         }

@@ -516,15 +516,26 @@ public var timestampData: String {
     return "blindingKey"
 }
 
-//extension DispatchQueue {
-//    static func background(delay: Double = 0.0, background: (()->Void)? = nil, completion: (() -> Void)? = nil) {
-//        DispatchQueue.global(qos: .background).async {
-//            background?()
-//            if let completion = completion {
-//                DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: {
-//                    completion()
-//                })
-//            }
-//        }
-//    }
-//}
+public extension UIViewController {
+    func authenticateWith2FA(completion: @escaping ((Bool)) -> Void) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        
+        guard let twofaVC = storyboard.instantiateViewController(identifier: "2FA") as? PromptForAuthViewController else {
+            completion(false)
+            return
+        }
+        
+        twofaVC.authenticating = true
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            twofaVC.modalPresentationStyle = .fullScreen
+            self.present(twofaVC, animated: true, completion: nil)
+        }
+        
+        twofaVC.authenticated = { authenticated in
+            completion(authenticated)
+        }
+    }
+}
