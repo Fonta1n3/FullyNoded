@@ -38,6 +38,7 @@
 		0A3013D8266B361E004DA35C /* LndRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3013D7266B361E004DA35C /* LndRpc.swift */; };
 		0A337D012700316E00AD087F /* WalletDir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A337D002700316E00AD087F /* WalletDir.swift */; };
 		0A39459826E5951100CAF05F /* Taker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A39459726E5951100CAF05F /* Taker.swift */; };
+		0A43EB8B270C50C100B39274 /* BigInt in Frameworks */ = {isa = PBXBuildFile; productRef = 0A43EB8A270C50C100B39274 /* BigInt */; };
 		0A590357269875CD00510626 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590356269875CB00510626 /* Extensions.swift */; };
 		0A59035A269B080700510626 /* ConfirmLightningPaymentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590359269B080700510626 /* ConfirmLightningPaymentViewController.swift */; };
 		0A59035D269B0CA800510626 /* InvoiceStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A59035C269B0CA700510626 /* InvoiceStruct.swift */; };
@@ -251,6 +252,7 @@
 		0A59035C269B0CA700510626 /* InvoiceStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceStruct.swift; sourceTree = "<group>"; };
 		0A77138326AD9C5E005CC23D /* BlindPsbt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlindPsbt.swift; sourceTree = "<group>"; };
 		0A77138526AE5E85005CC23D /* WalletInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletInfo.swift; sourceTree = "<group>"; };
+		0A8B41122702106C00815E65 /* Python.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python.framework; path = ../../../../../Library/Frameworks/Python.framework; sourceTree = "<group>"; };
 		0A9834BE26BBC93F00BAB74E /* CoreDataiCloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataiCloud.swift; sourceTree = "<group>"; };
 		0A9834C326BBCCB300BAB74E /* Backup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backup.swift; sourceTree = "<group>"; };
 		0A9834C526BC2E6700BAB74E /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
@@ -410,6 +412,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0A9834C626BC2E6800BAB74E /* CloudKit.framework in Frameworks */,
+				0A43EB8B270C50C100B39274 /* BigInt in Frameworks */,
 				0A1F10FD26A1AF3200BE2707 /* URKit in Frameworks */,
 				D06D788C25B817B500769157 /* LifeHash in Frameworks */,
 				D016AE7525B0284300A59E93 /* Tor.xcframework in Frameworks */,
@@ -920,6 +923,7 @@
 		D08C1FBB211147F600B7CA79 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0A8B41122702106C00815E65 /* Python.framework */,
 				0A9834C526BC2E6700BAB74E /* CloudKit.framework */,
 				D016AE7225B0284000A59E93 /* Tor.xcframework */,
 				D016AE4425AFFCA000A59E93 /* LibWally.xcframework */,
@@ -1017,6 +1021,7 @@
 			packageProductDependencies = (
 				D06D788B25B817B500769157 /* LifeHash */,
 				0A1F10FC26A1AF3200BE2707 /* URKit */,
+				0A43EB8A270C50C100B39274 /* BigInt */,
 			);
 			productName = BitSense;
 			productReference = D00B9A242111427200E8B95A /* FullyNoded.app */;
@@ -1091,6 +1096,7 @@
 			packageReferences = (
 				D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */,
 				0A1F10FB26A1AF3200BE2707 /* XCRemoteSwiftPackageReference "URKit" */,
+				0A43EB89270C50C100B39274 /* XCRemoteSwiftPackageReference "BigInt" */,
 			);
 			productRefGroup = D00B9A252111427200E8B95A /* Products */;
 			projectDirPath = "";
@@ -1505,7 +1511,10 @@
 				CURRENT_PROJECT_VERSION = 336;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				INFOPLIST_FILE = FullyNoded/Info.plist;
 				INFOPLIST_PREPROCESS = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -1543,7 +1552,10 @@
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_TESTABILITY = NO;
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				INFOPLIST_FILE = FullyNoded/Info.plist;
 				INFOPLIST_PREPROCESS = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -1654,6 +1666,14 @@
 				kind = branch;
 			};
 		};
+		0A43EB89270C50C100B39274 /* XCRemoteSwiftPackageReference "BigInt" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/attaswift/BigInt.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.3.0;
+			};
+		};
 		D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/BlockchainCommons/LifeHash";
@@ -1669,6 +1689,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0A1F10FB26A1AF3200BE2707 /* XCRemoteSwiftPackageReference "URKit" */;
 			productName = URKit;
+		};
+		0A43EB8A270C50C100B39274 /* BigInt */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0A43EB89270C50C100B39274 /* XCRemoteSwiftPackageReference "BigInt" */;
+			productName = BigInt;
 		};
 		D06D788B25B817B500769157 /* LifeHash */ = {
 			isa = XCSwiftPackageProductDependency;

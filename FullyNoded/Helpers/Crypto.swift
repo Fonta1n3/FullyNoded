@@ -118,19 +118,17 @@ enum Crypto {
         return Crypto.sha256hash(Crypto.sha256hash(Crypto.sha256hash(Data(bytes))))
     }
     
-   
-
-//    static func generateRandomBytes(_ bytes: Int) -> Data? {
-//        var keyData = Data(count: bytes)
-//        let result = keyData.withUnsafeMutableBytes {
-//            SecRandomCopyBytes(kSecRandomDefault, bytes, $0.baseAddress!)
-//        }
-//        if result == errSecSuccess {
-//            return keyData
-//        } else {
-//            print("Problem generating random bytes")
-//            return nil
-//        }
-//    }
+    static func generateRandomBytes(_ bytes: Int) -> Data? {
+        var keyData = Data(count: bytes)
+        let result = keyData.withUnsafeMutableBytes {
+            SecRandomCopyBytes(kSecRandomDefault, bytes, $0.baseAddress!)
+        }
+        if result == errSecSuccess {
+            return keyData
+        } else {
+            print("Problem generating random bytes")
+            return nil
+        }
+    }
     
 }

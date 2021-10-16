@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import BigInt
 
 class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
@@ -42,8 +43,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             self.wallet = wallet
         }
-        
-        print("fxRate: \(fxRate)")
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -568,95 +567,94 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     private func mix(_ utxo: Utxo) {
-//        JoinMarket.getDepositAddress { [weak self] address in
-//            guard let self = self else { return }
-//
-//            guard let address = address else { return }
-//
-//            DispatchQueue.main.async { [weak self] in
-//                guard let self = self else { return }
-//
-//                self.inputArray.append(utxo.input)
-//                self.depositAddress = address
-//                self.amountTotal = 0.0
-//
-//                self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
-//            }
-//        }
+        var utxoToMix = utxo
         
-//        var utxoToMix = utxo
-//        utxoToMix.commitment = "<insert code to creat commitment>"
-//        
-//        let jm = JoinMarketPit.sharedInstance
-//        let taker = Taker.shared
-//        print("jm.absOffers.count: \(jm.absOffers.count)")
-//        print("jm.relOffers.count: \(jm.relOffers.count)")
-//        
-//        guard jm.absOffers.count > 0 || jm.relOffers.count > 0 else {
-//            showAlert(vc: self, title: "", message: "No offers...")
-//            return
-//        }
-//        
-//        if jm.absOffers.count > 0 {
-//            jm.absOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
-//            jm.absOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
-//        }
-//        
-//        if jm.relOffers.count > 0 {
-//            jm.relOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
-//            jm.relOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
-//        }
-//                        
-//        guard let amount = utxo.amount else { print("failing here"); return }
-//        
-//        let satsToMix = Int(amount * 100000000.0)
-//        
-//        var idealAbsOffers = jm.absOffers
-//        
-//        for (i, absOffer) in jm.absOffers.enumerated() {
-//            if (satsToMix > absOffer.minSize ?? 0 && satsToMix < absOffer.maxSize ?? 0) {
-//                idealAbsOffers.append(absOffer)
-//            }
-//            
-//            if i + 1 == jm.absOffers.count {
-//                //print("ideal absoffer: \(idealAbsOffers[0].raw)")
-//                
-//                if idealAbsOffers.count > 4 {
-//                    for i in 0...4 {
-//                        let offer = idealAbsOffers[i]
-//                        print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
-//                        
-//                        taker.handshake(offer, utxo) { _ in
-//                            //print("handshake response: \(response ?? "empty")")
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        
-//        var idealRelOffers = jm.relOffers
-//        
-//        for (i, relOffer) in jm.relOffers.enumerated() {
-//            if (satsToMix > relOffer.minSize ?? 0 && satsToMix < relOffer.maxSize ?? 0) {
-//                idealRelOffers.append(relOffer)
-//            }
-//            
-//            if i + 1 == jm.relOffers.count {
-//                print("ideal reloffer: \(idealRelOffers[0].raw)")
-//                
-//                if idealRelOffers.count > 4 {
-//                    for i in 0...4 {
-//                        let offer = idealRelOffers[i]
-//                        print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
-//                        
-//                        taker.handshake(idealRelOffers[i], utxo) { response in
-//                            //print("handshake response: \(response ?? "empty")")
-//                        }
-//                    }
-//                }
-//            }
-//        }
+        guard let desc = utxo.desc else { return }
+        let descriptor = Descriptor(desc)
         
+        Keys.privKey(descriptor.derivation, descriptor.pubkey) { (privKey, errorMessage) in
+            guard let privKey = privKey else {
+                let defaultError = "We were unable to derive a private key from any of your signers which can spend for this utxo."
+                
+                showAlert(vc: self,
+                          title: "Something went wrong...",
+                          message: errorMessage ?? defaultError)
+                
+                return
+            }
+            
+            // MARK: RAJ TODO
+            // You will need to convert the privkey from data to a 256 bit integer and then supply it to your code for creating a commitment.
+            // BigInt is already added to the project, just import the module to use it.
+            // Once you have the commitment simply supply it as a string to the below line of code:
+            
+            let privkeyValue = BigInt.init(privKey)
+            utxoToMix.commitment = PoDLE.generatePodle(priv: privkeyValue, u: desc)["commit"]
+            
+            let jm = JoinMarketPit.sharedInstance
+            let taker = Taker.shared
+            
+            guard jm.absOffers.count > 0 || jm.relOffers.count > 0 else {
+                showAlert(vc: self, title: "", message: "No offers...")
+                return
+            }
+            
+            if jm.absOffers.count > 0 {
+                jm.absOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
+                jm.absOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
+            }
+            
+            if jm.relOffers.count > 0 {
+                jm.relOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
+                jm.relOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
+            }
+                            
+            guard let amount = utxo.amount else { print("failing here"); return }
+            
+            let satsToMix = Int(amount * 100000000.0)
+            
+            var idealAbsOffers = jm.absOffers
+            
+            for (i, absOffer) in jm.absOffers.enumerated() {
+                if (satsToMix > absOffer.minSize ?? 0 && satsToMix < absOffer.maxSize ?? 0) {
+                    idealAbsOffers.append(absOffer)
+                }
+                
+                if i + 1 == jm.absOffers.count {
+                    if idealAbsOffers.count > 4 {
+                        for i in 0...4 {
+                            let offer = idealAbsOffers[i]
+                            print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
+                            
+                            taker.handshake(offer, utxoToMix) { _ in
+                                //print("handshake response: \(response ?? "empty")")
+                            }
+                        }
+                    }
+                }
+            }
+            
+            var idealRelOffers = jm.relOffers
+            
+            for (i, relOffer) in jm.relOffers.enumerated() {
+                if (satsToMix > relOffer.minSize ?? 0 && satsToMix < relOffer.maxSize ?? 0) {
+                    idealRelOffers.append(relOffer)
+                }
+                
+                if i + 1 == jm.relOffers.count {
+                    if idealRelOffers.count > 4 {
+                        for i in 0...4 {
+                            let offer = idealRelOffers[i]
+                            print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
+                            
+                            taker.handshake(offer, utxoToMix) { response in
+                                //print("handshake response: \(response ?? "empty")")
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
             
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

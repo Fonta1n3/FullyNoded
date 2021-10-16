@@ -105,7 +105,7 @@ public class IRCServer {
                 return
             }
             
-            print("message: \(message)")
+            //print("message: \(message)")
             
             for line in message.split(separator: "\r\n") {
                 self.processLine(String(line))
@@ -159,11 +159,12 @@ public class IRCServer {
             print("append reloffer")
             relOffers.append(offer)
             
-        case .unknown(raw: message):
-            print("unknown message type: \(message)")
+//        case .unknown(raw: message):
+//            print("unknown message type: \(message)")
             
         default:
-            print("Unknown: \(message)")
+            //print("Unknown: \(message)")
+        break
         }
     }
     
