@@ -27,7 +27,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             UserDefaults.standard.set(true, forKey: "useBlockchainInfo")
         }
         
-        authenticated = (KeyChain.getData("userIdentifier") == nil)
+        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
+        authenticated = (KeyChain.getData("userIdentifier") == nil || lastAuthenticated < 30)
         
         guard authenticated else {
             self.authenticateWith2FA { [weak self] response in
@@ -37,6 +38,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 if !response {
                     showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access settings unless you successfully authenticate with 2FA.")
+                } else {
+                    self.settingsTable.reloadData()
                 }
             }
             return

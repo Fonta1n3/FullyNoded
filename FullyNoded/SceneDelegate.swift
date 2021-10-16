@@ -55,7 +55,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             return
         }
         
-        #if !os(macOS)
+        #if !os(macOS) && !targetEnvironment(macCatalyst)
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         
         guard let loginVC = storyboard.instantiateViewController(identifier: "LogIn") as? LogInViewController,

@@ -96,6 +96,7 @@ class PromptForAuthViewController: UIViewController, UINavigationControllerDeleg
                                 
                                 switch state {
                                 case .authorized:
+                                    UserDefaults.standard.setValue(Date(), forKey: "LastAuthenticated")
                                     self.done(nil, true)
                                 case .notFound:
                                     self.done(nil, false)

@@ -697,7 +697,9 @@ class NodeLogic {
                             if !alreadySaved {
                                 saveUtxo(utxo, wallet)
                             } else if updateLabel {
-                                updateUtxoLabel(id: savedUtxoStr.id!, newLabel: savedUtxoStr.label ?? "")
+                                if savedUtxoStr.label != nil && savedUtxoStr.label != "" {
+                                    updateUtxoLabel(id: savedUtxoStr.id!, newLabel: savedUtxoStr.label ?? "")
+                                }
                             }
                         }
                     }

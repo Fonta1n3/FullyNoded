@@ -16,11 +16,14 @@ public extension Utxo {
 }
 
 public extension Date {
-    
     var displayDate: String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
         return dateFormatter.string(from: self)
+    }
+    
+    var secondsSince: Int {
+        return Int(Date().timeIntervalSince(self))
     }
     
 }

@@ -122,7 +122,8 @@ class MainMenuViewController: UIViewController {
     }
     
     @IBAction func goToTools(_ sender: Any) {
-        authenticated = (KeyChain.getData("userIdentifier") == nil)
+        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
+        authenticated = (KeyChain.getData("userIdentifier") == nil || lastAuthenticated < 30)
         
         guard authenticated else {
             self.authenticateWith2FA { [weak self] response in

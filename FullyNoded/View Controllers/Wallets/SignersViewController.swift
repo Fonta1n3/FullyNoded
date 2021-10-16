@@ -20,8 +20,8 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
-        authenticated = (KeyChain.getData("userIdentifier") == nil)
+        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
+        authenticated = (KeyChain.getData("userIdentifier") == nil || lastAuthenticated < 30)
         
         guard authenticated else {
             self.authenticateWith2FA { [weak self] response in
