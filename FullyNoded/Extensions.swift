@@ -97,14 +97,6 @@ extension Array where Element == UInt8 {
     }
 }
 
-public extension Int {
-    var withCommas: String {
-        let numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = NumberFormatter.Style.decimal
-        return numberFormatter.string(from: NSNumber(value:self))!
-    }
-}
-
 public extension String {
     var pong: String {
         return self.replacingOccurrences(of: "PING", with: "PONG")
@@ -127,7 +119,11 @@ public extension String {
         } else if dbl == 1.0 {
             return "1 sat"
         } else {
-            return "\(dbl) sats"
+            if self.contains(".") || self.contains(",") {
+                return "\(sats) sats"
+            } else {
+                return "\(sats.withCommas) sats"
+            }
         }
     }
     
@@ -422,6 +418,12 @@ public extension Int {
     
     var satsToBtcDouble: Double {
         return Double(self) / 100000000.0
+    }
+    
+    var withCommas: String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = NumberFormatter.Style.decimal
+        return numberFormatter.string(from: NSNumber(value:self))!
     }
     
 }

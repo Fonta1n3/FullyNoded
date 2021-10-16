@@ -93,7 +93,6 @@ public struct Descriptor: CustomStringConvertible {
                 switch item {
                                 
                 case "multi", "sortedmulti":
-                    print("item: \(item)")
                     let mofnarray = (arr[i + 1]).split(separator: ",")
                     let numberOfKeys = mofnarray.count - 1
                     dictionary["mOfNType"] = "\(mofnarray[0]) of \(numberOfKeys)"

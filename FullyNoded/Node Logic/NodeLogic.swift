@@ -282,7 +282,8 @@ class NodeLogic {
                     return
                 }
                 
-                let amountSat = Int(txDict["amount"] as? String ?? "0")!.withCommas
+                let amountSat = (txDict["amount"] as? String ?? "0")!.replacingOccurrences(of: "-", with: "")
+                //print("amountSat.withCommas: \(amountSat.withCommas)")
                 let confs = txDict["num_confirmations"] as? Int ?? 0
                 let label = txDict["label"] as? String ?? ""
                 let time_stamp = txDict["time_stamp"] as? String ?? "0"
@@ -298,7 +299,7 @@ class NodeLogic {
                 dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
                 let dateString = dateFormatter.string(from: date)
                 
-                let amountBtc = amountSat.satsToBtc.avoidNotation
+                let amountBtc = amountSat.doubleValue.satsToBtc
                 let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
                 let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
                 
