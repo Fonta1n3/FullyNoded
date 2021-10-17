@@ -21,7 +21,7 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
         super.viewDidLoad()
 
         let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
-        authenticated = (KeyChain.getData("userIdentifier") == nil || lastAuthenticated < 30)
+        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > 30) && !(lastAuthenticated == 0))
         
         guard authenticated else {
             self.authenticateWith2FA { [weak self] response in

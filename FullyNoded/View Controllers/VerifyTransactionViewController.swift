@@ -7,9 +7,8 @@
 //
 
 import UIKit
-import AuthenticationServices
 
-class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
+class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate {
     
     var isChannelFunding = false
     var voutChannelFunding:Int?
@@ -72,38 +71,52 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         verifyTable.delegate = self
         verifyTable.dataSource = self
         
-        configureViews()
-        
-        activeWallet { [weak self] w in
-            guard let self = self else { return }
-            
-            self.wallet = w
-        }
-        
-        if unsignedPsbt != "" || signedRawTx != "" {
-            enableExportButton()
-            
-            if unsignedPsbt != "" {
-                processPsbt(unsignedPsbt)
-            } else {
-                load()
+        func loadNow() {
+            activeWallet { [weak self] w in
+                guard let self = self else { return }
+                
+                self.wallet = w
             }
             
-        } else {
-            promptToAddTx()
+            configureViews()
+            
+            if unsignedPsbt != "" || signedRawTx != "" {
+                enableExportButton()
+                
+                if unsignedPsbt != "" {
+                    processPsbt(unsignedPsbt)
+                } else {
+                    load()
+                }
+                
+            } else {
+                promptToAddTx()
+            }
         }
-    }
-    
-    private func show2fa() {
-        let request = ASAuthorizationAppleIDProvider().createRequest()
-        let controller = ASAuthorizationController(authorizationRequests: [request])
-        controller.delegate = self
-        controller.presentationContextProvider = self
-        controller.performRequests()
-    }
-    
-    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return self.view.window!
+        
+        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
+        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > 30) && !(lastAuthenticated == 0))
+        
+        guard authenticated else {
+            self.authenticateWith2FA { [weak self] response in
+                guard let self = self else { return }
+                
+                self.authenticated = response
+                
+                if !response {
+                    self.disableSendButton()
+                    self.disableSignButton()
+                    self.disableExportButton()
+                    self.disableBumpButton()
+                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access Transactions unless you successfully authenticate with 2FA.")
+                } else {
+                    loadNow()
+                }
+            }
+            return
+        }
+        
+        loadNow()
     }
     
     private func processPsbt(_ psbt: String) {
@@ -440,19 +453,15 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     private func send() {
         isSigning = false
         
-        if KeyChain.getData("userIdentifier") != nil && !authenticated {
-            show2fa()
-        } else {
-            if signedRawTx != "" {
-                if !isChannelFunding {
-                    broadcast()
-                } else {
-                    promptToCompleteChannelFunding()
-                }
-                
+        if signedRawTx != "" {
+            if !isChannelFunding {
+                broadcast()
             } else {
-                showAlert(vc: self, title: "", message: "Transaction not fully signed, you can export it to another signer or sign it if the sign button is enabled.")
+                promptToCompleteChannelFunding()
             }
+            
+        } else {
+            showAlert(vc: self, title: "", message: "Transaction not fully signed, you can export it to another signer or sign it if the sign button is enabled.")
         }
     }
     
@@ -466,11 +475,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     @IBAction func signAction(_ sender: Any) {
         isSigning = true
-        if KeyChain.getData("userIdentifier") != nil && !authenticated {
-            show2fa()
-        } else {
-            signNow()
-        }
+        signNow()
     }
     
     private func signNow() {
@@ -2447,40 +2452,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
         }
     }
-    
-    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-        switch authorization.credential {
-        case let appleIDCredential as ASAuthorizationAppleIDCredential:
-            let authorizationProvider = ASAuthorizationAppleIDProvider()
-            if let usernameData = KeyChain.getData("userIdentifier") {
-                if let username = String(data: usernameData, encoding: .utf8) {
-                    if username == appleIDCredential.user {
-                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
-                            guard let self = self else { return }
-                            
-                            switch state {
-                            case .authorized:
-                                self.authenticated = true
-                                if self.isSigning {
-                                    self.signNow()
-                                } else {
-                                    self.send()
-                                }
-                            case .revoked:
-                                fallthrough
-                            case .notFound:
-                                fallthrough
-                            default:
-                                break
-                            }
-                        }
-                    }
-                }
-            }
-        default:
-            break
-        }
-    }
 }
 
 extension VerifyTransactionViewController: UITableViewDelegate {
@@ -2652,6 +2623,4 @@ extension VerifyTransactionViewController: UITableViewDelegate {
     }
 }
 
-extension VerifyTransactionViewController: UITableViewDataSource {
-    
-}
+extension VerifyTransactionViewController: UITableViewDataSource {}
