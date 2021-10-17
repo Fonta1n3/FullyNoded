@@ -283,7 +283,6 @@ class NodeLogic {
                 }
                 
                 let amountSat = (txDict["amount"] as? String ?? "0")!.replacingOccurrences(of: "-", with: "")
-                //print("amountSat.withCommas: \(amountSat.withCommas)")
                 let confs = txDict["num_confirmations"] as? Int ?? 0
                 let label = txDict["label"] as? String ?? ""
                 let time_stamp = txDict["time_stamp"] as? String ?? "0"
