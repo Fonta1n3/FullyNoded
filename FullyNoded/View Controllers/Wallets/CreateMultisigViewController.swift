@@ -443,7 +443,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             
             for descriptor in descriptors {
                 let str = Descriptor(descriptor)
-                if str.isCosigner && str.derivation == self.derivationField.text {
+                if str.isCosigner && str.derivation == self.derivationField.text?.replacingOccurrences(of: "h", with: "'") {
                     parseDescriptor(str)
                     break
                 } else {

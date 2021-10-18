@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import AVFoundation
+//import AVFoundation
 
 class CreateFullyNodedWalletViewController: UIViewController, UINavigationControllerDelegate, UIDocumentPickerDelegate {
     

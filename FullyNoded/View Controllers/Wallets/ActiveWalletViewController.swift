@@ -48,6 +48,7 @@ class ActiveWalletViewController: UIViewController {
     private var isBtc = true
     private var isSats = false
     private var authenticated = false
+    private var isAuthenticating = false
     private var initialLoad = true
     var fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     
@@ -75,7 +76,7 @@ class ActiveWalletViewController: UIViewController {
         addNavBarSpinner()
         
         let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
-        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > 30) && !(lastAuthenticated == 0))
+        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
         
         guard authenticated else {
             self.authenticateWith2FA { [weak self] response in
@@ -102,6 +103,44 @@ class ActiveWalletViewController: UIViewController {
             initialLoad = false
             getFxRate()
             noPasswordAlert()
+        }
+        
+        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
+        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
+        
+        if !initialLoad && !authenticated && !isAuthenticating {
+            self.hideData()
+            self.isAuthenticating = true
+            
+            self.authenticateWith2FA { [weak self] response in
+                guard let self = self else { return }
+                
+                self.authenticated = response
+                self.isAuthenticating = false
+                
+                if !response {
+                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
+                } else {
+                    self.getFxRate()
+                }
+            }
+        }
+    }
+    
+    private func hideData() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.onchainBalanceBtc = ""
+            self.onchainBalanceSats = ""
+            self.onchainBalanceFiat = ""
+            self.offchainBalanceBtc = ""
+            self.offchainBalanceSats = ""
+            self.offchainBalanceFiat = ""
+            self.transactionArray.removeAll()
+            self.offchainTxArray.removeAll()
+            self.onchainTxArray.removeAll()
+            self.walletTable.reloadData()
         }
     }
     
@@ -431,6 +470,24 @@ class ActiveWalletViewController: UIViewController {
                 }
                 
                 self.loadBalances()
+            }
+        } else if !isAuthenticating {
+            removeSpinner()
+            self.hideData()
+            
+            self.isAuthenticating = true
+            
+            self.authenticateWith2FA { [weak self] result in
+                guard let self = self else { return }
+                
+                self.authenticated = result
+                self.isAuthenticating = false
+                
+                if result {
+                    self.refreshAll()
+                } else {
+                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
+                }
             }
         }
     }
@@ -981,26 +1038,30 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    private func getFxRate() {        
+    private func getFxRate() {
         FiatConverter.sharedInstance.getFxRate { [weak self] rate in
             guard let self = self else { return }
             
             guard let rate = rate else {
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
                     self.fxRateLabel.text = "no fx rate data"
                 }
+                
                 self.loadTable()
+                
                 return
             }
             
             self.fxRate = rate
             UserDefaults.standard.setValue(rate, forKey: "fxRate")
             
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.fxRateLabel.text = rate.exchangeRate
-            }
-            
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.fxRateLabel.text = rate.exchangeRate
+                
                 self.loadTable()
             }
         }
@@ -1425,37 +1486,6 @@ class ActiveWalletViewController: UIViewController {
             self.present(alert, animated: true, completion: nil)
         }
     }
-    
-//    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-//        switch authorization.credential {
-//        case let appleIDCredential as ASAuthorizationAppleIDCredential:
-//            let authorizationProvider = ASAuthorizationAppleIDProvider()
-//            if let usernameData = KeyChain.getData("userIdentifier") {
-//                if let username = String(data: usernameData, encoding: .utf8) {
-//                    if username == appleIDCredential.user {
-//                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
-//                            guard let self = self else { return }
-//
-//                            switch state {
-//                            case .authorized:
-//                                self.authenticated = true
-//                                self.getFxRate()
-//                            case .revoked:
-//                                fallthrough
-//                            case .notFound:
-//                                fallthrough
-//                            default:
-//                                break
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        default:
-//            break
-//        }
-//    }
-    
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
