@@ -129,6 +129,15 @@ class URHelper {
             return parseMultisig(isBIP67: false, script: "wsh(multi())", cbor: embeddedCbor)
         case 407:
             return parseMultisig(isBIP67: true, script: "wsh(sortedmulti())", cbor: embeddedCbor)
+        case 401:
+            return parseWSHCbor(taggedCbor: embeddedCbor)
+        case 303:
+            if let desc = parsePlainWSHCbor(taggedCbor: taggedCbor) {
+                return ([desc], nil)
+            } else {
+                return (nil, "Unable to parse that crypto-hdkey, please reach out to us.")
+            }
+                        
         default:
             return (nil, "Unsupported script. Fully Noded does not support single sig descriptors with multisig scripts.")
         }
@@ -141,7 +150,13 @@ class URHelper {
             return nil
         }
         
-        return "wsh([\(origin)]\(extKey)/0/*)"
+        var childPath = "/0/*"
+        
+        if let children = key.children {
+            childPath = children.description
+        }
+        
+        return "wsh([\(origin)]\(extKey)\(childPath))"
     }
     
     static func parseSHCbor(taggedCbor: CBOR) -> (descriptors: [String]?, error: String?) {
@@ -157,12 +172,9 @@ class URHelper {
         case 404: // sh(wpkh())
             return parseSHWPKHCbor(embeddedCbor: embeddedCbor)
             
-        case 303: // sh()
-            return (nil, "Fully Noded does not support multisig scripts for single sig descriptors.")
-            
         case 401:
             // sh(wsh())
-            return (nil, "Fully Noded does not support multisig scripts for single sig descriptors.")
+            return parseWSHCbor(taggedCbor: embeddedCbor)
             
         default:
             return (nil, "Unsupported script hash. Please let us know about it on Twitter, Github or Telegram.")
@@ -179,19 +191,32 @@ class URHelper {
             return parseMultisig(isBIP67: false, script: "sh(wsh(multi()))", cbor: embeddedCbor_)
         case 407:
             return parseMultisig(isBIP67: true, script: "sh(wsh(sortedmulti()))", cbor: embeddedCbor_)
+        case 303:
+            if let desc = parsePlainSHWSHCbor(embeddedCbor: embeddedCbor) {
+                return ([desc], nil)
+            } else {
+                return (nil, "Unable to parse that crypto-hdkey, please reach out to us.")
+            }
+            
         default:
             return (nil, "Unsupported script type. Fully Noded does not support multisig scripts for single sig descriptors.")
         }
     }
     
     static func parsePlainSHWSHCbor(embeddedCbor: CBOR) -> String? {
-            guard let key = try? HDKey_(taggedCBOR: embeddedCbor),
-                  let origin = key.origin,
-                  let extKey = key.base58 else {
-                return nil
-            }
+        guard let key = try? HDKey_(taggedCBOR: embeddedCbor),
+              let origin = key.origin,
+              let extKey = key.base58 else {
+            return nil
+        }
         
-            return "sh(wsh([\(origin)]\(extKey)/0/*))"
+        var childPath = "/0/*"
+        
+        if let children = key.children {
+            childPath = children.description
+        }
+        
+        return "sh(wsh([\(origin)]\(extKey)\(childPath))"
     }
     
     static func parsePlainSHCbor(taggedCbor: CBOR) -> String? {
@@ -333,12 +358,6 @@ class URHelper {
                                             descriptorArray.append("sh(wpkh([_xfp_/\(origin)]\(extKey)/0/*))")
                                         }
                                     }
-                                    
-                                case 303:
-                                    //sh()
-                                    let (descArray, errorCheck) = parseSHCbor(taggedCbor: embeddedCbor)
-                                    arrayToReturn = descArray
-                                    error = errorCheck
                             
                                 case 401:
                                     // sh(wsh())

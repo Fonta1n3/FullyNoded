@@ -11,7 +11,6 @@ import UIKit
 class CreateMultisigViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate {
     
     var spinner = ConnectingView()
-    var cointType = "0"
     private var isNested = false
     var blockheight = 0
     var m = Int()
@@ -22,7 +21,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     var ccXpub = ""
     var ccDeriv = ""
     var keys = [[String:String]]()
-    var alertStyle = UIAlertController.Style.actionSheet
+    var alertStyle = UIAlertController.Style.alert
     
     @IBOutlet weak var derivationField: UITextField!
     @IBOutlet weak var fingerprintField: UITextField!
@@ -48,26 +47,18 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         
         fingerprintField.text = ""
         
-        spinner.addConnectingView(vc: self, description: "fetching chain type...")
-        
         if ccXpub != "" && ccXfp != "" {
             derivationField.text = ccDeriv
             addKeyStore(ccXfp, ccXpub)
-            showAlert(vc: self, title: "Coldcard keystore added ✅", message: "")
+            showAlert(vc: self, title: "Cosigner added ✓", message: "")
         }
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
-        
-        if (UIDevice.current.userInterfaceIdiom == .pad) {
-            alertStyle = UIAlertController.Style.alert
-        }
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        getChain()
-    }
+    override func viewDidAppear(_ animated: Bool) {}
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         fingerprintField.resignFirstResponder()
@@ -150,36 +141,13 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         promptToCreate()
     }
     
-    private func getChain() {
-        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
-            guard let self = self else { return }
-            
-            guard let dict = response as? NSDictionary, let blocks = dict["blocks"] as? Int, let chain = dict["chain"] as? String else {
-                self.spinner.removeConnectingView()
-                
-                guard let errorMessage = errorMessage else {
-                    showAlert(vc: self, title: "Error", message: "error fetching chain type")
-                    
-                    return
-                }
-                
-                showAlert(vc: self, title: "Error fetching chain type", message: errorMessage)
-                
-                return
-            }
-            
-            self.blockheight = blocks
-            
-            if chain != "main" {
-                self.cointType = "1"
-            }
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.derivationField.text = "m/48'/\(self.cointType)'/0'/2'"
-                self.spinner.removeConnectingView()
-            }
+    var cointType: String {
+        let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+        switch chain {
+        case "main":
+            return "0"
+        default:
+            return "1"
         }
     }
     
@@ -456,21 +424,77 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 
                 self.addKeyStore(fingerprint, key)
             }
+        } else if extendedKey.lowercased().hasPrefix("wsh(") {
+            
+        } else if extendedKey.lowercased().hasPrefix("ur:crypto-hdkey") || extendedKey.lowercased().hasPrefix("ur:crypto-account") {
+            let (descriptors, error) = URHelper.parseUr(urString: extendedKey.lowercased())
+            
+            guard error == nil, let descriptors = descriptors, descriptors.count > 0 else {
+                showAlert(vc: self, title: "Error", message: error ?? "Unknown error decoding the QR code.")
+                return
+            }
+            
+            for descriptor in descriptors {
+                let str = Descriptor(descriptor)
+                if str.isCosigner && str.derivation == self.derivationField.text {
+                    parseDescriptor(str)
+                    break
+                } else {
+                    showAlert(vc: self, title: "There was an issue...", message: "It does not look like any of the supplied cosigners match the \(self.derivationField.text ?? "?") derivation path. For now the multisig creator only supports one derivation path per cosigner.")
+                }
+            }
+            
+        } else if extendedKey.lowercased().hasPrefix("ur:bytes") {
+            let (text, err) = URHelper.parseBlueWalletCoordinationSetup(extendedKey.lowercased())
+            if let textFile = text {
+                 if let dict = try? JSONSerialization.jsonObject(with: textFile.utf8, options: []) as? [String:Any] {
+                    let importStruct = WalletImport(dict)
+                    
+                    if let bip48 = importStruct.bip48 {
+                        parseDescriptor(Descriptor(bip48))
+                    }
+                    
+                 } else if let accountMap = TextFileImport.parse(textFile).accountMap {
+                    let desc = accountMap["descriptor"] as? String ?? ""
+                    parseDescriptor(Descriptor(desc))
+                        
+                } else {
+                    showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the text file into a descriptor.")
+                }
+            } else {
+                showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the QR code.")
+            }
+            
         } else if let data = extendedKey.data(using: .utf8) {
-            guard let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any],
-                let xfp = json["xfp"] as? String,
-                let xpub = json["xpub"] as? String,
-                let path = json["path"] as? String else {
-                showError(); return
-            }
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
+                guard let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any],
+                    let xfp = json["xfp"] as? String,
+                    let xpub = json["xpub"] as? String,
+                    let path = json["path"] as? String else {
+                    showError(); return
+                }
                 
-                self.derivationField.text = path
-                self.addKeyStore(xfp, xpub)
-            }
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.derivationField.text = path
+                    self.addKeyStore(xfp, xpub)
+                }
+                
+        } else {
+            showAlert(vc: self, title: "Unrecognized cosigner format.", message: extendedKey + " is not a recognized cosigner format. Please reach out to us so that we can add support for this.")
+        }
+    }
+
+    private func parseDescriptor(_ descriptor: Descriptor) {
+        let key = descriptor.accountXpub
+        let fingerprint = descriptor.fingerprint
+        
+        guard key != "", fingerprint != "" else { showError(); return }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             
+            self.addKeyStore(fingerprint, key)
         }
     }
     
@@ -511,7 +535,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             if #available(macCatalyst 14.0, *) {
                 guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
                 
-                vc.isScanningAddress = true
+                vc.isAccountMap = true
                 
                 vc.onAddressDoneBlock = { [weak self] xpub in
                     guard let self = self, let xpub = xpub else { return }

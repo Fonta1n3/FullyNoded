@@ -171,120 +171,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
-    private func parseColdcardStyleTextFile(txt: String) -> [String:Any]? {
-        let myStrings = txt.components(separatedBy: .newlines)
-        var name = ""
-        var sigsRequired = ""
-        var deriv = ""
-        var keys = [String]()
-        var descriptor = ""
-        
-        for item in myStrings {
-            if item.contains("Name: ") {
-                name = item.replacingOccurrences(of: "Name: ", with: "")
-            } else if item.contains("Policy: ") {
-                let policy = item.replacingOccurrences(of: "Policy: ", with: "")
-                let arr = policy.split(separator: " ")
-                sigsRequired = "\(arr[0])"
-            } else if item.contains("Format: ") {
-                guard item.contains("P2WSH") else {
-                    showAlert(vc: self, title: "Unsupported policy", message: "Currently we only support p2wsh multisig imports.")
-                    return nil
-                }
-            } else if item.contains("Derivation: ") {
-                deriv = item.replacingOccurrences(of: "Derivation: ", with: "")
-            } else if item.hasPrefix("seed: ") && !item.hasPrefix("#") {
-                keys.append(item)
-            } else if !item.hasPrefix("#") {
-                var processed = item.condenseWhitespace()
-                processed = processed.replacingOccurrences(of: "\n", with: "")
-                if processed != "" {
-                    keys.append(processed.replacingOccurrences(of: " ", with: ""))
-                }
-            }
-        }
-        
-        descriptor = "wsh(sortedmulti(\(sigsRequired),"
-        
-        for (i, key) in keys.enumerated() {
-            
-            func addKey(_ xpub: String, _ xfp: String) {
-                if !xpub.hasPrefix("xpub") && !xpub.hasPrefix("tpub") {
-                    guard let extKey = XpubConverter.convert(extendedKey: xpub) else {
-                        showAlert(vc: self, title: "Error", message: "There was a problem converting your extended key to an xpub.")
-                        return
-                    }
-                    
-                    descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(extKey)/0/*"
-                } else {
-                    descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(xpub)/0/*"
-                }
-                
-                if i < keys.count {
-                    descriptor += ","
-                } else {
-                    descriptor += "))"
-                }
-            }
-            
-            if key.hasPrefix("seed: ") {
-                let words = key.replacingOccurrences(of: "seed: ", with: "")
-                
-                guard let encryptedData = Crypto.encrypt(words.utf8) else {
-                    showAlert(vc: self, title: "Unable to encrypt the seed words...", message: "Please let us know about this bug.")
-                    return nil
-                }
-                
-                saveSigner(encryptedSigner: encryptedData) { saved in
-                    guard saved else {
-                        showAlert(vc: self, title: "Unable to save the encrypted signer...", message: "Please let us know about this bug.")
-                        return
-                    }
-                }
-                
-                var coinType = "0"
-                
-                let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
-                
-                if chain != "main" {
-                    coinType = "1"
-                }
-                
-                guard let mk = Keys.masterKey(words: words, coinType: coinType, passphrase: "") else {
-                    showAlert(vc: self, title: "Unable to derive the master key from the seed words...", message: "Please let us know about this bug.")
-                    return nil
-                }
-                
-                guard let xfp = Keys.fingerprint(masterKey: mk) else {
-                    showAlert(vc: self, title: "Unable to derive the fingerprint from the master key...", message: "Please let us know about this bug.")
-                    return nil
-                }
-                
-                guard let xpub = Keys.xpub(path: "m/48h/\(coinType)h/0h/2h", masterKey: mk) else {
-                    showAlert(vc: self, title: "Unable to derive the bip48 xpub from the master key...", message: "Please let us know about this bug.")
-                    return nil
-                }
-                
-                addKey(xpub, xfp)
-                
-            } else {
-                let arr = key.split(separator: ":")
-                let xfp = "\(arr[0])"
-                let xpub = "\(arr[1])"
-                addKey(xpub, xfp)
-            }
-        }
-        
-        return ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
-    }
-    
-    private func saveSigner(encryptedSigner: Data, completion: @escaping ((Bool)) -> Void) {
-        let dict = ["id":UUID(), "words":encryptedSigner] as [String:Any]
-        CoreDataService.saveEntity(dict: dict, entityName: .signers) { success in
-            completion(success)
-        }
-    }
-    
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
             spinner.removeConnectingView()
@@ -300,8 +186,12 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 return
             }
             
-            if let accountMap = parseColdcardStyleTextFile(txt: txt) {
-                promptToImportCoboMultiSig(accountMap)
+            let (accountMap, errorMessage) = TextFileImport.parse(txt)
+                
+            if let accountMap = accountMap {
+                promptToImportMultiSig(accountMap)
+            } else {
+                showAlert(vc: self, title: "There was an issue...", message: errorMessage ?? "Unknown error.")
             }
             
             /*
@@ -385,7 +275,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
-    private func promptToImportCoboMultiSig(_ dict: [String:Any]) {
+    private func promptToImportMultiSig(_ dict: [String:Any]) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -640,22 +530,28 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     private func setPrimDesc(descriptors: [String], descriptorToUseIndex: Int) {
         var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
-        accountMap["descriptor"] = descriptors[descriptorToUseIndex]
-        var arrayOfWatching:[String] = []
+        let primDesc = descriptors[descriptorToUseIndex]
+        accountMap["descriptor"] = primDesc
         
-        for (i, desc) in descriptors.enumerated() {
-            if i != descriptorToUseIndex {
-                arrayOfWatching.append(desc)
+        let desc = Descriptor("\(primDesc)")
+        if desc.isCosigner {
+            print("its a cosigner: \(primDesc)")
+            self.ccXfp = desc.fingerprint
+            self.xpub = desc.accountXpub
+            self.deriv = desc.derivation
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.performSegue(withIdentifier: "segueToCreateMultiSig", sender: self)
             }
+        } else {
+            self.importAccountMap(accountMap)
         }
-        
-        accountMap["watching"] = arrayOfWatching
-        self.importAccountMap(accountMap)
     }
     
     func prompToChoosePrimaryDesc(descriptors: [String]) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Select primary address format.", message: "You are adding multiple descriptors which is great, but you need to choose one to be the primary descriptor we use to derive receive addresses.", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Choose an address format.", message: "Looks like you are attempting to import multiple address formats, please choose one to continue.", preferredStyle: .alert)
             
             for (i, descriptor) in descriptors.enumerated() {
                 let descStr = Descriptor(descriptor)
@@ -736,13 +632,13 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                                         if let bip84 = importStruct.bip84 {
                                             descriptors.append(bip84)
                                         }
-//                                        if let bip48 = sparrowStruct.bip48 {
-//                                            descriptors.append(bip48)
-//                                        }
+                                        if let bip48 = importStruct.bip48 {
+                                            descriptors.append(bip48)
+                                        }
                                         
                                         self.prompToChoosePrimaryDesc(descriptors: descriptors)
                                         
-                                     } else if let accountMap = self.parseColdcardStyleTextFile(txt: textFile) {
+                                     } else if let accountMap = TextFileImport.parse(textFile).accountMap {
                                         self.importAccountMap(accountMap)
                                             
                                     } else {
@@ -769,8 +665,10 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                                     self.importAccountMap(accountMap)
                                 }
                             }
-                        } else if let accountMap = self.parseColdcardStyleTextFile(txt: item) {
+                        } else if let accountMap = TextFileImport.parse(item).accountMap {
                             self.importAccountMap(accountMap)
+                        } else {
+                            showAlert(vc: self, title: "Unsupported import.", message: item + " is not a supported import option, please let us know about this so we can add support.")
                         }
                     }
                 }

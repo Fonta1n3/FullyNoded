@@ -8,6 +8,7 @@
 
 public struct Descriptor: CustomStringConvertible {
     
+    let isCosigner:Bool
     let scriptType:String
     let format:String
     let isHot:Bool
@@ -326,6 +327,8 @@ public struct Descriptor: CustomStringConvertible {
                 
             }
             
+            dictionary["isCosigner"] = false
+            
             if descriptor.contains("combo") {
                 dictionary["format"] = "Combo"
             } else {
@@ -341,6 +344,7 @@ public struct Descriptor: CustomStringConvertible {
                         case "wsh":
                             dictionary["format"] = "P2WSH"
                             dictionary["scriptType"] = "Segwit multisig"
+                            dictionary["isCosigner"] = true
                             
                         case "wpkh":
                             dictionary["format"] = "P2WPKH"
@@ -355,9 +359,11 @@ public struct Descriptor: CustomStringConvertible {
                             } else if arr[1] == "wsh" {
                                 dictionary["format"] = "P2SH-P2WSH"
                                 dictionary["scriptType"] = "Segwit multisig"
+                                dictionary["isCosigner"] = true
                             } else {
                                 dictionary["format"] = "P2SH"
                                 dictionary["scriptType"] = "Legacy multisig"
+                                dictionary["isCosigner"] = true
                             }
                             
                         case "pk":
@@ -398,6 +404,7 @@ public struct Descriptor: CustomStringConvertible {
             dictionary["isHot"] = false
         }
         
+        isCosigner = dictionary["isCosigner"] as? Bool ?? false
         format = dictionary["format"] as? String ?? ""
         scriptType = dictionary["scriptType"] as? String ?? ""
         mOfNType = dictionary["mOfNType"] as? String ?? ""
