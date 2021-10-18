@@ -7584,12 +7584,20 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="Tie-jM-E6c">
-                        <barButtonItem key="rightBarButtonItem" image="qrcode.viewfinder" catalog="system" id="xya-es-Gi0">
-                            <color key="tintColor" systemColor="systemTealColor"/>
-                            <connections>
-                                <action selector="scanAction:" destination="00Y-n8-WfC" id="2Cd-69-E7T"/>
-                            </connections>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem image="qrcode.viewfinder" catalog="system" id="xya-es-Gi0">
+                                <color key="tintColor" systemColor="systemTealColor"/>
+                                <connections>
+                                    <action selector="scanAction:" destination="00Y-n8-WfC" id="2Cd-69-E7T"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="doc.on.clipboard" catalog="system" id="QGN-f0-PIf">
+                                <color key="tintColor" systemColor="systemTealColor"/>
+                                <connections>
+                                    <action selector="pasteAction:" destination="00Y-n8-WfC" id="FwC-0l-sTI"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <connections>
                         <outlet property="addOutlet" destination="oLZ-lP-Dfx" id="hZK-52-SBz"/>

@@ -67,6 +67,22 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         derivationField.resignFirstResponder()
     }
     
+    @IBAction func pasteAction(_ sender: Any) {
+        if let data = UIPasteboard.general.data(forPasteboardType: "com.apple.traditional-mac-plain-text") {
+            guard let string = String(bytes: data, encoding: .utf8) else {
+                showAlert(vc: self, title: "", message: "Looks like you do not have valid text on your clipboard.")
+                return
+            }
+            
+            parseImportedString(string)
+        } else if let string = UIPasteboard.general.string {
+            parseImportedString(string)
+        } else {
+            showAlert(vc: self, title: "", message: "Not a supported import item. Please let us know about it so we can add it.")
+        }
+    }
+    
+    
     @IBAction func scanAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -389,18 +405,18 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         }
     }
     
-    private func parseExtendedKey(_ extendedKey: String) {
-        if extendedKey.hasPrefix("xpub") || extendedKey.hasPrefix("tpub") {
-            if let _ = XpubConverter.zpub(xpub: extendedKey) {
+    private func parseImportedString(_ item: String) {
+        if item.hasPrefix("xpub") || item.hasPrefix("tpub") {
+            if let _ = XpubConverter.zpub(xpub: item) {
                 showAddButton()
             } else {
                 showError()
             }
-        } else if extendedKey.hasPrefix("Zpub") || extendedKey.hasPrefix("Vpub") || extendedKey.hasPrefix("Ypub") || extendedKey.hasPrefix("Upub") {
-            if let xpub = XpubConverter.convert(extendedKey: extendedKey) {
+        } else if item.hasPrefix("Zpub") || item.hasPrefix("Vpub") || item.hasPrefix("Ypub") || item.hasPrefix("Upub") {
+            if let xpub = XpubConverter.convert(extendedKey: item) {
                 updateXpubField(xpub)
                 showAddButton()
-                if extendedKey.hasPrefix("Ypub") || extendedKey.hasPrefix("Upub") {
+                if item.hasPrefix("Ypub") || item.hasPrefix("Upub") {
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
                         
@@ -411,23 +427,14 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             } else {
                 showError()
             }
-        } else if extendedKey.hasPrefix("[") {
-            let hack = "wpkh(\(extendedKey))"
-            let descriptor = Descriptor(hack)
-            let key = descriptor.accountXpub
-            let fingerprint = descriptor.fingerprint
+        } else if item.hasPrefix("[") {
+            parseDescriptor(Descriptor("wsh(\(item))"))
             
-            guard key != "", fingerprint != "" else { showError(); return }
+        } else if item.lowercased().hasPrefix("wsh(") || item.lowercased().hasPrefix("sh(wsh(") {
+            parseDescriptor(Descriptor(item))
             
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.addKeyStore(fingerprint, key)
-            }
-        } else if extendedKey.lowercased().hasPrefix("wsh(") {
-            
-        } else if extendedKey.lowercased().hasPrefix("ur:crypto-hdkey") || extendedKey.lowercased().hasPrefix("ur:crypto-account") || extendedKey.lowercased().hasPrefix("ur:crypto-seed") {
-            let (descriptors, error) = URHelper.parseUr(urString: extendedKey.lowercased())
+        } else if item.lowercased().hasPrefix("ur:crypto-hdkey") || item.lowercased().hasPrefix("ur:crypto-account") || item.lowercased().hasPrefix("ur:crypto-seed") {
+            let (descriptors, error) = URHelper.parseUr(urString: item.lowercased())
             
             guard error == nil, let descriptors = descriptors, descriptors.count > 0 else {
                 showAlert(vc: self, title: "Error", message: error ?? "Unknown error decoding the QR code.")
@@ -444,8 +451,8 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 }
             }
             
-        } else if extendedKey.lowercased().hasPrefix("ur:bytes") {
-            let (text, err) = URHelper.parseBlueWalletCoordinationSetup(extendedKey.lowercased())
+        } else if item.lowercased().hasPrefix("ur:bytes") {
+            let (text, err) = URHelper.parseBlueWalletCoordinationSetup(item.lowercased())
             if let textFile = text {
                  if let dict = try? JSONSerialization.jsonObject(with: textFile.utf8, options: []) as? [String:Any] {
                     let importStruct = WalletImport(dict)
@@ -465,7 +472,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the QR code.")
             }
             
-        } else if let data = extendedKey.data(using: .utf8) {
+        } else if let data = item.data(using: .utf8) {
                 guard let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any],
                     let xfp = json["xfp"] as? String,
                     let xpub = json["xpub"] as? String,
@@ -481,7 +488,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 }
                 
         } else {
-            showAlert(vc: self, title: "Unrecognized cosigner format.", message: extendedKey + " is not a recognized cosigner format. Please reach out to us so that we can add support for this.")
+            showAlert(vc: self, title: "Unrecognized cosigner format.", message: item + " is not a recognized cosigner format. Please reach out to us so that we can add support for this.")
         }
     }
 
@@ -511,7 +518,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         if textField == xpubField {
             let extendedKey = xpubField.text ?? ""
             if extendedKey != "" && extendedKey.count > 20 {
-                parseExtendedKey(extendedKey)
+                parseImportedString(extendedKey)
             }
         }
     }
@@ -519,7 +526,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     func textFieldDidChangeSelection(_ textField: UITextField) {
         guard textField == xpubField, let xpub = textField.text, xpub.count > 20 else { return }
         
-        parseExtendedKey(xpub)
+        parseImportedString(xpub)
     }
     
     private func updateXpubField(_ xpub: String) {
@@ -544,7 +551,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 vc.onAddressDoneBlock = { [weak self] xpub in
                     guard let self = self, let xpub = xpub else { return }
                     
-                    self.parseExtendedKey(xpub)
+                    self.parseImportedString(xpub)
                 }
             } else {
                 // Fallback on earlier versions

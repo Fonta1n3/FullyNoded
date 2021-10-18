@@ -100,10 +100,8 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
             }
             
-        } else if let data = processed.data(using: .utf8) {
-            if let accountMap = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] {
-                promptToImportAccountMap(dict: accountMap)
-            }
+        } else {
+            processImportedString(string)
         }
     }
     
@@ -569,6 +567,87 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
+    private func processImportedString(_ item: String) {
+        let lowercased = item.lowercased()
+        
+        if self.isExtendedKey(lowercased) {
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.isDescriptor = false
+                self.extendedKey = item
+                self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
+            }
+            
+        } else if self.isDescriptor(lowercased) {
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.isDescriptor = true
+                self.extendedKey = item
+                self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
+            }
+            
+        } else if lowercased.hasPrefix("ur:") {
+            if lowercased.hasPrefix("ur:bytes") {
+                let (text, err) = URHelper.parseBlueWalletCoordinationSetup(lowercased)
+                if let textFile = text {
+                     if let dict = try? JSONSerialization.jsonObject(with: textFile.utf8, options: []) as? [String:Any] {
+                        let importStruct = WalletImport(dict)
+                        
+                        var descriptors:[String] = []
+                        
+                        if let bip44 = importStruct.bip44 {
+                            descriptors.append(bip44)
+                        }
+                        if let bip49 = importStruct.bip49 {
+                            descriptors.append(bip49)
+                        }
+                        if let bip84 = importStruct.bip84 {
+                            descriptors.append(bip84)
+                        }
+                        if let bip48 = importStruct.bip48 {
+                            descriptors.append(bip48)
+                        }
+                        
+                        self.prompToChoosePrimaryDesc(descriptors: descriptors)
+                        
+                     } else if let accountMap = TextFileImport.parse(textFile).accountMap {
+                        self.importAccountMap(accountMap)
+                            
+                    } else {
+                        showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the text file into a descriptor.")
+                    }
+                } else {
+                    showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the QR code.")
+                }
+                
+            } else {
+                let (descriptors, error) = URHelper.parseUr(urString: item)
+                
+                guard error == nil, let descriptors = descriptors else {
+                    showAlert(vc: self, title: "Error", message: error ?? "Unknown error decoding the QR code.")
+                    return
+                }
+                
+                var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
+                
+                if descriptors.count > 1 {
+                    self.prompToChoosePrimaryDesc(descriptors: descriptors)
+                } else {
+                    accountMap["descriptor"] = descriptors[0]
+                    self.importAccountMap(accountMap)
+                }
+            }
+        } else if let accountMap = TextFileImport.parse(item).accountMap {
+            self.importAccountMap(accountMap)
+        } else {
+            showAlert(vc: self, title: "Unsupported import.", message: item + " is not a supported import option, please let us know about this so we can add support.")
+        }
+    }
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -592,84 +671,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                             return
                         }
                         
-                        let lowercased = item.lowercased()
-                        
-                        if self.isExtendedKey(lowercased) {
-                            
-                            DispatchQueue.main.async { [weak self] in
-                                guard let self = self else { return }
-                                
-                                self.isDescriptor = false
-                                self.extendedKey = item
-                                self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
-                            }
-                            
-                        } else if self.isDescriptor(lowercased) {
-                            
-                            DispatchQueue.main.async { [weak self] in
-                                guard let self = self else { return }
-                                
-                                self.isDescriptor = true
-                                self.extendedKey = item
-                                self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
-                            }
-                            
-                        } else if lowercased.hasPrefix("ur:") {
-                            if lowercased.hasPrefix("ur:bytes") {
-                                let (text, err) = URHelper.parseBlueWalletCoordinationSetup(lowercased)
-                                if let textFile = text {
-                                     if let dict = try? JSONSerialization.jsonObject(with: textFile.utf8, options: []) as? [String:Any] {
-                                        let importStruct = WalletImport(dict)
-                                        
-                                        var descriptors:[String] = []
-                                        
-                                        if let bip44 = importStruct.bip44 {
-                                            descriptors.append(bip44)
-                                        }
-                                        if let bip49 = importStruct.bip49 {
-                                            descriptors.append(bip49)
-                                        }
-                                        if let bip84 = importStruct.bip84 {
-                                            descriptors.append(bip84)
-                                        }
-                                        if let bip48 = importStruct.bip48 {
-                                            descriptors.append(bip48)
-                                        }
-                                        
-                                        self.prompToChoosePrimaryDesc(descriptors: descriptors)
-                                        
-                                     } else if let accountMap = TextFileImport.parse(textFile).accountMap {
-                                        self.importAccountMap(accountMap)
-                                            
-                                    } else {
-                                        showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the text file into a descriptor.")
-                                    }
-                                } else {
-                                    showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the QR code.")
-                                }
-                                
-                            } else {
-                                let (descriptors, error) = URHelper.parseUr(urString: item)
-                                
-                                guard error == nil, let descriptors = descriptors else {
-                                    showAlert(vc: self, title: "Error", message: error ?? "Unknown error decoding the QR code.")
-                                    return
-                                }
-                                
-                                var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
-                                
-                                if descriptors.count > 1 {
-                                    self.prompToChoosePrimaryDesc(descriptors: descriptors)
-                                } else {
-                                    accountMap["descriptor"] = descriptors[0]
-                                    self.importAccountMap(accountMap)
-                                }
-                            }
-                        } else if let accountMap = TextFileImport.parse(item).accountMap {
-                            self.importAccountMap(accountMap)
-                        } else {
-                            showAlert(vc: self, title: "Unsupported import.", message: item + " is not a supported import option, please let us know about this so we can add support.")
-                        }
+                        self.processImportedString(item)
                     }
                 }
             }
