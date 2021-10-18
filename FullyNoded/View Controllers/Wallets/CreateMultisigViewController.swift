@@ -426,7 +426,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             }
         } else if extendedKey.lowercased().hasPrefix("wsh(") {
             
-        } else if extendedKey.lowercased().hasPrefix("ur:crypto-hdkey") || extendedKey.lowercased().hasPrefix("ur:crypto-account") {
+        } else if extendedKey.lowercased().hasPrefix("ur:crypto-hdkey") || extendedKey.lowercased().hasPrefix("ur:crypto-account") || extendedKey.lowercased().hasPrefix("ur:crypto-seed") {
             let (descriptors, error) = URHelper.parseUr(urString: extendedKey.lowercased())
             
             guard error == nil, let descriptors = descriptors, descriptors.count > 0 else {
@@ -486,9 +486,13 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     }
 
     private func parseDescriptor(_ descriptor: Descriptor) {
-        let key = descriptor.accountXpub
+        var key = descriptor.accountXpub
+        let xprv = descriptor.accountXprv
+        if xprv != "" {
+            key = xprv
+        }
         let fingerprint = descriptor.fingerprint
-        
+                
         guard key != "", fingerprint != "" else { showError(); return }
         
         DispatchQueue.main.async { [weak self] in

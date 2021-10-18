@@ -312,7 +312,7 @@ class QRScannerViewController: UIViewController {
             }
             
         } else if isAccountMap {
-            if lowercased.hasPrefix("ur:crypto-output") || lowercased.hasPrefix("ur:crypto-account") || lowercased.hasPrefix("ur:crypto-hdkey") {
+            if lowercased.hasPrefix("ur:crypto-output") || lowercased.hasPrefix("ur:crypto-account") || lowercased.hasPrefix("ur:crypto-hdkey") || lowercased.hasPrefix("ur:crypto-seed") {
                 hasScanned = true
                 stopScanning(text)
             } else if isExtendedKey(lowercased) || isDescriptor(lowercased) {

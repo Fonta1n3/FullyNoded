@@ -67,20 +67,20 @@ public struct Descriptor: CustomStringConvertible {
                     
                     case "multi":
                         dictionary["format"] = "Bare-multi"
-                        dictionary["scriptType"] = "Bare multisig"
+                        dictionary["scriptType"] = "Bare multi-sig"
                         
                     case "wsh":
                         dictionary["format"] = "P2WSH"
-                        dictionary["scriptType"] = "Segwit multisig"
+                        dictionary["scriptType"] = "Segwit multi-sig"
                         
                     case "sh":
                         if arr[1] == "wsh" {
                             dictionary["format"] = "P2SH-P2WSH"
-                            dictionary["scriptType"] = "Nested multisig"
+                            dictionary["scriptType"] = "Nested multi-sig"
                             
                         } else {
                             dictionary["format"] = "P2SH"
-                            dictionary["scriptType"] = "Legacy multisig"
+                            dictionary["scriptType"] = "Legacy multi-sig"
                             
                         }
                         
@@ -343,7 +343,7 @@ public struct Descriptor: CustomStringConvertible {
                             dictionary["scriptType"] = "Taproot"
                         case "wsh":
                             dictionary["format"] = "P2WSH"
-                            dictionary["scriptType"] = "Segwit multisig"
+                            dictionary["scriptType"] = "Segwit multi-sig"
                             dictionary["isCosigner"] = true
                             
                         case "wpkh":
@@ -358,11 +358,11 @@ public struct Descriptor: CustomStringConvertible {
                                 dictionary["scriptType"] = "Nested single-sig"
                             } else if arr[1] == "wsh" {
                                 dictionary["format"] = "P2SH-P2WSH"
-                                dictionary["scriptType"] = "Segwit multisig"
+                                dictionary["scriptType"] = "Segwit multi-sig"
                                 dictionary["isCosigner"] = true
                             } else {
                                 dictionary["format"] = "P2SH"
-                                dictionary["scriptType"] = "Legacy multisig"
+                                dictionary["scriptType"] = "Legacy multi-sig"
                                 dictionary["isCosigner"] = true
                             }
                             

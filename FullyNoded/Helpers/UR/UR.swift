@@ -56,9 +56,47 @@ class URHelper {
             
         case _ where lowercased.hasPrefix("ur:crypto-output"):
             return parseCryptoOutput(urString)
+            
+        case _ where lowercased.hasPrefix("ur:crypto-seed"):
+            guard let words = cryptoSeedToMnemonic(urString) else { return (nil, "Error deriving descriptors from cytpo-seed.") }
+            
+            let (descriptors, errMess) = Keys.descriptorsFromSigner(words)
+            return (descriptors, errMess)
         
         default:
             return (nil, "Unsupported UR type. Please let us know about it on Twitter, Telegram or Github.")
+        }
+    }
+    
+    static func cryptoSeedToMnemonic(_ cryptoSeed: String) -> String? {
+        guard let data = URHelper.urToEntropy(urString: cryptoSeed).data,
+              let words = Keys.dataToSigner(data) else { return nil }
+        
+        return words
+    }
+    
+    static func urToEntropy(urString: String) -> (data: Data?, birthdate: UInt64?) {
+        do {
+            let ur = try URDecoder.decode(urString)
+            let decodedCbor = try CBOR.decode(ur.cbor.bytes)
+            guard case let CBOR.map(dict) = decodedCbor! else { return (nil, nil) }
+            var data:Data?
+            var birthdate:UInt64?
+            for (key, value) in dict {
+                switch key {
+                case 1:
+                    guard case let CBOR.byteString(byteString) = value else { fallthrough }
+                    data = Data(byteString)
+                case 2:
+                    guard case let CBOR.unsignedInt(n) = value else { fallthrough }
+                    birthdate = n
+                default:
+                    break
+                }
+            }
+            return (data, birthdate)
+        } catch {
+            return (nil, nil)
         }
     }
         

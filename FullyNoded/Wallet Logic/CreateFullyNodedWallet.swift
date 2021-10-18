@@ -38,6 +38,29 @@ enum Keys {
         return true
     }
     
+    static func dataToSigner(_ data: Data) -> String? {
+        return try? BIP39Mnemonic(entropy: BIP39Mnemonic.Entropy(data)).words.joined(separator: " ")
+    }
+    
+    static func descriptorsFromSigner(_ signer: String) -> (descriptors: [String]?, errorMess: String?) {
+        let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+        
+        var cointType = "0"
+        
+        if chain != "main" {
+            cointType = "1"
+        }
+        
+        guard let mk = Keys.masterKey(words: signer, coinType: cointType, passphrase: ""),
+              let xfp = Keys.fingerprint(masterKey: mk),
+              let bip84Xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: cointType, account: 0),
+              let bip48Xpub = Keys.xpub(path: "m/48'/\(cointType)'/0'/2'", masterKey: mk) else {
+            return (nil, "Error deriving descriptors.")
+        }
+        
+        return (["wsh([\(xfp)/48'/\(cointType)'/0'/2']\(bip48Xpub)/0/*)", "wpkh([\(xfp)/84'/\(cointType)'/0']\(bip84Xpub)/0/*)"], nil)
+    }
+    
     static func donationAddress() -> String? {
         let randomInt = Int.random(in: 0..<99999)
         
