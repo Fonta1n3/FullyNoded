@@ -7,9 +7,8 @@
 //
 
 import UIKit
-import AuthenticationServices
 
-class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
+class ActiveWalletViewController: UIViewController {
     
     private var showOnchain = false
     private var showOffchain = false
@@ -33,7 +32,7 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
     private var wallet:Wallet?
     private var isBolt11 = false
     private var fxRate:Double?
-    private var alertStyle = UIAlertController.Style.actionSheet
+    private var alertStyle = UIAlertController.Style.alert
     private let barSpinner = UIActivityIndicatorView(style: .medium)
     private let ud = UserDefaults.standard
     private let spinner = ConnectingView()
@@ -49,6 +48,7 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
     private var isBtc = true
     private var isSats = false
     private var authenticated = false
+    private var isAuthenticating = false
     private var initialLoad = true
     var fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     
@@ -74,62 +74,105 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
         sectionZeroLoaded = false
         setNotifications()
         addNavBarSpinner()
+        
+        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
+        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
+        
+        guard authenticated else {
+            self.authenticateWith2FA { [weak self] response in
+                guard let self = self else { return }
+                
+                self.authenticated = response
+                
+                if response {
+                    self.getFxRate()
+                } else {
+                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
+                    self.removeSpinner()
+                }
+            }
+            return
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        currencyControl.setTitle(fiatCurrency.lowercased(), forSegmentAt: 2)
         
-        if initialLoad {
+        if initialLoad && authenticated {
             initialLoad = false
-            // get 2fa here if set
-            if KeyChain.getData("userIdentifier") != nil && !authenticated {
-                show2fa()
-            } else {
-                authenticated = true
-                getFxRate()
-            }
-        } else {
-            if KeyChain.getData("userIdentifier") != nil && !authenticated {
-                show2fa()
-            } else {
-                fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
-                currencyControl.setTitle(fiatCurrency.lowercased(), forSegmentAt: 2)
+            getFxRate()
+            noPasswordAlert()
+        }
+        
+        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
+        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
+        
+        if !initialLoad && !authenticated && !isAuthenticating {
+            self.hideData()
+            self.isAuthenticating = true
+            
+            self.authenticateWith2FA { [weak self] response in
+                guard let self = self else { return }
                 
-                if KeyChain.getData("UnlockPassword") == nil && UserDefaults.standard.object(forKey: "doNotShowWarning") == nil && KeyChain.getData("userIdentifier") == nil {
+                self.authenticated = response
+                self.isAuthenticating = false
+                
+                if !response {
+                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
+                } else {
+                    self.getFxRate()
+                }
+            }
+        }
+    }
+    
+    private func hideData() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.onchainBalanceBtc = ""
+            self.onchainBalanceSats = ""
+            self.onchainBalanceFiat = ""
+            self.offchainBalanceBtc = ""
+            self.offchainBalanceSats = ""
+            self.offchainBalanceFiat = ""
+            self.transactionArray.removeAll()
+            self.offchainTxArray.removeAll()
+            self.onchainTxArray.removeAll()
+            self.walletTable.reloadData()
+        }
+    }
+    
+    private func noPasswordAlert() {
+        if KeyChain.getData("UnlockPassword") == nil && UserDefaults.standard.object(forKey: "doNotShowWarning") == nil && KeyChain.getData("userIdentifier") == nil {
+            CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+                if let wallets = wallets, wallets.count > 0 {
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
-                        
-                        let alert = UIAlertController(title: "", message: "You really ought to add a password that is used to lock the app if you are doing wallet related stuff!", preferredStyle: UIAlertController.Style.alert)
-                        
-                        alert.addAction(UIAlertAction(title: "set password", style: .default, handler: { action in
-                            DispatchQueue.main.async {
+
+                        let alert = UIAlertController(title: "", message: "You really ought to add a password that is used to lock the app if you are doing wallet related stuff.", preferredStyle: .alert)
+
+                        alert.addAction(UIAlertAction(title: "Set password", style: .default, handler: { action in
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
+                                
                                 self.performSegue(withIdentifier: "segueToAddPassword", sender: self)
                             }
                         }))
-                        
-                        alert.addAction(UIAlertAction(title: "do not show again", style: .destructive, handler: { action in
+
+                        alert.addAction(UIAlertAction(title: "Do not show again", style: .destructive, handler: { action in
                             UserDefaults.standard.set(true, forKey: "doNotShowWarning")
                         }))
-                        
-                        alert.addAction(UIAlertAction(title: "cancel", style: .cancel, handler: { action in }))
-                        
+
+                        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+
                         alert.popoverPresentationController?.sourceView = self.view
                         self.present(alert, animated: true, completion: nil)
                     }
                 }
             }
         }
-    }
-    
-    private func show2fa() {
-        let request = ASAuthorizationAppleIDProvider().createRequest()
-        let controller = ASAuthorizationController(authorizationRequests: [request])
-        controller.delegate = self
-        controller.presentationContextProvider = self
-        controller.performRequests()
-    }
-    
-    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return self.view.window!
     }
     
     private func setCurrency() {
@@ -254,10 +297,6 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
         
         backgroundView.clipsToBounds = true
         backgroundView.layer.cornerRadius = 8
-        
-        if (UIDevice.current.userInterfaceIdiom == .pad) {
-          alertStyle = UIAlertController.Style.alert
-        }
     }
     
     private func setNotifications() {
@@ -431,6 +470,24 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
                 }
                 
                 self.loadBalances()
+            }
+        } else if !isAuthenticating {
+            removeSpinner()
+            self.hideData()
+            
+            self.isAuthenticating = true
+            
+            self.authenticateWith2FA { [weak self] result in
+                guard let self = self else { return }
+                
+                self.authenticated = result
+                self.isAuthenticating = false
+                
+                if result {
+                    self.refreshAll()
+                } else {
+                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
+                }
             }
         }
     }
@@ -981,26 +1038,30 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
         }
     }
     
-    private func getFxRate() {        
+    private func getFxRate() {
         FiatConverter.sharedInstance.getFxRate { [weak self] rate in
             guard let self = self else { return }
             
             guard let rate = rate else {
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
                     self.fxRateLabel.text = "no fx rate data"
                 }
+                
                 self.loadTable()
+                
                 return
             }
             
             self.fxRate = rate
             UserDefaults.standard.setValue(rate, forKey: "fxRate")
             
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.fxRateLabel.text = rate.exchangeRate
-            }
-            
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.fxRateLabel.text = rate.exchangeRate
+                
                 self.loadTable()
             }
         }
@@ -1425,37 +1486,6 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
             self.present(alert, animated: true, completion: nil)
         }
     }
-    
-    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-        switch authorization.credential {
-        case let appleIDCredential as ASAuthorizationAppleIDCredential:
-            let authorizationProvider = ASAuthorizationAppleIDProvider()
-            if let usernameData = KeyChain.getData("userIdentifier") {
-                if let username = String(data: usernameData, encoding: .utf8) {
-                    if username == appleIDCredential.user {
-                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
-                            guard let self = self else { return }
-                            
-                            switch state {
-                            case .authorized:
-                                self.authenticated = true
-                                self.getFxRate()
-                            case .revoked:
-                                fallthrough
-                            case .notFound:
-                                fallthrough
-                            default:
-                                break
-                            }
-                        }
-                    }
-                }
-            }
-        default:
-            break
-        }
-    }
-    
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {

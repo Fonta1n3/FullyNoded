@@ -7,9 +7,8 @@
 //
 
 import UIKit
-import AuthenticationServices
 
-class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
+class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate {
     
     var isChannelFunding = false
     var voutChannelFunding:Int?
@@ -72,38 +71,52 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         verifyTable.delegate = self
         verifyTable.dataSource = self
         
-        configureViews()
-        
-        activeWallet { [weak self] w in
-            guard let self = self else { return }
-            
-            self.wallet = w
-        }
-        
-        if unsignedPsbt != "" || signedRawTx != "" {
-            enableExportButton()
-            
-            if unsignedPsbt != "" {
-                processPsbt(unsignedPsbt)
-            } else {
-                load()
+        func loadNow() {
+            activeWallet { [weak self] w in
+                guard let self = self else { return }
+                
+                self.wallet = w
             }
             
-        } else {
-            promptToAddTx()
+            configureViews()
+            
+            if unsignedPsbt != "" || signedRawTx != "" {
+                enableExportButton()
+                
+                if unsignedPsbt != "" {
+                    processPsbt(unsignedPsbt)
+                } else {
+                    load()
+                }
+                
+            } else {
+                promptToAddTx()
+            }
         }
-    }
-    
-    private func show2fa() {
-        let request = ASAuthorizationAppleIDProvider().createRequest()
-        let controller = ASAuthorizationController(authorizationRequests: [request])
-        controller.delegate = self
-        controller.presentationContextProvider = self
-        controller.performRequests()
-    }
-    
-    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return self.view.window!
+        
+        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
+        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > 30) && !(lastAuthenticated == 0))
+        
+        guard authenticated else {
+            self.authenticateWith2FA { [weak self] response in
+                guard let self = self else { return }
+                
+                self.authenticated = response
+                
+                if !response {
+                    self.disableSendButton()
+                    self.disableSignButton()
+                    self.disableExportButton()
+                    self.disableBumpButton()
+                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access Transactions unless you successfully authenticate with 2FA.")
+                } else {
+                    loadNow()
+                }
+            }
+            return
+        }
+        
+        loadNow()
     }
     
     private func processPsbt(_ psbt: String) {
@@ -440,19 +453,15 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     private func send() {
         isSigning = false
         
-        if KeyChain.getData("userIdentifier") != nil && !authenticated {
-            show2fa()
-        } else {
-            if signedRawTx != "" {
-                if !isChannelFunding {
-                    broadcast()
-                } else {
-                    promptToCompleteChannelFunding()
-                }
-                
+        if signedRawTx != "" {
+            if !isChannelFunding {
+                broadcast()
             } else {
-                showAlert(vc: self, title: "", message: "Transaction not fully signed, you can export it to another signer or sign it if the sign button is enabled.")
+                promptToCompleteChannelFunding()
             }
+            
+        } else {
+            showAlert(vc: self, title: "", message: "Transaction not fully signed, you can export it to another signer or sign it if the sign button is enabled.")
         }
     }
     
@@ -466,11 +475,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     @IBAction func signAction(_ sender: Any) {
         isSigning = true
-        if KeyChain.getData("userIdentifier") != nil && !authenticated {
-            show2fa()
-        } else {
-            signNow()
-        }
+        signNow()
     }
     
     private func signNow() {
@@ -511,6 +516,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     showAlert(vc: self, title: "Error", message: errorMessage ?? "Unknown error.")
                     return
                 }
+                
+                self.disableSendButton()
+                self.disableSignButton()
                 
                 showAlert(vc: self, title: "Success ⚡️", message: "Lightning channel funding complete.")
             }
@@ -1448,6 +1456,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let sigsImageView = inputCell.viewWithTag(17) as! UIImageView
         let copyAddressButton = inputCell.viewWithTag(18) as! UIButton
         let copyDescButton = inputCell.viewWithTag(19) as! UIButton
+        let addressQrButton = inputCell.viewWithTag(20) as! UIButton
                 
         backgroundView1.layer.cornerRadius = 5
         backgroundView2.layer.cornerRadius = 5
@@ -1487,9 +1496,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             copyAddressButton.restorationIdentifier = inputAddress
             copyDescButton.restorationIdentifier = desc
+            addressQrButton.restorationIdentifier = inputAddress
             
             copyAddressButton.addTarget(self, action: #selector(copyAddress(_:)), for: .touchUpInside)
             copyDescButton.addTarget(self, action: #selector(copyDesc(_:)), for: .touchUpInside)
+            addressQrButton.addTarget(self, action: #selector(showAddressQr(_:)), for: .touchUpInside)
             
             signaturesLabel.text = signatureStatus
             
@@ -1576,6 +1587,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let copyAddressButton = outputCell.viewWithTag(21) as! UIButton
         let copyDescriptorButton = outputCell.viewWithTag(22) as! UIButton
         let verifyOwnerButton = outputCell.viewWithTag(23) as! UIButton
+        let addressQrButton = outputCell.viewWithTag(24) as! UIButton
                 
         signableBackgroundView.layer.cornerRadius = 5
         verifiedByFnBackgroundView.layer.cornerRadius = 5
@@ -1620,10 +1632,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             copyAddressButton.restorationIdentifier = outputAddress
             verifyOwnerButton.restorationIdentifier = outputAddress + " " + "\(indexPath.row)"
             copyDescriptorButton.restorationIdentifier = desc
+            addressQrButton.restorationIdentifier = outputAddress
             
             copyAddressButton.addTarget(self, action: #selector(copyAddress(_:)), for: .touchUpInside)
             copyDescriptorButton.addTarget(self, action: #selector(copyDesc(_:)), for: .touchUpInside)
             verifyOwnerButton.addTarget(self, action: #selector(verifyOwner(_:)), for: .touchUpInside)
+            addressQrButton.addTarget(self, action: #selector(showAddressQr(_:)), for: .touchUpInside)
             
             if isOursFullyNoded {
                 verifiedByFnLabel.text = "Owned by \(walletLabel)"
@@ -1978,6 +1992,17 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         UIPasteboard.general.string = sender.restorationIdentifier
         
         showAlert(vc: self, title: "", message: "Address copied ✓")
+    }
+    
+    @objc func showAddressQr(_ sender: UIButton) {
+        guard let address = sender.restorationIdentifier else { return }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.qrCodeStringToExport = address
+            self.performSegue(withIdentifier: "segueToShowAddressQR", sender: self)
+        }
     }
     
     @objc func copyDesc(_ sender: UIButton) {
@@ -2380,8 +2405,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
+        if segue.identifier == "segueToShowAddressQR" {
+            if let vc = segue.destination as? QRDisplayerViewController {
+                vc.text = self.qrCodeStringToExport
+                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                vc.headerText = "Address"
+                vc.descriptionText = self.qrCodeStringToExport
+            }
+        }
+        
         if segue.identifier == "segueToExportPsbtAsQr" {
-            
             if let vc = segue.destination as? QRDisplayerViewController {
                 
                 if self.qrCodeStringToExport != "" {
@@ -2442,40 +2475,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     }
                 }
             }
-        }
-    }
-    
-    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-        switch authorization.credential {
-        case let appleIDCredential as ASAuthorizationAppleIDCredential:
-            let authorizationProvider = ASAuthorizationAppleIDProvider()
-            if let usernameData = KeyChain.getData("userIdentifier") {
-                if let username = String(data: usernameData, encoding: .utf8) {
-                    if username == appleIDCredential.user {
-                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
-                            guard let self = self else { return }
-                            
-                            switch state {
-                            case .authorized:
-                                self.authenticated = true
-                                if self.isSigning {
-                                    self.signNow()
-                                } else {
-                                    self.send()
-                                }
-                            case .revoked:
-                                fallthrough
-                            case .notFound:
-                                fallthrough
-                            default:
-                                break
-                            }
-                        }
-                    }
-                }
-            }
-        default:
-            break
         }
     }
 }
@@ -2649,6 +2648,4 @@ extension VerifyTransactionViewController: UITableViewDelegate {
     }
 }
 
-extension VerifyTransactionViewController: UITableViewDataSource {
-    
-}
+extension VerifyTransactionViewController: UITableViewDataSource {}

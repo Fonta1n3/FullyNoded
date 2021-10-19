@@ -27,7 +27,8 @@ class TorClient: NSObject, URLSessionDelegate {
     }
     
     public var state: TorState = .none
-    public var cert:String?
+    public var cert:Data?
+    
     static let sharedInstance = TorClient()
     private var config: TorConfiguration = TorConfiguration()
     private var thread: TorThread?
@@ -165,7 +166,6 @@ class TorClient: NSObject, URLSessionDelegate {
     }
     
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        
         guard let trust = challenge.protectionSpace.serverTrust else {
             print("did not receive trust")
             return
@@ -173,17 +173,10 @@ class TorClient: NSObject, URLSessionDelegate {
         
         let credential = URLCredential(trust: trust)
         
-        if let certificate = cert,
+        if let certData = self.cert,
             let remoteCert = SecTrustGetCertificateAtIndex(trust, 0) {
             let remoteCertData = SecCertificateCopyData(remoteCert) as NSData
-
-            let cert = certificate
-                .components(separatedBy: "\n")
-                .filter { !$0.isEmpty }
-                .dropLast()
-                .dropFirst()
-                .joined()
-            let certData = Data(base64Encoded: cert)
+            let certData = Data(base64Encoded: certData)
 
             if let pinnedCertData = certData,
                 remoteCertData.isEqual(to: pinnedCertData as Data) {

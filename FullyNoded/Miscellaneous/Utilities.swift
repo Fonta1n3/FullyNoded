@@ -188,6 +188,10 @@ public func currentDate() -> String {
     return "NZdDCNBFTDqKPrUG9V80g0iVemSXLL0CuaWj12xqD00="
 }
 
+public var authTimeout: Int {
+    return 180
+}
+
 public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
     var boolToReturn = Bool()
     
@@ -220,7 +224,8 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
          .walletpassphrasechange,
          .walletlock,
          .psbtbumpfee,
-         .importdescriptors:
+         .importdescriptors,
+         .signmessage:
         boolToReturn = true
         
     default:

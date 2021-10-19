@@ -7,9 +7,8 @@
 //
 
 import UIKit
-import AuthenticationServices
 
-class LightningNodeManagerViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
+class LightningNodeManagerViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     @IBOutlet weak var iconBackground: UIView!
     let spinner = ConnectingView()
@@ -37,12 +36,28 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         initialLoad = true
         onchainBalanceConf.alpha = 0
         onchainBalanceUnconfirmed.alpha = 0
+        
+        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
+        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > 30) && !(lastAuthenticated == 0))
+        
+        guard authenticated else {
+            self.authenticateWith2FA { [weak self] response in
+                guard let self = self else { return }
+                
+                self.authenticated = response
+                
+                if !response {
+                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access Lightning node management unless you successfully authenticate with 2FA.")
+                } else {
+                    self.loadData()
+                }
+            }
+            return
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        if KeyChain.getData("userIdentifier") != nil && !authenticated {
-            show2fa()
-        } else {
+        if authenticated {
             loadData()
         }
     }
@@ -63,18 +78,6 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
             
             self.getInfo(node: node)
         }
-    }
-    
-    private func show2fa() {
-        let request = ASAuthorizationAppleIDProvider().createRequest()
-        let controller = ASAuthorizationController(authorizationRequests: [request])
-        controller.delegate = self
-        controller.presentationContextProvider = self
-        controller.performRequests()
-    }
-    
-    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return self.view.window!
     }
     
     private func promptToAddNode() {
@@ -205,32 +208,38 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
                 return
             }
             
-            var onchainConfirmed = 0.0
-            var onchainUnconfirmed = 0.0
+            guard outputs.count > 0 else {
+                self.setOnchainAmounts("0", "0")
+                return
+            }
+            
+            var onchainConfirmed = 0
+            var onchainUnconfirmed = 0
             
             for (i, output) in outputs.enumerated() {
-                if let value = output["value"] as? String {
-                    
-                    if let status = output["status"] as? String {
-                        if status == "confirmed" {
-                            onchainConfirmed += value.doubleValue
-                        } else if status == "unconfirmed" {
-                            onchainUnconfirmed += value.doubleValue
-                        }
+                if let value = output["value"] as? Int, let status = output["status"] as? String {
+                    if status == "confirmed" {
+                        onchainConfirmed += value
+                    } else if status == "unconfirmed" {
+                        onchainUnconfirmed += value
                     }
                 }
                 
                 if i + 1 == outputs.count {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        self.onchainBalanceConf.text = "Onchain confirmed: " + onchainConfirmed.withCommas + " sats"
-                        self.onchainBalanceUnconfirmed.text = "Onchain unconfirmed: " + onchainUnconfirmed.withCommas + " sats"
-                        self.onchainBalanceConf.alpha = 1
-                        self.onchainBalanceUnconfirmed.alpha = 1
-                    }
+                    self.setOnchainAmounts(onchainConfirmed.withCommas, onchainUnconfirmed.withCommas)
                 }
             }
+        }
+    }
+    
+    private func setOnchainAmounts(_ confirmed: String, _ unconfirmed: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.onchainBalanceConf.text = "Onchain confirmed: " + confirmed + " sats"
+            self.onchainBalanceUnconfirmed.text = "Onchain unconfirmed: " + unconfirmed + " sats"
+            self.onchainBalanceConf.alpha = 1
+            self.onchainBalanceUnconfirmed.alpha = 1
         }
     }
     
@@ -320,21 +329,16 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     }
     
     private func getOnchainSpendableLND() {
-        LndRpc.sharedInstance.command(.walletbalance, nil, nil, nil) { (response, error) in
+        LndRpc.sharedInstance.command(.walletbalance, nil, nil, nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
             guard let response = response,
                   let confirmed_balance = response["confirmed_balance"] as? String,
                   let unconfirmed_balance = response["unconfirmed_balance"] as? String else {
                 return
             }
             
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.onchainBalanceConf.text = "Onchain confirmed: " + confirmed_balance.withCommas + " sats"
-                self.onchainBalanceUnconfirmed.text = "Onchain unconfirmed: " + unconfirmed_balance.withCommas + " sats"
-                self.onchainBalanceConf.alpha = 1
-                self.onchainBalanceUnconfirmed.alpha = 1
-            }
+            self.setOnchainAmounts(confirmed_balance.withCommas, unconfirmed_balance.withCommas)
         }
     }
     
@@ -448,36 +452,6 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         case 4:
             showPending = true
             goToChannels()
-        default:
-            break
-        }
-    }
-    
-    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-        switch authorization.credential {
-        case let appleIDCredential as ASAuthorizationAppleIDCredential:
-            let authorizationProvider = ASAuthorizationAppleIDProvider()
-            if let usernameData = KeyChain.getData("userIdentifier") {
-                if let username = String(data: usernameData, encoding: .utf8) {
-                    if username == appleIDCredential.user {
-                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
-                            guard let self = self else { return }
-                            
-                            switch state {
-                            case .authorized:
-                                self.authenticated = true
-                                self.loadData()
-                            case .revoked:
-                                fallthrough
-                            case .notFound:
-                                fallthrough
-                            default:
-                                break
-                            }
-                        }
-                    }
-                }
-            }
         default:
             break
         }

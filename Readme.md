@@ -1,15 +1,27 @@
 
-# [Fully Noded®](https://fullynoded.app)
+# Fully Noded®
 
 <img src="./Images/fn_logo.png" alt="" width="100"/> <br/> [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586) <br/> [<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](https://apps.apple.com/us/app/fully-noded-desktop/id1530816100?mt=12) <br/>
 
 <img src="./Images/home.png" alt="home" width="400"/> <img src="./Images/wallet.png" alt="home" width="400"/> <br/>
 
-Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own [Bitcoin Core](https://github.com/bitcoin/bitcoin) node as a backend. Providing an easy to use interface to interact with your nodes non wallet capabilities. Fully Noded® wallets are powered by PSBT's and descriptors. Fully Noded® acts as an offline signer using your node as a watch-only wallet as well as giving you full unfettered access to every wallet.dat in your nodes `.bitcoin` directory. [C-Lightning](https://github.com/ElementsProject/lightning) compatible for instant, unfairly cheap payments.
+Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own [Bitcoin Core](https://github.com/bitcoin/bitcoin) node as a backend. Providing an easy to use interface to interact with your nodes non wallet capabilities. Fully Noded® wallets are powered by PSBT's and descriptors. Fully Noded® acts as an offline signer using your node as a watch-only wallet as well as giving you full unfettered access to every wallet.dat in your nodes `.bitcoin` directory. [C-Lightning](https://github.com/ElementsProject/lightning) and [LND](https://github.com/lightningnetwork/lnd) compatible for instant, unfairly cheap payments.
 
 ## Build from source
 <br/><img src="./Images/build_from_source.png" alt="" width="400"/><br/>
-Click `open in Xcode` and run the project on either your Mac, iOS device or simulator.
+* Download Xcode
+* `git clone https://github.com/Fonta1n3/FullyNoded.git`
+* `cd FullyNoded`
+* Double click `FullyNoded.xcodeproj`
+* Click the play button in the top left bar of Xcode to run the app
+
+## Reproducible builds
+* Go to [releases](https://github.com/Fonta1n3/FullyNoded/releases)
+* Download the `SHA256SUMS` file and open it with a text editor
+* The `dmg`, `ipa`, `source zip` and `source tar` files are all reproducible
+* In a terminal run `shasum -a 256 FullyNoded-0.2.25.tar` (or whichever file you would like) the output should match what you see in the `SHA256SUMS` text file for the respective file
+* All files are signed with my pgp key `1C72 2776 3647 A221 6E02 E539 025E 9AD2 D3AC 0FCA` fontainedenton@googlemail.com
+* To run the app you can double click the `dmg` or `ipa` files (Xcode not required), to run via source code just unpack/unzip the file, double click the folder, and double click FullyNoded.xcodeproj
 
 ## Getting started
 

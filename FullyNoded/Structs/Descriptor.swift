@@ -8,6 +8,8 @@
 
 public struct Descriptor: CustomStringConvertible {
     
+    let isCosigner:Bool
+    let scriptType:String
     let format:String
     let isHot:Bool
     let mOfNType:String
@@ -65,16 +67,20 @@ public struct Descriptor: CustomStringConvertible {
                     
                     case "multi":
                         dictionary["format"] = "Bare-multi"
+                        dictionary["scriptType"] = "Bare multi-sig"
                         
                     case "wsh":
                         dictionary["format"] = "P2WSH"
+                        dictionary["scriptType"] = "Segwit multi-sig"
                         
                     case "sh":
                         if arr[1] == "wsh" {
                             dictionary["format"] = "P2SH-P2WSH"
+                            dictionary["scriptType"] = "Nested multi-sig"
                             
                         } else {
                             dictionary["format"] = "P2SH"
+                            dictionary["scriptType"] = "Legacy multi-sig"
                             
                         }
                         
@@ -86,7 +92,7 @@ public struct Descriptor: CustomStringConvertible {
                 }
                 
                 switch item {
-                
+                                
                 case "multi", "sortedmulti":
                     let mofnarray = (arr[i + 1]).split(separator: ",")
                     let numberOfKeys = mofnarray.count - 1
@@ -321,6 +327,8 @@ public struct Descriptor: CustomStringConvertible {
                 
             }
             
+            dictionary["isCosigner"] = false
+            
             if descriptor.contains("combo") {
                 dictionary["format"] = "Combo"
             } else {
@@ -332,29 +340,40 @@ public struct Descriptor: CustomStringConvertible {
                         switch item {
                         case "tr":
                             dictionary["format"] = "P2TR"
+                            dictionary["scriptType"] = "Taproot"
                         case "wsh":
                             dictionary["format"] = "P2WSH"
+                            dictionary["scriptType"] = "Segwit multi-sig"
+                            dictionary["isCosigner"] = true
                             
                         case "wpkh":
                             dictionary["format"] = "P2WPKH"
                             dictionary["isP2WPKH"] = true
+                            dictionary["scriptType"] = "Segwit single-sig"
                             
                         case "sh":
                             if arr[1] == "wpkh" {
                                 dictionary["format"] = "P2SH-P2WPKH"
                                 dictionary["isP2SHP2WPKH"] = true
+                                dictionary["scriptType"] = "Nested single-sig"
                             } else if arr[1] == "wsh" {
                                 dictionary["format"] = "P2SH-P2WSH"
+                                dictionary["scriptType"] = "Segwit multi-sig"
+                                dictionary["isCosigner"] = true
                             } else {
                                 dictionary["format"] = "P2SH"
+                                dictionary["scriptType"] = "Legacy multi-sig"
+                                dictionary["isCosigner"] = true
                             }
                             
                         case "pk":
                             dictionary["format"] = "P2PK"
+                            dictionary["scriptType"] = "Public key"
                             
                         case "pkh":
                             dictionary["format"] = "P2PKH"
                             dictionary["isP2PKH"] = true
+                            dictionary["scriptType"] = "Legacy single-sig"
                             
                         default:
                             
@@ -385,7 +404,9 @@ public struct Descriptor: CustomStringConvertible {
             dictionary["isHot"] = false
         }
         
+        isCosigner = dictionary["isCosigner"] as? Bool ?? false
         format = dictionary["format"] as? String ?? ""
+        scriptType = dictionary["scriptType"] as? String ?? ""
         mOfNType = dictionary["mOfNType"] as? String ?? ""
         isHot = dictionary["isHot"] as? Bool ?? false
         chain = dictionary["chain"] as? String ?? ""

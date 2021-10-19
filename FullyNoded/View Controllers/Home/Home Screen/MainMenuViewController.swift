@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import AuthenticationServices
 
 class MainMenuViewController: UIViewController {
     
@@ -109,6 +108,29 @@ class MainMenuViewController: UIViewController {
             }
         }
     }
+    
+    private func alertToAddNode() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let tit = "Fully Noded works best when you connect your node to it."
+            
+            let mess = ""
+            
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Connect my node", style: .default, handler: { action in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.performSegue(withIdentifier: "segueToAddANode", sender: self)
+                }
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
         
     @IBAction func lockAction(_ sender: Any) {
         if KeyChain.getData("UnlockPassword") != nil {
@@ -123,27 +145,33 @@ class MainMenuViewController: UIViewController {
     }
     
     @IBAction func goToTools(_ sender: Any) {
-        goToToolsCheck()
-    }
-    
-    private func goToToolsCheck() {
-        if KeyChain.getData("userIdentifier") != nil, !authenticated {
-            show2fa()
-        } else {
-            DispatchQueue.main.async { [weak self] in
+        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
+        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > 30) && !(lastAuthenticated == 0))
+        
+        guard authenticated else {
+            self.authenticateWith2FA { [weak self] response in
                 guard let self = self else { return }
                 
-                self.performSegue(withIdentifier: "segueToTools", sender: self)
+                self.authenticated = response
+                
+                if !response {
+                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access tools unless you successfully authenticate with 2FA.")
+                } else {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.performSegue(withIdentifier: "segueToTools", sender: self)
+                    }
+                }
             }
+            return
         }
-    }
-    
-    private func show2fa() {
-        let request = ASAuthorizationAppleIDProvider().createRequest()
-        let controller = ASAuthorizationController(authorizationRequests: [request])
-        controller.delegate = self
-        controller.presentationContextProvider = self
-        controller.performRequests()
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToTools", sender: self)
+        }
     }
     
     @IBAction func showRemoteControl(_ sender: Any) {
@@ -224,11 +252,7 @@ class MainMenuViewController: UIViewController {
             guard let nodeArray = nodeArray, nodeArray.count > 0 else {
                 self.removeLoader()
                 
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.performSegue(withIdentifier: "segueToAddANode", sender: self)
-                }
+                self.alertToAddNode()
                 
                 return
             }
@@ -1170,41 +1194,4 @@ extension MainMenuViewController: UITableViewDelegate {
 extension MainMenuViewController: UITableViewDataSource {}
 
 extension MainMenuViewController: UINavigationControllerDelegate {}
-
-extension MainMenuViewController: ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
-    
-    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return self.view.window!
-    }
-    
-    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-        switch authorization.credential {
-        case let appleIDCredential as ASAuthorizationAppleIDCredential:
-            let authorizationProvider = ASAuthorizationAppleIDProvider()
-            if let usernameData = KeyChain.getData("userIdentifier") {
-                if let username = String(data: usernameData, encoding: .utf8) {
-                    if username == appleIDCredential.user {
-                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
-                            guard let self = self else { return }
-                            
-                            switch state {
-                            case .authorized:
-                                self.authenticated = true
-                                self.goToToolsCheck()
-                            case .revoked:
-                                fallthrough
-                            case .notFound:
-                                fallthrough
-                            default:
-                                break
-                            }
-                        }
-                    }
-                }
-            }
-        default:
-            break
-        }
-    }
-}
 

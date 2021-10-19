@@ -7,9 +7,8 @@
 //
 
 import UIKit
-import AuthenticationServices
 
-class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
+class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource  {
     
     let ud = UserDefaults.standard
     let spinner = ConnectingView()
@@ -19,7 +18,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     override func viewDidLoad() {
         super.viewDidLoad()
         settingsTable.delegate = self
-                        
+        
         if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraWarning") == nil {            
             UserDefaults.standard.setValue(true, forKey: "useEsploraWarning")
         }
@@ -27,22 +26,28 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         if UserDefaults.standard.object(forKey: "useBlockchainInfo") == nil {
             UserDefaults.standard.set(true, forKey: "useBlockchainInfo")
         }
+        
+        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
+        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > 30) && !(lastAuthenticated == 0))
+        
+        guard authenticated else {
+            self.authenticateWith2FA { [weak self] response in
+                guard let self = self else { return }
+                
+                self.authenticated = response
+                
+                if !response {
+                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access settings unless you successfully authenticate with 2FA.")
+                } else {
+                    self.settingsTable.reloadData()
+                }
+            }
+            return
+        }
     }
 
     override func viewDidAppear(_ animated: Bool) {
         settingsTable.reloadData()
-    }
-    
-    private func show2fa() {
-        let request = ASAuthorizationAppleIDProvider().createRequest()
-        let controller = ASAuthorizationController(authorizationRequests: [request])
-        controller.delegate = self
-        controller.presentationContextProvider = self
-        controller.performRequests()
-    }
-    
-    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return self.view.window!
     }
     
     private func configureCell(_ cell: UITableViewCell) {
@@ -95,6 +100,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 label.text = "Delete iCloud backup"
                 icon.image = UIImage(systemName: "xmark.icloud")
                 background.backgroundColor = .systemRed
+            case 5:
+                label.text = "iCloud health check"
+                icon.image = UIImage(systemName: "heart.text.square")
+                background.backgroundColor = .systemPink
             default:
                 break
             }
@@ -112,7 +121,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func esploraCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let esploraCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCell", for: indexPath)
+        let esploraCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleEsploraCell", for: indexPath)
         configureCell(esploraCell)
         
         let label = esploraCell.viewWithTag(1) as! UILabel
@@ -146,7 +155,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func blockchainInfoCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let blockchainInfoCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCell", for: indexPath)
+        let blockchainInfoCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleFxrateCell", for: indexPath)
         configureCell(blockchainInfoCell)
         
         let label = blockchainInfoCell.viewWithTag(1) as! UILabel
@@ -179,7 +188,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func coinDeskCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let coinDeskCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCell", for: indexPath)
+        let coinDeskCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleFxrateCell", for: indexPath)
         configureCell(coinDeskCell)
         
         let label = coinDeskCell.viewWithTag(1) as! UILabel
@@ -212,7 +221,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func currencyCell(_ indexPath: IndexPath, _ currency: String) -> UITableViewCell {
-        let currencyCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCell", for: indexPath)
+        let currencyCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCurrencyCell", for: indexPath)
         configureCell(currencyCell)
         
         let label = currencyCell.viewWithTag(1) as! UILabel
@@ -263,7 +272,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         case 1:
             switch indexPath.row {
-            case 0, 1, 2, 3, 4: return settingsCell(indexPath)
+            case 0, 1, 2, 3, 4, 5: return settingsCell(indexPath)
             default:
                 return UITableViewCell()
             }
@@ -336,18 +345,26 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 6
+        if authenticated {
+            return 6
+        } else {
+            return 0
+        }
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 4 {
-            return 2
-        } else if section == 5 {
-            return 3
-        } else if section == 1 {
-            return 5
+        if authenticated {
+            if section == 4 {
+                return 2
+            } else if section == 5 {
+                return 3
+            } else if section == 1 {
+                return 6
+            } else {
+                return 1
+            }
         } else {
-            return 1
+            return 0
         }
     }
     
@@ -372,38 +389,40 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             }
             
         case 1:
-            if KeyChain.getData("userIdentifier") != nil && !authenticated {
-                show2fa()
-            } else {
-                switch indexPath.row {
-                case 0:
-                    warnToBackup()
-                case 1:
-                    alertToRecover()
-                case 2:
-                    promptToEnableiCloud()
-                case 3:
-                    confirmiCloudRecovery()
-                case 4:
-                    promptToDeleteiCloud()
-                default:
-                    break
-                }
+            switch indexPath.row {
+            case 0:
+                warnToBackup()
+            case 1:
+                alertToRecover()
+            case 2:
+                promptToEnableiCloud()
+            case 3:
+                confirmiCloudRecovery()
+            case 4:
+                promptToDeleteiCloud()
+            case 5:
+                healthCheck()
+            default:
+                break
             }
         case 2:
-            if KeyChain.getData("userIdentifier") != nil && !authenticated {
-                show2fa()
-            } else {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.performSegue(withIdentifier: "goToSecurity", sender: self)
-                }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.performSegue(withIdentifier: "goToSecurity", sender: self)
             }
             
         default:
             break
             
+        }
+    }
+    
+    private func healthCheck() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToHealthCheck", sender: self)
         }
     }
     
@@ -418,8 +437,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
-            self.settingsTable.reloadData()
+
+            self.settingsTable.reloadRows(at: [IndexPath(row: 0, section: 5), IndexPath(row: 1, section: 5), IndexPath(row: 2, section: 5)], with: .none)
         }
     }
     
@@ -753,16 +772,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     @objc func toggleEsplora(_ sender: UISwitch) {
         UserDefaults.standard.setValue(sender.isOn, forKey: "useEsplora")
         
-        if sender.isOn {
-            showAlert(vc: self, title: "Esplora enabled ✓", message: "Enabling Esplora may have negative privacy implications and is discouraged.\n\n**ONLY APPLIES TO PRUNED NODES**")
-        } else {
-            showAlert(vc: self, title: "", message: "Esplora disabled ✓")
-        }
-        
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
-            self.settingsTable.reloadData()
+
+            self.settingsTable.reloadRows(at: [IndexPath(row: 0, section: 3)], with: .none)
         }
     }
     
@@ -771,8 +784,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
-            self.settingsTable.reloadData()
+
+            self.settingsTable.reloadRows(at: [IndexPath(row: 1, section: 4), IndexPath(row: 0, section: 4)], with: .none)
         }
     }
     
@@ -781,37 +794,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
-            self.settingsTable.reloadData()
-        }
-    }
-    
-    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-        switch authorization.credential {
-        case let appleIDCredential as ASAuthorizationAppleIDCredential:
-            let authorizationProvider = ASAuthorizationAppleIDProvider()
-            if let usernameData = KeyChain.getData("userIdentifier") {
-                if let username = String(data: usernameData, encoding: .utf8) {
-                    if username == appleIDCredential.user {
-                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
-                            guard let self = self else { return }
-                            
-                            switch state {
-                            case .authorized:
-                                self.authenticated = true
-                            case .revoked:
-                                fallthrough
-                            case .notFound:
-                                fallthrough
-                            default:
-                                break
-                            }
-                        }
-                    }
-                }
-            }
-        default:
-            break
+
+            self.settingsTable.reloadRows(at: [IndexPath(row: 1, section: 4), IndexPath(row: 0, section: 4)], with: .none)
         }
     }
         

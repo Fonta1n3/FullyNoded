@@ -231,7 +231,9 @@ class LogInViewController: UIViewController, UITextFieldDelegate, ASAuthorizatio
     }
 
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
             self.passwordInput.resignFirstResponder()
         }
     }
