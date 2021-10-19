@@ -60,48 +60,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func processPastedString(_ string: String) {
-        let processed = string.condenseWhitespace()
-        let lowercased = processed.lowercased()
-        
-        if isExtendedKey(lowercased) {
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.isDescriptor = false
-                self.extendedKey = processed
-                self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
-            }
-            
-        } else if lowercased.hasPrefix("ur:") {
-            let (descriptors, error) = URHelper.parseUr(urString: lowercased)
-            
-            guard error == nil, let descriptors = descriptors else {
-                showAlert(vc: self, title: "Error", message: error!)
-                return
-            }
-            
-            var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
-            
-            if descriptors.count > 1 {
-                self.prompToChoosePrimaryDesc(descriptors: descriptors)
-            } else {
-                accountMap["descriptor"] = descriptors[0]
-                self.importAccountMap(accountMap)
-            }
-        } else if isDescriptor(lowercased) {
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.isDescriptor = true
-                self.extendedKey = processed
-                self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
-            }
-            
-        } else {
-            processImportedString(string)
-        }
+        processImportedString(string)
     }
     
     @IBAction func fileAction(_ sender: Any) {
@@ -532,7 +491,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         
         let desc = Descriptor("\(primDesc)")
         if desc.isCosigner {
-            print("its a cosigner: \(primDesc)")
             self.ccXfp = desc.fingerprint
             self.xpub = desc.accountXpub
             self.deriv = desc.derivation
@@ -636,8 +594,20 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 if descriptors.count > 1 {
                     self.prompToChoosePrimaryDesc(descriptors: descriptors)
                 } else {
-                    accountMap["descriptor"] = descriptors[0]
-                    self.importAccountMap(accountMap)
+                    let desc = Descriptor("\(descriptors[0])")
+                    if desc.isCosigner {
+                        self.ccXfp = desc.fingerprint
+                        self.xpub = desc.accountXpub
+                        self.deriv = desc.derivation
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.performSegue(withIdentifier: "segueToCreateMultiSig", sender: self)
+                        }
+                    } else {
+                        accountMap["descriptor"] = descriptors[0]
+                        self.importAccountMap(accountMap)
+                    }
                 }
             }
         } else if let accountMap = TextFileImport.parse(item).accountMap {

@@ -108,6 +108,29 @@ class MainMenuViewController: UIViewController {
             }
         }
     }
+    
+    private func alertToAddNode() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let tit = "Fully Noded works best when you connect your node to it."
+            
+            let mess = ""
+            
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Connect my node", style: .default, handler: { action in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.performSegue(withIdentifier: "segueToAddANode", sender: self)
+                }
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
         
     @IBAction func lockAction(_ sender: Any) {
         if KeyChain.getData("UnlockPassword") != nil {
@@ -229,11 +252,7 @@ class MainMenuViewController: UIViewController {
             guard let nodeArray = nodeArray, nodeArray.count > 0 else {
                 self.removeLoader()
                 
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.performSegue(withIdentifier: "segueToAddANode", sender: self)
-                }
+                self.alertToAddNode()
                 
                 return
             }
