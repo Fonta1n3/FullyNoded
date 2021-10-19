@@ -5143,11 +5143,12 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         <segue destination="FrY-WR-Inf" kind="show" identifier="goToNodes" id="Wy7-ur-TeS"/>
                         <segue destination="Jmi-bN-zgj" kind="show" identifier="goToSecurity" id="Qor-Ed-tsy"/>
                         <segue destination="wvf-1r-iOF" kind="show" identifier="segueToRecoveryDetail" id="UWO-93-FGz"/>
+                        <segue destination="SnB-G6-ZIL" kind="show" identifier="segueToHealthCheck" id="hSm-kr-1Pq"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="k6b-ep-z2U" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4216.8000000000002" y="-422.33883058470769"/>
+            <point key="canvasLocation" x="4217" y="-444"/>
         </scene>
         <!--Nodes View Controller-->
         <scene sceneID="iSc-Eo-e8H">
@@ -5467,6 +5468,110 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                 <placeholder placeholderIdentifier="IBFirstResponder" id="PtR-7d-dsy" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="5564" y="372.86356821589209"/>
+        </scene>
+        <!--Health Check View Controller-->
+        <scene sceneID="zhr-ZY-G5h">
+            <objects>
+                <viewController id="SnB-G6-ZIL" customClass="HealthCheckViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="kwg-f7-0xb">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="574"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="heart.text.square" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="ncQ-jj-Ngf">
+                                <rect key="frame" x="16" y="21" width="50" height="47.5"/>
+                                <color key="tintColor" systemColor="systemPinkColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="50" id="KFK-aE-u6o"/>
+                                    <constraint firstAttribute="height" constant="50" id="iCa-mN-TRu"/>
+                                </constraints>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="iCloud Health Check" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lv6-Dd-Lvy">
+                                <rect key="frame" x="74" y="20" width="291.5" height="50"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="7wt-iP-hOi"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="33"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="Jb2-p8-54Y">
+                                <rect key="frame" x="0.0" y="243" width="375" height="311"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <prototypes>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="healthCheckCell" id="Xsv-fp-bS1">
+                                        <rect key="frame" x="16" y="49.5" width="343" height="43.5"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Xsv-fp-bS1" id="pZ6-sS-3nU">
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </prototypes>
+                                <connections>
+                                    <outlet property="dataSource" destination="SnB-G6-ZIL" id="P5y-9o-jsq"/>
+                                    <outlet property="delegate" destination="SnB-G6-ZIL" id="f8e-Aq-how"/>
+                                </connections>
+                            </tableView>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="encryption password" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="qNH-Vh-gso">
+                                <rect key="frame" x="16" y="201" width="282" height="34"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" secureTextEntry="YES" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
+                            </textField>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Vq5-Jf-o3V">
+                                <rect key="frame" x="16" y="78" width="343" height="115"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="115" id="2w7-nO-elV"/>
+                                </constraints>
+                                <string key="text">This tool allows you to monitor the data which exists on your iCloud backup. To decrypt the data enter the encryption password you used when creating the backup.</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zK6-rs-BSE">
+                                <rect key="frame" x="306" y="201" width="53" height="34"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="53" id="NIc-rq-uw3"/>
+                                    <constraint firstAttribute="height" constant="34" id="Xco-Lb-usr"/>
+                                </constraints>
+                                <state key="normal" title="decrypt">
+                                    <color key="titleColor" systemColor="systemTealColor"/>
+                                </state>
+                                <connections>
+                                    <action selector="decryptAction:" destination="SnB-G6-ZIL" eventType="touchUpInside" id="Pau-Pl-FZd"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="hT6-gf-Fje"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="qNH-Vh-gso" firstAttribute="leading" secondItem="hT6-gf-Fje" secondAttribute="leading" constant="16" id="0OY-5P-bGh"/>
+                            <constraint firstItem="hT6-gf-Fje" firstAttribute="bottom" secondItem="Jb2-p8-54Y" secondAttribute="bottom" constant="20" id="1dt-Fl-TqY"/>
+                            <constraint firstItem="zK6-rs-BSE" firstAttribute="top" secondItem="Vq5-Jf-o3V" secondAttribute="bottom" constant="8" id="2Z5-n2-Ng8"/>
+                            <constraint firstItem="Jb2-p8-54Y" firstAttribute="top" secondItem="qNH-Vh-gso" secondAttribute="bottom" constant="8" symbolic="YES" id="AZl-5a-HdX"/>
+                            <constraint firstItem="ncQ-jj-Ngf" firstAttribute="leading" secondItem="hT6-gf-Fje" secondAttribute="leading" constant="16" id="EhU-Zt-Gxs"/>
+                            <constraint firstItem="lv6-Dd-Lvy" firstAttribute="centerY" secondItem="ncQ-jj-Ngf" secondAttribute="centerY" id="FO0-tp-zcl"/>
+                            <constraint firstItem="Vq5-Jf-o3V" firstAttribute="leading" secondItem="hT6-gf-Fje" secondAttribute="leading" constant="16" id="Fjm-hX-xib"/>
+                            <constraint firstItem="zK6-rs-BSE" firstAttribute="leading" secondItem="qNH-Vh-gso" secondAttribute="trailing" constant="8" symbolic="YES" id="HXv-sj-r5v"/>
+                            <constraint firstItem="Vq5-Jf-o3V" firstAttribute="top" secondItem="ncQ-jj-Ngf" secondAttribute="bottom" constant="8" symbolic="YES" id="OMs-Vi-D6G"/>
+                            <constraint firstItem="hT6-gf-Fje" firstAttribute="trailing" secondItem="Vq5-Jf-o3V" secondAttribute="trailing" constant="16" id="SNJ-Mt-z3U"/>
+                            <constraint firstItem="qNH-Vh-gso" firstAttribute="top" secondItem="Vq5-Jf-o3V" secondAttribute="bottom" constant="8" symbolic="YES" id="Wzk-0d-IIi"/>
+                            <constraint firstItem="hT6-gf-Fje" firstAttribute="trailing" secondItem="zK6-rs-BSE" secondAttribute="trailing" constant="16" id="Yhh-A6-Ksk"/>
+                            <constraint firstItem="hT6-gf-Fje" firstAttribute="trailing" secondItem="Jb2-p8-54Y" secondAttribute="trailing" id="gPj-hO-Mjk"/>
+                            <constraint firstItem="lv6-Dd-Lvy" firstAttribute="leading" secondItem="ncQ-jj-Ngf" secondAttribute="trailing" constant="8" symbolic="YES" id="kgz-u9-uCQ"/>
+                            <constraint firstItem="Jb2-p8-54Y" firstAttribute="leading" secondItem="hT6-gf-Fje" secondAttribute="leading" id="mLX-y7-iPr"/>
+                            <constraint firstItem="ncQ-jj-Ngf" firstAttribute="top" secondItem="hT6-gf-Fje" secondAttribute="top" constant="20" id="zIq-FC-pVV"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="PmJ-Xx-N3U"/>
+                    <connections>
+                        <outlet property="passwordField" destination="qNH-Vh-gso" id="xXx-Tb-H68"/>
+                        <outlet property="tableView" destination="Jb2-p8-54Y" id="Dd4-S7-SVl"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="EBJ-Cz-bl3" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6426.3999999999996" y="387.25637181409297"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="T9u-Zb-e9t">
@@ -7655,6 +7760,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="eye" catalog="system" width="128" height="81"/>
         <image name="folder" catalog="system" width="128" height="97"/>
         <image name="gear" catalog="system" width="128" height="119"/>
+        <image name="heart.text.square" catalog="system" width="128" height="114"/>
         <image name="icloud.and.arrow.down" catalog="system" width="128" height="112"/>
         <image name="info.circle" catalog="system" width="128" height="121"/>
         <image name="link" catalog="system" width="128" height="122"/>

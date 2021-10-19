@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0A00D6A4271BE51600ECAB22 /* TextFileImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A00D6A3271BE51600ECAB22 /* TextFileImport.swift */; };
+		0A00D6A6271E53DA00ECAB22 /* HealthCheckViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A00D6A5271E53DA00ECAB22 /* HealthCheckViewController.swift */; };
 		0A1F10CF26A1A47F00BE2707 /* DerivationPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10CE26A1A47F00BE2707 /* DerivationPath.swift */; };
 		0A1F10D226A1A4EE00BE2707 /* DerivationStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10D126A1A4EE00BE2707 /* DerivationStep.swift */; };
 		0A1F10D526A1A52600BE2707 /* ChildIndexSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10D426A1A52600BE2707 /* ChildIndexSpec.swift */; };
@@ -217,6 +218,7 @@
 
 /* Begin PBXFileReference section */
 		0A00D6A3271BE51600ECAB22 /* TextFileImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFileImport.swift; sourceTree = "<group>"; };
+		0A00D6A5271E53DA00ECAB22 /* HealthCheckViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthCheckViewController.swift; sourceTree = "<group>"; };
 		0A1F10CE26A1A47F00BE2707 /* DerivationPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationPath.swift; sourceTree = "<group>"; };
 		0A1F10D126A1A4EE00BE2707 /* DerivationStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationStep.swift; sourceTree = "<group>"; };
 		0A1F10D426A1A52600BE2707 /* ChildIndexSpec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildIndexSpec.swift; sourceTree = "<group>"; };
@@ -514,6 +516,7 @@
 				D0EF29C0216B82B400EB776A /* SettingsViewController.swift */,
 				D039D3CB2333250900D1ED18 /* Wallet Manager */,
 				D00F85192494966D008D7CD3 /* Security Center */,
+				0A00D6A5271E53DA00ECAB22 /* HealthCheckViewController.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -1289,6 +1292,7 @@
 				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,
 				D00B27BC255A27F300269B51 /* WalletURL.swift in Sources */,
 				D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */,
+				0A00D6A6271E53DA00ECAB22 /* HealthCheckViewController.swift in Sources */,
 				D07E0DE622F9168F00A81FA8 /* WalletManagerViewController.swift in Sources */,
 				0A337D012700316E00AD087F /* WalletDir.swift in Sources */,
 				D0384E34246AC53B002FEE94 /* base58.c in Sources */,

@@ -100,6 +100,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 label.text = "Delete iCloud backup"
                 icon.image = UIImage(systemName: "xmark.icloud")
                 background.backgroundColor = .systemRed
+            case 5:
+                label.text = "iCloud health check"
+                icon.image = UIImage(systemName: "heart.text.square")
+                background.backgroundColor = .systemPink
             default:
                 break
             }
@@ -268,7 +272,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         case 1:
             switch indexPath.row {
-            case 0, 1, 2, 3, 4: return settingsCell(indexPath)
+            case 0, 1, 2, 3, 4, 5: return settingsCell(indexPath)
             default:
                 return UITableViewCell()
             }
@@ -355,7 +359,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             } else if section == 5 {
                 return 3
             } else if section == 1 {
-                return 5
+                return 6
             } else {
                 return 1
             }
@@ -396,6 +400,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 confirmiCloudRecovery()
             case 4:
                 promptToDeleteiCloud()
+            case 5:
+                healthCheck()
             default:
                 break
             }
@@ -409,6 +415,14 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         default:
             break
             
+        }
+    }
+    
+    private func healthCheck() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToHealthCheck", sender: self)
         }
     }
     
