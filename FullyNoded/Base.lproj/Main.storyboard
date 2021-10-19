@@ -1559,6 +1559,15 @@
                                                     <color key="tintColor" systemColor="systemTealColor"/>
                                                     <state key="normal" image="doc.on.doc" catalog="system"/>
                                                 </button>
+                                                <button opaque="NO" tag="20" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Iu1-xw-WNL">
+                                                    <rect key="frame" x="233.5" y="208.5" width="19.5" height="22"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" constant="19.5" id="Vzh-Qk-d9a"/>
+                                                        <constraint firstAttribute="height" constant="22" id="rf1-qY-liY"/>
+                                                    </constraints>
+                                                    <color key="tintColor" systemColor="systemTealColor"/>
+                                                    <state key="normal" image="qrcode" catalog="system"/>
+                                                </button>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="KwQ-67-53g" firstAttribute="leading" secondItem="7UM-gD-d6D" secondAttribute="leadingMargin" id="0p2-iR-D5c"/>
@@ -1567,6 +1576,7 @@
                                                 <constraint firstItem="a57-TI-EeI" firstAttribute="leading" secondItem="KwQ-67-53g" secondAttribute="trailing" constant="8" symbolic="YES" id="JDl-di-6TP"/>
                                                 <constraint firstItem="a57-TI-EeI" firstAttribute="top" secondItem="zdr-sc-HtB" secondAttribute="bottom" constant="3" id="Jmt-tX-j8g"/>
                                                 <constraint firstItem="f1u-KK-ct4" firstAttribute="top" secondItem="z4a-KS-xO4" secondAttribute="bottom" constant="8" symbolic="YES" id="K0z-4q-UDF"/>
+                                                <constraint firstItem="zdr-sc-HtB" firstAttribute="leading" secondItem="Iu1-xw-WNL" secondAttribute="trailing" constant="21" id="KsZ-xO-FPa"/>
                                                 <constraint firstItem="iY2-LP-exX" firstAttribute="trailing" secondItem="7UM-gD-d6D" secondAttribute="trailingMargin" id="LV8-dr-pXe"/>
                                                 <constraint firstItem="HLS-ex-FHM" firstAttribute="centerY" secondItem="54E-J9-Pho" secondAttribute="centerY" id="N6j-Jg-1lT"/>
                                                 <constraint firstItem="uKr-5y-7N4" firstAttribute="top" secondItem="4z5-RA-kZU" secondAttribute="bottom" constant="8" id="O7y-5v-BaX"/>
@@ -1575,6 +1585,7 @@
                                                 <constraint firstItem="KwQ-67-53g" firstAttribute="top" secondItem="5eO-hO-ldz" secondAttribute="bottom" constant="8" id="Qgg-kj-mfT"/>
                                                 <constraint firstItem="ghT-J4-Alk" firstAttribute="leading" secondItem="7UM-gD-d6D" secondAttribute="leadingMargin" id="Tl9-w8-Ees"/>
                                                 <constraint firstItem="CJT-DR-Byx" firstAttribute="leading" secondItem="4z5-RA-kZU" secondAttribute="trailing" constant="8" id="VJF-Si-oE1"/>
+                                                <constraint firstItem="zdr-sc-HtB" firstAttribute="centerY" secondItem="Iu1-xw-WNL" secondAttribute="centerY" id="VMl-UK-I1p"/>
                                                 <constraint firstItem="crk-dT-SzH" firstAttribute="leading" secondItem="7UM-gD-d6D" secondAttribute="leadingMargin" id="W2J-tv-9Ks"/>
                                                 <constraint firstItem="5eO-hO-ldz" firstAttribute="leading" secondItem="7UM-gD-d6D" secondAttribute="leadingMargin" id="XqH-IH-rAp"/>
                                                 <constraint firstItem="iY2-LP-exX" firstAttribute="top" secondItem="od2-kA-Pbr" secondAttribute="bottom" constant="8" id="ZZa-1g-aHa"/>
@@ -1813,6 +1824,15 @@ xxxxx</string>
                                                         <color key="titleColor" systemColor="systemTealColor"/>
                                                     </state>
                                                 </button>
+                                                <button opaque="NO" tag="24" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cgv-V6-V33">
+                                                    <rect key="frame" x="210" y="250" width="37" height="40"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="40" id="3Sj-9l-gTA"/>
+                                                        <constraint firstAttribute="width" constant="37" id="vbV-pL-uRF"/>
+                                                    </constraints>
+                                                    <color key="tintColor" systemColor="systemTealColor"/>
+                                                    <state key="normal" image="qrcode" catalog="system"/>
+                                                </button>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="AfH-I7-2Ph" firstAttribute="leading" secondItem="ucK-wc-vtS" secondAttribute="leadingMargin" id="080-ue-dVF"/>
@@ -1829,8 +1849,10 @@ xxxxx</string>
                                                 <constraint firstItem="F8i-Gg-P7R" firstAttribute="leading" secondItem="ucK-wc-vtS" secondAttribute="leadingMargin" id="GwN-AI-nIi"/>
                                                 <constraint firstItem="u0V-oA-dw9" firstAttribute="trailing" secondItem="ucK-wc-vtS" secondAttribute="trailingMargin" id="JgF-ac-ozj"/>
                                                 <constraint firstItem="6hJ-0i-bOM" firstAttribute="centerY" secondItem="Dfq-Vo-DmZ" secondAttribute="centerY" id="OIP-cG-gYe"/>
+                                                <constraint firstItem="R1H-v8-PrD" firstAttribute="centerY" secondItem="cgv-V6-V33" secondAttribute="centerY" id="OKr-G8-0XS"/>
                                                 <constraint firstItem="EXC-cX-BjO" firstAttribute="trailing" secondItem="ucK-wc-vtS" secondAttribute="trailingMargin" id="OT3-kt-n7E"/>
                                                 <constraint firstItem="gpn-nZ-eqc" firstAttribute="leading" secondItem="vLy-qr-VzP" secondAttribute="leading" id="PKh-Vy-ciW"/>
+                                                <constraint firstItem="R1H-v8-PrD" firstAttribute="leading" secondItem="cgv-V6-V33" secondAttribute="trailing" constant="8" symbolic="YES" id="Pdv-xR-Pst"/>
                                                 <constraint firstItem="WU9-rX-4mY" firstAttribute="centerY" secondItem="gpn-nZ-eqc" secondAttribute="centerY" id="Pg1-Rp-ng1"/>
                                                 <constraint firstItem="87t-y2-bTs" firstAttribute="leading" secondItem="vLy-qr-VzP" secondAttribute="leading" id="QJ8-7B-jSY"/>
                                                 <constraint firstItem="Uob-jg-tKY" firstAttribute="leading" secondItem="vLy-qr-VzP" secondAttribute="leading" id="R5y-po-gWl"/>
@@ -2165,6 +2187,7 @@ xxxxx</string>
                         <segue destination="GlR-4A-eAx" kind="show" identifier="segueToExportPsbtAsQr" id="NFj-Y4-lQE"/>
                         <segue destination="4V7-jZ-58Y" kind="presentation" identifier="segueToTxLabelMemo" id="veA-tY-zvZ"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanPsbt" id="BTh-Z9-jlD"/>
+                        <segue destination="GlR-4A-eAx" kind="show" identifier="segueToShowAddressQR" id="2dt-ER-scB"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="qZa-gF-3f7" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -7729,9 +7752,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="Cd3-qW-ujG"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="2DM-Bo-8hK"/>
-        <segue reference="8MS-xS-DMP"/>
-        <segue reference="yAt-Ra-aPH"/>
+        <segue reference="BTh-Z9-jlD"/>
+        <segue reference="2dt-ER-scB"/>
+        <segue reference="veA-tY-zvZ"/>
         <segue reference="BVG-ie-esh"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="qmy-fM-U4p"/>
@@ -7773,6 +7796,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="play.rectangle" catalog="system" width="128" height="93"/>
         <image name="plus" catalog="system" width="128" height="113"/>
         <image name="plus.rectangle" catalog="system" width="128" height="93"/>
+        <image name="qrcode" catalog="system" width="128" height="114"/>
         <image name="qrcode.viewfinder" catalog="system" width="128" height="115"/>
         <image name="questionmark.circle" catalog="system" width="128" height="121"/>
         <image name="signature" catalog="system" width="128" height="90"/>

@@ -1456,6 +1456,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let sigsImageView = inputCell.viewWithTag(17) as! UIImageView
         let copyAddressButton = inputCell.viewWithTag(18) as! UIButton
         let copyDescButton = inputCell.viewWithTag(19) as! UIButton
+        let addressQrButton = inputCell.viewWithTag(20) as! UIButton
                 
         backgroundView1.layer.cornerRadius = 5
         backgroundView2.layer.cornerRadius = 5
@@ -1495,9 +1496,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             copyAddressButton.restorationIdentifier = inputAddress
             copyDescButton.restorationIdentifier = desc
+            addressQrButton.restorationIdentifier = inputAddress
             
             copyAddressButton.addTarget(self, action: #selector(copyAddress(_:)), for: .touchUpInside)
             copyDescButton.addTarget(self, action: #selector(copyDesc(_:)), for: .touchUpInside)
+            addressQrButton.addTarget(self, action: #selector(showAddressQr(_:)), for: .touchUpInside)
             
             signaturesLabel.text = signatureStatus
             
@@ -1584,6 +1587,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let copyAddressButton = outputCell.viewWithTag(21) as! UIButton
         let copyDescriptorButton = outputCell.viewWithTag(22) as! UIButton
         let verifyOwnerButton = outputCell.viewWithTag(23) as! UIButton
+        let addressQrButton = outputCell.viewWithTag(24) as! UIButton
                 
         signableBackgroundView.layer.cornerRadius = 5
         verifiedByFnBackgroundView.layer.cornerRadius = 5
@@ -1628,10 +1632,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             copyAddressButton.restorationIdentifier = outputAddress
             verifyOwnerButton.restorationIdentifier = outputAddress + " " + "\(indexPath.row)"
             copyDescriptorButton.restorationIdentifier = desc
+            addressQrButton.restorationIdentifier = outputAddress
             
             copyAddressButton.addTarget(self, action: #selector(copyAddress(_:)), for: .touchUpInside)
             copyDescriptorButton.addTarget(self, action: #selector(copyDesc(_:)), for: .touchUpInside)
             verifyOwnerButton.addTarget(self, action: #selector(verifyOwner(_:)), for: .touchUpInside)
+            addressQrButton.addTarget(self, action: #selector(showAddressQr(_:)), for: .touchUpInside)
             
             if isOursFullyNoded {
                 verifiedByFnLabel.text = "Owned by \(walletLabel)"
@@ -1986,6 +1992,17 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         UIPasteboard.general.string = sender.restorationIdentifier
         
         showAlert(vc: self, title: "", message: "Address copied ✓")
+    }
+    
+    @objc func showAddressQr(_ sender: UIButton) {
+        guard let address = sender.restorationIdentifier else { return }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.qrCodeStringToExport = address
+            self.performSegue(withIdentifier: "segueToShowAddressQR", sender: self)
+        }
     }
     
     @objc func copyDesc(_ sender: UIButton) {
@@ -2388,8 +2405,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
+        if segue.identifier == "segueToShowAddressQR" {
+            if let vc = segue.destination as? QRDisplayerViewController {
+                vc.text = self.qrCodeStringToExport
+                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                vc.headerText = "Address"
+                vc.descriptionText = self.qrCodeStringToExport
+            }
+        }
+        
         if segue.identifier == "segueToExportPsbtAsQr" {
-            
             if let vc = segue.destination as? QRDisplayerViewController {
                 
                 if self.qrCodeStringToExport != "" {
