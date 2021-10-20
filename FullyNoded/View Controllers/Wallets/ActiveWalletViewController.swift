@@ -77,11 +77,14 @@ class ActiveWalletViewController: UIViewController {
         
         let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
         authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
-        
+                
         guard authenticated else {
+            isAuthenticating = true
+            
             self.authenticateWith2FA { [weak self] response in
                 guard let self = self else { return }
                 
+                self.isAuthenticating = false
                 self.authenticated = response
                 
                 if response {
@@ -103,26 +106,26 @@ class ActiveWalletViewController: UIViewController {
             initialLoad = false
             getFxRate()
             noPasswordAlert()
-        }
-        
-        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
-        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
-        
-        if !initialLoad && !authenticated && !isAuthenticating {
-            self.hideData()
-            self.isAuthenticating = true
+        } else {
+            let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
+            authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
             
-            self.authenticateWith2FA { [weak self] response in
-                guard let self = self else { return }
+            if !initialLoad && !authenticated && !isAuthenticating {
+                self.hideData()
+                self.isAuthenticating = true
                 
-                self.authenticated = response
-                self.isAuthenticating = false
-                
-                if !response {
-                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
-                } else {
-                    self.addNavBarSpinner()
-                    self.getFxRate()
+                self.authenticateWith2FA { [weak self] response in
+                    guard let self = self else { return }
+                    
+                    self.authenticated = response
+                    self.isAuthenticating = false
+                    
+                    if !response {
+                        showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
+                    } else {
+                        self.addNavBarSpinner()
+                        self.getFxRate()
+                    }
                 }
             }
         }
@@ -132,12 +135,12 @@ class ActiveWalletViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.onchainBalanceBtc = ""
-            self.onchainBalanceSats = ""
-            self.onchainBalanceFiat = ""
-            self.offchainBalanceBtc = ""
-            self.offchainBalanceSats = ""
-            self.offchainBalanceFiat = ""
+            self.onchainBalanceBtc = "0"
+            self.onchainBalanceSats = "0"
+            self.onchainBalanceFiat = "0"
+            self.offchainBalanceBtc = "0"
+            self.offchainBalanceSats = "0"
+            self.offchainBalanceFiat = "0"
             self.transactionArray.removeAll()
             self.offchainTxArray.removeAll()
             self.onchainTxArray.removeAll()
@@ -474,9 +477,8 @@ class ActiveWalletViewController: UIViewController {
             }
         } else if !isAuthenticating {
             removeSpinner()
-            self.hideData()
-            
-            self.isAuthenticating = true
+            hideData()
+            isAuthenticating = true
             
             self.authenticateWith2FA { [weak self] result in
                 guard let self = self else { return }
@@ -596,8 +598,8 @@ class ActiveWalletViewController: UIViewController {
             offchainBalanceLabel.text = offchainBalanceFiat
         }
         
-        onchainBalanceLabel.adjustsFontSizeToFitWidth = true
-        offchainBalanceLabel.adjustsFontSizeToFitWidth = true
+        //onchainBalanceLabel.adjustsFontSizeToFitWidth = true
+        //offchainBalanceLabel.adjustsFontSizeToFitWidth = true
         
         return cell
     }
