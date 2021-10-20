@@ -8,17 +8,28 @@
 
 import UIKit
 
-class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
+class SignerDetailViewController: UIViewController, UINavigationControllerDelegate {
     
     var isEditingNow = false
     var id:UUID!
     private var signer: SignerStruct!
     private var tableDict = [String:String]()
     private var multisigKeystore = ""
+    private var singleSig = ""
     private var network = 0
     
+    private enum Section: Int {
+        case label
+        case words
+        case masterKeyFingerprint
+        case passphrase
+        case dateAdded
+        case signableWallets
+        case cosigner
+        case singleSig
+    }
+    
     @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var labelField: UITextField!
     @IBOutlet weak var segmentedControl: UISegmentedControl!
     
     override func viewDidLoad() {
@@ -28,11 +39,29 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
         tableView.delegate = self
         tableView.dataSource = self
         navigationController?.delegate = self
-        labelField.delegate = self
-        addTapGesture()
-        configureField(labelField)
         segmentedControl.setEnabled(true, forSegmentAt: network)
         getData()
+    }
+    
+    private func headerName(for section: Section) -> String {
+        switch section {
+        case .label:
+            return "Label"
+        case .words:
+            return "BIP39 words"
+        case .masterKeyFingerprint:
+            return "Fingerprint"
+        case .passphrase:
+            return "Passphrase"
+        case .dateAdded:
+            return "Date added"
+        case .signableWallets:
+            return "Wallets"
+        case .cosigner:
+            return "Multi-sig cosigner (BIP48)"
+        case .singleSig:
+            return "Single sig xpub (BIP84)"
+        }
     }
     
     @IBAction func switchNetwork(_ sender: Any) {
@@ -105,20 +134,6 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
         }
     }
     
-    private func addTapGesture() {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
-        tapGesture.numberOfTapsRequired = 1
-        self.view.addGestureRecognizer(tapGesture)
-        self.labelField.removeGestureRecognizer(tapGesture)
-    }
-    
-    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
-        if sender.state == .ended {
-            view.endEditing(true)
-        }
-        sender.cancelsTouchesInView = false
-    }
-    
     private func getData() {
         CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
             guard let self = self else { return }
@@ -139,7 +154,7 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.labelField.text = signer.label
+            self.tableDict["label"] = signer.label
             self.tableDict["date"] = "  " +  self.formattedDate(signer.added)
             
             guard var decrypted = Crypto.decrypt(signer.words), var words = decrypted.utf8 else { return }
@@ -182,7 +197,11 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
         
         guard let msigKey = Keys.xpub(path: "m/48'/\(self.network)'/0'/2'", masterKey: masterKey) else { return }
         
-        self.multisigKeystore = "[\(fingerprint)/48h/\(self.network)h/0h/2h]\(msigKey)"
+        guard let singleSigKey = Keys.xpub(path: "m/84'/\(self.network)'/0'", masterKey: masterKey) else { return }
+        
+        self.singleSig = "wpkh([\(fingerprint)/84h/\(self.network)h/0h]\(singleSigKey)/0/*)"
+        
+        self.multisigKeystore = "wsh([\(fingerprint)/48h/\(self.network)h/0h/2h]\(msigKey)/0/*)"
         
         CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
             guard let wallets = wallets, wallets.count > 0 else {
@@ -285,12 +304,10 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
 
 }
 
-extension SignerDetailViewController: UITableViewDelegate { }
-
-extension SignerDetailViewController: UITableViewDataSource {
+extension SignerDetailViewController: UITableViewDelegate {
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return 8
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -298,36 +315,60 @@ extension SignerDetailViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "signerDetailCell", for: indexPath)
-        
-        let wordsView = cell.viewWithTag(1) as! UITextView
-        let fingerprintLabel = cell.viewWithTag(2) as! UILabel
-        let passphraseLabel = cell.viewWithTag(3) as! UILabel
-        let dateAddedLabel = cell.viewWithTag(4) as! UILabel
-        let signableWalletsLabel = cell.viewWithTag(5) as! UILabel
-        let exportButton = cell.viewWithTag(6) as! UIButton
-        
-        configureField(wordsView)
-        configureField(passphraseLabel)
-        configureField(dateAddedLabel)
-        configureField(fingerprintLabel)
-        configureField(signableWalletsLabel)
-        configureField(exportButton)
-        
-        wordsView.text = self.tableDict["words"]
-        fingerprintLabel.text = self.tableDict["fingerprint"]
-        passphraseLabel.text = self.tableDict["passphrase"]
-        dateAddedLabel.text = self.tableDict["date"]
-        signableWalletsLabel.text = self.tableDict["wallets"]
-        
-        exportButton.showsTouchWhenHighlighted = true
-        exportButton.addTarget(self, action: #selector(export), for: .touchUpInside)
-        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "defaultCell", for: indexPath)
+        cell.textLabel?.numberOfLines = 0
+        cell.textLabel?.sizeToFit()
         cell.sizeToFit()
         cell.selectionStyle = .none
+        configureField(cell)
+        
+        switch Section(rawValue: indexPath.section) {
+        case .label:
+            cell.textLabel?.text = self.tableDict["label"]
+        case .words:
+            cell.textLabel?.text = self.tableDict["words"]
+        case .masterKeyFingerprint:
+            cell.textLabel?.text = self.tableDict["fingerprint"]
+        case .passphrase:
+            cell.textLabel?.text = self.tableDict["passphrase"]
+        case .dateAdded:
+            cell.textLabel?.text = self.tableDict["date"]
+        case .signableWallets:
+            cell.textLabel?.text = self.tableDict["wallets"]
+        case .cosigner:
+            cell.textLabel?.text = self.multisigKeystore
+        case .singleSig:
+            cell.textLabel?.text = self.singleSig
+        case .none:
+            break
+        }
         
         return cell
     }
     
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let header = UIView()
+        header.backgroundColor = UIColor.clear
+        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
+        
+        let textLabel = UILabel()
+        textLabel.textAlignment = .left
+        textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
+        textLabel.textColor = .white
+        textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
+        
+        if let section = Section(rawValue: section) {
+            textLabel.text = headerName(for: section)
+        }
+        
+        header.addSubview(textLabel)
+        return header
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 50
+    }
     
 }
+
+extension SignerDetailViewController: UITableViewDataSource {}
