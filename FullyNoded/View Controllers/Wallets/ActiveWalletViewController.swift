@@ -121,6 +121,7 @@ class ActiveWalletViewController: UIViewController {
                 if !response {
                     showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
                 } else {
+                    self.addNavBarSpinner()
                     self.getFxRate()
                 }
             }
@@ -484,6 +485,7 @@ class ActiveWalletViewController: UIViewController {
                 self.isAuthenticating = false
                 
                 if result {
+                    self.addNavBarSpinner()
                     self.refreshAll()
                 } else {
                     showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
