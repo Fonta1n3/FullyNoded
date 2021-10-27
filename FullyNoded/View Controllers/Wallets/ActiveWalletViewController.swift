@@ -135,12 +135,13 @@ class ActiveWalletViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.onchainBalanceBtc = "0"
-            self.onchainBalanceSats = "0"
-            self.onchainBalanceFiat = "0"
-            self.offchainBalanceBtc = "0"
-            self.offchainBalanceSats = "0"
-            self.offchainBalanceFiat = "0"
+            self.onchainBalanceBtc = ""
+            self.onchainBalanceSats = ""
+            self.onchainBalanceFiat = ""
+            self.offchainBalanceBtc = ""
+            self.offchainBalanceSats = ""
+            self.offchainBalanceFiat = ""
+            self.sectionZeroLoaded = false
             self.transactionArray.removeAll()
             self.offchainTxArray.removeAll()
             self.onchainTxArray.removeAll()
@@ -449,7 +450,7 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func loadTable() {
-        if authenticated {
+        //if authenticated {
             self.sectionZeroLoaded = false
             existingWallet = ""
             walletLabel = ""
@@ -475,7 +476,7 @@ class ActiveWalletViewController: UIViewController {
                 
                 self.loadBalances()
             }
-        } else if !isAuthenticating {
+        /*} else if !isAuthenticating {
             removeSpinner()
             hideData()
             isAuthenticating = true
@@ -493,7 +494,7 @@ class ActiveWalletViewController: UIViewController {
                     showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
                 }
             }
-        }
+        }*/
     }
     
     private func finishedLoading() {
@@ -597,10 +598,7 @@ class ActiveWalletViewController: UIViewController {
             onchainBalanceLabel.text = onchainBalanceFiat
             offchainBalanceLabel.text = offchainBalanceFiat
         }
-        
-        //onchainBalanceLabel.adjustsFontSizeToFitWidth = true
-        //offchainBalanceLabel.adjustsFontSizeToFitWidth = true
-        
+                
         return cell
     }
     

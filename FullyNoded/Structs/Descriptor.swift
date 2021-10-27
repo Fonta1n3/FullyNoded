@@ -18,6 +18,7 @@ public struct Descriptor: CustomStringConvertible {
     let isBIP67:Bool
     let isBIP49:Bool
     let isBIP84:Bool
+    let isBIP48:Bool
     let isBIP44:Bool
     let isP2WPKH:Bool
     let isP2PKH:Bool
@@ -180,7 +181,8 @@ public struct Descriptor: CustomStringConvertible {
                     dictionary["fingerprint"] = processed
                     
                     for deriv in derivationArray {
-                        switch deriv {
+                        let withH = deriv.replacingOccurrences(of: "h", with: "'")
+                        switch withH {
                         
                         case "m/48'/0'/0'/1'", "m/48'/1'/0'/1'":
                             dictionary["isBIP44"] = false
@@ -189,7 +191,7 @@ public struct Descriptor: CustomStringConvertible {
                             dictionary["isP2WPKH"] = false
                             dictionary["isBIP49"] = false
                             dictionary["isP2SHP2WPKH"] = true
-                            dictionary["isWIP48"] = true
+                            dictionary["isBIP48"] = true
                             dictionary["isAccount"] = true
                             
                         case "m/48'/0'/0'/2'", "m/48'/1'/0'/2'":
@@ -199,7 +201,7 @@ public struct Descriptor: CustomStringConvertible {
                             dictionary["isP2WPKH"] = true
                             dictionary["isBIP49"] = false
                             dictionary["isP2SHP2WPKH"] = false
-                            dictionary["isWIP48"] = true
+                            dictionary["isBIP48"] = true
                             dictionary["isAccount"] = true
                             
                         case "m/44'/0'/0'", "m/44'/1'/0'":
@@ -286,8 +288,9 @@ public struct Descriptor: CustomStringConvertible {
                             if i + 1 == arr3.count {
                                 
                                 dictionary["derivation"] = path
+                                let pathH = path.replacingOccurrences(of: "h", with: "'")
                                 
-                                switch path {
+                                switch pathH {
                                 
                                 case "m/44'/0'/0'", "m/44'/1'/0'":
                                     dictionary["isBIP44"] = true
@@ -414,6 +417,7 @@ public struct Descriptor: CustomStringConvertible {
         isBIP67 = dictionary["isBIP67"] as? Bool ?? false
         isBIP49 = dictionary["isBIP49"] as? Bool ?? false
         isBIP84 = dictionary["isBIP84"] as? Bool ?? false
+        isBIP48 = dictionary["isBIP48"] as? Bool ?? false
         isBIP44 = dictionary["isBIP44"] as? Bool ?? false
         isP2PKH = dictionary["isP2PKH"] as? Bool ?? false
         isP2WPKH = dictionary["isP2WPKH"] as? Bool ?? false

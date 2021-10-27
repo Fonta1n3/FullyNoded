@@ -95,7 +95,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
-        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > 30) && !(lastAuthenticated == 0))
+        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
         
         guard authenticated else {
             self.authenticateWith2FA { [weak self] response in

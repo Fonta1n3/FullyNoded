@@ -42,6 +42,10 @@ enum Keys {
         return try? BIP39Mnemonic(entropy: BIP39Mnemonic.Entropy(data)).words.joined(separator: " ")
     }
     
+    static func wordsToEntropy(_ words: String) -> BIP39Mnemonic.Entropy? {
+        return try? BIP39Mnemonic(words: words).entropy
+    }
+    
     static func descriptorsFromSigner(_ signer: String) -> (descriptors: [String]?, errorMess: String?) {
         let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
         

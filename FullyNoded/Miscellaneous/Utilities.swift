@@ -189,7 +189,7 @@ public func currentDate() -> String {
 }
 
 public var authTimeout: Int {
-    return 180
+    return 360
 }
 
 public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
