@@ -623,7 +623,12 @@ class URHelper {
         hdkeyArray.append(.init(key: 6, value: .tagged(CBOR.Tag(rawValue: 304), originsWrapper)))
         hdkeyArray.append(.init(key: 8, value: .unsignedInt(hexValue)))
         
-        let cbor = CBOR.orderedMap(hdkeyArray)
+        return CBOR.orderedMap(hdkeyArray)
+    }
+    
+    static func taggedHdKeyCbor(_ descriptor: Descriptor) -> CBOR? {
+        guard let cbor = descriptorToHdKeyCbor(descriptor) else { return nil }
+        
         return .tagged(CBOR.Tag(rawValue: 303), cbor)
     }
     
@@ -673,7 +678,7 @@ class URHelper {
         for key in descriptor.keysWithPath {
             let hack = "wsh(\(key)"
     
-            guard let hdkey = descriptorToHdKeyCbor(Descriptor(hack)) else { return nil }
+            guard let hdkey = taggedHdKeyCbor(Descriptor(hack)) else { return nil }
             
             hdkeyArray.append(hdkey)
         }
@@ -713,13 +718,13 @@ class URHelper {
         switch descriptor {
         case _ where descriptor.format == "P2WPKH":
             let wpkhTag:CBOR.Tag = .init(rawValue: 404)
-            guard let hdkeyCbor = descriptorToHdKeyCbor(descriptor) else { return nil }
+            guard let hdkeyCbor = taggedHdKeyCbor(descriptor) else { return nil }
             
             return .tagged(wpkhTag, hdkeyCbor)
             
         case _ where descriptor.format == "P2WSH":
             let wshTag:CBOR.Tag = .init(rawValue: 401)
-            guard let hdkeyCbor = descriptorToHdKeyCbor(descriptor) else { return nil }
+            guard let hdkeyCbor = taggedHdKeyCbor(descriptor) else { return nil }
             
             return .tagged(wshTag, hdkeyCbor)
             
