@@ -69,6 +69,59 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             self.signers = encryptedSigners
             self.reload()
+            
+            guard encryptedSigners.count > 0 else { return }
+            
+            for encryptedSigner in encryptedSigners {
+                let signerStruct = SignerStruct(dictionary: encryptedSigner)
+                
+                var passphrase = ""
+                
+                if let encryptedPassphrase = signerStruct.passphrase,
+                   let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
+                   let string = decryptedPassphrase.utf8 {
+                    passphrase = string
+                }
+                
+                // Only fires off if account xpubs had not been saved before.
+                if let encryptedWords = signerStruct.words,
+                   let decryptedSigner = Crypto.decrypt(encryptedWords),
+                   signerStruct.bip48tpub == nil,
+                   let words = decryptedSigner.utf8,
+                   let mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
+                   let xfp = Keys.fingerprint(masterKey: mkMain),
+                   let encryptedXfp = Crypto.encrypt(xfp.utf8),
+                   let mkTest = Keys.masterKey(words: words, coinType: "1", passphrase: passphrase),
+                   let bip84xpub = Keys.bip84AccountXpub(masterKey: mkMain, coinType: "0", account: 0),
+                   let bip84tpub = Keys.bip84AccountXpub(masterKey: mkTest, coinType: "1", account: 0),
+                   let bip48xpub = Keys.xpub(path: "m/48'/0'/0'/2'", masterKey: mkMain),
+                   let bip48tpub = Keys.xpub(path: "m/48'/1'/0'/2'", masterKey: mkTest),
+                   let encryptedbip84xpub = Crypto.encrypt(bip84xpub.utf8),
+                   let encryptedbip84tpub = Crypto.encrypt(bip84tpub.utf8),
+                   let encryptedbip48xpub = Crypto.encrypt(bip48xpub.utf8),
+                   let encryptedbip48tpub = Crypto.encrypt(bip48tpub.utf8) {
+                    
+                    CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip84xpub", newValue: encryptedbip84xpub, entity: .signers) { saved in
+                        print("encrypted bip84xpub saved ✓")
+                    }
+                    
+                    CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip84tpub", newValue: encryptedbip84tpub, entity: .signers) { saved in
+                        print("encrypted bip84tpub saved ✓")
+                    }
+                    
+                    CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip48xpub", newValue: encryptedbip48xpub, entity: .signers) { saved in
+                        print("encrypted bip48xpub saved ✓")
+                    }
+                    
+                    CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip48tpub", newValue: encryptedbip48tpub, entity: .signers) { saved in
+                        print("encrypted bip48tpub saved ✓")
+                    }
+                    
+                    CoreDataService.update(id: signerStruct.id, keyToUpdate: "xfp", newValue: encryptedXfp, entity: .signers) { saved in
+                        print("encrypted xfp saved ✓")
+                    }
+                }                
+            }
         }
     }
     
@@ -138,7 +191,9 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
               alertStyle = UIAlertController.Style.alert
             }
             
-            guard let words = Crypto.decrypt(signer.words), var arr = words.utf8?.split(separator: " ") else { return }            
+            guard let encryptedWords = signer.words,
+                    let words = Crypto.decrypt(encryptedWords),
+                    var arr = words.utf8?.split(separator: " ") else { return }            
             
             for (i, _) in arr.enumerated() {
                 if i > 0 && i < arr.count - 1 {

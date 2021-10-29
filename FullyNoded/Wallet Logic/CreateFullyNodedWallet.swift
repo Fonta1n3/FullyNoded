@@ -111,7 +111,7 @@ enum Keys {
         
         return nil
     }
-    
+        
     static func fingerprint(masterKey: String) -> String? {
         guard let hdMasterKey = try? HDKey(base58: masterKey) else { return nil }
         
@@ -182,7 +182,9 @@ enum Keys {
             for (i, signer) in signers.enumerated() {
                 let signerStruct = SignerStruct(dictionary: signer)
                 
-                guard let decryptedWords = Crypto.decrypt(signerStruct.words), let words = decryptedWords.utf8 else { return }
+                guard let encryptedWords = signerStruct.words,
+                        let decryptedWords = Crypto.decrypt(encryptedWords),
+                        let words = decryptedWords.utf8 else { return }
                 
                 var passphrase = ""
                 
@@ -230,12 +232,21 @@ enum Keys {
             for (i, signer) in signers.enumerated() {
                 let signerStruct = SignerStruct(dictionary: signer)
                 
-                guard let decryptedWords = Crypto.decrypt(signerStruct.words), let words = decryptedWords.utf8 else { completion((false, nil)); return }
+                guard let encryptedWords = signerStruct.words,
+                      let decryptedWords = Crypto.decrypt(encryptedWords),
+                      let words = decryptedWords.utf8 else {
+                          completion((false, nil))
+                          return
+                      }
                 
                 var passphrase = ""
                 
                 if let encryptedPassphrase = signerStruct.passphrase {
-                    guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase), let pp = decryptedPassphrase.utf8 else { completion((false, nil)); return }
+                    guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
+                            let pp = decryptedPassphrase.utf8 else {
+                                completion((false, nil))
+                                return
+                            }
                     
                     passphrase = pp
                 }

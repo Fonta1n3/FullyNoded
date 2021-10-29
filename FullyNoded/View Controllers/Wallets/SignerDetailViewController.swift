@@ -45,15 +45,15 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         segmentedControl.setEnabled(true, forSegmentAt: network)
         
         tableDict = [
-            ["label": ""],
-            ["text": "", "ur": "", "selectedSegmentIndex": 0, "censoredText": "", "censoredUr": ""],
-            ["fingerprint": ""],
-            ["passphrase": ""],
-            ["dateAdded": ""],
-            ["wallets": ""],
-            ["text": "", "ur": "", "selectedSegmentIndex": 1],
-            ["text": "", "ur": "", "selectedSegmentIndex": 1],
-            ["text": ""]
+            ["text":"", "footerText": "Tap the label to edit it."],// label 0
+            ["text": "", "ur": "", "selectedSegmentIndex": 0, "censoredText": "", "censoredUr": "", "footerText": "UR for exporting this signer to iOS Seed Tool, Gordian Wallet, Gordian Signer and any other wallet which supports UR crypto-seed. Tap to copy the text."],// words 1
+            ["text": "", "footerText": ""],// xfp 2
+            ["text": "", "footerText": ""],// passphrase 3
+            ["text": "", "footerText": ""],// dateAdded 4
+            ["text": "", "footerText": "The wallets which this signer can sign for. Tap the + button to create a wallet with this signer."],// wallets 5
+            ["text": "", "ur": "", "selectedSegmentIndex": 1, "footerText": "UR for exporting the segwit mutli-sig cosigner to Blue Wallet, Keystone HWW, Passport HWW, Sparrow and any other wallet which supports UR crypto-account. Tap to copy the text."],// cosigner 6
+            ["text": "", "ur": "", "selectedSegmentIndex": 1, "footerText": "UR for exporting the segwit single-sig watch-only wallet to Blue Wallet, Keystone HWW, Passport HWW, Sparrow and any other wallet which supports UR crypto-account. Tap to copy the text."],// singlesig 7
+            ["text": "", "footerText": "Export your segwit multi-sig cosigner to Casa App by selecting the Keystone option when adding a HWW key to Casa App. Also compatible with Gordian Wallet and Gordian Cosigner. Tap to copy the text."]// casa hdkey 8
         ]
         
         getData()
@@ -184,104 +184,152 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.tableDict[0]["label"] = signer.label
-            self.tableDict[4]["date"] = "  " +  self.formattedDate(signer.added)
-            
-            guard var decrypted = Crypto.decrypt(signer.words), var words = decrypted.utf8 else { return }
-                        
-            var arr = words.split(separator: " ")
-            
-            for (i, _) in arr.enumerated() {
-                if i > 0 && i < arr.count - 1 {
-                    arr[i] = "******"
-                }
-            }
-                                    
-            guard let urSeed = URHelper.mnemonicToCryptoSeed(words) else { return }
-            
-            var firstHalf = ""
-            var secondHalf = ""
-            
-            for (i, c) in urSeed.enumerated() {
-                if i < 20 {
-                    firstHalf += "\(c)"
-                }
-                
-                if i > urSeed.count - 5 {
-                    secondHalf += "\(c)"
-                }
-            }
-            
-            let displaySeed = "\(firstHalf + "*****" + secondHalf)"
-            
-            self.tableDict[1]["text"] = words
-            self.tableDict[1]["ur"] = urSeed
-            self.tableDict[1]["censoredText"] = arr.joined(separator: " ")
-            self.tableDict[1]["censoredSeed"] = displaySeed
+            self.tableDict[0]["text"] = signer.label
+            self.tableDict[4]["text"] = "  " +  self.formattedDate(signer.added)
             
             var passphrase = ""
             
-            if signer.passphrase != nil {
-                guard let decryptedPassphrase = Crypto.decrypt(signer.passphrase!), let string = decryptedPassphrase.utf8 else { return }
+            if let encryptedPassphrase = signer.passphrase {
+                guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
+                        let string = decryptedPassphrase.utf8 else { return }
                 
                 passphrase = string
-                self.tableDict[3]["passphrase"] = "  " + passphrase
+                self.tableDict[3]["text"] = "  " + passphrase
             } else {
-                self.tableDict[3]["passphrase"] = "  ** no passphrase **"
+                self.tableDict[3]["text"] = "  ** no passphrase **"
             }
             
-            guard var mk = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase) else { return }
+            guard let encryptedXfp = signer.xfp,
+                let decryptedXfp = Crypto.decrypt(encryptedXfp),
+                let xfp = decryptedXfp.utf8 else {
+                    showAlert(vc: self, title: "", message: "Error getting your xfp.")
+                return
+            }
             
-            self.setWallets(mk)
+            self.tableDict[2]["text"] = "  " + xfp
             
-            self.masterKey = mk
+            if self.network == 0 {
+                if let encryptedbip84xpub = signer.bip84xpub,
+                    let decryptedbip84xpub = Crypto.decrypt(encryptedbip84xpub),
+                    let xpub = decryptedbip84xpub.utf8 {
+                    let descriptor = "wpkh([\(xfp)/84h/0h/0h]\(xpub)/0/*)"
+                    
+                    guard let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) else {
+                        showAlert(vc: self, title: "UR error.", message: "Unable to convert your descriptor to crypto-account.")
+                        return
+                    }
+                    
+                    self.tableDict[7]["text"] = descriptor
+                    self.tableDict[7]["ur"] = singleSigCryptoAccount
+                }
+                
+                if let encryptedbip48xpub = signer.bip48xpub,
+                    let decryptedbip48xpub = Crypto.decrypt(encryptedbip48xpub),
+                    let xpub = decryptedbip48xpub.utf8 {
+                    let cosigner = "wsh([\(xfp)/48h/0h/0h/2h]\(xpub)/0/*)"
+                    
+                    guard let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) else {
+                        showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-account.")
+                        return
+                    }
+                    
+                    self.tableDict[6]["text"] = cosigner
+                    self.tableDict[6]["ur"] = cosignerAccount
+                    
+                    guard let casaHdkey = URHelper.descriptorToUrHdkey(Descriptor(cosigner)) else {
+                        showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-hdkey.")
+                        return
+                    }
+                    
+                    self.tableDict[8]["text"] = casaHdkey
+                }
+                
+            } else {
+                if let encryptedbip84tpub = signer.bip84tpub,
+                    let decryptedbip84tpub = Crypto.decrypt(encryptedbip84tpub),
+                    let tpub = decryptedbip84tpub.utf8 {
+                    let descriptor = "wpkh([\(xfp)/84h/0h/0h]\(tpub)/0/*)"
+                    
+                    guard let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) else {
+                        showAlert(vc: self, title: "UR error.", message: "Unable to convert your descriptor to crypto-account.")
+                        return
+                    }
+                    
+                    self.tableDict[7]["text"] = descriptor
+                    self.tableDict[7]["ur"] = singleSigCryptoAccount
+                }
+                
+                if let encryptedbip48tpub = signer.bip48tpub,
+                    let decryptedbip48tpub = Crypto.decrypt(encryptedbip48tpub),
+                    let tpub = decryptedbip48tpub.utf8 {
+                    let cosigner = "wsh([\(xfp)/48h/0h/0h/2h]\(tpub)/0/*)"
+                    
+                    guard let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) else {
+                        showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-account.")
+                        return
+                    }
+                    
+                    self.tableDict[6]["text"] = cosigner
+                    self.tableDict[6]["ur"] = cosignerAccount
+                    
+                    guard let casaHdkey = URHelper.descriptorToUrHdkey(Descriptor(cosigner)) else {
+                        showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-hdkey.")
+                        return
+                    }
+                    
+                    self.tableDict[8]["text"] = casaHdkey
+                }
+            }
             
-            decrypted = Data()
-            passphrase = ""
-            mk = ""
-            words = ""
+            if let encryptedWords = signer.words {
+                guard let decrypted = Crypto.decrypt(encryptedWords),
+                        let words = decrypted.utf8 else { return }
+                
+                guard let masterKey = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase) else {
+                    showAlert(vc: self, title: "", message: "Unable to derive your master key.")
+                    return
+                }
+                                            
+                var arr = words.split(separator: " ")
+                
+                for (i, _) in arr.enumerated() {
+                    if i > 0 && i < arr.count - 1 {
+                        arr[i] = "******"
+                    }
+                }
+                                        
+                guard let urSeed = URHelper.mnemonicToCryptoSeed(words) else { return }
+                
+                var firstHalf = ""
+                var secondHalf = ""
+                
+                for (i, c) in urSeed.enumerated() {
+                    if i < 20 {
+                        firstHalf += "\(c)"
+                    }
+                    
+                    if i > urSeed.count - 5 {
+                        secondHalf += "\(c)"
+                    }
+                }
+                
+                let displaySeed = "\(firstHalf + "*****" + secondHalf)"
+                
+                self.tableDict[1]["text"] = words
+                self.tableDict[1]["ur"] = urSeed
+                self.tableDict[1]["censoredText"] = arr.joined(separator: " ")
+                self.tableDict[1]["censoredSeed"] = displaySeed
+                self.setWallets(masterKey)
+            } else {
+                self.reloadTable()
+            }
         }
     }
     
     private func setWallets(_ masterKey: String) {
-        guard let fingerprint = Keys.fingerprint(masterKey: masterKey) else { return }
-        
-        self.tableDict[2]["fingerprint"] = "  " + fingerprint
-        
-        guard let msigKey = Keys.xpub(path: "m/48'/\(self.network)'/0'/2'", masterKey: masterKey) else { return }
-        
-        guard let singleSigKey = Keys.xpub(path: "m/84'/\(self.network)'/0'", masterKey: masterKey) else { return }
-        
-        let cosigner = "wsh([\(fingerprint)/48h/\(self.network)h/0h/2h]\(msigKey)/0/*)"
-        
-        guard let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) else {
-            showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-account.")
-            return
-        }
-        
-        self.tableDict[6]["text"] = cosigner
-        self.tableDict[6]["ur"] = cosignerAccount
-        
-        let descriptor = "wpkh([\(fingerprint)/84h/\(self.network)h/0h]\(singleSigKey)/0/*)"
-        
-        guard let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) else {
-            showAlert(vc: self, title: "UR error.", message: "Unable to convert your descriptor to crypto-account.")
-            return
-        }
-        
-        self.tableDict[7]["text"] = descriptor
-        self.tableDict[7]["ur"] = singleSigCryptoAccount
-        
-        guard let casaHdkey = URHelper.descriptorToUrHdkey(Descriptor(cosigner)) else {
-            showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-hdkey.")
-            return
-        }
-        
-        self.tableDict[8]["text"] = casaHdkey
-        
         CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
             guard let wallets = wallets, wallets.count > 0 else {
-                self.tableDict[5]["wallets"] = ""
+                self.tableDict[5]["text"] = ""
                 self.reloadTable()
                 return
             }
@@ -312,7 +360,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
                         
-                        self.tableDict[5]["wallets"] = "  " + signableWallets
+                        self.tableDict[5]["text"] = "  " + signableWallets
                         self.reloadTable()
                     }
                 }
@@ -334,7 +382,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
-                    self.tableDict[0]["label"] = label
+                    self.tableDict[0]["text"] = label
                     self.tableView.reloadSections(IndexSet(arrayLiteral: 0), with: .fade)
                 }
             } else {
@@ -446,6 +494,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     }
     
     @objc func createWallet() {
+        // MARK: If no words then only use saved accounts
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -595,31 +644,35 @@ extension SignerDetailViewController: UITableViewDelegate {
         titleLabel.font = .systemFont(ofSize: 14)
         titleLabel.textColor = .systemGreen
         
+        let text = tableDict[section]["footerText"] as? String ?? ""
+        titleLabel.text = text
+        
+        var height:CGFloat = 0
+        
         switch Section(rawValue: section) {
         case .words:
-            titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: 80)
-            titleLabel.text  = "UR for exporting this signer to iOS Seed Tool, Gordian Wallet, Gordian Signer and any other wallet which supports UR crypto-seed. Tap to copy the text."
+            height = 60
+            
         case .cosigner:
-            titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: 80)
-            titleLabel.text  = "UR for exporting the segwit mutli-sig cosigner to Blue Wallet, Keystone HWW, Passport HWW, Sparrow and any other wallet which supports UR crypto-account. Tap to copy the text."
+            height = 80
+            
         case .singleSig:
-            titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: 80)
-            titleLabel.text  = "UR for exporting the segwit single-sig watch-only wallet to Blue Wallet, Keystone HWW, Passport HWW, Sparrow and any other wallet which supports UR crypto-account. Tap to copy the text."
+            height = 80
+            
         case .casaCosigner:
-            titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: 80)
-            titleLabel.text  = "Export your segwit multi-sig cosigner to Casa App by selecting the Keystone option when adding a HWW key to Casa App. Also compatible with Gordian Wallet and Gordian Cosigner. Tap to copy the text."
+            height = 80
             
         case .signableWallets:
-            titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: 60)
-            titleLabel.text  = "The wallets which this signer can sign for. Tap the + button to create a wallet with this signer."
+            height = 60
             
         case .label:
-            titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: 40)
-            titleLabel.text  = "Tap the label to edit it."
+            height = 40
             
         default:
             titleLabel.text  = ""
         }
+        
+        titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: height)
         
         titleLabel.sizeToFit()
         
@@ -632,7 +685,7 @@ extension SignerDetailViewController: UITableViewDelegate {
         case .label:
             return 40
         case .words, .signableWallets:
-            return 80
+            return 60
         case .cosigner, .singleSig, .casaCosigner:
             return 80
         default:
@@ -646,7 +699,7 @@ extension SignerDetailViewController: UITableViewDelegate {
                 
         switch indexPath.section {
         case 0:
-            editLabel(dict["label"] as? String ?? "")
+            editLabel(dict["text"] as? String ?? "")
             
         case 1:
             switch selectedSegment {
@@ -698,7 +751,7 @@ extension SignerDetailViewController: UITableViewDelegate {
         
         switch Section(rawValue: indexPath.section) {
         case .label:
-            cell.textLabel?.text = dict["label"] as? String ?? "no label"
+            cell.textLabel?.text = dict["text"] as? String ?? "no label"
             
         case .words:
             switch selectedSegment {
@@ -711,16 +764,16 @@ extension SignerDetailViewController: UITableViewDelegate {
             }
             
         case .masterKeyFingerprint:
-            cell.textLabel?.text = dict["fingerprint"] as? String ?? "no fingerprint"
+            cell.textLabel?.text = dict["text"] as? String ?? "no fingerprint"
             
         case .passphrase:
-            cell.textLabel?.text = dict["passphrase"] as? String ?? "*** no passphrase ***"
+            cell.textLabel?.text = dict["text"] as? String ?? "*** no passphrase ***"
             
         case .dateAdded:
-            cell.textLabel?.text = dict["date"] as? String ?? "no date added"
+            cell.textLabel?.text = dict["text"] as? String ?? "no date added"
             
         case .signableWallets:
-            cell.textLabel?.text = dict["wallets"] as? String ?? "no signable wallets"
+            cell.textLabel?.text = dict["text"] as? String ?? "no signable wallets"
             
         case .cosigner:
             switch selectedSegment {

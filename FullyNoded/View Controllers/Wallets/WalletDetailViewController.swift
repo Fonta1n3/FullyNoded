@@ -224,7 +224,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     private func parseSigners(_ signers: [[String:Any]]) {
         for (i, signer) in signers.enumerated() {
             let signerStruct = SignerStruct(dictionary: signer)
-            guard let decryptedData = Crypto.decrypt(signerStruct.words) else { return }
+            guard let encryptedWords = signerStruct.words,
+                    let decryptedData = Crypto.decrypt(encryptedWords) else { return }
             
             parseWords(decryptedData, signerStruct)
             
