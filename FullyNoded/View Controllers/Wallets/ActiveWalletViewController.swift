@@ -402,7 +402,7 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @objc func importWallet(_ notification: NSNotification) {
-        spinner.addConnectingView(vc: self, description: "importing your Coldcard wallet, this can take a minute...")
+        spinner.addConnectingView(vc: self, description: "Creating your wallet, this can take a minute...")
         
         guard let accountMap = notification.userInfo as? [String:Any] else {
             self.spinner.removeConnectingView()
@@ -420,7 +420,7 @@ class ActiveWalletViewController: UIViewController {
             }
             
             self.spinner.removeConnectingView()
-            showAlert(vc: self, title: "Wallet imported ✅", message: "It has been activated and is refreshing now.")
+            showAlert(vc: self, title: "Wallet created ✓", message: "It has been activated and is refreshing now.")
             self.refreshWallet()
         }
     }
@@ -450,7 +450,7 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func loadTable() {
-        //if authenticated {
+        if authenticated {
             self.sectionZeroLoaded = false
             existingWallet = ""
             walletLabel = ""
@@ -476,7 +476,7 @@ class ActiveWalletViewController: UIViewController {
                 
                 self.loadBalances()
             }
-        /*} else if !isAuthenticating {
+        } else if !isAuthenticating {
             removeSpinner()
             hideData()
             isAuthenticating = true
@@ -487,14 +487,14 @@ class ActiveWalletViewController: UIViewController {
                 self.authenticated = result
                 self.isAuthenticating = false
                 
-                if result {
-                    self.addNavBarSpinner()
-                    self.refreshAll()
-                } else {
+                if !result {
                     showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
+                } else {
+                    self.addNavBarSpinner()
+                    self.loadTable()
                 }
             }
-        }*/
+        }
     }
     
     private func finishedLoading() {

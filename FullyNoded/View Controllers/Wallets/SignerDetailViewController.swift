@@ -10,14 +10,15 @@ import UIKit
 
 class SignerDetailViewController: UIViewController, UINavigationControllerDelegate {
     
-    var isEditingNow = false
     var id:UUID!
+    private var spinner = ConnectingView()
     private var signer: SignerStruct!
     private var tableDict = [[String:Any]]()
     private var network = 0
     private var stringToExport = ""
     private var descriptionText = ""
     private var headerText = ""
+    private var masterKey = ""
     
     private enum Section: Int {
         case label
@@ -108,10 +109,24 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             return
         }
         
-        guard let words = Crypto.decrypt(signer.words) else { return }
+        let selectedSegmentIndex = tableDict[1]["selectedSegmentIndex"] as? Int ?? 0
         
-        tableDict[1]["text"] = words.utf8
-        reloadTable()
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            switch selectedSegmentIndex {
+            case 0:
+                self.tableDict[1]["censoredText"] = self.tableDict[1]["text"] as? String ?? "no seed words"
+                
+            case 1:
+                self.tableDict[1]["censoredSeed"] = self.tableDict[1]["ur"] as? String ?? "no crypto-seed"
+                
+            default:
+                break
+            }
+            
+            self.tableView.reloadSections(IndexSet(arrayLiteral: 1), with: .fade)
+        }
     }
     
     @IBAction func deleteAction(_ sender: Any) {
@@ -184,21 +199,25 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                                     
             guard let urSeed = URHelper.mnemonicToCryptoSeed(words) else { return }
             
-            var censoredSeed:[String] = []
+            var firstHalf = ""
+            var secondHalf = ""
             
             for (i, c) in urSeed.enumerated() {
-                if i > 25 && i < urSeed.count - 7 {
-                    censoredSeed.append("*")
-                } else {
-                    censoredSeed.append("\(c)")
+                if i < 20 {
+                    firstHalf += "\(c)"
+                }
+                
+                if i > urSeed.count - 5 {
+                    secondHalf += "\(c)"
                 }
             }
             
-            self.tableDict[1]["text"] = words//arr.joined(separator: " ")
+            let displaySeed = "\(firstHalf + "*****" + secondHalf)"
+            
+            self.tableDict[1]["text"] = words
             self.tableDict[1]["ur"] = urSeed
             self.tableDict[1]["censoredText"] = arr.joined(separator: " ")
-            self.tableDict[1]["censoredSeed"] = censoredSeed.joined()
-            
+            self.tableDict[1]["censoredSeed"] = displaySeed
             
             var passphrase = ""
             
@@ -214,6 +233,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             guard var mk = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase) else { return }
             
             self.setWallets(mk)
+            
+            self.masterKey = mk
             
             decrypted = Data()
             passphrase = ""
@@ -310,28 +331,16 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             guard let self = self else { return }
             
             if success {
-                self.isEditingNow = false
-                showAlert(vc: self, title: "Success ✅", message: "Signer's label updated.")
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.tableDict[0]["label"] = label
+                    self.tableView.reloadSections(IndexSet(arrayLiteral: 0), with: .fade)
+                }
             } else {
-                showAlert(vc: self, title: "Error", message: "Signer's label did not update.")
+                showAlert(vc: self, title: "Error", message: "Label did not update.")
             }
         }
-    }
-    
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        if textField.text != "" && isEditingNow {
-            updateLabel(textField.text!)
-        }
-    }
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.endEditing(true)
-        return true
-    }
-    
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        isEditingNow = true
-        return true
     }
     
     @objc func export(_ sender: UIButton) {
@@ -343,6 +352,217 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             guard let self = self else { return }
             
             self.performSegue(withIdentifier: "segueToExportKeystore", sender: self)
+        }
+    }
+    
+    private func editLabel(_ existingLabel: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Edit Label"
+            let message = ""
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let edit = UIAlertAction(title: "Save", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                let text = (alert.textFields![0] as UITextField).text
+                
+                guard let text = text, text != "" else {
+                    showAlert(vc: self, title: "", message: "No label added.")
+                    
+                    return
+                }
+                
+                self.updateLabel(text)
+            }
+            
+            alert.addTextField { textField in
+                textField.text = existingLabel
+                textField.keyboardAppearance = .dark
+            }
+            
+            alert.addAction(edit)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            alert.addAction(cancel)
+            
+            self.present(alert, animated:true, completion: nil)
+        }
+    }
+    
+    private func segmentedControll(_ x: CGFloat, _ selectedSegmentIndex: Int) -> UISegmentedControl {
+        let segmentedControll = UISegmentedControl(items: ["text", "ur"])
+        segmentedControll.frame = CGRect(x: x, y: 10, width: 100, height: 30)
+        segmentedControll.setTitle("text", forSegmentAt: 0)
+        segmentedControll.setTitle("ur", forSegmentAt: 1)
+        segmentedControll.selectedSegmentIndex = selectedSegmentIndex
+        segmentedControll.addTarget(self, action: #selector(segmentedControlValueDidChange(_:)), for: .valueChanged)
+        return segmentedControll
+    }
+    
+    private func exportQrButton(_ x: CGFloat) -> UIButton {
+        let qrButton = UIButton()
+        qrButton.setImage(.init(systemName: "qrcode"), for: .normal)
+        qrButton.imageView?.tintColor = .systemTeal
+        qrButton.frame = CGRect(x: x, y: 5, width: 40, height: 40)
+        qrButton.showsTouchWhenHighlighted = true
+        qrButton.addTarget(self, action: #selector(exportQr(_:)), for: .touchUpInside)
+        return qrButton
+    }
+    
+    private func createWalletButton(_ x: CGFloat) -> UIButton {
+        let createWalletButton = UIButton()
+        createWalletButton.setImage(.init(systemName: "plus"), for: .normal)
+        createWalletButton.imageView?.tintColor = .systemTeal
+        createWalletButton.frame = CGRect(x: x, y: 5, width: 40, height: 40)
+        createWalletButton.showsTouchWhenHighlighted = true
+        createWalletButton.addTarget(self, action: #selector(createWallet), for: .touchUpInside)
+        return createWalletButton
+    }
+    
+    private func setClipBoard(_ string: String) {
+        let clipBoard = UIPasteboard.general
+        clipBoard.string = string
+        showAlert(vc: self, title: "", message: "Copied to clipboard ✓")
+    }
+    
+    @objc func segmentedControlValueDidChange(_ sender: UISegmentedControl) {
+        tableDict[sender.tag]["selectedSegmentIndex"] = sender.selectedSegmentIndex
+        tableView.reloadSections(IndexSet(arrayLiteral: sender.tag), with: .fade)
+    }
+    
+    private func importAccountMap(_ descriptor: String, _ label: String) {
+        let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": label] as [String : Any]
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.navigationController?.popViewController(animated: true)
+            self.tabBarController?.selectedIndex = 1
+            NotificationCenter.default.post(name: .importWallet, object: nil, userInfo: accountMap)
+        }
+    }
+    
+    @objc func createWallet() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            guard let fingerprint = Keys.fingerprint(masterKey: self.masterKey) else { return }
+            
+            let title = "Create a single sig wallet using this signer?"
+            let message = "Choose an address type."
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let p2wpkh = UIAlertAction(title: "Segwit BIP84", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                guard let singleSigKey = Keys.xpub(path: "m/84'/\(self.network)'/0'", masterKey: self.masterKey) else { return }
+                
+                let descriptor = "wpkh([\(fingerprint)/84h/\(self.network)h/0h]\(singleSigKey)/0/*)"
+                self.importAccountMap(descriptor, self.signer.label + " segwit")
+            }
+            
+            let p2pkh = UIAlertAction(title: "Legacy BIP44", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                guard let singleSigKey = Keys.xpub(path: "m/44'/\(self.network)'/0'", masterKey: self.masterKey) else { return }
+                
+                let descriptor = "pkh([\(fingerprint)/44h/\(self.network)h/0h]\(singleSigKey)/0/*)"
+                self.importAccountMap(descriptor, self.signer.label + " Legacy single-sig")
+            }
+            
+            let p2shp2wpkh = UIAlertAction(title: "Nested BIP49", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                guard let singleSigKey = Keys.xpub(path: "m/49'/\(self.network)'/0'", masterKey: self.masterKey) else { return }
+                
+                let descriptor = "sh(wpkh([\(fingerprint)/49h/\(self.network)h/0h]\(singleSigKey)/0/*))"
+                self.importAccountMap(descriptor, self.signer.label + " Nested single-sig")
+            }
+            
+            alert.addAction(p2wpkh)
+            alert.addAction(p2pkh)
+            alert.addAction(p2shp2wpkh)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            alert.addAction(cancel)
+            
+            self.present(alert, animated:true, completion: nil)
+        }
+    }
+    
+    @objc func exportQr(_ sender: UIButton) {
+        let section = sender.tag
+        
+        let dict = tableDict[section]
+        let selectedSegment = dict["selectedSegmentIndex"] as? Int ?? 0
+                
+        switch section {
+        case 1:
+            switch selectedSegment {
+            case 0:
+                stringToExport = dict["text"] as? String ?? ""
+                headerText = "BIP39 Seed Words"
+                descriptionText = "⚠️ Do not share with others! These words can be used to spend your btc, or recover your wallet."
+                
+            case 1:
+                stringToExport = dict["ur"] as? String ?? ""
+                headerText = "UR Crypto Seed"
+                descriptionText = "⚠️ Do not share with others! This is a new format for exporting your seed to other wallets."
+                
+            default:
+                break
+            }
+            
+            segueToQr()
+            
+        case 6:
+            switch selectedSegment {
+            case 0:
+                stringToExport = dict["text"] as? String ?? ""
+                headerText = "Cosigner BIP48"
+                descriptionText = "This can be shared with other wallets like Specter and Sparrow to create segwit multi-sig wallets."
+                
+            case 1:
+                stringToExport = dict["ur"] as? String ?? ""
+                headerText = "Cosigner BIP48"
+                descriptionText = "This can be shared with other wallets like Blue Wallet, Passport, Sparrow, and Keystone to create segwit multi-sig wallets."
+                
+            default:
+                break
+            }
+            
+            segueToQr()
+            
+        case 7:
+            switch selectedSegment {
+            case 0:
+                stringToExport = dict["text"] as? String ?? ""
+                headerText = "Descriptor BIP84"
+                descriptionText = "This can be shared with other wallets to create watch-only segwit single-sig wallets."
+                
+            case 1:
+                stringToExport = dict["ur"] as? String ?? ""
+                headerText = "Descriptor BIP84"
+                descriptionText = "This can be shared with other wallets like Blue Wallet, Passport, Sparrow, Keystone to create watch-only segwit single-sig wallets."
+                
+            default:
+                break
+            }
+            
+            segueToQr()
+            
+        case 8:
+            stringToExport = dict["text"] as? String ?? ""
+            headerText = "Casa App Cosigner"
+            descriptionText = "You can scan this with your Casa App to add a multi-sig cosigner from Fully Noded.\n\n⚠️ Currently Casa App does not display Fully Noded as an option, select Keystone instead."
+            segueToQr()
+            
+        default:
+            break
         }
     }
 
@@ -377,17 +597,25 @@ extension SignerDetailViewController: UITableViewDelegate {
         
         switch Section(rawValue: section) {
         case .words:
-            titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: 50)
-            titleLabel.text  = "UR for exporting this signer to iOS Seed Tool, Gordian Wallet, Gordian Signer and any other wallet which supports UR crypto-seed."
+            titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: 80)
+            titleLabel.text  = "UR for exporting this signer to iOS Seed Tool, Gordian Wallet, Gordian Signer and any other wallet which supports UR crypto-seed. Tap to copy the text."
         case .cosigner:
-            titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: 70)
-            titleLabel.text  = "UR for exporting the segwit mutli-sig cosigner to Blue Wallet, Keystone HWW, Passport HWW, Sparrow and any other wallet which supports UR crypto-account."
+            titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: 80)
+            titleLabel.text  = "UR for exporting the segwit mutli-sig cosigner to Blue Wallet, Keystone HWW, Passport HWW, Sparrow and any other wallet which supports UR crypto-account. Tap to copy the text."
         case .singleSig:
-            titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: 70)
-            titleLabel.text  = "UR for exporting the segwit single-sig watch-only wallet to Blue Wallet, Keystone HWW, Passport HWW, Sparrow and any other wallet which supports UR crypto-account."
+            titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: 80)
+            titleLabel.text  = "UR for exporting the segwit single-sig watch-only wallet to Blue Wallet, Keystone HWW, Passport HWW, Sparrow and any other wallet which supports UR crypto-account. Tap to copy the text."
         case .casaCosigner:
-            titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: 70)
-            titleLabel.text  = "Export your segwit multi-sig cosigner to Casa App by selecting the Keystone option when adding a HWW key to Casa App. Also compatible with Gordian Wallet and Gordian Cosigner."
+            titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: 80)
+            titleLabel.text  = "Export your segwit multi-sig cosigner to Casa App by selecting the Keystone option when adding a HWW key to Casa App. Also compatible with Gordian Wallet and Gordian Cosigner. Tap to copy the text."
+            
+        case .signableWallets:
+            titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: 60)
+            titleLabel.text  = "The wallets which this signer can sign for. Tap the + button to create a wallet with this signer."
+            
+        case .label:
+            titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: 40)
+            titleLabel.text  = "Tap the label to edit it."
             
         default:
             titleLabel.text  = ""
@@ -401,23 +629,15 @@ extension SignerDetailViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         switch Section(rawValue: section) {
-        case .words:
-            return 60
-        case .cosigner:
-            return 70
-        case .singleSig:
-            return 70
-        case .casaCosigner:
-            return 70
+        case .label:
+            return 40
+        case .words, .signableWallets:
+            return 80
+        case .cosigner, .singleSig, .casaCosigner:
+            return 80
         default:
             return 0
         }
-    }
-    
-    private func setClipBoard(_ string: String) {
-        let clipBoard = UIPasteboard.general
-        clipBoard.string = string
-        showAlert(vc: self, title: "", message: "Copied to clipboard ✓")
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -425,6 +645,9 @@ extension SignerDetailViewController: UITableViewDelegate {
         let selectedSegment = dict["selectedSegmentIndex"] as? Int ?? 0
                 
         switch indexPath.section {
+        case 0:
+            editLabel(dict["label"] as? String ?? "")
+            
         case 1:
             switch selectedSegment {
             case 0:
@@ -529,94 +752,6 @@ extension SignerDetailViewController: UITableViewDelegate {
         return cell
     }
     
-    @objc func segmentedControlValueDidChange(_ sender: UISegmentedControl) {
-        tableDict[sender.tag]["selectedSegmentIndex"] = sender.selectedSegmentIndex
-        tableView.reloadSections(IndexSet(arrayLiteral: sender.tag), with: .fade)
-    }
-    
-    @objc func exportQr(_ sender: UIButton) {
-        let section = sender.tag
-        
-        let dict = tableDict[section]
-        let selectedSegment = dict["selectedSegmentIndex"] as? Int ?? 0
-                
-        switch section {
-        case 1:
-            switch selectedSegment {
-            case 0:
-                stringToExport = dict["text"] as? String ?? ""
-                headerText = "BIP39 Seed Words"
-                descriptionText = "⚠️ Do not share with others! These words can be used to spend your btc, or recover your wallet."
-            case 1:
-                stringToExport = dict["ur"] as? String ?? ""
-                headerText = "UR Crypto Seed"
-                descriptionText = "⚠️ Do not share with others! This is a new format for exporting your seed to other wallets."
-            default:
-                break
-            }
-            segueToQr()
-            
-        case 6:
-            switch selectedSegment {
-            case 0:
-                stringToExport = dict["text"] as? String ?? ""
-                headerText = "Cosigner BIP48"
-                descriptionText = "This can be shared with other wallets like Specter and Sparrow to create segwit multi-sig wallets."
-            case 1:
-                stringToExport = dict["ur"] as? String ?? ""
-                headerText = "Cosigner BIP48"
-                descriptionText = "This can be shared with other wallets like Blue Wallet, Passport, Sparrow, and Keystone to create segwit multi-sig wallets."
-            default:
-                break
-            }
-            segueToQr()
-            
-        case 7:
-            switch selectedSegment {
-            case 0:
-                stringToExport = dict["text"] as? String ?? ""
-                headerText = "Descriptor BIP84"
-                descriptionText = "This can be shared with other wallets to create watch-only segwit single-sig wallets."
-            case 1:
-                stringToExport = dict["ur"] as? String ?? ""
-                headerText = "Descriptor BIP84"
-                descriptionText = "This can be shared with other wallets like Blue Wallet, Passport, Sparrow, Keystone to create watch-only segwit single-sig wallets."
-            default:
-                break
-            }
-            segueToQr()
-            
-        case 8:
-            stringToExport = dict["text"] as? String ?? ""
-            headerText = "Casa App Cosigner"
-            descriptionText = "You can scan this with your Casa App to add a multi-sig cosigner from Fully Noded.\n\n⚠️ Currently Casa App does not display Fully Noded as an option, select Keystone instead."
-            segueToQr()
-            
-        default:
-            break
-        }
-    }
-    
-    private func segmentedControll(_ x: CGFloat, _ selectedSegmentIndex: Int) -> UISegmentedControl {
-        let segmentedControll = UISegmentedControl(items: ["text", "ur"])
-        segmentedControll.frame = CGRect(x: x, y: 10, width: 100, height: 30)
-        segmentedControll.setTitle("text", forSegmentAt: 0)
-        segmentedControll.setTitle("ur", forSegmentAt: 1)
-        segmentedControll.selectedSegmentIndex = selectedSegmentIndex
-        segmentedControll.addTarget(self, action: #selector(segmentedControlValueDidChange(_:)), for: .valueChanged)
-        return segmentedControll
-    }
-    
-    private func exportQrButton(_ x: CGFloat) -> UIButton {
-        let qrButton = UIButton()
-        qrButton.setImage(.init(systemName: "qrcode"), for: .normal)
-        qrButton.imageView?.tintColor = .systemTeal
-        qrButton.frame = CGRect(x: x, y: 5, width: 40, height: 40)
-        qrButton.showsTouchWhenHighlighted = true
-        qrButton.addTarget(self, action: #selector(exportQr(_:)), for: .touchUpInside)
-        return qrButton
-    }
-    
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let header = UIView()
         header.backgroundColor = UIColor.clear
@@ -638,6 +773,10 @@ extension SignerDetailViewController: UITableViewDelegate {
         
         if let section = Section(rawValue: section) {
             switch section {
+            case .signableWallets:
+                header.addSubview(createWalletButton(header.frame.maxX - 46))
+                textLabel.text = headerName(for: section)
+                
             case .words:
                 header.addSubview(segmentedControl)
                 header.addSubview(exportQrButtonGeneric)
@@ -665,8 +804,6 @@ extension SignerDetailViewController: UITableViewDelegate {
             default:
                 textLabel.text = headerName(for: section)
             }
-            
-            
         }
         
         header.addSubview(textLabel)
