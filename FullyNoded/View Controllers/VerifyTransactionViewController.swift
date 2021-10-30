@@ -1316,7 +1316,80 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                             }
                             return
                         }
-                        self.parsePrevTx(method: .decoderawtransaction, param: "\"\(hex)\"", vout: vout, txid: txid)
+                        
+                        //MARK: Can use this info to populate the inputs our wallet knows about.
+                        
+                        /*
+                         result =     {
+                             amount = "0.001";
+                             "bip125-replaceable" = no;
+                             blockhash = 000000000000003e1512be9a017c2ac2e0452c82640e1cd8039e82d472c6b6cf;
+                             blockheight = 2101493;
+                             blockindex = 34;
+                             blocktime = 1635555272;
+                             confirmations = 6;
+                             details =         (
+                                             {
+                                     address = mkPfvTx286xjCeixrg1pdTC2y1ruTJVNGX;
+                                     amount = "0.001";
+                                     category = receive;
+                                     label = "test key";
+                                     vout = 1;
+                                 }
+                             );
+                             hex = 02000000000101e5745d555ed52b79fc7a630ebe16d5544c628cd5691cf6fac9e393f972392ecb0000000017160014cb53a18f52b0e6d43ff9f2e66d8bf0504b2641dffeffffff02137175000000000017a914298d62963517b6058664f470517ecf6bcf00c51987a0860100000000001976a91435780ce39c2ae0480636d49f117a71904d7753d288ac0247304402207d1c0b7bf04d56e15741cb54cac5a3c5713c9d197d40625d56d75333b02ccd36022007005d366b4d0a5d69f8be1f85a27517e75df57249d8b1b76e57110e165dc9e8012103cefe94da620df904d01eb464dbbcadcfc67b3acf9b165907a7e4cb95e30990c0ee102000;
+                             time = 1635555272;
+                             timereceived = 1635555526;
+                             txid = 204f26c1a0b276accf4c3889a31e9580d9d2f3626bea3c5288563e7c011274e8;
+                             walletconflicts =         (
+                             );
+                         }
+                         */
+                        
+                        if let details = dict["details"] as? NSArray, details.count > 0 {
+                            for detail in details {
+                                if let detailDict = detail as? [String:Any] {
+                                    
+                                    let amount = detailDict["amount"] as? Double ?? 0.0
+                                    let address = detailDict["address"] as? String ?? "no address"
+                                    self.inputTotal += amount
+                                    var amountString = amount.avoidNotation
+                                    
+                                    if self.fxRate != nil {
+                                        amountString += " btc / \(self.fiatAmount(btc: amount))"
+                                    }
+                                    
+                                    self.inputTableArray[self.index]["amount"] = amountString
+                                    self.inputTableArray[self.index]["address"] = address
+                                    self.inputTableArray[self.index]["lifehash"] = LifeHash.image(address) ?? UIImage()
+                                    self.inputTableArray[self.index]["isDust"] = amount < 0.00020000
+                                    
+                                    if self.index + 1 < self.inputArray.count {
+                                        self.index += 1
+                                        self.getInputInfo(index: self.index)
+                                        
+                                    } else if self.index + 1 == self.inputArray.count {
+                                        self.index = 0
+                                        self.txFee = self.inputTotal - self.outputTotal
+                                        
+                                        if self.inputTotal > 0.0 {
+                                            let txfeeString = self.txFee.avoidNotation
+                                            if self.fxRate != nil {
+                                                self.miningFee = "\(txfeeString) btc / \(self.fiatAmount(btc: self.txFee))"
+                                            } else {
+                                                self.miningFee = "\(txfeeString) btc / error fetching fx rate"
+                                            }
+                                        } else {
+                                            self.miningFee = "No fee data. Go to settings to opt in to Esplora use."
+                                        }
+                                        
+                                        self.verifyInputs()
+                                    }
+                                }
+                            }
+                        } else {
+                            self.parsePrevTx(method: .decoderawtransaction, param: "\"\(hex)\"", vout: vout, txid: txid)
+                        }
                     }
                     return
                 }
