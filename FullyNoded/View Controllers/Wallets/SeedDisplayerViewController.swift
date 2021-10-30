@@ -34,40 +34,50 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func setCoinType() {
-        spinner.addConnectingView(vc: self, description: "fetching chain type...")
-        
-        OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
-            guard let self = self else { return }
-            
-            guard let blockchainInfo = blockchainInfo else {
-                    self.showError(error: "Error getting blockchain info, please chack your connection to your node.")
-                    
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        self.navigationController?.popToRootViewController(animated: true)
-                    }
-                    
-                    return
-            }
-            
-            if blockchainInfo.chain != "main" {
+        if let chain = UserDefaults.standard.object(forKey: "chain") as? String,
+            let blockheight = UserDefaults.standard.object(forKey: "blockheight") as? Int {
+            if chain != "main" {
                 self.coinType = "1"
             }
             
-            self.blockheight = Int64(blockchainInfo.blocks)
+            self.blockheight = Int64(blockheight)
             
-            // check if version is at least 0.21.0 to use native descriptors
-            guard let version = UserDefaults.standard.object(forKey: "version") as? Int else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Version unknown.", message: "In order to create a wallet we need to know which version of Bitcoin Core you are running, please go the the home screen and refresh then try to create this wallet again.")
+        } else {
+            spinner.addConnectingView(vc: self, description: "fetching chain type...")
+            
+            OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
+                guard let self = self else { return }
                 
-                return
+                guard let blockchainInfo = blockchainInfo else {
+                        self.showError(error: "Error getting blockchain info, please chack your connection to your node.")
+                        
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.navigationController?.popToRootViewController(animated: true)
+                        }
+                        
+                        return
+                }
+                
+                if blockchainInfo.chain != "main" {
+                    self.coinType = "1"
+                }
+                
+                self.blockheight = Int64(blockchainInfo.blocks)
             }
-            
-            self.version = version
-            self.getWords()
         }
+        
+        // check if version is at least 0.21.0 to use native descriptors
+        guard let version = UserDefaults.standard.object(forKey: "version") as? Int else {
+            self.spinner.removeConnectingView()
+            showAlert(vc: self, title: "Version unknown.", message: "In order to create a wallet we need to know which version of Bitcoin Core you are running, please go the the home screen and refresh then try to create this wallet again.")
+            
+            return
+        }
+        
+        self.version = version
+        self.getWords()
     }
     
     @IBAction func savedAction(_ sender: Any) {
