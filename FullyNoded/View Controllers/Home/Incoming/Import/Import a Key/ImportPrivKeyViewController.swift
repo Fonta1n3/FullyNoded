@@ -173,15 +173,30 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     
     private func triggerRescan() {
         connectingView.addConnectingView(vc: self, description: "starting rescan...")
-        
-        OnchainUtils.rescan { (started, message) in
-            self.connectingView.removeConnectingView()
+                
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             
-            if started {
-                showAlert(vc: self, title: "", message: message ?? "Rescanning blockchain to look up historic transactions and balances.")
-            } else {
-                showAlert(vc: self, title: "", message: message ?? "Rescan failed...")
-            }
+            let alert = UIAlertController(title: "Private key imported successfully ✓", message: "Tap Done to start a rescan and go back to the Active Wallet view, once the rescan completes your balances and transactions from the private key will show up.", preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                OnchainUtils.rescan { (started, message) in
+                    self.connectingView.removeConnectingView()
+                    
+                    if !started {
+                        showAlert(vc: self, title: "", message: message ?? "Rescan failed...")
+                    }
+                    
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.navigationController?.popToRootViewController(animated: true)
+                    }
+                }
+            }))
+            
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true) {}
         }
     }
     
