@@ -1187,6 +1187,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 Reducer.makeCommand(command: .testmempoolaccept, param: "[\"\(signedRawTx)\"]") { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
+                    if let errorMessage = errorMessage {
+                        showAlert(vc: self, title: "testmempoolaccept error", message: errorMessage)
+                    }
+                    
                     guard let arr = response as? NSArray, arr.count > 0,
                         let dict = arr[0] as? NSDictionary,
                         let allowed = dict["allowed"] as? Bool else {

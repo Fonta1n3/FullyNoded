@@ -870,12 +870,14 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                         
                         self.spinner.removeConnectingView()
                         
-                        if psbt != nil {
-                            self.rawTxUnsigned = psbt!
-                            self.showRaw(raw: psbt!)
-                        } else if rawTx != nil {
+                        if rawTx != nil {
                             self.rawTxSigned = rawTx!
                             self.showRaw(raw: rawTx!)
+                            
+                        } else if psbt != nil {
+                            self.rawTxUnsigned = psbt!
+                            self.showRaw(raw: psbt!)
+                            
                         } else if errorMessage != nil {
                             showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown signing error")
                         }
