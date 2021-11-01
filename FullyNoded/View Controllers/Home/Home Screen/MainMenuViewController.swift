@@ -94,7 +94,7 @@ class MainMenuViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         if initialLoad {
             if !firstTimeHere() {
-                displayAlert(viewController: self, isError: true, message: "there was a critical error setting your devices encryption key, please delete and reinstall the app")
+                displayAlert(viewController: self, isError: true, message: "There was a critical error setting your devices encryption key, please delete and reinstall the app")
             } else {
                 if mgr?.state != .started && mgr?.state != .connected  {
                     if KeyChain.getData("UnlockPassword") != nil {

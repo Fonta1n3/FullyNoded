@@ -48,7 +48,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             ["text":"", "footerText": "Tap the label to edit it."],// label 0
             ["text": "", "ur": "", "selectedSegmentIndex": 0, "censoredText": "", "censoredUr": "", "footerText": "UR for exporting this signer to iOS Seed Tool, Gordian Wallet, Gordian Signer and any other wallet which supports UR crypto-seed. Tap to copy the text."],// words 1
             ["text": "", "footerText": ""],// xfp 2
-            ["text": "", "footerText": ""],// passphrase 3
+            ["text": "", "footerText": "Tap the passphrase to edit it. ⚠️ This has MAJOR implications, for experts only!"],// passphrase 3
             ["text": "", "footerText": ""],// dateAdded 4
             ["text": "", "footerText": "The wallets which this signer can sign for. Tap the + button to create a wallet with this signer."],// wallets 5
             ["text": "", "ur": "", "selectedSegmentIndex": 1, "footerText": "UR for exporting the segwit mutli-sig cosigner to Blue Wallet, Keystone HWW, Passport HWW, Sparrow and any other wallet which supports UR crypto-account. Tap to copy the text."],// cosigner 6
@@ -194,7 +194,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                         let string = decryptedPassphrase.utf8 else { return }
                 
                 passphrase = string
-                self.tableDict[3]["text"] = "  " + passphrase
+                self.tableDict[3]["text"] = "  " + "*********"
             } else {
                 self.tableDict[3]["text"] = "  ** no passphrase **"
             }
@@ -248,7 +248,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 if let encryptedbip84tpub = signer.bip84tpub,
                     let decryptedbip84tpub = Crypto.decrypt(encryptedbip84tpub),
                     let tpub = decryptedbip84tpub.utf8 {
-                    let descriptor = "wpkh([\(xfp)/84h/0h/0h]\(tpub)/0/*)"
+                    let descriptor = "wpkh([\(xfp)/84h/1h/0h]\(tpub)/0/*)"
                     
                     guard let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) else {
                         showAlert(vc: self, title: "UR error.", message: "Unable to convert your descriptor to crypto-account.")
@@ -262,7 +262,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 if let encryptedbip48tpub = signer.bip48tpub,
                     let decryptedbip48tpub = Crypto.decrypt(encryptedbip48tpub),
                     let tpub = decryptedbip48tpub.utf8 {
-                    let cosigner = "wsh([\(xfp)/48h/0h/0h/2h]\(tpub)/0/*)"
+                    let cosigner = "wsh([\(xfp)/48h/1h/0h/2h]\(tpub)/0/*)"
                     
                     guard let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) else {
                         showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-account.")
@@ -391,6 +391,67 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         }
     }
     
+    private func updatePassphrase(_ encryptedPassphrase: Data, _ passphrase: String) {
+        CoreDataService.update(id: id, keyToUpdate: "passphrase", newValue: encryptedPassphrase, entity: .signers) { [weak self] success in
+            guard let self = self else { return }
+            
+            if success {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.tableDict[3]["text"] = "**********"
+                    
+                    if let encryptedWords = self.signer.words,
+                       let decryptedSigner = Crypto.decrypt(encryptedWords),
+                       let words = decryptedSigner.utf8,
+                       let mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
+                       let xfp = Keys.fingerprint(masterKey: mkMain),
+                       let encryptedXfp = Crypto.encrypt(xfp.utf8),
+                       let mkTest = Keys.masterKey(words: words, coinType: "1", passphrase: passphrase),
+                       let bip84xpub = Keys.bip84AccountXpub(masterKey: mkMain, coinType: "0", account: 0),
+                       let bip84tpub = Keys.bip84AccountXpub(masterKey: mkTest, coinType: "1", account: 0),
+                       let bip48xpub = Keys.xpub(path: "m/48'/0'/0'/2'", masterKey: mkMain),
+                       let bip48tpub = Keys.xpub(path: "m/48'/1'/0'/2'", masterKey: mkTest),
+                       let encryptedbip84xpub = Crypto.encrypt(bip84xpub.utf8),
+                       let encryptedbip84tpub = Crypto.encrypt(bip84tpub.utf8),
+                       let encryptedbip48xpub = Crypto.encrypt(bip48xpub.utf8),
+                       let encryptedbip48tpub = Crypto.encrypt(bip48tpub.utf8) {
+                        
+                        CoreDataService.update(id: self.signer.id, keyToUpdate: "bip84xpub", newValue: encryptedbip84xpub, entity: .signers) { saved in
+                            print("encrypted bip84xpub updated ✓")
+                        }
+                        
+                        CoreDataService.update(id: self.signer.id, keyToUpdate: "bip84tpub", newValue: encryptedbip84tpub, entity: .signers) { saved in
+                            print("encrypted bip84tpub updated ✓")
+                        }
+                        
+                        CoreDataService.update(id: self.signer.id, keyToUpdate: "bip48xpub", newValue: encryptedbip48xpub, entity: .signers) { saved in
+                            print("encrypted bip48xpub updated ✓")
+                        }
+                        
+                        CoreDataService.update(id: self.signer.id, keyToUpdate: "bip48tpub", newValue: encryptedbip48tpub, entity: .signers) { saved in
+                            print("encrypted bip48tpub updated ✓")
+                        }
+                        
+                        CoreDataService.update(id: self.signer.id, keyToUpdate: "xfp", newValue: encryptedXfp, entity: .signers) { saved in
+                            print("encrypted xfp updated ✓")
+                        }
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.getData()
+                            
+                            showAlert(vc: self, title: "Signer updated ✓", message: "")
+                        }
+                    }
+                }
+            } else {
+                showAlert(vc: self, title: "Error", message: "Label did not update.")
+            }
+        }
+    }
+    
     @objc func export(_ sender: UIButton) {
         segueToQr()
     }
@@ -429,6 +490,77 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             alert.addTextField { textField in
                 textField.text = existingLabel
                 textField.keyboardAppearance = .dark
+            }
+            
+            alert.addAction(edit)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            alert.addAction(cancel)
+            
+            self.present(alert, animated:true, completion: nil)
+        }
+    }
+    
+    private func promptToEditPassphrase() {
+        if signer.words != nil {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                let title = "⚠️ Editing the passphrase has major implications!"
+                
+                let message = "This signer will no longer be able to sign transactions that invlove the previous passphrase, this will change the cosigner and descriptor used to create new wallets with this signer. Wallets that are associated with this signer will no longer be associated this signer. If you have exported your cosigner or descriptor to other wallets they will no longer be associated with this signer. If you do not understand what any of this means then just STOP."
+                
+                let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+                
+                let edit = UIAlertAction(title: "Edit Passphrase", style: .default) { [weak self] alertAction in
+                    guard let self = self else { return }
+                    
+                    self.editPassphrase()
+                }
+                
+                alert.addAction(edit)
+                
+                let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+                alert.addAction(cancel)
+                
+                self.present(alert, animated:true, completion: nil)
+            }
+        } else {
+            showAlert(vc: self, title: "No seed words exist.", message: "If the seed words have been deleted then you can not edit the passphrase. Please add a new signer with the seed words first then you may edit the passphrase as many times as you would like.")
+        }
+    }
+    
+    private func editPassphrase() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Edit Passphrase"
+            let message = ""
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let edit = UIAlertAction(title: "Save", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                let text = (alert.textFields![0] as UITextField).text
+                
+                guard let text = text else {
+                    showAlert(vc: self, title: "", message: "No passphrase added.")
+                    
+                    return
+                }
+                
+                guard let encryptedPassphrase = Crypto.encrypt(text.utf8) else {
+                    showAlert(vc: self, title: "Encryption error...", message: "Please let us know about this bug, unable to encrypt your new passphrase")
+                    return
+                }
+                
+                self.updatePassphrase(encryptedPassphrase, text)
+            }
+            
+            alert.addTextField { textField in
+                textField.keyboardAppearance = .dark
+                textField.isSecureTextEntry = true
             }
             
             alert.addAction(edit)
@@ -653,6 +785,9 @@ extension SignerDetailViewController: UITableViewDelegate {
         case .words:
             height = 60
             
+        case .passphrase:
+            height = 60
+            
         case .cosigner:
             height = 80
             
@@ -684,7 +819,7 @@ extension SignerDetailViewController: UITableViewDelegate {
         switch Section(rawValue: section) {
         case .label:
             return 40
-        case .words, .signableWallets:
+        case .words, .signableWallets, .passphrase:
             return 60
         case .cosigner, .singleSig, .casaCosigner:
             return 80
@@ -710,6 +845,13 @@ extension SignerDetailViewController: UITableViewDelegate {
             default:
                 break
             }
+            
+        case 2:
+            setClipBoard(dict["text"] as? String ?? "")
+        
+        case 3:
+            promptToEditPassphrase()
+            
         case 6, 7:
             switch selectedSegment {
             case 0:
