@@ -119,7 +119,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 self.tableDict[1]["censoredText"] = self.tableDict[1]["text"] as? String ?? "no seed words"
                 
             case 1:
-                self.tableDict[1]["censoredSeed"] = self.tableDict[1]["ur"] as? String ?? "no crypto-seed"
+                self.tableDict[1]["censoredUr"] = self.tableDict[1]["ur"] as? String ?? "no crypto-seed"
                 
             default:
                 break
@@ -318,7 +318,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 self.tableDict[1]["text"] = words
                 self.tableDict[1]["ur"] = urSeed
                 self.tableDict[1]["censoredText"] = arr.joined(separator: " ")
-                self.tableDict[1]["censoredSeed"] = displaySeed
+                self.tableDict[1]["censoredUr"] = displaySeed
                 self.setWallets(masterKey)
             } else {
                 self.reloadTable()
@@ -401,53 +401,57 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     
                     self.tableDict[3]["text"] = "**********"
                     
-                    if let encryptedWords = self.signer.words,
-                       let decryptedSigner = Crypto.decrypt(encryptedWords),
-                       let words = decryptedSigner.utf8,
-                       let mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
-                       let xfp = Keys.fingerprint(masterKey: mkMain),
-                       let encryptedXfp = Crypto.encrypt(xfp.utf8),
-                       let mkTest = Keys.masterKey(words: words, coinType: "1", passphrase: passphrase),
-                       let bip84xpub = Keys.bip84AccountXpub(masterKey: mkMain, coinType: "0", account: 0),
-                       let bip84tpub = Keys.bip84AccountXpub(masterKey: mkTest, coinType: "1", account: 0),
-                       let bip48xpub = Keys.xpub(path: "m/48'/0'/0'/2'", masterKey: mkMain),
-                       let bip48tpub = Keys.xpub(path: "m/48'/1'/0'/2'", masterKey: mkTest),
-                       let encryptedbip84xpub = Crypto.encrypt(bip84xpub.utf8),
-                       let encryptedbip84tpub = Crypto.encrypt(bip84tpub.utf8),
-                       let encryptedbip48xpub = Crypto.encrypt(bip48xpub.utf8),
-                       let encryptedbip48tpub = Crypto.encrypt(bip48tpub.utf8) {
-                        
-                        CoreDataService.update(id: self.signer.id, keyToUpdate: "bip84xpub", newValue: encryptedbip84xpub, entity: .signers) { saved in
-                            print("encrypted bip84xpub updated ✓")
-                        }
-                        
-                        CoreDataService.update(id: self.signer.id, keyToUpdate: "bip84tpub", newValue: encryptedbip84tpub, entity: .signers) { saved in
-                            print("encrypted bip84tpub updated ✓")
-                        }
-                        
-                        CoreDataService.update(id: self.signer.id, keyToUpdate: "bip48xpub", newValue: encryptedbip48xpub, entity: .signers) { saved in
-                            print("encrypted bip48xpub updated ✓")
-                        }
-                        
-                        CoreDataService.update(id: self.signer.id, keyToUpdate: "bip48tpub", newValue: encryptedbip48tpub, entity: .signers) { saved in
-                            print("encrypted bip48tpub updated ✓")
-                        }
-                        
-                        CoreDataService.update(id: self.signer.id, keyToUpdate: "xfp", newValue: encryptedXfp, entity: .signers) { saved in
-                            print("encrypted xfp updated ✓")
-                        }
-                        
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
-                            guard let self = self else { return }
-                            
-                            self.getData()
-                            
-                            showAlert(vc: self, title: "Signer updated ✓", message: "")
-                        }
-                    }
+                    self.updateSigner(passphrase)
                 }
             } else {
                 showAlert(vc: self, title: "Error", message: "Label did not update.")
+            }
+        }
+    }
+    
+    private func updateSigner(_ passphrase: String) {
+        if let encryptedWords = self.signer.words,
+           let decryptedSigner = Crypto.decrypt(encryptedWords),
+           let words = decryptedSigner.utf8,
+           let mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
+           let xfp = Keys.fingerprint(masterKey: mkMain),
+           let encryptedXfp = Crypto.encrypt(xfp.utf8),
+           let mkTest = Keys.masterKey(words: words, coinType: "1", passphrase: passphrase),
+           let bip84xpub = Keys.bip84AccountXpub(masterKey: mkMain, coinType: "0", account: 0),
+           let bip84tpub = Keys.bip84AccountXpub(masterKey: mkTest, coinType: "1", account: 0),
+           let bip48xpub = Keys.xpub(path: "m/48'/0'/0'/2'", masterKey: mkMain),
+           let bip48tpub = Keys.xpub(path: "m/48'/1'/0'/2'", masterKey: mkTest),
+           let encryptedbip84xpub = Crypto.encrypt(bip84xpub.utf8),
+           let encryptedbip84tpub = Crypto.encrypt(bip84tpub.utf8),
+           let encryptedbip48xpub = Crypto.encrypt(bip48xpub.utf8),
+           let encryptedbip48tpub = Crypto.encrypt(bip48tpub.utf8) {
+            
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip84xpub", newValue: encryptedbip84xpub, entity: .signers) { saved in
+                print("encrypted bip84xpub updated ✓")
+            }
+            
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip84tpub", newValue: encryptedbip84tpub, entity: .signers) { saved in
+                print("encrypted bip84tpub updated ✓")
+            }
+            
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip48xpub", newValue: encryptedbip48xpub, entity: .signers) { saved in
+                print("encrypted bip48xpub updated ✓")
+            }
+            
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip48tpub", newValue: encryptedbip48tpub, entity: .signers) { saved in
+                print("encrypted bip48tpub updated ✓")
+            }
+            
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "xfp", newValue: encryptedXfp, entity: .signers) { saved in
+                print("encrypted xfp updated ✓")
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                guard let self = self else { return }
+                
+                self.getData()
+                
+                showAlert(vc: self, title: "Signer updated ✓", message: "")
             }
         }
     }
@@ -600,6 +604,108 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         createWalletButton.showsTouchWhenHighlighted = true
         createWalletButton.addTarget(self, action: #selector(createWallet), for: .touchUpInside)
         return createWalletButton
+    }
+    
+    private func deleteButton(_ x: CGFloat) -> UIButton {
+        let deleteButton = UIButton()
+        deleteButton.setImage(.init(systemName: "trash"), for: .normal)
+        deleteButton.imageView?.tintColor = .systemRed
+        deleteButton.frame = CGRect(x: x, y: 5, width: 40, height: 40)
+        deleteButton.showsTouchWhenHighlighted = true
+        return deleteButton
+    }
+    
+    private func deletePassphrase() {
+        CoreDataService.deleteValue(id: signer.id, keyToDelete: "passphrase", entity: .signers) { [weak self] deleted in
+            guard let self = self else { return }
+            
+            guard deleted else {
+                showAlert(vc: self, title: "There was an issue...", message: "Unable to delete your passphrase, please let us know about this bug.")
+                return
+            }
+            
+            self.updateSigner("")
+        }
+    }
+    
+    @objc func promptToDeletePassphrase() {
+        if signer.passphrase != nil {
+            if signer.words != nil {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    let title = "⚠️ Deleting the passphrase has major implications!"
+                    
+                    let message = "This signer will no longer be able to sign transactions that invlove the previous passphrase, this will change the cosigner and descriptor used to create new wallets with this signer. Wallets that are associated with this signer will no longer be associated this signer. If you have exported your cosigner or descriptor to other wallets they will no longer be associated with this signer. If you do not understand what any of this means then just STOP."
+                    
+                    let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+                    
+                    let delete = UIAlertAction(title: "Delete Passphrase", style: .destructive) { [weak self] alertAction in
+                        guard let self = self else { return }
+                        
+                        self.deletePassphrase()
+                    }
+                    
+                    alert.addAction(delete)
+                    
+                    let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+                    alert.addAction(cancel)
+                    
+                    self.present(alert, animated:true, completion: nil)
+                }
+            } else {
+                showAlert(vc: self, title: "No seed words exist.", message: "If the seed words have been deleted then you can not delete the passphrase. Please add a new signer with the seed words first, optionally adding/deleting/editing the passphrase afterwards. It makes more sense to just delete this signer completely.")
+            }
+        } else {
+            showAlert(vc: self, title: "No passphrase exists...", message: "")
+        }
+    }
+    
+    @objc func promptToDeleteSeed() {
+        if signer.words != nil {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    let title = "⚠️ Deleting the seed has major implications!"
+                    
+                    let message = "This signer will no longer be able to sign transactions! All other data will remain intact so that you may easily create watch-only wallets and export the public key based cosigner to other hardware/software wallets."
+                    
+                    let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+                    
+                    let delete = UIAlertAction(title: "Delete Seed", style: .destructive) { [weak self] alertAction in
+                        guard let self = self else { return }
+                        
+                        self.deleteSeed()
+                    }
+                    
+                    alert.addAction(delete)
+                    
+                    let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+                    alert.addAction(cancel)
+                    
+                    self.present(alert, animated:true, completion: nil)
+                }
+        } else {
+            showAlert(vc: self, title: "No seed exists...", message: "")
+        }
+    }
+    
+    private func deleteSeed() {
+        CoreDataService.deleteValue(id: signer.id, keyToDelete: "words", entity: .signers) { [weak self] deleted in
+            guard let self = self else { return }
+            
+            guard deleted else {
+                showAlert(vc: self, title: "There was an issue...", message: "Unable to delete your seed, please let us know about this bug.")
+                return
+            }
+            
+            self.tableDict[1]["ur"] = ""
+            self.tableDict[1]["text"] = ""
+            self.tableDict[1]["censoredText"] = ""
+            self.tableDict[1]["censoredUr"] = ""
+            
+            self.getData()
+        }
     }
     
     private func setClipBoard(_ string: String) {
@@ -900,7 +1006,7 @@ extension SignerDetailViewController: UITableViewDelegate {
             case 0:
                 cell.textLabel?.text = dict["censoredText"] as? String ?? "no seed words"
             case 1:
-                cell.textLabel?.text = dict["censoredSeed"] as? String ?? "no seed words"
+                cell.textLabel?.text = dict["censoredUr"] as? String ?? "no seed words"
             default:
                 break
             }
@@ -962,7 +1068,7 @@ extension SignerDetailViewController: UITableViewDelegate {
                 
         let exportQrButtonGeneric = exportQrButton(header.frame.maxX - 46)
         exportQrButtonGeneric.tag = section
-        
+                
         let segmentedControl = segmentedControll(exportQrButtonGeneric.frame.minX - 108, selectedSegmentIndex)
         segmentedControl.tag = section
         
@@ -973,14 +1079,23 @@ extension SignerDetailViewController: UITableViewDelegate {
                 textLabel.text = headerName(for: section)
                 
             case .words:
+                let deleteButtonSeed = deleteButton(segmentedControl.frame.minX - 46)
+                deleteButtonSeed.addTarget(self, action: #selector(promptToDeleteSeed), for: .touchUpInside)
                 header.addSubview(segmentedControl)
                 header.addSubview(exportQrButtonGeneric)
+                header.addSubview(deleteButtonSeed)
                 
                 if selectedSegmentIndex == 0 {
                     textLabel.text = headerName(for: section)
                 } else {
                     textLabel.text = "Seed"
                 }
+                
+            case .passphrase:
+                let deleteButtonPassphrase = deleteButton(header.frame.maxX - 46)
+                textLabel.text = headerName(for: section)
+                deleteButtonPassphrase.addTarget(self, action: #selector(promptToDeletePassphrase), for: .touchUpInside)
+                header.addSubview(deleteButtonPassphrase)
                 
             case .cosigner:
                 header.addSubview(segmentedControl)

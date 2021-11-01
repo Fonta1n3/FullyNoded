@@ -121,6 +121,37 @@ class CoreDataService {
         }
     }
     
+    class func deleteValue(id: UUID, keyToDelete: String, entity: ENTITY, completion: @escaping ((Bool)) -> Void) {
+        DispatchQueue.main.async {
+            
+            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+                completion(false)
+                return
+            }
+            
+            let context = appDelegate.persistentContainer.viewContext
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entity.rawValue)
+            fetchRequest.returnsObjectsAsFaults = false
+            
+            guard let results = try? context.fetch(fetchRequest) as [NSManagedObject], results.count > 0 else {
+                completion(false)
+                return
+            }
+            
+            for data in results {
+                if id == data.value(forKey: "id") as? UUID {
+                    data.setValue(nil, forKey: keyToDelete)
+                    do {
+                        try context.save()
+                        completion(true)
+                    } catch {
+                        completion(false)
+                    }
+                }
+            }
+        }
+    }
+    
     class func deleteEntity(id: UUID, entityName: ENTITY, completion: @escaping ((Bool)) -> Void) {
         DispatchQueue.main.async {
             
