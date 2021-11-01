@@ -289,6 +289,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     showAlert(vc: self, title: "", message: "Unable to derive your master key.")
                     return
                 }
+                
+                self.masterKey = masterKey
                                             
                 var arr = words.split(separator: " ")
                 
@@ -725,14 +727,48 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.navigationController?.popViewController(animated: true)
             self.tabBarController?.selectedIndex = 1
             NotificationCenter.default.post(name: .importWallet, object: nil, userInfo: accountMap)
         }
     }
     
     @objc func createWallet() {
-        // MARK: If no words then only use saved accounts
+        if signer.words != nil {
+            creatWalletLive()
+        } else {
+            createWalletFromMemory()
+        }
+    }
+    
+    private func createWalletFromMemory() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Create a single sig wallet using this signer?"
+            let message = "You deleted the seed words so we can only automatically create the wallet using the saved BIP84 xpub. To create a multi-sig wallet using this signer navigate to the wallet creator, choose multi-sig > derive cosigner from existing signer."
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let p2wpkh = UIAlertAction(title: "Segwit BIP84", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                if let descriptor = self.tableDict[7]["text"] as? String {
+                    self.importAccountMap(descriptor, self.signer.label + " segwit")
+                } else {
+                    showAlert(vc: self, title: "There was an issue...", message: "Unable to get your bip84 descriptor.")
+                }
+            }
+            
+            alert.addAction(p2wpkh)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            alert.addAction(cancel)
+            
+            self.present(alert, animated:true, completion: nil)
+        }
+    }
+    
+    private func creatWalletLive() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             

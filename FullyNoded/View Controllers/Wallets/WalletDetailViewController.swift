@@ -224,10 +224,12 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     private func parseSigners(_ signers: [[String:Any]]) {
         for (i, signer) in signers.enumerated() {
             let signerStruct = SignerStruct(dictionary: signer)
-            guard let encryptedWords = signerStruct.words,
-                    let decryptedData = Crypto.decrypt(encryptedWords) else { return }
             
-            parseWords(decryptedData, signerStruct)
+            if let encryptedWords = signerStruct.words {
+                guard let decryptedData = Crypto.decrypt(encryptedWords) else { return }
+                
+                parseWords(decryptedData, signerStruct)
+            }
             
             if i + 1 == signers.count {
                 DispatchQueue.main.async { [weak self] in
