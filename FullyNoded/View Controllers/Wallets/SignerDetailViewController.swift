@@ -428,25 +428,11 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
            let encryptedbip48xpub = Crypto.encrypt(bip48xpub.utf8),
            let encryptedbip48tpub = Crypto.encrypt(bip48tpub.utf8) {
             
-            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip84xpub", newValue: encryptedbip84xpub, entity: .signers) { saved in
-                print("encrypted bip84xpub updated ✓")
-            }
-            
-            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip84tpub", newValue: encryptedbip84tpub, entity: .signers) { saved in
-                print("encrypted bip84tpub updated ✓")
-            }
-            
-            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip48xpub", newValue: encryptedbip48xpub, entity: .signers) { saved in
-                print("encrypted bip48xpub updated ✓")
-            }
-            
-            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip48tpub", newValue: encryptedbip48tpub, entity: .signers) { saved in
-                print("encrypted bip48tpub updated ✓")
-            }
-            
-            CoreDataService.update(id: self.signer.id, keyToUpdate: "xfp", newValue: encryptedXfp, entity: .signers) { saved in
-                print("encrypted xfp updated ✓")
-            }
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip84xpub", newValue: encryptedbip84xpub, entity: .signers) { _ in }
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip84tpub", newValue: encryptedbip84tpub, entity: .signers) { _ in }
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip48xpub", newValue: encryptedbip48xpub, entity: .signers) { _ in }
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip48tpub", newValue: encryptedbip48tpub, entity: .signers) { _ in }
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "xfp", newValue: encryptedXfp, entity: .signers) { _ in }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
                 guard let self = self else { return }

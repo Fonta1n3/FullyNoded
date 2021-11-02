@@ -28,7 +28,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 5
+        return 6
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -101,7 +101,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         case 4:
             if ud.object(forKey: "bioMetricsDisabled") != nil {
                 label.text = "Disabled"
-                label.textColor = UIColor.darkGray
+                label.textColor = .darkGray
                 icon.image = UIImage(systemName: "eye.slash")
             } else {
                 label.text = "Enabled"
@@ -111,6 +111,19 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             
             background.backgroundColor = .systemPurple
             
+        case 5:
+            if ud.object(forKey: "passphrasePrompt") != nil {
+                label.text = "On"
+                label.textColor = .lightGray
+                icon.image = UIImage(systemName: "checkmark.circle")
+                background.backgroundColor = .systemGreen
+            } else {
+                label.text = "Off"
+                label.textColor = .darkGray
+                icon.image = UIImage(systemName: "xmark.circle")
+                background.backgroundColor = .systemRed
+            }
+                        
         default:
             break
         }
@@ -143,6 +156,9 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             
         case 4:
             textLabel.text = "Biometrics"
+            
+        case 5:
+            textLabel.text = "Passphrase Prompt"
                         
         default:
             break
@@ -198,6 +214,16 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             }
             DispatchQueue.main.async {
                 tableView.reloadSections([4], with: .fade)
+            }
+            
+        case 5:
+            if ud.object(forKey: "passphrasePrompt") != nil {
+                ud.removeObject(forKey: "passphrasePrompt")
+            } else {
+                ud.set(true, forKey: "passphrasePrompt")
+            }
+            DispatchQueue.main.async {
+                tableView.reloadSections([5], with: .fade)
             }
             
         default:

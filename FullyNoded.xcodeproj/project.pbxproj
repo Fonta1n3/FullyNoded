@@ -153,7 +153,6 @@
 		D09F9E5224B1F8DE006B588C /* AddSignerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */; };
 		D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A2918E225114670099A2F3 /* MakeRPCCall.swift */; };
 		D0A291912251743B0099A2F3 /* settings90.png in Resources */ = {isa = PBXBuildFile; fileRef = D0A291902251743B0099A2F3 /* settings90.png */; };
-		D0A519B9226C212C00860D5C /* SendUTXO.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A519B8226C212C00860D5C /* SendUTXO.swift */; };
 		D0A7CF73227967F900B683A0 /* AddressParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A7CF72227967F900B683A0 /* AddressParser.swift */; };
 		D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */; };
 		D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */; };
@@ -366,7 +365,6 @@
 		D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSignerViewController.swift; sourceTree = "<group>"; };
 		D0A2918E225114670099A2F3 /* MakeRPCCall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeRPCCall.swift; sourceTree = "<group>"; };
 		D0A291902251743B0099A2F3 /* settings90.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = settings90.png; sourceTree = "<group>"; };
-		D0A519B8226C212C00860D5C /* SendUTXO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendUTXO.swift; sourceTree = "<group>"; };
 		D0A7CF72227967F900B683A0 /* AddressParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressParser.swift; sourceTree = "<group>"; };
 		D0AC9D31234D079000290550 /* FullyNoded.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FullyNoded.entitlements; sourceTree = "<group>"; };
 		D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -938,7 +936,6 @@
 			isa = PBXGroup;
 			children = (
 				0A212D9026C75E1B00BF6FD4 /* Join Market */,
-				D0A519B8226C212C00860D5C /* SendUTXO.swift */,
 				D0855FC922B0CEA800DBBFC2 /* CreatePSBT.swift */,
 				D0806B4422EE9FBA002C20A1 /* TXChain.swift */,
 				D09A32FE24A8419C009FA0B2 /* CreateFullyNodedWallet.swift */,
@@ -1281,7 +1278,6 @@
 				0A212D9226CBE17600BF6FD4 /* MixIndexes.swift in Sources */,
 				0A21442C26B4282300123EAC /* PromptForAuthViewController.swift in Sources */,
 				D0F3919624C0379200EA8A2A /* ImportWallet.swift in Sources */,
-				D0A519B9226C212C00860D5C /* SendUTXO.swift in Sources */,
 				D0855FC622B08EE000DBBFC2 /* TorClient.swift in Sources */,
 				D03F65F124EFB25100901D06 /* KeySendViewController.swift in Sources */,
 				0A212DE026DC863D00BF6FD4 /* JMOffer.swift in Sources */,

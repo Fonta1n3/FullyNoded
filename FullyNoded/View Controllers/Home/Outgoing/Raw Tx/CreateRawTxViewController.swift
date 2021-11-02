@@ -354,7 +354,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     override func viewDidAppear(_ animated: Bool) {
         if inputArray.count > 0 {
-            showAlert(vc: self, title: "Coin control ✓", message: "Only the utxo's you have just selected will be used in this transaction. You may sweep the total balance of the selected utxo's by tapping the sweep button or enter a custom amount as normal.")
+            showAlert(vc: self, title: "Coin control ✓", message: "Only the utxo's you have just selected will be used in this transaction. You may send the total balance of the *selected utxo's* by tapping the \"⚠️ send all\" button or enter a custom amount as normal.")
         }
     }
     
@@ -781,27 +781,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     return
                 }
                 
-                Signer.sign(psbt: processedPSBT) { [weak self] (psbt, rawTx, errorMessage) in
-                    guard let self = self else { return }
-                    
-                    self.spinner.removeConnectingView()
-                    
-                    guard let rawTx = rawTx else {
-                        
-                        guard let psbt = psbt else {
-                            showAlert(vc: self, title: "Error creating transaction", message: errorMessage ?? "unknown")
-                            return
-                        }
-                        
-                        self.rawTxUnsigned = psbt
-                        self.showRaw(raw: psbt)
-                        
-                        return
-                    }
-                    
-                    self.rawTxSigned = rawTx
-                    self.showRaw(raw: rawTx)
-                }
+                self.sign(psbt: processedPSBT)
             }
         }
     }
@@ -865,24 +845,28 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                         return
                     }
                     
-                    Signer.sign(psbt: processedPSBT) { [weak self] (psbt, rawTx, errorMessage) in
-                        guard let self = self else { return }
-                        
-                        self.spinner.removeConnectingView()
-                        
-                        if rawTx != nil {
-                            self.rawTxSigned = rawTx!
-                            self.showRaw(raw: rawTx!)
-                            
-                        } else if psbt != nil {
-                            self.rawTxUnsigned = psbt!
-                            self.showRaw(raw: psbt!)
-                            
-                        } else if errorMessage != nil {
-                            showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown signing error")
-                        }
-                    }
+                    self.sign(psbt: processedPSBT)
                 }
+            }
+        }
+    }
+    
+    private func sign(psbt: String) {
+        Signer.sign(psbt: psbt, passphrase: nil) { [weak self] (psbt, rawTx, errorMessage) in
+            guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
+            
+            if rawTx != nil {
+                self.rawTxSigned = rawTx!
+                self.showRaw(raw: rawTx!)
+                
+            } else if psbt != nil {
+                self.rawTxUnsigned = psbt!
+                self.showRaw(raw: psbt!)
+                
+            } else if errorMessage != nil {
+                showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown signing error")
             }
         }
     }

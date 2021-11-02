@@ -42,8 +42,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             self.wallet = wallet
         }
-        
-        print("fxRate: \(fxRate)")
     }
     
     override func viewDidAppear(_ animated: Bool) {
