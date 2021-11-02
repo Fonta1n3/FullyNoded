@@ -89,6 +89,7 @@ class ActiveWalletViewController: UIViewController {
                 
                 if response {
                     self.getFxRate()
+                    self.initialLoad = false
                 } else {
                     showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
                     self.removeSpinner()
@@ -106,12 +107,11 @@ class ActiveWalletViewController: UIViewController {
             initialLoad = false
             getFxRate()
             noPasswordAlert()
-        } else {
+        } else if !initialLoad {
             let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
             authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
             
             if !initialLoad && !authenticated && !isAuthenticating {
-                self.hideData()
                 self.isAuthenticating = true
                 
                 self.authenticateWith2FA { [weak self] response in
@@ -121,10 +121,10 @@ class ActiveWalletViewController: UIViewController {
                     self.isAuthenticating = false
                     
                     if !response {
+                        self.hideData()
                         showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
                     } else {
-                        self.addNavBarSpinner()
-                        self.getFxRate()
+                        self.initialLoad = false
                     }
                 }
             }
@@ -450,6 +450,7 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func loadTable() {
+        print("loadTable")
         if authenticated {
             self.sectionZeroLoaded = false
             existingWallet = ""
@@ -464,7 +465,7 @@ class ActiveWalletViewController: UIViewController {
                     self.loadBalances()
                     return
                 }
-                                
+                
                 self.wallet = wallet
                 self.existingWallet = wallet.name
                 self.walletLabel = wallet.label
@@ -494,7 +495,7 @@ class ActiveWalletViewController: UIViewController {
                     self.loadTable()
                 }
             }
-        }
+        }        
     }
     
     private func finishedLoading() {
@@ -1041,6 +1042,7 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func getFxRate() {
+        print("getFxRate")
         FiatConverter.sharedInstance.getFxRate { [weak self] rate in
             guard let self = self else { return }
             

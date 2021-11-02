@@ -56,6 +56,10 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             ["text": "", "footerText": "Export your segwit multi-sig cosigner to Casa App by selecting the Keystone option when adding a HWW key to Casa App. Also compatible with Gordian Wallet and Gordian Cosigner. Tap to copy the text."]// casa hdkey 8
         ]
         
+        let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+        if chain != "main" {
+            network = 1
+        }
         getData()
     }
     
@@ -730,8 +734,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let title = "Create a single sig wallet using this signer?"
-            let message = "You deleted the seed words so we can only automatically create the wallet using the saved BIP84 xpub. To create a multi-sig wallet using this signer navigate to the wallet creator, choose multi-sig > derive cosigner from existing signer."
+            let title = "Create a single sig wallet with this signer?"
+            let message = "You deleted the seed words so we can only automatically create the wallet using the saved BIP84 xpub. To create a multi-sig wallet with this signer navigate to the wallet creator, choose multi-sig > derive cosigner from existing signer."
             
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             
@@ -760,7 +764,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             
             guard let fingerprint = Keys.fingerprint(masterKey: self.masterKey) else { return }
             
-            let title = "Create a single sig wallet using this signer?"
+            let title = "Create a single sig wallet with this signer?"
             let message = "Choose an address type."
             
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
