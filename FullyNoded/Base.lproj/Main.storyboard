@@ -3119,7 +3119,7 @@ xxxxx</string>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="Skj-se-LO2">
-                        <barButtonItem key="rightBarButtonItem" image="arrow.2.circlepath" catalog="system" id="ovZ-3P-GHi">
+                        <barButtonItem key="rightBarButtonItem" image="arrow.triangle.2.circlepath" catalog="system" id="ovZ-3P-GHi">
                             <color key="tintColor" systemColor="systemTealColor"/>
                             <connections>
                                 <action selector="generateSignerAction:" destination="G0V-te-kek" id="6t0-mx-1Oa"/>
@@ -6978,7 +6978,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                             <rect key="frame" x="0.0" y="0.0" width="343" height="96"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="person.crop.circle.badge.exclam" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="tr7-4F-cQd">
+                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="person.crop.circle.badge.exclamationmark.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="tr7-4F-cQd">
                                                     <rect key="frame" x="14.5" y="11" width="33.5" height="31.5"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="32" id="4JC-Ij-Mut"/>
@@ -7625,10 +7625,10 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="Cd3-qW-ujG"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="BTh-Z9-jlD"/>
+        <segue reference="CQp-9r-70w"/>
         <segue reference="ods-Ql-GAw"/>
         <segue reference="yAt-Ra-aPH"/>
-        <segue reference="AK4-4u-w1q"/>
+        <segue reference="7PS-EL-3d2"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="qmy-fM-U4p"/>
     </inferredMetricsTieBreakers>
@@ -7637,9 +7637,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="Home" width="30" height="30"/>
         <image name="Settings" width="30" height="30"/>
         <image name="antenna.radiowaves.left.and.right" catalog="system" width="128" height="109"/>
-        <image name="arrow.2.circlepath" catalog="system" width="128" height="101"/>
         <image name="arrow.clockwise" catalog="system" width="115" height="128"/>
         <image name="arrow.down.left" catalog="system" width="128" height="112"/>
+        <image name="arrow.triangle.2.circlepath" catalog="system" width="128" height="101"/>
         <image name="arrow.up.right" catalog="system" width="128" height="112"/>
         <image name="arrowtriangle.right.and.line.vertical.and.arrowtriangle.left" catalog="system" width="128" height="89"/>
         <image name="bitcoinsign.circle" catalog="system" width="128" height="121"/>
@@ -7665,7 +7665,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="minus.rectangle" catalog="system" width="128" height="93"/>
         <image name="person.3" catalog="system" width="128" height="62"/>
         <image name="person.circle" catalog="system" width="128" height="121"/>
-        <image name="person.crop.circle.badge.exclam" catalog="system" width="128" height="113"/>
+        <image name="person.crop.circle.badge.exclamationmark.fill" catalog="system" width="128" height="113"/>
         <image name="play.rectangle" catalog="system" width="128" height="93"/>
         <image name="plus" catalog="system" width="128" height="113"/>
         <image name="plus.rectangle" catalog="system" width="128" height="93"/>
