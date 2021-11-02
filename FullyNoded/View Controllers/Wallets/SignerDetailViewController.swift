@@ -43,7 +43,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         tableView.delegate = self
         tableView.dataSource = self
         navigationController?.delegate = self
-        segmentedControl.setEnabled(true, forSegmentAt: network)
         
         tableDict = [
             ["text":"", "footerText": "Tap the label to edit it."],// label 0
@@ -61,6 +60,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         if chain != "main" {
             network = 1
         }
+        segmentedControl.selectedSegmentIndex = network
         getData()
     }
     
