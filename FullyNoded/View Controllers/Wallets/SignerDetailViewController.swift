@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import LocalAuthentication
 
 class SignerDetailViewController: UIViewController, UINavigationControllerDelegate {
     
@@ -113,23 +114,43 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             return
         }
         
-        let selectedSegmentIndex = tableDict[1]["selectedSegmentIndex"] as? Int ?? 0
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            switch selectedSegmentIndex {
-            case 0:
-                self.tableDict[1]["censoredText"] = self.tableDict[1]["text"] as? String ?? "no seed words"
+        let localAuthenticationContext = LAContext()
+        localAuthenticationContext.localizedFallbackTitle = "Use Password"
+        var authError: NSError?
+        let reasonString = "To Unlock"
+
+        if localAuthenticationContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &authError) {
+            localAuthenticationContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reasonString) { [weak self] (success, evaluateError) in
+                guard let self = self else { return }
                 
-            case 1:
-                self.tableDict[1]["censoredUr"] = self.tableDict[1]["ur"] as? String ?? "no crypto-seed"
-                
-            default:
-                break
+                if success {
+                    let selectedSegmentIndex = self.tableDict[1]["selectedSegmentIndex"] as? Int ?? 0
+                    
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        switch selectedSegmentIndex {
+                        case 0:
+                            self.tableDict[1]["censoredText"] = self.tableDict[1]["text"] as? String ?? "no seed words"
+                            
+                        case 1:
+                            self.tableDict[1]["censoredUr"] = self.tableDict[1]["ur"] as? String ?? "no crypto-seed"
+                            
+                        default:
+                            break
+                        }
+                        
+                        self.tableView.reloadSections(IndexSet(arrayLiteral: 1), with: .fade)
+                    }
+                } else {
+                    guard let error = evaluateError else { return }
+                    showAlert(vc: self, title: "Auth failed...", message: error.localizedDescription)
+                }
             }
-            
-            self.tableView.reloadSections(IndexSet(arrayLiteral: 1), with: .fade)
+
+        } else {
+            guard let error = authError else { return }
+            showAlert(vc: self, title: "Auth failed...", message: error.localizedDescription)
         }
     }
     
@@ -951,7 +972,9 @@ extension SignerDetailViewController: UITableViewDelegate {
         switch Section(rawValue: section) {
         case .label:
             return 40
-        case .words, .signableWallets, .passphrase:
+        case .words:
+            return 70
+        case .signableWallets, .passphrase:
             return 60
         case .cosigner, .singleSig, .casaCosigner:
             return 80

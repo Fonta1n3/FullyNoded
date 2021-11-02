@@ -450,7 +450,6 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func loadTable() {
-        print("loadTable")
         if authenticated {
             self.sectionZeroLoaded = false
             existingWallet = ""
@@ -1042,7 +1041,6 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func getFxRate() {
-        print("getFxRate")
         FiatConverter.sharedInstance.getFxRate { [weak self] rate in
             guard let self = self else { return }
             
