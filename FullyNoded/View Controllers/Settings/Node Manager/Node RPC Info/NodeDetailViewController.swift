@@ -57,7 +57,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         if isLightning {
             addressHeaderOutlet.text = "Address: (xxx.onion:8080 or 127.0.0.1:8080)"
         } else {
-            addressHeaderOutlet.text = "Address: (xxx.onion:8332 or xxx.127.0.0.1:8332)"
+            addressHeaderOutlet.text = "Address: (xxx.onion:8332 or 127.0.0.1:8332)"
             
         }
     }
