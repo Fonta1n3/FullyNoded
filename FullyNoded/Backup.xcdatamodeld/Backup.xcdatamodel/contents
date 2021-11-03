@@ -26,6 +26,8 @@
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="label" optional="YES" attributeType="Binary"/>
         <attribute name="passphrase" optional="YES" attributeType="Binary"/>
+        <attribute name="rootTpub" optional="YES" attributeType="Binary"/>
+        <attribute name="rootXpub" optional="YES" attributeType="Binary"/>
         <attribute name="words" optional="YES" attributeType="Binary"/>
         <attribute name="xfp" optional="YES" attributeType="Binary"/>
     </entity>
@@ -54,7 +56,7 @@
     <elements>
         <element name="AuthKeys_" positionX="-54" positionY="-9" width="128" height="74"/>
         <element name="Nodes_" positionX="-36" positionY="36" width="128" height="14"/>
-        <element name="Signers_" positionX="0" positionY="54" width="128" height="179"/>
+        <element name="Signers_" positionX="0" positionY="54" width="128" height="209"/>
         <element name="Wallets_" positionX="-9" positionY="45" width="128" height="14"/>
     </elements>
 </model>

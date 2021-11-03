@@ -147,19 +147,26 @@ class HealthCheckViewController: UIViewController, UITextFieldDelegate {
                     
                     switch key {
                     case "publicKey",
-                         "label",
-                         "name",
-                         "changeDescriptor",
-                         "receiveDescriptor",
-                         "type",
-                         "privateKey",
-                         "cert",
-                         "macaroon",
-                         "onionAddress",
-                         "rpcpassword",
-                         "rpcuser",
-                         "passphrase",
-                         "words":
+                        "label",
+                        "name",
+                        "changeDescriptor",
+                        "receiveDescriptor",
+                        "type",
+                        "privateKey",
+                        "cert",
+                        "macaroon",
+                        "onionAddress",
+                        "rpcpassword",
+                        "rpcuser",
+                        "passphrase",
+                        "words",
+                        "bip84xpub",
+                        "bip84tpub",
+                        "bip48xpub",
+                        "bip48tpub",
+                        "xfp",
+                        "rootTpub",
+                        "rootXpub":
                         
                         if key == "cert" {
                             if let decrypted = Crypto.decryptForBackup(passwordHash, data) {
@@ -170,7 +177,8 @@ class HealthCheckViewController: UIViewController, UITextFieldDelegate {
                             }
                             
                         } else if !(entity == .nodes && key == "label") {
-                            if let decrypted = Crypto.decryptForBackup(passwordHash, data), let string = decrypted.utf8 {
+                            if let decrypted = Crypto.decryptForBackup(passwordHash, data),
+                                let string = decrypted.utf8 {
                                 item["\(key)"] = string
                             } else {
                                 failed = true
@@ -223,7 +231,7 @@ class HealthCheckViewController: UIViewController, UITextFieldDelegate {
                     self.spinner.removeConnectingView()
                     
                     if x + 1 == self.entities.count && !dataExists {
-                        showAlert(vc: self, title: "No exisiting data in iCloud.", message: "If this is the first time you are checking the status of your iCloud backup you may need to wait around 30 seconds and try again, there can be a delay when fetching your backup the first time.")
+                        showAlert(vc: self, title: "No existing data in iCloud.", message: "If this is the first time you are checking the status of your iCloud backup you may need to wait around 30 seconds and try again, there can be a delay when fetching your backup the first time.")
                     }
                 }
             }

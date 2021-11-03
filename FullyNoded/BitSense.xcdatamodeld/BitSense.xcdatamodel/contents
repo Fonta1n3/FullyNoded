@@ -47,6 +47,8 @@
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="label" optional="YES" attributeType="String"/>
         <attribute name="passphrase" optional="YES" attributeType="Binary"/>
+        <attribute name="rootTpub" optional="YES" attributeType="Binary"/>
+        <attribute name="rootXpub" optional="YES" attributeType="Binary"/>
         <attribute name="words" optional="YES" attributeType="Binary"/>
         <attribute name="xfp" optional="YES" attributeType="Binary"/>
     </entity>
@@ -105,7 +107,7 @@
         <element name="NewHDWallets" positionX="-36" positionY="144" width="128" height="118"/>
         <element name="NewNodes" positionX="-54" positionY="135" width="128" height="179"/>
         <element name="Peers" positionX="-36" positionY="234" width="128" height="133"/>
-        <element name="Signers" positionX="-27" positionY="189" width="128" height="179"/>
+        <element name="Signers" positionX="-27" positionY="189" width="128" height="209"/>
         <element name="Transactions" positionX="-36" positionY="279" width="128" height="149"/>
         <element name="Utxos" positionX="-36" positionY="234" width="128" height="238"/>
         <element name="Wallets" positionX="-36" positionY="180" width="128" height="359"/>

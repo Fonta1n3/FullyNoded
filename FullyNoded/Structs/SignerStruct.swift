@@ -20,6 +20,8 @@ public struct SignerStruct: CustomStringConvertible {
     let bip48tpub:Data?
     let bip84tpub:Data?
     let xfp:Data?
+    let rootTpub:Data?
+    let rootXpub:Data?
     
     init(dictionary: [String: Any]) {
         id = dictionary["id"] as! UUID
@@ -32,6 +34,8 @@ public struct SignerStruct: CustomStringConvertible {
         bip48tpub = dictionary["bip48tpub"] as? Data
         bip84tpub = dictionary["bip84tpub"] as? Data
         xfp = dictionary["xfp"] as? Data
+        rootXpub = dictionary["rootXpub"] as? Data
+        rootTpub = dictionary["rootTpub"] as? Data
     }
     
     public var description: String {

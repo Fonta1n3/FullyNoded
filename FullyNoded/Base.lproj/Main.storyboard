@@ -3588,7 +3588,7 @@ xxxxx</string>
                                 </constraints>
                             </imageView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="11" translatesAutoresizingMaskIntoConstraints="NO" id="6zG-h6-wiF">
-                                <rect key="frame" x="16" y="122" width="343" height="99"/>
+                                <rect key="frame" x="16" y="122" width="343" height="207"/>
                                 <subviews>
                                     <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GO8-o8-fXl">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
@@ -3596,39 +3596,66 @@ xxxxx</string>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="DY7-55-MO9"/>
                                         </constraints>
-                                        <state key="normal" title="single sig">
+                                        <state key="normal" title="Single-sig">
                                             <color key="titleColor" systemColor="systemTealColor"/>
                                         </state>
                                         <connections>
                                             <action selector="automaticAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="WJS-8r-ich"/>
                                         </connections>
                                     </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="d1Y-lU-km0">
+                                        <rect key="frame" x="0.0" y="55" width="343" height="43"/>
+                                        <string key="text">Creates a brand new single signature wallet. Your node holds the public keys, Fully Noded holds the private keys encrypted on your device.</string>
+                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                        <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                     <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ewF-ze-dkg">
-                                        <rect key="frame" x="0.0" y="55" width="343" height="44"/>
+                                        <rect key="frame" x="0.0" y="109" width="343" height="44"/>
                                         <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="ozy-XE-8dP"/>
                                         </constraints>
-                                        <state key="normal" title="multi sig">
+                                        <state key="normal" title="Multi-sig">
                                             <color key="titleColor" systemColor="systemTealColor"/>
                                         </state>
                                         <connections>
                                             <action selector="createMultiSigAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="43H-WF-yRT"/>
                                         </connections>
                                     </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ti9-Jn-c8c">
+                                        <rect key="frame" x="0.0" y="164" width="343" height="43"/>
+                                        <string key="text">Allows you to add cosigners by scanning QR's, pasting text from other wallets or by deriving cosigners from existing signers stored on Fully Noded.</string>
+                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                        <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                 </subviews>
                             </stackView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="47C-HD-wcH">
+                                <rect key="frame" x="16" y="364" width="343" height="107"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="107" id="nNQ-1S-X4D"/>
+                                </constraints>
+                                <string key="text">Already have a wallet or cosigner? Use the buttons in the top right to import whatever you've got. From left to right: paste text, upload file and scan QR. Fully Noded does its best to support as many hardware and software wallets as possible.</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="V4I-Q6-GVc"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="OAM-QB-2gl" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="6WN-0B-5us"/>
+                            <constraint firstItem="47C-HD-wcH" firstAttribute="top" secondItem="6zG-h6-wiF" secondAttribute="bottom" constant="35" id="6k8-NV-rw8"/>
                             <constraint firstItem="6zG-h6-wiF" firstAttribute="top" secondItem="ZTq-Qt-Cb4" secondAttribute="bottom" constant="8" id="7E0-mu-WaG"/>
                             <constraint firstItem="6zG-h6-wiF" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="8UM-IY-OU4"/>
+                            <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="47C-HD-wcH" secondAttribute="trailing" constant="16" id="8fD-P5-6B4"/>
                             <constraint firstItem="OAM-QB-2gl" firstAttribute="top" secondItem="V4I-Q6-GVc" secondAttribute="top" constant="10" id="Ge6-2N-SKB"/>
                             <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="ZTq-Qt-Cb4" secondAttribute="trailing" constant="26" id="H04-kj-cXt"/>
                             <constraint firstItem="ZTq-Qt-Cb4" firstAttribute="leading" secondItem="OAM-QB-2gl" secondAttribute="trailing" constant="8" id="Hgg-cg-1rH"/>
                             <constraint firstItem="ZTq-Qt-Cb4" firstAttribute="top" secondItem="V4I-Q6-GVc" secondAttribute="top" constant="10" id="gOC-hw-8vg"/>
+                            <constraint firstItem="47C-HD-wcH" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="kH2-Al-5sW"/>
                             <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="6zG-h6-wiF" secondAttribute="trailing" constant="16" id="pph-He-lUp"/>
                         </constraints>
                     </view>

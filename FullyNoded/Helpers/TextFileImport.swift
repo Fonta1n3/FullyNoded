@@ -9,7 +9,7 @@
 import Foundation
 
 class TextFileImport {
-    class func parse(_ txt: String) -> (accountMap: [String:Any]?, errMessage: String?) {
+    class func parse(_ txt: String) -> (accountMap: [String:Any]?, errMessage: String?) {        
         let myStrings = txt.components(separatedBy: .newlines)
         var name = ""
         var sigsRequired = ""

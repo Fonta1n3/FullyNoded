@@ -336,15 +336,12 @@ public extension Double {
         
         var symbol = "$"
         
-        switch currency {
-        case "USD":
-            symbol = "$"
-        case "GBP":
-            symbol = "£"
-        case "EUR":
-            symbol = "€"
-        default:
-            break
+        for curr in currencies {
+            for (key, value) in curr {
+                if key == currency {
+                    symbol = value
+                }
+            }
         }
         
         var dbl = self
@@ -365,15 +362,12 @@ public extension Double {
         
         var symbol = "$"
         
-        switch currency {
-        case "USD":
-            symbol = "$"
-        case "GBP":
-            symbol = "£"
-        case "EUR":
-            symbol = "€"
-        default:
-            break
+        for curr in currencies {
+            for (key, value) in curr {
+                if key == currency {
+                    symbol = value
+                }
+            }
         }
         
         return "\(symbol)\(self.withCommas) / btc"
@@ -384,15 +378,12 @@ public extension Double {
         
         var symbol = "$"
         
-        switch currency {
-        case "USD":
-            symbol = "$"
-        case "GBP":
-            symbol = "£"
-        case "EUR":
-            symbol = "€"
-        default:
-            break
+        for curr in currencies {
+            for (key, value) in curr {
+                if key == currency {
+                    symbol = value
+                }
+            }
         }
         
         if self < 1.0 {

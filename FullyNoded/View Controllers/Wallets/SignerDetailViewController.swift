@@ -30,7 +30,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         case signableWallets
         case cosigner
         case singleSig
-        case casaCosigner
+        case rootXpub
     }
     
     @IBOutlet weak var tableView: UITableView!
@@ -51,9 +51,9 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             ["text": "", "footerText": "Tap the passphrase to edit it. ⚠️ This has MAJOR implications, for experts only!"],// passphrase 3
             ["text": "", "footerText": ""],// dateAdded 4
             ["text": "", "footerText": "The wallets which this signer can sign for. Tap the + button to create a wallet with this signer."],// wallets 5
-            ["text": "", "ur": "", "selectedSegmentIndex": 1, "footerText": "UR for exporting the segwit mutli-sig cosigner to Blue Wallet, Keystone HWW, Passport HWW, Sparrow and any other wallet which supports UR crypto-account. Tap to copy the text."],// cosigner 6
-            ["text": "", "ur": "", "selectedSegmentIndex": 1, "footerText": "UR for exporting the segwit single-sig watch-only wallet to Blue Wallet, Keystone HWW, Passport HWW, Sparrow and any other wallet which supports UR crypto-account. Tap to copy the text."],// singlesig 7
-            ["text": "", "footerText": "Export your segwit multi-sig cosigner to Casa App by selecting the Keystone option when adding a HWW key to Casa App. Also compatible with Gordian Wallet and Gordian Cosigner. Tap to copy the text."]// casa hdkey 8
+            ["text": "", "ur": "", "selectedSegmentIndex": 1, "footerText": "UR for exporting the segwit mutli-sig cosigner to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text."],// cosigner 6
+            ["text": "", "ur": "", "selectedSegmentIndex": 1, "footerText": "UR for exporting the segwit single-sig watch-only wallet to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text."],// singlesig 7
+            ["text": "", "ur": "", "selectedSegmentIndex": 1, "footerText": "Export your root xpub UR to Casa App by selecting the Keystone option when adding a HWW key to Casa App. Also compatible with Gordian Wallet and Gordian Cosigner. Tap to copy the text."]// casa hdkey 8
         ]
         
         let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
@@ -82,8 +82,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             return "Cosigner - BIP48"
         case .singleSig:
             return "Descriptor - BIP84"
-        case .casaCosigner:
-            return "Casa App Cosigner"
+        case .rootXpub:
+            return "Root xpub"
         }
     }
     
@@ -261,12 +261,18 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     self.tableDict[6]["text"] = cosigner
                     self.tableDict[6]["ur"] = cosignerAccount
                     
-                    guard let casaHdkey = URHelper.descriptorToUrHdkey(Descriptor(cosigner)) else {
-                        showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-hdkey.")
-                        return
+                    if let encryptedRootXpub = signer.rootXpub,
+                       let decryptedRootXpub = Crypto.decrypt(encryptedRootXpub),
+                       let xpub = decryptedRootXpub.utf8 {
+                        
+                        guard let rootHdkey = URHelper.rootXpubToUrHdkey(xpub) else {
+                            showAlert(vc: self, title: "UR error.", message: "Unable to convert your root xpub to crypto-hdkey.")
+                            return
+                        }
+                        
+                        self.tableDict[8]["text"] = xpub
+                        self.tableDict[8]["ur"] = rootHdkey
                     }
-                    
-                    self.tableDict[8]["text"] = casaHdkey
                 }
                 
             } else {
@@ -286,7 +292,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 
                 if let encryptedbip48tpub = signer.bip48tpub,
                     let decryptedbip48tpub = Crypto.decrypt(encryptedbip48tpub),
-                    let tpub = decryptedbip48tpub.utf8 {
+                   let tpub = decryptedbip48tpub.utf8 {
                     let cosigner = "wsh([\(xfp)/48h/1h/0h/2h]\(tpub)/0/*)"
                     
                     guard let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) else {
@@ -297,12 +303,18 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     self.tableDict[6]["text"] = cosigner
                     self.tableDict[6]["ur"] = cosignerAccount
                     
-                    guard let casaHdkey = URHelper.descriptorToUrHdkey(Descriptor(cosigner)) else {
-                        showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-hdkey.")
-                        return
+                    if let encryptedRootTpub = signer.rootTpub,
+                       let decryptedRootTpub = Crypto.decrypt(encryptedRootTpub),
+                       let tpub = decryptedRootTpub.utf8 {
+                        
+                        guard let rootHdkey = URHelper.rootXpubToUrHdkey(tpub) else {
+                            showAlert(vc: self, title: "UR error.", message: "Unable to convert your root tpub to crypto-hdkey.")
+                            return
+                        }
+                        
+                        self.tableDict[8]["text"] = tpub
+                        self.tableDict[8]["ur"] = rootHdkey
                     }
-                    
-                    self.tableDict[8]["text"] = casaHdkey
                 }
             }
             
@@ -448,6 +460,10 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
            let bip84tpub = Keys.bip84AccountXpub(masterKey: mkTest, coinType: "1", account: 0),
            let bip48xpub = Keys.xpub(path: "m/48'/0'/0'/2'", masterKey: mkMain),
            let bip48tpub = Keys.xpub(path: "m/48'/1'/0'/2'", masterKey: mkTest),
+           let rootTpub = Keys.xpub(path: "m", masterKey: mkTest),
+           let rootXpub = Keys.xpub(path: "m", masterKey: mkMain),
+           let encryptedRootTpub = Crypto.encrypt(rootTpub.utf8),
+           let encryptedRootXpub = Crypto.encrypt(rootXpub.utf8),
            let encryptedbip84xpub = Crypto.encrypt(bip84xpub.utf8),
            let encryptedbip84tpub = Crypto.encrypt(bip84tpub.utf8),
            let encryptedbip48xpub = Crypto.encrypt(bip48xpub.utf8),
@@ -458,6 +474,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             CoreDataService.update(id: self.signer.id, keyToUpdate: "bip48xpub", newValue: encryptedbip48xpub, entity: .signers) { _ in }
             CoreDataService.update(id: self.signer.id, keyToUpdate: "bip48tpub", newValue: encryptedbip48tpub, entity: .signers) { _ in }
             CoreDataService.update(id: self.signer.id, keyToUpdate: "xfp", newValue: encryptedXfp, entity: .signers) { _ in }
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "rootTpub", newValue: encryptedRootTpub, entity: .signers) { _ in }
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "rootXpub", newValue: encryptedRootXpub, entity: .signers) { _ in }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
                 guard let self = self else { return }
@@ -875,12 +893,12 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             switch selectedSegment {
             case 0:
                 stringToExport = dict["text"] as? String ?? ""
-                headerText = "Descriptor BIP84"
+                headerText = "BIP84 Account"
                 descriptionText = "This can be shared with other wallets to create watch-only segwit single-sig wallets."
                 
             case 1:
                 stringToExport = dict["ur"] as? String ?? ""
-                headerText = "Descriptor BIP84"
+                headerText = "BIP84 Account"
                 descriptionText = "This can be shared with other wallets like Blue Wallet, Passport, Sparrow, Keystone to create watch-only segwit single-sig wallets."
                 
             default:
@@ -890,9 +908,21 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             segueToQr()
             
         case 8:
-            stringToExport = dict["text"] as? String ?? ""
-            headerText = "Casa App Cosigner"
-            descriptionText = "You can scan this with your Casa App to add a multi-sig cosigner from Fully Noded.\n\n⚠️ Currently Casa App does not display Fully Noded as an option, select Keystone instead."
+            switch selectedSegment {
+            case 0:
+                stringToExport = dict["text"] as? String ?? ""
+                headerText = "Root xpub"
+                descriptionText = "This can be used with other wallets to create *non hardened* accounts."
+                
+            case 1:
+                stringToExport = dict["ur"] as? String ?? ""
+                headerText = "Root xpub hdkey"
+                descriptionText = "You can scan this with your Casa App to add a multi-sig cosigner from Fully Noded.\n\n⚠️ Currently Casa App does not display Fully Noded as an option, select Keystone instead."
+                
+            default:
+                break
+            }
+            
             segueToQr()
             
         default:
@@ -947,7 +977,7 @@ extension SignerDetailViewController: UITableViewDelegate {
         case .singleSig:
             height = 80
             
-        case .casaCosigner:
+        case .rootXpub:
             height = 80
             
         case .signableWallets:
@@ -976,7 +1006,7 @@ extension SignerDetailViewController: UITableViewDelegate {
             return 70
         case .signableWallets, .passphrase:
             return 60
-        case .cosigner, .singleSig, .casaCosigner:
+        case .cosigner, .singleSig, .rootXpub:
             return 80
         default:
             return 0
@@ -1092,8 +1122,15 @@ extension SignerDetailViewController: UITableViewDelegate {
                 break
             }
             
-        case .casaCosigner:
-            cell.textLabel?.text = dict["text"] as? String ?? "no hdkey"
+        case .rootXpub:
+            switch selectedSegment {
+            case 0:
+                cell.textLabel?.text = dict["text"] as? String ?? "no root xpub"
+            case 1:
+                cell.textLabel?.text = dict["ur"] as? String ?? "no root xpub hdkey"
+            default:
+                break
+            }
             
         case .none:
             break
@@ -1156,7 +1193,8 @@ extension SignerDetailViewController: UITableViewDelegate {
                 header.addSubview(exportQrButtonGeneric)
                 textLabel.text = headerName(for: section)
                 
-            case .casaCosigner:
+            case .rootXpub:
+                header.addSubview(segmentedControl)
                 header.addSubview(exportQrButtonGeneric)
                 textLabel.text = headerName(for: section)
                 

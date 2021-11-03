@@ -586,16 +586,25 @@ class URHelper {
         return "wsh([\(origin)]\(extKey)/0/*)"
     }
     
-    static func descriptorToHdKeyCbor(_ descriptor: Descriptor) -> CBOR? {
-        let key = descriptor.accountXpub
-        
-        /// Decodes our original extended key to base58 data.
+    static func extractXpub(_ key: String) -> (chaincode: Data?, keyData: Data?, parentFingerprint: Data?, depth: Data?) {
         let b58 = Base58.decode(key)
         let b58Data = Data(b58)
         let depth = b58Data.subdata(in: Range(4...4))
         let parentFingerprint = b58Data.subdata(in: Range(5...8))
         let chaincode = b58Data.subdata(in: Range(13...44))
         let keydata = b58Data.subdata(in: Range(45...77))
+        return (chaincode, keydata, parentFingerprint, depth)
+    }
+    
+    static func descriptorToHdKeyCbor(_ descriptor: Descriptor) -> CBOR? {
+        let key = descriptor.accountXpub
+        
+        /// Decodes our original extended key to base58 data.
+        let (chaincode, keyData, parentFingerprint, depth) = extractXpub(key)
+        
+        guard let chaincode = chaincode, let keyData = keyData, let parentFingerprint = parentFingerprint, let depth = depth else {
+            return nil
+        }
         
         var cointype:UInt64 = 1
         if descriptor.chain == "main" {
@@ -617,7 +626,7 @@ class URHelper {
         var hdkeyArray:[OrderedMapEntry] = []
         hdkeyArray.append(.init(key: 1, value: .boolean(false)))
         hdkeyArray.append(.init(key: 2, value: .boolean(false)))
-        hdkeyArray.append(.init(key: 3, value: .byteString([UInt8](keydata))))
+        hdkeyArray.append(.init(key: 3, value: .byteString([UInt8](keyData))))
         hdkeyArray.append(.init(key: 4, value: .byteString([UInt8](chaincode))))
         hdkeyArray.append(.init(key: 5, value: .tagged(CBOR.Tag(rawValue: 305), useInfoWrapper)))
         hdkeyArray.append(.init(key: 6, value: .tagged(CBOR.Tag(rawValue: 304), originsWrapper)))
@@ -640,6 +649,11 @@ class URHelper {
               }
         
         return UREncoder.encode(rawUr)
+    }
+    
+    static func rootXpubToUrHdkey(_ xpub: String) -> String? {
+        let descriptor = "wsh([00000000]\(xpub))"
+        return descriptorToUrHdkey(Descriptor(descriptor))
     }
     
     static func descriptorToUrOutput(_ descriptor: Descriptor) -> String? {
