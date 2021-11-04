@@ -730,7 +730,7 @@ class URHelper {
     
     static func cosignerOutputCbor(_ descriptor: Descriptor) -> CBOR? {
         switch descriptor {
-        case _ where descriptor.format == "P2WPKH":
+        case _ where descriptor.format == "P2WPKH" || descriptor.format == "Combo":
             let wpkhTag:CBOR.Tag = .init(rawValue: 404)
             guard let hdkeyCbor = taggedHdKeyCbor(descriptor) else { return nil }
             

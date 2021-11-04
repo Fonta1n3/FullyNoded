@@ -3605,7 +3605,7 @@ xxxxx</string>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="d1Y-lU-km0">
                                         <rect key="frame" x="0.0" y="55" width="343" height="43"/>
-                                        <string key="text">Creates a brand new single signature wallet. Your node holds the public keys, Fully Noded holds the private keys encrypted on your device.</string>
+                                        <string key="text">Creates a new single signature wallet. Your node holds the public keys, Fully Noded holds the private keys encrypted on your device.</string>
                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
@@ -3625,7 +3625,7 @@ xxxxx</string>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ti9-Jn-c8c">
                                         <rect key="frame" x="0.0" y="164" width="343" height="43"/>
-                                        <string key="text">Allows you to add cosigners by scanning QR's, pasting text from other wallets or by deriving cosigners from existing signers stored on Fully Noded.</string>
+                                        <string key="text">Add cosigners by scanning QR's, pasting text from other wallets or by deriving cosigners from existing signers stored on Fully Noded.</string>
                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                         <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
@@ -3633,11 +3633,13 @@ xxxxx</string>
                                 </subviews>
                             </stackView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="47C-HD-wcH">
-                                <rect key="frame" x="16" y="364" width="343" height="107"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="107" id="nNQ-1S-X4D"/>
-                                </constraints>
-                                <string key="text">Already have a wallet or cosigner? Use the buttons in the top right to import whatever you've got. From left to right: paste text, upload file and scan QR. Fully Noded does its best to support as many hardware and software wallets as possible.</string>
+                                <rect key="frame" x="16" y="364" width="343" height="167.5"/>
+                                <string key="text">Already have a wallet or cosigner? 
+
+Use the buttons in the top right to import whatever you've got.  
+From left to right: paste text, upload file and scan QR. 
+
+Fully Noded does its best to support as many hardware and software wallet options as possible.</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -4817,7 +4819,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
             </objects>
             <point key="canvasLocation" x="2718" y="376"/>
         </scene>
-        <!--v0.2.28-->
+        <!--v0.2.29-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -5058,7 +5060,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.2.28" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.2.29" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -5437,7 +5439,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                 </connections>
                             </tableView>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="encryption password" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="qNH-Vh-gso">
-                                <rect key="frame" x="16" y="201" width="282" height="34"/>
+                                <rect key="frame" x="16" y="201" width="273" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" secureTextEntry="YES" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
@@ -5452,9 +5454,9 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zK6-rs-BSE">
-                                <rect key="frame" x="306" y="201" width="53" height="34"/>
+                                <rect key="frame" x="297" y="201" width="62" height="34"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="53" id="NIc-rq-uw3"/>
+                                    <constraint firstAttribute="width" constant="62" id="NIc-rq-uw3"/>
                                     <constraint firstAttribute="height" constant="34" id="Xco-Lb-usr"/>
                                 </constraints>
                                 <state key="normal" title="decrypt">
@@ -7652,7 +7654,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="Cd3-qW-ujG"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="CQp-9r-70w"/>
+        <segue reference="1fQ-PG-chF"/>
         <segue reference="ods-Ql-GAw"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="7PS-EL-3d2"/>

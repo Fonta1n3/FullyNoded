@@ -19,9 +19,7 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     private var isAuthenticating = false
     
     override func viewDidLoad() {
-        super.viewDidLoad()
-
-       
+        super.viewDidLoad()       
     }
     
     override func viewDidAppear(_ animated: Bool) {
