@@ -176,47 +176,51 @@ enum Keys {
     }
     
     static func addressSignable(_ address: String, _ path: BIP32Path, completion: @escaping ((signable: Bool, signer: String?)) -> Void) {
+        print("addressSignable: \(address)")
         CoreDataService.retrieveEntity(entityName: .signers) { signers in
             guard let signers = signers, signers.count > 0 else { completion((false, nil)); return }
             
             for (i, signer) in signers.enumerated() {
                 let signerStruct = SignerStruct(dictionary: signer)
                 
-                guard let encryptedWords = signerStruct.words,
-                        let decryptedWords = Crypto.decrypt(encryptedWords),
-                        let words = decryptedWords.utf8 else { return }
-                
-                var passphrase = ""
-                
-                if let encryptedPassphrase = signerStruct.passphrase {
-                    guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase), let pp = decryptedPassphrase.utf8 else { return }
+                if let encryptedWords = signerStruct.words,
+                   let decryptedWords = Crypto.decrypt(encryptedWords),
+                   let words = decryptedWords.utf8 {
                     
-                    passphrase = pp
-                }
-                
-                guard let a = try? Address(string: address) else { return }
-                
-                var cointype = "0"
-                
-                if a.network == .testnet {
-                    cointype = "1"
-                }
-                
-                guard let mk = masterKey(words: words, coinType: cointype, passphrase: passphrase),
-                      let hdKey = try? HDKey(base58: mk),
-                      let childKey = try? hdKey.derive(using: path) else { return }
-                
-                let segwit = childKey.address(type: .payToWitnessPubKeyHash).description
-                let wrappedSegwit = childKey.address(type: .payToScriptHashPayToWitnessPubKeyHash).description
-                let legacy = childKey.address(type: .payToPubKeyHash).description
-                
-                if address == segwit || address == wrappedSegwit || address == legacy {
-                    completion((true, signerStruct.label))
-                    break
-                } else {
-                    if i + 1 == signers.count {
-                        completion((false, nil))
+                    var passphrase = ""
+                    
+                    if let encryptedPassphrase = signerStruct.passphrase {
+                        guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase), let pp = decryptedPassphrase.utf8 else { return }
+                        
+                        passphrase = pp
                     }
+                    
+                    guard let a = try? Address(string: address) else { return }
+                    
+                    var cointype = "0"
+                    
+                    if a.network == .testnet {
+                        cointype = "1"
+                    }
+                    
+                    guard let mk = masterKey(words: words, coinType: cointype, passphrase: passphrase),
+                          let hdKey = try? HDKey(base58: mk),
+                          let childKey = try? hdKey.derive(using: path) else { return }
+                    
+                    let segwit = childKey.address(type: .payToWitnessPubKeyHash).description
+                    let wrappedSegwit = childKey.address(type: .payToScriptHashPayToWitnessPubKeyHash).description
+                    let legacy = childKey.address(type: .payToPubKeyHash).description
+                    
+                    if address == segwit || address == wrappedSegwit || address == legacy {
+                        completion((true, signerStruct.label))
+                        break
+                    } else {
+                        if i + 1 == signers.count {
+                            completion((false, nil))
+                        }
+                    }
+                } else if i + 1 == signers.count {
+                    completion((false, nil))
                 }
             }
         }
@@ -273,6 +277,7 @@ enum Keys {
     }
         
     static func verifyAddress(_ address: String, _ path: String, _ descriptor: String, completion: @escaping ((isOurs: Bool, wallet: String?, signable: Bool, signer: String?)) -> Void) {
+        print("verifyAddress")
         CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
             guard let wallets = wallets, wallets.count > 0 else {
                 // need to check if signers can sign here
@@ -292,10 +297,12 @@ enum Keys {
                 let providedDescStr = Descriptor(descriptor)
                 
                 if let type = addressType(descStr) {
+                    print("path: \(path)")
                     if !providedDescStr.isMulti && path != "no key path" {
                         guard let fullPath = try? BIP32Path(string: path) else { completion((isOurs, walletLabel, signable, signer)); return }
                         
                         addressSignable(address, fullPath) { (isSignable, signerLabel) in
+                            print("getting here")
                             if isSignable {
                                 signable = true
                             }
