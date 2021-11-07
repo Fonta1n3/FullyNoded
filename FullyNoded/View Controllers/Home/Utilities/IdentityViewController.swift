@@ -199,7 +199,6 @@ class IdentityViewController: UIViewController, UITextViewDelegate {
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
-        
         hideKeyboards()
         
     }

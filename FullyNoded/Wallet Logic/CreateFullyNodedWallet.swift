@@ -176,7 +176,6 @@ enum Keys {
     }
     
     static func addressSignable(_ address: String, _ path: BIP32Path, completion: @escaping ((signable: Bool, signer: String?)) -> Void) {
-        print("addressSignable: \(address)")
         CoreDataService.retrieveEntity(entityName: .signers) { signers in
             guard let signers = signers, signers.count > 0 else { completion((false, nil)); return }
             
@@ -236,41 +235,41 @@ enum Keys {
             for (i, signer) in signers.enumerated() {
                 let signerStruct = SignerStruct(dictionary: signer)
                 
-                guard let encryptedWords = signerStruct.words,
-                      let decryptedWords = Crypto.decrypt(encryptedWords),
-                      let words = decryptedWords.utf8 else {
-                          completion((false, nil))
-                          return
-                      }
-                
-                var passphrase = ""
-                
-                if let encryptedPassphrase = signerStruct.passphrase {
-                    guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
-                            let pp = decryptedPassphrase.utf8 else {
-                                completion((false, nil))
-                                return
-                            }
+                if let encryptedWords = signerStruct.words,
+                   let decryptedWords = Crypto.decrypt(encryptedWords),
+                   let words = decryptedWords.utf8 {
                     
-                    passphrase = pp
-                }
-                
-                guard let mkM = masterKey(words: words, coinType: "0", passphrase: passphrase),
-                      let hdKeyM = try? HDKey(base58: mkM),
-                      let childKeyM = try? hdKeyM.derive(using: path),
-                      let mkT = masterKey(words: words, coinType: "1", passphrase: passphrase),
-                      let hdKeyT = try? HDKey(base58: mkT),
-                      let childKeyT = try? hdKeyT.derive(using: path) else { completion((false, nil)); return }
-                
-                for (p, pk) in pubkeys.enumerated() {
-                    if childKeyM.pubKey == pk || childKeyT.pubKey == pk {
-                        canSign = true
-                        signerLabel = signerStruct.label
+                    var passphrase = ""
+                    
+                    if let encryptedPassphrase = signerStruct.passphrase {
+                        guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
+                                let pp = decryptedPassphrase.utf8 else {
+                                    completion((false, nil))
+                                    return
+                                }
+                        
+                        passphrase = pp
                     }
                     
-                    if i + 1 == signers.count && p + 1 == pubkeys.count {
-                        completion((canSign, signerLabel))
+                    guard let mkM = masterKey(words: words, coinType: "0", passphrase: passphrase),
+                          let hdKeyM = try? HDKey(base58: mkM),
+                          let childKeyM = try? hdKeyM.derive(using: path),
+                          let mkT = masterKey(words: words, coinType: "1", passphrase: passphrase),
+                          let hdKeyT = try? HDKey(base58: mkT),
+                          let childKeyT = try? hdKeyT.derive(using: path) else { completion((false, nil)); return }
+                    
+                    for (p, pk) in pubkeys.enumerated() {
+                        if childKeyM.pubKey == pk || childKeyT.pubKey == pk {
+                            canSign = true
+                            signerLabel = signerStruct.label
+                        }
+                        
+                        if i + 1 == signers.count && p + 1 == pubkeys.count {
+                            completion((canSign, signerLabel))
+                        }
                     }
+                } else if i + 1 == signers.count {
+                    completion((canSign, signerLabel))
                 }
             }
         }
@@ -297,12 +296,10 @@ enum Keys {
                 let providedDescStr = Descriptor(descriptor)
                 
                 if let type = addressType(descStr) {
-                    print("path: \(path)")
                     if !providedDescStr.isMulti && path != "no key path" {
                         guard let fullPath = try? BIP32Path(string: path) else { completion((isOurs, walletLabel, signable, signer)); return }
                         
                         addressSignable(address, fullPath) { (isSignable, signerLabel) in
-                            print("getting here")
                             if isSignable {
                                 signable = true
                             }
