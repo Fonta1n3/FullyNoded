@@ -18,10 +18,11 @@ Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own 
 ## Reproducible builds
 * Go to [releases](https://github.com/Fonta1n3/FullyNoded/releases)
 * Download the `SHA256SUMS` file and open it with a text editor
-* The `dmg`, `ipa`, `source zip` and `source tar` files are all reproducible
-* In a terminal run `shasum -a 256 FullyNoded-0.2.25.tar` (or whichever file you would like) the output should match what you see in the `SHA256SUMS` text file for the respective file
+* `FullyNoded.app.zip` and `source.zip` are reproducible
+* In a terminal run `shasum -a 256 FullyNoded.app.zip` (or whichever file you would like) the output should match what you see in the `SHA256SUMS` text file for the respective file
 * All files are signed with my pgp key `1C72 2776 3647 A221 6E02 E539 025E 9AD2 D3AC 0FCA` fontainedenton@googlemail.com
-* To run the app you can double click the `dmg` or `ipa` files (Xcode not required), to run via source code just unpack/unzip the file, double click the folder, and double click FullyNoded.xcodeproj
+* To run the app you can double click the `FullyNoded.app.zip` file (Xcode not required)
+* to run via source code just unzip `source.zip`, double click the folder, and double click `FullyNoded.xcodeproj` which will launch the source code via Xcode
 
 ## Getting started
 
