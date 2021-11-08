@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A00D6A4271BE51600ECAB22 /* TextFileImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A00D6A3271BE51600ECAB22 /* TextFileImport.swift */; };
+		0A00D6A6271E53DA00ECAB22 /* HealthCheckViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A00D6A5271E53DA00ECAB22 /* HealthCheckViewController.swift */; };
 		0A1F10CF26A1A47F00BE2707 /* DerivationPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10CE26A1A47F00BE2707 /* DerivationPath.swift */; };
 		0A1F10D226A1A4EE00BE2707 /* DerivationStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10D126A1A4EE00BE2707 /* DerivationStep.swift */; };
 		0A1F10D526A1A52600BE2707 /* ChildIndexSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10D426A1A52600BE2707 /* ChildIndexSpec.swift */; };
@@ -34,6 +36,7 @@
 		0A212DDE26D5DA9100BF6FD4 /* JoinMarketPit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212DDD26D5DA9100BF6FD4 /* JoinMarketPit.swift */; };
 		0A212DE026DC863D00BF6FD4 /* JMOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212DDF26DC863D00BF6FD4 /* JMOffer.swift */; };
 		0A21442C26B4282300123EAC /* PromptForAuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */; };
+		0A2B4D702716ABCB00B607EE /* SparrowWalletImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2B4D6F2716ABCB00B607EE /* SparrowWalletImport.swift */; };
 		0A3013D8266B361E004DA35C /* LndRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3013D7266B361E004DA35C /* LndRpc.swift */; };
 		0A337D012700316E00AD087F /* WalletDir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A337D002700316E00AD087F /* WalletDir.swift */; };
 		0A39459826E5951100CAF05F /* Taker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A39459726E5951100CAF05F /* Taker.swift */; };
@@ -151,7 +154,6 @@
 		D09F9E5224B1F8DE006B588C /* AddSignerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */; };
 		D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A2918E225114670099A2F3 /* MakeRPCCall.swift */; };
 		D0A291912251743B0099A2F3 /* settings90.png in Resources */ = {isa = PBXBuildFile; fileRef = D0A291902251743B0099A2F3 /* settings90.png */; };
-		D0A519B9226C212C00860D5C /* SendUTXO.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A519B8226C212C00860D5C /* SendUTXO.swift */; };
 		D0A7CF73227967F900B683A0 /* AddressParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A7CF72227967F900B683A0 /* AddressParser.swift */; };
 		D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */; };
 		D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */; };
@@ -215,6 +217,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0A00D6A3271BE51600ECAB22 /* TextFileImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFileImport.swift; sourceTree = "<group>"; };
+		0A00D6A5271E53DA00ECAB22 /* HealthCheckViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthCheckViewController.swift; sourceTree = "<group>"; };
 		0A1F10CE26A1A47F00BE2707 /* DerivationPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationPath.swift; sourceTree = "<group>"; };
 		0A1F10D126A1A4EE00BE2707 /* DerivationStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationStep.swift; sourceTree = "<group>"; };
 		0A1F10D426A1A52600BE2707 /* ChildIndexSpec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildIndexSpec.swift; sourceTree = "<group>"; };
@@ -242,6 +246,7 @@
 		0A212DDD26D5DA9100BF6FD4 /* JoinMarketPit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinMarketPit.swift; sourceTree = "<group>"; };
 		0A212DDF26DC863D00BF6FD4 /* JMOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMOffer.swift; sourceTree = "<group>"; };
 		0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptForAuthViewController.swift; sourceTree = "<group>"; };
+		0A2B4D6F2716ABCB00B607EE /* SparrowWalletImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparrowWalletImport.swift; sourceTree = "<group>"; };
 		0A3013D7266B361E004DA35C /* LndRpc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LndRpc.swift; sourceTree = "<group>"; };
 		0A337D002700316E00AD087F /* WalletDir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDir.swift; sourceTree = "<group>"; };
 		0A39459726E5951100CAF05F /* Taker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Taker.swift; sourceTree = "<group>"; };
@@ -362,7 +367,6 @@
 		D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSignerViewController.swift; sourceTree = "<group>"; };
 		D0A2918E225114670099A2F3 /* MakeRPCCall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeRPCCall.swift; sourceTree = "<group>"; };
 		D0A291902251743B0099A2F3 /* settings90.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = settings90.png; sourceTree = "<group>"; };
-		D0A519B8226C212C00860D5C /* SendUTXO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendUTXO.swift; sourceTree = "<group>"; };
 		D0A7CF72227967F900B683A0 /* AddressParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressParser.swift; sourceTree = "<group>"; };
 		D0AC9D31234D079000290550 /* FullyNoded.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FullyNoded.entitlements; sourceTree = "<group>"; };
 		D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -513,6 +517,7 @@
 				D0EF29C0216B82B400EB776A /* SettingsViewController.swift */,
 				D039D3CB2333250900D1ED18 /* Wallet Manager */,
 				D00F85192494966D008D7CD3 /* Security Center */,
+				0A00D6A5271E53DA00ECAB22 /* HealthCheckViewController.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -674,6 +679,7 @@
 				0A9834C326BBCCB300BAB74E /* Backup.swift */,
 				0A212D8A26C66A9600BF6FD4 /* OnchainUtils.swift */,
 				0A212D9426CCD63A00BF6FD4 /* IRC */,
+				0A00D6A3271BE51600ECAB22 /* TextFileImport.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -748,6 +754,7 @@
 				0A212D9126CBE17600BF6FD4 /* MixIndexes.swift */,
 				0A212DDF26DC863D00BF6FD4 /* JMOffer.swift */,
 				0A337D002700316E00AD087F /* WalletDir.swift */,
+				0A2B4D6F2716ABCB00B607EE /* SparrowWalletImport.swift */,
 			);
 			path = Structs;
 			sourceTree = "<group>";
@@ -933,7 +940,6 @@
 			isa = PBXGroup;
 			children = (
 				0A212D9026C75E1B00BF6FD4 /* Join Market */,
-				D0A519B8226C212C00860D5C /* SendUTXO.swift */,
 				D0855FC922B0CEA800DBBFC2 /* CreatePSBT.swift */,
 				D0806B4422EE9FBA002C20A1 /* TXChain.swift */,
 				D09A32FE24A8419C009FA0B2 /* CreateFullyNodedWallet.swift */,
@@ -1250,6 +1256,7 @@
 				0A212D9826CCD67C00BF6FD4 /* IRCServerInputParser.swift in Sources */,
 				D0D71DA32351F835005CCDB9 /* UtilitieMenuViewController.swift in Sources */,
 				D03968B1246F6CBA0010D821 /* Crypto.swift in Sources */,
+				0A2B4D702716ABCB00B607EE /* SparrowWalletImport.swift in Sources */,
 				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
 				D02958D3234F82E000ED8F72 /* IdentityViewController.swift in Sources */,
 				0A1F10DB26A1A58100BE2707 /* GeneralError.swift in Sources */,
@@ -1271,12 +1278,12 @@
 				0A1F110C26A278C100BE2707 /* ModelObject.swift in Sources */,
 				D0CC0E2224F0FA98001BF905 /* PeerDetailsViewController.swift in Sources */,
 				D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */,
+				0A00D6A4271BE51600ECAB22 /* TextFileImport.swift in Sources */,
 				D0384E2F246AC4B1002FEE94 /* XpubConverter.swift in Sources */,
 				D08A92B5233C979600409D6E /* FiatConverter.swift in Sources */,
 				0A212D9226CBE17600BF6FD4 /* MixIndexes.swift in Sources */,
 				0A21442C26B4282300123EAC /* PromptForAuthViewController.swift in Sources */,
 				D0F3919624C0379200EA8A2A /* ImportWallet.swift in Sources */,
-				D0A519B9226C212C00860D5C /* SendUTXO.swift in Sources */,
 				D0855FC622B08EE000DBBFC2 /* TorClient.swift in Sources */,
 				D03F65F124EFB25100901D06 /* KeySendViewController.swift in Sources */,
 				0A212DE026DC863D00BF6FD4 /* JMOffer.swift in Sources */,
@@ -1287,6 +1294,7 @@
 				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,
 				D00B27BC255A27F300269B51 /* WalletURL.swift in Sources */,
 				D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */,
+				0A00D6A6271E53DA00ECAB22 /* HealthCheckViewController.swift in Sources */,
 				D07E0DE622F9168F00A81FA8 /* WalletManagerViewController.swift in Sources */,
 				0A337D012700316E00AD087F /* WalletDir.swift in Sources */,
 				D0384E34246AC53B002FEE94 /* base58.c in Sources */,
@@ -1504,7 +1512,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 335;
+				CURRENT_PROJECT_VERSION = 340;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1518,7 +1526,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.415;
+				MARKETING_VERSION = 1.420;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1543,7 +1551,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 335;
+				CURRENT_PROJECT_VERSION = 340;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1559,7 +1567,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.415;
+				MARKETING_VERSION = 1.420;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";

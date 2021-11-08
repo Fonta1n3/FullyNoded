@@ -23,7 +23,6 @@ enum Crypto {
     }
     
     static func privateKey() -> Data {
-        
         return P256.Signing.PrivateKey().rawRepresentation
     }
     
@@ -89,7 +88,7 @@ enum Crypto {
         // Goal is to replace this with a get request to my own server behind an authenticated v3 onion
         guard KeyChain.getData("blindingKey") == nil else { return true }
         
-        guard let pk = Data(base64Encoded: "") else { return false }
+        guard let pk = Data(base64Encoded: currentDate()) else { return false }
 
         return KeyChain.set(pk, forKey: "blindingKey")
     }
@@ -117,18 +116,4 @@ enum Crypto {
 
         return Crypto.sha256hash(Crypto.sha256hash(Crypto.sha256hash(Data(bytes))))
     }
-    
-    static func generateRandomBytes(_ bytes: Int) -> Data? {
-        var keyData = Data(count: bytes)
-        let result = keyData.withUnsafeMutableBytes {
-            SecRandomCopyBytes(kSecRandomDefault, bytes, $0.baseAddress!)
-        }
-        if result == errSecSuccess {
-            return keyData
-        } else {
-            print("Problem generating random bytes")
-            return nil
-        }
-    }
-    
 }

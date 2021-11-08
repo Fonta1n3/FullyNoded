@@ -103,36 +103,17 @@ class NodeLogic {
     
     class func getOffChainBalanceCL(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         let id = UUID()
+        var offchainBalance = 0.0
+        dictToReturn["offchainBalance"] = "0.00000000"
+        
         LightningRPC.command(id: id, method: .listfunds, param: "") { (uuid, responseDict, errorDesc) in
-            guard uuid == id, let dict = responseDict as? NSDictionary, let outputs = dict["outputs"] as? NSArray, outputs.count > 0 else {
-                dictToReturn["offchainBalance"] = "0.00000000"
+            guard uuid == id, let dict = responseDict as? NSDictionary, let outputs = dict["outputs"] as? NSArray, let channels = dict["channels"] as? NSArray else {
                 completion((dictToReturn, errorDesc ?? ""))
                 return
             }
             
-            var offchainBalance = 0.0
-            
-            for (i, output) in outputs.enumerated() {
-                
-                if let outputDict = output as? NSDictionary {
-                    
-                    if let sats = outputDict["value"] as? Int {
-                        let btc = Double(sats) / 100000000.0
-                        offchainBalance += btc
-                        dictToReturn["offchainBalance"] = "\(rounded(number: offchainBalance).avoidNotation)"
-                    }
-                    
-                    if let txid = outputDict["txid"] as? String {
-                        offchainTxids.append(txid)
-                    }
-                }
-                
-                if i + 1 == outputs.count {
-                    guard let channels = dict["channels"] as? NSArray, channels.count > 0 else {
-                        completion((dictToReturn, nil))
-                        return
-                    }
-                    
+            func getChannelFunds() {
+                if channels.count > 0 {
                     for (c, channel) in channels.enumerated() {
                         
                         if let channelDict = channel as? NSDictionary {
@@ -155,7 +136,33 @@ class NodeLogic {
                             completion((dictToReturn, nil))
                         }
                     }
+                } else {
+                    completion((dictToReturn, nil))
                 }
+            }
+            
+            if outputs.count > 0 {
+                for (i, output) in outputs.enumerated() {
+                    
+                    if let outputDict = output as? NSDictionary {
+                        
+                        if let sats = outputDict["value"] as? Int {
+                            let btc = Double(sats) / 100000000.0
+                            offchainBalance += btc
+                            dictToReturn["offchainBalance"] = "\(rounded(number: offchainBalance).avoidNotation)"
+                        }
+                        
+                        if let txid = outputDict["txid"] as? String {
+                            offchainTxids.append(txid)
+                        }
+                    }
+                    
+                    if i + 1 == outputs.count {
+                        getChannelFunds()
+                    }
+                }
+            } else {
+                getChannelFunds()
             }
         }
     }
@@ -275,7 +282,7 @@ class NodeLogic {
                     return
                 }
                 
-                let amountSat = Int(txDict["amount"] as? String ?? "0")!.withCommas
+                let amountSat = (txDict["amount"] as? String ?? "0")!.replacingOccurrences(of: "-", with: "")
                 let confs = txDict["num_confirmations"] as? Int ?? 0
                 let label = txDict["label"] as? String ?? ""
                 let time_stamp = txDict["time_stamp"] as? String ?? "0"
@@ -291,7 +298,7 @@ class NodeLogic {
                 dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
                 let dateString = dateFormatter.string(from: date)
                 
-                let amountBtc = amountSat.satsToBtc.avoidNotation
+                let amountBtc = amountSat.doubleValue.satsToBtc
                 let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
                 let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
                 
@@ -690,7 +697,9 @@ class NodeLogic {
                             if !alreadySaved {
                                 saveUtxo(utxo, wallet)
                             } else if updateLabel {
-                                updateUtxoLabel(id: savedUtxoStr.id!, newLabel: savedUtxoStr.label ?? "")
+                                if savedUtxoStr.label != nil && savedUtxoStr.label != "" {
+                                    updateUtxoLabel(id: savedUtxoStr.id!, newLabel: savedUtxoStr.label ?? "")
+                                }
                             }
                         }
                     }

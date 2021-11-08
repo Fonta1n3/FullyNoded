@@ -7,18 +7,33 @@
 //
 
 import UIKit
+import LocalAuthentication
 
-class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
+class SignerDetailViewController: UIViewController, UINavigationControllerDelegate {
     
-    var isEditingNow = false
     var id:UUID!
+    private var spinner = ConnectingView()
     private var signer: SignerStruct!
-    private var tableDict = [String:String]()
-    private var multisigKeystore = ""
+    private var tableDict = [[String:Any]]()
     private var network = 0
+    private var stringToExport = ""
+    private var descriptionText = ""
+    private var headerText = ""
+    private var masterKey = ""
+    
+    private enum Section: Int {
+        case label
+        case words
+        case masterKeyFingerprint
+        case passphrase
+        case dateAdded
+        case signableWallets
+        case cosigner
+        case singleSig
+        case rootXpub
+    }
     
     @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var labelField: UITextField!
     @IBOutlet weak var segmentedControl: UISegmentedControl!
     
     override func viewDidLoad() {
@@ -28,18 +43,54 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
         tableView.delegate = self
         tableView.dataSource = self
         navigationController?.delegate = self
-        labelField.delegate = self
-        addTapGesture()
-        configureField(labelField)
-        segmentedControl.setEnabled(true, forSegmentAt: network)
+        
+        tableDict = [
+            ["text":"", "footerText": "Tap the label to edit it."],// label 0
+            ["text": "", "ur": "", "selectedSegmentIndex": 0, "censoredText": "", "censoredUr": "", "footerText": "UR for exporting this signer to iOS Seed Tool, Gordian Wallet, Gordian Signer and any other wallet which supports UR crypto-seed. Tap to copy the text."],// words 1
+            ["text": "", "footerText": ""],// xfp 2
+            ["text": "", "footerText": "Tap the passphrase to edit it. ⚠️ This has MAJOR implications, for experts only!"],// passphrase 3
+            ["text": "", "footerText": ""],// dateAdded 4
+            ["text": "", "footerText": "The wallets which this signer can sign for. Tap the + button to create a wallet with this signer."],// wallets 5
+            ["text": "", "ur": "", "selectedSegmentIndex": 1, "footerText": "UR for exporting the segwit mutli-sig cosigner to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text."],// cosigner 6
+            ["text": "", "ur": "", "selectedSegmentIndex": 1, "footerText": "UR for exporting the segwit single-sig watch-only wallet to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text."],// singlesig 7
+            ["text": "", "ur": "", "selectedSegmentIndex": 1, "footerText": "Export your root xpub UR to Casa App by selecting the Keystone option when adding a HWW key to Casa App. Also compatible with Gordian Wallet and Gordian Cosigner. Tap to copy the text."]// casa hdkey 8
+        ]
+        
+        let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+        if chain != "main" {
+            network = 1
+        }
+        segmentedControl.selectedSegmentIndex = network
         getData()
+    }
+    
+    private func headerName(for section: Section) -> String {
+        switch section {
+        case .label:
+            return "Label"
+        case .words:
+            return "BIP39 words"
+        case .masterKeyFingerprint:
+            return "Fingerprint"
+        case .passphrase:
+            return "Passphrase"
+        case .dateAdded:
+            return "Date added"
+        case .signableWallets:
+            return "Wallets"
+        case .cosigner:
+            return "Cosigner - BIP48"
+        case .singleSig:
+            return "Descriptor - BIP84"
+        case .rootXpub:
+            return "Root xpub"
+        }
     }
     
     @IBAction func switchNetwork(_ sender: Any) {
         network = segmentedControl.selectedSegmentIndex
         getData()
     }
-    
     
     private func configureField(_ field: UIView) {
         field.clipsToBounds = true
@@ -63,12 +114,45 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
             return
         }
         
-        guard let words = Crypto.decrypt(signer.words) else { return }
-        
-        tableDict["words"] = words.utf8
-        reloadTable()
+        let localAuthenticationContext = LAContext()
+        localAuthenticationContext.localizedFallbackTitle = "Use Password"
+        var authError: NSError?
+        let reasonString = "To Unlock"
+
+        if localAuthenticationContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &authError) {
+            localAuthenticationContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reasonString) { [weak self] (success, evaluateError) in
+                guard let self = self else { return }
+                
+                if success {
+                    let selectedSegmentIndex = self.tableDict[1]["selectedSegmentIndex"] as? Int ?? 0
+                    
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        switch selectedSegmentIndex {
+                        case 0:
+                            self.tableDict[1]["censoredText"] = self.tableDict[1]["text"] as? String ?? "no seed words"
+                            
+                        case 1:
+                            self.tableDict[1]["censoredUr"] = self.tableDict[1]["ur"] as? String ?? "no crypto-seed"
+                            
+                        default:
+                            break
+                        }
+                        
+                        self.tableView.reloadSections(IndexSet(arrayLiteral: 1), with: .fade)
+                    }
+                } else {
+                    guard let error = evaluateError else { return }
+                    showAlert(vc: self, title: "Auth failed...", message: error.localizedDescription)
+                }
+            }
+
+        } else {
+            guard let error = authError else { return }
+            showAlert(vc: self, title: "Auth failed...", message: error.localizedDescription)
+        }
     }
-    
     
     @IBAction func deleteAction(_ sender: Any) {
         promptToDeleteSigner()
@@ -105,20 +189,6 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
         }
     }
     
-    private func addTapGesture() {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
-        tapGesture.numberOfTapsRequired = 1
-        self.view.addGestureRecognizer(tapGesture)
-        self.labelField.removeGestureRecognizer(tapGesture)
-    }
-    
-    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
-        if sender.state == .ended {
-            view.endEditing(true)
-        }
-        sender.cancelsTouchesInView = false
-    }
-    
     private func getData() {
         CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
             guard let self = self else { return }
@@ -139,54 +209,166 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.labelField.text = signer.label
-            self.tableDict["date"] = "  " +  self.formattedDate(signer.added)
-            
-            guard var decrypted = Crypto.decrypt(signer.words), var words = decrypted.utf8 else { return }
-                        
-            var arr = words.split(separator: " ")
-            
-            for (i, _) in arr.enumerated() {
-                if i > 0 && i < arr.count - 1 {
-                    arr[i] = "******"
-                }
-            }
-            
-            self.tableDict["words"] = arr.joined(separator: " ")
+            self.tableDict[0]["text"] = signer.label
+            self.tableDict[4]["text"] = "  " +  self.formattedDate(signer.added)
             
             var passphrase = ""
             
-            if signer.passphrase != nil {
-                guard let decryptedPassphrase = Crypto.decrypt(signer.passphrase!), let string = decryptedPassphrase.utf8 else { return }
+            if let encryptedPassphrase = signer.passphrase {
+                guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
+                        let string = decryptedPassphrase.utf8 else { return }
                 
                 passphrase = string
-                self.tableDict["passphrase"] = "  " + passphrase
+                self.tableDict[3]["text"] = "  " + "*********"
             } else {
-                self.tableDict["passphrase"] = "  ** no passphrase **"
+                self.tableDict[3]["text"] = "  ** no passphrase **"
             }
             
-            guard var mk = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase) else { return }
+            guard let encryptedXfp = signer.xfp,
+                let decryptedXfp = Crypto.decrypt(encryptedXfp),
+                let xfp = decryptedXfp.utf8 else {
+                    showAlert(vc: self, title: "", message: "Error getting your xfp.")
+                return
+            }
             
-            self.setWallets(mk)
-            decrypted = Data()
-            passphrase = ""
-            mk = ""
-            words = ""
+            self.tableDict[2]["text"] = "  " + xfp
+            
+            if self.network == 0 {
+                if let encryptedbip84xpub = signer.bip84xpub,
+                    let decryptedbip84xpub = Crypto.decrypt(encryptedbip84xpub),
+                    let xpub = decryptedbip84xpub.utf8 {
+                    let descriptor = "wpkh([\(xfp)/84h/0h/0h]\(xpub)/0/*)"
+                    
+                    guard let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) else {
+                        showAlert(vc: self, title: "UR error.", message: "Unable to convert your descriptor to crypto-account.")
+                        return
+                    }
+                    
+                    self.tableDict[7]["text"] = descriptor
+                    self.tableDict[7]["ur"] = singleSigCryptoAccount
+                }
+                
+                if let encryptedbip48xpub = signer.bip48xpub,
+                    let decryptedbip48xpub = Crypto.decrypt(encryptedbip48xpub),
+                    let xpub = decryptedbip48xpub.utf8 {
+                    let cosigner = "wsh([\(xfp)/48h/0h/0h/2h]\(xpub)/0/*)"
+                    
+                    guard let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) else {
+                        showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-account.")
+                        return
+                    }
+                    
+                    self.tableDict[6]["text"] = cosigner
+                    self.tableDict[6]["ur"] = cosignerAccount
+                    
+                    if let encryptedRootXpub = signer.rootXpub,
+                       let decryptedRootXpub = Crypto.decrypt(encryptedRootXpub),
+                       let xpub = decryptedRootXpub.utf8 {
+                        
+                        guard let rootHdkey = URHelper.rootXpubToUrHdkey(xpub) else {
+                            showAlert(vc: self, title: "UR error.", message: "Unable to convert your root xpub to crypto-hdkey.")
+                            return
+                        }
+                        
+                        self.tableDict[8]["text"] = xpub
+                        self.tableDict[8]["ur"] = rootHdkey
+                    }
+                }
+                
+            } else {
+                if let encryptedbip84tpub = signer.bip84tpub,
+                    let decryptedbip84tpub = Crypto.decrypt(encryptedbip84tpub),
+                    let tpub = decryptedbip84tpub.utf8 {
+                    let descriptor = "wpkh([\(xfp)/84h/1h/0h]\(tpub)/0/*)"
+                    
+                    guard let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) else {
+                        showAlert(vc: self, title: "UR error.", message: "Unable to convert your descriptor to crypto-account.")
+                        return
+                    }
+                    
+                    self.tableDict[7]["text"] = descriptor
+                    self.tableDict[7]["ur"] = singleSigCryptoAccount
+                }
+                
+                if let encryptedbip48tpub = signer.bip48tpub,
+                    let decryptedbip48tpub = Crypto.decrypt(encryptedbip48tpub),
+                   let tpub = decryptedbip48tpub.utf8 {
+                    let cosigner = "wsh([\(xfp)/48h/1h/0h/2h]\(tpub)/0/*)"
+                    
+                    guard let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) else {
+                        showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-account.")
+                        return
+                    }
+                    
+                    self.tableDict[6]["text"] = cosigner
+                    self.tableDict[6]["ur"] = cosignerAccount
+                    
+                    if let encryptedRootTpub = signer.rootTpub,
+                       let decryptedRootTpub = Crypto.decrypt(encryptedRootTpub),
+                       let tpub = decryptedRootTpub.utf8 {
+                        
+                        guard let rootHdkey = URHelper.rootXpubToUrHdkey(tpub) else {
+                            showAlert(vc: self, title: "UR error.", message: "Unable to convert your root tpub to crypto-hdkey.")
+                            return
+                        }
+                        
+                        self.tableDict[8]["text"] = tpub
+                        self.tableDict[8]["ur"] = rootHdkey
+                    }
+                }
+            }
+            
+            if let encryptedWords = signer.words {
+                guard let decrypted = Crypto.decrypt(encryptedWords),
+                        let words = decrypted.utf8 else { return }
+                
+                guard let masterKey = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase) else {
+                    showAlert(vc: self, title: "", message: "Unable to derive your master key.")
+                    return
+                }
+                
+                self.masterKey = masterKey
+                                            
+                var arr = words.split(separator: " ")
+                
+                for (i, _) in arr.enumerated() {
+                    if i > 0 && i < arr.count - 1 {
+                        arr[i] = "******"
+                    }
+                }
+                                        
+                guard let urSeed = URHelper.mnemonicToCryptoSeed(words) else { return }
+                
+                var firstHalf = ""
+                var secondHalf = ""
+                
+                for (i, c) in urSeed.enumerated() {
+                    if i < 20 {
+                        firstHalf += "\(c)"
+                    }
+                    
+                    if i > urSeed.count - 5 {
+                        secondHalf += "\(c)"
+                    }
+                }
+                
+                let displaySeed = "\(firstHalf + "*****" + secondHalf)"
+                
+                self.tableDict[1]["text"] = words
+                self.tableDict[1]["ur"] = urSeed
+                self.tableDict[1]["censoredText"] = arr.joined(separator: " ")
+                self.tableDict[1]["censoredUr"] = displaySeed
+                self.setWallets(masterKey)
+            } else {
+                self.reloadTable()
+            }
         }
     }
     
     private func setWallets(_ masterKey: String) {
-        guard let fingerprint = Keys.fingerprint(masterKey: masterKey) else { return }
-        
-        self.tableDict["fingerprint"] = "  " + fingerprint
-        
-        guard let msigKey = Keys.xpub(path: "m/48'/\(self.network)'/0'/2'", masterKey: masterKey) else { return }
-        
-        self.multisigKeystore = "[\(fingerprint)/48h/\(self.network)h/0h/2h]\(msigKey)"
-        
         CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
             guard let wallets = wallets, wallets.count > 0 else {
-                self.tableDict["wallets"] = ""
+                self.tableDict[5]["text"] = ""
                 self.reloadTable()
                 return
             }
@@ -217,7 +399,7 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
                         
-                        self.tableDict["wallets"] = "  " + signableWallets
+                        self.tableDict[5]["text"] = "  " + signableWallets
                         self.reloadTable()
                     }
                 }
@@ -236,35 +418,515 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
             guard let self = self else { return }
             
             if success {
-                self.isEditingNow = false
-                showAlert(vc: self, title: "Success ✅", message: "Signer's label updated.")
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.tableDict[0]["text"] = label
+                    self.tableView.reloadSections(IndexSet(arrayLiteral: 0), with: .fade)
+                }
             } else {
-                showAlert(vc: self, title: "Error", message: "Signer's label did not update.")
+                showAlert(vc: self, title: "Error", message: "Label did not update.")
             }
         }
     }
     
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        if textField.text != "" && isEditingNow {
-            updateLabel(textField.text!)
+    private func updatePassphrase(_ encryptedPassphrase: Data, _ passphrase: String) {
+        CoreDataService.update(id: id, keyToUpdate: "passphrase", newValue: encryptedPassphrase, entity: .signers) { [weak self] success in
+            guard let self = self else { return }
+            
+            if success {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.tableDict[3]["text"] = "**********"
+                    
+                    self.updateSigner(passphrase)
+                }
+            } else {
+                showAlert(vc: self, title: "Error", message: "Label did not update.")
+            }
         }
     }
     
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.endEditing(true)
-        return true
-    }
-    
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        isEditingNow = true
-        return true
+    private func updateSigner(_ passphrase: String) {
+        if let encryptedWords = self.signer.words,
+           let decryptedSigner = Crypto.decrypt(encryptedWords),
+           let words = decryptedSigner.utf8,
+           let mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
+           let xfp = Keys.fingerprint(masterKey: mkMain),
+           let encryptedXfp = Crypto.encrypt(xfp.utf8),
+           let mkTest = Keys.masterKey(words: words, coinType: "1", passphrase: passphrase),
+           let bip84xpub = Keys.bip84AccountXpub(masterKey: mkMain, coinType: "0", account: 0),
+           let bip84tpub = Keys.bip84AccountXpub(masterKey: mkTest, coinType: "1", account: 0),
+           let bip48xpub = Keys.xpub(path: "m/48'/0'/0'/2'", masterKey: mkMain),
+           let bip48tpub = Keys.xpub(path: "m/48'/1'/0'/2'", masterKey: mkTest),
+           let rootTpub = Keys.xpub(path: "m", masterKey: mkTest),
+           let rootXpub = Keys.xpub(path: "m", masterKey: mkMain),
+           let encryptedRootTpub = Crypto.encrypt(rootTpub.utf8),
+           let encryptedRootXpub = Crypto.encrypt(rootXpub.utf8),
+           let encryptedbip84xpub = Crypto.encrypt(bip84xpub.utf8),
+           let encryptedbip84tpub = Crypto.encrypt(bip84tpub.utf8),
+           let encryptedbip48xpub = Crypto.encrypt(bip48xpub.utf8),
+           let encryptedbip48tpub = Crypto.encrypt(bip48tpub.utf8) {
+            
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip84xpub", newValue: encryptedbip84xpub, entity: .signers) { _ in }
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip84tpub", newValue: encryptedbip84tpub, entity: .signers) { _ in }
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip48xpub", newValue: encryptedbip48xpub, entity: .signers) { _ in }
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip48tpub", newValue: encryptedbip48tpub, entity: .signers) { _ in }
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "xfp", newValue: encryptedXfp, entity: .signers) { _ in }
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "rootTpub", newValue: encryptedRootTpub, entity: .signers) { _ in }
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "rootXpub", newValue: encryptedRootXpub, entity: .signers) { _ in }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                guard let self = self else { return }
+                
+                self.getData()
+                
+                showAlert(vc: self, title: "Signer updated ✓", message: "")
+            }
+        }
     }
     
     @objc func export(_ sender: UIButton) {
+        segueToQr()
+    }
+    
+    private func segueToQr() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             self.performSegue(withIdentifier: "segueToExportKeystore", sender: self)
+        }
+    }
+    
+    private func editLabel(_ existingLabel: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Edit Label"
+            let message = ""
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let edit = UIAlertAction(title: "Save", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                let text = (alert.textFields![0] as UITextField).text
+                
+                guard let text = text, text != "" else {
+                    showAlert(vc: self, title: "", message: "No label added.")
+                    
+                    return
+                }
+                
+                self.updateLabel(text)
+            }
+            
+            alert.addTextField { textField in
+                textField.text = existingLabel
+                textField.keyboardAppearance = .dark
+            }
+            
+            alert.addAction(edit)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            alert.addAction(cancel)
+            
+            self.present(alert, animated:true, completion: nil)
+        }
+    }
+    
+    private func promptToEditPassphrase() {
+        if signer.words != nil {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                let title = "⚠️ Editing the passphrase has major implications!"
+                
+                let message = "This signer will no longer be able to sign transactions that invlove the previous passphrase, this will change the cosigner and descriptor used to create new wallets with this signer. Wallets that are associated with this signer will no longer be associated this signer. If you have exported your cosigner or descriptor to other wallets they will no longer be associated with this signer. If you do not understand what any of this means then just STOP."
+                
+                let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+                
+                let edit = UIAlertAction(title: "Edit Passphrase", style: .default) { [weak self] alertAction in
+                    guard let self = self else { return }
+                    
+                    self.editPassphrase()
+                }
+                
+                alert.addAction(edit)
+                
+                let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+                alert.addAction(cancel)
+                
+                self.present(alert, animated:true, completion: nil)
+            }
+        } else {
+            showAlert(vc: self, title: "No seed words exist.", message: "If the seed words have been deleted then you can not edit the passphrase. Please add a new signer with the seed words first then you may edit the passphrase as many times as you would like.")
+        }
+    }
+    
+    private func editPassphrase() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Edit Passphrase"
+            let message = ""
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let edit = UIAlertAction(title: "Save", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                let text = (alert.textFields![0] as UITextField).text
+                
+                guard let text = text else {
+                    showAlert(vc: self, title: "", message: "No passphrase added.")
+                    
+                    return
+                }
+                
+                guard let encryptedPassphrase = Crypto.encrypt(text.utf8) else {
+                    showAlert(vc: self, title: "Encryption error...", message: "Please let us know about this bug, unable to encrypt your new passphrase")
+                    return
+                }
+                
+                self.updatePassphrase(encryptedPassphrase, text)
+            }
+            
+            alert.addTextField { textField in
+                textField.keyboardAppearance = .dark
+                textField.isSecureTextEntry = true
+            }
+            
+            alert.addAction(edit)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            alert.addAction(cancel)
+            
+            self.present(alert, animated:true, completion: nil)
+        }
+    }
+    
+    private func segmentedControll(_ x: CGFloat, _ selectedSegmentIndex: Int) -> UISegmentedControl {
+        let segmentedControll = UISegmentedControl(items: ["text", "ur"])
+        segmentedControll.frame = CGRect(x: x, y: 10, width: 100, height: 30)
+        segmentedControll.setTitle("text", forSegmentAt: 0)
+        segmentedControll.setTitle("ur", forSegmentAt: 1)
+        segmentedControll.selectedSegmentIndex = selectedSegmentIndex
+        segmentedControll.addTarget(self, action: #selector(segmentedControlValueDidChange(_:)), for: .valueChanged)
+        return segmentedControll
+    }
+    
+    private func exportQrButton(_ x: CGFloat) -> UIButton {
+        let qrButton = UIButton()
+        qrButton.setImage(.init(systemName: "qrcode"), for: .normal)
+        qrButton.imageView?.tintColor = .systemTeal
+        qrButton.frame = CGRect(x: x, y: 5, width: 40, height: 40)
+        qrButton.showsTouchWhenHighlighted = true
+        qrButton.addTarget(self, action: #selector(exportQr(_:)), for: .touchUpInside)
+        return qrButton
+    }
+    
+    private func createWalletButton(_ x: CGFloat) -> UIButton {
+        let createWalletButton = UIButton()
+        createWalletButton.setImage(.init(systemName: "plus"), for: .normal)
+        createWalletButton.imageView?.tintColor = .systemTeal
+        createWalletButton.frame = CGRect(x: x, y: 5, width: 40, height: 40)
+        createWalletButton.showsTouchWhenHighlighted = true
+        createWalletButton.addTarget(self, action: #selector(createWallet), for: .touchUpInside)
+        return createWalletButton
+    }
+    
+    private func deleteButton(_ x: CGFloat) -> UIButton {
+        let deleteButton = UIButton()
+        deleteButton.setImage(.init(systemName: "trash"), for: .normal)
+        deleteButton.imageView?.tintColor = .systemRed
+        deleteButton.frame = CGRect(x: x, y: 5, width: 40, height: 40)
+        deleteButton.showsTouchWhenHighlighted = true
+        return deleteButton
+    }
+    
+    private func deletePassphrase() {
+        CoreDataService.deleteValue(id: signer.id, keyToDelete: "passphrase", entity: .signers) { [weak self] deleted in
+            guard let self = self else { return }
+            
+            guard deleted else {
+                showAlert(vc: self, title: "There was an issue...", message: "Unable to delete your passphrase, please let us know about this bug.")
+                return
+            }
+            
+            self.updateSigner("")
+        }
+    }
+    
+    @objc func promptToDeletePassphrase() {
+        if signer.passphrase != nil {
+            if signer.words != nil {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    let title = "⚠️ Deleting the passphrase has major implications!"
+                    
+                    let message = "This signer will no longer be able to sign transactions that invlove the previous passphrase, this will change the cosigner and descriptor used to create new wallets with this signer. Wallets that are associated with this signer will no longer be associated this signer. If you have exported your cosigner or descriptor to other wallets they will no longer be associated with this signer. If you do not understand what any of this means then just STOP."
+                    
+                    let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+                    
+                    let delete = UIAlertAction(title: "Delete Passphrase", style: .destructive) { [weak self] alertAction in
+                        guard let self = self else { return }
+                        
+                        self.deletePassphrase()
+                    }
+                    
+                    alert.addAction(delete)
+                    
+                    let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+                    alert.addAction(cancel)
+                    
+                    self.present(alert, animated:true, completion: nil)
+                }
+            } else {
+                showAlert(vc: self, title: "No seed words exist.", message: "If the seed words have been deleted then you can not delete the passphrase. Please add a new signer with the seed words first, optionally adding/deleting/editing the passphrase afterwards. It makes more sense to just delete this signer completely.")
+            }
+        } else {
+            showAlert(vc: self, title: "No passphrase exists...", message: "")
+        }
+    }
+    
+    @objc func promptToDeleteSeed() {
+        if signer.words != nil {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    let title = "⚠️ Deleting the seed has major implications!"
+                    
+                    let message = "This signer will no longer be able to sign transactions! All other data will remain intact so that you may easily create watch-only wallets and export the public key based cosigner to other hardware/software wallets."
+                    
+                    let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+                    
+                    let delete = UIAlertAction(title: "Delete Seed", style: .destructive) { [weak self] alertAction in
+                        guard let self = self else { return }
+                        
+                        self.deleteSeed()
+                    }
+                    
+                    alert.addAction(delete)
+                    
+                    let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+                    alert.addAction(cancel)
+                    
+                    self.present(alert, animated:true, completion: nil)
+                }
+        } else {
+            showAlert(vc: self, title: "No seed exists...", message: "")
+        }
+    }
+    
+    private func deleteSeed() {
+        CoreDataService.deleteValue(id: signer.id, keyToDelete: "words", entity: .signers) { [weak self] deleted in
+            guard let self = self else { return }
+            
+            guard deleted else {
+                showAlert(vc: self, title: "There was an issue...", message: "Unable to delete your seed, please let us know about this bug.")
+                return
+            }
+            
+            self.tableDict[1]["ur"] = ""
+            self.tableDict[1]["text"] = ""
+            self.tableDict[1]["censoredText"] = ""
+            self.tableDict[1]["censoredUr"] = ""
+            
+            self.getData()
+        }
+    }
+    
+    private func setClipBoard(_ string: String) {
+        let clipBoard = UIPasteboard.general
+        clipBoard.string = string
+        showAlert(vc: self, title: "", message: "Copied to clipboard ✓")
+    }
+    
+    @objc func segmentedControlValueDidChange(_ sender: UISegmentedControl) {
+        tableDict[sender.tag]["selectedSegmentIndex"] = sender.selectedSegmentIndex
+        tableView.reloadSections(IndexSet(arrayLiteral: sender.tag), with: .fade)
+    }
+    
+    private func importAccountMap(_ descriptor: String, _ label: String) {
+        let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": label] as [String : Any]
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.tabBarController?.selectedIndex = 1
+            NotificationCenter.default.post(name: .importWallet, object: nil, userInfo: accountMap)
+        }
+    }
+    
+    @objc func createWallet() {
+        if signer.words != nil {
+            creatWalletLive()
+        } else {
+            createWalletFromMemory()
+        }
+    }
+    
+    private func createWalletFromMemory() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Create a single sig wallet with this signer?"
+            let message = "You deleted the seed words so we can only automatically create the wallet using the saved BIP84 xpub. To create a multi-sig wallet with this signer navigate to the wallet creator, choose multi-sig > derive cosigner from existing signer."
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let p2wpkh = UIAlertAction(title: "Segwit BIP84", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                if let descriptor = self.tableDict[7]["text"] as? String {
+                    self.importAccountMap(descriptor, self.signer.label + " segwit")
+                } else {
+                    showAlert(vc: self, title: "There was an issue...", message: "Unable to get your bip84 descriptor.")
+                }
+            }
+            
+            alert.addAction(p2wpkh)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            alert.addAction(cancel)
+            
+            self.present(alert, animated:true, completion: nil)
+        }
+    }
+    
+    private func creatWalletLive() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            guard let fingerprint = Keys.fingerprint(masterKey: self.masterKey) else { return }
+            
+            let title = "Create a single sig wallet with this signer?"
+            let message = "Choose an address type."
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let p2wpkh = UIAlertAction(title: "Segwit BIP84", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                guard let singleSigKey = Keys.xpub(path: "m/84'/\(self.network)'/0'", masterKey: self.masterKey) else { return }
+                
+                let descriptor = "wpkh([\(fingerprint)/84h/\(self.network)h/0h]\(singleSigKey)/0/*)"
+                self.importAccountMap(descriptor, self.signer.label + " segwit")
+            }
+            
+            let p2pkh = UIAlertAction(title: "Legacy BIP44", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                guard let singleSigKey = Keys.xpub(path: "m/44'/\(self.network)'/0'", masterKey: self.masterKey) else { return }
+                
+                let descriptor = "pkh([\(fingerprint)/44h/\(self.network)h/0h]\(singleSigKey)/0/*)"
+                self.importAccountMap(descriptor, self.signer.label + " Legacy single-sig")
+            }
+            
+            let p2shp2wpkh = UIAlertAction(title: "Nested BIP49", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                guard let singleSigKey = Keys.xpub(path: "m/49'/\(self.network)'/0'", masterKey: self.masterKey) else { return }
+                
+                let descriptor = "sh(wpkh([\(fingerprint)/49h/\(self.network)h/0h]\(singleSigKey)/0/*))"
+                self.importAccountMap(descriptor, self.signer.label + " Nested single-sig")
+            }
+            
+            alert.addAction(p2wpkh)
+            alert.addAction(p2pkh)
+            alert.addAction(p2shp2wpkh)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            alert.addAction(cancel)
+            
+            self.present(alert, animated:true, completion: nil)
+        }
+    }
+    
+    @objc func exportQr(_ sender: UIButton) {
+        let section = sender.tag
+        
+        let dict = tableDict[section]
+        let selectedSegment = dict["selectedSegmentIndex"] as? Int ?? 0
+                
+        switch section {
+        case 1:
+            switch selectedSegment {
+            case 0:
+                stringToExport = dict["text"] as? String ?? ""
+                headerText = "BIP39 Seed Words"
+                descriptionText = "⚠️ Do not share with others! These words can be used to spend your btc, or recover your wallet."
+                
+            case 1:
+                stringToExport = dict["ur"] as? String ?? ""
+                headerText = "UR Crypto Seed"
+                descriptionText = "⚠️ Do not share with others! This is a new format for exporting your seed to other wallets."
+                
+            default:
+                break
+            }
+            
+            segueToQr()
+            
+        case 6:
+            switch selectedSegment {
+            case 0:
+                stringToExport = dict["text"] as? String ?? ""
+                headerText = "Cosigner BIP48"
+                descriptionText = "This can be shared with other wallets like Specter and Sparrow to create segwit multi-sig wallets."
+                
+            case 1:
+                stringToExport = dict["ur"] as? String ?? ""
+                headerText = "Cosigner BIP48"
+                descriptionText = "This can be shared with other wallets like Blue Wallet, Passport, Sparrow, and Keystone to create segwit multi-sig wallets."
+                
+            default:
+                break
+            }
+            
+            segueToQr()
+            
+        case 7:
+            switch selectedSegment {
+            case 0:
+                stringToExport = dict["text"] as? String ?? ""
+                headerText = "BIP84 Account"
+                descriptionText = "This can be shared with other wallets to create watch-only segwit single-sig wallets."
+                
+            case 1:
+                stringToExport = dict["ur"] as? String ?? ""
+                headerText = "BIP84 Account"
+                descriptionText = "This can be shared with other wallets like Blue Wallet, Passport, Sparrow, Keystone to create watch-only segwit single-sig wallets."
+                
+            default:
+                break
+            }
+            
+            segueToQr()
+            
+        case 8:
+            switch selectedSegment {
+            case 0:
+                stringToExport = dict["text"] as? String ?? ""
+                headerText = "Root xpub"
+                descriptionText = "This can be used with other wallets to create *non hardened* accounts."
+                
+            case 1:
+                stringToExport = dict["ur"] as? String ?? ""
+                headerText = "Root xpub hdkey"
+                descriptionText = "You can scan this with your Casa App to add a multi-sig cosigner from Fully Noded.\n\n⚠️ Currently Casa App does not display Fully Noded as an option, select Keystone instead."
+                
+            default:
+                break
+            }
+            
+            segueToQr()
+            
+        default:
+            break
         }
     }
 
@@ -276,21 +938,125 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
         // Pass the selected object to the new view controller.
         guard let vc = segue.destination as? QRDisplayerViewController else { return }
         
-        vc.descriptionText = multisigKeystore
-        vc.headerIcon = UIImage(systemName: "person.3")
-        vc.headerText = "Multisig Cosigner"
-        vc.text = multisigKeystore
+        vc.descriptionText = descriptionText
+        vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+        vc.headerText = headerText
+        vc.text = stringToExport.uppercased()
     }
     
 
 }
 
-extension SignerDetailViewController: UITableViewDelegate { }
+extension SignerDetailViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let vw = UIView()
+        vw.backgroundColor = .clear
+        let titleLabel = UILabel()
+        titleLabel.numberOfLines = 0
+        titleLabel.lineBreakMode = .byWordWrapping
+        titleLabel.backgroundColor = .clear
+        titleLabel.font = .systemFont(ofSize: 14)
+        titleLabel.textColor = .systemGreen
+        
+        let text = tableDict[section]["footerText"] as? String ?? ""
+        titleLabel.text = text
+        
+        var height:CGFloat = 0
+        
+        switch Section(rawValue: section) {
+        case .words:
+            height = 60
+            
+        case .passphrase:
+            height = 60
+            
+        case .cosigner:
+            height = 80
+            
+        case .singleSig:
+            height = 80
+            
+        case .rootXpub:
+            height = 80
+            
+        case .signableWallets:
+            height = 60
+            
+        case .label:
+            height = 40
+            
+        default:
+            titleLabel.text  = ""
+        }
+        
+        titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: height)
+        
+        titleLabel.sizeToFit()
+        
+        vw.addSubview(titleLabel)
+        return vw
+    }
 
-extension SignerDetailViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        switch Section(rawValue: section) {
+        case .label:
+            return 40
+        case .words:
+            return 70
+        case .signableWallets, .passphrase:
+            return 60
+        case .cosigner, .singleSig, .rootXpub:
+            return 80
+        default:
+            return 0
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let dict = tableDict[indexPath.section]
+        let selectedSegment = dict["selectedSegmentIndex"] as? Int ?? 0
+                
+        switch indexPath.section {
+        case 0:
+            editLabel(dict["text"] as? String ?? "")
+            
+        case 1:
+            switch selectedSegment {
+            case 0:
+                setClipBoard(dict["text"] as? String ?? "")
+            case 1:
+                setClipBoard(dict["ur"] as? String ?? "")
+            default:
+                break
+            }
+            
+        case 2:
+            setClipBoard(dict["text"] as? String ?? "")
+        
+        case 3:
+            promptToEditPassphrase()
+            
+        case 6, 7:
+            switch selectedSegment {
+            case 0:
+                setClipBoard(dict["text"] as? String ?? "")
+            case 1:
+                setClipBoard(dict["ur"] as? String ?? "")
+            default:
+                break
+            }
+            
+        case 8:
+            setClipBoard(dict["text"] as? String ?? "")
+            
+        default:
+            break
+        }
+    }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return 9
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -298,36 +1064,153 @@ extension SignerDetailViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "signerDetailCell", for: indexPath)
-        
-        let wordsView = cell.viewWithTag(1) as! UITextView
-        let fingerprintLabel = cell.viewWithTag(2) as! UILabel
-        let passphraseLabel = cell.viewWithTag(3) as! UILabel
-        let dateAddedLabel = cell.viewWithTag(4) as! UILabel
-        let signableWalletsLabel = cell.viewWithTag(5) as! UILabel
-        let exportButton = cell.viewWithTag(6) as! UIButton
-        
-        configureField(wordsView)
-        configureField(passphraseLabel)
-        configureField(dateAddedLabel)
-        configureField(fingerprintLabel)
-        configureField(signableWalletsLabel)
-        configureField(exportButton)
-        
-        wordsView.text = self.tableDict["words"]
-        fingerprintLabel.text = self.tableDict["fingerprint"]
-        passphraseLabel.text = self.tableDict["passphrase"]
-        dateAddedLabel.text = self.tableDict["date"]
-        signableWalletsLabel.text = self.tableDict["wallets"]
-        
-        exportButton.showsTouchWhenHighlighted = true
-        exportButton.addTarget(self, action: #selector(export), for: .touchUpInside)
-        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "defaultCell", for: indexPath)
+        cell.textLabel?.numberOfLines = 0
+        cell.textLabel?.textColor = .lightGray
+        cell.textLabel?.sizeToFit()
         cell.sizeToFit()
         cell.selectionStyle = .none
+        
+        configureField(cell)
+        
+        let dict = self.tableDict[indexPath.section]
+        let selectedSegment = dict["selectedSegmentIndex"] as? Int ?? 0
+        
+        switch Section(rawValue: indexPath.section) {
+        case .label:
+            cell.textLabel?.text = dict["text"] as? String ?? "no label"
+            
+        case .words:
+            switch selectedSegment {
+            case 0:
+                cell.textLabel?.text = dict["censoredText"] as? String ?? "no seed words"
+            case 1:
+                cell.textLabel?.text = dict["censoredUr"] as? String ?? "no seed words"
+            default:
+                break
+            }
+            
+        case .masterKeyFingerprint:
+            cell.textLabel?.text = dict["text"] as? String ?? "no fingerprint"
+            
+        case .passphrase:
+            cell.textLabel?.text = dict["text"] as? String ?? "*** no passphrase ***"
+            
+        case .dateAdded:
+            cell.textLabel?.text = dict["text"] as? String ?? "no date added"
+            
+        case .signableWallets:
+            cell.textLabel?.text = dict["text"] as? String ?? "no signable wallets"
+            
+        case .cosigner:
+            switch selectedSegment {
+            case 0:
+                cell.textLabel?.text = dict["text"] as? String ?? "no multi-sig cosigner"
+            case 1:
+                cell.textLabel?.text = dict["ur"] as? String ?? "no multi-sig cosigner"
+            default:
+                break
+            }
+            
+        case .singleSig:
+            switch selectedSegment {
+            case 0:
+                cell.textLabel?.text = dict["text"] as? String ?? "no descriptor"
+            case 1:
+                cell.textLabel?.text = dict["ur"] as? String ?? "no descriptor"
+            default:
+                break
+            }
+            
+        case .rootXpub:
+            switch selectedSegment {
+            case 0:
+                cell.textLabel?.text = dict["text"] as? String ?? "no root xpub"
+            case 1:
+                cell.textLabel?.text = dict["ur"] as? String ?? "no root xpub hdkey"
+            default:
+                break
+            }
+            
+        case .none:
+            break
+        }
         
         return cell
     }
     
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let header = UIView()
+        header.backgroundColor = UIColor.clear
+        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
+        
+        let textLabel = UILabel()
+        textLabel.textAlignment = .left
+        textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
+        textLabel.textColor = .white
+        textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
+        
+        let selectedSegmentIndex = tableDict[section]["selectedSegmentIndex"] as? Int ?? 0
+                
+        let exportQrButtonGeneric = exportQrButton(header.frame.maxX - 46)
+        exportQrButtonGeneric.tag = section
+                
+        let segmentedControl = segmentedControll(exportQrButtonGeneric.frame.minX - 108, selectedSegmentIndex)
+        segmentedControl.tag = section
+        
+        if let section = Section(rawValue: section) {
+            switch section {
+            case .signableWallets:
+                header.addSubview(createWalletButton(header.frame.maxX - 46))
+                textLabel.text = headerName(for: section)
+                
+            case .words:
+                let deleteButtonSeed = deleteButton(segmentedControl.frame.minX - 46)
+                deleteButtonSeed.addTarget(self, action: #selector(promptToDeleteSeed), for: .touchUpInside)
+                header.addSubview(segmentedControl)
+                header.addSubview(exportQrButtonGeneric)
+                header.addSubview(deleteButtonSeed)
+                
+                if selectedSegmentIndex == 0 {
+                    textLabel.text = headerName(for: section)
+                } else {
+                    textLabel.text = "Seed"
+                }
+                
+            case .passphrase:
+                let deleteButtonPassphrase = deleteButton(header.frame.maxX - 46)
+                textLabel.text = headerName(for: section)
+                deleteButtonPassphrase.addTarget(self, action: #selector(promptToDeletePassphrase), for: .touchUpInside)
+                header.addSubview(deleteButtonPassphrase)
+                
+            case .cosigner:
+                header.addSubview(segmentedControl)
+                header.addSubview(exportQrButtonGeneric)
+                textLabel.text = headerName(for: section)
+                
+            case .singleSig:
+                header.addSubview(segmentedControl)
+                header.addSubview(exportQrButtonGeneric)
+                textLabel.text = headerName(for: section)
+                
+            case .rootXpub:
+                header.addSubview(segmentedControl)
+                header.addSubview(exportQrButtonGeneric)
+                textLabel.text = headerName(for: section)
+                
+            default:
+                textLabel.text = headerName(for: section)
+            }
+        }
+        
+        header.addSubview(textLabel)
+        return header
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 50
+    }
     
 }
+
+extension SignerDetailViewController: UITableViewDataSource {}

@@ -7,9 +7,8 @@
 //
 
 import UIKit
-import AuthenticationServices
 
-class SignersViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
+class SignersViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     @IBOutlet weak var signerTable: UITableView!
     var signers = [[String:Any]]()
@@ -17,32 +16,37 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     var isCreatingMsig = false
     var signerSelected: ((SignerStruct) -> Void)?
     private var authenticated = false
+    private var isAuthenticating = false
     
     override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+        super.viewDidLoad()       
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        if KeyChain.getData("userIdentifier") != nil && !authenticated {
-            show2fa()
-        } else {
-            authenticated = true
+        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
+        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
+        
+        if !isAuthenticating {
+            guard authenticated else {
+                self.isAuthenticating = true
+                
+                self.authenticateWith2FA { [weak self] response in
+                    guard let self = self else { return }
+                    
+                    self.authenticated = response
+                    self.isAuthenticating = false
+                    
+                    if !response {
+                        showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access signers unless you successfully authenticate with 2FA.")
+                    } else {
+                        self.loadData()
+                    }
+                }
+                return
+            }
+            
             loadData()
         }
-    }
-    
-    private func show2fa() {
-        let request = ASAuthorizationAppleIDProvider().createRequest()
-        let controller = ASAuthorizationController(authorizationRequests: [request])
-        controller.delegate = self
-        controller.presentationContextProvider = self
-        controller.performRequests()
-    }
-    
-    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return self.view.window!
     }
     
     @IBAction func addSignerAction(_ sender: Any) {
@@ -69,6 +73,51 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             self.signers = encryptedSigners
             self.reload()
+            
+            guard encryptedSigners.count > 0 else { return }
+            
+            for encryptedSigner in encryptedSigners {
+                let signerStruct = SignerStruct(dictionary: encryptedSigner)
+                
+                var passphrase = ""
+                
+                if let encryptedPassphrase = signerStruct.passphrase,
+                   let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
+                   let string = decryptedPassphrase.utf8 {
+                    passphrase = string
+                }
+                
+                // Only fires off if account xpubs had not been saved before.
+                if let encryptedWords = signerStruct.words,
+                   let decryptedSigner = Crypto.decrypt(encryptedWords),
+                   signerStruct.rootTpub == nil,
+                   let words = decryptedSigner.utf8,
+                   let mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
+                   let xfp = Keys.fingerprint(masterKey: mkMain),
+                   let encryptedXfp = Crypto.encrypt(xfp.utf8),
+                   let mkTest = Keys.masterKey(words: words, coinType: "1", passphrase: passphrase),
+                   let bip84xpub = Keys.bip84AccountXpub(masterKey: mkMain, coinType: "0", account: 0),
+                   let bip84tpub = Keys.bip84AccountXpub(masterKey: mkTest, coinType: "1", account: 0),
+                   let bip48xpub = Keys.xpub(path: "m/48'/0'/0'/2'", masterKey: mkMain),
+                   let bip48tpub = Keys.xpub(path: "m/48'/1'/0'/2'", masterKey: mkTest),
+                   let rootTpub = Keys.xpub(path: "m", masterKey: mkTest),
+                   let rootXpub = Keys.xpub(path: "m", masterKey: mkMain),
+                   let encryptedRootTpub = Crypto.encrypt(rootTpub.utf8),
+                   let encryptedRootXpub = Crypto.encrypt(rootXpub.utf8),
+                   let encryptedbip84xpub = Crypto.encrypt(bip84xpub.utf8),
+                   let encryptedbip84tpub = Crypto.encrypt(bip84tpub.utf8),
+                   let encryptedbip48xpub = Crypto.encrypt(bip48xpub.utf8),
+                   let encryptedbip48tpub = Crypto.encrypt(bip48tpub.utf8) {
+                    
+                    CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip84xpub", newValue: encryptedbip84xpub, entity: .signers) { _ in }
+                    CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip84tpub", newValue: encryptedbip84tpub, entity: .signers) { _ in }
+                    CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip48xpub", newValue: encryptedbip48xpub, entity: .signers) { _ in }
+                    CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip48tpub", newValue: encryptedbip48tpub, entity: .signers) { _ in }
+                    CoreDataService.update(id: signerStruct.id, keyToUpdate: "xfp", newValue: encryptedXfp, entity: .signers) { _ in }
+                    CoreDataService.update(id: signerStruct.id, keyToUpdate: "rootTpub", newValue: encryptedRootTpub, entity: .signers) { _ in }
+                    CoreDataService.update(id: signerStruct.id, keyToUpdate: "rootXpub", newValue: encryptedRootXpub, entity: .signers) { _ in }
+                }                
+            }
         }
     }
     
@@ -138,7 +187,9 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
               alertStyle = UIAlertController.Style.alert
             }
             
-            guard let words = Crypto.decrypt(signer.words), var arr = words.utf8?.split(separator: " ") else { return }            
+            guard let encryptedWords = signer.words,
+                    let words = Crypto.decrypt(encryptedWords),
+                    var arr = words.utf8?.split(separator: " ") else { return }            
             
             for (i, _) in arr.enumerated() {
                 if i > 0 && i < arr.count - 1 {
@@ -166,36 +217,6 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     private func segueToDetail() {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "segueToSignerDetail", sender: vc)
-        }
-    }
-    
-    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-        switch authorization.credential {
-        case let appleIDCredential as ASAuthorizationAppleIDCredential:
-            let authorizationProvider = ASAuthorizationAppleIDProvider()
-            if let usernameData = KeyChain.getData("userIdentifier") {
-                if let username = String(data: usernameData, encoding: .utf8) {
-                    if username == appleIDCredential.user {
-                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
-                            guard let self = self else { return }
-                            
-                            switch state {
-                            case .authorized:
-                                self.authenticated = true
-                                self.loadData()
-                            case .revoked:
-                                fallthrough
-                            case .notFound:
-                                fallthrough
-                            default:
-                                break
-                            }
-                        }
-                    }
-                }
-            }
-        default:
-            break
         }
     }
     

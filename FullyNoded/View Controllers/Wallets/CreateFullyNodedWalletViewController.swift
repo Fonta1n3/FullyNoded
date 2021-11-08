@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import AVFoundation
 
 class CreateFullyNodedWalletViewController: UIViewController, UINavigationControllerDelegate, UIDocumentPickerDelegate {
     
@@ -61,50 +60,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func processPastedString(_ string: String) {
-        let processed = string.condenseWhitespace()
-        let lowercased = processed.lowercased()
-        
-        if isExtendedKey(lowercased) {
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.isDescriptor = false
-                self.extendedKey = processed
-                self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
-            }
-            
-        } else if lowercased.hasPrefix("ur:") {
-            let (descriptors, error) = URHelper.parseUr(urString: lowercased)
-            
-            guard error == nil, let descriptors = descriptors else {
-                showAlert(vc: self, title: "Error", message: error!)
-                return
-            }
-            
-            var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
-            
-            if descriptors.count > 1 {
-                self.prompToChoosePrimaryDesc(descriptors: descriptors)
-            } else {
-                accountMap["descriptor"] = descriptors[0]
-                self.importAccountMap(accountMap)
-            }
-        } else if isDescriptor(lowercased) {
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.isDescriptor = true
-                self.extendedKey = processed
-                self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
-            }
-            
-        } else if let data = processed.data(using: .utf8) {
-            if let accountMap = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] {
-                promptToImportAccountMap(dict: accountMap)
-            }
-        }
+        processImportedString(string)
     }
     
     @IBAction func fileAction(_ sender: Any) {
@@ -186,64 +142,14 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 return
             }
             
-            let myStrings = txt.components(separatedBy: .newlines)
-            var name = ""
-            var sigsRequired = ""
-            var deriv = ""
-            var keys = [String]()
-            var descriptor = ""
-            
-            for item in myStrings {
-                if item.contains("Name: ") {
-                    name = item.replacingOccurrences(of: "Name: ", with: "")
-                } else if item.contains("Policy: ") {
-                    let policy = item.replacingOccurrences(of: "Policy: ", with: "")
-                    let arr = policy.split(separator: " ")
-                    sigsRequired = "\(arr[0])"
-                } else if item.contains("Format: ") {
-                    guard item.contains("P2WSH") else {
-                        showAlert(vc: self, title: "Unsupported policy", message: "Currently we only support p2wsh multisig imports.")
-                        return
-                    }
-                } else if item.contains("Derivation: ") {
-                    deriv = item.replacingOccurrences(of: "Derivation: ", with: "")
-                } else {
-                    var processed = item.condenseWhitespace()
-                    processed = processed.replacingOccurrences(of: "\n", with: "")
-                    if processed != "" {
-                        keys.append(processed.replacingOccurrences(of: " ", with: ""))
-                    }
-                }
+            let (accountMap, errorMessage) = TextFileImport.parse(txt)
+                
+            if let accountMap = accountMap {
+                promptToImportMultiSig(accountMap)
+            } else {
+                showAlert(vc: self, title: "There was an issue...", message: errorMessage ?? "Unknown error.")
             }
             
-            descriptor = "wsh(sortedmulti(\(sigsRequired),"
-            
-            for (i, key) in keys.enumerated() {
-                if !key.hasPrefix("#") {
-                    let arr = key.split(separator: ":")
-                    let xfp = "\(arr[0])"
-                    let xpub = "\(arr[1])"
-                    if !xpub.hasPrefix("xpub") && !xpub.hasPrefix("tpub") {
-                        guard let extKey = XpubConverter.convert(extendedKey: xpub) else {
-                            showAlert(vc: self, title: "Error", message: "There was a problem converting your extended key to an xpub.")
-                            return
-                        }
-                        
-                        descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(extKey)/0/*"
-                    } else {
-                        descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(xpub)/0/*"
-                    }
-                    
-                    if i < keys.count {
-                        descriptor += ","
-                    } else {
-                        descriptor += "))"
-                    }
-                }
-            }
-            
-            let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
-            promptToImportCoboMultiSig(accountMap)
             /*
              Name: CV_85C39000_2-3
              Policy: 2 of 3
@@ -279,7 +185,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         
                         if i + 1 == extendedPublicKeys.count {
                             descriptor += "))"
-                            print("descriptor: \(descriptor)")
                             let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
                             promptToImportUnchained(accountMap)
                         } else {
@@ -326,7 +231,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
-    private func promptToImportCoboMultiSig(_ dict: [String:Any]) {
+    private func promptToImportMultiSig(_ dict: [String:Any]) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -365,12 +270,12 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             
         }
         
-        let accountMap = ["descriptor": desc, "blockheight": 0, "watching": [], "label": "Cobo Vault"] as [String : Any]
+        let accountMap = ["descriptor": desc, "blockheight": 0, "watching": [], "label": "Wallet import"] as [String : Any]
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Import your CoboVault single sig?", message: "Looks like you selected a CoboVault single sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Import single sig?", message: "Looks like you selected a single sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { action in
                 self.importAccountMap(accountMap)
@@ -581,27 +486,32 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     private func setPrimDesc(descriptors: [String], descriptorToUseIndex: Int) {
         var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
-        accountMap["descriptor"] = descriptors[descriptorToUseIndex]
-        var arrayOfWatching:[String] = []
+        let primDesc = descriptors[descriptorToUseIndex]
+        accountMap["descriptor"] = primDesc
         
-        for (i, desc) in descriptors.enumerated() {
-            if i != descriptorToUseIndex {
-                arrayOfWatching.append(desc)
+        let desc = Descriptor("\(primDesc)")
+        if desc.isCosigner {
+            self.ccXfp = desc.fingerprint
+            self.xpub = desc.accountXpub
+            self.deriv = desc.derivation
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.performSegue(withIdentifier: "segueToCreateMultiSig", sender: self)
             }
+        } else {
+            self.importAccountMap(accountMap)
         }
-        
-        accountMap["watching"] = arrayOfWatching
-        self.importAccountMap(accountMap)
     }
     
     func prompToChoosePrimaryDesc(descriptors: [String]) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Select primary address format.", message: "You are adding multiple descriptors which is great, but you need to choose one to be the primary descriptor we use to derive receive addresses.", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Choose an address format.", message: "Looks like you are attempting to import multiple address formats, please choose one to continue.", preferredStyle: .alert)
             
             for (i, descriptor) in descriptors.enumerated() {
                 let descStr = Descriptor(descriptor)
                 
-                alert.addAction(UIAlertAction(title: descStr.format, style: .default, handler: { [weak self] action in
+                alert.addAction(UIAlertAction(title: descStr.scriptType, style: .default, handler: { [weak self] action in
                     guard let self = self else { return }
                     
                     self.setPrimDesc(descriptors: descriptors, descriptorToUseIndex: i)
@@ -611,6 +521,99 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = vc.view
             vc.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func processImportedString(_ item: String) {
+        let lowercased = item.lowercased()
+        
+        if self.isExtendedKey(lowercased) {
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.isDescriptor = false
+                self.extendedKey = item
+                self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
+            }
+            
+        } else if self.isDescriptor(lowercased) {
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.isDescriptor = true
+                self.extendedKey = item
+                self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
+            }
+            
+        } else if lowercased.hasPrefix("ur:") {
+            if lowercased.hasPrefix("ur:bytes") {
+                let (text, err) = URHelper.parseBlueWalletCoordinationSetup(lowercased)
+                if let textFile = text {
+                     if let dict = try? JSONSerialization.jsonObject(with: textFile.utf8, options: []) as? [String:Any] {
+                        let importStruct = WalletImport(dict)
+                        
+                        var descriptors:[String] = []
+                        
+                        if let bip44 = importStruct.bip44 {
+                            descriptors.append(bip44)
+                        }
+                        if let bip49 = importStruct.bip49 {
+                            descriptors.append(bip49)
+                        }
+                        if let bip84 = importStruct.bip84 {
+                            descriptors.append(bip84)
+                        }
+                        if let bip48 = importStruct.bip48 {
+                            descriptors.append(bip48)
+                        }
+                        
+                        self.prompToChoosePrimaryDesc(descriptors: descriptors)
+                        
+                     } else if let accountMap = TextFileImport.parse(textFile).accountMap {
+                        self.importAccountMap(accountMap)
+                            
+                    } else {
+                        showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the text file into a descriptor.")
+                    }
+                } else {
+                    showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the QR code.")
+                }
+                
+            } else {
+                let (descriptors, error) = URHelper.parseUr(urString: item)
+                
+                guard error == nil, let descriptors = descriptors else {
+                    showAlert(vc: self, title: "Error", message: error ?? "Unknown error decoding the QR code.")
+                    return
+                }
+                
+                var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
+                
+                if descriptors.count > 1 {
+                    self.prompToChoosePrimaryDesc(descriptors: descriptors)
+                } else {
+                    let desc = Descriptor("\(descriptors[0])")
+                    if desc.isCosigner {
+                        self.ccXfp = desc.fingerprint
+                        self.xpub = desc.accountXpub
+                        self.deriv = desc.derivation
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.performSegue(withIdentifier: "segueToCreateMultiSig", sender: self)
+                        }
+                    } else {
+                        accountMap["descriptor"] = descriptors[0]
+                        self.importAccountMap(accountMap)
+                    }
+                }
+            }
+        } else if let accountMap = TextFileImport.parse(item).accountMap {
+            self.importAccountMap(accountMap)
+        } else {
+            showAlert(vc: self, title: "Unsupported import.", message: item + " is not a supported import option, please let us know about this so we can add support.")
         }
     }
     
@@ -637,45 +640,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                             return
                         }
                         
-                        let lowercased = item.lowercased()
-                        
-                        if self.isExtendedKey(lowercased) {
-                            
-                            DispatchQueue.main.async { [weak self] in
-                                guard let self = self else { return }
-                                
-                                self.isDescriptor = false
-                                self.extendedKey = item
-                                self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
-                            }
-                            
-                        } else if self.isDescriptor(lowercased) {
-                            
-                            DispatchQueue.main.async { [weak self] in
-                                guard let self = self else { return }
-                                
-                                self.isDescriptor = true
-                                self.extendedKey = item
-                                self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
-                            }
-                            
-                        } else if lowercased.hasPrefix("ur:") {
-                            let (descriptors, error) = URHelper.parseUr(urString: item)
-                            
-                            guard error == nil, let descriptors = descriptors else {
-                                showAlert(vc: self, title: "Error", message: error!)
-                                return
-                            }
-                            
-                            var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
-                            
-                            if descriptors.count > 1 {
-                                self.prompToChoosePrimaryDesc(descriptors: descriptors)
-                            } else {
-                                accountMap["descriptor"] = descriptors[0]
-                                self.importAccountMap(accountMap)
-                            }
-                        }
+                        self.processImportedString(item)
                     }
                 }
             }

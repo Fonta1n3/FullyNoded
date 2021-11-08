@@ -98,11 +98,11 @@ class IdentityViewController: UIViewController, UITextViewDelegate {
         
         switch key {
             
-        case _ where key.hasPrefix("l"),
+        case _ where key.hasPrefix("L"),
              _ where key.hasPrefix("5"),
              _ where key.hasPrefix("9"),
              _ where key.hasPrefix("c"),
-             _ where key.hasPrefix("k"):
+             _ where key.hasPrefix("K"):
             
             boolToReturn = true
             
@@ -199,7 +199,6 @@ class IdentityViewController: UIViewController, UITextViewDelegate {
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
-        
         hideKeyboards()
         
     }

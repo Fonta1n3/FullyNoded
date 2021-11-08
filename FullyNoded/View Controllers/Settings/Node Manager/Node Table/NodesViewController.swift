@@ -7,9 +7,8 @@
 //
 
 import UIKit
-import AuthenticationServices
 
-class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
+class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate {
     
     var nodeArray = [[String:Any]]()
     var selectedIndex = Int()
@@ -32,23 +31,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        if KeyChain.getData("userIdentifier") != nil, !authenticated {
-            show2fa()
-        } else {
-            getNodes()
-        }
-    }
-    
-    private func show2fa() {
-        let request = ASAuthorizationAppleIDProvider().createRequest()
-        let controller = ASAuthorizationController(authorizationRequests: [request])
-        controller.delegate = self
-        controller.presentationContextProvider = self
-        controller.performRequests()
-    }
-    
-    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return self.view.window!
+        getNodes()
     }
     
     func getNodes() {
@@ -378,36 +361,6 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             } else {
                 displayAlert(viewController: self, isError: true, message: "Error adding that node: \(errorMessage ?? "unknown")")
             }
-        }
-    }
-    
-    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-        switch authorization.credential {
-        case let appleIDCredential as ASAuthorizationAppleIDCredential:
-            let authorizationProvider = ASAuthorizationAppleIDProvider()
-            if let usernameData = KeyChain.getData("userIdentifier") {
-                if let username = String(data: usernameData, encoding: .utf8) {
-                    if username == appleIDCredential.user {
-                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
-                            guard let self = self else { return }
-                            
-                            switch state {
-                            case .authorized:
-                                self.authenticated = true
-                                self.getNodes()
-                            case .revoked:
-                                fallthrough
-                            case .notFound:
-                                fallthrough
-                            default:
-                                break
-                            }
-                        }
-                    }
-                }
-            }
-        default:
-            break
         }
     }
     

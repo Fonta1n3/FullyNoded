@@ -425,7 +425,24 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         if !addressString.hasPrefix("lntb") && !addressString.hasPrefix("lightning:") && !addressString.hasPrefix("lnbc") && !addressString.hasPrefix("lnbcrt") {
             let label = self.labelField.text?.replacingOccurrences(of: " ", with: "%20") ?? ""
             let message = self.messageField.text?.replacingOccurrences(of: " ", with: "%20") ?? ""
-            textToShareViaQRCode = "bitcoin:\(self.addressString)?amount=\(amount)&label=\(label)&message=\(message)"
+            textToShareViaQRCode = "bitcoin:\(self.addressString)"
+            let dict = ["amount": amount, "label": label, "message": message]
+            
+            if amount != "" || label != "" || message != "" {
+                textToShareViaQRCode += "?"
+            }
+            
+            for (key, value) in dict {
+                if textToShareViaQRCode.contains("amount=") || textToShareViaQRCode.contains("label=") || textToShareViaQRCode.contains("message=") {
+                    if value != "" {
+                        textToShareViaQRCode += "&\(key)=\(value)"
+                    }
+                } else {
+                    if value != "" {
+                        textToShareViaQRCode += "\(key)=\(value)"
+                    }
+                }
+            }
             
             newImage = self.generateQrCode(key:textToShareViaQRCode)
             

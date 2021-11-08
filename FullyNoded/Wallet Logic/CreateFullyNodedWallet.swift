@@ -103,6 +103,33 @@ enum Keys {
         return true
     }
     
+    static func dataToSigner(_ data: Data) -> String? {
+        return try? BIP39Mnemonic(entropy: BIP39Mnemonic.Entropy(data)).words.joined(separator: " ")
+    }
+    
+    static func wordsToEntropy(_ words: String) -> BIP39Mnemonic.Entropy? {
+        return try? BIP39Mnemonic(words: words).entropy
+    }
+    
+    static func descriptorsFromSigner(_ signer: String) -> (descriptors: [String]?, errorMess: String?) {
+        let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+        
+        var cointType = "0"
+        
+        if chain != "main" {
+            cointType = "1"
+        }
+        
+        guard let mk = Keys.masterKey(words: signer, coinType: cointType, passphrase: ""),
+              let xfp = Keys.fingerprint(masterKey: mk),
+              let bip84Xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: cointType, account: 0),
+              let bip48Xpub = Keys.xpub(path: "m/48'/\(cointType)'/0'/2'", masterKey: mk) else {
+            return (nil, "Error deriving descriptors.")
+        }
+        
+        return (["wsh([\(xfp)/48'/\(cointType)'/0'/2']\(bip48Xpub)/0/*)", "wpkh([\(xfp)/84'/\(cointType)'/0']\(bip84Xpub)/0/*)"], nil)
+    }
+    
     static func donationAddress() -> String? {
         let randomInt = Int.random(in: 0..<99999)
         
@@ -149,7 +176,7 @@ enum Keys {
         
         return nil
     }
-    
+        
     static func fingerprint(masterKey: String) -> String? {
         guard let hdMasterKey = try? HDKey(base58: masterKey) else { return nil }
         
@@ -220,39 +247,44 @@ enum Keys {
             for (i, signer) in signers.enumerated() {
                 let signerStruct = SignerStruct(dictionary: signer)
                 
-                guard let decryptedWords = Crypto.decrypt(signerStruct.words), let words = decryptedWords.utf8 else { return }
-                
-                var passphrase = ""
-                
-                if let encryptedPassphrase = signerStruct.passphrase {
-                    guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase), let pp = decryptedPassphrase.utf8 else { return }
+                if let encryptedWords = signerStruct.words,
+                   let decryptedWords = Crypto.decrypt(encryptedWords),
+                   let words = decryptedWords.utf8 {
                     
-                    passphrase = pp
-                }
-                
-                guard let a = try? Address(string: address) else { return }
-                
-                var cointype = "0"
-                
-                if a.network == .testnet {
-                    cointype = "1"
-                }
-                
-                guard let mk = masterKey(words: words, coinType: cointype, passphrase: passphrase),
-                      let hdKey = try? HDKey(base58: mk),
-                      let childKey = try? hdKey.derive(using: path) else { return }
-                
-                let segwit = childKey.address(type: .payToWitnessPubKeyHash).description
-                let wrappedSegwit = childKey.address(type: .payToScriptHashPayToWitnessPubKeyHash).description
-                let legacy = childKey.address(type: .payToPubKeyHash).description
-                
-                if address == segwit || address == wrappedSegwit || address == legacy {
-                    completion((true, signerStruct.label))
-                    break
-                } else {
-                    if i + 1 == signers.count {
-                        completion((false, nil))
+                    var passphrase = ""
+                    
+                    if let encryptedPassphrase = signerStruct.passphrase {
+                        guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase), let pp = decryptedPassphrase.utf8 else { return }
+                        
+                        passphrase = pp
                     }
+                    
+                    guard let a = try? Address(string: address) else { return }
+                    
+                    var cointype = "0"
+                    
+                    if a.network == .testnet {
+                        cointype = "1"
+                    }
+                    
+                    guard let mk = masterKey(words: words, coinType: cointype, passphrase: passphrase),
+                          let hdKey = try? HDKey(base58: mk),
+                          let childKey = try? hdKey.derive(using: path) else { return }
+                    
+                    let segwit = childKey.address(type: .payToWitnessPubKeyHash).description
+                    let wrappedSegwit = childKey.address(type: .payToScriptHashPayToWitnessPubKeyHash).description
+                    let legacy = childKey.address(type: .payToPubKeyHash).description
+                    
+                    if address == segwit || address == wrappedSegwit || address == legacy {
+                        completion((true, signerStruct.label))
+                        break
+                    } else {
+                        if i + 1 == signers.count {
+                            completion((false, nil))
+                        }
+                    }
+                } else if i + 1 == signers.count {
+                    completion((false, nil))
                 }
             }
         }
@@ -268,32 +300,41 @@ enum Keys {
             for (i, signer) in signers.enumerated() {
                 let signerStruct = SignerStruct(dictionary: signer)
                 
-                guard let decryptedWords = Crypto.decrypt(signerStruct.words), let words = decryptedWords.utf8 else { completion((false, nil)); return }
-                
-                var passphrase = ""
-                
-                if let encryptedPassphrase = signerStruct.passphrase {
-                    guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase), let pp = decryptedPassphrase.utf8 else { completion((false, nil)); return }
+                if let encryptedWords = signerStruct.words,
+                   let decryptedWords = Crypto.decrypt(encryptedWords),
+                   let words = decryptedWords.utf8 {
                     
-                    passphrase = pp
-                }
-                
-                guard let mkM = masterKey(words: words, coinType: "0", passphrase: passphrase),
-                      let hdKeyM = try? HDKey(base58: mkM),
-                      let childKeyM = try? hdKeyM.derive(using: path),
-                      let mkT = masterKey(words: words, coinType: "1", passphrase: passphrase),
-                      let hdKeyT = try? HDKey(base58: mkT),
-                      let childKeyT = try? hdKeyT.derive(using: path) else { completion((false, nil)); return }
-                
-                for (p, pk) in pubkeys.enumerated() {
-                    if childKeyM.pubKey == pk || childKeyT.pubKey == pk {
-                        canSign = true
-                        signerLabel = signerStruct.label
+                    var passphrase = ""
+                    
+                    if let encryptedPassphrase = signerStruct.passphrase {
+                        guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
+                                let pp = decryptedPassphrase.utf8 else {
+                                    completion((false, nil))
+                                    return
+                                }
+                        
+                        passphrase = pp
                     }
                     
-                    if i + 1 == signers.count && p + 1 == pubkeys.count {
-                        completion((canSign, signerLabel))
+                    guard let mkM = masterKey(words: words, coinType: "0", passphrase: passphrase),
+                          let hdKeyM = try? HDKey(base58: mkM),
+                          let childKeyM = try? hdKeyM.derive(using: path),
+                          let mkT = masterKey(words: words, coinType: "1", passphrase: passphrase),
+                          let hdKeyT = try? HDKey(base58: mkT),
+                          let childKeyT = try? hdKeyT.derive(using: path) else { completion((false, nil)); return }
+                    
+                    for (p, pk) in pubkeys.enumerated() {
+                        if childKeyM.pubKey == pk || childKeyT.pubKey == pk {
+                            canSign = true
+                            signerLabel = signerStruct.label
+                        }
+                        
+                        if i + 1 == signers.count && p + 1 == pubkeys.count {
+                            completion((canSign, signerLabel))
+                        }
                     }
+                } else if i + 1 == signers.count {
+                    completion((canSign, signerLabel))
                 }
             }
         }

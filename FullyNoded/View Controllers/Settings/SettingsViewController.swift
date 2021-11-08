@@ -7,19 +7,51 @@
 //
 
 import UIKit
-import AuthenticationServices
+import Foundation
 
-class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
+class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource  {
     
     let ud = UserDefaults.standard
     let spinner = ConnectingView()
     private var authenticated = false
     @IBOutlet var settingsTable: UITableView!
     
+    private let blockchainInfoCurrencies:[[String:String]] = [
+        ["USD": "dollarsign.circle"],
+        ["GBP": "sterlingsign.circle"],
+        ["EUR": "eurosign.circle"],
+        ["AUD":"dollarsign.circle"],
+        ["BRL": "brazilianrealsign.circle"],
+        ["CAD": "dollarsign.circle"],
+        ["CHF": "francsign.circle"],
+        ["CLP": "dollarsign.circle"],
+        ["CNY": "yensign.circle"],
+        ["DKK": "k.circle"],
+        ["HKD": "dollarsign.circle"],
+        ["INR": "indianrupeesign.circle"],
+        ["ISK": "k.circle"],
+        ["JPY": "yensign.circle"],
+        ["KRW": "wonsign.circle"],
+        ["NZD": "dollarsign.circle"],
+        ["PLN": "z.circle"],
+        ["RUB": "rublesign.circle"],
+        ["SEK": "k.circle"],
+        ["SGD": "dollarsign.circle"],
+        ["THB": "bahtsign.circle"],
+        ["TRY": "turkishlirasign.circle"],
+        ["TWD": "dollarsign.circle"]
+    ]
+    
+    private let coindeskCurrencies:[[String:String]] = [
+        ["USD": "dollarsign.circle"],
+        ["GBP": "sterlingsign.circle"],
+        ["EUR": "eurosign.circle"]
+    ]
+        
     override func viewDidLoad() {
         super.viewDidLoad()
         settingsTable.delegate = self
-                        
+        
         if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraWarning") == nil {            
             UserDefaults.standard.setValue(true, forKey: "useEsploraWarning")
         }
@@ -27,22 +59,28 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         if UserDefaults.standard.object(forKey: "useBlockchainInfo") == nil {
             UserDefaults.standard.set(true, forKey: "useBlockchainInfo")
         }
+        
+        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
+        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
+        
+        guard authenticated else {
+            self.authenticateWith2FA { [weak self] response in
+                guard let self = self else { return }
+                
+                self.authenticated = response
+                
+                if !response {
+                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access settings unless you successfully authenticate with 2FA.")
+                } else {
+                    self.settingsTable.reloadData()
+                }
+            }
+            return
+        }
     }
 
     override func viewDidAppear(_ animated: Bool) {
         settingsTable.reloadData()
-    }
-    
-    private func show2fa() {
-        let request = ASAuthorizationAppleIDProvider().createRequest()
-        let controller = ASAuthorizationController(authorizationRequests: [request])
-        controller.delegate = self
-        controller.presentationContextProvider = self
-        controller.performRequests()
-    }
-    
-    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return self.view.window!
     }
     
     private func configureCell(_ cell: UITableViewCell) {
@@ -95,6 +133,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 label.text = "Delete iCloud backup"
                 icon.image = UIImage(systemName: "xmark.icloud")
                 background.backgroundColor = .systemRed
+            case 5:
+                label.text = "iCloud health check"
+                icon.image = UIImage(systemName: "heart.text.square")
+                background.backgroundColor = .systemPink
             default:
                 break
             }
@@ -112,7 +154,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func esploraCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let esploraCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCell", for: indexPath)
+        let esploraCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleEsploraCell", for: indexPath)
         configureCell(esploraCell)
         
         let label = esploraCell.viewWithTag(1) as! UILabel
@@ -146,7 +188,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func blockchainInfoCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let blockchainInfoCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCell", for: indexPath)
+        let blockchainInfoCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleFxrateCell", for: indexPath)
         configureCell(blockchainInfoCell)
         
         let label = blockchainInfoCell.viewWithTag(1) as! UILabel
@@ -179,7 +221,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func coinDeskCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let coinDeskCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCell", for: indexPath)
+        let coinDeskCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleFxrateCell", for: indexPath)
         configureCell(coinDeskCell)
         
         let label = coinDeskCell.viewWithTag(1) as! UILabel
@@ -211,8 +253,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         return coinDeskCell
     }
     
-    func currencyCell(_ indexPath: IndexPath, _ currency: String) -> UITableViewCell {
-        let currencyCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCell", for: indexPath)
+    func currencyCell(_ indexPath: IndexPath, _ currency: [String:String]) -> UITableViewCell {
+        let currencyCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCurrencyCell", for: indexPath)
         configureCell(currencyCell)
         
         let label = currencyCell.viewWithTag(1) as! UILabel
@@ -222,36 +264,28 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         let background = currencyCell.viewWithTag(2)!
         background.clipsToBounds = true
         background.layer.cornerRadius = 8
-        
-        label.text = currency
-        
+                
         let icon = currencyCell.viewWithTag(3) as! UIImageView
         icon.tintColor = .white
         
         let toggle = currencyCell.viewWithTag(4) as! UISwitch
-        toggle.restorationIdentifier = currency
-        toggle.addTarget(self, action: #selector(toggleCurrency(_:)), for: .valueChanged)
-        
         let currencyToUse = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
         
-        if currencyToUse == currency {
-            background.backgroundColor = .systemGreen
-        } else {
-            background.backgroundColor = .systemGray
+        for (key, value) in currency {
+            if currencyToUse == key {
+                background.backgroundColor = .systemGreen
+            } else {
+                background.backgroundColor = .systemGray
+            }
+            
+            toggle.restorationIdentifier = key
+            toggle.setOn(currencyToUse == key, animated: true)
+            
+            label.text = key
+            icon.image = UIImage(systemName: value)
         }
         
-        toggle.setOn(currencyToUse == currency, animated: true)
-        
-        switch currency {
-        case "USD":
-            icon.image = UIImage(systemName: "dollarsign.circle")
-        case "GBP":
-            icon.image = UIImage(systemName: "sterlingsign.circle")
-        case "EUR":
-            icon.image = UIImage(systemName: "eurosign.circle")
-        default:
-            break
-        }
+        toggle.addTarget(self, action: #selector(toggleCurrency(_:)), for: .valueChanged)
         
         return currencyCell
     }
@@ -263,7 +297,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         case 1:
             switch indexPath.row {
-            case 0, 1, 2, 3, 4: return settingsCell(indexPath)
+            case 0, 1, 2, 3, 4, 5: return settingsCell(indexPath)
             default:
                 return UITableViewCell()
             }
@@ -274,7 +308,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             default:
                 return UITableViewCell()
             }
-                        
+            
         case 4:
             if indexPath.row == 0 {
                 return blockchainInfoCell(indexPath)
@@ -283,16 +317,15 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             }
             
         case 5:
-            switch indexPath.row {
-            case 0:
-                return currencyCell(indexPath, "USD")
-            case 1:
-                return currencyCell(indexPath, "GBP")
-            case 2:
-                return currencyCell(indexPath, "EUR")
-            default:
-                return UITableViewCell()
+            let useBlockchainInfo = UserDefaults.standard.object(forKey: "useBlockchainInfo") as? Bool ?? true
+            
+            var currencies:[[String:String]] = blockchainInfoCurrencies
+            
+            if !useBlockchainInfo {
+                currencies = coindeskCurrencies
             }
+            
+            return currencyCell(indexPath, currencies[indexPath.row])
             
         default:
             return UITableViewCell()
@@ -336,18 +369,31 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 6
+        if authenticated {
+            return 6
+        } else {
+            return 0
+        }
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 4 {
-            return 2
-        } else if section == 5 {
-            return 3
-        } else if section == 1 {
-            return 5
+        if authenticated {
+            if section == 4 {
+                return 2
+            } else if section == 5 {
+                let useBlockchainInfo = UserDefaults.standard.object(forKey: "useBlockchainInfo") as? Bool ?? true
+                if useBlockchainInfo {
+                    return blockchainInfoCurrencies.count
+                } else {
+                    return coindeskCurrencies.count
+                }
+            } else if section == 1 {
+                return 6
+            } else {
+                return 1
+            }
         } else {
-            return 1
+            return 0
         }
     }
     
@@ -372,38 +418,40 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             }
             
         case 1:
-            if KeyChain.getData("userIdentifier") != nil && !authenticated {
-                show2fa()
-            } else {
-                switch indexPath.row {
-                case 0:
-                    warnToBackup()
-                case 1:
-                    alertToRecover()
-                case 2:
-                    promptToEnableiCloud()
-                case 3:
-                    confirmiCloudRecovery()
-                case 4:
-                    promptToDeleteiCloud()
-                default:
-                    break
-                }
+            switch indexPath.row {
+            case 0:
+                warnToBackup()
+            case 1:
+                alertToRecover()
+            case 2:
+                promptToEnableiCloud()
+            case 3:
+                confirmiCloudRecovery()
+            case 4:
+                promptToDeleteiCloud()
+            case 5:
+                healthCheck()
+            default:
+                break
             }
         case 2:
-            if KeyChain.getData("userIdentifier") != nil && !authenticated {
-                show2fa()
-            } else {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.performSegue(withIdentifier: "goToSecurity", sender: self)
-                }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.performSegue(withIdentifier: "goToSecurity", sender: self)
             }
             
         default:
             break
             
+        }
+    }
+    
+    private func healthCheck() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToHealthCheck", sender: self)
         }
     }
     
@@ -418,8 +466,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
-            self.settingsTable.reloadData()
+
+            self.settingsTable.reloadSections(IndexSet(arrayLiteral: 5), with: .fade)
         }
     }
     
@@ -753,16 +801,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     @objc func toggleEsplora(_ sender: UISwitch) {
         UserDefaults.standard.setValue(sender.isOn, forKey: "useEsplora")
         
-        if sender.isOn {
-            showAlert(vc: self, title: "Esplora enabled ✓", message: "Enabling Esplora may have negative privacy implications and is discouraged.\n\n**ONLY APPLIES TO PRUNED NODES**")
-        } else {
-            showAlert(vc: self, title: "", message: "Esplora disabled ✓")
-        }
-        
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
-            self.settingsTable.reloadData()
+
+            self.settingsTable.reloadRows(at: [IndexPath(row: 0, section: 3)], with: .none)
         }
     }
     
@@ -771,47 +813,29 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
-            self.settingsTable.reloadData()
+
+            self.settingsTable.reloadSections(IndexSet(arrayLiteral: 4, 5), with: .fade)
         }
     }
     
     @objc func toggleCoindesk(_ sender: UISwitch) {
         UserDefaults.standard.setValue(!sender.isOn, forKey: "useBlockchainInfo")
         
+        let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        
+        if sender.isOn {
+            switch currency {
+            case "USD", "GBP", "EUR":
+                fallthrough
+            default:
+                UserDefaults.standard.setValue("USD", forKey: "currency")
+            }
+        }
+        
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
-            self.settingsTable.reloadData()
-        }
-    }
-    
-    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-        switch authorization.credential {
-        case let appleIDCredential as ASAuthorizationAppleIDCredential:
-            let authorizationProvider = ASAuthorizationAppleIDProvider()
-            if let usernameData = KeyChain.getData("userIdentifier") {
-                if let username = String(data: usernameData, encoding: .utf8) {
-                    if username == appleIDCredential.user {
-                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
-                            guard let self = self else { return }
-                            
-                            switch state {
-                            case .authorized:
-                                self.authenticated = true
-                            case .revoked:
-                                fallthrough
-                            case .notFound:
-                                fallthrough
-                            default:
-                                break
-                            }
-                        }
-                    }
-                }
-            }
-        default:
-            break
+
+            self.settingsTable.reloadSections(IndexSet(arrayLiteral: 4, 5), with: .fade)
         }
     }
         

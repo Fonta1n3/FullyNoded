@@ -188,6 +188,36 @@ public func currentDate() -> String {
     return "NZdDCNBFTDqKPrUG9V80g0iVemSXLL0CuaWj12xqD00="
 }
 
+public var authTimeout: Int {
+    return 360
+}
+
+public let currencies:[[String:String]] = [
+    ["USD": "$"],
+    ["GBP": "£"],
+    ["EUR": "€"],
+    ["AUD":"$"],
+    ["BRL": "R$"],
+    ["CAD": "$"],
+    ["CHF": "CHF "],
+    ["CLP": "$"],
+    ["CNY": "¥"],
+    ["DKK": "kr"],
+    ["HKD": "$"],
+    ["INR": "₹"],
+    ["ISK": "kr"],
+    ["JPY": "¥"],
+    ["KRW": "₩"],
+    ["NZD": "$"],
+    ["PLN": "zł"],
+    ["RUB": "₽"],
+    ["SEK": "kr"],
+    ["SGD": "$"],
+    ["THB": "฿"],
+    ["TRY": "₺"],
+    ["TWD": "NT$"]
+]
+
 public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
     var boolToReturn = Bool()
     
@@ -220,7 +250,8 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
          .walletpassphrasechange,
          .walletlock,
          .psbtbumpfee,
-         .importdescriptors:
+         .importdescriptors,
+         .signmessage:
         boolToReturn = true
         
     default:
