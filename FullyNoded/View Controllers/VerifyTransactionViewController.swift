@@ -95,7 +95,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
-        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > 30) && !(lastAuthenticated == 0))
+        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
         
         guard authenticated else {
             self.authenticateWith2FA { [weak self] response in
@@ -475,14 +475,48 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     @IBAction func signAction(_ sender: Any) {
         isSigning = true
-        signNow()
+        if UserDefaults.standard.object(forKey: "passphrasePrompt") == nil {
+            signNow(nil)
+        } else {
+            setPassphrase { [weak self] passphrase in
+                guard let self = self else { return }
+                
+                self.signNow(passphrase)
+            }
+        }
     }
     
-    private func signNow() {
+    private func setPassphrase(completion: @escaping (String?) -> Void) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Passphrase Prompt"
+            let message = "You enabled the passphrase prompt in Security Center, please enter the passphrase you want to use for signing this transaction."
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let set = UIAlertAction(title: "Sign now", style: .default) { alertAction in
+                completion((alert.textFields![0] as UITextField).text)
+            }
+            
+            alert.addTextField { textField in
+                textField.keyboardAppearance = .dark
+                textField.isSecureTextEntry = true
+            }
+            
+            alert.addAction(set)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { alertAction in }
+            alert.addAction(cancel)
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func signNow(_ passphrase: String?) {
         isSigning = true
         spinner.addConnectingView(vc: self, description: "signing...")
         
-        Signer.sign(psbt: self.unsignedPsbt) { [weak self] (signedPsbt, rawTx, errorMessage) in
+        Signer.sign(psbt: self.unsignedPsbt, passphrase: passphrase) { [weak self] (signedPsbt, rawTx, errorMessage) in
             guard let self = self else { return }
                         
             self.disableSignButton()
@@ -592,12 +626,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 } else if let errors = result["errors"] as? NSArray {
                     showAlert(vc: self, title: "There was an error increasing the fee.", message: "\(errors)")
                 }
-                return
-            }
+                return            }
             
             self.signedRawTx = ""
             
-            Signer.sign(psbt: psbt) { (signedPsbt, rawTx, errorMessage) in
+            Signer.sign(psbt: psbt, passphrase: nil) { (signedPsbt, rawTx, errorMessage) in
                 self.spinner.removeConnectingView()
                 
                 self.disableBumpButton()
@@ -880,6 +913,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         } else {
                             addressString = addresses[0] as? String ?? ""
                         }
+                    } else if let address = scriptpubkey["address"] as? String {
+                        addressString = address
                     }
                     
                     outputTotal += amount
@@ -957,6 +992,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                                     } else {
                                         addressString = addresses[0] as! String
                                     }
+                                } else if let address = scriptpubkey["address"] as? String {
+                                    addressString = address
                                 }
                             }
                             
@@ -1187,6 +1224,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 Reducer.makeCommand(command: .testmempoolaccept, param: "[\"\(signedRawTx)\"]") { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
+                    if let errorMessage = errorMessage {
+                        showAlert(vc: self, title: "testmempoolaccept error", message: errorMessage)
+                    }
+                    
                     guard let arr = response as? NSArray, arr.count > 0,
                         let dict = arr[0] as? NSDictionary,
                         let allowed = dict["allowed"] as? Bool else {
@@ -1286,7 +1327,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     }
                     
                     Reducer.makeCommand(command: .gettransaction, param: "\"\(txid)\", true") { (response, errorMessage) in
-                        guard let dict = response as? NSDictionary, let hex = dict["hex"] as? String else {
+                        guard let dict = response as? NSDictionary, let hexToParse = dict["hex"] as? String else {
                             
                             guard let useEsplora = UserDefaults.standard.object(forKey: "useEsplora") as? Bool, useEsplora else {
                                 
@@ -1316,10 +1357,14 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                             }
                             return
                         }
-                        self.parsePrevTx(method: .decoderawtransaction, param: "\"\(hex)\"", vout: vout, txid: txid)
+                        
+                        print("input #\(self.index + 1), searching for vout \(vout)")
+                        self.parsePrevTx(method: .decoderawtransaction, param: "\"\(hexToParse)\"", vout: vout, txid: txid)
                     }
+                    
                     return
                 }
+                
                 self.parsePrevTx(method: .decoderawtransaction, param: "\"\(hex)\"", vout: vout, txid: txid)
             }
         }

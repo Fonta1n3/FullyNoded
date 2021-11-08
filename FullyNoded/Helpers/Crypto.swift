@@ -23,7 +23,6 @@ enum Crypto {
     }
     
     static func privateKey() -> Data {
-        
         return P256.Signing.PrivateKey().rawRepresentation
     }
     

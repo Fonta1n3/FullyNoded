@@ -77,15 +77,19 @@ class ActiveWalletViewController: UIViewController {
         
         let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
         authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
-        
+                
         guard authenticated else {
+            isAuthenticating = true
+            
             self.authenticateWith2FA { [weak self] response in
                 guard let self = self else { return }
                 
+                self.isAuthenticating = false
                 self.authenticated = response
                 
                 if response {
                     self.getFxRate()
+                    self.initialLoad = false
                 } else {
                     showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
                     self.removeSpinner()
@@ -103,25 +107,25 @@ class ActiveWalletViewController: UIViewController {
             initialLoad = false
             getFxRate()
             noPasswordAlert()
-        }
-        
-        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
-        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
-        
-        if !initialLoad && !authenticated && !isAuthenticating {
-            self.hideData()
-            self.isAuthenticating = true
+        } else if !initialLoad {
+            let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
+            authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
             
-            self.authenticateWith2FA { [weak self] response in
-                guard let self = self else { return }
+            if !initialLoad && !authenticated && !isAuthenticating {
+                self.isAuthenticating = true
                 
-                self.authenticated = response
-                self.isAuthenticating = false
-                
-                if !response {
-                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
-                } else {
-                    self.getFxRate()
+                self.authenticateWith2FA { [weak self] response in
+                    guard let self = self else { return }
+                    
+                    self.authenticated = response
+                    self.isAuthenticating = false
+                    
+                    if !response {
+                        self.hideData()
+                        showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
+                    } else {
+                        self.initialLoad = false
+                    }
                 }
             }
         }
@@ -137,6 +141,7 @@ class ActiveWalletViewController: UIViewController {
             self.offchainBalanceBtc = ""
             self.offchainBalanceSats = ""
             self.offchainBalanceFiat = ""
+            self.sectionZeroLoaded = false
             self.transactionArray.removeAll()
             self.offchainTxArray.removeAll()
             self.onchainTxArray.removeAll()
@@ -397,7 +402,7 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @objc func importWallet(_ notification: NSNotification) {
-        spinner.addConnectingView(vc: self, description: "importing your Coldcard wallet, this can take a minute...")
+        spinner.addConnectingView(vc: self, description: "Creating your wallet, this can take a minute...")
         
         guard let accountMap = notification.userInfo as? [String:Any] else {
             self.spinner.removeConnectingView()
@@ -415,7 +420,7 @@ class ActiveWalletViewController: UIViewController {
             }
             
             self.spinner.removeConnectingView()
-            showAlert(vc: self, title: "Wallet imported ✅", message: "It has been activated and is refreshing now.")
+            showAlert(vc: self, title: "Wallet created ✓", message: "It has been activated and is refreshing now.")
             self.refreshWallet()
         }
     }
@@ -459,7 +464,7 @@ class ActiveWalletViewController: UIViewController {
                     self.loadBalances()
                     return
                 }
-                                
+                
                 self.wallet = wallet
                 self.existingWallet = wallet.name
                 self.walletLabel = wallet.label
@@ -473,9 +478,8 @@ class ActiveWalletViewController: UIViewController {
             }
         } else if !isAuthenticating {
             removeSpinner()
-            self.hideData()
-            
-            self.isAuthenticating = true
+            hideData()
+            isAuthenticating = true
             
             self.authenticateWith2FA { [weak self] result in
                 guard let self = self else { return }
@@ -483,13 +487,14 @@ class ActiveWalletViewController: UIViewController {
                 self.authenticated = result
                 self.isAuthenticating = false
                 
-                if result {
-                    self.refreshAll()
-                } else {
+                if !result {
                     showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
+                } else {
+                    self.addNavBarSpinner()
+                    self.loadTable()
                 }
             }
-        }
+        }        
     }
     
     private func finishedLoading() {
@@ -593,10 +598,7 @@ class ActiveWalletViewController: UIViewController {
             onchainBalanceLabel.text = onchainBalanceFiat
             offchainBalanceLabel.text = offchainBalanceFiat
         }
-        
-        onchainBalanceLabel.adjustsFontSizeToFitWidth = true
-        offchainBalanceLabel.adjustsFontSizeToFitWidth = true
-        
+                
         return cell
     }
     

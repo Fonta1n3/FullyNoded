@@ -9,7 +9,7 @@
 import Foundation
 
 class Lightning {
-    
+        
     class func connect(amount: Int, id: String, ip: String?, port: String?, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
         var param = "\(id)"
         

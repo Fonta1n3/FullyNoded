@@ -94,7 +94,7 @@ class MainMenuViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         if initialLoad {
             if !firstTimeHere() {
-                displayAlert(viewController: self, isError: true, message: "there was a critical error setting your devices encryption key, please delete and reinstall the app")
+                displayAlert(viewController: self, isError: true, message: "There was a critical error setting your devices encryption key, please delete and reinstall the app")
             } else {
                 if mgr?.state != .started && mgr?.state != .connected  {
                     if KeyChain.getData("UnlockPassword") != nil {
@@ -146,7 +146,7 @@ class MainMenuViewController: UIViewController {
     
     @IBAction func goToTools(_ sender: Any) {
         let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
-        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > 30) && !(lastAuthenticated == 0))
+        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
         
         guard authenticated else {
             self.authenticateWith2FA { [weak self] response in
@@ -547,6 +547,8 @@ class MainMenuViewController: UIViewController {
                 
                 return
             }
+            
+            //ud.setValue(blockchainInfo., forKey: <#T##String#>)
                                     
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }

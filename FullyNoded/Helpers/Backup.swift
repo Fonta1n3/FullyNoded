@@ -349,11 +349,11 @@ class BackupiCloud {
                                     
                                     switch key {
                                     case "publicKey",
-                                         "label",
-                                         "name",
-                                         "changeDescriptor",
-                                         "receiveDescriptor",
-                                         "type":
+                                        "label",
+                                        "name",
+                                        "changeDescriptor",
+                                        "receiveDescriptor",
+                                        "type":
                                         
                                         if !(entity == .nodes && key == "label") {
                                             if let decrypted = Crypto.decryptForBackup(passwordHash, data), let string = decrypted.utf8 {
@@ -362,13 +362,20 @@ class BackupiCloud {
                                         }
                                         
                                     case "privateKey",
-                                         "cert",
-                                         "macaroon",
-                                         "onionAddress",
-                                         "rpcpassword",
-                                         "rpcuser",
-                                         "passphrase",
-                                         "words":
+                                        "cert",
+                                        "macaroon",
+                                        "onionAddress",
+                                        "rpcpassword",
+                                        "rpcuser",
+                                        "passphrase",
+                                        "words",
+                                        "rootTpub",
+                                        "rootXpub",
+                                        "bip84tpub",
+                                        "bip84xpub",
+                                        "bip48tpub",
+                                        "bip48xpub",
+                                        "xfp":
                                         
                                         if let decrypted = Crypto.decryptForBackup(passwordHash, data) {
                                             if let encrypted = Crypto.encrypt(decrypted) {

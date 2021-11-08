@@ -563,7 +563,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             vc.isCreatingMsig = true
             
             vc.signerSelected = { [weak self] signer in
-                guard let self = self, let words = Crypto.decrypt(signer.words) else { return }
+                guard let self = self, let encryptedWords = signer.words, let words = Crypto.decrypt(encryptedWords) else { return }
                             
                 guard let encryptedPassphrase = signer.passphrase else {
                     self.convertWords(words.utf8 ?? "", "")

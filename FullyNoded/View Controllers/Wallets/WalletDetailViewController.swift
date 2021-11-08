@@ -18,8 +18,10 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     var coinType = "0"
     var addresses = ""
     var originalLabel = ""
-    var exportQrImage: UIImage!
+    var backupQrImage: UIImage!
+    var exportWalletImage: UIImage!
     var backupText = ""
+    var exportText = ""
     var textToShow = ""
     var json = ""
     var showReceive = 0
@@ -30,7 +32,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private enum Section: Int {
         case label
-        case exportQr
+        case walletExport
+        case backupQr
         case exportFile
         case filename
         case receiveDesc
@@ -108,7 +111,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                     }
                 }
                 
-            } else if wallet.watching != nil/* && wallet.name.contains("Coldcard")*/ {
+            } else if wallet.watching != nil {
                 let descriptors = wallet.watching!
                 var prefix = ""
                 var descriptorToUse = ""
@@ -200,7 +203,17 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                     let generator = QRGenerator()
                     generator.textInput = self.json
                     self.backupText = self.json
-                    self.exportQrImage = generator.getQRCode()
+                    self.backupQrImage = generator.getQRCode()
+                    
+                    guard let urOutput = URHelper.descriptorToUrOutput(Descriptor(self.wallet.receiveDescriptor)) else {
+                        showAlert(vc: self, title: "", message: "Unable to convert your wallet to crypto-output.")
+                        return
+                    }
+                    
+                    generator.textInput = urOutput.uppercased()
+                    self.exportText = urOutput
+                    self.exportWalletImage = generator.getQRCode()
+                    
                     self.findSigner()
                     self.getAddresses()
                 }
@@ -224,9 +237,12 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     private func parseSigners(_ signers: [[String:Any]]) {
         for (i, signer) in signers.enumerated() {
             let signerStruct = SignerStruct(dictionary: signer)
-            guard let decryptedData = Crypto.decrypt(signerStruct.words) else { return }
             
-            parseWords(decryptedData, signerStruct)
+            if let encryptedWords = signerStruct.words {
+                guard let decryptedData = Crypto.decrypt(encryptedWords) else { return }
+                
+                parseWords(decryptedData, signerStruct)
+            }
             
             if i + 1 == signers.count {
                 DispatchQueue.main.async { [weak self] in
@@ -449,8 +465,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         case .filename:
             exportItem(wallet.name)
             
-        case .exportQr:
-            exportItem(exportQrImage as Any)
+        case .walletExport:
+            exportItem(exportWalletImage as Any)
+            
+        case .backupQr:
+            exportItem(backupQrImage as Any)
     
         case .exportFile:
             exportJson()
@@ -492,7 +511,10 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch Section(rawValue: indexPath.section) {
-        case .exportQr:
+        case .walletExport:
+            textToShow = exportText
+            showQr()
+        case .backupQr:
             textToShow = backupText
             showQr()
         default:
@@ -654,13 +676,27 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         return cell
     }
     
-    private func exportQrCell(_ indexPath: IndexPath) -> UITableViewCell {
+    private func exportWalletCell(_ indexPath: IndexPath) -> UITableViewCell {
         let cell = detailTable.dequeueReusableCell(withIdentifier: "walletExportQrCell", for: indexPath)
         configureCell(cell)
         
         let imageView = cell.viewWithTag(1) as! UIImageView
         
-        imageView.image = exportQrImage
+        imageView.image = exportWalletImage
+        
+        let exportButton = cell.viewWithTag(2) as! UIButton
+        configureExportButton(exportButton, indexPath: indexPath)
+        
+        return cell
+    }
+    
+    private func backupQrCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletExportQrCell", for: indexPath)
+        configureCell(cell)
+        
+        let imageView = cell.viewWithTag(1) as! UIImageView
+        
+        imageView.image = backupQrImage
         
         let exportButton = cell.viewWithTag(2) as! UIButton
         configureExportButton(exportButton, indexPath: indexPath)
@@ -682,7 +718,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 12
+        return 13
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -712,8 +748,10 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         switch Section(rawValue: indexPath.section) {
         case .label:
             return labelCell(indexPath)
-        case .exportQr:
-            return exportQrCell(indexPath)
+        case .walletExport:
+            return exportWalletCell(indexPath)
+        case .backupQr:
+            return backupQrCell(indexPath)
         case .exportFile:
             return exportFileCell(indexPath)
         case .filename:
@@ -741,7 +779,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         switch Section(rawValue: indexPath.section) {
         case .label:
             return 50
-        case .exportQr:
+        case .backupQr, .walletExport:
             return 192
         case .exportFile:
             return 120
@@ -875,8 +913,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func importDescriptors(index: Int, maxRange: Int, descriptorsToImport: [String]) {
-        //let descriptorParser = DescriptorParser()
-        let descriptorStruct = Descriptor(wallet.receiveDescriptor)//descriptorParser.descriptor(wallet.receiveDescriptor)
+        let descriptorStruct = Descriptor(wallet.receiveDescriptor)
         var keypool = true
         
         if descriptorStruct.isMulti {
@@ -983,11 +1020,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             if textToShow == backupText {
                 vc.headerText = "Wallet Backup QR"
                 vc.headerIcon = UIImage(systemName: "rectangle.and.paperclip")
-                vc.descriptionText = "Save this QR in lots of places so you can always easily recreate this wallet as watch-only."
+                vc.descriptionText = "Save this QR in lots of places so you can always easily recreate this wallet as watch-only. This QR code is best used with Fully Noded only."
             } else {
-                vc.headerText = "Uncle Jim QR"
-                vc.headerIcon = UIImage(systemName: "person.badge.plus")
-                vc.descriptionText = "Share this with Uncle Jim to get him set up properly on his Bitcoin journey, or use it to create joint accounts (multisig) wallets with people who do not have their own node and want to share yours. Uncle Jim QR codes share your node and this wallet so use with caution!"
+                vc.headerText = "Wallet Export QR"
+                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                vc.descriptionText = "This QR code is best for exporting this wallet to other software and hardware wallets."
             }
         }
         default:
@@ -1003,7 +1040,9 @@ extension WalletDetailViewController {
         switch section {
         case .label:
             return ("Label", UIImage(systemName: "rectangle.and.paperclip")!, .systemBlue)
-        case .exportQr:
+        case .walletExport:
+            return ("Wallet export", UIImage(systemName: "square.and.arrow.up")!, .systemIndigo)
+        case .backupQr:
             return ("Backup QR", UIImage(systemName: "qrcode")!, .systemGreen)
         case .exportFile:
             return ("Backup file", UIImage(systemName: "folder")!, .systemPink)

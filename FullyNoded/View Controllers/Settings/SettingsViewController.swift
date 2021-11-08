@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Foundation
 
 class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource  {
     
@@ -15,6 +16,38 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     private var authenticated = false
     @IBOutlet var settingsTable: UITableView!
     
+    private let blockchainInfoCurrencies:[[String:String]] = [
+        ["USD": "dollarsign.circle"],
+        ["GBP": "sterlingsign.circle"],
+        ["EUR": "eurosign.circle"],
+        ["AUD":"dollarsign.circle"],
+        ["BRL": "brazilianrealsign.circle"],
+        ["CAD": "dollarsign.circle"],
+        ["CHF": "francsign.circle"],
+        ["CLP": "dollarsign.circle"],
+        ["CNY": "yensign.circle"],
+        ["DKK": "k.circle"],
+        ["HKD": "dollarsign.circle"],
+        ["INR": "indianrupeesign.circle"],
+        ["ISK": "k.circle"],
+        ["JPY": "yensign.circle"],
+        ["KRW": "wonsign.circle"],
+        ["NZD": "dollarsign.circle"],
+        ["PLN": "z.circle"],
+        ["RUB": "rublesign.circle"],
+        ["SEK": "k.circle"],
+        ["SGD": "dollarsign.circle"],
+        ["THB": "bahtsign.circle"],
+        ["TRY": "turkishlirasign.circle"],
+        ["TWD": "dollarsign.circle"]
+    ]
+    
+    private let coindeskCurrencies:[[String:String]] = [
+        ["USD": "dollarsign.circle"],
+        ["GBP": "sterlingsign.circle"],
+        ["EUR": "eurosign.circle"]
+    ]
+        
     override func viewDidLoad() {
         super.viewDidLoad()
         settingsTable.delegate = self
@@ -28,7 +61,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         }
         
         let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
-        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > 30) && !(lastAuthenticated == 0))
+        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
         
         guard authenticated else {
             self.authenticateWith2FA { [weak self] response in
@@ -220,7 +253,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         return coinDeskCell
     }
     
-    func currencyCell(_ indexPath: IndexPath, _ currency: String) -> UITableViewCell {
+    func currencyCell(_ indexPath: IndexPath, _ currency: [String:String]) -> UITableViewCell {
         let currencyCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCurrencyCell", for: indexPath)
         configureCell(currencyCell)
         
@@ -231,36 +264,28 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         let background = currencyCell.viewWithTag(2)!
         background.clipsToBounds = true
         background.layer.cornerRadius = 8
-        
-        label.text = currency
-        
+                
         let icon = currencyCell.viewWithTag(3) as! UIImageView
         icon.tintColor = .white
         
         let toggle = currencyCell.viewWithTag(4) as! UISwitch
-        toggle.restorationIdentifier = currency
-        toggle.addTarget(self, action: #selector(toggleCurrency(_:)), for: .valueChanged)
-        
         let currencyToUse = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
         
-        if currencyToUse == currency {
-            background.backgroundColor = .systemGreen
-        } else {
-            background.backgroundColor = .systemGray
+        for (key, value) in currency {
+            if currencyToUse == key {
+                background.backgroundColor = .systemGreen
+            } else {
+                background.backgroundColor = .systemGray
+            }
+            
+            toggle.restorationIdentifier = key
+            toggle.setOn(currencyToUse == key, animated: true)
+            
+            label.text = key
+            icon.image = UIImage(systemName: value)
         }
         
-        toggle.setOn(currencyToUse == currency, animated: true)
-        
-        switch currency {
-        case "USD":
-            icon.image = UIImage(systemName: "dollarsign.circle")
-        case "GBP":
-            icon.image = UIImage(systemName: "sterlingsign.circle")
-        case "EUR":
-            icon.image = UIImage(systemName: "eurosign.circle")
-        default:
-            break
-        }
+        toggle.addTarget(self, action: #selector(toggleCurrency(_:)), for: .valueChanged)
         
         return currencyCell
     }
@@ -283,7 +308,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             default:
                 return UITableViewCell()
             }
-                        
+            
         case 4:
             if indexPath.row == 0 {
                 return blockchainInfoCell(indexPath)
@@ -292,16 +317,15 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             }
             
         case 5:
-            switch indexPath.row {
-            case 0:
-                return currencyCell(indexPath, "USD")
-            case 1:
-                return currencyCell(indexPath, "GBP")
-            case 2:
-                return currencyCell(indexPath, "EUR")
-            default:
-                return UITableViewCell()
+            let useBlockchainInfo = UserDefaults.standard.object(forKey: "useBlockchainInfo") as? Bool ?? true
+            
+            var currencies:[[String:String]] = blockchainInfoCurrencies
+            
+            if !useBlockchainInfo {
+                currencies = coindeskCurrencies
             }
+            
+            return currencyCell(indexPath, currencies[indexPath.row])
             
         default:
             return UITableViewCell()
@@ -357,7 +381,12 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             if section == 4 {
                 return 2
             } else if section == 5 {
-                return 3
+                let useBlockchainInfo = UserDefaults.standard.object(forKey: "useBlockchainInfo") as? Bool ?? true
+                if useBlockchainInfo {
+                    return blockchainInfoCurrencies.count
+                } else {
+                    return coindeskCurrencies.count
+                }
             } else if section == 1 {
                 return 6
             } else {
@@ -438,7 +467,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
 
-            self.settingsTable.reloadRows(at: [IndexPath(row: 0, section: 5), IndexPath(row: 1, section: 5), IndexPath(row: 2, section: 5)], with: .none)
+            self.settingsTable.reloadSections(IndexSet(arrayLiteral: 5), with: .fade)
         }
     }
     
@@ -785,17 +814,28 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
 
-            self.settingsTable.reloadRows(at: [IndexPath(row: 1, section: 4), IndexPath(row: 0, section: 4)], with: .none)
+            self.settingsTable.reloadSections(IndexSet(arrayLiteral: 4, 5), with: .fade)
         }
     }
     
     @objc func toggleCoindesk(_ sender: UISwitch) {
         UserDefaults.standard.setValue(!sender.isOn, forKey: "useBlockchainInfo")
         
+        let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        
+        if sender.isOn {
+            switch currency {
+            case "USD", "GBP", "EUR":
+                fallthrough
+            default:
+                UserDefaults.standard.setValue("USD", forKey: "currency")
+            }
+        }
+        
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
 
-            self.settingsTable.reloadRows(at: [IndexPath(row: 1, section: 4), IndexPath(row: 0, section: 4)], with: .none)
+            self.settingsTable.reloadSections(IndexSet(arrayLiteral: 4, 5), with: .fade)
         }
     }
         

@@ -110,9 +110,9 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate, UINavi
                 }
             }
             
-            if let message = message {
-                showAlert(vc: self, title: "Warning", message: message)
-            }
+//            if let message = message {
+//                showAlert(vc: self, title: "Warning", message: message)
+//            }
         }
     }
     
