@@ -159,8 +159,8 @@ public class IRCServer {
             print("append reloffer")
             relOffers.append(offer)
             
-//        case .unknown(raw: message):
-//            print("unknown message type: \(message)")
+        case .unknown(raw: message):
+            print("unknown message type: \(message)")
             
         default:
             //print("Unknown: \(message)")

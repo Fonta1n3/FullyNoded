@@ -183,5 +183,17 @@ class OnchainUtils {
             completion((addresses, errorMessage))
         }
     }
+    
+    static func signMessage(message: String, privKey: String, completion: @escaping ((signature: String?, message: String?)) -> Void) {
+        let param = "\"\(privKey)\", \"\(message)\""
+        Reducer.makeCommand(command: .signmessagewithprivkey, param: param) { (response, errorMessage) in
+            guard let signature = response as? String else {
+                completion((nil, errorMessage))
+                return
+            }
+            
+            completion((signature, nil))
+        }
+    }
      
 }

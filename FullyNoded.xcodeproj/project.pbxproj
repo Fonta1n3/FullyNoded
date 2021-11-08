@@ -50,6 +50,8 @@
 		0A9834C426BBCCB300BAB74E /* Backup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9834C326BBCCB300BAB74E /* Backup.swift */; };
 		0A9834C626BC2E6800BAB74E /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A9834C526BC2E6700BAB74E /* CloudKit.framework */; };
 		0A9834CA26BC3CF500BAB74E /* Backup.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 0A9834C826BC3CF500BAB74E /* Backup.xcdatamodeld */; };
+		0A98BF972738BB1A0000B620 /* Secp256k1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A98BF962738BB1A0000B620 /* Secp256k1.swift */; };
+		0A98BF992738BBB40000B620 /* PoDLE.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A98BF982738BBB40000B620 /* PoDLE.swift */; };
 		0A9FDC9126A84CE30050C4AE /* WalletTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9FDC9026A84CE30050C4AE /* WalletTypes.swift */; };
 		0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
@@ -260,6 +262,8 @@
 		0A9834C326BBCCB300BAB74E /* Backup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backup.swift; sourceTree = "<group>"; };
 		0A9834C526BC2E6700BAB74E /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		0A9834C926BC3CF500BAB74E /* Backup.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Backup.xcdatamodel; sourceTree = "<group>"; };
+		0A98BF962738BB1A0000B620 /* Secp256k1.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Secp256k1.swift; sourceTree = "<group>"; };
+		0A98BF982738BBB40000B620 /* PoDLE.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PoDLE.swift; sourceTree = "<group>"; };
 		0A9FDC9026A84CE30050C4AE /* WalletTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletTypes.swift; sourceTree = "<group>"; };
 		0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletRecoveryViewController.swift; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
@@ -653,6 +657,7 @@
 		D0286D6121E2675D00954991 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				0A98BF962738BB1A0000B620 /* Secp256k1.swift */,
 				D02094EF2257FB78002E8E7A /* FirstTime.swift */,
 				D073E16D22558CDE0012A28C /* CoreDataService.swift */,
 				D073E16C225588EF0012A28C /* Tor */,
@@ -797,6 +802,7 @@
 		D06B3A522272D1C4001921EE /* UTXO's */ = {
 			isa = PBXGroup;
 			children = (
+				0A98BF982738BBB40000B620 /* PoDLE.swift */,
 				D0560EE82277F75900C3E909 /* UTXOViewController.swift */,
 				D08A92B6233E113B00409D6E /* LockedViewController.swift */,
 				844D2A492512D4F60046372E /* UTXOCell.swift */,
@@ -1280,9 +1286,11 @@
 				D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */,
 				0A00D6A4271BE51600ECAB22 /* TextFileImport.swift in Sources */,
 				D0384E2F246AC4B1002FEE94 /* XpubConverter.swift in Sources */,
+				0A98BF972738BB1A0000B620 /* Secp256k1.swift in Sources */,
 				D08A92B5233C979600409D6E /* FiatConverter.swift in Sources */,
 				0A212D9226CBE17600BF6FD4 /* MixIndexes.swift in Sources */,
 				0A21442C26B4282300123EAC /* PromptForAuthViewController.swift in Sources */,
+				0A98BF992738BBB40000B620 /* PoDLE.swift in Sources */,
 				D0F3919624C0379200EA8A2A /* ImportWallet.swift in Sources */,
 				D0855FC622B08EE000DBBFC2 /* TorClient.swift in Sources */,
 				D03F65F124EFB25100901D06 /* KeySendViewController.swift in Sources */,

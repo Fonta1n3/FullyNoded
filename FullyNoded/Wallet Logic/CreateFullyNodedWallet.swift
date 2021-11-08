@@ -20,6 +20,12 @@ enum Keys {
         return hdkey.privKey?.data
     }
     
+    static func privKeyToWIF(_ data: Data) -> String? {
+        guard let key = try? Key(data, network: .mainnet) else { return nil }
+        
+        return key.wif
+    }
+    
     static func privKeyToPubKey(_ privKey: Data) -> String? {
         guard let key = try? Key(privKey, network: .mainnet) else { return nil }
         
@@ -38,55 +44,59 @@ enum Keys {
                 return
             }
             
-            for (i, encryptedSigner) in encryptedSigners.enumerated() {
+            for (_, encryptedSigner) in encryptedSigners.enumerated() {
                 let encryptedSignerStruct = SignerStruct(dictionary: encryptedSigner)
                 
-                guard let wordsData = Crypto.decrypt(encryptedSignerStruct.words), let words = wordsData.utf8 else {
-                    completion((nil, "Unable to decrypt your signer."))
-                    return
-                }
-                
-                var passphrase = ""
-                
-                if let encryptedPassphrase = encryptedSignerStruct.passphrase {
-                    guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase), let passphraseString = decryptedPassphrase.utf8 else {
-                        completion((nil, "Unable to decrypt your passphrase."))
+                if let encryptedWords = encryptedSignerStruct.words {
+                    guard let wordsData = Crypto.decrypt(encryptedWords), let words = wordsData.utf8 else {
+                        completion((nil, "Unable to decrypt your signer."))
                         return
                     }
                     
-                    passphrase = passphraseString
-                }
-                
-                var coinType = "0"
-                
-                if let chain = UserDefaults.standard.object(forKey: "chain") as? String {
-                    if chain != "main" {
-                        coinType = "1"
+                    var passphrase = ""
+                    
+                    if let encryptedPassphrase = encryptedSignerStruct.passphrase {
+                        guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase), let passphraseString = decryptedPassphrase.utf8 else {
+                            completion((nil, "Unable to decrypt your passphrase."))
+                            return
+                        }
+                        
+                        passphrase = passphraseString
                     }
-                }
-                
-                guard let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase) else {
-                    completion((nil, "Unable to derive your signers master key."))
-                    return
-                }
-                
-                guard let hdkey = try? HDKey(base58: masterKey), let derivedKey = try? hdkey.derive(using: bip32Path) else {
-                    completion((nil, "Unable to derive key from your master key."))
-                    return
-                }
-                
-                if derivedKey.pubKey.data.hex == pubkey {
-                    guard let privKey = derivedKey.privKey?.data else {
-                        completion((nil, "Unable to convert the key to a private key."))
+                    
+                    var coinType = "0"
+                    
+                    if let chain = UserDefaults.standard.object(forKey: "chain") as? String {
+                        if chain != "main" {
+                            coinType = "1"
+                        }
+                    }
+                    
+                    guard let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase) else {
+                        completion((nil, "Unable to derive your signers master key."))
                         return
                     }
                     
-                    completion((privKey, nil))
-                    break
+                    guard let hdkey = try? HDKey(base58: masterKey), let derivedKey = try? hdkey.derive(using: bip32Path) else {
+                        completion((nil, "Unable to derive key from your master key."))
+                        return
+                    }
                     
-                } else if i + 1 == encryptedSigner.count {
+                    if derivedKey.pubKey.data.hex == pubkey {
+                        guard let privKey = derivedKey.privKey?.data else {
+                            completion((nil, "Unable to convert the key to a private key."))
+                            return
+                        }
+                        
+                        completion((privKey, nil))
+                        break
+                        
+                    }/* else if i + 1 == encryptedSigner.count {
+                        completion((nil, "Looks like none of your signers can sign for that utxo. This feature only works with hot wallets for now."))
+                    }*/
+                }/* else if i + 1 == encryptedSigner.count {
                     completion((nil, "Looks like none of your signers can sign for that utxo. This feature only works with hot wallets for now."))
-                }
+                }*/
             }
         }
     }

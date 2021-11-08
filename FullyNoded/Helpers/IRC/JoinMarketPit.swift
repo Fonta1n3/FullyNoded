@@ -46,6 +46,7 @@ class JoinMarketPit: NSObject {
     
     private class func server() -> IRCServer {
         return IRCServer(hostname: HostName.darkScience.rawValue, port: 6667, user: user())
+        //return IRCServer(hostname: HostName.hackInt.rawValue, port: 6667, user: user())
     }
     
     private class func user() -> IRCUser {

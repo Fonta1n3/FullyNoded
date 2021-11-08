@@ -624,7 +624,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                     if idealAbsOffers.count > 4 {
                         for i in 0...4 {
                             let offer = idealAbsOffers[i]
-                            print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
+                            print("maker: \(offer.maker)\nminAmount: \(offer.minSize ?? 0)\nmaxAmount: \(offer.maxSize ?? 0)")
                             
                             taker.handshake(offer, utxoToMix) { _ in
                                 //print("handshake response: \(response ?? "empty")")
@@ -645,7 +645,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                     if idealRelOffers.count > 4 {
                         for i in 0...4 {
                             let offer = idealRelOffers[i]
-                            print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
+                            print("maker: \(offer.maker)\nminAmount: \(offer.minSize ?? 0)\nmaxAmount: \(offer.maxSize ?? 0)")
                             
                             taker.handshake(offer, utxoToMix) { response in
                                 //print("handshake response: \(response ?? "empty")")

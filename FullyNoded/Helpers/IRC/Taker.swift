@@ -62,7 +62,7 @@ class Taker: NSObject {
         
         //!auth <input utxo pubkey> <btc sig of taker encryption pubkey using input utxo pubkey>
         
-        guard let privkey = Keys.randomPrivKey() else { print("privkey failing"); return }
+        guard let privkey = Keys.randomPrivKey(), let wif = Keys.privKeyToWIF(privkey) else { print("privkey failing"); return }
         guard let pubkey = Keys.privKeyToPubKey(privkey) else { print("pubkey failing"); return }
         guard let server = JoinMarketPit.sharedInstance.server else { print("server failing"); return }
         let maker = offer.maker
@@ -70,14 +70,24 @@ class Taker: NSObject {
         guard let cjAmount = utxo.amount else { print("cjamount failing"); return }
         guard let commitment = utxo.commitment else { print("commitment failing"); return }
         
-        
+        // (NS): nick signature (either of form pub, sig or from pubkey recovery, bitcoin type) :
+        // message to be signed is the whole message to be sent + message channel identifier str(serverport) (the latter to prevent cross-channel replay)
         server.delegate = self
                 
         let amount = Int(cjAmount * 100000000)
         
-        let fill = "PRIVMSG \(maker) :!fill \(oid) \(amount) \(pubkey) \(commitment)"
+        let messageToBeSigned = "!fill \(oid) \(amount) \(pubkey) \("P" + commitment) darkirc6tqgpnwd3blln3yfv5ckl47eg7llfxkmtovrv7c7iwohhb6ad.onion6667"
         
-        server.send(fill)
+        OnchainUtils.signMessage(message: messageToBeSigned, privKey: wif) { (signature, errMessage) in
+            guard let sig = signature else {
+                print("sign message failed: \(errMessage ?? "unknown")")
+                return
+            }
+                        
+            let fill = "PRIVMSG \(maker) :!fill \(oid) \(amount) \(pubkey) \("P" + commitment) \(sig)"
+            
+            server.send(fill)
+        }
     }
 
 }

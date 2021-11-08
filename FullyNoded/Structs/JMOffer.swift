@@ -40,6 +40,21 @@ public struct JMOffer: CustomStringConvertible {
         raw = dict["offer"]!
         
         let array = raw.split(separator: " ")
+        
+        guard array.count >= 6 else {
+            isNativeSegwit = nil
+            isAbs = nil
+            isRel = nil
+            oid = nil
+            minSize = nil
+            maxSize = nil
+            txFee = nil
+            cjFee = nil
+            pubkey = nil
+            encMessage = nil
+            print("failing offer: \(raw)")
+            return
+        }
                     
         let type = array[0]
         isNativeSegwit = type.hasPrefix("sw0")
@@ -50,7 +65,7 @@ public struct JMOffer: CustomStringConvertible {
         oid = Int(array[1])
         minSize = Int(array[2])
         maxSize = Int(array[3])
-        txFee = Int(array[4])
+        txFee = Int(array[4])        
         cjFee = Int(array[5])
         
         if array.count > 6 {
