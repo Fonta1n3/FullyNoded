@@ -59,12 +59,10 @@ class PromptForAuthViewController: UIViewController, UINavigationControllerDeleg
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            if !self.authenticating {
-                self.dismiss(animated: true) {
+            self.dismiss(animated: false) {
+                if !self.authenticating {
                     self.doneBlock?(id)
-                }
-            } else {
-                self.dismiss(animated: true) {
+                } else {
                     self.authenticated?(result)
                 }
             }

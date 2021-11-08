@@ -276,7 +276,6 @@ enum Keys {
     }
         
     static func verifyAddress(_ address: String, _ path: String, _ descriptor: String, completion: @escaping ((isOurs: Bool, wallet: String?, signable: Bool, signer: String?)) -> Void) {
-        print("verifyAddress")
         CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
             guard let wallets = wallets, wallets.count > 0 else {
                 // need to check if signers can sign here
