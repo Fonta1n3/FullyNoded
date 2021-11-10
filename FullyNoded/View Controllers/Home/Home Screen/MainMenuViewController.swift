@@ -380,7 +380,7 @@ class MainMenuViewController: UIViewController {
         case .totalSupply:
             if uptimeInfo != nil {
                 label.text = "Verify total supply"
-                icon.image = UIImage(systemName: "bitcoinsign.circle")
+                icon.image = UIImage(systemName: "person.fill.checkmark")
                 background.backgroundColor = .systemYellow
                 chevron.alpha = 1
             }
@@ -395,13 +395,18 @@ class MainMenuViewController: UIViewController {
             
         case .blockchainNetwork:
             if blockchainInfo != nil {
-                label.text = blockchainInfo.network
-                icon.image = UIImage(systemName: "link")
-                if blockchainInfo.network == "test chain" {
-                    background.backgroundColor = .systemGreen
-                } else if blockchainInfo.network == "main chain" {
-                    background.backgroundColor = .systemOrange
-                } else {
+                label.text = blockchainInfo.network.capitalized
+                icon.image = UIImage(systemName: "bitcoinsign.circle")
+                switch blockchainInfo.network {
+                case "test":
+                    background.backgroundColor = #colorLiteral(red: 0.4399289489, green: 0.9726744294, blue: 0.2046178877, alpha: 1)
+                case "main":
+                    background.backgroundColor = #colorLiteral(red: 0.9629253745, green: 0.5778557658, blue: 0.1043280438, alpha: 1)
+                case "regtest":
+                    background.backgroundColor = #colorLiteral(red: 0.2165609896, green: 0.7795373201, blue: 0.9218732715, alpha: 1)
+                case "signet":
+                    background.backgroundColor = #colorLiteral(red: 0.8719944954, green: 0.9879228473, blue: 0.07238187641, alpha: 1)
+                default:
                     background.backgroundColor = .systemTeal
                 }
                 chevron.alpha = 1
@@ -897,7 +902,7 @@ extension MainMenuViewController {
         case .nodeVersion:
             return "Node version"
         case .blockchainNetwork:
-            return "Blockchain network"
+            return "Bitcoin network"
         case .peerConnections:
             return "Peer connections"
         case .blockchainState:
@@ -1084,7 +1089,7 @@ extension MainMenuViewController: UITableViewDelegate {
                 command = "gettxoutsetinfo"
                 detailHeaderText = headerName(for: .totalSupply)
                 detailSubheaderText = "Use your own node to verify total supply"
-                detailImage = UIImage(systemName: "bitcoinsign.circle")!
+                detailImage = UIImage(systemName: "person.fill.checkmark")!
                 detailImageTint = .systemYellow
                 detailTextDescription = """
                 Fully Noded uses the bitcoin-cli gettxoutsetinfo command to determine the total amount of mined Bitcoins. This command can take considerable time to load, usually around 30 seconds so please be patient while it loads.
