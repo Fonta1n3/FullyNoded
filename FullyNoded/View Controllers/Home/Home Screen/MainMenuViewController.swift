@@ -1120,7 +1120,7 @@ extension MainMenuViewController: UITableViewDelegate {
             if blockchainInfo != nil {
                 command = "getblockchaininfo"
                 detailHeaderText = headerName(for: .blockchainNetwork)
-                detailSubheaderText = blockchainInfo.network
+                detailSubheaderText = blockchainInfo.network.capitalized
                 if blockchainInfo.network == "test chain" {
                     detailImageTint = .systemGreen
                 } else if blockchainInfo.network == "main chain" {
@@ -1128,7 +1128,20 @@ extension MainMenuViewController: UITableViewDelegate {
                 } else {
                     detailImageTint = .systemTeal
                 }
-                detailImage = UIImage(systemName: "link")!
+                detailImage = UIImage(systemName: "bitcoinsign.circle")!
+                switch blockchainInfo.network {
+                case "test":
+                    detailImageTint = #colorLiteral(red: 0.4399289489, green: 0.9726744294, blue: 0.2046178877, alpha: 1)
+                case "main":
+                    detailImageTint = #colorLiteral(red: 0.9629253745, green: 0.5778557658, blue: 0.1043280438, alpha: 1)
+                case "regtest":
+                    detailImageTint = #colorLiteral(red: 0.2165609896, green: 0.7795373201, blue: 0.9218732715, alpha: 1)
+                case "signet":
+                    detailImageTint = #colorLiteral(red: 0.8719944954, green: 0.9879228473, blue: 0.07238187641, alpha: 1)
+                default:
+                    detailImageTint = .systemTeal
+                }
+                
                 detailTextDescription = """
                 Fully Noded makes the bitcoin-cli getblockchaininfo command to determine which network your node is running on. Your node can run three different chain's simultaneously; "main", "test" and "regtest". Fully Noded is capable of connecting to either one. To launch mutliple chains simultaneously you would want to run the "bitcoind" command with the "-chain=test", "-chain=regtest" arguments or omit the argument to run the main chain.
                 
