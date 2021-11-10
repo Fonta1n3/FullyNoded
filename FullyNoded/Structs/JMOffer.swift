@@ -21,7 +21,7 @@ public struct JMOffer: CustomStringConvertible {
     // This is failing: :J5DbkkCqGnfSNmHt!J5DbkkCqGn@tor.darkscience.net PRIVMSG J5EBCzgQ5yCUz1vZ :!sw0absoffer 0 100000 99999999 0 0!sw0reloffer 1 100000000 3110768682 0 0.00001999!tbond //8wRAIgYPXdaA+L8CVTJ9itwNR/5VRa58UnAL/3fmN2CNNGzYkCIBJK9QVVFAcPlcG6CGWSAUH9GZakEQl22X5VmqgxnJkq//8wRAIgbwPGbSAU+/NjXtTCwLbhmcWhl970j8GN/ud6RSGzNwACIDl2yqBuXutJC0/kQQ/4BQl7jMQkPTc7qJOvr789oOanAu0BqJgOvV6JTTxtpkVfCAQ+hcqA8ppftqmw1aE/V4m8WwEC/lU55H6vN7C0Up9irJZwTyEdWjbXVB6rP4otWR52452byAZsS/040/cQQAL6/M8gTSUMkcZ7rcCXPlqjnVXKmwAAAAAAz
     
     let maker:String
-    //let host:String?
+    let channelId:String?
     let oid: Int?
     let isAbs: Bool?
     let isRel: Bool?
@@ -38,6 +38,7 @@ public struct JMOffer: CustomStringConvertible {
     init(_ dict: [String:String]) {
         maker = dict["maker"]!
         raw = dict["offer"]!
+        channelId = dict["channelId"]!
         
         let array = raw.split(separator: " ")
         

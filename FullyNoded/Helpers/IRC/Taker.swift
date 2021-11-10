@@ -65,6 +65,8 @@ class Taker: NSObject {
         guard let privkey = Keys.randomPrivKey(), let wif = Keys.privKeyToWIF(privkey) else { print("privkey failing"); return }
         guard let pubkey = Keys.privKeyToPubKey(privkey) else { print("pubkey failing"); return }
         guard let server = JoinMarketPit.sharedInstance.server else { print("server failing"); return }
+        guard let channelId = offer.channelId else { print("channelId failing"); return }
+        print("channelId: \(channelId)")
         let maker = offer.maker
         guard let oid = offer.oid else { print("oid failing"); return }
         guard let cjAmount = utxo.amount else { print("cjamount failing"); return }
@@ -76,7 +78,7 @@ class Taker: NSObject {
                 
         let amount = Int(cjAmount * 100000000)
         
-        let messageToBeSigned = "!fill \(oid) \(amount) \(pubkey) \("P" + commitment) darkirc6tqgpnwd3blln3yfv5ckl47eg7llfxkmtovrv7c7iwohhb6ad.onion6667"
+        let messageToBeSigned = "!fill \(oid) \(amount) \(pubkey) \("P" + commitment) \(channelId)"
         
         OnchainUtils.signMessage(message: messageToBeSigned, privKey: wif) { (signature, errMessage) in
             guard let sig = signature else {

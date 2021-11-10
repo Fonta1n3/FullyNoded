@@ -394,6 +394,7 @@ enum Keys {
                             }
                             
                             if i + 1 == wallets.count {
+                                // if is not ours we can also query all Bitcoin Core wallets
                                 completion((isOurs, walletLabel, signable, signer))
                             }
                         }
@@ -414,6 +415,7 @@ enum Keys {
                                 network = key.network
                                 
                                 guard let childKey = try? key.derive(using: accountPath) else {
+                                    // if is not ours we can also query all Bitcoin Core wallets
                                     completion((isOurs, walletLabel, signable, signer))
                                     return
                                 }
@@ -438,6 +440,7 @@ enum Keys {
                 if i + 1 == wallets.count && providedDescStr.isMulti {
                     for (d, derivation) in providedDescStr.derivationArray.enumerated() {
                         guard let fullPath = try? BIP32Path(string: derivation) else {
+                            // if is not ours we can also query all Bitcoin Core wallets
                             completion((isOurs, walletLabel, signable, signer))
                             return
                         }
@@ -447,6 +450,7 @@ enum Keys {
                             guard let hex = Data(hexString: key),
                                   let pubkey1 = try? PubKey(hex, network: .mainnet),
                                   let pubkey2 = try? PubKey(hex, network: .testnet) else {
+                                      // if is not ours we can also query all Bitcoin Core wallets
                                 completion((isOurs, walletLabel, signable, signer))
                                 return
                             }
@@ -463,6 +467,7 @@ enum Keys {
                                     }
                                     
                                     if d + 1 == providedDescStr.derivationArray.count {
+                                        // if is not ours we can also query all Bitcoin Core wallets
                                         completion((isOurs, walletLabel, signable, signer))
                                     }
                                 }

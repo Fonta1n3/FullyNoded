@@ -35,8 +35,9 @@ struct IRCServerInputParser {
                 
                 if sourceChunks.count == 2 {
                     let maker = "\(sourceChunks[0])".replacingOccurrences(of: ":", with: "")
-                    
+                    let channelId = "\(sourceChunks[1])"
                     let offerChunks = rest.split(separator: "!")
+                    
                     //offerChunks[0] = "PRIVMSG J55dwWZtXgVNVckn :"
                     //offerChunks[1] = "sw0reloffer 0 27300 1130638816 0 0.002500"
                     //offerChunks[2] = "tbond //8wRAIgUuRfeUYW0TBwlcX8+Bvg5wwE8+DxU1sLfgyPF1sgVq8CIGmhg1XemT9F/JsKtd27T53FC2tUdiix31IgX6LUe6VU//8wRAIgISN5peEJQSU/1ZYkH+e1TkInxPSg5w2WMb06YFMqe0MCIBekR60FkxUv7WmX1KPL/FaIvM4evZqMd0D0mPWTqT1AA/W43SXCmM4IQhnZvCNqiYvPojY4zu3n+25rmv3PkFNkWgEC8vlSXYrSw94MW1gt7q95LTdDS+Yx4AS/vG4Q1DNLY5/UA0Fvqnggve8D3+OoOb36dI+9ZLrWt5vE4IsfH2f7tQAAAAAArJZi 036b7dd4ca556b7c6549fdde88a3b9f84846 ;"
@@ -45,9 +46,9 @@ struct IRCServerInputParser {
                         if i > 0 {
                             switch chunk {
                             case _ where chunk.hasPrefix("sw0reloffer"):
-                                return .sw0reloffer(offer: JMOffer(["maker": maker, "offer": "\(chunk)"]))
+                                return .sw0reloffer(offer: JMOffer(["maker": maker, "offer": "\(chunk)", "channelId": channelId]))
                             case _ where chunk.hasPrefix("sw0absoffer"):
-                                return .sw0absoffer(offer: JMOffer(["maker": maker, "offer": "\(chunk)"]))
+                                return .sw0absoffer(offer: JMOffer(["maker": maker, "offer": "\(chunk)", "channelId": channelId]))
                             default:
                                 break
                             }

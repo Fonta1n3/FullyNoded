@@ -163,8 +163,8 @@ public class IRCServer {
             print("unknown message type: \(message)")
             
         default:
-            //print("Unknown: \(message)")
-        break
+            print("Unknown: \(message)")
+            break
         }
     }
     
