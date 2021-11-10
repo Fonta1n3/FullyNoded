@@ -1107,7 +1107,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="h8h-eI-nNX" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-4199" y="-490"/>
+            <point key="canvasLocation" x="-4199" y="-445"/>
         </scene>
         <!--Get Info View Controller-->
         <scene sceneID="rVE-tx-gVr">
@@ -1133,7 +1133,7 @@
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="WKP-8y-kGS">
                                 <rect key="frame" x="16" y="102" width="290" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="CoM-f0-K05">
                                 <rect key="frame" x="313" y="104" width="46" height="30"/>
@@ -2205,7 +2205,7 @@ xxxxx</string>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="sl3-9W-VXh">
                                 <rect key="frame" x="16" y="96.5" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="label:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OXp-Lu-TiL">
                                 <rect key="frame" x="16" y="68" width="41" height="20.5"/>
@@ -2429,160 +2429,6 @@ xxxxx</string>
             </objects>
             <point key="canvasLocation" x="-9623.2000000000007" y="1127.5862068965519"/>
         </scene>
-        <!--Recovery View Controller-->
-        <scene sceneID="Q5L-1h-B2i">
-            <objects>
-                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="pBQ-SK-r7u" customClass="RecoveryViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="ecT-RY-DAq">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Recovery Words" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MdU-Rr-Lbu">
-                                <rect key="frame" x="16" y="71" width="213.5" height="35"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="35" id="8Va-u4-T38"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="Egm-58-pbp">
-                                <rect key="frame" x="16" y="120" width="343" height="34"/>
-                                <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DTD-DW-IEG">
-                                        <rect key="frame" x="0.0" y="0.0" width="24" height="34"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" constant="24" id="5FA-IS-60X"/>
-                                            <constraint firstAttribute="height" constant="34" id="9Ol-D0-x4b"/>
-                                        </constraints>
-                                        <color key="tintColor" systemColor="systemPinkColor"/>
-                                        <state key="normal" image="minus.rectangle" catalog="system"/>
-                                        <connections>
-                                            <action selector="removeWordAction:" destination="pBQ-SK-r7u" eventType="touchUpInside" id="bcL-tz-8hD"/>
-                                        </connections>
-                                    </button>
-                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Ihd-q7-s4e">
-                                        <rect key="frame" x="71.5" y="0.0" width="200" height="34"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" constant="200" id="OLc-nB-tgV"/>
-                                            <constraint firstAttribute="height" constant="34" id="Pqh-Gl-8WH"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <textInputTraits key="textInputTraits" keyboardAppearance="alert"/>
-                                    </textField>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GKi-IT-icE">
-                                        <rect key="frame" x="319" y="0.0" width="24" height="34"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" constant="24" id="Icz-XV-kDo"/>
-                                            <constraint firstAttribute="height" constant="34" id="dyU-fj-Xkq"/>
-                                        </constraints>
-                                        <color key="tintColor" systemColor="systemGreenColor"/>
-                                        <state key="normal" image="plus.rectangle" catalog="system"/>
-                                        <connections>
-                                            <action selector="addWordAction:" destination="pBQ-SK-r7u" eventType="touchUpInside" id="9gQ-wq-uDL"/>
-                                        </connections>
-                                    </button>
-                                </subviews>
-                            </stackView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="In order to recover a wallet you need to supply BIP39 recovery words. " textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="8" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qu0-JM-zmT">
-                                <rect key="frame" x="21" y="545" width="333" height="52"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="52" id="4o1-82-Gdp"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="S92-Fc-9YX">
-                                <rect key="frame" x="16" y="605" width="343" height="42"/>
-                                <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="42" id="aYW-lD-sRP"/>
-                                </constraints>
-                                <state key="normal" title="recover">
-                                    <color key="titleColor" systemColor="systemTealColor"/>
-                                </state>
-                                <connections>
-                                    <action selector="recoverAction:" destination="pBQ-SK-r7u" eventType="touchUpInside" id="KOS-nh-Y1A"/>
-                                </connections>
-                            </button>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="TIM-Je-Ssn">
-                                <rect key="frame" x="292" y="51" width="67" height="24"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="67" id="BYm-uh-5dS"/>
-                                    <constraint firstAttribute="height" constant="24" id="nNx-TS-p4J"/>
-                                </constraints>
-                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits" keyboardType="numberPad" keyboardAppearance="alert"/>
-                            </textField>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Account #" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WA3-99-MRO">
-                                <rect key="frame" x="218" y="54.5" width="66" height="17"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="optional passphrase" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="FGI-Cz-6Xp">
-                                <rect key="frame" x="16" y="503" width="343" height="34"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
-                            </textField>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rKg-VX-oPO">
-                                <rect key="frame" x="16" y="162" width="343" height="333"/>
-                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <color key="textColor" systemColor="systemGreenColor"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                            </textView>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="gaX-UQ-PFc"/>
-                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <constraints>
-                            <constraint firstItem="S92-Fc-9YX" firstAttribute="leading" secondItem="gaX-UQ-PFc" secondAttribute="leading" constant="16" id="3SS-R3-fHl"/>
-                            <constraint firstItem="FGI-Cz-6Xp" firstAttribute="leading" secondItem="gaX-UQ-PFc" secondAttribute="leading" constant="16" id="3gb-xp-F7g"/>
-                            <constraint firstItem="Egm-58-pbp" firstAttribute="top" secondItem="MdU-Rr-Lbu" secondAttribute="bottom" constant="14" id="43J-Ye-j2s"/>
-                            <constraint firstItem="gaX-UQ-PFc" firstAttribute="trailing" secondItem="Egm-58-pbp" secondAttribute="trailing" constant="16" id="4Vn-oG-eiB"/>
-                            <constraint firstItem="gaX-UQ-PFc" firstAttribute="trailing" secondItem="Qu0-JM-zmT" secondAttribute="trailing" constant="21" id="6bb-wY-Mwd"/>
-                            <constraint firstItem="rKg-VX-oPO" firstAttribute="top" secondItem="Egm-58-pbp" secondAttribute="bottom" constant="8" id="B7n-Ru-wJS"/>
-                            <constraint firstItem="TIM-Je-Ssn" firstAttribute="leading" secondItem="WA3-99-MRO" secondAttribute="trailing" constant="8" id="E86-aF-wLv"/>
-                            <constraint firstItem="gaX-UQ-PFc" firstAttribute="trailing" secondItem="TIM-Je-Ssn" secondAttribute="trailing" constant="16" id="GTM-WQ-8Di"/>
-                            <constraint firstItem="FGI-Cz-6Xp" firstAttribute="top" secondItem="rKg-VX-oPO" secondAttribute="bottom" constant="8" id="HLB-u0-6CB"/>
-                            <constraint firstItem="TIM-Je-Ssn" firstAttribute="top" secondItem="gaX-UQ-PFc" secondAttribute="top" constant="7" id="Jeh-pa-qDB"/>
-                            <constraint firstItem="S92-Fc-9YX" firstAttribute="top" secondItem="Qu0-JM-zmT" secondAttribute="bottom" constant="8" id="OmZ-Q9-Jvx"/>
-                            <constraint firstItem="MdU-Rr-Lbu" firstAttribute="top" secondItem="gaX-UQ-PFc" secondAttribute="top" constant="27" id="P8X-Ml-7sd"/>
-                            <constraint firstItem="gaX-UQ-PFc" firstAttribute="bottom" secondItem="S92-Fc-9YX" secondAttribute="bottom" constant="20" id="RB8-Ja-MpE"/>
-                            <constraint firstItem="TIM-Je-Ssn" firstAttribute="centerY" secondItem="WA3-99-MRO" secondAttribute="centerY" id="See-58-fir"/>
-                            <constraint firstItem="Egm-58-pbp" firstAttribute="leading" secondItem="gaX-UQ-PFc" secondAttribute="leading" constant="16" id="bPy-7h-0Oh"/>
-                            <constraint firstItem="gaX-UQ-PFc" firstAttribute="trailing" secondItem="FGI-Cz-6Xp" secondAttribute="trailing" constant="16" id="dKZ-a4-DBJ"/>
-                            <constraint firstItem="rKg-VX-oPO" firstAttribute="leading" secondItem="gaX-UQ-PFc" secondAttribute="leading" constant="16" id="krR-Tx-AFh"/>
-                            <constraint firstItem="Qu0-JM-zmT" firstAttribute="top" secondItem="FGI-Cz-6Xp" secondAttribute="bottom" constant="8" id="mnl-PG-A2X"/>
-                            <constraint firstItem="gaX-UQ-PFc" firstAttribute="trailing" secondItem="rKg-VX-oPO" secondAttribute="trailing" constant="16" id="p6L-TN-hhG"/>
-                            <constraint firstItem="gaX-UQ-PFc" firstAttribute="trailing" secondItem="S92-Fc-9YX" secondAttribute="trailing" constant="16" id="pil-5b-2gn"/>
-                            <constraint firstItem="Qu0-JM-zmT" firstAttribute="leading" secondItem="gaX-UQ-PFc" secondAttribute="leading" constant="21" id="rGj-PP-8Cp"/>
-                            <constraint firstItem="MdU-Rr-Lbu" firstAttribute="leading" secondItem="gaX-UQ-PFc" secondAttribute="leading" constant="16" id="wGD-OU-YJQ"/>
-                        </constraints>
-                    </view>
-                    <navigationItem key="navigationItem" id="Q0u-kv-3Ie">
-                        <barButtonItem key="rightBarButtonItem" image="questionmark.circle" catalog="system" id="jMC-0r-Kfq">
-                            <color key="tintColor" systemColor="systemTealColor"/>
-                            <connections>
-                                <action selector="showHelp:" destination="pBQ-SK-r7u" id="G91-Lc-pXY"/>
-                            </connections>
-                        </barButtonItem>
-                    </navigationItem>
-                    <connections>
-                        <outlet property="accountField" destination="TIM-Je-Ssn" id="qbj-Jf-YFT"/>
-                        <outlet property="passphraseField" destination="FGI-Cz-6Xp" id="OOS-yq-UzK"/>
-                        <outlet property="recoverOutlet" destination="S92-Fc-9YX" id="XWt-6Z-X93"/>
-                        <outlet property="textField" destination="Ihd-q7-s4e" id="jM2-Q2-Ir5"/>
-                        <outlet property="wordView" destination="rKg-VX-oPO" id="aPV-Zx-Tf6"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="0cJ-iY-7AU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-8863.2000000000007" y="1800.4497751124438"/>
-        </scene>
         <!--Prompt For Auth View Controller-->
         <scene sceneID="l33-wA-QdN">
             <objects>
@@ -2757,7 +2603,7 @@ xxxxx</string>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="oeA-4f-Yg1" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-10378.4" y="2544.3778110944531"/>
+            <point key="canvasLocation" x="-6551" y="422"/>
         </scene>
         <!--Signers View Controller-->
         <scene sceneID="HBy-5M-PSd">
@@ -2872,7 +2718,7 @@ xxxxx</string>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="rsb-bT-QAF" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-6708" y="-419"/>
+            <point key="canvasLocation" x="-6130" y="-419"/>
         </scene>
         <!--Fully Noded Wallets View Controller-->
         <scene sceneID="GAV-WR-w2l">
@@ -3045,7 +2891,7 @@ xxxxx</string>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="optional passphrase" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="yZn-vb-xcG">
                                 <rect key="frame" x="16" y="563" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="3xd-ni-TOq">
                                 <rect key="frame" x="58.5" y="120" width="258" height="34"/>
@@ -3069,7 +2915,7 @@ xxxxx</string>
                                             <constraint firstAttribute="height" constant="34" id="faz-zg-gdb"/>
                                         </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <textInputTraits key="textInputTraits" keyboardAppearance="alert"/>
+                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                     </textField>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="aWx-tf-Q2j">
                                         <rect key="frame" x="234" y="0.0" width="24" height="34"/>
@@ -3135,7 +2981,7 @@ xxxxx</string>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Zqn-cy-ARX" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-9682.3999999999996" y="3313.4932533733136"/>
+            <point key="canvasLocation" x="-5713" y="421"/>
         </scene>
         <!--Wallet Detail View Controller-->
         <scene sceneID="qgF-W8-mAf">
@@ -3687,7 +3533,6 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <outlet property="multiSigOutlet" destination="ewF-ze-dkg" id="EXb-It-bRN"/>
                         <outlet property="singleSigOutlet" destination="GO8-o8-fXl" id="6Gi-pM-wjc"/>
                         <segue destination="Yhd-sD-SB5" kind="show" identifier="segueToSeedWords" id="AJq-aA-dsj"/>
-                        <segue destination="pBQ-SK-r7u" kind="show" identifier="seguToManualCreation" id="tT8-Fn-Z1b"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanner" id="1fQ-PG-chF"/>
                         <segue destination="00Y-n8-WfC" kind="show" identifier="segueToCreateMultiSig" id="ejH-sy-hlm"/>
                         <segue destination="fG5-85-vAV" kind="show" identifier="segueToImportXpub" id="Cd3-qW-ujG"/>
@@ -3722,12 +3567,12 @@ Fully Noded does its best to support as many hardware and software wallet option
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="optional label" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="0B2-xL-1ut">
                                 <rect key="frame" x="16" y="127" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="xpub / xprv" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="fbb-jX-krx">
                                 <rect key="frame" x="16" y="169" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sLK-5X-3x7">
                                 <rect key="frame" x="91" y="211" width="191" height="43"/>
@@ -3920,7 +3765,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="IBK-3t-b6g" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-5938" y="1129"/>
+            <point key="canvasLocation" x="-7431" y="1128"/>
         </scene>
         <!--Invoice View Controller-->
         <scene sceneID="aU3-2L-A1l">
@@ -4052,18 +3897,18 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                         <rect key="frame" x="0.0" y="0.0" width="85.5" height="34"/>
                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
+                                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                                     </textField>
                                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="amount" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="qFH-Vc-Ghn">
                                                         <rect key="frame" x="120.5" y="0.0" width="86" height="34"/>
                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="decimalPad" keyboardAppearance="alert" returnKeyType="done"/>
+                                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="decimalPad" keyboardAppearance="alert" returnKeyType="done" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                                     </textField>
                                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="message" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="ykL-jw-dGh">
                                                         <rect key="frame" x="241.5" y="0.0" width="85.5" height="34"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                        <textInputTraits key="textInputTraits"/>
+                                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                                     </textField>
                                                 </subviews>
                                             </stackView>
@@ -4237,7 +4082,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="e3g-lC-Q3f" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-6708" y="375.56221889055473"/>
+            <point key="canvasLocation" x="-8668" y="367"/>
         </scene>
         <!--Add Label View Controller-->
         <scene sceneID="jeZ-ZL-EW2">
@@ -4302,7 +4147,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="arQ-cZ-jef" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-5938.3999999999996" y="375.56221889055473"/>
+            <point key="canvasLocation" x="-8470" y="1118"/>
         </scene>
         <!--Create Raw Tx View Controller-->
         <scene sceneID="nPC-E2-jSN">
@@ -4387,7 +4232,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                <textInputTraits key="textInputTraits" keyboardType="decimalPad" keyboardAppearance="alert"/>
+                                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="decimalPad" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                             </textField>
                                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="vMA-Qa-Z9W">
                                                 <rect key="frame" x="201" y="100" width="134" height="32"/>
@@ -4615,7 +4460,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                     <constraint firstAttribute="width" constant="51" id="h5d-Ow-rNC"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
+                                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="numberPad" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Set a sat/vbyte fee rate:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yHc-bR-waN">
                                                 <rect key="frame" x="126.5" y="8" width="115.5" height="12"/>
@@ -5875,7 +5720,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                         <rect key="frame" x="0.0" y="24" width="343" height="34"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
+                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                     </textField>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address: (xxx.onion:8332 or 127.0.0.1:8332) " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1oS-WI-SUN">
                                         <rect key="frame" x="0.0" y="65" width="343" height="17"/>
@@ -5887,7 +5732,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                         <rect key="frame" x="0.0" y="89" width="343" height="34"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
+                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                     </textField>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC username: (Bitcoin Core or c-lightning)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Shd-1m-99a">
                                         <rect key="frame" x="0.0" y="130" width="343" height="17"/>
@@ -6206,7 +6051,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="SRg-gq-aWa">
                                 <rect key="frame" x="16" y="280" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits" keyboardType="numberPad" keyboardAppearance="alert" returnKeyType="done"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="numberPad" keyboardAppearance="alert" returnKeyType="done"/>
                             </textField>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Enter an amount of satoshis to commit to the channel:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dQ2-EQ-aje">
                                 <rect key="frame" x="16" y="257" width="345" height="15"/>
@@ -6930,7 +6775,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                         <rect key="frame" x="0.0" y="30.5" width="343" height="34"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <textInputTraits key="textInputTraits"/>
+                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no"/>
                                     </textField>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="URI" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SDf-c1-XMB">
                                         <rect key="frame" x="0.0" y="74.5" width="343" height="20.5"/>
@@ -7151,7 +6996,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="amount in satoshis" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="pW9-Tg-G5r">
                                 <rect key="frame" x="16" y="153" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no"/>
                             </textField>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="kcjbwducwiueciuef74" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cZ4-b4-9Q3">
                                 <rect key="frame" x="16" y="124" width="343" height="17"/>
@@ -7526,7 +7371,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <rect key="frame" x="16" y="128" width="343" height="34"/>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5Ap-ZR-AIW">
                                 <rect key="frame" x="325" y="44" width="33" height="42"/>
@@ -7654,12 +7499,12 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="Cd3-qW-ujG"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="1fQ-PG-chF"/>
-        <segue reference="ods-Ql-GAw"/>
+        <segue reference="CQp-9r-70w"/>
+        <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="7PS-EL-3d2"/>
-        <segue reference="Ikt-mc-dmE"/>
-        <segue reference="qmy-fM-U4p"/>
+        <segue reference="j10-wi-hpr"/>
+        <segue reference="U54-oe-CeC"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
     <resources>

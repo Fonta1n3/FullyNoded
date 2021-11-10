@@ -563,12 +563,16 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 textField.placeholder = "encryption password"
                 textField.isSecureTextEntry = true
                 textField.keyboardAppearance = .dark
+                textField.autocorrectionType = .no
+                textField.spellCheckingType = .no
             }
             
             alert.addTextField { textField in
                 textField.placeholder = "confirm password"
                 textField.isSecureTextEntry = true
                 textField.keyboardAppearance = .dark
+                textField.autocorrectionType = .no
+                textField.spellCheckingType = .no
             }
             
             alert.addAction(enable)
@@ -645,12 +649,16 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 textField.placeholder = "encryption password"
                 textField.isSecureTextEntry = true
                 textField.keyboardAppearance = .dark
+                textField.autocorrectionType = .no
+                textField.spellCheckingType = .no
             }
             
             alert.addTextField { textField in
                 textField.placeholder = "confirm password"
                 textField.isSecureTextEntry = true
                 textField.keyboardAppearance = .dark
+                textField.autocorrectionType = .no
+                textField.spellCheckingType = .no
             }
             
             alert.addAction(enable)

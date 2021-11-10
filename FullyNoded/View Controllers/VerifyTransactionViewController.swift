@@ -119,6 +119,39 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         loadNow()
     }
     
+    private func reset() {
+        self.unsignedPsbt = ""
+        self.signedRawTx = ""
+        self.isChannelFunding = false
+        self.voutChannelFunding = nil
+        self.rejectionMessage = ""
+        self.txValid = nil
+        self.memo = ""
+        self.txid = ""
+        self.outputsString = ""
+        self.inputArray.removeAll()
+        self.inputTableArray.removeAll()
+        self.outputArray.removeAll()
+        self.index = 0
+        self.inputTotal = 0.0
+        self.outputTotal = 0.0
+        self.miningFee = ""
+        self.recipients.removeAll()
+        self.addressToVerify = ""
+        self.signatures.removeAll()
+        self.signedTxInputs = NSArray()
+        self.confs = 0
+        self.alreadyBroadcast = false
+        self.labelText = "no label added"
+        self.memoText = "no memo added"
+        self.hasSigned = false
+        self.isSigning = false
+        self.bitcoinCoreWallets.removeAll()
+        self.walletIndex = 0
+        self.qrCodeStringToExport = ""
+        self.blind = false
+    }
+    
     private func processPsbt(_ psbt: String) {
         spinner.addConnectingView(vc: self, description: "processing psbt...")
                 
@@ -336,13 +369,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     private func processPastedString(_ string: String) {
         let processed = string.condenseWhitespace()
         if Keys.validPsbt(processed) {
+            self.reset()
             enableExportButton()
             processPsbt(processed)
         } else if Keys.validTx(processed) {
+            self.reset()
             enableExportButton()
             signedRawTx = processed
             load()
         } else if processed.lowercased().hasPrefix("ur:bytes") {
+            self.reset()
             self.blind = true
             self.parseBlindPsbt(processed)
         } else {
@@ -375,18 +411,21 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 showAlert(vc: self, title: "Invalid File", message: "That is not a recognized format, generally it will be a .psbt or .txn file.")
                 return
             }
-            
+                        
             if let text = data.utf8, text.lowercased().hasPrefix("ur:bytes") {
+                self.reset()
                 self.blind = true
                 self.parseBlindPsbt(text)
             } else {
+                self.reset()
                 unsignedPsbt = data.base64EncodedString()
                 processPsbt(unsignedPsbt)
             }
             
             return
         }
-                    
+        
+        reset()
         signedRawTx = text.condenseWhitespace()
         load()
     }
@@ -502,6 +541,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             alert.addTextField { textField in
                 textField.keyboardAppearance = .dark
                 textField.isSecureTextEntry = true
+                textField.autocorrectionType = .no
+                textField.spellCheckingType = .no
             }
             
             alert.addAction(set)
@@ -2508,6 +2549,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 
                 vc.onAddressDoneBlock = { [weak self] tx in
                     guard let self = self, let tx = tx else { return }
+                    
+                    self.reset()
                     
                     if Keys.validPsbt(tx) {
                         self.processPsbt(tx)
