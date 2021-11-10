@@ -485,12 +485,12 @@ class MainMenuViewController: UIViewController {
         case .p2pHiddenService:
             if networkInfo != nil {
                 if networkInfo.torReachable {
-                    label.text = "tor hidden service on"
+                    label.text = "Tor hidden service on"
                     icon.image = UIImage(systemName: "wifi")
                     background.backgroundColor = .black
                     
                 } else {
-                    label.text = "tor hidden service off"
+                    label.text = "Tor hidden service off"
                     icon.image = UIImage(systemName: "wifi.slash")
                     background.backgroundColor = .darkGray
                 }
