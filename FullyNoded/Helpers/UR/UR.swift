@@ -597,7 +597,12 @@ class URHelper {
     }
     
     static func descriptorToHdKeyCbor(_ descriptor: Descriptor) -> CBOR? {
-        let key = descriptor.accountXpub
+        var key = ""
+        if descriptor.accountXpub != "" {
+            key = descriptor.accountXpub
+        } else if descriptor.accountXprv != "" {
+            key = descriptor.accountXprv
+        }
         
         /// Decodes our original extended key to base58 data.
         let (chaincode, keyData, parentFingerprint, depth) = extractXpub(key)

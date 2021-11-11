@@ -16,6 +16,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     @IBOutlet weak var walletsTable: UITableView!
     
     var wallets = [[String:Any]]()
+    var externalWallets = [Wallet]()
     var walletId:UUID!
     var index = 0
     var existingActiveWalletName = ""
@@ -41,13 +42,18 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        externalWallets.removeAll()
         spinner.addConnectingView(vc: self, description: "getting total balance...")
         getBitcoinCoreWallets()
     }
     
-    @IBAction func seeAllWalletsAction(_ sender: Any) {
+    @IBAction func seeExternalWalletsAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToShowAllWallets", sender: self)
+        }
     }
-    
     
     private func getBitcoinCoreWallets() {
         bitcoinCoreWallets.removeAll()
@@ -99,9 +105,16 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
             for (i, wallet) in ws.enumerated() {
                 let walletStruct = Wallet(dictionary: wallet)
                 
-                for bitcoinCoreWallet in self.bitcoinCoreWallets {
+                var isInternal = false
+                
+                for (b, bitcoinCoreWallet) in self.bitcoinCoreWallets.enumerated() {
                     if bitcoinCoreWallet == walletStruct.name {
+                        isInternal = true
                         self.wallets.append(wallet)
+                    }
+                    
+                    if b + 1 == self.bitcoinCoreWallets.count && !isInternal {
+                        self.externalWallets.append(walletStruct)
                     }
                 }
                 
@@ -272,12 +285,18 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
-        if segue.identifier == "showWalletDetail" {
-            if let vc = segue.destination as? WalletDetailViewController {
-                vc.walletId = walletId
-            }
+        
+        switch segue.identifier {
+        case "segueToShowAllWallets":
+            guard let vc = segue.destination as? ExternalFNWalletsViewController else { fallthrough }
+            
+            vc.externalWallets = externalWallets
+        case "showWalletDetail":
+            guard let vc = segue.destination as? WalletDetailViewController else { fallthrough }
+            
+            vc.walletId = walletId
+        default:
+            break
         }
     }
-    
-
 }

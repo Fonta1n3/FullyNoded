@@ -47,7 +47,7 @@ class AccountMap {
             }
         }
         
-        let dict = ["descriptor":"\(primDesc)", "blockheight":Int(wallet.blockheight),"label":wallet.label,"watching":watching] as [String : Any]
+        let dict = ["descriptor":"\(primDesc)", "blockheight":Int64(wallet.blockheight),"label":wallet.label,"watching":watching] as [String : Any]
         
         return dict.json()
     }
