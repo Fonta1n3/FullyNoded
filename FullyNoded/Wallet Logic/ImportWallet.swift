@@ -25,7 +25,7 @@ class ImportWallet {
         }
         var keypool = Bool()
         var primDescriptor = accountMap["descriptor"] as! String
-        let blockheight = accountMap["blockheight"] as! Int
+        let blockheight = accountMap["blockheight"] as! Int64
         let label = accountMap["label"] as! String
         let watching = accountMap["watching"] as? [String] ?? []
         
@@ -331,7 +331,18 @@ class ImportWallet {
     }
     
     class func importPrimaryDescriptors(_ recDesc: String, _ changeDesc: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        let params = "[{\"desc\": \"\(recDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": false}, {\"desc\": \"\(changeDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": true}]"
+        var recDescIsActive = true
+        var changeDescIsActive = true
+        
+        if recDesc.hasPrefix("combo") {
+            recDescIsActive = false
+        }
+        
+        if changeDesc.hasPrefix("combo") {
+            changeDescIsActive = false
+        }
+        
+        let params = "[{\"desc\": \"\(recDesc)\", \"active\": \(recDescIsActive), \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": false}, {\"desc\": \"\(changeDesc)\", \"active\": \(changeDescIsActive), \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": true}]"
         
         importDescriptors(params, completion: completion)
     }

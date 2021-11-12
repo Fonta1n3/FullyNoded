@@ -18,6 +18,7 @@ class ExternalFNWalletsViewController: UIViewController {
     var testnetWallets = [Wallet]()
     var walletToView:UUID!
     var network = 0
+    var activeChain = "main"
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,6 +30,7 @@ class ExternalFNWalletsViewController: UIViewController {
         if chain != "main" {
             network = 1
         }
+        activeChain = chain
         segmentedControl.selectedSegmentIndex = network
         
         for wallet in externalWallets {
@@ -144,8 +146,47 @@ class ExternalFNWalletsViewController: UIViewController {
         return infoButton
     }
     
+    private func promptToRecover(_ wallet: Wallet, _ index: Int) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let tit = "Recover \(wallet.label)?"
+            
+            let mess = "This will create the wallet on your active node and trigger a rescan. If you want to recover multiple wallets quickly you will want to abort the rescan each time or you may see an error. Home tab > tools (wrench button) > Abort rescan"
+            
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Recover", style: .default, handler: { action in
+                self.recoverNow(wallet, index)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func recoverNow(_ wallet: Wallet, _ index: Int) {
+        let accountMap = ["descriptor": wallet.receiveDescriptor, "blockheight": wallet.blockheight, "watching": wallet.watching ?? [], "label": wallet.label] as [String : Any]
+                
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.navigationController?.popToRootViewController(animated: true)
+            NotificationCenter.default.post(name: .importWallet, object: nil, userInfo: accountMap)
+        }
+    }
+    
     @objc func recoverWallet(_ sender: UIButton) {
-        print("recover wallet")
+        var wallet:Wallet!
+        if network == 0 && activeChain == "main" {
+            wallet = mainnetWallets[sender.tag]
+            promptToRecover(wallet, sender.tag)
+        } else if activeChain != "main" && network == 1 {
+            wallet = testnetWallets[sender.tag]
+            promptToRecover(wallet, sender.tag)
+        } else {
+            showAlert(vc: self, title: "Network mismatch...", message: "The active node is not on the same network as the wallet you are attempting to recover.")
+        }        
     }
     
     private func recoverButton(_ x: CGFloat) -> UIButton {

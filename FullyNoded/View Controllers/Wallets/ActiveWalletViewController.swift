@@ -50,6 +50,7 @@ class ActiveWalletViewController: UIViewController {
     private var authenticated = false
     private var isAuthenticating = false
     private var initialLoad = true
+    private var isRecovering = false
     var fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     
     @IBOutlet weak private var currencyControl: UISegmentedControl!
@@ -111,7 +112,7 @@ class ActiveWalletViewController: UIViewController {
             let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
             authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
             
-            if !initialLoad && !authenticated && !isAuthenticating {
+            if !initialLoad && !authenticated && !isAuthenticating && !isRecovering {
                 self.isAuthenticating = true
                 
                 self.authenticateWith2FA { [weak self] response in
@@ -402,11 +403,12 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @objc func importWallet(_ notification: NSNotification) {
+        isRecovering = true
         spinner.addConnectingView(vc: self, description: "Creating your wallet, this can take a minute...")
         
         guard let accountMap = notification.userInfo as? [String:Any] else {
             self.spinner.removeConnectingView()
-            showAlert(vc: self, title: "Ooops", message: "That file does not seem to be a compatible wallet import, please raise an issue on the github so we can add support for it.")
+            showAlert(vc: self, title: "", message: "That file does not seem to be a compatible wallet import, please raise an issue on the github so we can add support for it.")
             return
         }
         
@@ -420,7 +422,8 @@ class ActiveWalletViewController: UIViewController {
             }
             
             self.spinner.removeConnectingView()
-            showAlert(vc: self, title: "Wallet created ✓", message: "It has been activated and is refreshing now.")
+            OnchainUtils.rescan { _ in }
+            showAlert(vc: self, title: "Wallet created ✓", message: "It has been activated and is refreshing now. A rescan has been initiated, you may not see balances or transaction history until the rescan completes.")
             self.refreshWallet()
         }
     }
