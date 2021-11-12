@@ -4410,17 +4410,6 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                             </textField>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rOq-3M-0CP">
-                                                <rect key="frame" x="276" y="83" width="59" height="23"/>
-                                                <fontDescription key="fontDescription" type="system" pointSize="9"/>
-                                                <color key="tintColor" systemColor="systemTealColor"/>
-                                                <state key="normal" title=" add to batch">
-                                                    <color key="titleColor" systemColor="systemTealColor"/>
-                                                </state>
-                                                <connections>
-                                                    <action selector="addToBatchAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="Tif-TN-mgI"/>
-                                                </connections>
-                                            </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vCU-fw-O9h">
                                                 <rect key="frame" x="194.5" y="6" width="68" height="21.5"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="11"/>
@@ -4432,20 +4421,6 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                     <action selector="lightningWithdrawAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="IkT-60-d1p"/>
                                                 </connections>
                                             </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="characterWrap" translatesAutoresizingMaskIntoConstraints="NO" id="9FE-8A-o8A">
-                                                <rect key="frame" x="8" y="83.5" width="106" height="22"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" constant="22" id="XhS-kh-Gpm"/>
-                                                </constraints>
-                                                <fontDescription key="fontDescription" type="system" pointSize="10"/>
-                                                <color key="tintColor" systemColor="systemPinkColor"/>
-                                                <state key="normal" title=" get donation address">
-                                                    <color key="titleColor" systemColor="systemTealColor"/>
-                                                </state>
-                                                <connections>
-                                                    <action selector="makeADonationAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="uo8-Z3-Q5c"/>
-                                                </connections>
-                                            </button>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="iqB-He-pDQ">
                                                 <rect key="frame" x="8" y="37.5" width="35" height="35"/>
                                                 <constraints>
@@ -4453,25 +4428,64 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                     <constraint firstAttribute="height" constant="35" id="tPq-ih-pCG"/>
                                                 </constraints>
                                             </imageView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="equalCentering" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="ne0-Tl-EvV">
+                                                <rect key="frame" x="8" y="80.5" width="327" height="25"/>
+                                                <subviews>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="characterWrap" translatesAutoresizingMaskIntoConstraints="NO" id="9FE-8A-o8A">
+                                                        <rect key="frame" x="0.0" y="0.0" width="98" height="25"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                        <color key="tintColor" systemColor="systemPinkColor"/>
+                                                        <state key="normal" title="donation address">
+                                                            <color key="titleColor" systemColor="systemTealColor"/>
+                                                        </state>
+                                                        <connections>
+                                                            <action selector="makeADonationAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="uo8-Z3-Q5c"/>
+                                                        </connections>
+                                                    </button>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nA1-eY-B0R">
+                                                        <rect key="frame" x="130" y="0.0" width="79" height="25"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                        <color key="tintColor" systemColor="systemTealColor"/>
+                                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                        <state key="normal" title="send to wallet">
+                                                            <color key="titleColor" systemColor="systemTealColor"/>
+                                                        </state>
+                                                        <connections>
+                                                            <action selector="sendToWalletAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="2fy-8F-Jvq"/>
+                                                        </connections>
+                                                    </button>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rOq-3M-0CP">
+                                                        <rect key="frame" x="252" y="0.0" width="75" height="25"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                        <color key="tintColor" systemColor="systemTealColor"/>
+                                                        <state key="normal" title=" add to batch">
+                                                            <color key="titleColor" systemColor="systemTealColor"/>
+                                                        </state>
+                                                        <connections>
+                                                            <action selector="addToBatchAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="Tif-TN-mgI"/>
+                                                        </connections>
+                                                    </button>
+                                                </subviews>
+                                            </stackView>
                                         </subviews>
                                         <color key="backgroundColor" red="0.019498584789999999" green="0.023548513649999998" blue="0.023569250480000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstItem="CX8-Q9-SO8" firstAttribute="centerY" secondItem="yzj-3l-LdC" secondAttribute="centerY" id="0ak-wr-A2t"/>
-                                            <constraint firstItem="rOq-3M-0CP" firstAttribute="centerY" secondItem="9FE-8A-o8A" secondAttribute="centerY" id="0yl-fS-WWn"/>
                                             <constraint firstItem="PFC-7A-3Gn" firstAttribute="top" secondItem="yzj-3l-LdC" secondAttribute="top" constant="8" id="3GM-1R-EGG"/>
                                             <constraint firstItem="vOa-19-8RX" firstAttribute="centerY" secondItem="iqB-He-pDQ" secondAttribute="centerY" id="44A-eI-wSf"/>
-                                            <constraint firstItem="9FE-8A-o8A" firstAttribute="leading" secondItem="yzj-3l-LdC" secondAttribute="leading" constant="8" id="76l-yz-EZm"/>
+                                            <constraint firstItem="ne0-Tl-EvV" firstAttribute="top" secondItem="CX8-Q9-SO8" secondAttribute="bottom" constant="8" id="4GV-i8-ts5"/>
                                             <constraint firstAttribute="height" constant="110" id="819-iL-EHS"/>
                                             <constraint firstItem="uKX-Nk-zA1" firstAttribute="leading" secondItem="vCU-fw-O9h" secondAttribute="trailing" constant="10" id="8e4-6y-2q1"/>
                                             <constraint firstAttribute="trailing" secondItem="vOa-19-8RX" secondAttribute="trailing" constant="8" id="BrB-xG-8eV"/>
                                             <constraint firstItem="vOa-19-8RX" firstAttribute="leading" secondItem="CX8-Q9-SO8" secondAttribute="trailing" constant="8" id="DGO-r7-4Xx"/>
                                             <constraint firstAttribute="trailing" secondItem="uKX-Nk-zA1" secondAttribute="trailing" constant="16.5" id="G0Y-qF-1Lb"/>
+                                            <constraint firstAttribute="trailing" secondItem="ne0-Tl-EvV" secondAttribute="trailing" constant="8" id="JO7-fD-tKe"/>
                                             <constraint firstItem="uKX-Nk-zA1" firstAttribute="centerY" secondItem="vCU-fw-O9h" secondAttribute="centerY" id="Sbe-Ts-5W5"/>
-                                            <constraint firstAttribute="bottom" secondItem="rOq-3M-0CP" secondAttribute="bottom" constant="4" id="TTK-pN-s5r"/>
+                                            <constraint firstItem="ne0-Tl-EvV" firstAttribute="leading" secondItem="yzj-3l-LdC" secondAttribute="leading" constant="8" id="bX8-Bb-7xc"/>
                                             <constraint firstItem="CX8-Q9-SO8" firstAttribute="leading" secondItem="yzj-3l-LdC" secondAttribute="leading" constant="8" id="gcK-7M-17l"/>
                                             <constraint firstItem="uKX-Nk-zA1" firstAttribute="top" secondItem="yzj-3l-LdC" secondAttribute="top" constant="6" id="iUw-zx-IQQ"/>
                                             <constraint firstItem="PFC-7A-3Gn" firstAttribute="leading" secondItem="yzj-3l-LdC" secondAttribute="leading" constant="8" id="ju5-VI-b7p"/>
-                                            <constraint firstAttribute="trailing" secondItem="rOq-3M-0CP" secondAttribute="trailing" constant="8" id="u9j-Xb-psR"/>
+                                            <constraint firstAttribute="bottom" secondItem="ne0-Tl-EvV" secondAttribute="bottom" constant="4.5" id="ss8-lR-n0H"/>
                                             <constraint firstItem="vOa-19-8RX" firstAttribute="centerY" secondItem="yzj-3l-LdC" secondAttribute="centerY" id="x3K-rp-yWB"/>
                                             <constraint firstItem="iqB-He-pDQ" firstAttribute="leading" secondItem="yzj-3l-LdC" secondAttribute="leading" constant="8" id="ycv-wN-6ei"/>
                                         </constraints>
@@ -7575,10 +7589,10 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="Cd3-qW-ujG"/>
         <segue reference="kws-xU-XdS"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="2DM-Bo-8hK"/>
+        <segue reference="CQp-9r-70w"/>
         <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
-        <segue reference="BVG-ie-esh"/>
+        <segue reference="7PS-EL-3d2"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="U54-oe-CeC"/>
     </inferredMetricsTieBreakers>

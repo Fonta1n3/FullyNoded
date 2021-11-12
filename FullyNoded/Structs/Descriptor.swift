@@ -24,7 +24,6 @@ public struct Descriptor: CustomStringConvertible {
     let isP2PKH:Bool
     let isP2SHP2WPKH:Bool
     let isP2TR:Bool
-    let network:String
     let multiSigKeys:[String]
     let multiSigPaths:[String]
     let sigsRequired:UInt
@@ -420,7 +419,6 @@ public struct Descriptor: CustomStringConvertible {
         isP2PKH = dictionary["isP2PKH"] as? Bool ?? false
         isP2WPKH = dictionary["isP2WPKH"] as? Bool ?? false
         isP2SHP2WPKH = dictionary["isP2SHP2WPKH"] as? Bool ?? false
-        network = dictionary["network"] as? String ?? ""
         multiSigKeys = dictionary["multiSigKeys"] as? [String] ?? [""]
         multiSigPaths = dictionary["multiSigPaths"] as? [String] ?? [""]
         sigsRequired = dictionary["sigsRequired"] as? UInt ?? 0

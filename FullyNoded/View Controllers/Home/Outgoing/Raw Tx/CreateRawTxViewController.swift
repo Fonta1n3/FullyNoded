@@ -172,8 +172,89 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         slider.addTarget(self, action: #selector(didFinishSliding(_:)), for: .valueChanged)
         
         amountInput.text = ""
-        addressInput.text = address
+        addAddress(address)
     }
+    
+    @IBAction func sendToWalletAction(_ sender: Any) {
+        CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] wallets in
+            guard let self = self else { return }
+            
+            guard let wallets = wallets, !wallets.isEmpty else {
+                showAlert(vc: self, title: "No wallets...", message: "")
+                return
+            }
+            
+            var walletsToSendTo:[Wallet] = []
+            
+            let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+            
+            for (i, wallet) in wallets.enumerated() {
+                let walletStruct = Wallet(dictionary: wallet)
+                let desc = Descriptor(walletStruct.receiveDescriptor)
+                
+                if chain == "main" && desc.chain == "Mainnet" {
+                    walletsToSendTo.append(walletStruct)
+                } else if chain != "main" && desc.chain != "Mainnet" {
+                    walletsToSendTo.append(walletStruct)
+                }
+                
+                if i + 1 == wallets.count {
+                    self.selectWalletRecipient(walletsToSendTo)
+                }
+            }
+        }
+    }
+    
+    
+    private func selectWalletRecipient(_ wallets: [Wallet]) {
+        guard !wallets.isEmpty else {
+            showAlert(vc: self, title: "No wallets...", message: "None of the wallets you have saved are on the same network as your active node.")
+            return
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Select a wallet to send to."
+            
+            let alert = UIAlertController(title: title, message: "", preferredStyle: .alert)
+            
+            for wallet in wallets {
+                alert.addAction(UIAlertAction(title: wallet.label, style: .default, handler: { action in
+                    self.getAddressFromWallet(wallet)
+                }))
+            }
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func getAddressFromWallet(_ wallet: Wallet) {
+        spinner.addConnectingView(vc: self, description: "getting address...")
+        
+        let param = "\"\(wallet.receiveDescriptor)\", [\(wallet.index + 1), \(wallet.index + 1)]"
+        
+        OnchainUtils.deriveAddresses(param: param) { [weak self] (addresses, message) in
+            guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
+            
+            guard let addresses = addresses, !addresses.isEmpty else {
+                showAlert(vc: self, title: "There was an issue getting an address from that wallet...", message: message ?? "Unknown error.")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.addAddress("\(addresses[0])")
+                showAlert(vc: self, title: "Address added ✓", message: "This address was derived from \(wallet.label).")
+            }
+        }
+    }
+    
     
     @IBAction func switchCoinSelectionAction(_ sender: Any) {
         switch coinSelectionControl.selectedSegmentIndex {
@@ -540,15 +621,15 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func showFundingAddr(_ addr: String) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.spinner.removeConnectingView()
-            
-            self.addressInput.text = addr
-            
-            showAlert(vc: self, title: "⚡️ Lightning deposit address\n", message: "This is an address controlled by your Lightning node's internal onchain wallet. You can use it to fund your lightning node to open channels.\n\nTo fund channels directly from your active Fully Noded wallet you can navigate home > tap the ⚡️ button > Channels > + (c-lightning only).")
-        }
+        spinner.removeConnectingView()
+        
+        addAddress(addr)
+        
+        showAlert(
+            vc: self,
+            title: "⚡️ Lightning deposit address\n",
+            message: "This is an address controlled by your Lightning node's internal onchain wallet. You can use it to fund your lightning node to open channels.\n\nTo fund channels directly from your active Fully Noded wallet you can navigate home > tap the ⚡️ button > Channels > + (c-lightning only)."
+        )
     }
     
     @IBAction func denominationChanged(_ sender: UISegmentedControl) {
@@ -639,13 +720,23 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     @IBAction func makeADonationAction(_ sender: Any) {
         if let address = Keys.donationAddress() {
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.addressInput.text = address
-                vc.addressImageView.image = LifeHash.image(address)
-                vc.addressImageView.alpha = 1
-                showAlert(vc: vc, title: "Thank you!",
-                          message: "A donation address has automatically been added so you may build a transaction which will fund further development of Fully Noded.")
-            }
+            addAddress(address)
+            
+            showAlert(
+                vc: self,
+                title: "Thank you!",
+                message: "A donation address has automatically been added so you may build a transaction which will fund further development of Fully Noded."
+            )
+        }
+    }
+    
+    private func addAddress(_ address: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.addressInput.text = address
+            self.addressImageView.image = LifeHash.image(address)
+            self.addressImageView.alpha = 1
         }
     }
     
@@ -1393,11 +1484,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 return
             }
             
-            self.addressInput.text = address
-            
-            let lifehash = LifeHash.image(address)
-            self.addressImageView.image = lifehash
-            self.addressImageView.alpha = 1
+            self.addAddress(address)
             
             if amount != nil || label != nil || message != nil {
                 var amountText = "not specified"
