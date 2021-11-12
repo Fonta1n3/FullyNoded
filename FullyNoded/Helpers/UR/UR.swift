@@ -221,10 +221,10 @@ class URHelper {
         
         switch embeddedTag {
         case 406: // multisig
-            return parseMultisig(isBIP67: false, script: "sh", cbor: embeddedCbor)
+            return parseMultisig(isBIP67: false, script: "sh(multi())", cbor: embeddedCbor)
             
         case 407: // sortedmulti
-            return parseMultisig(isBIP67: true, script: "sh", cbor: embeddedCbor)
+            return parseMultisig(isBIP67: true, script: "sh(sortedmulti())", cbor: embeddedCbor)
             
         case 404: // sh(wpkh())
             return parseSHWPKHCbor(embeddedCbor: embeddedCbor)
@@ -349,7 +349,7 @@ class URHelper {
         }
         
         guard let threshold = thresholdCheck else { return (nil, "Invalid multisig hdkey, no threshold provided.") }
-        
+        print("script: \(script)")
         switch script {
         case "wsh(multi())":
             return (["wsh(multi(\(threshold)\(keys)))"], nil)
@@ -680,7 +680,7 @@ class URHelper {
         var cbor:CBOR? = nil
         
         // MARK: TODO UPDATE TO BE DYNAMIC FOR NON SORTED MULTI
-        if descriptor.isBIP67 {
+        if descriptor.isMulti {
             cbor = multiSigOutputCbor(descriptor)
         } else {
             cbor = cosignerOutputCbor(descriptor)
@@ -707,8 +707,13 @@ class URHelper {
         keyThreshholdArray.append(.init(key: 2, value: .array(hdkeyArray)))
         let keyThreshholdArrayCbor = CBOR.orderedMap(keyThreshholdArray)
         
-        let sortedMultisigTag:CBOR.Tag = .init(rawValue: 407)
-        let taggedMsigCbor:CBOR = .tagged(sortedMultisigTag, keyThreshholdArrayCbor)
+        var multisigTag:CBOR.Tag!
+        if descriptor.isBIP67 {
+            multisigTag = .init(rawValue: 407)
+        } else {
+            multisigTag = .init(rawValue: 406)
+        }
+        let taggedMsigCbor:CBOR = .tagged(multisigTag, keyThreshholdArrayCbor)
         
         var scriptTag:CBOR.Tag
         

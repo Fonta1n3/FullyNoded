@@ -444,7 +444,7 @@ class ActiveWalletViewController: UIViewController {
             }
             
             self.spinner.removeConnectingView()
-            showAlert(vc: self, title: "Coldcard Wallet imported ✅", message: "It has been activated and is refreshing now.")
+            showAlert(vc: self, title: "Coldcard Wallet imported ✓", message: "It has been activated and is refreshing now.")
             self.refreshWallet()
         }
     }
@@ -1575,7 +1575,7 @@ class ActiveWalletViewController: UIViewController {
                         return
                     }
                     
-                    showAlert(vc: self, title: "Wallet imported ✅", message: "")
+                    showAlert(vc: self, title: "Wallet imported ✓", message: "")
                 }
             }
                     
