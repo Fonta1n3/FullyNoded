@@ -24,9 +24,6 @@ class ExternalFNWalletsViewController: UIViewController {
 
         // Do any additional setup after loading the view.
         externWalletsTable.delegate = self
-        externWalletsTable.layer.cornerRadius = 8
-        externWalletsTable.layer.borderColor = UIColor.lightGray.cgColor
-        externWalletsTable.layer.borderWidth = 0.5
         
         let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
         if chain != "main" {
@@ -147,6 +144,20 @@ class ExternalFNWalletsViewController: UIViewController {
         return infoButton
     }
     
+    @objc func recoverWallet(_ sender: UIButton) {
+        print("recover wallet")
+    }
+    
+    private func recoverButton(_ x: CGFloat) -> UIButton {
+        let recoverButton = UIButton()
+        recoverButton.frame = CGRect(x: x, y: 10, width: 40, height: 40)
+        recoverButton.addTarget(self, action: #selector(recoverWallet(_:)), for: .touchUpInside)
+        recoverButton.setImage(.init(systemName: "square.and.arrow.down.fill"), for: .normal)
+        recoverButton.tintColor = .systemTeal
+        recoverButton.showsTouchWhenHighlighted = true
+        return recoverButton
+    }
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -187,11 +198,13 @@ extension ExternalFNWalletsViewController: UITableViewDataSource {
         cell.selectionStyle = .none
         
         var wallet:Wallet!
+        
         if network == 0 {
             wallet = mainnetWallets[indexPath.section]
         } else {
             wallet = testnetWallets[indexPath.section]
         }
+        
         cell.textLabel?.text = wallet.label
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.layer.borderWidth = 0.5
@@ -201,6 +214,7 @@ extension ExternalFNWalletsViewController: UITableViewDataSource {
         cell.textLabel?.lineBreakMode = .byWordWrapping
         cell.textLabel?.sizeToFit()
         cell.sizeToFit()
+        
         return cell
     }
     
@@ -216,6 +230,10 @@ extension ExternalFNWalletsViewController: UITableViewDataSource {
         let infoButton = infoButton(deleteButton.frame.minX - 48)
         infoButton.tag = section
         header.addSubview(infoButton)
+        
+        let recoverButton = recoverButton(infoButton.frame.minX - 48)
+        recoverButton.tag = section
+        header.addSubview(recoverButton)
         
         return header
     }

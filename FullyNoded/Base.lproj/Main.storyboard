@@ -2730,7 +2730,7 @@ xxxxx</string>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" estimatedSectionHeaderHeight="-1" sectionFooterHeight="18" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="Z2d-EH-10T">
                                 <rect key="frame" x="16" y="128.5" width="343" height="518.5"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="externalWalletCell" id="2ym-7V-rvj">
                                         <rect key="frame" x="16" y="49.5" width="311" height="43.5"/>
@@ -2818,7 +2818,7 @@ xxxxx</string>
                                 </constraints>
                             </imageView>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="e5J-1l-ENr">
-                                <rect key="frame" x="0.0" y="239.5" width="375" height="368.5"/>
+                                <rect key="frame" x="0.0" y="239.5" width="375" height="359.5"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="fnWalletCell" rowHeight="54" id="MUh-Fj-cAe">
@@ -2896,10 +2896,10 @@ xxxxx</string>
                                     </label>
                                 </subviews>
                             </stackView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OGe-8g-Qaj">
-                                <rect key="frame" x="16" y="616" width="343" height="31"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OGe-8g-Qaj">
+                                <rect key="frame" x="16" y="607" width="343" height="40"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="31" id="DTb-LB-sl9"/>
+                                    <constraint firstAttribute="height" constant="40" id="DTb-LB-sl9"/>
                                     <constraint firstAttribute="width" constant="343" id="XTx-d7-NKL"/>
                                 </constraints>
                                 <state key="normal" title="Button"/>
