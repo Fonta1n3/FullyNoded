@@ -87,9 +87,7 @@ public struct Descriptor: CustomStringConvertible {
                         
                     default:
                         break
-                        
                     }
-                    
                 }
                 
                 switch item {

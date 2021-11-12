@@ -10,6 +10,21 @@ import Foundation
 import URKit
 
 class URHelper {
+    
+    enum scriptTag:CBOR.Tag {
+        case wpkh = 404
+        case wsh = 401
+        case sh = 400
+        case multi = 406
+        case sortedmulti = 407
+        case pk = 402
+        case pkh = 403
+        case combo = 405
+        case addr = 307
+        case raw = 408
+        case tr = 409
+    }
+    
     static func bytesToData(_ ur: UR) -> Data? {
         guard let decodedCbor = try? CBOR.decode(ur.cbor.bytes),
             case let CBOR.byteString(bytes) = decodedCbor else {
@@ -150,10 +165,24 @@ class URHelper {
         case 404:
             // wpkh()
             return parseWPKHCbor(taggedCbor: taggedCbor)
+            
+        case 409:
+            // tr()
+            return parseTRCbor(taggedCbor: taggedCbor)
 
         default:
             return (nil, "Unsupported script type for output. Please let us know about it on Twitter, Github or Telegram.")
         }
+    }
+    
+    static func parseTRCbor(taggedCbor: CBOR) -> (descriptors: [String]?, error: String?) {
+        guard let key = try? HDKey_(taggedCBOR: taggedCbor),
+              let origin = key.origin,
+              let extKey = key.base58 else {
+            return (nil, "Error deriving hdkey/origin/xpub from your taproot CBOR.")
+        }
+        
+        return (["tr([\(origin)]\(extKey)/0/*)"], nil)
     }
     
     static func parseWPKHCbor(taggedCbor: CBOR) -> (descriptors: [String]?, error: String?) {
@@ -586,7 +615,7 @@ class URHelper {
         return "wsh([\(origin)]\(extKey)/0/*)"
     }
     
-    static func extractXpub(_ key: String) -> (chaincode: Data?, keyData: Data?, parentFingerprint: Data?, depth: Data?) {
+    static func extractExtendedKey(_ key: String) -> (chaincode: Data?, keyData: Data?, parentFingerprint: Data?, depth: Data?) {
         let b58 = Base58.decode(key)
         let b58Data = Data(b58)
         let depth = b58Data.subdata(in: Range(4...4))
@@ -597,23 +626,31 @@ class URHelper {
     }
     
     static func descriptorToHdKeyCbor(_ descriptor: Descriptor) -> CBOR? {
-        var key = ""
+        var key:String!
+        var isPrivate:Bool!
+        var cointype:UInt64 = 1
+        
+        if descriptor.chain == "main" {
+            cointype = 0
+        }
+        
         if descriptor.accountXpub != "" {
             key = descriptor.accountXpub
+            isPrivate = false
         } else if descriptor.accountXprv != "" {
             key = descriptor.accountXprv
+            isPrivate = true
         }
         
         /// Decodes our original extended key to base58 data.
-        let (chaincode, keyData, parentFingerprint, depth) = extractXpub(key)
+        let (chaincode, keyData, parentFingerprint, depth) = extractExtendedKey(key)
         
-        guard let chaincode = chaincode, let keyData = keyData, let parentFingerprint = parentFingerprint, let depth = depth else {
+        guard let chaincode = chaincode,
+                let keyData = keyData,
+                let parentFingerprint = parentFingerprint,
+                let depth = depth else {
+                    
             return nil
-        }
-        
-        var cointype:UInt64 = 1
-        if descriptor.chain == "main" {
-            cointype = 0
         }
         
         var originsArray:[OrderedMapEntry] = []
@@ -630,7 +667,7 @@ class URHelper {
         
         var hdkeyArray:[OrderedMapEntry] = []
         hdkeyArray.append(.init(key: 1, value: .boolean(false)))
-        hdkeyArray.append(.init(key: 2, value: .boolean(false)))
+        hdkeyArray.append(.init(key: 2, value: .boolean(isPrivate)))
         hdkeyArray.append(.init(key: 3, value: .byteString([UInt8](keyData))))
         hdkeyArray.append(.init(key: 4, value: .byteString([UInt8](chaincode))))
         hdkeyArray.append(.init(key: 5, value: .tagged(CBOR.Tag(rawValue: 305), useInfoWrapper)))
@@ -679,7 +716,6 @@ class URHelper {
     static func descriptorToOutputCbor(_ descriptor: Descriptor) -> CBOR? {
         var cbor:CBOR? = nil
         
-        // MARK: TODO UPDATE TO BE DYNAMIC FOR NON SORTED MULTI
         if descriptor.isMulti {
             cbor = multiSigOutputCbor(descriptor)
         } else {
@@ -715,22 +751,16 @@ class URHelper {
         }
         let taggedMsigCbor:CBOR = .tagged(multisigTag, keyThreshholdArrayCbor)
         
-        var scriptTag:CBOR.Tag
-        
         switch descriptor {
         case _ where descriptor.format == "P2WSH":
-            scriptTag = .init(rawValue: 401)
-            return .tagged(scriptTag, taggedMsigCbor)
+            return .tagged(scriptTag.wsh.rawValue, taggedMsigCbor)
             
         case _ where descriptor.format == "P2SH-P2WSH":
-            let outerScriptTag:CBOR.Tag = .init(rawValue: 400)
-            let tagged = CBOR.tagged(outerScriptTag, taggedMsigCbor)
-            scriptTag = .init(rawValue: 404)
-            return .tagged(scriptTag, tagged)
+            let tagged = CBOR.tagged(scriptTag.sh.rawValue, taggedMsigCbor)
+            return .tagged(scriptTag.wsh.rawValue, tagged)
             
         case _ where descriptor.format == "P2SH":
-            scriptTag = .init(rawValue: 400)
-            return .tagged(scriptTag, taggedMsigCbor)
+            return .tagged(scriptTag.sh.rawValue, taggedMsigCbor)
             
         default:
             return nil
@@ -739,18 +769,33 @@ class URHelper {
     }
     
     static func cosignerOutputCbor(_ descriptor: Descriptor) -> CBOR? {
+        guard let hdkeyCbor = taggedHdKeyCbor(descriptor) else { return nil }
+        
         switch descriptor {
-        case _ where descriptor.format == "P2WPKH" || descriptor.format == "Combo":
-            let wpkhTag:CBOR.Tag = .init(rawValue: 404)
-            guard let hdkeyCbor = taggedHdKeyCbor(descriptor) else { return nil }
+        case _ where descriptor.format == "P2WPKH":
+            return .tagged(scriptTag.wpkh.rawValue, hdkeyCbor)
             
-            return .tagged(wpkhTag, hdkeyCbor)
+        case _ where descriptor.format == "Combo":
+            return .tagged(scriptTag.combo.rawValue, hdkeyCbor)
             
         case _ where descriptor.format == "P2WSH":
-            let wshTag:CBOR.Tag = .init(rawValue: 401)
-            guard let hdkeyCbor = taggedHdKeyCbor(descriptor) else { return nil }
+            return .tagged(scriptTag.wsh.rawValue, hdkeyCbor)
             
-            return .tagged(wshTag, hdkeyCbor)
+        case _ where descriptor.format == "P2SH-P2WPKH":
+            let innerTagged = CBOR.tagged(scriptTag.wpkh.rawValue, hdkeyCbor)
+            
+            return .tagged(scriptTag.sh.rawValue, innerTagged)
+            
+        case _ where descriptor.format == "P2SH-P2WSH":
+            let innerTagged = CBOR.tagged(scriptTag.wsh.rawValue, hdkeyCbor)
+            
+            return .tagged(scriptTag.sh.rawValue, innerTagged)
+            
+        case _ where descriptor.format == "P2SH":
+            return .tagged(scriptTag.sh.rawValue, hdkeyCbor)
+            
+        case _ where descriptor.format == "P2TR":
+            return .tagged(scriptTag.tr.rawValue, hdkeyCbor)
             
         default:
             return nil
@@ -766,9 +811,7 @@ class URHelper {
         
         let cbor = CBOR.orderedMap(cborArray)
         
-        guard let rawUr = try? UR(type: "crypto-account", cbor: cbor) else {
-            return nil
-        }
+        guard let rawUr = try? UR(type: "crypto-account", cbor: cbor) else { return nil }
   
         return UREncoder.encode(rawUr)
     }
