@@ -58,11 +58,20 @@ enum Keys {
         guard let mk = Keys.masterKey(words: signer, coinType: cointType, passphrase: ""),
               let xfp = Keys.fingerprint(masterKey: mk),
               let bip84Xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: cointType, account: 0),
+              let bip49Xpub = Keys.xpub(path: "m/49'/\(cointType)'/0'", masterKey: mk),
+              let bip44Xpub = Keys.xpub(path: "m/44'/\(cointType)'/0'", masterKey: mk),
+              let bip86Xpub = Keys.xpub(path: "m/86'/\(cointType)'/0'", masterKey: mk),
               let bip48Xpub = Keys.xpub(path: "m/48'/\(cointType)'/0'/2'", masterKey: mk) else {
             return (nil, "Error deriving descriptors.")
         }
         
-        return (["wsh([\(xfp)/48'/\(cointType)'/0'/2']\(bip48Xpub)/0/*)", "wpkh([\(xfp)/84'/\(cointType)'/0']\(bip84Xpub)/0/*)"], nil)
+        let cosigner = "wsh([\(xfp)/48'/\(cointType)'/0'/2']\(bip48Xpub)/0/*)"
+        let bip84 = "wpkh([\(xfp)/84'/\(cointType)'/0']\(bip84Xpub)/0/*)"
+        let bip49 = "sh(wpkh([\(xfp)/49'/\(cointType)'/0']\(bip49Xpub)/0/*))"
+        let bip86 = "tr([\(xfp)/86'/\(cointType)'/0']\(bip86Xpub)/0/*)"
+        let bip44 = "pkh([\(xfp)/44'/\(cointType)'/0']\(bip44Xpub)/0/*)"
+        
+        return ([bip84,bip49, bip44, cosigner, bip86], nil)
     }
     
     static func donationAddress() -> String? {

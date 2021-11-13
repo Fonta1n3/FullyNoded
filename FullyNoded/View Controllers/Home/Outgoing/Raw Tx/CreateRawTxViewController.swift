@@ -1560,7 +1560,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 
                 vc.isScanningAddress = true
                 
-                vc.onAddressDoneBlock = { addrss in
+                vc.onDoneBlock = { addrss in
                     guard let addrss = addrss else { return }
                     
                     DispatchQueue.main.async { [unowned thisVc = self] in

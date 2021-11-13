@@ -155,7 +155,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     return
             }
             
-            presentMultisigCreator(zpub: zpub, fingerprint: fingerprint, xpub: xpub)
+            let origin = p2wsh_deriv.replacingOccurrences(of: "m", with: fingerprint)
+            let descriptor = "wsh([\(origin)]\(xpub)/0/*)"
+            let cosigner = Descriptor(descriptor)
+            
+            presentMultisigCreator(cosigner: cosigner)
             
         } else if let _ = dict["chain"] as? String {
             presentWalletCreator(coldCard: dict)
@@ -200,7 +204,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
     
-    private func presentMultisigCreator(zpub: String, fingerprint: String, xpub: String) {
+    private func presentMultisigCreator(cosigner: Descriptor) {
         let storyBoard = UIStoryboard(name: "Main", bundle: nil)
         
         guard let multisigCreator = storyBoard.instantiateViewController(identifier: "MultisigCreator") as? CreateMultisigViewController,
@@ -209,8 +213,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             return
         }
         
-        multisigCreator.ccXfp = fingerprint
-        multisigCreator.ccXpub = xpub
+        multisigCreator.cosigner = cosigner
         
         var currentController = rootViewController
         

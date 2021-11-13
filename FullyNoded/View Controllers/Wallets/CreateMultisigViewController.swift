@@ -17,9 +17,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     var n = Int()
     var keysString = ""
     var isDone = Bool()
-    var ccXfp = ""
-    var ccXpub = ""
-    var ccDeriv = ""
+    var cosigner:Descriptor?
     var keys = [[String:String]]()
     var alertStyle = UIAlertController.Style.alert
     
@@ -47,9 +45,9 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         
         fingerprintField.text = ""
         
-        if ccXpub != "" && ccXfp != "" {
-            derivationField.text = ccDeriv
-            addKeyStore(ccXfp, ccXpub)
+        if let cosigner = cosigner {
+            derivationField.text = cosigner.derivation
+            addKeyStore(cosigner.fingerprint, cosigner.accountXpub == "" ? cosigner.accountXprv : cosigner.accountXpub)
             showAlert(vc: self, title: "Cosigner added ✓", message: "")
         }
         
@@ -267,7 +265,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             var message = "The wallet has been activated and the wallet view is refreshing, tap done to go back"
             var text = ""
             
-            if self.ccXpub != "" {
+            if self.cosigner != nil {
                 message = "It is important you export this text to your Coldcard as a .txt file otherwise your Coldcard will not be able to sign for this wallet. Tap \"export\" to save the file that can be uploaded to your Coldcard via the SD card."
                 
                 text = """
@@ -292,7 +290,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             
             let alert = UIAlertController(title: "\(mofn) successfully created ✓", message: message, preferredStyle: alertStyle)
             
-            if self.ccXpub != "" {
+            if self.cosigner != nil {
                 alert.addAction(UIAlertAction(title: "Export", style: .default, handler: { action in
                     self.export(text: text)
                 }))
@@ -546,9 +544,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             if #available(macCatalyst 14.0, *) {
                 guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
                 
-                vc.isAccountMap = true
-                
-                vc.onAddressDoneBlock = { [weak self] xpub in
+                vc.onDoneBlock = { [weak self] xpub in
                     guard let self = self, let xpub = xpub else { return }
                     
                     self.parseImportedString(xpub)

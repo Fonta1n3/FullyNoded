@@ -226,7 +226,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 guard let vc = segue.destination as? QRScannerViewController else { return }
                 
                 vc.isScanningAddress = true
-                vc.onAddressDoneBlock = { [weak self] key in
+                vc.onDoneBlock = { [weak self] key in
                     guard let self = self, let key = key else { return }
                     
                     self.parseKey(key: key)

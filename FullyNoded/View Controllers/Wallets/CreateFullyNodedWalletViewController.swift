@@ -13,6 +13,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     @IBOutlet weak var multiSigOutlet: UIButton!
     @IBOutlet weak var singleSigOutlet: UIButton!
     
+    var cosigner:Descriptor?
     var isDescriptor = false
     var onDoneBlock:(((Bool)) -> Void)?
     var spinner = ConnectingView()
@@ -142,24 +143,8 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 return
             }
             
-            let (accountMap, errorMessage) = TextFileImport.parse(txt)
-                
-            if let accountMap = accountMap {
-                promptToImportMultiSig(accountMap)
-            } else {
-                showAlert(vc: self, title: "There was an issue...", message: errorMessage ?? "Unknown error.")
-            }
+            self.processImportedString(txt)
             
-            /*
-             Name: CV_85C39000_2-3
-             Policy: 2 of 3
-             Derivation: m/48'/1'/0'/2'
-             Format: P2WSH
-             
-             C2202A77: Vpub5nbpJQxCxQu9Nv5Effa1F8gdQsijrgk7KrMkioLs5DoRwb7MCjC3t1P2y9mXbnBgu29yL8EYexZqzniFdX7Xo3q8TuwkVAqbQpgxfAfrRiW
-             5271C071: Vpub5mpRVCzdkDTtCwH9LrfiiPonePjP4CZSakA4wynC4zVBVAooaykiCzjUniYbLpWxoRotGiXwoKGcHC5kSxiJGX1Ybjf2ioNommVmCJg7AV2
-             748CC6AA: Vpub5mcrJpVp9X8ZKsjyxwNu36SLRAWTMbqUtbmtcapahAtqVa66JtXhT4Uc9SVLN1nF782sPRRT2jbUbe7XzT8eue6vXsyDJKBvexGJHewyPxQ
-             */
             return
         }
         
@@ -185,7 +170,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         
                         if i + 1 == extendedPublicKeys.count {
                             descriptor += "))"
-                            let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
+                            let accountMap = ["descriptor": descriptor, "blockheight": Int64(0), "watching": [], "label": name] as [String : Any]
                             promptToImportUnchained(accountMap)
                         } else {
                             descriptor += ","
@@ -201,7 +186,10 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             
         } else if let deriv = dict["p2wsh_deriv"] as? String, let xfp = dict["xfp"] as? String, let p2wsh = dict["p2wsh"] as? String {
             /// It is most likely a multi-sig wallet export
-            promptToImportColdcardMsig(xfp, p2wsh, deriv)
+            let origin = deriv.replacingOccurrences(of: "m", with: xfp)
+            let descriptor = "wsh([\(origin)]\(p2wsh)/0/*)"
+            promptToImportColdcardMsig(Descriptor(descriptor))
+            
             
         } else if let _ = dict["wallet_type"] as? String {
             /// We think its an Electrum wallet
@@ -270,7 +258,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             
         }
         
-        let accountMap = ["descriptor": desc, "blockheight": 0, "watching": [], "label": "Wallet import"] as [String : Any]
+        let accountMap = ["descriptor": desc, "blockheight": Int64(0), "watching": [], "label": "Wallet import"] as [String : Any]
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -311,7 +299,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     private func convertElectrumToAccountMap(_ dict: [String:Any]) -> [String:Any]? {
         guard let descriptor = getDescriptorFromElectrumBackUp(dict) else { return nil }
         
-        return ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": "Electrum wallet"]
+        return ["descriptor": descriptor, "blockheight": Int64(0), "watching": [], "label": "Electrum wallet"]
     }
     
     private func getDescriptorFromElectrumBackUp(_ dict: [String:Any]) -> String? {
@@ -395,15 +383,13 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         return "wsh(sortedmulti(\(m),\(keysString)))"
     }
     
-    private func promptToImportColdcardMsig(_ xfp: String, _ xpub: String, _ deriv: String) {
+    private func promptToImportColdcardMsig(_ desc: Descriptor) {
         DispatchQueue.main.async { [unowned vc = self] in
             let alert = UIAlertController(title: "Create a multisig with your Coldcard?", message: "You have uploaded a Coldcard multisig file, this action allows you to easily create a wallet with your Coldcard and Fully Noded.", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { action in
                 DispatchQueue.main.async { [unowned vc = self] in
-                    vc.ccXfp = xfp
-                    vc.xpub = xpub
-                    vc.deriv = deriv
+                    vc.cosigner = desc
                     vc.performSegue(withIdentifier: "segueToCreateMultiSig", sender: vc)
                 }
             }))
@@ -436,7 +422,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         
         func importAccount() {
             if let _ = accountMap["descriptor"] as? String {
-                if let _ = accountMap["blockheight"] as? Int {
+                if (accountMap["blockheight"] as? Int) != nil || (accountMap["blockheight"] as? Int64) != nil {
                     /// It is an Account Map.
                     ImportWallet.accountMap(accountMap) { (success, errorDescription) in
                         if success {
@@ -485,7 +471,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func setPrimDesc(descriptors: [String], descriptorToUseIndex: Int) {
-        var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
+        var accountMap:[String:Any] = ["descriptor": "", "blockheight": Int64(0), "watching": [], "label": "Wallet Import"]
         let primDesc = descriptors[descriptorToUseIndex]
         accountMap["descriptor"] = primDesc
         
@@ -589,7 +575,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                     return
                 }
                 
-                var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
+                var accountMap:[String:Any] = ["descriptor": "", "blockheight": Int64(0), "watching": [], "label": "Wallet Import"]
                 
                 if descriptors.count > 1 {
                     self.prompToChoosePrimaryDesc(descriptors: descriptors)
@@ -610,8 +596,35 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                     }
                 }
             }
+            
+        } else if Keys.validMnemonic(item) {
+            let (descriptors, message) = Keys.descriptorsFromSigner(item)
+            
+            guard let encryptedSigner = Crypto.encrypt(item.utf8) else {
+                showAlert(vc: self, title: "Unable to encrypt your signer.", message: "Please let us know about this bug.")
+                return
+            }
+            
+            let dict = ["id":UUID(), "words":encryptedSigner, "added": Date()] as [String:Any]
+            CoreDataService.saveEntity(dict: dict, entityName: .signers) { success in
+                guard success else {
+                    return
+                }
+                
+                guard let descriptors = descriptors else {
+                    showAlert(vc: self, title: "Unable to derive descriptors...", message: "Please let us know about this issue. Error: \(message ?? "unknown.")")
+                    return
+                }
+                
+                self.prompToChoosePrimaryDesc(descriptors: descriptors)
+            }
+            
+        } else if let accountMap = try? JSONSerialization.jsonObject(with: item.utf8, options: []) as? [String:Any] {
+            self.importAccountMap(accountMap)
+            
         } else if let accountMap = TextFileImport.parse(item).accountMap {
             self.importAccountMap(accountMap)
+            
         } else {
             showAlert(vc: self, title: "Unsupported import.", message: item + " is not a supported import option, please let us know about this so we can add support.")
         }
@@ -626,20 +639,15 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         if segue.identifier == "segueToScanner" {
             if #available(macCatalyst 14.0, *) {
                 if let vc = segue.destination as? QRScannerViewController {
-                    vc.isAccountMap = true
-                    vc.onImportDoneBlock = { [unowned thisVc = self] accountMap in
-                        if accountMap != nil {
-                            thisVc.importAccountMap(accountMap!)
-                        }
-                    }
-                    
-                    vc.onAddressDoneBlock = { [weak self] item in
+                    vc.isImporting = true
+                    vc.onDoneBlock = { [weak self] item in
                         guard let self = self else { return }
                         
                         guard let item = item else {
                             return
                         }
                         
+                        // needs to check AM too
                         self.processImportedString(item)
                     }
                 }
@@ -648,9 +656,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         
         if segue.identifier == "segueToCreateMultiSig" {
             if let vc = segue.destination as? CreateMultisigViewController {
-                vc.ccXfp = ccXfp
-                vc.ccXpub = xpub
-                vc.ccDeriv = deriv
+                vc.cosigner = cosigner
             }
         }
         

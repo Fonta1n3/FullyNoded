@@ -630,7 +630,7 @@ class URHelper {
         var isPrivate:Bool!
         var cointype:UInt64 = 1
         
-        if descriptor.chain == "main" {
+        if descriptor.chain == "Mainnet" {
             cointype = 0
         }
         
@@ -796,6 +796,9 @@ class URHelper {
             
         case _ where descriptor.format == "P2TR":
             return .tagged(scriptTag.tr.rawValue, hdkeyCbor)
+            
+        case _ where descriptor.format == "P2PKH":
+            return .tagged(scriptTag.pkh.rawValue, hdkeyCbor)
             
         default:
             return nil

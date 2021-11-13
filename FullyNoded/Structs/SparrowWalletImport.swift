@@ -33,6 +33,7 @@ public struct WalletImport: CustomStringConvertible {
     let bip44:String?
     let bip84:String?
     let bip48:String?
+    let bip86:String?
     
     init(_ dictionary: [String: Any]) {
         
@@ -51,6 +52,13 @@ public struct WalletImport: CustomStringConvertible {
             bip84 = "wpkh([\(xfp)/84h/0h/0h]\(bip84Xpub)/0/*)"
             bip48 = "wsh([\(xfp)/48h/0h/0h/2h]\(bip48Xpub)/0/*)"
             
+            if let bip86Dict = dictionary["bip86"] as? [String:Any],
+                let bip86Xpub = bip86Dict["xpub"] as? String {
+                bip86 = "tr([\(xfp)/86h/0h/0h]\(bip86Xpub)/0/*)"
+            } else {
+                bip86 = nil
+            }
+            
         } else if let keystore = dictionary["keystore"] as? [String:Any],
                   let xpub = keystore["ckcc_xpub"] as? String,
                   let label = keystore["label"] as? String {
@@ -61,12 +69,14 @@ public struct WalletImport: CustomStringConvertible {
             bip49 = nil
             bip44 = nil
             bip48 = nil
+            bip86 = nil
             
         } else {
             bip49 = nil
             bip44 = nil
             bip84 = nil
             bip48 = nil
+            bip86 = nil
         }
     }
     

@@ -2547,7 +2547,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 
                 vc.fromSignAndVerify = true
                 
-                vc.onAddressDoneBlock = { [weak self] tx in
+                vc.onDoneBlock = { [weak self] tx in
                     guard let self = self, let tx = tx else { return }
                     
                     self.reset()

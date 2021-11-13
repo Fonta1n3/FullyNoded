@@ -296,7 +296,7 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
                 if let vc = segue.destination as? QRScannerViewController {
                     vc.isScanningAddress = true
                     
-                    vc.onAddressDoneBlock = { [weak self] url in
+                    vc.onDoneBlock = { [weak self] url in
                         guard let self = self else { return }
                         
                         guard let url = url else { return }

@@ -434,10 +434,7 @@ class ImportWallet {
             
             for (i, existingWallet) in wallets.enumerated() {
                 let existingWalletStr = Wallet(dictionary: existingWallet)
-                
-                if existingWalletStr.receiveDescriptor == walletToSave.receiveDescriptor {
-                    alreadySaved = true
-                }
+                alreadySaved = existingWalletStr.name == walletToSave.name
                 
                 if i + 1 == wallets.count {
                     if !alreadySaved {

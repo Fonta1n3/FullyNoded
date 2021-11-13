@@ -1015,6 +1015,7 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func chooseWallet() {
+        isRecovering = true//to avoid 2FA when view reappears
         OnchainUtils.listWalletDir { (coreWallets, message) in
             guard let coreWallets = coreWallets, !coreWallets.wallets.isEmpty else { self.promptToCreateWallet(); return }
             
@@ -1315,6 +1316,7 @@ class ActiveWalletViewController: UIViewController {
             DispatchQueue.main.async {
                 self.transactionArray = response
                 self.updateTransactionArray()
+                self.isRecovering = false
             }
         }
     }

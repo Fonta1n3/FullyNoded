@@ -104,16 +104,21 @@ class TextFileImport {
             } else {
                 let arr = key.split(separator: ":")
                 let xfp = "\(arr[0])"
+                
+                guard arr.count > 1 else {
+                    return (nil, "This does not seem to be a supported import type. Please let us know about it so we can add support.")
+                }
+                
                 let xpub = "\(arr[1])"
                 addKey(xpub, xfp)
             }
         }
         
-        return (["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any], errorMessage)
+        return (["descriptor": descriptor, "blockheight": Int64(0), "watching": [], "label": name] as [String : Any], errorMessage)
     }
     
     class func saveSigner(encryptedSigner: Data, completion: @escaping ((Bool)) -> Void) {
-        let dict = ["id":UUID(), "words":encryptedSigner] as [String:Any]
+        let dict = ["id":UUID(), "words":encryptedSigner, "added": Date()] as [String:Any]
         CoreDataService.saveEntity(dict: dict, entityName: .signers) { success in
             completion(success)
         }
