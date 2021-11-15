@@ -1166,8 +1166,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                                     self.inputTableArray[self.index]["signatures"] = "Signatures complete"
                                 } else {
                                     if let txwitness = input["txinwitness"] as? NSArray {
-                                        
-                                        if txwitness.count > 1 {
+                                        if txwitness.count > 0 {
                                             self.inputTableArray[self.index]["signatures"] = "Signatures complete"
                                         }
                                     }
@@ -1198,7 +1197,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     
                     if let dict = response as? NSDictionary {
                         let solvable = dict["solvable"] as? Bool ?? false
-                        let keypath = dict["hdkeypath"] as? String ?? "no key path"
+                        var keypath = dict["hdkeypath"] as? String ?? "no key path"
                         let labels = dict["labels"] as? NSArray ?? ["no label"]
                         let desc = dict["desc"] as? String ?? "no descriptor"
                         var isChange = dict["ischange"] as? Bool ?? false
@@ -1219,6 +1218,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         
                         if desc.contains("/1/") {
                             isChange = true
+                        }
+                        
+                        if keypath == "no key path" {
+                            let descriptorStr = Descriptor(desc)
+                            keypath = descriptorStr.derivation
                         }
                         
                         self.outputArray[self.index]["isOursBitcoind"] = solvable

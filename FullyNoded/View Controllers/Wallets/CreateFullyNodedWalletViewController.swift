@@ -492,7 +492,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     func prompToChoosePrimaryDesc(descriptors: [String]) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Choose an address format.", message: "Looks like you are attempting to import multiple address formats, please choose one to continue.", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Choose an address format.", message: "", preferredStyle: .alert)
             
             for (i, descriptor) in descriptors.enumerated() {
                 let descStr = Descriptor(descriptor)

@@ -800,7 +800,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     
     private func prompToChoosePrimaryDesc(descriptors: [String]) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Choose an address format.", message: "Looks like you are attempting to import multiple address formats, please choose one to continue.", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Choose an address format.", message: "", preferredStyle: .alert)
             
             for (i, descriptor) in descriptors.enumerated() {
                 let descStr = Descriptor(descriptor)
@@ -950,7 +950,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             guard let vc = segue.destination as? CreateMultisigViewController else { fallthrough }
             
             vc.cosigner = self.cosigner
-        case "":
+            
+        case "segueToExportKeystore":
             guard let vc = segue.destination as? QRDisplayerViewController else { fallthrough }
             
             vc.descriptionText = descriptionText

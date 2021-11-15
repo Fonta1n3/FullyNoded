@@ -290,10 +290,10 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             let descriptorStruct = Descriptor(wallet.receiveDescriptor)
             
             if wallet.type == WalletType.descriptor.stringValue || wallet.type == "JoinMarket" {
-                self.fetchDescriptorAddress()
+                self.getReceieveAddressForFullyNodedWallet(wallet)
             } else {
                 if descriptorStruct.isMulti {
-                    self.getReceieveAddressForFullyNodedMultiSig(wallet)
+                    self.getReceieveAddressForFullyNodedWallet(wallet)
                 } else {
                     self.fetchAddress()
                 }
@@ -301,7 +301,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    private func getReceieveAddressForFullyNodedMultiSig(_ wallet: Wallet) {
+    private func getReceieveAddressForFullyNodedWallet(_ wallet: Wallet) {
         let index = Int(wallet.index) + 1
         
         CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { success in
@@ -341,10 +341,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
         
         self.getAddress(params)
-    }
-    
-    private func fetchDescriptorAddress() {
-        getAddress("")
     }
     
     func showAddress(address: String) {
