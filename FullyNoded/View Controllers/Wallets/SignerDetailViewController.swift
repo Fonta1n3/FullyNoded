@@ -601,7 +601,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             
             alert.addAction(edit)
             
-            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { alertAction in }
             alert.addAction(cancel)
             
             self.present(alert, animated:true, completion: nil)
@@ -751,14 +751,39 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         tableView.reloadSections(IndexSet(arrayLiteral: sender.tag), with: .fade)
     }
     
-    private func importAccountMap(_ descriptor: String, _ label: String) {
-        let accountMap = ["descriptor": descriptor, "blockheight": Int64(0), "watching": [], "label": label] as [String : Any]
+    private func importAccountMap(_ descriptor: String, _ label: String, _ password: String) {
+        spinner.addConnectingView(vc: self, description: "creating wallet...")
         
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
+        let accountMap = ["descriptor": descriptor, "blockheight": Int64(0), "watching": [], "label": label, "password": password] as [String : Any]
+        
+        ImportWallet.accountMap(accountMap) { (success, errorDescription) in
+            self.spinner.removeConnectingView()
             
-            self.tabBarController?.selectedIndex = 1
-            NotificationCenter.default.post(name: .importWallet, object: nil, userInfo: accountMap)
+            guard success else {
+                showAlert(vc: self, title: "There was an issue creating your wallet...", message: errorDescription ?? "Unknown...")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                let tit = "Wallet created ✓"
+                
+                let mess = "A rescan was triggered, you may not see transactions or balances until the rescan completes."
+                
+                let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+                
+                alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { action in
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.tabBarController?.selectedIndex = 1
+                    }
+                }))
+                
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+                self.present(alert, animated: true, completion: nil)
+            }
         }
     }
     
@@ -779,17 +804,34 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             
-            let p2wpkh = UIAlertAction(title: "Segwit BIP84", style: .default) { [weak self] alertAction in
+            let p2wpkh = UIAlertAction(title: "Segwit Single-sig", style: .default) { [weak self] alertAction in
                 guard let self = self else { return }
                 
                 if let descriptor = self.tableDict[7]["text"] as? String {
-                    self.importAccountMap(descriptor, self.signer.label + " segwit")
+                    self.importAccountMap(descriptor, self.signer.label + " segwit", "")
+                } else {
+                    showAlert(vc: self, title: "There was an issue...", message: "Unable to get your bip84 descriptor.")
+                }
+            }
+            
+            let p2wsh = UIAlertAction(title: "Segwit Multi-sig", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                if let descriptor = self.tableDict[6]["text"] as? String {
+                    self.cosigner = Descriptor(descriptor)
+
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+
+                        self.performSegue(withIdentifier: "segueToCreateMultiSigFromSigner", sender: self)
+                    }
                 } else {
                     showAlert(vc: self, title: "There was an issue...", message: "Unable to get your bip84 descriptor.")
                 }
             }
             
             alert.addAction(p2wpkh)
+            alert.addAction(p2wsh)
             
             let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
             alert.addAction(cancel)
@@ -819,21 +861,60 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     }
     
     private func setPrimDesc(descriptors: [String], descriptorToUseIndex: Int) {
-        var accountMap:[String:Any] = ["descriptor": "", "blockheight": Int64(0), "watching": [], "label": "Wallet Import"]
         let primDesc = descriptors[descriptorToUseIndex]
-        accountMap["descriptor"] = primDesc
-        
         let desc = Descriptor("\(primDesc)")
-        if desc.isCosigner {
-            self.cosigner = desc
-
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-
-                self.performSegue(withIdentifier: "segueToCreateMultiSigFromSigner", sender: self)
-            }
+        
+        if desc.isP2TR {
+            prompForEncryptionPassword(primDesc)
         } else {
-            self.importAccountMap(primDesc, signer.label)
+            if desc.isCosigner {
+                self.cosigner = desc
+
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+
+                    self.performSegue(withIdentifier: "segueToCreateMultiSigFromSigner", sender: self)
+                }
+            } else {
+                self.importAccountMap(primDesc, signer.label, "")
+            }
+        }
+    }
+    
+    private func prompForEncryptionPassword(_ primDesc: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Add a password?"
+            let message = "Taproot wallets store the private keys on your node. You must remember this password as Fully Noded does not save it."
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let setPassword = UIAlertAction(title: "Set password", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                let password = (alert.textFields![0] as UITextField).text
+                
+                guard let password = password else {
+                    showAlert(vc: self, title: "", message: "No password added, try again.")
+                    
+                    return
+                }
+                
+                self.importAccountMap(primDesc, "Taproot: " + self.signer.label, password)
+            }
+            
+            alert.addTextField { textField in
+                textField.isSecureTextEntry = true
+                textField.keyboardAppearance = .dark
+            }
+            
+            alert.addAction(setPassword)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            alert.addAction(cancel)
+            
+            self.present(alert, animated:true, completion: nil)
         }
     }
     

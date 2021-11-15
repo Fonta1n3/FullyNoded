@@ -72,8 +72,8 @@ class ActiveWalletViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(signPsbt(_:)), name: .signPsbt, object: nil)
         existingWallet = ud.object(forKey: "walletName") as? String ?? ""
         setCurrency()
-        sectionZeroLoaded = false
         setNotifications()
+        sectionZeroLoaded = false
         addNavBarSpinner()
         
         let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince

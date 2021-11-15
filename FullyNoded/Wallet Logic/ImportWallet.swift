@@ -18,6 +18,7 @@ class ImportWallet {
     static var isHot = false
             
     class func accountMap(_ accountMap: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
+        let password = accountMap["password"] as? String ?? ""
         var wallet = [String:Any]()
         var prefix = "FullyNoded"
         if isColdcard {
@@ -128,11 +129,11 @@ class ImportWallet {
             }
         }
         
-        func createWalletNow(_ recDesc: String, _ changeDesc: String) {
+        func createWalletNow(_ recDesc: String, _ changeDesc: String, _ password: String) {
             // Use the sha256 hash of the checksum-less primary receive keypool desc as the wallet name so it has a deterministic identifier
             let walletName = "\(prefix)-\(Crypto.sha256hash(primDescriptor))"
             
-            createWallet(walletName) { (name, errorMessage) in
+            createWallet(walletName, password) { (name, errorMessage) in
                 guard let name = name else {
                     UserDefaults.standard.removeObject(forKey: "walletName")
                     completion((false, "error creatig wallet: \(errorMessage ?? "unknown error")"))
@@ -252,7 +253,7 @@ class ImportWallet {
                 
                 walletExistsOnNode(hash) { existingWallet in
                     guard let existingWallet = existingWallet else {
-                        createWalletNow(recDesc, changeDesc)
+                        createWalletNow(recDesc, changeDesc, password)
                         return
                     }
                     
@@ -318,15 +319,26 @@ class ImportWallet {
         accountMap(wallet, completion: completion)
     }
     
-    class func createWallet(_ walletName: String, completion: @escaping ((name: String?, errorMessage: String?)) -> Void) {
-        var param = "\"\(walletName)\", \(!isHot), true, \"\", true"
+    class func createWallet(_ walletName: String, _ password: String, completion: @escaping ((name: String?, errorMessage: String?)) -> Void) {
+        var param = "\"\(walletName)\", \(!isHot), true, \"\(password)\", true"
         
         if version >= 210100 {
             param += ", true, true"
         }
         
         OnchainUtils.createWallet(param: param) { (name, message) in
-            completion((name, message))
+            if password != "" {
+                UserDefaults.standard.setValue(name, forKey: "walletName")
+                Reducer.makeCommand(command: .walletpassphrase, param: "\"\(password)\", 600") { (response, errorMessage) in
+                    if errorMessage == nil {
+                        completion((name, message))
+                    } else {
+                        completion((nil, errorMessage ?? "Unknown error unlocking your wallet."))
+                    }
+                }
+            } else {
+                completion((name, message))
+            }
         }
     }
     

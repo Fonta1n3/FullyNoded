@@ -514,13 +514,28 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     @IBAction func signAction(_ sender: Any) {
         isSigning = true
-        if UserDefaults.standard.object(forKey: "passphrasePrompt") == nil {
-            signNow(nil)
-        } else {
-            setPassphrase { [weak self] passphrase in
-                guard let self = self else { return }
-                
-                self.signNow(passphrase)
+        
+        OnchainUtils.getWalletInfo { [weak self] (walletInfo, message) in
+            guard let self = self else { return }
+            
+            guard let walletInfo = walletInfo else {
+                showAlert(vc: self, title: "Error getting wallet info...", message: message ?? "unknown")
+                return
+            }
+            
+            guard !walletInfo.locked else {
+                showAlert(vc: self, title: "Wallet locked!", message: "You need to decrypt your wallet before you can sign transactions.\n\nSettings > Security Center > Wallet Encryption > Decrypt")
+                return
+            }
+            
+            if UserDefaults.standard.object(forKey: "passphrasePrompt") == nil {
+                self.signNow(nil)
+            } else {
+                self.setPassphrase { [weak self] passphrase in
+                    guard let self = self else { return }
+                    
+                    self.signNow(passphrase)
+                }
             }
         }
     }

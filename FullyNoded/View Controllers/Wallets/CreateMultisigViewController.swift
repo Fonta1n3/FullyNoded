@@ -48,7 +48,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         if let cosigner = cosigner {
             derivationField.text = cosigner.derivation
             addKeyStore(cosigner.fingerprint, cosigner.accountXpub == "" ? cosigner.accountXprv : cosigner.accountXpub)
-            showAlert(vc: self, title: "Cosigner added ✓", message: "")
+            showAlert(vc: self, title: "Cosigner added ✓", message: "Add more or select create wallet.")
         }
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
@@ -152,7 +152,12 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     }
     
     @IBAction func createButton(_ sender: Any) {
-        promptToCreate()
+        if keys.count > 1 {
+            promptToCreate()
+        } else {
+            showAlert(vc: self, title: "Add more cosigners first.", message: "Creating a multi-sig wallet with one cosigner is pointless...")
+        }
+        
     }
     
     var cointType: String {
