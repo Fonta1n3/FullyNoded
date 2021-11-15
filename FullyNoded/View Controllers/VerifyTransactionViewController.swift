@@ -515,8 +515,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     @IBAction func signAction(_ sender: Any) {
         isSigning = true
         
+        spinner.addConnectingView(vc: self, description: "Checking for wallet encryption...")
+        
         OnchainUtils.getWalletInfo { [weak self] (walletInfo, message) in
             guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
             
             guard let walletInfo = walletInfo else {
                 showAlert(vc: self, title: "Error getting wallet info...", message: message ?? "unknown")
@@ -524,7 +528,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
             
             guard !walletInfo.locked else {
-                showAlert(vc: self, title: "Wallet locked!", message: "You need to decrypt your wallet before you can sign transactions.\n\nSettings > Security Center > Wallet Encryption > Decrypt")
+                self.unlockWallet()
                 return
             }
             
@@ -561,6 +565,51 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
             
             alert.addAction(set)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { alertAction in }
+            alert.addAction(cancel)
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func unlockWallet() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Wallet locked 🔒"
+            let message = "Enter your encryption password to unlock it."
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let unlock = UIAlertAction(title: "Unlock", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                let password = (alert.textFields![0] as UITextField).text ?? ""
+                
+                self.spinner.addConnectingView(vc: self, description: "Unlocking wallet...")
+                
+                Reducer.makeCommand(command: .walletpassphrase, param: "\"\(password)\", 600") { [weak self] (response, errorMessage) in
+                    guard let self = self else { return }
+                    
+                    self.spinner.removeConnectingView()
+                    
+                    guard errorMessage == nil else {
+                        self.showError(error: errorMessage ?? "Unknown error unlocking your wallet.")
+                        return
+                    }
+                    
+                    showAlert(vc: self, title: "Wallet unlocked ✓", message: "Try signing again.")
+                }
+            }
+            
+            alert.addTextField { textField in
+                textField.keyboardAppearance = .dark
+                textField.isSecureTextEntry = true
+                textField.autocorrectionType = .no
+                textField.spellCheckingType = .no
+            }
+            
+            alert.addAction(unlock)
             
             let cancel = UIAlertAction(title: "Cancel", style: .default) { alertAction in }
             alert.addAction(cancel)
