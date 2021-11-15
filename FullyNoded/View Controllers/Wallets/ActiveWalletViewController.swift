@@ -978,7 +978,7 @@ class ActiveWalletViewController: UIViewController {
                     return
                 }
                 
-                guard errorMessage.contains("Wallet file not specified (must request wallet RPC through") || errorMessage.contains("No wallet is loaded") else {
+                guard errorMessage.contains("Wallet file not specified (must request wallet RPC through") || errorMessage.contains("No wallet is loaded") || errorMessage.contains("Looks like your last used wallet does not exist on this node, please activate a wallet") else {
                     displayAlert(viewController: self, isError: true, message: errorMessage)
                     return
                 }
@@ -1275,7 +1275,12 @@ class ActiveWalletViewController: UIViewController {
                     return
                 }
                 
-                displayAlert(viewController: self, isError: true, message: errorMessage)
+                if errorMessage.contains("Looks like your last used wallet does not exist on this node, please activate a wallet") {
+                    self.chooseWallet()
+                } else {
+                    displayAlert(viewController: self, isError: true, message: errorMessage)
+                }
+                
                 return
             }
             

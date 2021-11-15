@@ -71,7 +71,7 @@ enum Keys {
         let bip86 = "tr([\(xfp)/86'/\(cointType)'/0']\(bip86Xprv)/0/*)"
         let bip44 = "pkh([\(xfp)/44'/\(cointType)'/0']\(bip44Xpub)/0/*)"
         
-        return ([bip84,bip49, bip44, cosigner, bip86], nil)
+        return ([bip84, bip49, bip44, cosigner, bip86], nil)
     }
     
     static func donationAddress() -> String? {

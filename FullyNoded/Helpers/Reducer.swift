@@ -60,6 +60,9 @@ class Reducer {
                     makeTorCommand()
                 } else if errorDesc!.contains("Duplicate -wallet filename specified") {
                     makeTorCommand()
+                } else if errorDesc!.contains("Wallet file verification failed") {
+                    UserDefaults.standard.removeObject(forKey: "walletName")
+                    completion((nil, "Looks like your last used wallet does not exist on this node, please activate a wallet."))
                 } else {
                     completion((nil, errorDesc))
                 }

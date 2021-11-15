@@ -254,8 +254,6 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
     
     private func recoverWallet(_ wallets: [[String:Any]]) {
         if index < wallets.count {
-            ImportWallet.isRecovering = true
-            
             ImportWallet.accountMap(wallets[index]) { [weak self] (success, errorDescription) in
                 guard let self = self else { return }
                 
@@ -269,7 +267,6 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
                 self.recoverWallet(wallets)
             }
         } else {
-            ImportWallet.isRecovering = false
             spinner.removeConnectingView()
             
             DispatchQueue.main.async { [weak self] in

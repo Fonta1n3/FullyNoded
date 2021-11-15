@@ -13,6 +13,8 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     @IBOutlet weak var savedOutlet: UIButton!
     @IBOutlet weak var textView: UITextView!
     
+    var isTaproot = false
+    var isSegwit = false
     var spinner = ConnectingView()
     var primDesc = ""
     var changeDesc = ""
@@ -29,6 +31,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         textView.layer.cornerRadius = 8
         textView.layer.borderColor = UIColor.lightGray.cgColor
         textView.layer.borderWidth = 0.5
+        textView.textColor = .systemGreen
         savedOutlet.layer.cornerRadius = 8
         setCoinType()
     }
@@ -112,7 +115,11 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 return
             }
             
-            self.getMasterKey(seed: seed)
+            if self.isSegwit {
+                self.getMasterKey(seed: seed)
+            } else if self.isTaproot {
+                self.getPassword(seed)
+            }
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -122,22 +129,90 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
     }
     
+    private func getPassword(_ words: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Add a password?"
+            let message = "Taproot wallets store the private keys on your node, this password is used to encrypt them. You must remember this password as Fully Noded does not save it."
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let setPassword = UIAlertAction(title: "Set password", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                let password = (alert.textFields![0] as UITextField).text
+                
+                guard let password = password else {
+                    showAlert(vc: self, title: "", message: "No password added, try again.")
+                    
+                    return
+                }
+                
+                let (descriptors, error) = Keys.descriptorsFromSigner(words)
+                
+                guard let descriptors = descriptors else {
+                    self.showError(error: error ?? "Unknown")
+                    return
+                }
+                
+                let taprootDesc = descriptors[4]
+                
+                let accountMap:[String:Any] = [
+                    "descriptor": taprootDesc,
+                    "blockheight": Int64(self.blockheight),
+                    "label": "Taproot Single Sig",
+                    "password": password,
+                    "watching":[]
+                ]
+                
+                self.importAccountMap(accountMap)
+            }
+            
+            alert.addTextField { textField in
+                textField.isSecureTextEntry = true
+                textField.keyboardAppearance = .dark
+            }
+            
+            alert.addAction(setPassword)
+            
+            self.present(alert, animated:true, completion: nil)
+        }
+    }
+    
+    private func importAccountMap(_ accountMap: [String:Any]) {
+        ImportWallet.accountMap(accountMap) { (success, errorDescription) in
+            if success {
+                self.spinner.removeConnectingView()
+                
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                }
+                
+                showAlert(vc: self, title: "Success ✓", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!")
+            } else {
+                UserDefaults.standard.removeObject(forKey: "walletName")
+                self.showError(error: "Error creating wallet: \(errorDescription ?? "Unknown error.")")
+            }
+        }
+    }
+    
     private func getMasterKey(seed: String) {
         if let masterKey = Keys.masterKey(words: seed, coinType: coinType, passphrase: "") {
-            getXpubFingerprint(masterKey: masterKey)
+            getSegwitData(masterKey: masterKey)
         } else {
             showError(error: "Error deriving master key")
         }
     }
-    
-    private func getXpubFingerprint(masterKey: String) {
+        
+    private func getSegwitData(masterKey: String) {
         guard let xpub = Keys.bip84AccountXpub(masterKey: masterKey, coinType: coinType, account: 0),
               let fingerprint = Keys.fingerprint(masterKey: masterKey) else {
-            showError(error: "Error deriving fingerprint")
+            showError(error: "Error deriving xpub or fingerprint.")
             return
         }
         
-        createWallet(fingerprint: fingerprint, xpub: xpub, mk: masterKey) { [weak self] (success, error) in
+        createSegwitWallet(fingerprint: fingerprint, xpub: xpub, mk: masterKey) { [weak self] (success, error) in
             guard let self = self else { return }
             
             if success {
@@ -157,16 +232,17 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
     }
     
-    private func primaryDescriptor(_ fingerprint: String, _ xpub: String) -> String {
+    private func primarySegwitDescriptor(_ fingerprint: String, _ xpub: String) -> String {
         return "wpkh([\(fingerprint)/84h/\(coinType)h/0h]\(xpub)/0/*)"
     }
     
-    private func changeDescriptor(_ fingerprint: String, _ xpub: String) -> String {
+    private func changeSegwitDescriptor(_ fingerprint: String, _ xpub: String) -> String {
         return "wpkh([\(fingerprint)/84h/\(coinType)h/0h]\(xpub)/1/*)"
     }
     
-    private func createWallet(fingerprint: String, xpub: String, mk: String, completion: @escaping ((success: Bool, message: String?)) -> Void) {
-        primDesc = primaryDescriptor(fingerprint, xpub)
+    private func createSegwitWallet(fingerprint: String, xpub: String, mk: String, completion: @escaping ((success: Bool, message: String?)) -> Void) {
+        primDesc = primarySegwitDescriptor(fingerprint, xpub)
+        changeDesc = changeSegwitDescriptor(fingerprint, xpub)
         
         let walletName = "FullyNoded-\(Crypto.sha256hash(primDesc))"
         var param = "\"\(walletName)\", true, true, \"\", true"
@@ -182,7 +258,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 UserDefaults.standard.set(name, forKey: "walletName")
                 
                 if self.version >= 210100 {
-                    self.importDescriptors(name, fingerprint, xpub, self.primDesc, mk, completion: completion)
+                    self.importDescriptors(name, fingerprint, self.primDesc, self.changeDesc, mk, completion: completion)
                 } else {
                     self.importKeys(name, fingerprint, xpub, self.primDesc, completion: completion)
                 }
@@ -197,43 +273,34 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     
     private func importDescriptors(_ name: String,
                                    _ xfp: String,
-                                   _ xpub: String,
-                                   _ desc: String,
+                                   _ descPrim: String,
+                                   _ descChange: String,
                                    _ mk: String,
                                    completion: @escaping ((success: Bool, message: String?)) -> Void) {
         self.name = name
-        let changeDesc = self.changeDescriptor(xfp, xpub)
         
-        OnchainUtils.getDescriptorInfo(desc) { (descriptorInfo, message) in
+        OnchainUtils.getDescriptorInfo(descPrim) { (descriptorInfo, message) in
             guard let recDescriptorInfo = descriptorInfo else { completion((false, message)); return }
             
-            OnchainUtils.getDescriptorInfo(changeDesc) { (changeDescInfo, message) in
+            OnchainUtils.getDescriptorInfo(descChange) { (changeDescInfo, message) in
                 guard let changeDescInfo = changeDescInfo else { completion((false, message)); return }
                 
                 self.changeDesc = changeDescInfo.descriptor
                 self.primDesc = recDescriptorInfo.descriptor
                 
-                JoinMarket.descriptors(mk, xfp) { [weak self] (jMDescriptors, dict) in
+                let params = "[{\"desc\": \"\(self.primDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": false}, {\"desc\": \"\(self.changeDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": true}]"
+                
+                OnchainUtils.importDescriptors(params) { [weak self] (imported, message) in
                     guard let self = self else { return }
                     
-                    guard let jMDescriptors = jMDescriptors, let dict = dict else { return }
-                    
-                    self.dict = dict
-                    
-                    let params = "[{\"desc\": \"\(self.primDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": false}, {\"desc\": \"\(self.changeDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": true}, \(jMDescriptors)]"
-                    
-                    OnchainUtils.importDescriptors(params) { [weak self] (imported, message) in
-                        guard let self = self else { return }
-                        
-                        guard imported else {
-                            UserDefaults.standard.removeObject(forKey: "walletName")
-                            completion((false, message))
-                            self.showError(error: message ?? "Unknown error importing descriptors.")
-                            return
-                        }
-                        
-                        completion((true, nil))
+                    guard imported else {
+                        UserDefaults.standard.removeObject(forKey: "walletName")
+                        completion((false, message))
+                        self.showError(error: message ?? "Unknown error importing descriptors.")
+                        return
                     }
+                    
+                    completion((true, nil))
                 }
             }
         }
@@ -250,7 +317,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             guard let self = self else { return }
             
             if success {
-                self.importChangeKeys(desc: self.changeDescriptor(fingerprint, xpub)) { (changeImported, errorDesc) in
+                self.importChangeKeys(desc: self.changeSegwitDescriptor(fingerprint, xpub)) { (changeImported, errorDesc) in
                     
                     if changeImported {
                         completion((true, nil))
@@ -329,7 +396,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func saveSigner(encryptedSigner: Data, completion: @escaping ((Bool)) -> Void) {
-        let dict = ["id":UUID(), "words":encryptedSigner] as [String:Any]
+        let dict = ["id":UUID(), "words":encryptedSigner, "added": Date(), "label": "Single Sig"] as [String:Any]
         CoreDataService.saveEntity(dict: dict, entityName: .signers) { success in
             completion(success)
         }

@@ -865,7 +865,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         let desc = Descriptor("\(primDesc)")
         
         if desc.isP2TR {
-            prompForEncryptionPassword(primDesc)
+            promptForEncryptionPassword(primDesc)
         } else {
             if desc.isCosigner {
                 self.cosigner = desc
@@ -881,12 +881,12 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         }
     }
     
-    private func prompForEncryptionPassword(_ primDesc: String) {
+    private func promptForEncryptionPassword(_ primDesc: String) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             let title = "Add a password?"
-            let message = "Taproot wallets store the private keys on your node. You must remember this password as Fully Noded does not save it."
+            let message = "Taproot wallets store the private keys on your node, this password is used to encrypt them. You must remember this password as Fully Noded does not save it."
             
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             

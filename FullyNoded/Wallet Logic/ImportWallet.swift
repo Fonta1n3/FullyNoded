@@ -13,7 +13,6 @@ class ImportWallet {
     static var index = 0
     static var processedWatching = [String]()
     static var isColdcard = false
-    static var isRecovering = false
     static var version:Int = 0
     static var isHot = false
             
@@ -460,17 +459,18 @@ class ImportWallet {
     }
     
     class func rescan(wallet: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
-        if !isRecovering {
-            OnchainUtils.rescan { (started, message) in
+        //if !isRecovering {
+            let walletStr = Wallet(dictionary: wallet)
+            OnchainUtils.rescanNow(from: "\(walletStr.blockheight)") { (started, message) in
                 if started {
                     saveLocally(wallet: wallet, completion: completion)
                 } else {
                     completion((false, message ?? "error rescanning"))
                 }
             }
-        } else {
-            saveLocally(wallet: wallet, completion: completion)
-        }
+//        } else {
+//            saveLocally(wallet: wallet, completion: completion)
+//        }
     }
     
     class func importMultiDesc(params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {

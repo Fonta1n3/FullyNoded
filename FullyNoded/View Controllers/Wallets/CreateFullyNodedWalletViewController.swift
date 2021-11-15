@@ -21,6 +21,8 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     var xpub = ""
     var deriv = ""
     var extendedKey = ""
+    var isSegwit = false
+    var isTaproot = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -99,12 +101,34 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     @IBAction func automaticAction(_ sender: Any) {
-        guard let _ = KeyChain.getData("UnlockPassword") else {
-            showAlert(vc: self, title: "Security alert", message: "Single signature wallets store seed words on the app, you need to go to the home screen and tap the lock button to create a locking password before the app can hold seed words.")
+        promptForSingleSigFormat()
+    }
+    
+    private func promptForSingleSigFormat() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            let alert = UIAlertController(title: "Choose an address format.", message: "", preferredStyle: .alert)
             
-            return
+            alert.addAction(UIAlertAction(title: "Segwit", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.isSegwit = true
+                self.segueToSingleSigCreator()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Taproot", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.isTaproot = true
+                self.segueToSingleSigCreator()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = vc.view
+            vc.present(alert, animated: true, completion: nil)
         }
-        
+    }
+    
+    private func segueToSingleSigCreator() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -490,7 +514,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
-    func prompToChoosePrimaryDesc(descriptors: [String]) {
+    private func prompToChoosePrimaryDesc(descriptors: [String]) {
         DispatchQueue.main.async { [unowned vc = self] in
             let alert = UIAlertController(title: "Choose an address format.", message: "", preferredStyle: .alert)
             
@@ -636,41 +660,48 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
-        if segue.identifier == "segueToScanner" {
+        switch segue.identifier {
+        case "segueToSeedWords":
+            guard let vc = segue.destination as? SeedDisplayerViewController else { fallthrough }
+            
+            vc.isSegwit = isSegwit
+            vc.isTaproot = isTaproot
+            
+        case "segueToScanner":
             if #available(macCatalyst 14.0, *) {
-                if let vc = segue.destination as? QRScannerViewController {
-                    vc.isImporting = true
-                    vc.onDoneBlock = { [weak self] item in
-                        guard let self = self else { return }
-                        
-                        guard let item = item else {
-                            return
-                        }
-                        
-                        // needs to check AM too
-                        self.processImportedString(item)
+                guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
+                
+                vc.isImporting = true
+                vc.onDoneBlock = { [weak self] item in
+                    guard let self = self else { return }
+                    
+                    guard let item = item else {
+                        return
                     }
+                    
+                    // needs to check AM too
+                    self.processImportedString(item)
                 }
             }
-        }
-        
-        if segue.identifier == "segueToCreateMultiSig" {
-            if let vc = segue.destination as? CreateMultisigViewController {
-                vc.cosigner = cosigner
-            }
-        }
-        
-        if segue.identifier == "segueToImportDescriptor" {
-            if let vc = segue.destination as? ImportXpubViewController {
-                vc.isDescriptor = true
-            }
-        }
-        
-        if segue.identifier == "segueToImportXpub" {
-            if let vc = segue.destination as? ImportXpubViewController {
-                vc.isDescriptor = self.isDescriptor
-                vc.extKey = self.extendedKey
-            }
+            
+        case "segueToCreateMultiSig":
+            guard let vc = segue.destination as? CreateMultisigViewController else { fallthrough }
+            
+            vc.cosigner = cosigner
+            
+        case "segueToImportDescriptor":
+            guard let vc = segue.destination as? ImportXpubViewController else { fallthrough }
+            
+            vc.isDescriptor = true
+            
+        case "segueToImportXpub":
+            guard let vc = segue.destination as? ImportXpubViewController else { fallthrough }
+            
+            vc.isDescriptor = self.isDescriptor
+            vc.extKey = self.extendedKey
+            
+        default:
+            break
         }
     }
 }
