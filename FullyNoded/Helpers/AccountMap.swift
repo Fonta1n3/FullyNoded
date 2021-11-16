@@ -13,6 +13,7 @@ import LibWally
 class AccountMap {
     
     class func create(wallet: Wallet) -> String? {
+        print("wallet: \(wallet.receiveDescriptor)")
         var primDesc = processedDesc(wallet.receiveDescriptor)
         var watching = [String]()
         

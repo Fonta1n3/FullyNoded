@@ -39,6 +39,7 @@ class ExternalFNWalletsViewController: UIViewController {
             if desc.chain == "Mainnet" {
                 mainnetWallets.append(wallet)
             } else {
+                print("wallet: \(wallet.receiveDescriptor)")
                 testnetWallets.append(wallet)
             }
         }
