@@ -553,8 +553,6 @@ class MainMenuViewController: UIViewController {
                 return
             }
             
-            //ud.setValue(blockchainInfo., forKey: <#T##String#>)
-                                    
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 

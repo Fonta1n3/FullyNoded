@@ -202,7 +202,7 @@ public extension BlockchainInfo {
     }
     
     var diffString: String {
-        return "difficulty \(Int(self.difficulty / 1000000000000).withCommas) trillion"
+        return "Difficulty \(Int(self.difficulty / 1000000000000).withCommas) trillion"
     }
 }
 

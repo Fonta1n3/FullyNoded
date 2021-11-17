@@ -708,52 +708,63 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         var bumpfee:BTC_CLI_COMMAND = .bumpfee
         
-        let version = UserDefaults.standard.object(forKey: "version") as? String ?? "0.20"
-        
-        if version.contains("0.21.") {
-            bumpfee = .psbtbumpfee
-        }
-        
-        Reducer.makeCommand(command: bumpfee, param: "\"\(txid)\"") { [weak self] (response, errorMessage) in
+        OnchainUtils.getWalletInfo { [weak self] (walletInfo, message) in
             guard let self = self else { return }
             
-            guard let result = response as? NSDictionary, let originalFee = result["origfee"] as? Double, let newFee = result["fee"] as? Double else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "There was an issue increasing the fee.", message: errorMessage ?? "unknown")
+            guard let walletInfo = walletInfo else {
+                self.showError(error: "Error getting wallet info: \(message ?? "unknown")")
                 return
             }
             
-            guard let psbt = result["psbt"] as? String else {
-                self.spinner.removeConnectingView()
-                if let txid = result["txid"] as? String {
-                    self.saveNewTx(txid)
-                    displayAlert(viewController: self, isError: false, message: "fee bumped from \(originalFee.avoidNotation) to \(newFee.avoidNotation)")
-                } else if let errors = result["errors"] as? NSArray {
-                    showAlert(vc: self, title: "There was an error increasing the fee.", message: "\(errors)")
+            if !walletInfo.private_keys_enabled,
+                let version = UserDefaults.standard.object(forKey: "version") as? Int,
+                version >= 210000 {
+                bumpfee = .psbtbumpfee
+            }
+            
+            Reducer.makeCommand(command: bumpfee, param: "\"\(self.txid)\"") { [weak self] (response, errorMessage) in
+                guard let self = self else { return }
+                
+                guard let result = response as? NSDictionary,
+                        let originalFee = result["origfee"] as? Double,
+                        let newFee = result["fee"] as? Double else {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "There was an issue increasing the fee.", message: errorMessage ?? "unknown")
+                    return
                 }
-                return            }
-            
-            self.signedRawTx = ""
-            
-            Signer.sign(psbt: psbt, passphrase: nil) { (signedPsbt, rawTx, errorMessage) in
-                self.spinner.removeConnectingView()
                 
-                self.disableBumpButton()
+                guard let psbt = result["psbt"] as? String else {
+                    self.spinner.removeConnectingView()
+                    if let txid = result["txid"] as? String {
+                        self.saveNewTx(txid)
+                        displayAlert(viewController: self, isError: false, message: "fee bumped from \(originalFee.avoidNotation) to \(newFee.avoidNotation)")
+                    } else if let errors = result["errors"] as? NSArray {
+                        showAlert(vc: self, title: "There was an error increasing the fee.", message: "\(errors)")
+                    }
+                    return            }
                 
-                if rawTx != nil {
-                    self.signedRawTx = rawTx!
-                    self.enableSendButton()
-                    self.disableSignButton()
-                    self.load()
-                    showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "Tap the send button to broadcast the new transaction.")
+                self.signedRawTx = ""
+                
+                Signer.sign(psbt: psbt, passphrase: nil) { (signedPsbt, rawTx, errorMessage) in
+                    self.spinner.removeConnectingView()
                     
-                } else if signedPsbt != nil {
-                    self.unsignedPsbt = signedPsbt!
-                    self.load()
-                    showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "The transaction still needs more signatures before it can be broadcast.")
+                    self.disableBumpButton()
                     
-                } else {
-                    showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "unknown")
+                    if rawTx != nil {
+                        self.signedRawTx = rawTx!
+                        self.enableSendButton()
+                        self.disableSignButton()
+                        self.load()
+                        showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "Tap the send button to broadcast the new transaction.")
+                        
+                    } else if signedPsbt != nil {
+                        self.unsignedPsbt = signedPsbt!
+                        self.load()
+                        showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "The transaction still needs more signatures before it can be broadcast.")
+                        
+                    } else {
+                        showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "unknown")
+                    }
                 }
             }
         }
