@@ -159,10 +159,13 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                 }
                 
                 if utxos.count > 0 {
+                    var walletBalance = 0.0
                     for (x, utxo) in utxos.enumerated() {
                         self.totalBtcBalance += utxo.amount!
+                        walletBalance += utxo.amount!
                         
                         if x + 1 == utxos.count {
+                            self.wallets[self.index]["balance"] = walletBalance
                             self.index += 1
                             self.getTotals()
                         }
@@ -217,8 +220,10 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         let label = cell.viewWithTag(1) as! UILabel
         let button = cell.viewWithTag(2) as! UIButton
         let toggle = cell.viewWithTag(3) as! UISwitch
-        let walletStruct = Wallet(dictionary: wallets[indexPath.section])
-        label.text = walletStruct.label
+        let wallet = wallets[indexPath.section]
+        let btcBalance = (wallet["balance"] as? Double ?? 0.0)
+        let walletStruct = Wallet(dictionary: wallet)
+        label.text = walletStruct.label + ": \(btcBalance.btc) / \((btcBalance * fxRate).balanceText)"
         button.restorationIdentifier = "\(indexPath.section)"
         toggle.restorationIdentifier = "\(indexPath.section)"
         button.addTarget(self, action: #selector(goToDetail(_:)), for: .touchUpInside)
