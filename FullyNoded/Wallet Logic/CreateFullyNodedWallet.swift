@@ -123,11 +123,20 @@ enum Keys {
         guard let mk = Keys.masterKey(words: signer, coinType: cointType, passphrase: ""),
               let xfp = Keys.fingerprint(masterKey: mk),
               let bip84Xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: cointType, account: 0),
+              let bip49Xpub = Keys.xpub(path: "m/49'/\(cointType)'/0'", masterKey: mk),
+              let bip44Xpub = Keys.xpub(path: "m/44'/\(cointType)'/0'", masterKey: mk),
+              let bip86Xprv = Keys.xprv(path: "m/86'/\(cointType)'/0'", masterKey: mk),// Needs to be a hot wallet until libwally updates for taproot
               let bip48Xpub = Keys.xpub(path: "m/48'/\(cointType)'/0'/2'", masterKey: mk) else {
             return (nil, "Error deriving descriptors.")
         }
         
-        return (["wsh([\(xfp)/48'/\(cointType)'/0'/2']\(bip48Xpub)/0/*)", "wpkh([\(xfp)/84'/\(cointType)'/0']\(bip84Xpub)/0/*)"], nil)
+        let cosigner = "wsh([\(xfp)/48'/\(cointType)'/0'/2']\(bip48Xpub)/0/*)"
+        let bip84 = "wpkh([\(xfp)/84'/\(cointType)'/0']\(bip84Xpub)/0/*)"
+        let bip49 = "sh(wpkh([\(xfp)/49'/\(cointType)'/0']\(bip49Xpub)/0/*))"
+        let bip86 = "tr([\(xfp)/86'/\(cointType)'/0']\(bip86Xprv)/0/*)"
+        let bip44 = "pkh([\(xfp)/44'/\(cointType)'/0']\(bip44Xpub)/0/*)"
+        
+        return ([bip84, bip49, bip44, cosigner, bip86], nil)
     }
     
     static func donationAddress() -> String? {
@@ -203,6 +212,18 @@ enum Keys {
         }
     }
     
+    static func xprv(path: String, masterKey: String) -> String? {
+        if path == "m" {
+            return try? HDKey(base58: masterKey).xpriv
+        } else {
+            guard let hdMasterKey = try? HDKey(base58: masterKey),
+                let path = try? BIP32Path(string: path),
+                let accountKey = try? hdMasterKey.derive(using: path) else { return nil }
+            
+            return accountKey.xpriv
+        }
+    }
+    
     static func validPsbt(_ psbt: String) -> Bool {
         guard let _ = try? PSBT(psbt: psbt, network: .mainnet) else {
             
@@ -232,7 +253,8 @@ enum Keys {
         var type:AddressType?
         if descriptorStruct.isP2PKH {
             type = .payToPubKeyHash
-        } else if descriptorStruct.isP2WPKH {
+            // Libwally does not directly support Taproot for now so using this hack.
+        } else if descriptorStruct.isP2WPKH || descriptorStruct.isP2TR {
             type = .payToWitnessPubKeyHash
         } else if descriptorStruct.isP2SHP2WPKH {
             type = .payToScriptHashPayToWitnessPubKeyHash
@@ -241,6 +263,7 @@ enum Keys {
     }
     
     static func addressSignable(_ address: String, _ path: BIP32Path, completion: @escaping ((signable: Bool, signer: String?)) -> Void) {
+        print("addressSignable")
         CoreDataService.retrieveEntity(entityName: .signers) { signers in
             guard let signers = signers, signers.count > 0 else { completion((false, nil)); return }
             
@@ -259,7 +282,11 @@ enum Keys {
                         passphrase = pp
                     }
                     
-                    guard let a = try? Address(string: address) else { return }
+                    guard let a = try? Address(string: address) else {
+                        print("failing address type here")
+                        completion((false, nil))
+                        return
+                    }
                     
                     var cointype = "0"
                     
@@ -360,6 +387,7 @@ enum Keys {
                 let providedDescStr = Descriptor(descriptor)
                 
                 if let type = addressType(descStr) {
+                    print("we are getting here")
                     if !providedDescStr.isMulti && path != "no key path" {
                         guard let fullPath = try? BIP32Path(string: path) else { completion((isOurs, walletLabel, signable, signer)); return }
                         
@@ -423,6 +451,9 @@ enum Keys {
                             }
                         }
                     }
+                } else if i + 1 == wallets.count {
+                    // Taproot not yet supported in Libwally
+                    completion((isOurs, walletLabel, signable, signer))
                 }
                 
                 if i + 1 == wallets.count && providedDescStr.isMulti {

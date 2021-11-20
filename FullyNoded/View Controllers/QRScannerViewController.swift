@@ -13,6 +13,7 @@ import UIKit
 @available(macCatalyst 14.0, *)
 class QRScannerViewController: UIViewController {
     
+    var isImporting = false
     private var hasScanned = false
     private let avCaptureSession = AVCaptureSession()
     private var stringToReturn = ""
@@ -22,12 +23,9 @@ class QRScannerViewController: UIViewController {
     private let torchButton = UIButton()
     private let closeButton = UIButton()
     private let downSwipe = UISwipeGestureRecognizer()
-    var onImportDoneBlock : (([String:Any]?) -> Void)?
-    var isAccountMap = Bool()
     var isQuickConnect = Bool()
     var isScanningAddress = Bool()
-    var onQuickConnectDoneBlock : ((String?) -> Void)?
-    var onAddressDoneBlock : ((String?) -> Void)?
+    var onDoneBlock : ((String?) -> Void)?
     var fromSignAndVerify = Bool()
     var decoder:URDecoder!
     private let spinner = ConnectingView()
@@ -140,7 +138,7 @@ class QRScannerViewController: UIViewController {
             self.removeScanner()
             
             self.dismiss(animated: true) {
-                self.onAddressDoneBlock!(psbt)
+                self.onDoneBlock!(psbt)
             }
         }
     }
@@ -311,53 +309,23 @@ class QRScannerViewController: UIViewController {
                 showAlert(vc: self, title: "Unrecognized format", message: "That is an unrecognized transaction format, please reach out to us so we can add compatibility.")
             }
             
-        } else if isAccountMap {
-            if lowercased.hasPrefix("ur:crypto-output") || lowercased.hasPrefix("ur:crypto-account") || lowercased.hasPrefix("ur:crypto-hdkey") || lowercased.hasPrefix("ur:crypto-seed") {
-                hasScanned = true
-                stopScanning(text)
-            } else if isExtendedKey(lowercased) || isDescriptor(lowercased) {
-                hasScanned = true
-                stopScanning(text)
-                
-            } else if lowercased.hasPrefix("ur:bytes") {
+        } else if isImporting {
+            if lowercased.hasPrefix("ur:bytes") {
                 hasScanned = false
                 processUrPsbt(text: lowercased)
-                                
-            } else if let data = text.data(using: .utf8) {
-                if let accountMap = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] {
-                    spinner.removeConnectingView()
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-
-                        self.dismiss(animated: true) {
-                            self.stopScanner()
-                            self.avCaptureSession.stopRunning()
-                            self.onImportDoneBlock!(accountMap)
-                        }
-                    }
-                } else if text.hasPrefix("#") {
-                    spinner.removeConnectingView()
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-
-                        self.dismiss(animated: true) {
-                            self.stopScanner()
-                            self.avCaptureSession.stopRunning()
-                            self.onAddressDoneBlock!(text)
-                        }
-                    }
-                } else {
-                    spinner.removeConnectingView()
-                    showAlert(vc: self, title: "Error", message: "That does not seem to be an accepted wallet format.")
-                }
+                
+            } else {
+                hasScanned = true
+                stopScanning(text)
             }
+                        
         } else if isQuickConnect {
             spinner.removeConnectingView()
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.dismiss(animated: true) {
                     vc.stopScanner()
                     vc.avCaptureSession.stopRunning()
-                    vc.onQuickConnectDoneBlock!(text)
+                    vc.onDoneBlock!(text)
                 }
             }
         } else if isScanningAddress {
@@ -365,7 +333,7 @@ class QRScannerViewController: UIViewController {
                 vc.dismiss(animated: true) {
                     vc.stopScanner()
                     vc.avCaptureSession.stopRunning()
-                    vc.onAddressDoneBlock!(text)
+                    vc.onDoneBlock!(text)
                 }
             }
         } else {
@@ -373,25 +341,9 @@ class QRScannerViewController: UIViewController {
                 vc.dismiss(animated: true) {
                     vc.stopScanner()
                     vc.avCaptureSession.stopRunning()
-                    vc.onAddressDoneBlock!(text)
+                    vc.onDoneBlock!(text)
                 }
             }
-        }
-    }
-    
-    private func isExtendedKey(_ lowercased: String) -> Bool {
-        if lowercased.hasPrefix("xprv") || lowercased.hasPrefix("tprv") || lowercased.hasPrefix("vprv") || lowercased.hasPrefix("yprv") || lowercased.hasPrefix("zprv") || lowercased.hasPrefix("uprv") || lowercased.hasPrefix("xpub") || lowercased.hasPrefix("tpub") || lowercased.hasPrefix("vpub") || lowercased.hasPrefix("ypub") || lowercased.hasPrefix("zpub") || lowercased.hasPrefix("upub") {
-            return true
-        } else {
-            return false
-        }
-    }
-    
-    private func isDescriptor(_ lowercased: String) -> Bool {
-        if lowercased.hasPrefix("wsh") || lowercased.hasPrefix("pkh") || lowercased.hasPrefix("sh") || lowercased.hasPrefix("combo") || lowercased.hasPrefix("wpkh") || lowercased.hasPrefix("addr") || lowercased.hasPrefix("multi") || lowercased.hasPrefix("sortedmulti") {
-            return true
-        } else {
-            return false
         }
     }
     

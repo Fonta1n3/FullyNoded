@@ -380,7 +380,7 @@ class MainMenuViewController: UIViewController {
         case .totalSupply:
             if uptimeInfo != nil {
                 label.text = "Verify total supply"
-                icon.image = UIImage(systemName: "bitcoinsign.circle")
+                icon.image = UIImage(systemName: "person.fill.checkmark")
                 background.backgroundColor = .systemYellow
                 chevron.alpha = 1
             }
@@ -395,13 +395,18 @@ class MainMenuViewController: UIViewController {
             
         case .blockchainNetwork:
             if blockchainInfo != nil {
-                label.text = blockchainInfo.network
-                icon.image = UIImage(systemName: "link")
-                if blockchainInfo.network == "test chain" {
-                    background.backgroundColor = .systemGreen
-                } else if blockchainInfo.network == "main chain" {
-                    background.backgroundColor = .systemOrange
-                } else {
+                label.text = blockchainInfo.network.capitalized
+                icon.image = UIImage(systemName: "bitcoinsign.circle")
+                switch blockchainInfo.network {
+                case "test":
+                    background.backgroundColor = #colorLiteral(red: 0.4399289489, green: 0.9726744294, blue: 0.2046178877, alpha: 1)
+                case "main":
+                    background.backgroundColor = #colorLiteral(red: 0.9629253745, green: 0.5778557658, blue: 0.1043280438, alpha: 1)
+                case "regtest":
+                    background.backgroundColor = #colorLiteral(red: 0.2165609896, green: 0.7795373201, blue: 0.9218732715, alpha: 1)
+                case "signet":
+                    background.backgroundColor = #colorLiteral(red: 0.8719944954, green: 0.9879228473, blue: 0.07238187641, alpha: 1)
+                default:
                     background.backgroundColor = .systemTeal
                 }
                 chevron.alpha = 1
@@ -480,12 +485,12 @@ class MainMenuViewController: UIViewController {
         case .p2pHiddenService:
             if networkInfo != nil {
                 if networkInfo.torReachable {
-                    label.text = "tor hidden service on"
+                    label.text = "Tor hidden service on"
                     icon.image = UIImage(systemName: "wifi")
                     background.backgroundColor = .black
                     
                 } else {
-                    label.text = "tor hidden service off"
+                    label.text = "Tor hidden service off"
                     icon.image = UIImage(systemName: "wifi.slash")
                     background.backgroundColor = .darkGray
                 }
@@ -548,8 +553,6 @@ class MainMenuViewController: UIViewController {
                 return
             }
             
-            //ud.setValue(blockchainInfo., forKey: <#T##String#>)
-                                    
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
@@ -897,7 +900,7 @@ extension MainMenuViewController {
         case .nodeVersion:
             return "Node version"
         case .blockchainNetwork:
-            return "Blockchain network"
+            return "Bitcoin network"
         case .peerConnections:
             return "Peer connections"
         case .blockchainState:
@@ -1084,7 +1087,7 @@ extension MainMenuViewController: UITableViewDelegate {
                 command = "gettxoutsetinfo"
                 detailHeaderText = headerName(for: .totalSupply)
                 detailSubheaderText = "Use your own node to verify total supply"
-                detailImage = UIImage(systemName: "bitcoinsign.circle")!
+                detailImage = UIImage(systemName: "person.fill.checkmark")!
                 detailImageTint = .systemYellow
                 detailTextDescription = """
                 Fully Noded uses the bitcoin-cli gettxoutsetinfo command to determine the total amount of mined Bitcoins. This command can take considerable time to load, usually around 30 seconds so please be patient while it loads.
@@ -1115,7 +1118,7 @@ extension MainMenuViewController: UITableViewDelegate {
             if blockchainInfo != nil {
                 command = "getblockchaininfo"
                 detailHeaderText = headerName(for: .blockchainNetwork)
-                detailSubheaderText = blockchainInfo.network
+                detailSubheaderText = blockchainInfo.network.capitalized
                 if blockchainInfo.network == "test chain" {
                     detailImageTint = .systemGreen
                 } else if blockchainInfo.network == "main chain" {
@@ -1123,7 +1126,20 @@ extension MainMenuViewController: UITableViewDelegate {
                 } else {
                     detailImageTint = .systemTeal
                 }
-                detailImage = UIImage(systemName: "link")!
+                detailImage = UIImage(systemName: "bitcoinsign.circle")!
+                switch blockchainInfo.network {
+                case "test":
+                    detailImageTint = #colorLiteral(red: 0.4399289489, green: 0.9726744294, blue: 0.2046178877, alpha: 1)
+                case "main":
+                    detailImageTint = #colorLiteral(red: 0.9629253745, green: 0.5778557658, blue: 0.1043280438, alpha: 1)
+                case "regtest":
+                    detailImageTint = #colorLiteral(red: 0.2165609896, green: 0.7795373201, blue: 0.9218732715, alpha: 1)
+                case "signet":
+                    detailImageTint = #colorLiteral(red: 0.8719944954, green: 0.9879228473, blue: 0.07238187641, alpha: 1)
+                default:
+                    detailImageTint = .systemTeal
+                }
+                
                 detailTextDescription = """
                 Fully Noded makes the bitcoin-cli getblockchaininfo command to determine which network your node is running on. Your node can run three different chain's simultaneously; "main", "test" and "regtest". Fully Noded is capable of connecting to either one. To launch mutliple chains simultaneously you would want to run the "bitcoind" command with the "-chain=test", "-chain=regtest" arguments or omit the argument to run the main chain.
                 

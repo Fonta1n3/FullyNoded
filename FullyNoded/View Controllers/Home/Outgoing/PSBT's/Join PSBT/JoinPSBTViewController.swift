@@ -273,7 +273,7 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
             if #available(macCatalyst 14.0, *) {
                 if let vc = segue.destination as? QRScannerViewController {
                     vc.isScanningAddress = true
-                    vc.onAddressDoneBlock = {text in
+                    vc.onDoneBlock = {text in
                         if text != nil {
                             self.addPSBT(url: text!)
                         }

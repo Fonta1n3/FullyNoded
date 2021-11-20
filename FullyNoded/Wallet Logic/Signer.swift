@@ -17,7 +17,7 @@ class Signer {
         var psbtToSign:PSBT!
         var chain:Network!
         var coinType:String!
-                
+        
         func reset() {
             seedsToSignWith.removeAll()
             xprvsToSignWith.removeAll()
@@ -26,47 +26,47 @@ class Signer {
         }
         
         func finalize() {
-//            if psbtToSign.inputs.count < 4 {
+            //            if psbtToSign.inputs.count < 4 {
             /// reproducable bug when finalizing segwit msig psbts with more then 3 inputs.
-//                guard let finalizedPsbt = try? psbtToSign.finalized() else {
-//                    reset()
-//                    completion((psbtToSign.description, nil, nil))
-//                    return
-//                }
-//
-//                guard let hex = finalizedPsbt.transactionFinal else {
-//                    reset()
-//                    completion((finalizedPsbt.description, nil, nil))
-//                    return
-//                }
-//
-//                reset()
-//                completion((nil, hex.description, nil))
-//
-//            } else {
-                Reducer.makeCommand(command: .finalizepsbt, param: "\"\(psbtToSign.description)\"") { (object, errorDescription) in
-                    if let result = object as? NSDictionary {
-                        if let complete = result["complete"] as? Bool {
-                            if complete {
-                                let hex = result["hex"] as! String
-                                let psbt = psbtToSign.description
-                                reset()
-                                // Now always return the non finalized psbt as exporting signed psbt's can be useful.
-                                completion((psbt, hex, nil))
-                            } else {
-                                let psbt = result["psbt"] as! String
-                                reset()
-                                completion((psbt, nil, nil))
-                            }
-                        } else {
+            //                guard let finalizedPsbt = try? psbtToSign.finalized() else {
+            //                    reset()
+            //                    completion((psbtToSign.description, nil, nil))
+            //                    return
+            //                }
+            //
+            //                guard let hex = finalizedPsbt.transactionFinal else {
+            //                    reset()
+            //                    completion((finalizedPsbt.description, nil, nil))
+            //                    return
+            //                }
+            //
+            //                reset()
+            //                completion((nil, hex.description, nil))
+            //
+            //            } else {
+            Reducer.makeCommand(command: .finalizepsbt, param: "\"\(psbtToSign.description)\"") { (object, errorDescription) in
+                if let result = object as? NSDictionary {
+                    if let complete = result["complete"] as? Bool {
+                        if complete {
+                            let hex = result["hex"] as! String
+                            let psbt = psbtToSign.description
                             reset()
-                            completion((nil, nil, errorDescription))
+                            // Now always return the non finalized psbt as exporting signed psbt's can be useful.
+                            completion((psbt, hex, nil))
+                        } else {
+                            let psbt = result["psbt"] as! String
+                            reset()
+                            completion((psbt, nil, nil))
                         }
                     } else {
                         reset()
                         completion((nil, nil, errorDescription))
                     }
+                } else {
+                    reset()
+                    completion((nil, nil, errorDescription))
                 }
+            }
             //}
         }
         
@@ -249,6 +249,9 @@ class Signer {
                             }
                         }
                     }
+                } else if i + 1 == seedsToSignWith.count {
+                    seedsToSignWith.removeAll()
+                    processWithActiveWallet()
                 }
             }
         }
@@ -267,29 +270,25 @@ class Signer {
             }
         }
         
-        Reducer.makeCommand(command: .getblockchaininfo, param: "") { (response, errorMessage) in
-            if let dict = response as? NSDictionary {
-                if let network = dict["chain"] as? String {
-                    if network == "main" {
-                        chain = .mainnet
-                        coinType = "0"
-                    } else {
-                        chain = .testnet
-                        coinType = "1"
-                    }
-                    do {
-                        psbtToSign = try PSBT(psbt: psbt, network: chain)
-                        if psbtToSign.isComplete {
-                            finalize()
-                        } else {
-                            getSeeds()
-                        }
-                    } catch {
-                        completion((nil, nil, "Error converting that psbt"))
-                    }
-                }
-            }
+        let network = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+        if network == "main" {
+            chain = .mainnet
+            coinType = "0"
+        } else {
+            chain = .testnet
+            coinType = "1"
         }
+        do {
+            psbtToSign = try PSBT(psbt: psbt, network: chain)
+            if psbtToSign.isComplete {
+                finalize()
+            } else {
+                getSeeds()
+            }
+        } catch {
+            completion((nil, nil, "Error converting that psbt"))
+        }
+        
     }
 }
 

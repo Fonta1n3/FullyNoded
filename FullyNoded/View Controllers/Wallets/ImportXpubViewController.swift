@@ -279,7 +279,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
             if #available(macCatalyst 14.0, *) {
                 if let vc = segue.destination as? QRScannerViewController {
                     vc.isScanningAddress = true
-                    vc.onAddressDoneBlock = { [unowned thisVc = self] xpub in
+                    vc.onDoneBlock = { [unowned thisVc = self] xpub in
                         if xpub != nil {
                             let lowercased = xpub!.lowercased()
                             

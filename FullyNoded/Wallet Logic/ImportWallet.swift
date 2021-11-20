@@ -13,11 +13,11 @@ class ImportWallet {
     static var index = 0
     static var processedWatching = [String]()
     static var isColdcard = false
-    static var isRecovering = false
     static var version:Int = 0
     static var isHot = false
             
     class func accountMap(_ accountMap: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
+        let password = accountMap["password"] as? String ?? ""
         var wallet = [String:Any]()
         var prefix = "FullyNoded"
         if isColdcard {
@@ -25,7 +25,7 @@ class ImportWallet {
         }
         var keypool = Bool()
         var primDescriptor = accountMap["descriptor"] as! String
-        let blockheight = accountMap["blockheight"] as! Int
+        let blockheight = accountMap["blockheight"] as! Int64
         let label = accountMap["label"] as! String
         let watching = accountMap["watching"] as? [String] ?? []
         
@@ -128,11 +128,11 @@ class ImportWallet {
             }
         }
         
-        func createWalletNow(_ recDesc: String, _ changeDesc: String) {
+        func createWalletNow(_ recDesc: String, _ changeDesc: String, _ password: String) {
             // Use the sha256 hash of the checksum-less primary receive keypool desc as the wallet name so it has a deterministic identifier
             let walletName = "\(prefix)-\(Crypto.sha256hash(primDescriptor))"
             
-            createWallet(walletName) { (name, errorMessage) in
+            createWallet(walletName, password) { (name, errorMessage) in
                 guard let name = name else {
                     UserDefaults.standard.removeObject(forKey: "walletName")
                     completion((false, "error creatig wallet: \(errorMessage ?? "unknown error")"))
@@ -252,7 +252,7 @@ class ImportWallet {
                 
                 walletExistsOnNode(hash) { existingWallet in
                     guard let existingWallet = existingWallet else {
-                        createWalletNow(recDesc, changeDesc)
+                        createWalletNow(recDesc, changeDesc, password)
                         return
                     }
                     
@@ -318,20 +318,42 @@ class ImportWallet {
         accountMap(wallet, completion: completion)
     }
     
-    class func createWallet(_ walletName: String, completion: @escaping ((name: String?, errorMessage: String?)) -> Void) {
-        var param = "\"\(walletName)\", \(!isHot), true, \"\", true"
+    class func createWallet(_ walletName: String, _ password: String, completion: @escaping ((name: String?, errorMessage: String?)) -> Void) {
+        var param = "\"\(walletName)\", \(!isHot), true, \"\(password)\", true"
         
         if version >= 210100 {
             param += ", true, true"
         }
         
         OnchainUtils.createWallet(param: param) { (name, message) in
-            completion((name, message))
+            if password != "" {
+                UserDefaults.standard.setValue(name, forKey: "walletName")
+                Reducer.makeCommand(command: .walletpassphrase, param: "\"\(password)\", 600") { (response, errorMessage) in
+                    if errorMessage == nil {
+                        completion((name, message))
+                    } else {
+                        completion((nil, errorMessage ?? "Unknown error unlocking your wallet."))
+                    }
+                }
+            } else {
+                completion((name, message))
+            }
         }
     }
     
     class func importPrimaryDescriptors(_ recDesc: String, _ changeDesc: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        let params = "[{\"desc\": \"\(recDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": false}, {\"desc\": \"\(changeDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": true}]"
+        var recDescIsActive = true
+        var changeDescIsActive = true
+        
+        if recDesc.hasPrefix("combo") {
+            recDescIsActive = false
+        }
+        
+        if changeDesc.hasPrefix("combo") {
+            changeDescIsActive = false
+        }
+        
+        let params = "[{\"desc\": \"\(recDesc)\", \"active\": \(recDescIsActive), \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": false}, {\"desc\": \"\(changeDesc)\", \"active\": \(changeDescIsActive), \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": true}]"
         
         importDescriptors(params, completion: completion)
     }
@@ -423,10 +445,7 @@ class ImportWallet {
             
             for (i, existingWallet) in wallets.enumerated() {
                 let existingWalletStr = Wallet(dictionary: existingWallet)
-                
-                if existingWalletStr.receiveDescriptor == walletToSave.receiveDescriptor {
-                    alreadySaved = true
-                }
+                alreadySaved = existingWalletStr.name == walletToSave.name
                 
                 if i + 1 == wallets.count {
                     if !alreadySaved {
@@ -440,17 +459,18 @@ class ImportWallet {
     }
     
     class func rescan(wallet: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
-        if !isRecovering {
-            OnchainUtils.rescan { (started, message) in
+        //if !isRecovering {
+            let walletStr = Wallet(dictionary: wallet)
+            OnchainUtils.rescanNow(from: "\(walletStr.blockheight)") { (started, message) in
                 if started {
                     saveLocally(wallet: wallet, completion: completion)
                 } else {
                     completion((false, message ?? "error rescanning"))
                 }
             }
-        } else {
-            saveLocally(wallet: wallet, completion: completion)
-        }
+//        } else {
+//            saveLocally(wallet: wallet, completion: completion)
+//        }
     }
     
     class func importMultiDesc(params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {

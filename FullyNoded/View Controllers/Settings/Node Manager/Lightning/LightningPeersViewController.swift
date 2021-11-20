@@ -487,7 +487,7 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
             if #available(macCatalyst 14.0, *) {
                 if let vc = segue.destination as? QRScannerViewController {
                     vc.isScanningAddress = true
-                    vc.onAddressDoneBlock = { url in
+                    vc.onDoneBlock = { url in
                         if url != nil {
                             let arr = url!.split(separator: "@")
                             if arr.count > 1 {

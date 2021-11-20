@@ -12,6 +12,7 @@ import LocalAuthentication
 class SignerDetailViewController: UIViewController, UINavigationControllerDelegate {
     
     var id:UUID!
+    var cosigner:Descriptor?
     private var spinner = ConnectingView()
     private var signer: SignerStruct!
     private var tableDict = [[String:Any]]()
@@ -600,7 +601,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             
             alert.addAction(edit)
             
-            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { alertAction in }
             alert.addAction(cancel)
             
             self.present(alert, animated:true, completion: nil)
@@ -750,14 +751,39 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         tableView.reloadSections(IndexSet(arrayLiteral: sender.tag), with: .fade)
     }
     
-    private func importAccountMap(_ descriptor: String, _ label: String) {
-        let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": label] as [String : Any]
+    private func importAccountMap(_ descriptor: String, _ label: String, _ password: String) {
+        spinner.addConnectingView(vc: self, description: "creating wallet...")
         
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
+        let accountMap = ["descriptor": descriptor, "blockheight": Int64(0), "watching": [], "label": label, "password": password] as [String : Any]
+        
+        ImportWallet.accountMap(accountMap) { (success, errorDescription) in
+            self.spinner.removeConnectingView()
             
-            self.tabBarController?.selectedIndex = 1
-            NotificationCenter.default.post(name: .importWallet, object: nil, userInfo: accountMap)
+            guard success else {
+                showAlert(vc: self, title: "There was an issue creating your wallet...", message: errorDescription ?? "Unknown...")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                let tit = "Wallet created ✓"
+                
+                let mess = "A rescan was triggered, you may not see transactions or balances until the rescan completes."
+                
+                let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+                
+                alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { action in
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.tabBarController?.selectedIndex = 1
+                    }
+                }))
+                
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+                self.present(alert, animated: true, completion: nil)
+            }
         }
     }
     
@@ -778,17 +804,112 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             
-            let p2wpkh = UIAlertAction(title: "Segwit BIP84", style: .default) { [weak self] alertAction in
+            let p2wpkh = UIAlertAction(title: "Segwit Single-sig", style: .default) { [weak self] alertAction in
                 guard let self = self else { return }
                 
                 if let descriptor = self.tableDict[7]["text"] as? String {
-                    self.importAccountMap(descriptor, self.signer.label + " segwit")
+                    self.importAccountMap(descriptor, self.signer.label + " segwit", "")
+                } else {
+                    showAlert(vc: self, title: "There was an issue...", message: "Unable to get your bip84 descriptor.")
+                }
+            }
+            
+            let p2wsh = UIAlertAction(title: "Segwit Multi-sig", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                if let descriptor = self.tableDict[6]["text"] as? String {
+                    self.cosigner = Descriptor(descriptor)
+
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+
+                        self.performSegue(withIdentifier: "segueToCreateMultiSigFromSigner", sender: self)
+                    }
                 } else {
                     showAlert(vc: self, title: "There was an issue...", message: "Unable to get your bip84 descriptor.")
                 }
             }
             
             alert.addAction(p2wpkh)
+            alert.addAction(p2wsh)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            alert.addAction(cancel)
+            
+            self.present(alert, animated:true, completion: nil)
+        }
+    }
+    
+    private func prompToChoosePrimaryDesc(descriptors: [String]) {
+        DispatchQueue.main.async { [unowned vc = self] in
+            let alert = UIAlertController(title: "Choose an address format.", message: "", preferredStyle: .alert)
+            
+            for (i, descriptor) in descriptors.enumerated() {
+                let descStr = Descriptor(descriptor)
+                
+                alert.addAction(UIAlertAction(title: descStr.scriptType, style: .default, handler: { [weak self] action in
+                    guard let self = self else { return }
+                    
+                    self.setPrimDesc(descriptors: descriptors, descriptorToUseIndex: i)
+                }))
+            }
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = vc.view
+            vc.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func setPrimDesc(descriptors: [String], descriptorToUseIndex: Int) {
+        let primDesc = descriptors[descriptorToUseIndex]
+        let desc = Descriptor("\(primDesc)")
+        
+        if desc.isP2TR {
+            promptForEncryptionPassword(primDesc)
+        } else {
+            if desc.isCosigner {
+                self.cosigner = desc
+
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+
+                    self.performSegue(withIdentifier: "segueToCreateMultiSigFromSigner", sender: self)
+                }
+            } else {
+                self.importAccountMap(primDesc, signer.label, "")
+            }
+        }
+    }
+    
+    private func promptForEncryptionPassword(_ primDesc: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Add a password?"
+            let message = "Taproot wallets store the private keys on your node, this password is used to encrypt them. You must remember this password as Fully Noded does not save it."
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let setPassword = UIAlertAction(title: "Set password", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                let password = (alert.textFields![0] as UITextField).text
+                
+                guard let password = password else {
+                    showAlert(vc: self, title: "", message: "No password added, try again.")
+                    
+                    return
+                }
+                
+                self.importAccountMap(primDesc, "Taproot: " + self.signer.label, password)
+            }
+            
+            alert.addTextField { textField in
+                textField.isSecureTextEntry = true
+                textField.keyboardAppearance = .dark
+            }
+            
+            alert.addAction(setPassword)
             
             let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
             alert.addAction(cancel)
@@ -798,52 +919,20 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     }
     
     private func creatWalletLive() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            guard let fingerprint = Keys.fingerprint(masterKey: self.masterKey) else { return }
-            
-            let title = "Create a single sig wallet with this signer?"
-            let message = "Choose an address type."
-            
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            
-            let p2wpkh = UIAlertAction(title: "Segwit BIP84", style: .default) { [weak self] alertAction in
-                guard let self = self else { return }
-                
-                guard let singleSigKey = Keys.xpub(path: "m/84'/\(self.network)'/0'", masterKey: self.masterKey) else { return }
-                
-                let descriptor = "wpkh([\(fingerprint)/84h/\(self.network)h/0h]\(singleSigKey)/0/*)"
-                self.importAccountMap(descriptor, self.signer.label + " segwit")
-            }
-            
-            let p2pkh = UIAlertAction(title: "Legacy BIP44", style: .default) { [weak self] alertAction in
-                guard let self = self else { return }
-                
-                guard let singleSigKey = Keys.xpub(path: "m/44'/\(self.network)'/0'", masterKey: self.masterKey) else { return }
-                
-                let descriptor = "pkh([\(fingerprint)/44h/\(self.network)h/0h]\(singleSigKey)/0/*)"
-                self.importAccountMap(descriptor, self.signer.label + " Legacy single-sig")
-            }
-            
-            let p2shp2wpkh = UIAlertAction(title: "Nested BIP49", style: .default) { [weak self] alertAction in
-                guard let self = self else { return }
-                
-                guard let singleSigKey = Keys.xpub(path: "m/49'/\(self.network)'/0'", masterKey: self.masterKey) else { return }
-                
-                let descriptor = "sh(wpkh([\(fingerprint)/49h/\(self.network)h/0h]\(singleSigKey)/0/*))"
-                self.importAccountMap(descriptor, self.signer.label + " Nested single-sig")
-            }
-            
-            alert.addAction(p2wpkh)
-            alert.addAction(p2pkh)
-            alert.addAction(p2shp2wpkh)
-            
-            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
-            alert.addAction(cancel)
-            
-            self.present(alert, animated:true, completion: nil)
+        guard let encryptedWords = signer.words,
+                let wordsData = Crypto.decrypt(encryptedWords),
+                let words = wordsData.utf8 else {
+                    return
+                }
+        
+        let (descriptors, message) = Keys.descriptorsFromSigner(words)
+        
+        guard let descriptors = descriptors else {
+            showAlert(vc: self, title: "There was an issue deriving your descriptors...", message: message ?? "Unknown")
+            return
         }
+        
+        prompToChoosePrimaryDesc(descriptors: descriptors)
     }
     
     @objc func exportQr(_ sender: UIButton) {
@@ -936,12 +1025,24 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
-        guard let vc = segue.destination as? QRDisplayerViewController else { return }
         
-        vc.descriptionText = descriptionText
-        vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-        vc.headerText = headerText
-        vc.text = stringToExport.uppercased()
+        switch segue.identifier {
+        case "segueToCreateMultiSigFromSigner":
+            guard let vc = segue.destination as? CreateMultisigViewController else { fallthrough }
+            
+            vc.cosigner = self.cosigner
+            
+        case "segueToExportKeystore":
+            guard let vc = segue.destination as? QRDisplayerViewController else { fallthrough }
+            
+            vc.descriptionText = descriptionText
+            vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+            vc.headerText = headerText
+            vc.text = stringToExport.uppercased()
+        default:
+            break
+        }
+        
     }
     
 

@@ -410,7 +410,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             if #available(macCatalyst 14.0, *) {
                 if let vc = segue.destination as? QRScannerViewController {
                     vc.isScanningAddress = true
-                    vc.onAddressDoneBlock = { [weak self] item in
+                    vc.onDoneBlock = { [weak self] item in
                         if item != nil {
                             DispatchQueue.main.async {
                                 self?.textField.text = item

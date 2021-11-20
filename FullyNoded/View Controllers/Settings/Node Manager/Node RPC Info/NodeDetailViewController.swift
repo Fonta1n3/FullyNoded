@@ -732,7 +732,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             if #available(macCatalyst 14.0, *) {
                 if let vc = segue.destination as? QRScannerViewController {
                     vc.isQuickConnect = true
-                    vc.onQuickConnectDoneBlock = { [unowned thisVc = self] url in
+                    vc.onDoneBlock = { [unowned thisVc = self] url in
                         if url != nil {
                             thisVc.addBtcRpcQr(url: url!)
                         }

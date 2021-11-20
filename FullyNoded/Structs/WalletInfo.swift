@@ -42,7 +42,12 @@ public struct WalletInfo: CustomStringConvertible {
 //        }
         progress = (dictionary["scanning"] as? [String:Any])?["progress"] as? Double
         walletname = dictionary["walletname"] as! String
-        locked = (dictionary["unlocked_until"] as? Int != nil)
+        
+        if let unlockedUntil = dictionary["unlocked_until"] as? Int {
+            locked = !(unlockedUntil > 0)
+        } else {
+            locked = false
+        }
     }
     
     public var description: String {

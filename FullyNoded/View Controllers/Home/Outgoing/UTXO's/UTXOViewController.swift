@@ -50,6 +50,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         loadUnlockedUtxos()
     }
     
+    
+    
     @IBAction func divideAction(_ sender: Any) {
         guard selectedUTXOs.count > 0 else {
             showAlert(vc: self, title: "Select some utxos first.", message: "")

@@ -50,6 +50,7 @@ class ActiveWalletViewController: UIViewController {
     private var authenticated = false
     private var isAuthenticating = false
     private var initialLoad = true
+    private var isRecovering = false
     var fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     
     @IBOutlet weak private var currencyControl: UISegmentedControl!
@@ -71,8 +72,8 @@ class ActiveWalletViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(signPsbt(_:)), name: .signPsbt, object: nil)
         existingWallet = ud.object(forKey: "walletName") as? String ?? ""
         setCurrency()
-        sectionZeroLoaded = false
         setNotifications()
+        sectionZeroLoaded = false
         addNavBarSpinner()
         
         let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
@@ -111,7 +112,7 @@ class ActiveWalletViewController: UIViewController {
             let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
             authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
             
-            if !initialLoad && !authenticated && !isAuthenticating {
+            if !initialLoad && !authenticated && !isAuthenticating && !isRecovering {
                 self.isAuthenticating = true
                 
                 self.authenticateWith2FA { [weak self] response in
@@ -402,11 +403,12 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @objc func importWallet(_ notification: NSNotification) {
+        isRecovering = true
         spinner.addConnectingView(vc: self, description: "Creating your wallet, this can take a minute...")
         
         guard let accountMap = notification.userInfo as? [String:Any] else {
             self.spinner.removeConnectingView()
-            showAlert(vc: self, title: "Ooops", message: "That file does not seem to be a compatible wallet import, please raise an issue on the github so we can add support for it.")
+            showAlert(vc: self, title: "", message: "That file does not seem to be a compatible wallet import, please raise an issue on the github so we can add support for it.")
             return
         }
         
@@ -420,7 +422,8 @@ class ActiveWalletViewController: UIViewController {
             }
             
             self.spinner.removeConnectingView()
-            showAlert(vc: self, title: "Wallet created ✓", message: "It has been activated and is refreshing now.")
+            OnchainUtils.rescan { _ in }
+            showAlert(vc: self, title: "Wallet created ✓", message: "It has been activated and is refreshing now. A rescan has been initiated, you may not see balances or transaction history until the rescan completes.")
             self.refreshWallet()
         }
     }
@@ -444,7 +447,7 @@ class ActiveWalletViewController: UIViewController {
             }
             
             self.spinner.removeConnectingView()
-            showAlert(vc: self, title: "Coldcard Wallet imported ✅", message: "It has been activated and is refreshing now.")
+            showAlert(vc: self, title: "Coldcard Wallet imported ✓", message: "It has been activated and is refreshing now.")
             self.refreshWallet()
         }
     }
@@ -975,7 +978,7 @@ class ActiveWalletViewController: UIViewController {
                     return
                 }
                 
-                guard errorMessage.contains("Wallet file not specified (must request wallet RPC through") || errorMessage.contains("No wallet is loaded") else {
+                guard errorMessage.contains("Wallet file not specified (must request wallet RPC through") || errorMessage.contains("No wallet is loaded") || errorMessage.contains("Looks like your last used wallet does not exist on this node, please activate a wallet") else {
                     displayAlert(viewController: self, isError: true, message: errorMessage)
                     return
                 }
@@ -1012,6 +1015,7 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func chooseWallet() {
+        isRecovering = true//to avoid 2FA when view reappears
         OnchainUtils.listWalletDir { (coreWallets, message) in
             guard let coreWallets = coreWallets, !coreWallets.wallets.isEmpty else { self.promptToCreateWallet(); return }
             
@@ -1271,7 +1275,12 @@ class ActiveWalletViewController: UIViewController {
                     return
                 }
                 
-                displayAlert(viewController: self, isError: true, message: errorMessage)
+                if errorMessage.contains("Looks like your last used wallet does not exist on this node, please activate a wallet") {
+                    self.chooseWallet()
+                } else {
+                    displayAlert(viewController: self, isError: true, message: errorMessage)
+                }
+                
                 return
             }
             
@@ -1312,6 +1321,7 @@ class ActiveWalletViewController: UIViewController {
             DispatchQueue.main.async {
                 self.transactionArray = response
                 self.updateTransactionArray()
+                self.isRecovering = false
             }
         }
     }
@@ -1575,7 +1585,7 @@ class ActiveWalletViewController: UIViewController {
                         return
                     }
                     
-                    showAlert(vc: self, title: "Wallet imported ✅", message: "")
+                    showAlert(vc: self, title: "Wallet imported ✓", message: "")
                 }
             }
                     

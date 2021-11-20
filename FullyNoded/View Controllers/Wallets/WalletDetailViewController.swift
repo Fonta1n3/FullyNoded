@@ -60,6 +60,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         load()
     }
     
+    
+    
     private func exportJson() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -205,14 +207,13 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                     self.backupText = self.json
                     self.backupQrImage = generator.getQRCode()
                     
-                    guard let urOutput = URHelper.descriptorToUrOutput(Descriptor(self.wallet.receiveDescriptor)) else {
+                    if let urOutput = URHelper.descriptorToUrOutput(Descriptor(self.wallet.receiveDescriptor)) {
+                        generator.textInput = urOutput.uppercased()
+                        self.exportText = urOutput
+                        self.exportWalletImage = generator.getQRCode()
+                    } else {
                         showAlert(vc: self, title: "", message: "Unable to convert your wallet to crypto-output.")
-                        return
-                    }
-                    
-                    generator.textInput = urOutput.uppercased()
-                    self.exportText = urOutput
-                    self.exportWalletImage = generator.getQRCode()
+                    }                    
                     
                     self.findSigner()
                     self.getAddresses()
@@ -365,7 +366,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             
             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                 DispatchQueue.main.async { [weak self] in
-                    self?.navigationController?.popViewController(animated: true)
+                    self?.navigationController?.popToRootViewController(animated: true)
                 }
             }))
             

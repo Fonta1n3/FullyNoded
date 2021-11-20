@@ -13,6 +13,7 @@ import LibWally
 class AccountMap {
     
     class func create(wallet: Wallet) -> String? {
+        print("wallet: \(wallet.receiveDescriptor)")
         var primDesc = processedDesc(wallet.receiveDescriptor)
         var watching = [String]()
         
@@ -47,7 +48,7 @@ class AccountMap {
             }
         }
         
-        let dict = ["descriptor":"\(primDesc)", "blockheight":Int(wallet.blockheight),"label":wallet.label,"watching":watching] as [String : Any]
+        let dict = ["descriptor":"\(primDesc)", "blockheight":Int64(wallet.blockheight),"label":wallet.label,"watching":watching] as [String : Any]
         
         return dict.json()
     }

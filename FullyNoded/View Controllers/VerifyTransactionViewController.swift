@@ -119,6 +119,39 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         loadNow()
     }
     
+    private func reset() {
+        self.unsignedPsbt = ""
+        self.signedRawTx = ""
+        self.isChannelFunding = false
+        self.voutChannelFunding = nil
+        self.rejectionMessage = ""
+        self.txValid = nil
+        self.memo = ""
+        self.txid = ""
+        self.outputsString = ""
+        self.inputArray.removeAll()
+        self.inputTableArray.removeAll()
+        self.outputArray.removeAll()
+        self.index = 0
+        self.inputTotal = 0.0
+        self.outputTotal = 0.0
+        self.miningFee = ""
+        self.recipients.removeAll()
+        self.addressToVerify = ""
+        self.signatures.removeAll()
+        self.signedTxInputs = NSArray()
+        self.confs = 0
+        self.alreadyBroadcast = false
+        self.labelText = "no label added"
+        self.memoText = "no memo added"
+        self.hasSigned = false
+        self.isSigning = false
+        self.bitcoinCoreWallets.removeAll()
+        self.walletIndex = 0
+        self.qrCodeStringToExport = ""
+        self.blind = false
+    }
+    
     private func processPsbt(_ psbt: String) {
         spinner.addConnectingView(vc: self, description: "processing psbt...")
                 
@@ -336,13 +369,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     private func processPastedString(_ string: String) {
         let processed = string.condenseWhitespace()
         if Keys.validPsbt(processed) {
+            self.reset()
             enableExportButton()
             processPsbt(processed)
         } else if Keys.validTx(processed) {
+            self.reset()
             enableExportButton()
             signedRawTx = processed
             load()
         } else if processed.lowercased().hasPrefix("ur:bytes") {
+            self.reset()
             self.blind = true
             self.parseBlindPsbt(processed)
         } else {
@@ -375,18 +411,21 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 showAlert(vc: self, title: "Invalid File", message: "That is not a recognized format, generally it will be a .psbt or .txn file.")
                 return
             }
-            
+                        
             if let text = data.utf8, text.lowercased().hasPrefix("ur:bytes") {
+                self.reset()
                 self.blind = true
                 self.parseBlindPsbt(text)
             } else {
+                self.reset()
                 unsignedPsbt = data.base64EncodedString()
                 processPsbt(unsignedPsbt)
             }
             
             return
         }
-                    
+        
+        reset()
         signedRawTx = text.condenseWhitespace()
         load()
     }
@@ -475,13 +514,32 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     @IBAction func signAction(_ sender: Any) {
         isSigning = true
-        if UserDefaults.standard.object(forKey: "passphrasePrompt") == nil {
-            signNow(nil)
-        } else {
-            setPassphrase { [weak self] passphrase in
-                guard let self = self else { return }
-                
-                self.signNow(passphrase)
+        
+        spinner.addConnectingView(vc: self, description: "Checking for wallet encryption...")
+        
+        OnchainUtils.getWalletInfo { [weak self] (walletInfo, message) in
+            guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
+            
+            guard let walletInfo = walletInfo else {
+                showAlert(vc: self, title: "Error getting wallet info...", message: message ?? "unknown")
+                return
+            }
+            
+            guard !walletInfo.locked else {
+                self.unlockWallet()
+                return
+            }
+            
+            if UserDefaults.standard.object(forKey: "passphrasePrompt") == nil {
+                self.signNow(nil)
+            } else {
+                self.setPassphrase { [weak self] passphrase in
+                    guard let self = self else { return }
+                    
+                    self.signNow(passphrase)
+                }
             }
         }
     }
@@ -502,9 +560,56 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             alert.addTextField { textField in
                 textField.keyboardAppearance = .dark
                 textField.isSecureTextEntry = true
+                textField.autocorrectionType = .no
+                textField.spellCheckingType = .no
             }
             
             alert.addAction(set)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { alertAction in }
+            alert.addAction(cancel)
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func unlockWallet() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Wallet locked 🔒"
+            let message = "Enter your encryption password to unlock it."
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let unlock = UIAlertAction(title: "Unlock", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                let password = (alert.textFields![0] as UITextField).text ?? ""
+                
+                self.spinner.addConnectingView(vc: self, description: "Unlocking wallet...")
+                
+                Reducer.makeCommand(command: .walletpassphrase, param: "\"\(password)\", 600") { [weak self] (response, errorMessage) in
+                    guard let self = self else { return }
+                    
+                    self.spinner.removeConnectingView()
+                    
+                    guard errorMessage == nil else {
+                        self.showError(error: errorMessage ?? "Unknown error unlocking your wallet.")
+                        return
+                    }
+                    
+                    showAlert(vc: self, title: "Wallet unlocked ✓", message: "Try signing again.")
+                }
+            }
+            
+            alert.addTextField { textField in
+                textField.keyboardAppearance = .dark
+                textField.isSecureTextEntry = true
+                textField.autocorrectionType = .no
+                textField.spellCheckingType = .no
+            }
+            
+            alert.addAction(unlock)
             
             let cancel = UIAlertAction(title: "Cancel", style: .default) { alertAction in }
             alert.addAction(cancel)
@@ -603,52 +708,63 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         var bumpfee:BTC_CLI_COMMAND = .bumpfee
         
-        let version = UserDefaults.standard.object(forKey: "version") as? String ?? "0.20"
-        
-        if version.contains("0.21.") {
-            bumpfee = .psbtbumpfee
-        }
-        
-        Reducer.makeCommand(command: bumpfee, param: "\"\(txid)\"") { [weak self] (response, errorMessage) in
+        OnchainUtils.getWalletInfo { [weak self] (walletInfo, message) in
             guard let self = self else { return }
             
-            guard let result = response as? NSDictionary, let originalFee = result["origfee"] as? Double, let newFee = result["fee"] as? Double else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "There was an issue increasing the fee.", message: errorMessage ?? "unknown")
+            guard let walletInfo = walletInfo else {
+                self.showError(error: "Error getting wallet info: \(message ?? "unknown")")
                 return
             }
             
-            guard let psbt = result["psbt"] as? String else {
-                self.spinner.removeConnectingView()
-                if let txid = result["txid"] as? String {
-                    self.saveNewTx(txid)
-                    displayAlert(viewController: self, isError: false, message: "fee bumped from \(originalFee.avoidNotation) to \(newFee.avoidNotation)")
-                } else if let errors = result["errors"] as? NSArray {
-                    showAlert(vc: self, title: "There was an error increasing the fee.", message: "\(errors)")
+            if !walletInfo.private_keys_enabled,
+                let version = UserDefaults.standard.object(forKey: "version") as? Int,
+                version >= 210000 {
+                bumpfee = .psbtbumpfee
+            }
+            
+            Reducer.makeCommand(command: bumpfee, param: "\"\(self.txid)\"") { [weak self] (response, errorMessage) in
+                guard let self = self else { return }
+                
+                guard let result = response as? NSDictionary,
+                        let originalFee = result["origfee"] as? Double,
+                        let newFee = result["fee"] as? Double else {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "There was an issue increasing the fee.", message: errorMessage ?? "unknown")
+                    return
                 }
-                return            }
-            
-            self.signedRawTx = ""
-            
-            Signer.sign(psbt: psbt, passphrase: nil) { (signedPsbt, rawTx, errorMessage) in
-                self.spinner.removeConnectingView()
                 
-                self.disableBumpButton()
+                guard let psbt = result["psbt"] as? String else {
+                    self.spinner.removeConnectingView()
+                    if let txid = result["txid"] as? String {
+                        self.saveNewTx(txid)
+                        displayAlert(viewController: self, isError: false, message: "fee bumped from \(originalFee.avoidNotation) to \(newFee.avoidNotation)")
+                    } else if let errors = result["errors"] as? NSArray {
+                        showAlert(vc: self, title: "There was an error increasing the fee.", message: "\(errors)")
+                    }
+                    return            }
                 
-                if rawTx != nil {
-                    self.signedRawTx = rawTx!
-                    self.enableSendButton()
-                    self.disableSignButton()
-                    self.load()
-                    showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "Tap the send button to broadcast the new transaction.")
+                self.signedRawTx = ""
+                
+                Signer.sign(psbt: psbt, passphrase: nil) { (signedPsbt, rawTx, errorMessage) in
+                    self.spinner.removeConnectingView()
                     
-                } else if signedPsbt != nil {
-                    self.unsignedPsbt = signedPsbt!
-                    self.load()
-                    showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "The transaction still needs more signatures before it can be broadcast.")
+                    self.disableBumpButton()
                     
-                } else {
-                    showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "unknown")
+                    if rawTx != nil {
+                        self.signedRawTx = rawTx!
+                        self.enableSendButton()
+                        self.disableSignButton()
+                        self.load()
+                        showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "Tap the send button to broadcast the new transaction.")
+                        
+                    } else if signedPsbt != nil {
+                        self.unsignedPsbt = signedPsbt!
+                        self.load()
+                        showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "The transaction still needs more signatures before it can be broadcast.")
+                        
+                    } else {
+                        showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "unknown")
+                    }
                 }
             }
         }
@@ -1125,8 +1241,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                                     self.inputTableArray[self.index]["signatures"] = "Signatures complete"
                                 } else {
                                     if let txwitness = input["txinwitness"] as? NSArray {
-                                        
-                                        if txwitness.count > 1 {
+                                        if txwitness.count > 0 {
                                             self.inputTableArray[self.index]["signatures"] = "Signatures complete"
                                         }
                                     }
@@ -1157,7 +1272,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     
                     if let dict = response as? NSDictionary {
                         let solvable = dict["solvable"] as? Bool ?? false
-                        let keypath = dict["hdkeypath"] as? String ?? "no key path"
+                        var keypath = dict["hdkeypath"] as? String ?? "no key path"
                         let labels = dict["labels"] as? NSArray ?? ["no label"]
                         let desc = dict["desc"] as? String ?? "no descriptor"
                         var isChange = dict["ischange"] as? Bool ?? false
@@ -1178,6 +1293,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         
                         if desc.contains("/1/") {
                             isChange = true
+                        }
+                        
+                        if keypath == "no key path" {
+                            let descriptorStr = Descriptor(desc)
+                            keypath = descriptorStr.derivation
                         }
                         
                         self.outputArray[self.index]["isOursBitcoind"] = solvable
@@ -2506,8 +2626,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 
                 vc.fromSignAndVerify = true
                 
-                vc.onAddressDoneBlock = { [weak self] tx in
+                vc.onDoneBlock = { [weak self] tx in
                     guard let self = self, let tx = tx else { return }
+                    
+                    self.reset()
                     
                     if Keys.validPsbt(tx) {
                         self.processPsbt(tx)
