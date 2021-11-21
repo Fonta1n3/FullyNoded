@@ -92,6 +92,34 @@ class MainMenuViewController: UIViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmwallets in
+            guard let jmwallets = jmwallets, jmwallets.count > 0 else {
+                return
+            }
+            
+            let wallet = JMWallet(jmwallets[0])
+            
+            JMUtils.unlockWallet(wallet: wallet) { (locked, message) in
+                print("locked: \(locked)")
+            }
+        }
+        
+        
+        
+//        JMUtils.createWallet { (response, message) in
+//            guard let jmWallet = response else {
+//                showAlert(vc: self, title: "Error creating jm wallet.", message: message ?? "Unknown.")
+//                return
+//            }
+//
+//            guard let token = Crypto.decrypt(jmWallet.token) else {
+//                showAlert(vc: self, title: "Error decrypting token.", message: "")
+//                return
+//            }
+//
+//            print("token: \(token)")
+//        }
+        
         if initialLoad {
             if !firstTimeHere() {
                 displayAlert(viewController: self, isError: true, message: "There was a critical error setting your devices encryption key, please delete and reinstall the app")
@@ -940,7 +968,7 @@ extension MainMenuViewController: OnionManagerDelegate {
     func torConnFinished() {
         viewHasLoaded = true
         removeBackView()
-        loadTable()
+        //loadTable()
         displayAlert(viewController: self, isError: false, message: "Tor finished bootstrapping.")
         
         DispatchQueue.main.async { [weak self] in
@@ -951,14 +979,14 @@ extension MainMenuViewController: OnionManagerDelegate {
         
         timeStamp()
         
-        let jmPit = JoinMarketPit.sharedInstance
-        jmPit.connect()
-
-        jmPit.connectedToPit = { connected in
-            if connected {
-                jmPit.getOrderBook()
-            }
-        }
+//        let jmPit = JoinMarketPit.sharedInstance
+//        jmPit.connect()
+//
+//        jmPit.connectedToPit = { connected in
+//            if connected {
+//                jmPit.getOrderBook()
+//            }
+//        }
     }
     
     func torConnDifficulties() {

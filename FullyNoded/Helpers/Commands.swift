@@ -167,3 +167,23 @@ public enum LND_REST: String {
         }
     }
 }
+
+public enum JM_REST {
+    case walletall
+    case walletcreate
+    case lockwallet(jmWallet: JMWallet)
+    case unlockwallet(jmWallet: JMWallet)
+    
+    var stringValue:String {
+        switch self {
+        case .walletall:
+            return "api/v1/wallet/all"
+        case .walletcreate:
+            return "api/v1/wallet/create"
+        case .lockwallet(let wallet):
+            return "api/v1/wallet/\(wallet.name)/lock"
+        case .unlockwallet(jmWallet: let wallet):
+            return "api/v1/wallet/\(wallet.name)/unlock"
+        }
+    }
+}

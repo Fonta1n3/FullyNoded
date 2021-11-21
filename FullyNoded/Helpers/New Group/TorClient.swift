@@ -166,6 +166,8 @@ class TorClient: NSObject, URLSessionDelegate {
     }
     
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        print("did receive challenge")
+        
         guard let trust = challenge.protectionSpace.serverTrust else {
             print("did not receive trust")
             return
@@ -173,6 +175,8 @@ class TorClient: NSObject, URLSessionDelegate {
         
         let credential = URLCredential(trust: trust)
         
+        print("self.cert: \(self.cert!.base64EncodedString())")
+
         if let certData = self.cert,
             let remoteCert = SecTrustGetCertificateAtIndex(trust, 0) {
             let remoteCertData = SecCertificateCopyData(remoteCert) as NSData

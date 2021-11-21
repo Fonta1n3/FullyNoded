@@ -41,7 +41,7 @@ enum Keys {
             for (i, encryptedSigner) in encryptedSigners.enumerated() {
                 let encryptedSignerStruct = SignerStruct(dictionary: encryptedSigner)
                 
-                guard let wordsData = Crypto.decrypt(encryptedSignerStruct.words), let words = wordsData.utf8 else {
+                guard let encryptedWords = encryptedSignerStruct.words, let wordsData = Crypto.decrypt(encryptedWords), let words = wordsData.utf8 else {
                     completion((nil, "Unable to decrypt your signer."))
                     return
                 }

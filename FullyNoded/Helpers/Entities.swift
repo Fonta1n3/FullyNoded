@@ -18,6 +18,7 @@ public enum ENTITY: String {
     case peers = "Peers"
     case utxos = "Utxos"
     case transactions = "Transactions"
+    case jmWallets = "JMWallets"
 }
 
 public enum ENTITY_BACKUP: String {

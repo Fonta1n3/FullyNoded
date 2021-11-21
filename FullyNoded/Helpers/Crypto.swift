@@ -125,7 +125,7 @@ enum Crypto {
 
     struct Payload: Encodable {
         let sub = "1234567890"
-        let name = "John Doe"
+        let name = "Satoshi"
         let iat = 1516239022
     }
     
