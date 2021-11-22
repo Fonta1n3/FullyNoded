@@ -92,17 +92,40 @@ class MainMenuViewController: UIViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-//        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmwallets in
-//            guard let jmwallets = jmwallets, jmwallets.count > 0 else {
-//                return
+        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmwallets in
+            guard let jmwallets = jmwallets, jmwallets.count > 0 else {
+                return
+            }
+            
+            print("jmwallets.count: \(jmwallets.count)")
+            
+            let wallet = JMWallet(jmwallets[0])
+            
+//            let newToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXQiOiJGdWxseU5vZGVkLXlKeXE1aWJRd1Quam1kYXQiLCJleHAiOjE2Mzc1NDkxMTB9.6STviDohYanPbfgMJUky41q_nF0LTDuRP6S9jbrwEUo"
+//            guard let encToken = Crypto.encrypt(newToken.utf8) else { return }
+//            CoreDataService.update(id: wallet.id, keyToUpdate: "token", newValue: encToken, entity: .jmWallets) { updated in
+//                guard updated else {
+//                    print("not updated")
+//                    return
+//                }
+//
 //            }
-//            
-//            let wallet = JMWallet(jmwallets[0])
-//            
-//            JMUtils.unlockWallet(wallet: wallet) { (locked, message) in
-//                print("locked: \(locked)")
+//            JMUtils.unlockWallet(wallet: wallet) { (unlockedWallet, message) in
+//                print("wallet unlocked: \(unlockedWallet?.walletname)")
 //            }
-//        }
+            
+//            JMUtils.displayWallet(wallet: wallet) { (walletDetail, message) in
+//                guard let walletDetail = walletDetail else { return }
+//                for account in walletDetail.accounts {
+//                    for branch in account.branches {
+//                        print("branch: \(branch.branch)")
+//                        for entry in branch.entries {
+//                            print("derivation: \(entry.hd_path)")
+//                        }
+//                    }
+//                }
+//            }
+        }
         
         
         
@@ -968,7 +991,7 @@ extension MainMenuViewController: OnionManagerDelegate {
     func torConnFinished() {
         viewHasLoaded = true
         removeBackView()
-        loadTable()
+        //loadTable()
         displayAlert(viewController: self, isError: false, message: "Tor finished bootstrapping.")
         
         DispatchQueue.main.async { [weak self] in

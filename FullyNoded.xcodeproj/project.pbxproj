@@ -50,6 +50,8 @@
 		0A643A25274A540E007F4F44 /* JMWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A643A24274A540E007F4F44 /* JMWallet.swift */; };
 		0A643A29274A889D007F4F44 /* WalletLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A643A28274A889D007F4F44 /* WalletLock.swift */; };
 		0A643A2B274A8D44007F4F44 /* WalletUnlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A643A2A274A8D44007F4F44 /* WalletUnlock.swift */; };
+		0A643A2D274B375F007F4F44 /* WalletDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A643A2C274B375F007F4F44 /* WalletDetail.swift */; };
+		0A643A2F274B3EC7007F4F44 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A643A2E274B3EC7007F4F44 /* Account.swift */; };
 		0A77138426AD9C5E005CC23D /* BlindPsbt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A77138326AD9C5E005CC23D /* BlindPsbt.swift */; };
 		0A77138626AE5E85005CC23D /* WalletInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A77138526AE5E85005CC23D /* WalletInfo.swift */; };
 		0A9834BF26BBC93F00BAB74E /* CoreDataiCloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9834BE26BBC93F00BAB74E /* CoreDataiCloud.swift */; };
@@ -265,6 +267,8 @@
 		0A643A24274A540E007F4F44 /* JMWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMWallet.swift; sourceTree = "<group>"; };
 		0A643A28274A889D007F4F44 /* WalletLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLock.swift; sourceTree = "<group>"; };
 		0A643A2A274A8D44007F4F44 /* WalletUnlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletUnlock.swift; sourceTree = "<group>"; };
+		0A643A2C274B375F007F4F44 /* WalletDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDetail.swift; sourceTree = "<group>"; };
+		0A643A2E274B3EC7007F4F44 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
 		0A77138326AD9C5E005CC23D /* BlindPsbt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlindPsbt.swift; sourceTree = "<group>"; };
 		0A77138526AE5E85005CC23D /* WalletInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletInfo.swift; sourceTree = "<group>"; };
 		0A8B41122702106C00815E65 /* Python.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python.framework; path = ../../../../../Library/Frameworks/Python.framework; sourceTree = "<group>"; };
@@ -535,6 +539,8 @@
 				0A643A20274A4CD5007F4F44 /* WalletCreated.swift */,
 				0A643A28274A889D007F4F44 /* WalletLock.swift */,
 				0A643A2A274A8D44007F4F44 /* WalletUnlock.swift */,
+				0A643A2C274B375F007F4F44 /* WalletDetail.swift */,
+				0A643A2E274B3EC7007F4F44 /* Account.swift */,
 			);
 			path = JoinMarket;
 			sourceTree = "<group>";
@@ -1305,6 +1311,7 @@
 				D09A330724A982F3009FA0B2 /* FullyNodedWalletsViewController.swift in Sources */,
 				D07AED042435B62B00C2FADB /* Entities.swift in Sources */,
 				0A212D8F26C75E1100BF6FD4 /* JMWalletCreate.swift in Sources */,
+				0A643A2D274B375F007F4F44 /* WalletDetail.swift in Sources */,
 				0A9834BF26BBC93F00BAB74E /* CoreDataiCloud.swift in Sources */,
 				D0DBC7062501CEFE00F6787C /* VerifyTransactionViewController.swift in Sources */,
 				D0855FCA22B0CEA800DBBFC2 /* CreatePSBT.swift in Sources */,
@@ -1362,6 +1369,7 @@
 				0A212D9226CBE17600BF6FD4 /* MixIndexes.swift in Sources */,
 				0A21442C26B4282300123EAC /* PromptForAuthViewController.swift in Sources */,
 				D0F3919624C0379200EA8A2A /* ImportWallet.swift in Sources */,
+				0A643A2F274B3EC7007F4F44 /* Account.swift in Sources */,
 				D0855FC622B08EE000DBBFC2 /* TorClient.swift in Sources */,
 				D03F65F124EFB25100901D06 /* KeySendViewController.swift in Sources */,
 				0A212DE026DC863D00BF6FD4 /* JMOffer.swift in Sources */,

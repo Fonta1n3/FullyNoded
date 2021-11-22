@@ -178,7 +178,7 @@ class HealthCheckViewController: UIViewController, UITextFieldDelegate {
                             
                         } else if !(entity == .nodes && key == "label") {
                             if let decrypted = Crypto.decryptForBackup(passwordHash, data),
-                                let string = decrypted.utf8 {
+                                let string = decrypted.utf8String {
                                 item["\(key)"] = string
                             } else {
                                 failed = true

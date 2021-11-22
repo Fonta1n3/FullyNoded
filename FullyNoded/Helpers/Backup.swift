@@ -356,7 +356,7 @@ class BackupiCloud {
                                         "type":
                                         
                                         if !(entity == .nodes && key == "label") {
-                                            if let decrypted = Crypto.decryptForBackup(passwordHash, data), let string = decrypted.utf8 {
+                                            if let decrypted = Crypto.decryptForBackup(passwordHash, data), let string = decrypted.utf8String {
                                                 item["\(key)"] = string
                                             }
                                         }

@@ -218,7 +218,7 @@ public extension Notification.Name {
 }
 
 public extension Data {
-    var utf8:String? {
+    var utf8String:String? {
         return String(bytes: self, encoding: .utf8)
     }
     

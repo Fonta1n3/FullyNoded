@@ -72,7 +72,32 @@ class JMUtils {
             }
                         
             let walletUnlock = WalletUnlock(response)
-            completion((walletUnlock, nil))
+            
+            guard let updatedToken = Crypto.encrypt(walletUnlock.token.utf8) else {
+                completion((nil, "Unable to encrypt new token."))
+                return
+            }
+            
+            CoreDataService.update(id: wallet.id, keyToUpdate: "token", newValue: updatedToken, entity: .jmWallets) { updated in
+                guard updated else {
+                    completion((nil, "Unable to save new token."))
+                    return
+                }
+                
+                completion((walletUnlock, nil))
+            }
+        }
+    }
+    
+    static func displayWallet(wallet: JMWallet, completion: @escaping ((walletDetail: WalletDetail?, message: String?)) -> Void) {
+        JMRPC.sharedInstance.command(method: .walletdisplay(jmWallet: wallet), param: nil) { (response, errorDesc) in
+            guard let response = response as? [String:Any] else {
+                completion((nil, errorDesc ?? "Unknown."))
+                return
+            }
+            
+            let walletDetail = WalletDetail(response)
+            completion((walletDetail, nil))
         }
     }
 }

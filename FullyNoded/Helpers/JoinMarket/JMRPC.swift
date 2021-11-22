@@ -122,11 +122,11 @@ class JMRPC {
             case .walletall:
                 httpMethod = "GET"
                 
-            case .lockwallet(let wallet):
+            case .lockwallet(let wallet), .walletdisplay(let wallet):
                 httpMethod = "GET"
                 
                 guard let decryptedToken = Crypto.decrypt(wallet.token),
-                        let token = decryptedToken.utf8 else {
+                        let token = decryptedToken.utf8String else {
                     completion((nil, "Unable to decrypt token."))
                     return
                 }
@@ -137,15 +137,15 @@ class JMRPC {
                 httpMethod = "POST"
                 
                 guard let decryptedPassword = Crypto.decrypt(wallet.password),
-                        let password = decryptedPassword.utf8 else {
-                    completion((nil, "Unable to decrypt token."))
+                        let password = decryptedPassword.utf8String else {
+                    completion((nil, "Unable to decrypt password."))
                     return
                 }
                 
                 guard let jsonData = try? JSONSerialization.data(withJSONObject: ["password":password]) else { return }
                 
                 #if DEBUG
-                print("JM param: \(param)")
+                print("JM param: \(String(describing: param))")
                 #endif
                 
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")

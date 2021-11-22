@@ -173,6 +173,8 @@ public enum JM_REST {
     case walletcreate
     case lockwallet(jmWallet: JMWallet)
     case unlockwallet(jmWallet: JMWallet)
+    case walletdisplay(jmWallet: JMWallet)
+    case getaddress(jmWallet: JMWallet, mixDepth: Int)
     
     var stringValue:String {
         switch self {
@@ -184,6 +186,10 @@ public enum JM_REST {
             return "api/v1/wallet/\(wallet.name)/lock"
         case .unlockwallet(jmWallet: let wallet):
             return "api/v1/wallet/\(wallet.name)/unlock"
+        case .walletdisplay(jmWallet: let wallet):
+            return "api/v1/wallet/\(wallet.name)/display"
+        case .getaddress(jmWallet: let wallet, mixDepth: let mixDepth):
+            return "wallet/\(wallet.name)/address/new/\(mixDepth)"
         }
     }
 }

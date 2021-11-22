@@ -34,7 +34,7 @@ public func isLndNode(completion: @escaping (Bool) -> Void) {
 public func decryptedValue(_ encryptedValue: Data) -> String {
     guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
     
-    return decrypted.utf8 ?? ""
+    return decrypted.utf8String ?? ""
 }
 
 /// Call this method to retrive active wallet. This method seaches the device's storage. NOT the node.

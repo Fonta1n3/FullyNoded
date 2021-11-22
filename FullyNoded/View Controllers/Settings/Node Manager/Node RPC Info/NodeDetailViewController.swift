@@ -433,7 +433,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         func decryptedValue(_ encryptedValue: Data) -> String {
             guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
             
-            return decrypted.utf8 ?? ""
+            return decrypted.utf8String ?? ""
         }
         
         if selectedNode != nil {

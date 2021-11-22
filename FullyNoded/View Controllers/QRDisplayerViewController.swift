@@ -76,7 +76,7 @@ class QRDisplayerViewController: UIViewController {
             return
         }
         
-        let paymentAddress = data.utf8 ?? ""
+        let paymentAddress = data.utf8String ?? ""
         getPaid(paymentAddress)
     }
     

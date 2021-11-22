@@ -217,7 +217,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             
             if let encryptedPassphrase = signer.passphrase {
                 guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
-                        let string = decryptedPassphrase.utf8 else { return }
+                        let string = decryptedPassphrase.utf8String else { return }
                 
                 passphrase = string
                 self.tableDict[3]["text"] = "  " + "*********"
@@ -227,7 +227,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             
             guard let encryptedXfp = signer.xfp,
                 let decryptedXfp = Crypto.decrypt(encryptedXfp),
-                let xfp = decryptedXfp.utf8 else {
+                let xfp = decryptedXfp.utf8String else {
                     showAlert(vc: self, title: "", message: "Error getting your xfp.")
                 return
             }
@@ -237,7 +237,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             if self.network == 0 {
                 if let encryptedbip84xpub = signer.bip84xpub,
                     let decryptedbip84xpub = Crypto.decrypt(encryptedbip84xpub),
-                    let xpub = decryptedbip84xpub.utf8 {
+                    let xpub = decryptedbip84xpub.utf8String {
                     let descriptor = "wpkh([\(xfp)/84h/0h/0h]\(xpub)/0/*)"
                     
                     guard let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) else {
@@ -251,7 +251,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 
                 if let encryptedbip48xpub = signer.bip48xpub,
                     let decryptedbip48xpub = Crypto.decrypt(encryptedbip48xpub),
-                    let xpub = decryptedbip48xpub.utf8 {
+                    let xpub = decryptedbip48xpub.utf8String {
                     let cosigner = "wsh([\(xfp)/48h/0h/0h/2h]\(xpub)/0/*)"
                     
                     guard let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) else {
@@ -264,7 +264,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     
                     if let encryptedRootXpub = signer.rootXpub,
                        let decryptedRootXpub = Crypto.decrypt(encryptedRootXpub),
-                       let xpub = decryptedRootXpub.utf8 {
+                       let xpub = decryptedRootXpub.utf8String {
                         
                         guard let rootHdkey = URHelper.rootXpubToUrHdkey(xpub) else {
                             showAlert(vc: self, title: "UR error.", message: "Unable to convert your root xpub to crypto-hdkey.")
@@ -279,7 +279,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             } else {
                 if let encryptedbip84tpub = signer.bip84tpub,
                     let decryptedbip84tpub = Crypto.decrypt(encryptedbip84tpub),
-                    let tpub = decryptedbip84tpub.utf8 {
+                    let tpub = decryptedbip84tpub.utf8String {
                     let descriptor = "wpkh([\(xfp)/84h/1h/0h]\(tpub)/0/*)"
                     
                     guard let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) else {
@@ -293,7 +293,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 
                 if let encryptedbip48tpub = signer.bip48tpub,
                     let decryptedbip48tpub = Crypto.decrypt(encryptedbip48tpub),
-                   let tpub = decryptedbip48tpub.utf8 {
+                   let tpub = decryptedbip48tpub.utf8String {
                     let cosigner = "wsh([\(xfp)/48h/1h/0h/2h]\(tpub)/0/*)"
                     
                     guard let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) else {
@@ -306,7 +306,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     
                     if let encryptedRootTpub = signer.rootTpub,
                        let decryptedRootTpub = Crypto.decrypt(encryptedRootTpub),
-                       let tpub = decryptedRootTpub.utf8 {
+                       let tpub = decryptedRootTpub.utf8String {
                         
                         guard let rootHdkey = URHelper.rootXpubToUrHdkey(tpub) else {
                             showAlert(vc: self, title: "UR error.", message: "Unable to convert your root tpub to crypto-hdkey.")
@@ -321,7 +321,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             
             if let encryptedWords = signer.words {
                 guard let decrypted = Crypto.decrypt(encryptedWords),
-                        let words = decrypted.utf8 else { return }
+                        let words = decrypted.utf8String else { return }
                 
                 guard let masterKey = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase) else {
                     showAlert(vc: self, title: "", message: "Unable to derive your master key.")
@@ -452,7 +452,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private func updateSigner(_ passphrase: String) {
         if let encryptedWords = self.signer.words,
            let decryptedSigner = Crypto.decrypt(encryptedWords),
-           let words = decryptedSigner.utf8,
+           let words = decryptedSigner.utf8String,
            let mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
            let xfp = Keys.fingerprint(masterKey: mkMain),
            let encryptedXfp = Crypto.encrypt(xfp.utf8),
@@ -921,7 +921,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private func creatWalletLive() {
         guard let encryptedWords = signer.words,
                 let wordsData = Crypto.decrypt(encryptedWords),
-                let words = wordsData.utf8 else {
+                let words = wordsData.utf8String else {
                     return
                 }
         

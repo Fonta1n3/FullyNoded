@@ -412,7 +412,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 return
             }
                         
-            if let text = data.utf8, text.lowercased().hasPrefix("ur:bytes") {
+            if let text = data.utf8String, text.lowercased().hasPrefix("ur:bytes") {
                 self.reset()
                 self.blind = true
                 self.parseBlindPsbt(text)

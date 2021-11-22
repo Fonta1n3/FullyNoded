@@ -256,7 +256,7 @@ class JoinMarket {
     
     private class func decrypted(_ data: Data) -> String? {
         guard let decrypted = Crypto.decrypt(data),
-              let string = decrypted.utf8 else {
+              let string = decrypted.utf8String else {
             return nil
         }
         

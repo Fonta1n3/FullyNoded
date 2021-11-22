@@ -41,7 +41,9 @@ enum Keys {
             for (i, encryptedSigner) in encryptedSigners.enumerated() {
                 let encryptedSignerStruct = SignerStruct(dictionary: encryptedSigner)
                 
-                guard let encryptedWords = encryptedSignerStruct.words, let wordsData = Crypto.decrypt(encryptedWords), let words = wordsData.utf8 else {
+                guard let encryptedWords = encryptedSignerStruct.words,
+                        let wordsData = Crypto.decrypt(encryptedWords),
+                        let words = wordsData.utf8String else {
                     completion((nil, "Unable to decrypt your signer."))
                     return
                 }
@@ -49,7 +51,8 @@ enum Keys {
                 var passphrase = ""
                 
                 if let encryptedPassphrase = encryptedSignerStruct.passphrase {
-                    guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase), let passphraseString = decryptedPassphrase.utf8 else {
+                    guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
+                            let passphraseString = decryptedPassphrase.utf8String else {
                         completion((nil, "Unable to decrypt your passphrase."))
                         return
                     }
@@ -70,7 +73,8 @@ enum Keys {
                     return
                 }
                 
-                guard let hdkey = try? HDKey(base58: masterKey), let derivedKey = try? hdkey.derive(using: bip32Path) else {
+                guard let hdkey = try? HDKey(base58: masterKey),
+                        let derivedKey = try? hdkey.derive(using: bip32Path) else {
                     completion((nil, "Unable to derive key from your master key."))
                     return
                 }
@@ -272,12 +276,12 @@ enum Keys {
                 
                 if let encryptedWords = signerStruct.words,
                    let decryptedWords = Crypto.decrypt(encryptedWords),
-                   let words = decryptedWords.utf8 {
+                   let words = decryptedWords.utf8String {
                     
                     var passphrase = ""
                     
                     if let encryptedPassphrase = signerStruct.passphrase {
-                        guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase), let pp = decryptedPassphrase.utf8 else { return }
+                        guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase), let pp = decryptedPassphrase.utf8String else { return }
                         
                         passphrase = pp
                     }
@@ -329,13 +333,13 @@ enum Keys {
                 
                 if let encryptedWords = signerStruct.words,
                    let decryptedWords = Crypto.decrypt(encryptedWords),
-                   let words = decryptedWords.utf8 {
+                   let words = decryptedWords.utf8String {
                     
                     var passphrase = ""
                     
                     if let encryptedPassphrase = signerStruct.passphrase {
                         guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
-                                let pp = decryptedPassphrase.utf8 else {
+                                let pp = decryptedPassphrase.utf8String else {
                                     completion((false, nil))
                                     return
                                 }
