@@ -92,17 +92,17 @@ class MainMenuViewController: UIViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmwallets in
-            guard let jmwallets = jmwallets, jmwallets.count > 0 else {
-                return
-            }
-            
-            let wallet = JMWallet(jmwallets[0])
-            
-            JMUtils.unlockWallet(wallet: wallet) { (locked, message) in
-                print("locked: \(locked)")
-            }
-        }
+//        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmwallets in
+//            guard let jmwallets = jmwallets, jmwallets.count > 0 else {
+//                return
+//            }
+//            
+//            let wallet = JMWallet(jmwallets[0])
+//            
+//            JMUtils.unlockWallet(wallet: wallet) { (locked, message) in
+//                print("locked: \(locked)")
+//            }
+//        }
         
         
         
@@ -968,7 +968,7 @@ extension MainMenuViewController: OnionManagerDelegate {
     func torConnFinished() {
         viewHasLoaded = true
         removeBackView()
-        //loadTable()
+        loadTable()
         displayAlert(viewController: self, isError: false, message: "Tor finished bootstrapping.")
         
         DispatchQueue.main.async { [weak self] in
