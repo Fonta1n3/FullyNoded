@@ -14,6 +14,8 @@ public struct JMWallet: CustomStringConvertible {
     let password:Data
     let words:Data
     let token:Data
+    let index:Int
+    let account:Int
     
     init(_ dictionary: [String: Any]) {
         id = dictionary["id"] as! UUID
@@ -21,6 +23,8 @@ public struct JMWallet: CustomStringConvertible {
         password = dictionary["password"] as! Data
         words = dictionary["words"] as! Data
         token = dictionary["token"] as! Data
+        account = Int(dictionary["account"] as! Int16)
+        index = Int(dictionary["index"] as! Int16)
     }
     
     public var description: String {

@@ -309,13 +309,13 @@ public struct WalletDetail: CustomStringConvertible {
 }
 
 public struct Account: CustomStringConvertible {
-    let accountNumber: String
-    let account_balance: String
+    let accountNumber: Int
+    let account_balance: Double
     var branches: [Branch] = []
     
     init(_ dictionary: [String: Any]) {
-        accountNumber = dictionary["account"] as! String
-        account_balance = dictionary["account_balance"] as! String
+        accountNumber = Int(dictionary["account"] as! String)!
+        account_balance = Double(dictionary["account_balance"] as! String)!
         let branches_ = dictionary["branches"] as! [[String:Any]]
         for branch in branches_ {
             branches.append(Branch(branch))
@@ -374,12 +374,12 @@ labels = "";
  */
 
 public struct Branch: CustomStringConvertible {
-    let balance: String
+    let balance: Double
     let branch: String
     var entries: [Entry] = []
     
     init(_ dictionary: [String: Any]) {
-        balance = dictionary["balance"] as! String
+        balance = Double(dictionary["balance"] as! String)!
         branch = dictionary["branch"] as! String
         let entries_ = dictionary["entries"] as! [[String:Any]]
         for entry in entries_ {
@@ -403,13 +403,13 @@ labels = "";
 
 public struct Entry: CustomStringConvertible {
     let address: String
-    let amount: String
+    let amount: Double
     let hd_path: String
     let labels: String
     
     init(_ dictionary: [String: Any]) {
         address = dictionary["address"] as! String
-        amount = dictionary["amount"] as! String
+        amount = Double(dictionary["amount"] as! String)!
         hd_path = dictionary["hd_path"] as! String
         labels = dictionary["labels"] as! String
     }

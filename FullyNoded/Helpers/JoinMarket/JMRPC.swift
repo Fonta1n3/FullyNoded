@@ -119,17 +119,21 @@ class JMRPC {
             var httpMethod:String!
             
             switch method {
-            case .walletall:
+            case .walletall,
+                    .session:
                 httpMethod = "GET"
                 
-            case .lockwallet(let wallet), .walletdisplay(let wallet):
+            case .lockwallet(let wallet),
+                    .walletdisplay(let wallet),
+                    .getaddress(jmWallet: let wallet),
+                    .makerStop(jmWallet: let wallet):
                 httpMethod = "GET"
                 
                 guard let decryptedToken = Crypto.decrypt(wallet.token),
-                        let token = decryptedToken.utf8String else {
-                    completion((nil, "Unable to decrypt token."))
-                    return
-                }
+                      let token = decryptedToken.utf8String else {
+                          completion((nil, "Unable to decrypt token."))
+                          return
+                      }
                 
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
                 
@@ -137,10 +141,10 @@ class JMRPC {
                 httpMethod = "POST"
                 
                 guard let decryptedPassword = Crypto.decrypt(wallet.password),
-                        let password = decryptedPassword.utf8String else {
-                    completion((nil, "Unable to decrypt password."))
-                    return
-                }
+                      let password = decryptedPassword.utf8String else {
+                          completion((nil, "Unable to decrypt password."))
+                          return
+                      }
                 
                 guard let jsonData = try? JSONSerialization.data(withJSONObject: ["password":password]) else { return }
                 
@@ -154,41 +158,42 @@ class JMRPC {
                 
             case .walletcreate:
                 httpMethod = "POST"
+                
+            case .coinjoin(jmWallet: let wallet),
+                    .makerStart(jmWallet: let wallet),
+                    .configGet(jmWallet: let wallet),
+                    .configSet(jmWallet: let wallet):
+                httpMethod = "POST"
+                
+                guard let decryptedToken = Crypto.decrypt(wallet.token),
+                      let token = decryptedToken.utf8String else {
+                          completion((nil, "Unable to decrypt token."))
+                          return
+                      }
+                
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             }
             
-            
-            //let id = UUID()
-            //let token = Crypto.jwtToken()!
-            //print("token: \(token)")
-            
-//            let loginString = String(format: "%@:%@", rpcusername, rpcpassword)
-//            let loginData = loginString.data(using: String.Encoding.utf8)!
-//            let base64LoginString = loginData.base64EncodedString()
-            
-            
-            
-            switch httpMethod {
-            case "POST":
-                guard let param = param else { fallthrough }
-                
-                guard let jsonData = try? JSONSerialization.data(withJSONObject: param) else { return }
-                
+            if let param = param {
                 #if DEBUG
                 print("JM param: \(param)")
                 #endif
                 
+                guard let jsonData = try? JSONSerialization.data(withJSONObject: param) else {
+                    completion((nil, "Unable to encode your params into json data."))
+                    return
+                }
+                
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")
                 request.setValue("\(jsonData.count)", forHTTPHeaderField: "Content-Length")
                 request.httpBody = jsonData
-            default:
+                
+            } else {
                 request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
             }
             
             request.timeoutInterval = timeout
             request.httpMethod = httpMethod
-            
-            //request.setValue(token, forHTTPHeaderField: "Authorization")
-            //request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             request.url = url
             
             #if DEBUG
@@ -203,10 +208,7 @@ class JMRPC {
             
             let task = sesh.dataTask(with: request as URLRequest) { [weak self] (data, response, error) in
                 guard let self = self else { return }
-                
-//                print("response: \(response)")
-//                print("data: \(data?.utf8)")
-                
+                                
                 guard let urlContent = data else {
                     
                     guard let error = error else {

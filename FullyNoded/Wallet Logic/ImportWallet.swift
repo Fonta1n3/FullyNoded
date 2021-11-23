@@ -25,7 +25,7 @@ class ImportWallet {
         }
         var keypool = Bool()
         var primDescriptor = accountMap["descriptor"] as! String
-        let blockheight = accountMap["blockheight"] as! Int64
+        let blockheight = accountMap["blockheight"] as! Int
         let label = accountMap["label"] as! String
         let watching = accountMap["watching"] as? [String] ?? []
         

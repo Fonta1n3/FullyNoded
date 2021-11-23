@@ -6,7 +6,9 @@
         <attribute name="publicKey" optional="YES" attributeType="String"/>
     </entity>
     <entity name="JMWallets" representedClassName="JMWallets" syncable="YES" codeGenerationType="class">
+        <attribute name="account" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="index" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="password" optional="YES" attributeType="Binary"/>
         <attribute name="token" optional="YES" attributeType="Binary"/>
@@ -103,6 +105,6 @@
         <element name="Transactions" positionX="-36" positionY="279" width="128" height="149"/>
         <element name="Utxos" positionX="-36" positionY="234" width="128" height="238"/>
         <element name="Wallets" positionX="-36" positionY="180" width="128" height="359"/>
-        <element name="JMWallets" positionX="-36" positionY="288" width="128" height="104"/>
+        <element name="JMWallets" positionX="-36" positionY="288" width="128" height="134"/>
     </elements>
 </model>
