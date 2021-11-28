@@ -390,12 +390,12 @@ class LogInViewController: UIViewController, UITextFieldDelegate, ASAuthorizatio
     
     @objc func authenticationWithTouchID() {
         let localAuthenticationContext = LAContext()
-        localAuthenticationContext.localizedFallbackTitle = "Use Password"
+        localAuthenticationContext.localizedFallbackTitle = "Use passcode"
         var authError: NSError?
-        let reasonString = "To Unlock"
+        let reasonString = "To unlock"
 
-        if localAuthenticationContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &authError) {
-            localAuthenticationContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reasonString) { success, evaluateError in
+        if localAuthenticationContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: &authError) {
+            localAuthenticationContext.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reasonString) { success, evaluateError in
                 if success {
                     DispatchQueue.main.async {
                         self.unlock()

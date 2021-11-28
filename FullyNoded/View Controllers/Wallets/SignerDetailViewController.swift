@@ -116,12 +116,12 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         }
         
         let localAuthenticationContext = LAContext()
-        localAuthenticationContext.localizedFallbackTitle = "Use Password"
+        localAuthenticationContext.localizedFallbackTitle = "Use Passcode"
         var authError: NSError?
         let reasonString = "To Unlock"
 
-        if localAuthenticationContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &authError) {
-            localAuthenticationContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reasonString) { [weak self] (success, evaluateError) in
+        if localAuthenticationContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: &authError) {
+            localAuthenticationContext.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reasonString) { [weak self] (success, evaluateError) in
                 guard let self = self else { return }
                 
                 if success {
@@ -1122,15 +1122,15 @@ extension SignerDetailViewController: UITableViewDelegate {
         case 0:
             editLabel(dict["text"] as? String ?? "")
             
-        case 1:
-            switch selectedSegment {
-            case 0:
-                setClipBoard(dict["text"] as? String ?? "")
-            case 1:
-                setClipBoard(dict["ur"] as? String ?? "")
-            default:
-                break
-            }
+//        case 1:
+//            switch selectedSegment {
+//            case 0:
+//                setClipBoard(dict["text"] as? String ?? "")
+//            case 1:
+//                setClipBoard(dict["ur"] as? String ?? "")
+//            default:
+//                break
+//            }
             
         case 2:
             setClipBoard(dict["text"] as? String ?? "")
