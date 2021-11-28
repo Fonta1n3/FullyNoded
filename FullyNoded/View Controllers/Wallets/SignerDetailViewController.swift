@@ -1124,10 +1124,6 @@ extension SignerDetailViewController: UITableViewDelegate {
             
         case 1:
             switch selectedSegment {
-            case 0:
-                setClipBoard(dict["text"] as? String ?? "")
-            case 1:
-                setClipBoard(dict["ur"] as? String ?? "")
             default:
                 break
             }

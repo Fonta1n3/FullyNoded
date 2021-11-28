@@ -267,7 +267,6 @@ enum Keys {
     }
     
     static func addressSignable(_ address: String, _ path: BIP32Path, completion: @escaping ((signable: Bool, signer: String?)) -> Void) {
-        print("addressSignable")
         CoreDataService.retrieveEntity(entityName: .signers) { signers in
             guard let signers = signers, signers.count > 0 else { completion((false, nil)); return }
             
@@ -287,7 +286,6 @@ enum Keys {
                     }
                     
                     guard let a = try? Address(string: address) else {
-                        print("failing address type here")
                         completion((false, nil))
                         return
                     }
@@ -298,6 +296,8 @@ enum Keys {
                         cointype = "1"
                     }
                     
+                    print("path: \(path.description)")
+                    
                     guard let mk = masterKey(words: words, coinType: cointype, passphrase: passphrase),
                           let hdKey = try? HDKey(base58: mk),
                           let childKey = try? hdKey.derive(using: path) else { return }
@@ -307,6 +307,7 @@ enum Keys {
                     let legacy = childKey.address(type: .payToPubKeyHash).description
                     
                     if address == segwit || address == wrappedSegwit || address == legacy {
+                        print("signerStruct.label: \(signerStruct.label)")
                         completion((true, signerStruct.label))
                         break
                     } else {

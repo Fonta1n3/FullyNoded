@@ -26,6 +26,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     /// 2. FN decrypts the blinded psbt and check to make sure it follows the rules:
     ///     - inputs are divisible by 3, identical output amounts, all either p2wpkh or wsh inputs/outputs
     
+    var isJmarket = false
+    var jmWallet:JMWallet?
     var isFiat = false
     var isBtc = true
     var isSats = false
@@ -172,7 +174,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         slider.addTarget(self, action: #selector(didFinishSliding(_:)), for: .valueChanged)
         
         amountInput.text = ""
-        addAddress(address)
+        if address != "" {
+            addAddress(address)
+        }
     }
     
     @IBAction func sendToWalletAction(_ sender: Any) {
@@ -336,18 +340,91 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 return
             }
             
-            switch coinSelectionControl.selectedSegmentIndex {
-            case 0:
-                tryRaw()
-            case 1:
-                self.createBlindNow(amount: amount.doubleValue, recipient: item, strict: false)
-            case 2:
-                self.createBlindNow(amount: amount.doubleValue, recipient: item, strict: true)
-            default:
-                break
-            }
+//            if isJmarket {
+//                selectJMWallet()
+//            } else {
+                switch coinSelectionControl.selectedSegmentIndex {
+                case 0:
+                    if isJmarket {
+                        guard let jmWallet = jmWallet else { return }
+                        
+                        JMUtils.coinjoin(wallet: jmWallet,
+                                         amount_sats: Int(Double(amount)! * 100000000.0),
+                                         mixdepth: jmWallet.account,
+                                         counterparties: Int.random(in: 3...8),
+                                         address: item) { (response, message) in
+                            print("response: \(response)")
+                            print("message: \(message)")
+                        }
+                    } else {
+                        tryRaw()
+                    }
+                case 1:
+                    self.createBlindNow(amount: amount.doubleValue, recipient: item, strict: false)
+                case 2:
+                    self.createBlindNow(amount: amount.doubleValue, recipient: item, strict: true)
+                default:
+                    break
+                }
+            //}
         }
     }
+    
+//    private func selectJMWallet() {
+//        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmwallets in
+//            guard let jmwallets = jmwallets, !jmwallets.isEmpty else {
+//                return
+//            }
+//
+//            var jwallets:[JMWallet] = []
+//
+//            for w in jmwallets {
+//                jwallets.append(JMWallet(w))
+//            }
+//
+//            if jmwallets.count > 1 {
+//                self.chooseJmWallet(jwallets)
+//            } else {
+//                self.joinNow(jwallets[0])
+//            }
+//        }
+//    }
+    
+//    private func chooseJmWallet(_ jmWallets: [JMWallet]) {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            let title = "Select a Join Market wallet to join with."
+//
+//            let alert = UIAlertController(title: title, message: "", preferredStyle: .alert)
+//
+//            for wallet in jmWallets {
+//                alert.addAction(UIAlertAction(title: wallet.name, style: .default, handler: { action in
+//                    self.joinNow(wallet)
+//                }))
+//            }
+//
+//            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+//            alert.popoverPresentationController?.sourceView = self.view
+//            self.present(alert, animated: true, completion: nil)
+//        }
+//    }
+    
+//    private func joinNow(_ wallet: JMWallet) {
+//        JMUtils.coinjoin(wallet: wallet,
+//                         amount_sats: Int(self.amount.sats) ?? 0,
+//                         mixdepth: wallet.account,
+//                         counterparties: Int.random(in: 3...8),
+//                         address: self.addressInput.text ?? "") { (response, message) in
+//            
+//            guard let response = response else {
+//                showAlert(vc: self, title: "Something went wrong...", message: message ?? "unknown")
+//                return
+//            }
+//            
+//            print("coinjoin response: \(response)")
+//        }
+//    }
     
     private func createBlindNow(amount: Double, recipient: String, strict: Bool) {
         var type = ""
@@ -435,7 +512,25 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     override func viewDidAppear(_ animated: Bool) {
         if inputArray.count > 0 {
-            showAlert(vc: self, title: "Coin control ✓", message: "Only the utxo's you have just selected will be used in this transaction. You may send the total balance of the *selected utxo's* by tapping the \"⚠️ send all\" button or enter a custom amount as normal.")
+            if !isJmarket {
+                showAlert(vc: self, title: "Coin control ✓", message: "Only the utxo's you have just selected will be used in this transaction. You may send the total balance of the *selected utxo's* by tapping the \"⚠️ send all\" button or enter a custom amount as normal.")
+            } else {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    let title = "Join Market Transaction"
+                    let mess = "Add a recipient address for your coinjoined funds. To remix select the Join Market wallet as the recipient."
+                    
+                    let alert = UIAlertController(title: title, message: mess, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] action in
+                        guard let self = self else { return }
+                        
+                        showAlert(vc: self, title: "Coin control ✓", message: "Only the utxo's you have just selected will be used in this transaction. You may send the total balance of the *selected utxo's* by tapping the \"⚠️ send all\" button or enter a custom amount as normal.")
+                    }))
+                    alert.popoverPresentationController?.sourceView = self.view
+                    self.present(alert, animated: true, completion: nil)
+                }
+            }
         }
     }
     
@@ -846,33 +941,46 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     private func sweepSelectedUtxos(_ receivingAddress: String) {
         
-        var param = ""
-        
-        if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
-            param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
-        } else {
-            param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
-        }
-        
-        Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { [weak self] (response, errorMessage) in
-            guard let self = self else { return }
+        if isJmarket {
+            guard let jmWallet = jmWallet else { return }
             
-            guard let result = response as? NSDictionary, let psbt1 = result["psbt"] as? String else {
-                self.spinner.removeConnectingView()
-                displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
-                return
+            JMUtils.coinjoin(wallet: jmWallet,
+                             amount_sats: Int(rounded(number: utxoTotal)) * 100000000,
+                             mixdepth: jmWallet.account,
+                             counterparties: Int.random(in: 3...8),
+                             address: receivingAddress) { (response, message) in
+                print("response: \(response)")
+                print("message: \(message)")
+            }
+        } else {
+            var param = ""
+            
+            if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
+                param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+            } else {
+                param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
             }
             
-            Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [weak self] (response, errorMessage) in
+            Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
-                guard let dict = response as? NSDictionary, let processedPSBT = dict["psbt"] as? String else {
+                guard let result = response as? NSDictionary, let psbt1 = result["psbt"] as? String else {
                     self.spinner.removeConnectingView()
                     displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                     return
                 }
                 
-                self.sign(psbt: processedPSBT)
+                Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [weak self] (response, errorMessage) in
+                    guard let self = self else { return }
+                    
+                    guard let dict = response as? NSDictionary, let processedPSBT = dict["psbt"] as? String else {
+                        self.spinner.removeConnectingView()
+                        displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
+                        return
+                    }
+                    
+                    self.sign(psbt: processedPSBT)
+                }
             }
         }
     }
@@ -901,7 +1009,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 
                 guard utxo.confs! > 0 else {
                     self.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "Ooops", message: "You have unconfirmed utxo's, wait till they get a confirmation before trying to sweep them.")
+                    showAlert(vc: self, title: "", message: "You have unconfirmed utxo's, wait till they get a confirmation before trying to sweep them.")
                     return
                 }
                 
@@ -963,10 +1071,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func sweep() {
-        guard let receivingAddress = addressInput.text, receivingAddress != "" else {
-            showAlert(vc: self, title: "Add an address first", message: "")
-            return
-        }
+        guard let receivingAddress = addressInput.text,
+              receivingAddress != "" else {
+                  showAlert(vc: self, title: "Add an address first", message: "")
+                  return
+              }
         
         if inputArray.count > 0 {
             spinner.addConnectingView(vc: self, description: "sweeping selected utxo's...")

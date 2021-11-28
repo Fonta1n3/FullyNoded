@@ -250,12 +250,18 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             newNode["id"] = UUID()
             
             var isLightning = false
+            var isJoinMarket = false
             
             if onionAddressField.text!.hasSuffix(":8080") {
                 isLightning = true
             }
             
+            if onionAddressField.text!.hasSuffix(":28183") {
+                isJoinMarket = true
+            }
+            
             newNode["isLightning"] = isLightning
+            newNode["isJoinMarket"] = isJoinMarket
             
             if nodeLabel.text != "" {
                 newNode["label"] = nodeLabel.text!
@@ -371,6 +377,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 CoreDataService.update(id: id, keyToUpdate: "isLightning", newValue: true, entity: .newNodes) { success in
                     if !success {
                         displayAlert(viewController: self, isError: true, message: "error updating isLightning")
+                    }
+                }
+            }
+            
+            if onionAddressField.text!.hasSuffix(":28183") {
+                CoreDataService.update(id: id, keyToUpdate: "isJoinMarket", newValue: true, entity: .newNodes) { success in
+                    if !success {
+                        displayAlert(viewController: self, isError: true, message: "error updating isJoinMarket")
                     }
                 }
             }
@@ -638,6 +652,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
                 }
                 
+                if isActive && newNodeStr.isJoinMarket && str.isJoinMarket {
+                    CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                }
+                
+                if isActive && !newNodeStr.isJoinMarket && !str.isJoinMarket {
+                    CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                }
+                
             } else {
                 if selectedNode != nil {
                     let selectedNodeStr = NodeStruct(dictionary: selectedNode!)
@@ -647,6 +669,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     }
                     
                     if isActive && !selectedNodeStr.isLightning && !str.isLightning {
+                        CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                    }
+                    
+                    if isActive && selectedNodeStr.isJoinMarket && str.isJoinMarket {
+                        CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                    }
+                    
+                    if isActive && !selectedNodeStr.isJoinMarket && !str.isJoinMarket {
                         CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
                     }
                 }

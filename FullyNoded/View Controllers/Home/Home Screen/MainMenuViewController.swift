@@ -92,95 +92,19 @@ class MainMenuViewController: UIViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-//        JMUtils.session { (response, message) in
-//            guard let session = response else { return }
-//
-//            print("session wallet: \(session.wallet_name)")
-//        }
-        
-        
-        
-        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmwallets in
-            guard let jmwallets = jmwallets, jmwallets.count > 0 else {
+        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmWallets in
+            guard let jmWallets = jmWallets else {
                 return
             }
-
-            let wallet = JMWallet(jmwallets[3])
-//            JMUtils.syncIndexes(wallet: wallet) { message in
-//                print("message: \(message)")
-//            }
-//            JMUtils.lockWallet(wallet: wallet) { (locked, message) in
-//                if locked {
-//                    JMUtils.createWallet { (response, message) in
-//                        guard let response = response else {
-//                            print("message: \(message)")
-//                            return
-//                        }
-//
-//                        print("wallet created: \(response.name)")
-//                    }
-//                }
-//            }
-//            JMUtils.configSet(wallet: wallet, section: "BLOCKCHAIN", field: "rpc_port", value: "18332") { (response, message)
-//                in
-//                print("response: \(response)")
-//                print("message: \(message)")
-//
-//                            JMUtils.configGet(wallet: wallet, section: "BLOCKCHAIN", field: "rpc_port") { (response, message) in
-//                                print("response: \(response)")
-//                                print("message: \(message)")
-//                            }
-//            }
-            
-
-
-            JMUtils.getAddress(wallet: wallet) { (address, message) in
-                print("message: \(message)")
-                print("address: \(address)")
+            JMUtils.unlockWallet(wallet: JMWallet(jmWallets[1])) { (unlockedWallet, message) in
+                print(")")
             }
-
-
-//            let newToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXQiOiJGdWxseU5vZGVkLXlKeXE1aWJRd1Quam1kYXQiLCJleHAiOjE2Mzc1NDkxMTB9.6STviDohYanPbfgMJUky41q_nF0LTDuRP6S9jbrwEUo"
-//            guard let encToken = Crypto.encrypt(newToken.utf8) else { return }
-//            CoreDataService.update(id: wallet.id, keyToUpdate: "token", newValue: encToken, entity: .jmWallets) { updated in
-//                guard updated else {
-//                    print("not updated")
-//                    return
-//                }
-//
-//            }
-//            JMUtils.unlockWallet(wallet: wallet) { (unlockedWallet, message) in
-//                print("wallet unlocked: \(unlockedWallet?.walletname)")
-//            }
-
-//            JMUtils.displayWallet(wallet: wallet) { (walletDetail, message) in
-//                guard let walletDetail = walletDetail else { return }
-//                for account in walletDetail.accounts {
-//                    for branch in account.branches {
-//                        print("branch: \(branch.branch)")
-//                        for entry in branch.entries {
-//                            print("derivation: \(entry.hd_path)")
-//                        }
-//                    }
-//                }
+            
+//            JMUtils.createWallet { (response, message) in
+//                print("")
 //            }
         }
         
-        
-        
-//        JMUtils.createWallet { (response, message) in
-//            guard let jmWallet = response else {
-//                showAlert(vc: self, title: "Error creating jm wallet.", message: message ?? "Unknown.")
-//                return
-//            }
-//
-//            guard let token = Crypto.decrypt(jmWallet.token) else {
-//                showAlert(vc: self, title: "Error decrypting token.", message: "")
-//                return
-//            }
-//
-//            print("token: \(token)")
-//        }
         
         if initialLoad {
             if !firstTimeHere() {
@@ -356,7 +280,7 @@ class MainMenuViewController: UIViewController {
         var activeNode:[String:Any]?
         for (i, node) in nodes.enumerated() {
             let nodeStruct = NodeStruct.init(dictionary: node)
-            if nodeStruct.isActive && !nodeStruct.isLightning {
+            if nodeStruct.isActive && !nodeStruct.isLightning && !nodeStruct.isJoinMarket {
                 activeNode = node
                 self.activeNode = node
             }

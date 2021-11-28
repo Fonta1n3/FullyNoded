@@ -19,10 +19,12 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private var wallet:Wallet?
     private var psbt:String?
     private var depositAddress:String?
+    private var isJmarket = false
     var fxRate:Double?
     var isBtc = false
     var isSats = false
     var isFiat = false
+    private var jmWallet:JMWallet?
     
     @IBOutlet weak private var tableView: UITableView!
     
@@ -341,7 +343,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            //JoinMarket.syncAddresses()
             self.updateSelectedUtxos()
             self.tableView.isUserInteractionEnabled = true
             self.tableView.reloadData()
@@ -567,96 +568,297 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func mix(_ utxo: Utxo) {
-        var utxoToMix = utxo
-        
-        guard let desc = utxo.desc else { return }
-        let descriptor = Descriptor(desc)
-        
-        Keys.privKey(descriptor.derivation, descriptor.pubkey) { (privKey, errorMessage) in
-            guard let privKey = privKey else {
-                let defaultError = "We were unable to derive a private key from any of your signers which can spend for this utxo."
+    private func promptToMix(_ utxo: Utxo, _ jmWallet: JMWallet) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+
+            let tit = "Join?"
+            let mess = "This action will create a coinjoin transaction to the address of your choice. Select a recipient, amount and fee preference as normal."
+
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
                 
-                showAlert(vc: self,
-                          title: "Something went wrong...",
-                          message: errorMessage ?? defaultError)
+                self.jmWallet = jmWallet
+                self.isJmarket = true
                 
-                return
-            }
-            
-            // MARK: RAJ TODO
-            // You will need to convert the privkey from data to a 256 bit integer and then supply it to your code for creating a commitment.
-            // BigInt is already added to the project, just import the module to use it.
-            // Once you have the commitment simply supply it as a string to the below line of code:
-            
-            utxoToMix.commitment = "<insert commitment here>"
-            
-            let jm = JoinMarketPit.sharedInstance
-            let taker = Taker.shared
-            
-            guard jm.absOffers.count > 0 || jm.relOffers.count > 0 else {
-                showAlert(vc: self, title: "", message: "No offers...")
-                return
-            }
-            
-            if jm.absOffers.count > 0 {
-                jm.absOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
-                jm.absOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
-            }
-            
-            if jm.relOffers.count > 0 {
-                jm.relOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
-                jm.relOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
-            }
-                            
-            guard let amount = utxo.amount else { print("failing here"); return }
-            
-            let satsToMix = Int(amount * 100000000.0)
-            
-            var idealAbsOffers = jm.absOffers
-            
-            for (i, absOffer) in jm.absOffers.enumerated() {
-                if (satsToMix > absOffer.minSize ?? 0 && satsToMix < absOffer.maxSize ?? 0) {
-                    idealAbsOffers.append(absOffer)
-                }
-                
-                if i + 1 == jm.absOffers.count {
-                    if idealAbsOffers.count > 4 {
-                        for i in 0...4 {
-                            let offer = idealAbsOffers[i]
-                            print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
-                            
-                            taker.handshake(offer, utxoToMix) { _ in
-                                //print("handshake response: \(response ?? "empty")")
-                            }
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    for (i, unlockedUtxo) in self.unlockedUtxos.enumerated() {
+                        if unlockedUtxo.id == utxo.id && unlockedUtxo.txid == utxo.txid && unlockedUtxo.vout == utxo.vout {
+                            self.unlockedUtxos[i].isSelected = true
+                            self.updateSelectedUtxos()
+                            self.updateInputs()
                         }
                     }
+                    self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
+                }
+            }))
+
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func depositNow(_ utxo: Utxo) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            for (i, unlockedUtxo) in self.unlockedUtxos.enumerated() {
+                if unlockedUtxo.id == utxo.id && unlockedUtxo.txid == utxo.txid && unlockedUtxo.vout == utxo.vout {
+                    self.unlockedUtxos[i].isSelected = true
+                    self.updateSelectedUtxos()
+                    self.updateInputs()
                 }
             }
+            self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
+        }
+    }
+    
+    
+    
+//    private func mix(_ utxo: Utxo) {
+//
+////        Keys.privKey(descriptor.derivation, descriptor.pubkey) { (privKey, errorMessage) in
+////            guard let privKey = privKey else {
+////                let defaultError = "We were unable to derive a private key from any of your signers which can spend for this utxo."
+////
+////                showAlert(vc: self,
+////                          title: "Something went wrong...",
+////                          message: errorMessage ?? defaultError)
+////
+////                return
+////            }
+////
+////            // MARK: RAJ TODO
+////            // You will need to convert the privkey from data to a 256 bit integer and then supply it to your code for creating a commitment.
+////            // BigInt is already added to the project, just import the module to use it.
+////            // Once you have the commitment simply supply it as a string to the below line of code:
+////
+////            utxoToMix.commitment = "<insert commitment here>"
+////
+////            let jm = JoinMarketPit.sharedInstance
+////            let taker = Taker.shared
+////
+////            guard jm.absOffers.count > 0 || jm.relOffers.count > 0 else {
+////                showAlert(vc: self, title: "", message: "No offers...")
+////                return
+////            }
+////
+////            if jm.absOffers.count > 0 {
+////                jm.absOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
+////                jm.absOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
+////            }
+////
+////            if jm.relOffers.count > 0 {
+////                jm.relOffers.sort { $0.cjFee ?? 0 < $1.cjFee ?? 0 }
+////                jm.relOffers.sort { $0.minSize ?? 0 < $1.minSize ?? 0 }
+////            }
+////
+////            guard let amount = utxo.amount else { print("failing here"); return }
+////
+////            let satsToMix = Int(amount * 100000000.0)
+////
+////            var idealAbsOffers = jm.absOffers
+////
+////            for (i, absOffer) in jm.absOffers.enumerated() {
+////                if (satsToMix > absOffer.minSize ?? 0 && satsToMix < absOffer.maxSize ?? 0) {
+////                    idealAbsOffers.append(absOffer)
+////                }
+////
+////                if i + 1 == jm.absOffers.count {
+////                    if idealAbsOffers.count > 4 {
+////                        for i in 0...4 {
+////                            let offer = idealAbsOffers[i]
+////                            print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
+////
+////                            taker.handshake(offer, utxoToMix) { _ in
+////                                //print("handshake response: \(response ?? "empty")")
+////                            }
+////                        }
+////                    }
+////                }
+////            }
+////
+////            var idealRelOffers = jm.relOffers
+////
+////            for (i, relOffer) in jm.relOffers.enumerated() {
+////                if (satsToMix > relOffer.minSize ?? 0 && satsToMix < relOffer.maxSize ?? 0) {
+////                    idealRelOffers.append(relOffer)
+////                }
+////
+////                if i + 1 == jm.relOffers.count {
+////                    if idealRelOffers.count > 4 {
+////                        for i in 0...4 {
+////                            let offer = idealRelOffers[i]
+////                            print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
+////
+////                            taker.handshake(offer, utxoToMix) { response in
+////                                //print("handshake response: \(response ?? "empty")")
+////                            }
+////                        }
+////                    }
+////                }
+////            }
+////        }
+//    }
+    
+    private func promptToLockWallets() {
+        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmWallets in
+            guard let jmWallets = jmWallets else { return }
             
-            var idealRelOffers = jm.relOffers
-            
-            for (i, relOffer) in jm.relOffers.enumerated() {
-                if (satsToMix > relOffer.minSize ?? 0 && satsToMix < relOffer.maxSize ?? 0) {
-                    idealRelOffers.append(relOffer)
-                }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 
-                if i + 1 == jm.relOffers.count {
-                    if idealRelOffers.count > 4 {
-                        for i in 0...4 {
-                            let offer = idealRelOffers[i]
-                            print("maker: \(offer.maker)\nminAmount: \(offer.minSize!)\nmaxAmount: \(offer.maxSize!)")
-                            
-                            taker.handshake(offer, utxoToMix) { response in
-                                //print("handshake response: \(response ?? "empty")")
+                let tit = "You have an existing Join Market wallet which is unlocked, you need to lock it before we can create a new one."
+                
+                let mess = ""
+                
+                let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+                
+                for jmWallet in jmWallets {
+                    let str = JMWallet(jmWallet)
+                    alert.addAction(UIAlertAction(title: str.name, style: .default, handler: { [weak self] action in
+                        JMUtils.lockWallet(wallet: str) { (locked, message) in
+                            if locked {
+                                showAlert(vc: self, title: "Wallet locked ✓", message: "Try joining the utxo again.")
                             }
                         }
-                    }
+                    }))
                 }
+                
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+                alert.popoverPresentationController?.sourceView = self.view
+                self.present(alert, animated: true, completion: nil)
             }
         }
     }
+    
+    private func promptToDepsitToWallet(_ utxo: Utxo) {
+        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmWallets in
+            guard let jmWallets = jmWallets else { return }
             
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                let tit = "Deposit to Join Market wallet?"
+                let mess = "Once you deposit the utxo to your Join Market wallet you can begin joining. This action will fetch a deposit address from your Join Market wallet and present the transaction creator as normal."
+                
+                let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+                
+                for jmWallet in jmWallets {
+                    let str = JMWallet(jmWallet)
+                    alert.addAction(UIAlertAction(title: str.name, style: .default, handler: { [weak self] action in
+                        guard let self = self else { return }
+                        
+                        JMUtils.getAddress(wallet: str) { (address, message) in
+                            guard let address = address else {
+                                showAlert(vc: self, title: "Error getting deposit address...", message: message ?? "Unknown.")
+                                return
+                            }
+                            
+                            self.depositAddress = address
+                            self.depositNow(utxo)
+                        }
+                    }))
+                }
+                
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+                alert.popoverPresentationController?.sourceView = self.view
+                self.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    private func promptToCreateJmWallet(_ utxo: Utxo) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let tit = "Create a Join Market wallet?"
+            let mess = "In order to join your utxos you need to create a Join Market wallet. This will be like your other Fully Noded wallets with the added ability to instantly join and earn interest on your balance."
+            
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                let currentWallet = self.wallet?.name ?? ""
+                
+                JMUtils.createWallet { (response, message) in
+                    guard let jmWallet = response else {
+                        if let mess = message, mess.contains("Wallet already unlocked.") {
+                            self.promptToLockWallets()
+                        } else {
+                            showAlert(vc: self, title: "There was an issue creating your JM wallet.", message: message ?? "Unknown.")
+                        }
+                        
+                        return
+                    }
+                    
+                    UserDefaults.standard.setValue(currentWallet, forKey: "walletName")
+                    self.walletCreatedSuccess(utxo, jmWallet)
+                }
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func walletCreatedSuccess(_ utxo: Utxo, _ jmWallet: JMWallet) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let tit = "Join Market wallet created successfully ✓"
+            let mess = "You may now deposit funds to it."
+            
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Deposit funds", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.promptToDeposit(utxo, jmWallet)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func promptToDeposit(_ utxo: Utxo, _ jmWallet: JMWallet) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let tit = "Deposit to Join Market wallet?"
+            let mess = "Once you deposit the utxo to your Join Market wallet you can begin joining. This action will fetch a deposit address from your Join Market wallet and present the transaction creator as normal."
+            
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                JMUtils.getAddress(wallet: jmWallet) { (address, message) in
+                    guard let address = address else {
+                        showAlert(vc: self, title: "Error getting deposit address...", message: message ?? "Unknown.")
+                        return
+                    }
+                    
+                    self.depositAddress = address
+                    self.depositNow(utxo)
+                }
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+                
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
             
@@ -671,6 +873,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         case "segueToSendFromUtxos":
             guard let vc = segue.destination as? CreateRawTxViewController else { fallthrough }
             
+            vc.isJmarket = isJmarket
+            vc.jmWallet = jmWallet
             vc.inputArray = inputArray
             vc.utxoTotal = amountTotal
             vc.address = depositAddress ?? ""
@@ -704,7 +908,38 @@ extension UTXOViewController: UTXOCellDelegate {
     }
     
     func didTapToMix(_ utxo: Utxo) {
-        mix(utxo)
+        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmWallets in
+            guard let jmWallets = jmWallets, jmWallets.count > 0 else {
+                self.promptToCreateJmWallet(utxo)
+                return
+            }
+            
+            var isJMWallet = false
+            var isAnyJMWallet = false
+            var jmWalletToUse:JMWallet!
+            
+            for (i, jmWallet) in jmWallets.enumerated() {
+                let jmWalletStruct = JMWallet(jmWallet)
+                
+                if jmWalletStruct.fnWallet != "" {
+                    isAnyJMWallet = true
+                }
+                
+                if jmWalletStruct.fnWallet == self.wallet?.name {
+                    jmWalletToUse = jmWalletStruct
+                }
+                
+                if i + 1 == jmWallets.count && isAnyJMWallet {
+                    if let jmWalletToUse = jmWalletToUse {
+                        self.promptToMix(utxo, jmWalletToUse)
+                    } else {
+                        self.promptToDepsitToWallet(utxo)
+                    }
+                } else if i + 1 == jmWallets.count {
+                    self.promptToCreateJmWallet(utxo)
+                }
+            }
+        }
     }
     
 }

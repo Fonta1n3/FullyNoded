@@ -7,6 +7,7 @@
     </entity>
     <entity name="JMWallets" representedClassName="JMWallets" syncable="YES" codeGenerationType="class">
         <attribute name="account" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="fnWallet" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="index" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>
@@ -18,6 +19,7 @@
         <attribute name="cert" optional="YES" attributeType="Binary"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="isActive" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="isJoinMarket" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="isLightning" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="label" optional="YES" attributeType="String"/>
         <attribute name="macaroon" optional="YES" attributeType="Binary"/>
@@ -99,12 +101,12 @@
     </entity>
     <elements>
         <element name="AuthKeys" positionX="-36" positionY="126" width="128" height="88"/>
-        <element name="NewNodes" positionX="-54" positionY="135" width="128" height="179"/>
+        <element name="NewNodes" positionX="-54" positionY="135" width="128" height="194"/>
         <element name="Peers" positionX="-36" positionY="234" width="128" height="133"/>
         <element name="Signers" positionX="-27" positionY="189" width="128" height="209"/>
         <element name="Transactions" positionX="-36" positionY="279" width="128" height="149"/>
         <element name="Utxos" positionX="-36" positionY="234" width="128" height="238"/>
         <element name="Wallets" positionX="-36" positionY="180" width="128" height="359"/>
-        <element name="JMWallets" positionX="-36" positionY="288" width="128" height="134"/>
+        <element name="JMWallets" positionX="-36" positionY="288" width="128" height="149"/>
     </elements>
 </model>

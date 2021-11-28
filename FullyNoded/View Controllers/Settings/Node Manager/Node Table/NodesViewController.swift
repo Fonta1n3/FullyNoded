@@ -122,7 +122,10 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         icon.tintColor = .white
         
-        if nodeStruct.isLightning {
+        if nodeStruct.isJoinMarket {
+            icon.image = UIImage(systemName: "arrow.triangle.2.circlepath")
+            background.backgroundColor = .black
+        } else if nodeStruct.isLightning {
             icon.image = UIImage(systemName: "bolt")
             background.backgroundColor = .systemOrange
         } else {
@@ -209,7 +212,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             CoreDataService.update(id: nodeStr.id!, keyToUpdate: "isActive", newValue: selectedSwitch.isOn, entity: .newNodes) { [unowned vc = self] success in
                 if success {
-                    if !nodeStr.isLightning {
+                    if !nodeStr.isLightning && !nodeStr.isJoinMarket {
                         vc.ud.removeObject(forKey: "walletName")
                     }
                     
@@ -229,11 +232,11 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                         let str = NodeStruct(dictionary: node)
                         
                         if str.id != nodeStr.id {
-                            if !nodeStr.isLightning && !str.isLightning {
+                            if !nodeStr.isLightning && !str.isLightning && !nodeStr.isJoinMarket && !str.isJoinMarket {
                                 CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
                             }
                             
-                            if nodeStr.isLightning && str.isLightning {
+                            if nodeStr.isLightning && str.isLightning || nodeStr.isJoinMarket && str.isJoinMarket {
                                 CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
                             }
                         }
@@ -252,11 +255,13 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                                     }
                                     vc.nodeTable.reloadData()
                                     
-                                    if !nodeStr.isLightning {
+                                    if !nodeStr.isLightning && !nodeStr.isJoinMarket {
                                         NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
                                     }
                                     
-                                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                                    if !nodeStr.isJoinMarket {
+                                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                                    }
                                 }
                             }
                         }

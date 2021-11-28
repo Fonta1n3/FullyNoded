@@ -25,31 +25,83 @@ class JMUtils {
             }
             
             let jmWalletCreated = JMWalletCreated(response)
+            let signer = jmWalletCreated.seedphrase
             
             guard let encryptedToken = Crypto.encrypt(jmWalletCreated.token.utf8),
-                  let encryptedWords = Crypto.encrypt(jmWalletCreated.seedphrase.utf8),
+                  let encryptedWords = Crypto.encrypt(signer.utf8),
                   let encryptedPass = Crypto.encrypt(pass.utf8) else {
                       completion((nil, "Error encrypting jm wallet credentials."))
                       return
                   }
             
-            let jmWalletDict:[String:Any] = [
-                "id":UUID(),
-                "name":jmWalletCreated.walletname,
-                "token":encryptedToken,
-                "words": encryptedWords,
-                "password": encryptedPass,
-                "account": Int16(0),
-                "index": Int16(0)
-            ]
-            
-            CoreDataService.saveEntity(dict: jmWalletDict, entityName: .jmWallets) { saved in
-                guard saved else {
-                    completion((nil, "Error saving jm wallet."))
+            let dict = ["id":UUID(), "words":encryptedWords, "added": Date(), "label": "Join Market"] as [String:Any]
+            CoreDataService.saveEntity(dict: dict, entityName: .signers) { success in
+                guard success else {
+                    completion((nil, "Unable to save the signer."))
                     return
                 }
                 
-                completion((response: JMWallet(jmWalletDict), nil))
+                var cointType = "0"
+                let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+                if chain != "main" {
+                    cointType = "1"
+                }
+                
+                let blockheight = UserDefaults.standard.object(forKey: "blockheight") as? Int ?? 0
+                
+                guard let mk = Keys.masterKey(words: signer, coinType: cointType, passphrase: ""),
+                      let xfp = Keys.fingerprint(masterKey: mk) else {
+                    completion((nil, "Error deriving master key."))
+                    return
+                }
+                
+                JoinMarket.descriptors(mk, xfp) { descriptors in
+                    guard var descriptors = descriptors else {
+                        completion((nil, "Error creating your jm descriptors."))
+                        return
+                    }
+                    
+                    let accountMap:[String:Any] = [
+                        "descriptor":descriptors.removeFirst(),
+                        "blockheight": blockheight,
+                        "watching":descriptors,
+                        "label":"Join Market"
+                    ]
+                                    
+                    ImportWallet.accountMap(accountMap) { (success, errorDescription) in
+                        guard success else {
+                            completion((nil, errorDescription ?? "Unknown."))
+                            return
+                        }
+                        
+                        activeWallet(completion: { activeWallet
+                            in
+                            guard let activeWallet = activeWallet else {
+                                return
+                            }
+                            
+                            let jmWalletDict:[String:Any] = [
+                                "id":UUID(),
+                                "name":jmWalletCreated.walletname,
+                                "token":encryptedToken,
+                                "words": encryptedWords,
+                                "password": encryptedPass,
+                                "account": Int16(0),
+                                "index": Int16(0),
+                                "fnWallet": activeWallet.name
+                            ]
+                            
+                            CoreDataService.saveEntity(dict: jmWalletDict, entityName: .jmWallets) { saved in
+                                guard saved else {
+                                    completion((nil, "Error saving jm wallet."))
+                                    return
+                                }
+                                
+                                completion((response: JMWallet(jmWalletDict), nil))
+                            }
+                        })
+                    }
+                }
             }
         }
     }
@@ -103,8 +155,7 @@ class JMUtils {
             
             for (i, account) in walletDetail.accounts.enumerated() {
                 if account.accountNumber > 0 {
-                    nextAccount = account.accountNumber
-                    
+                    // this is incrementing the account number when it should just be the index
                     for branch in account.branches {
                         for entry in branch.entries {
                             if entry.amount > 0 {
@@ -164,15 +215,15 @@ class JMUtils {
         let param:[String:Any] = [
             "amount_sats":amount_sats,
             "mixdepth":mixdepth,
-            "counterparties":counterparties,
+            "counterparties":1,
             "destination": address
         ]
         
         JMRPC.sharedInstance.command(method: .coinjoin(jmWallet: wallet), param: param) { (response, errorDesc) in
             guard let response = response as? [String:Any] else {
-                      completion((nil, errorDesc ?? "unknown"))
-                      return
-                  }
+                completion((nil, errorDesc ?? "unknown"))
+                return
+            }
             
             completion((response, errorDesc))
         }
