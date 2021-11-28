@@ -116,12 +116,12 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         }
         
         let localAuthenticationContext = LAContext()
-        localAuthenticationContext.localizedFallbackTitle = "Use Password"
+        localAuthenticationContext.localizedFallbackTitle = "Use Passcode"
         var authError: NSError?
         let reasonString = "To Unlock"
 
-        if localAuthenticationContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &authError) {
-            localAuthenticationContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reasonString) { [weak self] (success, evaluateError) in
+        if localAuthenticationContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: &authError) {
+            localAuthenticationContext.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reasonString) { [weak self] (success, evaluateError) in
                 guard let self = self else { return }
                 
                 if success {
@@ -754,7 +754,9 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private func importAccountMap(_ descriptor: String, _ label: String, _ password: String) {
         spinner.addConnectingView(vc: self, description: "creating wallet...")
         
-        let accountMap = ["descriptor": descriptor, "blockheight": Int64(0), "watching": [], "label": label, "password": password] as [String : Any]
+        let blockheight = UserDefaults.standard.object(forKey: "blockheight") as? Int ?? 0
+        
+        let accountMap = ["descriptor": descriptor, "blockheight": blockheight, "watching": [], "label": label, "password": password] as [String : Any]
         
         ImportWallet.accountMap(accountMap) { (success, errorDescription) in
             self.spinner.removeConnectingView()

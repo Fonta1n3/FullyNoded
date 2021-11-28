@@ -1045,7 +1045,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     if sweeping {
                         isChange = false
                     }
-                    
+                                        
                     var amountString = amount.avoidNotation
                     
                     if fxRate != nil {
@@ -1197,9 +1197,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                             labelsText += "no label "
                         }
                         
-                        if desc.contains("/1/") {
-                            isChange = true
-                        }
+                        isChange = desc.contains("/1/")
                         
                         self.inputTableArray[self.index]["isOurs"] = solvable
                         self.inputTableArray[self.index]["hdKeyPath"] = keypath

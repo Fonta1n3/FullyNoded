@@ -20,7 +20,7 @@ public struct Wallet: CustomStringConvertible {
     let index:Int64
     let watching:[String]?
     let account:Int16
-    let blockheight:Int64
+    let blockheight:Int
     let mixDepthZeroExt: Data?
     let mixDepthZeroInt: Data?
     let mixDepthOneExt: Data?
@@ -45,7 +45,7 @@ public struct Wallet: CustomStringConvertible {
         index = dictionary["index"] as? Int64 ?? 0
         watching = dictionary["watching"] as? [String]
         account = dictionary["account"] as? Int16 ?? 0
-        blockheight = dictionary["blockheight"] as? Int64 ?? 0
+        blockheight = Int(exactly: dictionary["blockheight"] as? Int64 ?? 0)!
         mixDepthZeroExt = dictionary["mixDepthZeroExt"] as? Data
         mixDepthZeroInt = dictionary["mixDepthZeroInt"] as? Data
         mixDepthOneExt = dictionary["mixDepthOneExt"] as? Data

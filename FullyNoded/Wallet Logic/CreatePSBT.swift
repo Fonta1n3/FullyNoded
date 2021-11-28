@@ -48,41 +48,34 @@ class CreatePSBT {
         activeWallet { wallet in
             guard let wallet = wallet else {
                 // using a bitcoin core wallet
-                create(params: param)
-//                Reducer.makeCommand(command: .getrawchangeaddress, param: "") { (response, errorMessage) in
-//                    guard let changeAddress = response else {
-//                        completion((nil, nil, "error getting a change address: \(errorMessage ?? "unknown")"))
-//                        return
-//                    }
-//
-//                    if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
-//
-//                        param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"changeAddress\": \"\(changeAddress)\"}'', true"
-//
-//                        if inputs != "" {
-//                            param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"changeAddress\": \"\(changeAddress)\"}'', true"
-//                        }
-//                    } else if let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int {
-//
-//                        param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
-//
-//                        if inputs != "" {
-//                            param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
-//                        }
-//                    }
-//
-//                    create(params: param)
-//                }
+                Reducer.makeCommand(command: .getrawchangeaddress, param: "") { (response, errorMessage) in
+                    guard let changeAddress = response else {
+                        completion((nil, nil, "error getting a change address: \(errorMessage ?? "unknown")"))
+                        return
+                    }
+
+                    if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
+
+                        param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"changeAddress\": \"\(changeAddress)\"}'', true"
+
+                        if inputs != "" {
+                            param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"changeAddress\": \"\(changeAddress)\"}'', true"
+                        }
+                    } else if let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int {
+
+                        param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
+
+                        if inputs != "" {
+                            param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
+                        }
+                    }
+
+                    create(params: param)
+                }
 
                 return
             }
-
-            let descriptorStruct = Descriptor(wallet.receiveDescriptor)
-
-//            guard descriptorStruct.isMulti && wallet.type != WalletType.descriptor.stringValue else {
-//                create(params: param)
-//                return
-//            }
+            
 
             let index = Int(wallet.index) + 1
 
@@ -94,7 +87,7 @@ class CreatePSBT {
 
                 Reducer.makeCommand(command: .deriveaddresses, param: "\"\(wallet.changeDescriptor)\", [\(index),\(index)]") { (response, errorMessage) in
                     guard let result = response as? NSArray, let changeAddress = result[0] as? String else {
-                        completion((nil, nil, errorMessage ?? "error deriving multisig change address"))
+                        completion((nil, nil, errorMessage ?? "error deriving change address"))
                         return
                     }
 
