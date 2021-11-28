@@ -754,7 +754,9 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private func importAccountMap(_ descriptor: String, _ label: String, _ password: String) {
         spinner.addConnectingView(vc: self, description: "creating wallet...")
         
-        let accountMap = ["descriptor": descriptor, "blockheight": Int64(0), "watching": [], "label": label, "password": password] as [String : Any]
+        let blockheight = UserDefaults.standard.object(forKey: "blockheight") as? Int ?? 0
+        
+        let accountMap = ["descriptor": descriptor, "blockheight": blockheight, "watching": [], "label": label, "password": password] as [String : Any]
         
         ImportWallet.accountMap(accountMap) { (success, errorDescription) in
             self.spinner.removeConnectingView()

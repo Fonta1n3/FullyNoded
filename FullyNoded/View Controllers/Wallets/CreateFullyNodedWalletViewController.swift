@@ -194,7 +194,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         
                         if i + 1 == extendedPublicKeys.count {
                             descriptor += "))"
-                            let accountMap = ["descriptor": descriptor, "blockheight": Int64(0), "watching": [], "label": name] as [String : Any]
+                            let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
                             promptToImportUnchained(accountMap)
                         } else {
                             descriptor += ","
@@ -282,7 +282,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             
         }
         
-        let accountMap = ["descriptor": desc, "blockheight": Int64(0), "watching": [], "label": "Wallet import"] as [String : Any]
+        let accountMap = ["descriptor": desc, "blockheight": 0, "watching": [], "label": "Wallet import"] as [String : Any]
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -323,7 +323,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     private func convertElectrumToAccountMap(_ dict: [String:Any]) -> [String:Any]? {
         guard let descriptor = getDescriptorFromElectrumBackUp(dict) else { return nil }
         
-        return ["descriptor": descriptor, "blockheight": Int64(0), "watching": [], "label": "Electrum wallet"]
+        return ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": "Electrum wallet"]
     }
     
     private func getDescriptorFromElectrumBackUp(_ dict: [String:Any]) -> String? {
@@ -495,7 +495,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func setPrimDesc(descriptors: [String], descriptorToUseIndex: Int) {
-        var accountMap:[String:Any] = ["descriptor": "", "blockheight": Int64(0), "watching": [], "label": "Wallet Import"]
+        var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
         let primDesc = descriptors[descriptorToUseIndex]
         accountMap["descriptor"] = primDesc
         
@@ -599,7 +599,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                     return
                 }
                 
-                var accountMap:[String:Any] = ["descriptor": "", "blockheight": Int64(0), "watching": [], "label": "Wallet Import"]
+                var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
                 
                 if descriptors.count > 1 {
                     self.prompToChoosePrimaryDesc(descriptors: descriptors)

@@ -76,12 +76,14 @@ class CreatePSBT {
                 return
             }
             
-            let descriptorStruct = Descriptor(wallet.receiveDescriptor)
+            //let descriptorStruct = Descriptor(wallet.receiveDescriptor)
             
-            guard descriptorStruct.isMulti && wallet.type != WalletType.descriptor.stringValue else {
-                create(params: param)
-                return
-            }
+//            guard descriptorStruct.isMulti && wallet.type != WalletType.descriptor.stringValue else {
+//                print("wallet.type: \(wallet.type)")
+//                print("descriptorStruct.isMulti: \(descriptorStruct.isMulti)")
+//                create(params: param)
+//                return
+//            }
             
             let index = Int(wallet.index) + 1
             

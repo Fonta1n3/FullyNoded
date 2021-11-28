@@ -167,7 +167,7 @@ class ExternalFNWalletsViewController: UIViewController {
     }
     
     private func recoverNow(_ wallet: Wallet, _ index: Int) {
-        let accountMap = ["descriptor": wallet.receiveDescriptor, "blockheight": wallet.blockheight, "watching": wallet.watching ?? [], "label": wallet.label] as [String : Any]
+        let accountMap = ["descriptor": wallet.receiveDescriptor, "blockheight": Int(wallet.blockheight), "watching": wallet.watching ?? [], "label": wallet.label] as [String : Any]
                 
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
