@@ -4667,11 +4667,13 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <outlet property="amountBackground" destination="6ok-Q8-SRj" id="k8E-mF-PS4"/>
                         <outlet property="amountIcon" destination="AXR-UZ-1lO" id="kwa-lq-pfa"/>
                         <outlet property="amountInput" destination="WBT-v4-ipz" id="4zO-8O-Q8c"/>
+                        <outlet property="batchOutlet" destination="rOq-3M-0CP" id="TtL-GS-wFd"/>
                         <outlet property="coinSelectionControl" destination="Vac-p9-eJN" id="WYP-k8-8ch"/>
                         <outlet property="denominationImage" destination="cDK-QG-hoD" id="gXI-bz-daC"/>
                         <outlet property="feeIconBackground" destination="X4T-PA-gul" id="Gas-HE-S15"/>
                         <outlet property="feeRateInputField" destination="sbh-pS-EJp" id="oKd-NE-FHX"/>
                         <outlet property="fxRateLabel" destination="Tft-x5-9Sa" id="diE-in-GEv"/>
+                        <outlet property="lightningWithdrawOutlet" destination="vCU-fw-O9h" id="ubx-pf-bKu"/>
                         <outlet property="miningTargetLabel" destination="mdu-uM-jaM" id="DQW-cX-yg0"/>
                         <outlet property="outputsTable" destination="jXp-xP-J4h" id="y02-Rq-oD9"/>
                         <outlet property="recipientBackground" destination="yzj-3l-LdC" id="HK4-cn-hVM"/>
@@ -6414,9 +6416,16 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                     <action selector="divideAction:" destination="1tX-je-wOH" id="VSa-mN-732"/>
                                 </connections>
                             </barButtonItem>
+                            <barButtonItem image="arrow.triangle.2.circlepath" catalog="system" id="oQM-6X-MzJ">
+                                <color key="tintColor" systemColor="systemTealColor"/>
+                                <connections>
+                                    <action selector="mixAction:" destination="1tX-je-wOH" id="qr3-2c-5zo"/>
+                                </connections>
+                            </barButtonItem>
                         </rightBarButtonItems>
                     </navigationItem>
                     <connections>
+                        <outlet property="jmMixOutlet" destination="oQM-6X-MzJ" id="3TL-ob-3Mc"/>
                         <outlet property="tableView" destination="CFb-Jk-h9Z" id="2QQ-Qg-zs6"/>
                         <segue destination="03r-hX-hYT" kind="show" identifier="goToLocked" id="p49-Xm-Jgn"/>
                         <segue destination="Hww-Qm-Hos" kind="show" identifier="getUTXOinfo" id="Ikt-mc-dmE"/>

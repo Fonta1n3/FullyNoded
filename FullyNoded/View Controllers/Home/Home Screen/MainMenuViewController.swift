@@ -93,18 +93,24 @@ class MainMenuViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         CoreDataService.retrieveEntity(entityName: .jmWallets) { jmWallets in
-            guard let jmWallets = jmWallets else {
+            guard let jmWallets = jmWallets, jmWallets.count > 0 else {
                 return
             }
-            JMUtils.unlockWallet(wallet: JMWallet(jmWallets[1])) { (unlockedWallet, message) in
-                print(")")
-            }
-            
+//            print("jmwallets.count: \(jmWallets.count)")
+//            JMUtils.session { (response, message) in
+//
+//            }
+//            JMUtils.lockWallet(wallet: JMWallet(jmWallets[0])) { (locked, message) in
+//
+//            }
+//            JMUtils.unlockWallet(wallet: JMWallet(jmWallets[0])) { (unlockedWallet, message) in
+//                print("unlockWallet")
+//            }
+//
 //            JMUtils.createWallet { (response, message) in
 //                print("")
 //            }
         }
-        
         
         if initialLoad {
             if !firstTimeHere() {

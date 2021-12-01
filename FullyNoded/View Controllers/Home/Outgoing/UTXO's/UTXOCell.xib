@@ -243,11 +243,27 @@
                                     <constraint firstItem="U9a-DB-VDl" firstAttribute="leading" secondItem="F64-us-7JM" secondAttribute="leading" id="wOP-05-3jY"/>
                                 </constraints>
                             </stackView>
+                            <button opaque="NO" contentMode="right" contentHorizontalAlignment="trailing" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="x7I-5Z-UZR">
+                                <rect key="frame" x="125" y="45" width="180" height="31"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="31" id="3JH-a6-Ai5"/>
+                                    <constraint firstAttribute="width" constant="180" id="oMr-qg-6Mw"/>
+                                </constraints>
+                                <color key="tintColor" systemColor="systemGroupedBackgroundColor"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="⚠ donate toxic change" titleAlignment="trailing">
+                                    <color key="baseForegroundColor" systemColor="systemIndigoColor"/>
+                                </buttonConfiguration>
+                                <connections>
+                                    <action selector="donateChangeTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="cUf-Xl-YIq"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="F64-us-7JM" firstAttribute="top" secondItem="vRf-33-bgg" secondAttribute="bottom" constant="8" symbolic="YES" id="12D-vo-VM3"/>
                             <constraint firstAttribute="trailing" secondItem="kDg-wc-FHW" secondAttribute="trailing" constant="15" id="153-px-AEP"/>
+                            <constraint firstItem="x7I-5Z-UZR" firstAttribute="top" secondItem="wqB-Pa-JzN" secondAttribute="bottom" constant="8" id="4Oo-1N-62X"/>
                             <constraint firstItem="un5-bt-OPd" firstAttribute="leading" secondItem="pXx-EG-WdU" secondAttribute="leading" constant="15" id="5dc-Jw-tEk"/>
                             <constraint firstItem="7Pg-Wx-b2U" firstAttribute="top" secondItem="Ior-Ps-Whx" secondAttribute="bottom" constant="4" id="7gr-gn-dRc"/>
                             <constraint firstAttribute="bottom" secondItem="yyx-fL-Koo" secondAttribute="bottom" constant="8" id="D1i-G7-3yO"/>
@@ -262,6 +278,7 @@
                             <constraint firstItem="Ior-Ps-Whx" firstAttribute="leading" secondItem="pXx-EG-WdU" secondAttribute="leading" constant="15" id="Vvm-pU-Gn4"/>
                             <constraint firstAttribute="bottom" secondItem="un5-bt-OPd" secondAttribute="bottom" constant="8" id="YOs-XM-d8s"/>
                             <constraint firstItem="XOd-o9-Fv3" firstAttribute="top" secondItem="kTC-Be-Ir1" secondAttribute="bottom" constant="4" id="Z40-2a-Rbn"/>
+                            <constraint firstAttribute="trailing" secondItem="x7I-5Z-UZR" secondAttribute="trailing" constant="15" id="dC8-Ka-shj"/>
                             <constraint firstItem="wqB-Pa-JzN" firstAttribute="top" secondItem="pXx-EG-WdU" secondAttribute="top" constant="8" id="gY7-8J-OPa"/>
                             <constraint firstItem="kTC-Be-Ir1" firstAttribute="top" secondItem="F64-us-7JM" secondAttribute="bottom" constant="6" id="h33-aL-2gK"/>
                             <constraint firstAttribute="trailing" secondItem="wqB-Pa-JzN" secondAttribute="trailing" constant="15" id="nWH-To-vWX"/>
@@ -287,6 +304,7 @@
                 <outlet property="capGainLabel" destination="7Pg-Wx-b2U" id="INg-Xr-BcR"/>
                 <outlet property="checkMarkImageView" destination="un5-bt-OPd" id="AO8-ih-Fus"/>
                 <outlet property="confirmationsLabel" destination="Y2N-Mq-EK6" id="HIS-mS-i5d"/>
+                <outlet property="donateChange" destination="x7I-5Z-UZR" id="dkF-g2-jHQ"/>
                 <outlet property="fetchOriginOutlet" destination="kDg-wc-FHW" id="r3l-Mz-xrj"/>
                 <outlet property="fiatLabel" destination="XOd-o9-Fv3" id="pej-Ur-yKh"/>
                 <outlet property="isChangeBackground" destination="yBn-mf-ozB" id="czI-d9-7GS"/>
@@ -318,6 +336,12 @@
         </systemColor>
         <systemColor name="systemGreenColor">
             <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemGroupedBackgroundColor">
+            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemIndigoColor">
+            <color red="0.34509803921568627" green="0.33725490196078434" blue="0.83921568627450982" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemTealColor">
             <color red="0.18823529411764706" green="0.69019607843137254" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

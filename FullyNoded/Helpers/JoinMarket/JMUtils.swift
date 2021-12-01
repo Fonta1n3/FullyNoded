@@ -215,13 +215,18 @@ class JMUtils {
         let param:[String:Any] = [
             "amount_sats":amount_sats,
             "mixdepth":mixdepth,
-            "counterparties":1,
+            "counterparties":counterparties,
             "destination": address
         ]
         
         JMRPC.sharedInstance.command(method: .coinjoin(jmWallet: wallet), param: param) { (response, errorDesc) in
             guard let response = response as? [String:Any] else {
                 completion((nil, errorDesc ?? "unknown"))
+                return
+            }
+            
+            guard let errorDesc = errorDesc else {
+                completion((response, errorDesc))
                 return
             }
             
