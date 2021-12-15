@@ -30,7 +30,7 @@ Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own 
   - Download Fully Noded® macOS<br/>
   [<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](https://apps.apple.com/us/app/fully-noded-desktop/id1530816100?mt=12)<br/>
   - Download Bitcoin Core [https://bitcoincore.org/en/download/](https://bitcoincore.org/en/download/)
-    - Or for best security and ease of use download [GordianServer](https://github.com/Fonta1n3/GordianServer-macOS/blob/master/GordianServer-macOS-v0.1.4.dmg) which will harden your mac for best security practices and install Bitcoin Core, Tor and C-Lightning with one click.
+    - Or for best security and ease of use download [GordianServer](https://github.com/BlockchainCommons/GordianServer-macOS/releases/download/v1.0.1/gordian-server-1.0.1.dmg) which will harden your mac for best security practices and install Bitcoin Core, Tor and C-Lightning with one click.
   - Start Bitcoin Core by double clicking it.
   - Start Fully Noded by double clicking it.
   - Fully Noded® will prompt you to add a node. Get your `rpc` credentials from your `bitcoin.conf` file which can be found at `/Users/<username>/Library/Application Support/Bitcoin/bitcoin.conf ` and add them to FN when adding your node. By default FN will add the correct address for your node, this can be customized for remote connections for advanced users.
