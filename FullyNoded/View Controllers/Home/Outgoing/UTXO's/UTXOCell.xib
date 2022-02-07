@@ -243,7 +243,7 @@
                                     <constraint firstItem="U9a-DB-VDl" firstAttribute="leading" secondItem="F64-us-7JM" secondAttribute="leading" id="wOP-05-3jY"/>
                                 </constraints>
                             </stackView>
-                            <button opaque="NO" contentMode="right" contentHorizontalAlignment="trailing" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="x7I-5Z-UZR">
+                            <button opaque="NO" contentMode="right" contentHorizontalAlignment="right" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="x7I-5Z-UZR">
                                 <rect key="frame" x="125" y="45" width="180" height="31"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="31" id="3JH-a6-Ai5"/>
@@ -258,6 +258,15 @@
                                     <action selector="donateChangeTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="cUf-Xl-YIq"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="   " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zPr-I3-SYn">
+                                <rect key="frame" x="16" y="235" width="10.5" height="12"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="12" id="BRl-vY-xfF"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
@@ -281,7 +290,9 @@
                             <constraint firstAttribute="trailing" secondItem="x7I-5Z-UZR" secondAttribute="trailing" constant="15" id="dC8-Ka-shj"/>
                             <constraint firstItem="wqB-Pa-JzN" firstAttribute="top" secondItem="pXx-EG-WdU" secondAttribute="top" constant="8" id="gY7-8J-OPa"/>
                             <constraint firstItem="kTC-Be-Ir1" firstAttribute="top" secondItem="F64-us-7JM" secondAttribute="bottom" constant="6" id="h33-aL-2gK"/>
+                            <constraint firstItem="zPr-I3-SYn" firstAttribute="leading" secondItem="pXx-EG-WdU" secondAttribute="leading" constant="16" id="n6R-S8-VFP"/>
                             <constraint firstAttribute="trailing" secondItem="wqB-Pa-JzN" secondAttribute="trailing" constant="15" id="nWH-To-vWX"/>
+                            <constraint firstItem="zPr-I3-SYn" firstAttribute="top" secondItem="7Pg-Wx-b2U" secondAttribute="bottom" constant="4" id="qAW-wj-t8f"/>
                             <constraint firstItem="vRf-33-bgg" firstAttribute="top" secondItem="pXx-EG-WdU" secondAttribute="top" constant="8" id="sNM-WF-icY"/>
                             <constraint firstItem="7Pg-Wx-b2U" firstAttribute="leading" secondItem="pXx-EG-WdU" secondAttribute="leading" constant="16" id="tq0-Kz-xiW"/>
                             <constraint firstAttribute="trailing" secondItem="yyx-fL-Koo" secondAttribute="trailing" constant="15" id="vHh-fn-j8T"/>
@@ -304,6 +315,7 @@
                 <outlet property="capGainLabel" destination="7Pg-Wx-b2U" id="INg-Xr-BcR"/>
                 <outlet property="checkMarkImageView" destination="un5-bt-OPd" id="AO8-ih-Fus"/>
                 <outlet property="confirmationsLabel" destination="Y2N-Mq-EK6" id="HIS-mS-i5d"/>
+                <outlet property="derivationLabel" destination="zPr-I3-SYn" id="gxS-mh-nwM"/>
                 <outlet property="donateChange" destination="x7I-5Z-UZR" id="dkF-g2-jHQ"/>
                 <outlet property="fetchOriginOutlet" destination="kDg-wc-FHW" id="r3l-Mz-xrj"/>
                 <outlet property="fiatLabel" destination="XOd-o9-Fv3" id="pej-Ur-yKh"/>

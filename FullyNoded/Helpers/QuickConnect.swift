@@ -24,6 +24,8 @@ class QuickConnect {
         newNode["id"] = UUID()
         var label = "Node"
         
+        print("url: \(url)")
+        
         guard var host = URLComponents(string: url)?.host,
             let port = URLComponents(string: url)?.port else {
                 completion((false, "invalid url"))
@@ -68,7 +70,26 @@ class QuickConnect {
         } else {
             guard let rpcPassword = URLComponents(string: url)?.password,
                 let rpcUser = URLComponents(string: url)?.user else {
-                    completion((false, "invalid url"))
+                    // try jm here.
+                    guard let certCheck = URL(string: url)?.value(for: "cert"),
+                          let certData = try? Data.decodeUrlSafeBase64(certCheck) else {
+                              completion((false, "cert missing."))
+                              return
+                          }
+                    
+                    guard let encryptedCert = Crypto.encrypt(certData) else {
+                            completion((false, "error encrypting your credentials"))
+                            return
+                    }
+                    
+                    newNode["cert"] = encryptedCert
+                    newNode["onionAddress"] = torNodeHost
+                    newNode["isLightning"] = false
+                    newNode["isActive"] = true
+                    newNode["uncleJim"] = false
+                    newNode["label"] = "Join Market"
+                    newNode["isJoinMarket"] = true
+                    processNode(newNode, url, completion: completion)
                     return
             }
                         
@@ -107,7 +128,7 @@ class QuickConnect {
     }
     
     private class func processNode(_ newNode: [String:Any], _ url: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        if url.hasPrefix("clightning-rpc") || url.hasPrefix("lndconnect") {
+        if url.hasPrefix("clightning-rpc") || url.hasPrefix("lndconnect") || url.hasPrefix("http") {
             saveNode(newNode, url, completion: completion)
             
         } else {

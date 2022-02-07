@@ -77,7 +77,13 @@ class JMRPC {
             }
             
             var request = URLRequest(url: url)
-            let timeout = 10.0
+            var timeout = 10.0
+            
+            var sesh = URLSession(configuration: .default)
+            
+            if onionAddress.contains("onion") {
+                sesh = self.torClient.session
+            }
             
             var httpMethod:String!
             
@@ -89,7 +95,9 @@ class JMRPC {
             case .lockwallet(let wallet),
                     .walletdisplay(let wallet),
                     .getaddress(jmWallet: let wallet),
-                    .makerStop(jmWallet: let wallet):
+                    .makerStop(jmWallet: let wallet),
+                    .takerStop(jmWallet: let wallet),
+                    .getSeed(jmWallet: let wallet):
                 httpMethod = "GET"
                 
                 guard let decryptedToken = Crypto.decrypt(wallet.token),
@@ -121,6 +129,7 @@ class JMRPC {
                 
             case .walletcreate:
                 httpMethod = "POST"
+                timeout = 1000
                 
             case .coinjoin(jmWallet: let wallet),
                     .makerStart(jmWallet: let wallet),
@@ -135,6 +144,39 @@ class JMRPC {
                       }
                 
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                
+            case .gettimelockaddress(jmWallet: let wallet, date: let _):
+                httpMethod = "GET"
+                
+                guard let decryptedToken = Crypto.decrypt(wallet.token),
+                      let token = decryptedToken.utf8String else {
+                          completion((nil, "Unable to decrypt token."))
+                          return
+                      }
+                
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                
+            case .unfreeze(jmWallet: let wallet, utxo: let utxo):
+                httpMethod = "POST"
+                
+                guard let decryptedToken = Crypto.decrypt(wallet.token),
+                      let token = decryptedToken.utf8String else {
+                          completion((nil, "Unable to decrypt token."))
+                          return
+                      }
+                
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                
+//                guard let jsonData = try? JSONSerialization.data(withJSONObject: ["utxo-string":utxo.txid + ":" + "\(utxo.vout)", "freeze": false]) else { return }
+//                
+//                #if DEBUG
+//                print("JM param: \(String(describing: param))")
+//                #endif
+//                
+//                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+//                request.setValue("\(jsonData.count)", forHTTPHeaderField: "Content-Length")
+//                request.httpBody = jsonData
+                                               
             }
             
             if let param = param {
@@ -162,13 +204,7 @@ class JMRPC {
             #if DEBUG
             print("url = \(url)")
             #endif
-            
-            var sesh = URLSession(configuration: .default)
-            
-            if onionAddress.contains("onion") {
-                sesh = self.torClient.session
-            }
-            
+                        
             let task = sesh.dataTask(with: request as URLRequest) { [weak self] (data, response, error) in
                 guard let self = self else { return }
                                 
@@ -220,12 +256,16 @@ class JMRPC {
                 print("json: \(json)")
                 #endif
                 
-                guard let errorCheck = json["message"] as? String else {
+                guard var message = json["message"] as? String else {
                     completion((json, nil))
                     return
                 }
                 
-                completion((nil, errorCheck))
+                if message == "Invalid credentials." {
+                    message = "Invalid token, you need to restart your jm daemon and try again."
+                }
+                
+                completion((nil, message))
             }
             
             task.resume()

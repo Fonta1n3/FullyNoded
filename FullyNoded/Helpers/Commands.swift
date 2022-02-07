@@ -181,8 +181,12 @@ public enum JM_REST {
     case coinjoin(jmWallet: JMWallet)
     case makerStart(jmWallet: JMWallet)
     case makerStop(jmWallet: JMWallet)
+    case takerStop(jmWallet: JMWallet)
     case configGet(jmWallet: JMWallet)
     case configSet(jmWallet: JMWallet)
+    case gettimelockaddress(jmWallet: JMWallet, date: String)
+    case getSeed(jmWallet: JMWallet)
+    case unfreeze(jmWallet: JMWallet, utxo: Utxo)
     
     var stringValue:String {
         switch self {
@@ -206,10 +210,18 @@ public enum JM_REST {
             return "\(rootUrl)/wallet/\(wallet.name)/maker/start"
         case .makerStop(jmWallet: let wallet):
             return "\(rootUrl)/wallet/\(wallet.name)/maker/stop"
+        case .takerStop(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/taker/stop"
         case .configGet(jmWallet: let wallet):
             return "\(rootUrl)/wallet/\(wallet.name)/configget"
         case .configSet(jmWallet: let wallet):
             return "\(rootUrl)/wallet/\(wallet.name)/configset"
+        case .gettimelockaddress(jmWallet: let wallet, date: let date):
+            return "\(rootUrl)/wallet/\(wallet.name)/address/timelock/new/\(date)"
+        case .getSeed(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/getseed"
+        case .unfreeze(jmWallet: let wallet, utxo: let _):
+            return "\(rootUrl)/wallet/\(wallet.name)/freeze"
         }
     }
 }

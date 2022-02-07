@@ -67,11 +67,11 @@ class MainMenuViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+                
         if !Crypto.setupinit() {
             showAlert(vc: self, title: "", message: "There was an error setupinit.")
         }
-                        
+                                
         mainMenu.delegate = self
         mainMenu.alpha = 0
         mainMenu.tableFooterView = UIView(frame: .zero)
@@ -93,17 +93,44 @@ class MainMenuViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         CoreDataService.retrieveEntity(entityName: .jmWallets) { jmWallets in
-            guard let jmWallets = jmWallets, jmWallets.count > 0 else {
+            guard let jmWallets = jmWallets, !jmWallets.isEmpty else {
+                print("no jmwallets")
                 return
             }
+            
+            let jmWallet = JMWallet(jmWallets[0])
+            
+//            CoreDataService.deleteEntity(id: jmWallet.id, entityName: .jmWallets) { deleted in
+//                print("jmwallet deleted")
+//            }
+            
+//            JMUtils.stopMaker(wallet: jmWallet) { (response, message) in
+//
+//            }
+            
+//            JMUtils.session { (response, message) in
+//
+//            }
+            
+            print("jmwallets.count: \(jmWallets.count)")
+            guard let pw = Crypto.decrypt(jmWallet.password)?.utf8String else { return }
+            print("pw: \(pw)")
+            
+            
+//            JMUtils.display(wallet: jmWallet) { (detail, message) in
+//
+//            }
+//            JMUtils.fidelityAddress(wallet: jmWallet, date: "2023-01") { (exists, message) in
+//
+//            }
 //            print("jmwallets.count: \(jmWallets.count)")
 //            JMUtils.session { (response, message) in
 //
 //            }
-//            JMUtils.lockWallet(wallet: JMWallet(jmWallets[0])) { (locked, message) in
+//            JMUtils.lockWallet(wallet: jmWallet) { (locked, message) in
 //
 //            }
-//            JMUtils.unlockWallet(wallet: JMWallet(jmWallets[0])) { (unlockedWallet, message) in
+//            JMUtils.unlockWallet(wallet: jmWallet) { (unlockedWallet, message) in
 //                print("unlockWallet")
 //            }
 //

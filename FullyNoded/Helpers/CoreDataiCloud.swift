@@ -20,19 +20,19 @@ class CoreDataiCloud {
         
         description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.fullynoded.backup")
         
-        
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
                 //fatalError("Unresolved error \(error), \(error.userInfo)")
                 print("Unresolved error \(error), \(error.userInfo)")
             }
+            
         })
         return container
     }()
     
     static var viewContext: NSManagedObjectContext {
         let viewContext = CoreDataiCloud.persistentContainer.viewContext
-        viewContext.automaticallyMergesChangesFromParent = true
+        //viewContext.automaticallyMergesChangesFromParent = true
         return viewContext
     }
         
@@ -76,6 +76,7 @@ class CoreDataiCloud {
     }
     
     class func deleteEntity(entity: ENTITY_BACKUP, completion: @escaping ((Bool)) -> Void) {
+        print("deleteEntity: \(entity.rawValue)")
         DispatchQueue.main.async {
             let context = CoreDataiCloud.viewContext
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entity.rawValue)

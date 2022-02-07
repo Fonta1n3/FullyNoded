@@ -60,7 +60,8 @@ class BackupiCloud {
             .authKeys,
             .newNodes,
             .signers,
-            .wallets
+            .wallets,
+            .jmWallets
         ]
         
         for (e, entity) in entities.enumerated() {
@@ -75,6 +76,8 @@ class BackupiCloud {
                 backupEntity = .signers
             case .wallets:
                 backupEntity = .wallets
+            case .jmWallets:
+                backupEntity = .jmWallets
             default:
                 break
             }
@@ -136,6 +139,7 @@ class BackupiCloud {
         var nodes = [[String:Any]]()
         var signers = [[String:Any]]()
         var wallets = [[String:Any]]()
+        var jmWallets = [[String:Any]]()
         
         for (key, value) in dataToRecover {
             guard let entity = ENTITY(rawValue: key) else { print("not an entity"); return nil }
@@ -151,12 +155,14 @@ class BackupiCloud {
                 signers = dictArray
             case .wallets:
                 wallets = dictArray
+            case .jmWallets:
+                jmWallets = dictArray
             default:
                 break
             }
         }
         
-        return [authKeys, nodes, signers, wallets]
+        return [authKeys, nodes, signers, wallets, jmWallets]
     }
     
     static func saveEntityLocal(_ name: ENTITY, _ entity: [String:Any], completion: @escaping ((success:Bool, didSaveSomething: Bool)) -> Void) {
@@ -252,9 +258,21 @@ class BackupiCloud {
                                 }
                             }
                         case 3:
+                            for entity in entities {
+                                saveEntityLocal(.wallets, entity) { (success, didSave) in
+                                    if !success {
+                                        backedUp = false
+                                    }
+                                    
+                                    if didSave {
+                                        somethingWasSaved = true
+                                    }
+                                }
+                            }
+                        case 4:
                             if entities.count > 0 {
                                 for (x, entity) in entities.enumerated() {
-                                    saveEntityLocal(.wallets, entity) { (success, didSave) in
+                                    saveEntityLocal(.jmWallets, entity) { (success, didSave) in
                                         if !success {
                                             backedUp = false
                                         }
@@ -285,24 +303,38 @@ class BackupiCloud {
     }
     
     static func destroy(completion: @escaping ((Bool)) -> Void) {
+        print("destroy")
         let entities:[ENTITY_BACKUP] = [
             .authKeys,
             .nodes,
             .signers,
-            .wallets
+            .wallets,
+            .jmWallets
         ]
         
         var deletedAll = true
         
         for (i, entity) in entities.enumerated() {
-            CoreDataiCloud.deleteEntity(entity: entity) { deleted in
-                if !deleted {
-                    deletedAll = false
+            CoreDataiCloud.retrieveEntity(entity: entity) { existingEntity in
+                guard let existingEntity = existingEntity, !existingEntity.isEmpty else {
+                    print("no existing entity for: \(entity.rawValue)")
+                    if i + 1 == entities.count {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            completion((deletedAll))
+                        }
+                    }
+                    return
                 }
                 
-                if i + 1 == entities.count {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        completion((deletedAll))
+                CoreDataiCloud.deleteEntity(entity: entity) { deleted in
+                    if !deleted {
+                        deletedAll = false
+                    }
+                    
+                    if i + 1 == entities.count {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            completion((deletedAll))
+                        }
                     }
                 }
             }
@@ -331,7 +363,8 @@ class BackupiCloud {
             .authKeys,
             .nodes,
             .signers,
-            .wallets
+            .wallets,
+            .jmWallets
         ]
         
         for (x, entity) in entities.enumerated() {
@@ -353,7 +386,8 @@ class BackupiCloud {
                                         "name",
                                         "changeDescriptor",
                                         "receiveDescriptor",
-                                        "type":
+                                        "type",
+                                        "fnWallet":
                                         
                                         if !(entity == .nodes && key == "label") {
                                             if let decrypted = Crypto.decryptForBackup(passwordHash, data), let string = decrypted.utf8String {
@@ -403,6 +437,8 @@ class BackupiCloud {
                                     newKey = .signers
                                 case .wallets:
                                     newKey = .wallets
+                                case .jmWallets:
+                                    newKey = .jmWallets
                                 }
                                 
                                 dataToRecover["\(newKey.rawValue)"] = newArray

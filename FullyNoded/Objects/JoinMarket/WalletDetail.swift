@@ -405,13 +405,13 @@ public struct Entry: CustomStringConvertible {
     let address: String
     let amount: Double
     let hd_path: String
-    let labels: String
+    let label: String
     
     init(_ dictionary: [String: Any]) {
         address = dictionary["address"] as! String
         amount = Double(dictionary["amount"] as! String)!
         hd_path = dictionary["hd_path"] as! String
-        labels = dictionary["labels"] as! String
+        label = dictionary["label"] as! String
     }
     
     public var description: String {

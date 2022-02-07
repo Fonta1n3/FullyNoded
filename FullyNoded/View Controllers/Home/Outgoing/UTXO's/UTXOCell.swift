@@ -49,6 +49,7 @@ class UTXOCell: UITableViewCell {
     @IBOutlet private weak var reusedBackground: UIView!
     @IBOutlet private weak var reusedImageView: UIImageView!
     @IBOutlet private weak var mixButtonOutlet: UIButton!
+    @IBOutlet private weak var derivationLabel: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -117,8 +118,8 @@ class UTXOCell: UITableViewCell {
             reusedBackground.alpha = 0
         }
         
-        if utxo.desc != nil {
-            if utxo.desc!.contains("/1/") {
+        if let desc = utxo.desc {
+            if desc.contains("/1/") {
                 isChangeImageView.image = UIImage(systemName: "arrow.2.circlepath")
                 isChangeBackground.backgroundColor = .systemPurple
                 
@@ -132,6 +133,9 @@ class UTXOCell: UITableViewCell {
                 isChangeImageView.image = UIImage(systemName: "arrow.down.left")
                 isChangeBackground.backgroundColor = .systemBlue
             }
+            let descriptor = Descriptor(desc)
+            derivationLabel.text = descriptor.derivation
+            
         } else {
             isChangeImageView.image = UIImage(systemName: "questionmark")
             isChangeBackground.backgroundColor = .clear
@@ -298,4 +302,5 @@ class UTXOCell: UITableViewCell {
     @IBAction func donateChangeTapped(_ sender: Any) {
         delegate.didTapDonateChange(utxo)
     }
+    
 }

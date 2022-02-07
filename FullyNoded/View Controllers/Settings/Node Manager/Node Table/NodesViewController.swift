@@ -353,7 +353,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     private func addBtcRpcQr(url: String) {
         QuickConnect.addNode(uncleJim: false, url: url) { [weak self] (success, errorMessage) in
             if success {
-                if !url.hasPrefix("clightning-rpc") && !url.hasPrefix("lndconnect:") {
+                if !url.hasPrefix("clightning-rpc") && !url.hasPrefix("lndconnect:") && !url.hasPrefix("http") {
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
                         

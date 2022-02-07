@@ -31,6 +31,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var invoice:[String:Any]?
     var invoiceString = ""
     let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+    var isFidelity = false
     
     @IBOutlet weak private var batchOutlet: UIButton!
     @IBOutlet weak private var lightningWithdrawOutlet: UIButton!
@@ -446,26 +447,32 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     override func viewDidAppear(_ animated: Bool) {
         if inputArray.count > 0 {
-            if !isJmarket {
+            if !isJmarket && !isFidelity {
                 showAlert(vc: self, title: "Coin control ✓", message: "Only the utxo's you have just selected will be used in this transaction. You may send the total balance of the *selected utxo's* by tapping the \"⚠️ send all\" button or enter a custom amount as normal.")
-            } else {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.sliderViewBackground.alpha = 0
-                    self.lightningWithdrawOutlet.alpha = 0
-                    self.batchOutlet.removeFromSuperview()
-                    self.coinSelectionControl.alpha = 0
-                    
-                    let title = "Join Market Transaction"
-                    let mess = "Add a recipient address for your coinjoined funds. To remix select the Join Market wallet as the recipient."
-                    
-                    let alert = UIAlertController(title: title, message: mess, preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in }))
-                    alert.popoverPresentationController?.sourceView = self.view
-                    self.present(alert, animated: true, completion: nil)
-                }
             }
+        }
+        
+        if isJmarket {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.sliderViewBackground.alpha = 0
+                self.lightningWithdrawOutlet.alpha = 0
+                self.batchOutlet.removeFromSuperview()
+                self.coinSelectionControl.alpha = 0
+                
+                let title = "Join Market Transaction"
+                let mess = "Add a recipient address for your coinjoined funds. To remix select the Join Market wallet as the recipient."
+                
+                let alert = UIAlertController(title: title, message: mess, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in }))
+                alert.popoverPresentationController?.sourceView = self.view
+                self.present(alert, animated: true, completion: nil)
+            }
+        }
+        
+        if isFidelity {
+            showAlert(vc: self, title: "Fidelity Bond", message: "⚠️ This is a timelocked address.\n\nFor best privacy practices it is recommended to use the \"Send all\" button to sweep the selected utxo(s) when creating a fidelity bond.")
         }
     }
     
@@ -477,6 +484,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         outputArray.removeAll()
         inputArray.removeAll()
         inputsString = ""
+        isJmarket = false
+        isFidelity = false
     }
     
     private func promptToWithdrawalFromLightning(_ recipient: String) {
@@ -918,11 +927,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     private func sweepToMix(_ recipient: String) {
         guard let jmWallet = jmWallet else { return }
         
-        //let sats = Int(utxoTotal * 100000000.0)
         let counter = Int.random(in: 4...6)
-        print("counter: \(counter)")
-        
-        //print("jmwallet: \(jmWallet.name)\namount: \(sats)\ncounterparties: \(counter)\naddress: \(receivingAddress)")
         
         JMUtils.coinjoin(wallet: jmWallet,
                          amount_sats: 0,
@@ -955,11 +960,16 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 tit = "JM response"
                 mess = "\(response)"
             }
+            
+        } else if let message = message, message != "" {
+            tit = "JM message:"
+            mess = message
 
         } else {
             tit = "No response.."
             mess = "Usually after a succesful taker order JM replies with an empty response, this time we got nothing at all."
         }
+        
 
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
