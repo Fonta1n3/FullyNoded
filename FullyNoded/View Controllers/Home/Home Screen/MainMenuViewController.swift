@@ -91,54 +91,7 @@ class MainMenuViewController: UIViewController {
         progressView.setNeedsFocusUpdate()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmWallets in
-            guard let jmWallets = jmWallets, !jmWallets.isEmpty else {
-                print("no jmwallets")
-                return
-            }
-            
-            let jmWallet = JMWallet(jmWallets[0])
-            
-//            CoreDataService.deleteEntity(id: jmWallet.id, entityName: .jmWallets) { deleted in
-//                print("jmwallet deleted")
-//            }
-            
-//            JMUtils.stopMaker(wallet: jmWallet) { (response, message) in
-//
-//            }
-            
-//            JMUtils.session { (response, message) in
-//
-//            }
-            
-            print("jmwallets.count: \(jmWallets.count)")
-            guard let pw = Crypto.decrypt(jmWallet.password)?.utf8String else { return }
-            print("pw: \(pw)")
-            
-            
-//            JMUtils.display(wallet: jmWallet) { (detail, message) in
-//
-//            }
-//            JMUtils.fidelityAddress(wallet: jmWallet, date: "2023-01") { (exists, message) in
-//
-//            }
-//            print("jmwallets.count: \(jmWallets.count)")
-//            JMUtils.session { (response, message) in
-//
-//            }
-//            JMUtils.lockWallet(wallet: jmWallet) { (locked, message) in
-//
-//            }
-//            JMUtils.unlockWallet(wallet: jmWallet) { (unlockedWallet, message) in
-//                print("unlockWallet")
-//            }
-//
-//            JMUtils.createWallet { (response, message) in
-//                print("")
-//            }
-        }
-        
+    override func viewDidAppear(_ animated: Bool) {        
         if initialLoad {
             if !firstTimeHere() {
                 displayAlert(viewController: self, isError: true, message: "There was a critical error setting your devices encryption key, please delete and reinstall the app")

@@ -52,6 +52,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private var jmActive = false
     private var makerRunning = false
     private var takerRunning = false
+    private var isDirectSend = false
     var fxRate:Double?
     var isBtc = false
     var isSats = false
@@ -215,6 +216,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                     self.jmActionOutlet.setTitle("start", for: .normal)
                     self.makerRunning = false
                     self.jmActionOutlet.alpha = 1
+                    
                 }
                 
             } else {
@@ -262,6 +264,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                                                     self.jmStatusLabelOutlet.text = "maker stopped"
                                                     self.jmActionOutlet.setTitle("start", for: .normal)
                                                     self.makerRunning = false
+                                                    self.jmActionOutlet.alpha = 1
                                                 }
                                             }
                                         }
@@ -415,11 +418,70 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 return
             }
             
-            DispatchQueue.main.async { [weak self] in
+            self.showFidelityBondOptions(jmWallet)
+        }
+    }
+    
+    private func showFidelityBondOptions(_ wallet: JMWallet) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+
+            let tit = "Fidelity Bond Options"
+            let mess = ""
+
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+
+            alert.addAction(UIAlertAction(title: "Unfreeze fb", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
+                                                
+                self.unfreezeFb(wallet)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Direct send mixdepth 0", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                                                
+                self.directSend(wallet)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func startMakerNow() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.spinner.label.text = "starting maker..."
+            self.startMaker()
+        }
+    }
+    
+    private func directSend(_ wallet: JMWallet) {
+        directSendNow()
+    }
+    
+    private func unfreezeFb(_ wallet: JMWallet) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.spinner.label.text = "unfreezing fb utxo..."
+            
+            JMUtils.unfreezeFb(wallet: wallet) { (response, message) in
+                self.spinner.removeConnectingView()
                 
-                self.spinner.label.text = "starting maker..."
-                self.startMaker()
+                guard let _ = response else {
+                    showAlert(vc: self, title: "There was an issue...", message: message ?? "Unknown issue unfreezing utxo.")
+                    return
+                }
+                
+                guard let message = message else {
+                    showAlert(vc: self, title: "Utxo unfrozen", message: "You should be able to join or earn with your expired fidelity bond funds now.")
+                    return
+                }
+                
+                showAlert(vc: self, title: "Message from JM:", message: message)
             }
         }
     }
@@ -624,6 +686,33 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                     guard let self = self else { return }
                     
                     self.isJmarket = true
+                    self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
+                }
+            }))
+
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func directSendNow() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+
+            let tit = "Direct send?"
+            let mess = "This action will direct send from mixdepth 0. Select a recipient and amount as normal."
+
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                                                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.isJmarket = true
+                    self.isDirectSend = true
                     self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
                 }
             }))
@@ -1632,6 +1721,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             vc.isFidelity = isFidelity
             vc.isJmarket = isJmarket
+            vc.isDirectSend = isDirectSend
             vc.jmWallet = jmWallet
             vc.inputArray = inputArray
             vc.utxoTotal = amountTotal

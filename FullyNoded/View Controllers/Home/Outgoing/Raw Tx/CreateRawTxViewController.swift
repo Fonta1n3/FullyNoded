@@ -10,6 +10,7 @@ import UIKit
 
 class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
     var isJmarket = false
+    var isDirectSend = false
     var jmWallet:JMWallet?
     var isFiat = false
     var isBtc = true
@@ -309,15 +310,15 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             self.addressInput.resignFirstResponder()
         }
         
-        guard let item = addressInput.text else {
+        guard let addressInput = addressInput.text else {
             showAlert(vc: self, title: "", message: "Enter an address or invoice.")
             return
         }
         
-        let lc = item.lowercased()
+        let lc = addressInput.lowercased()
         
         if lc.hasPrefix("lntb") || lc.hasPrefix("lightning:") || lc.hasPrefix("lnbc") || lc.hasPrefix("lnbcrt") {
-            decodeLighnting(invoice: item.lowercased().replacingOccurrences(of: "lightning:", with: ""))
+            decodeLighnting(invoice: addressInput.lowercased().replacingOccurrences(of: "lightning:", with: ""))
         } else {
             
             guard let amount = convertedAmount() else {
@@ -329,7 +330,22 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             switch coinSelectionControl.selectedSegmentIndex {
                 
             case 0:
-                if isJmarket {
+                if isDirectSend {
+                    print("directSend")
+                    guard let jmWallet = jmWallet else { return }
+                    
+                    let sats = Int(Double(amount)! * 100000000.0)
+                    
+                    self.spinner.addConnectingView(vc: self, description: "direct sending with JM...")
+                    
+                    JMUtils.directSend(wallet: jmWallet, address: addressInput, amount: sats) { [weak self] (sendResult, message) in
+                        guard let self = self else { return }
+                        
+                        self.spinner.removeConnectingView()
+                        print("we here: \(sendResult)")
+                    }
+                    
+                } else if isJmarket {
                     guard let jmWallet = jmWallet else { return }
                     
                     let counter = Int.random(in: 3...6)
@@ -339,7 +355,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                                      amount_sats: sats,
                                      mixdepth: jmWallet.account,
                                      counterparties: counter,
-                                     address: item) { [weak self] (response, message) in
+                                     address: addressInput) { [weak self] (response, message) in
                         
                         guard let self = self else { return }
                         
@@ -350,10 +366,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 }
                 
             case 1:
-                self.createBlindNow(amount: amount.doubleValue, recipient: item, strict: false)
+                self.createBlindNow(amount: amount.doubleValue, recipient: addressInput, strict: false)
                 
             case 2:
-                self.createBlindNow(amount: amount.doubleValue, recipient: item, strict: true)
+                self.createBlindNow(amount: amount.doubleValue, recipient: addressInput, strict: true)
                 
             default:
                 break
@@ -452,7 +468,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             }
         }
         
-        if isJmarket {
+        if isJmarket || isDirectSend {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
@@ -461,13 +477,24 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 self.batchOutlet.removeFromSuperview()
                 self.coinSelectionControl.alpha = 0
                 
-                let title = "Join Market Transaction"
-                let mess = "Add a recipient address for your coinjoined funds. To remix select the Join Market wallet as the recipient."
+                if self.isDirectSend {
+                    let title = "Join Market Direct Send"
+                    let mess = "Add a recipient address for your mixdepth 0 funds. To remix select the Join Market wallet as the recipient."
+                    let alert = UIAlertController(title: title, message: mess, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in }))
+                    alert.popoverPresentationController?.sourceView = self.view
+                    self.present(alert, animated: true, completion: nil)
+                    
+                } else if self.isJmarket {
+                    let title = "Join Market Transaction"
+                    let mess = "Add a recipient address for your coinjoined funds. To remix select the Join Market wallet as the recipient."
+                    let alert = UIAlertController(title: title, message: mess, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in }))
+                    alert.popoverPresentationController?.sourceView = self.view
+                    self.present(alert, animated: true, completion: nil)
+                }
                 
-                let alert = UIAlertController(title: title, message: mess, preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in }))
-                alert.popoverPresentationController?.sourceView = self.view
-                self.present(alert, animated: true, completion: nil)
+                
             }
         }
         

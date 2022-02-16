@@ -6479,7 +6479,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Kf1-ld-TGL" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-2252" y="-505.09745127436287"/>
+            <point key="canvasLocation" x="-2390" y="-505"/>
         </scene>
         <!--Confirm Lightning Payment View Controller-->
         <scene sceneID="fKs-py-e7s">
@@ -7643,7 +7643,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="Cd3-qW-ujG"/>
         <segue reference="kws-xU-XdS"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="07E-4w-Zh7"/>
+        <segue reference="2DM-Bo-8hK"/>
         <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="BVG-ie-esh"/>

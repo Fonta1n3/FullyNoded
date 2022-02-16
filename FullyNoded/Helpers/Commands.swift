@@ -186,7 +186,9 @@ public enum JM_REST {
     case configSet(jmWallet: JMWallet)
     case gettimelockaddress(jmWallet: JMWallet, date: String)
     case getSeed(jmWallet: JMWallet)
-    case unfreeze(jmWallet: JMWallet, utxo: Utxo)
+    case unfreeze(jmWallet: JMWallet)
+    case listutxos(jmWallet: JMWallet)
+    case directSend(jmWallet: JMWallet)
     
     var stringValue:String {
         switch self {
@@ -220,8 +222,12 @@ public enum JM_REST {
             return "\(rootUrl)/wallet/\(wallet.name)/address/timelock/new/\(date)"
         case .getSeed(jmWallet: let wallet):
             return "\(rootUrl)/wallet/\(wallet.name)/getseed"
-        case .unfreeze(jmWallet: let wallet, utxo: let _):
+        case .unfreeze(jmWallet: let wallet):
             return "\(rootUrl)/wallet/\(wallet.name)/freeze"
+        case .listutxos(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/utxos"
+        case .directSend(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/taker/direct-send"
         }
     }
 }

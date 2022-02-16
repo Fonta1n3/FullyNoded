@@ -370,7 +370,7 @@ class JMUtils {
         ]
         
 //        var streamTask: URLSessionStreamTask!
-//        let host = "gcmcocwfwryrcawgp5i2wnna3l5laj7lug3zfsrguufxyzvjwhomayid.onion"
+//        let host = "xxx.onion"
 //        let port = 28283
         
 //        guard let decryptedToken = Crypto.decrypt(wallet.token),
@@ -564,6 +564,65 @@ class JMUtils {
                 return }
             
             completion((wallets, nil))
+        }
+    }
+    
+    static func unfreezeFb(wallet: JMWallet, completion: @escaping ((response: [String:Any]?, message: String?)) -> Void) {
+        JMRPC.sharedInstance.command(method: .listutxos(jmWallet: wallet), param: nil) { (response, errorDesc) in
+            guard let response = response as? [String:Any],
+                    !response.isEmpty,
+                    let utxos = response["utxos"] as? [[String:Any]],
+                    !utxos.isEmpty else { return }
+            
+            var fbUtxo:JMUtxo?
+            
+            for (i, utxo) in utxos.enumerated() {
+                let jmUtxo = JMUtxo(utxo)
+                                
+                if jmUtxo.frozen, let locktime = jmUtxo.locktime, locktime < Date() {
+                    fbUtxo = jmUtxo
+                }
+                
+                if i + 1 == utxos.count {
+                    guard let fbUtxo = fbUtxo else {
+                        print("no utxo")
+                        completion((nil, "No frozen expired timelocked utxo."))
+                        return
+                    }
+                    
+                    let param:[String:Any] = [
+                        "utxo-string":fbUtxo.utxoString,
+                        "freeze": false
+                    ]
+                    
+                    JMRPC.sharedInstance.command(method: .unfreeze(jmWallet: wallet), param: param) { (response, errorDesc) in
+                        guard let response = response as? [String:Any] else {
+                            completion((nil, errorDesc))
+                            return
+                        }
+                        
+                        completion((response, errorDesc))
+                    }
+                }
+            }
+        }
+    }
+    
+    static func directSend(wallet: JMWallet, address: String, amount: Int, completion: @escaping ((hex: String?, message: String?)) -> Void) {
+        let param:[String:Any] = [
+            "mixdepth":0,
+            "amount_sats":amount,
+            "destination": address
+        ]
+        
+        JMRPC.sharedInstance.command(method: .directSend(jmWallet: wallet), param: param) { (response, errorDesc) in
+            guard let response = response as? [String:Any] else {
+                completion((nil, errorDesc))
+                return }
+
+            let sendResult = JMTx(response)
+
+            completion((sendResult.hex, nil))
         }
     }
 }

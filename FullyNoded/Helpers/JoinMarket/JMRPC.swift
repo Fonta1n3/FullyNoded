@@ -97,7 +97,8 @@ class JMRPC {
                     .getaddress(jmWallet: let wallet),
                     .makerStop(jmWallet: let wallet),
                     .takerStop(jmWallet: let wallet),
-                    .getSeed(jmWallet: let wallet):
+                    .getSeed(jmWallet: let wallet),
+                    .listutxos(jmWallet: let wallet):
                 httpMethod = "GET"
                 
                 guard let decryptedToken = Crypto.decrypt(wallet.token),
@@ -134,7 +135,10 @@ class JMRPC {
             case .coinjoin(jmWallet: let wallet),
                     .makerStart(jmWallet: let wallet),
                     .configGet(jmWallet: let wallet),
-                    .configSet(jmWallet: let wallet):
+                    .configSet(jmWallet: let wallet),
+                    .unfreeze(jmWallet: let wallet),
+                    .directSend(jmWallet: let wallet):
+                
                 httpMethod = "POST"
                 
                 guard let decryptedToken = Crypto.decrypt(wallet.token),
@@ -145,7 +149,7 @@ class JMRPC {
                 
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
                 
-            case .gettimelockaddress(jmWallet: let wallet, date: let _):
+            case .gettimelockaddress(jmWallet: let wallet, date: _):
                 httpMethod = "GET"
                 
                 guard let decryptedToken = Crypto.decrypt(wallet.token),
@@ -155,28 +159,6 @@ class JMRPC {
                       }
                 
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-                
-            case .unfreeze(jmWallet: let wallet, utxo: let utxo):
-                httpMethod = "POST"
-                
-                guard let decryptedToken = Crypto.decrypt(wallet.token),
-                      let token = decryptedToken.utf8String else {
-                          completion((nil, "Unable to decrypt token."))
-                          return
-                      }
-                
-                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-                
-//                guard let jsonData = try? JSONSerialization.data(withJSONObject: ["utxo-string":utxo.txid + ":" + "\(utxo.vout)", "freeze": false]) else { return }
-//                
-//                #if DEBUG
-//                print("JM param: \(String(describing: param))")
-//                #endif
-//                
-//                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-//                request.setValue("\(jsonData.count)", forHTTPHeaderField: "Content-Length")
-//                request.httpBody = jsonData
-                                               
             }
             
             if let param = param {
