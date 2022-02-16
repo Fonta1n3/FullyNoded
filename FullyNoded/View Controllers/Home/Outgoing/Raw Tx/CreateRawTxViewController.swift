@@ -331,18 +331,25 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 
             case 0:
                 if isDirectSend {
-                    print("directSend")
                     guard let jmWallet = jmWallet else { return }
                     
                     let sats = Int(Double(amount)! * 100000000.0)
                     
                     self.spinner.addConnectingView(vc: self, description: "direct sending with JM...")
                     
-                    JMUtils.directSend(wallet: jmWallet, address: addressInput, amount: sats) { [weak self] (sendResult, message) in
+                    JMUtils.directSend(wallet: jmWallet, address: addressInput, amount: sats) { [weak self] (hex, message) in
                         guard let self = self else { return }
                         
                         self.spinner.removeConnectingView()
-                        print("we here: \(sendResult)")
+                        
+                        guard let hex = hex else {
+                            showAlert(vc: self, title: "No transaction info received...", message: "Message: \(message)")
+                            return
+                        }
+                        
+                        print("hex: \(hex)")
+                        // need to save tx locally here
+                        
                     }
                     
                 } else if isJmarket {

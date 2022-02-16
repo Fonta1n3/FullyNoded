@@ -622,7 +622,7 @@ class JMUtils {
 
             let sendResult = JMTx(response)
 
-            completion((sendResult.hex, nil))
+            completion((sendResult.hex, errorDesc))
         }
     }
 }
