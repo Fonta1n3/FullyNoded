@@ -244,6 +244,7 @@ class JMRPC {
                 }
                 
                 if message == "Invalid credentials." {
+                    // should be able to auto unlock here...
                     message = "Invalid token, you need to restart your jm daemon and try again."
                 }
                 

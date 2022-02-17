@@ -11,6 +11,7 @@ import UIKit
 class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
     var isJmarket = false
     var isDirectSend = false
+    var mixdepth = 0
     var jmWallet:JMWallet?
     var isFiat = false
     var isBtc = true
@@ -337,18 +338,44 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     
                     self.spinner.addConnectingView(vc: self, description: "direct sending with JM...")
                     
-                    JMUtils.directSend(wallet: jmWallet, address: addressInput, amount: sats) { [weak self] (hex, message) in
+                    JMUtils.directSend(wallet: jmWallet, address: addressInput, amount: sats, mixdepth: 0) { [weak self] (jmTx, message) in
                         guard let self = self else { return }
                         
                         self.spinner.removeConnectingView()
                         
-                        guard let hex = hex else {
-                            showAlert(vc: self, title: "No transaction info received...", message: "Message: \(message)")
+                        guard let jmTx = jmTx, let hex = jmTx.hex, let txid = jmTx.txid else {
+                            showAlert(vc: self, title: "No transaction info received...", message: "Message: \(message ?? "unknown")")
                             return
                         }
                         
-                        print("hex: \(hex)")
-                        // need to save tx locally here
+                        FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
+                            guard let self = self else { return }
+                            
+                            var dict:[String:Any] = ["txid": txid,
+                                                     "id": UUID(),
+                                                     "memo": "JM Direct Send",
+                                                     "date": Date(),
+                                                     "label": "JM Direct Send",
+                                                     "fiatCurrency": self.fiatCurrency]
+                            
+                            self.spinner.removeConnectingView()
+                            
+                            guard let originRate = fxRate else {
+                                CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in
+                                    self.rawTxSigned = hex
+                                    self.showRaw(raw: self.rawTxSigned)
+                                }
+                                
+                                return
+                            }
+                            
+                            dict["originFxRate"] = originRate
+                            
+                            CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in
+                                self.rawTxSigned = hex
+                                self.showRaw(raw: self.rawTxSigned)
+                            }
+                        }
                         
                     }
                     
@@ -360,7 +387,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     
                     JMUtils.coinjoin(wallet: jmWallet,
                                      amount_sats: sats,
-                                     mixdepth: jmWallet.account,
+                                     mixdepth: self.mixdepth,
                                      counterparties: counter,
                                      address: addressInput) { [weak self] (response, message) in
                         
@@ -521,7 +548,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         isJmarket = false
         isFidelity = false
     }
-    
+        
     private func promptToWithdrawalFromLightning(_ recipient: String) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -965,7 +992,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
         JMUtils.coinjoin(wallet: jmWallet,
                          amount_sats: 0,
-                         mixdepth: jmWallet.account,
+                         mixdepth: self.mixdepth,
                          counterparties: counter,
                          address: recipient) { [weak self] (response, message) in
 

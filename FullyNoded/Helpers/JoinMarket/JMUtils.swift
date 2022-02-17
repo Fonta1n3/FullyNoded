@@ -553,7 +553,45 @@ class JMUtils {
                 completion((nil, errorDesc ?? "Unknown."))
                 return
             }
-            completion((address, errorDesc))
+            
+            // Need to import the address to FN wallet
+            let fnWallet = wallet.fnWallet
+            
+            CoreDataService.retrieveEntity(entityName: .wallets) { fnWallets in
+                guard let fnWallets = fnWallets, !fnWallets.isEmpty else {
+                    return
+                }
+                
+                let desc = "addr(\(address))"
+                
+                OnchainUtils.getDescriptorInfo(desc) { (descriptorInfo, message) in
+                    guard let descInfo = descriptorInfo else { return }
+                    
+                    let newDesc = descInfo.descriptor
+                    
+                    for existingFnWallet in fnWallets {
+                        let fnWalletStr = Wallet(dictionary: existingFnWallet)
+                        var watching:[String] = []
+                        
+                        if fnWalletStr.watching != nil {
+                            watching = fnWalletStr.watching!
+                        }
+                        
+                        watching.append(newDesc)
+                        
+                        if fnWalletStr.name == fnWallet {
+                            CoreDataService.update(id: fnWalletStr.id, keyToUpdate: "watching", newValue: watching, entity: .wallets) { saved in
+                                // here we can import the address into core
+                                let params = "[{\"desc\": \"\(newDesc)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"JM Fidelity Bond Expiry \(date)\"}]"
+                                
+                                OnchainUtils.importDescriptors(params) { (imported, message) in
+                                    completion((address, errorDesc))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     
@@ -608,9 +646,9 @@ class JMUtils {
         }
     }
     
-    static func directSend(wallet: JMWallet, address: String, amount: Int, completion: @escaping ((hex: String?, message: String?)) -> Void) {
+    static func directSend(wallet: JMWallet, address: String, amount: Int, mixdepth: Int, completion: @escaping ((jmTx: JMTx?, message: String?)) -> Void) {
         let param:[String:Any] = [
-            "mixdepth":0,
+            "mixdepth":mixdepth,
             "amount_sats":amount,
             "destination": address
         ]
@@ -618,11 +656,10 @@ class JMUtils {
         JMRPC.sharedInstance.command(method: .directSend(jmWallet: wallet), param: param) { (response, errorDesc) in
             guard let response = response as? [String:Any] else {
                 completion((nil, errorDesc))
-                return }
-
-            let sendResult = JMTx(response)
-
-            completion((sendResult.hex, errorDesc))
+                return
+            }
+            
+            completion((JMTx(response), errorDesc))
         }
     }
 }

@@ -37,6 +37,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
     private var month = ""
     private var year = "2022"
+    private var mixdepth = 0
     private var amountTotal = 0.0
     private let refresher = UIRefreshControl()
     private var unlockedUtxos = [Utxo]()
@@ -635,38 +636,16 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
                         
             if self.unlockedUtxos.count > 1 {
-                self.warnAboutCoinControl()
+                //self.warnAboutCoinControl()
+                if self.selectedUTXOs.count > 0 {
+                    showAlert(vc: self, title: "Coin control not yet supported for JM.", message: "You need to manually freeze your utxos using the JM wallet tool scripts.")
+                } else {
+                    self.joinNow()
+                }
+                
             } else {
                 self.joinNow()
             }
-        }
-    }
-    
-    private func warnAboutCoinControl() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-
-            let tit = "Join Market"
-            let mess = "Ensure you lock any utxos you do *not* want to be used in the Join market transaction! Currently utxo selection is not supported by Join Market."
-
-            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
-
-            alert.addAction(UIAlertAction(title: "Join now", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                                                
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.isJmarket = true
-                    self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
-                }
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Lock utxos first", style: .default, handler: { _ in }))
-
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true, completion: nil)
         }
     }
     
@@ -675,24 +654,65 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             guard let self = self else { return }
 
             let tit = "Join?"
-            let mess = "This action will create a coinjoin transaction to the address of your choice. Select a recipient and amount as normal. The fees will be determined as per your Join Market config. In order to use coin control you must first lock all utxos you do not want to be used in this transaction."
+            let mess = "This action will create a coinjoin transaction to the address of your choice. Specify which mixdepth (account) you want to join. The default is the first mixdepth that holds a balance.\n\nOn the next screen you can select a recipient and amount as normal. The fees will be determined as per your Join Market config."
 
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
 
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] action in
+            alert.addAction(UIAlertAction(title: "Default mixdepth \(self.jmWallet!.account)", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                                                 
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
                     self.isJmarket = true
+                    self.mixdepth = self.jmWallet!.account
                     self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
                 }
+            }))
+                        
+            alert.addAction(UIAlertAction(title: "Mixdepth 0", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                                                
+                self.joinMixdepthNow(0)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Mixdepth 1", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                                                
+                self.joinMixdepthNow(1)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Mixdepth 2", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                                                
+                self.joinMixdepthNow(2)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Mixdepth 3", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                                                
+                self.joinMixdepthNow(3)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Mixdepth 4", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.joinMixdepthNow(4)
             }))
 
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = self.view
             self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func joinMixdepthNow(_ mixdepth: Int) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.mixdepth = mixdepth
+            self.isJmarket = true
+            self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
         }
     }
     
@@ -1722,6 +1742,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             vc.isFidelity = isFidelity
             vc.isJmarket = isJmarket
             vc.isDirectSend = isDirectSend
+            vc.mixdepth = mixdepth
             vc.jmWallet = jmWallet
             vc.inputArray = inputArray
             vc.utxoTotal = amountTotal
