@@ -26,6 +26,75 @@ enum Keys {
         return key.pubKey.data.hexString
     }
     
+    static func privKey(_ path: String, _ pubkey: String, completion: @escaping ((privKey: Data?, errorMessage: String?)) -> Void) {
+        guard let bip32Path = try? BIP32Path(string: path) else {
+            completion((nil, "Invalid bip32 path."))
+            return
+        }
+        
+        CoreDataService.retrieveEntity(entityName: .signers) { encryptedSigners in
+            guard let encryptedSigners = encryptedSigners, encryptedSigners.count > 0 else {
+                completion((nil, "No signers. This feature only works with hot wallets for now."))
+                return
+            }
+            
+            for (i, encryptedSigner) in encryptedSigners.enumerated() {
+                let encryptedSignerStruct = SignerStruct(dictionary: encryptedSigner)
+                
+                guard let encryptedWords = encryptedSignerStruct.words,
+                        let wordsData = Crypto.decrypt(encryptedWords),
+                        let words = wordsData.utf8String else {
+                    completion((nil, "Unable to decrypt your signer."))
+                    return
+                }
+                
+                var passphrase = ""
+                
+                if let encryptedPassphrase = encryptedSignerStruct.passphrase {
+                    guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
+                            let passphraseString = decryptedPassphrase.utf8String else {
+                        completion((nil, "Unable to decrypt your passphrase."))
+                        return
+                    }
+                    
+                    passphrase = passphraseString
+                }
+                
+                var coinType = "0"
+                
+                if let chain = UserDefaults.standard.object(forKey: "chain") as? String {
+                    if chain != "main" {
+                        coinType = "1"
+                    }
+                }
+                
+                guard let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase) else {
+                    completion((nil, "Unable to derive your signers master key."))
+                    return
+                }
+                
+                guard let hdkey = try? HDKey(base58: masterKey),
+                        let derivedKey = try? hdkey.derive(using: bip32Path) else {
+                    completion((nil, "Unable to derive key from your master key."))
+                    return
+                }
+                
+                if derivedKey.pubKey.data.hex == pubkey {
+                    guard let privKey = derivedKey.privKey?.data else {
+                        completion((nil, "Unable to convert the key to a private key."))
+                        return
+                    }
+                    
+                    completion((privKey, nil))
+                    break
+                    
+                } else if i + 1 == encryptedSigner.count {
+                    completion((nil, "Looks like none of your signers can sign for that utxo. This feature only works with hot wallets for now."))
+                }
+            }
+        }
+    }
+    
     static func validMnemonic(_ words: String) -> Bool {
         guard let _ = try? BIP39Mnemonic(words: words) else { return false }
         
@@ -198,7 +267,6 @@ enum Keys {
     }
     
     static func addressSignable(_ address: String, _ path: BIP32Path, completion: @escaping ((signable: Bool, signer: String?)) -> Void) {
-        print("addressSignable")
         CoreDataService.retrieveEntity(entityName: .signers) { signers in
             guard let signers = signers, signers.count > 0 else { completion((false, nil)); return }
             
@@ -207,18 +275,17 @@ enum Keys {
                 
                 if let encryptedWords = signerStruct.words,
                    let decryptedWords = Crypto.decrypt(encryptedWords),
-                   let words = decryptedWords.utf8 {
+                   let words = decryptedWords.utf8String {
                     
                     var passphrase = ""
                     
                     if let encryptedPassphrase = signerStruct.passphrase {
-                        guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase), let pp = decryptedPassphrase.utf8 else { return }
+                        guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase), let pp = decryptedPassphrase.utf8String else { return }
                         
                         passphrase = pp
                     }
                     
                     guard let a = try? Address(string: address) else {
-                        print("failing address type here")
                         completion((false, nil))
                         return
                     }
@@ -229,6 +296,8 @@ enum Keys {
                         cointype = "1"
                     }
                     
+                    print("path: \(path.description)")
+                    
                     guard let mk = masterKey(words: words, coinType: cointype, passphrase: passphrase),
                           let hdKey = try? HDKey(base58: mk),
                           let childKey = try? hdKey.derive(using: path) else { return }
@@ -238,6 +307,7 @@ enum Keys {
                     let legacy = childKey.address(type: .payToPubKeyHash).description
                     
                     if address == segwit || address == wrappedSegwit || address == legacy {
+                        print("signerStruct.label: \(signerStruct.label)")
                         completion((true, signerStruct.label))
                         break
                     } else {
@@ -264,13 +334,13 @@ enum Keys {
                 
                 if let encryptedWords = signerStruct.words,
                    let decryptedWords = Crypto.decrypt(encryptedWords),
-                   let words = decryptedWords.utf8 {
+                   let words = decryptedWords.utf8String {
                     
                     var passphrase = ""
                     
                     if let encryptedPassphrase = signerStruct.passphrase {
                         guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
-                                let pp = decryptedPassphrase.utf8 else {
+                                let pp = decryptedPassphrase.utf8String else {
                                     completion((false, nil))
                                     return
                                 }

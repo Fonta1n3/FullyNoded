@@ -76,7 +76,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate, ASAuthorizatio
             return
         }
 
-        guard let seconds = timeToDisableOnKeychain.utf8, let time = Double(seconds) else { return }
+        guard let seconds = timeToDisableOnKeychain.utf8String, let time = Double(seconds) else { return }
 
         timeToDisable = time
         secondsRemaining = Int(timeToDisable)
@@ -313,7 +313,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate, ASAuthorizatio
     func checkPassword(password: String) {
         guard let passwordData = KeyChain.getData("UnlockPassword") else { return }
 
-        let retrievedPassword = passwordData.utf8
+        let retrievedPassword = passwordData.utf8String
 
         let hashedPassword = Crypto.sha256hash(password)
 

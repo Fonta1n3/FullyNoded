@@ -567,13 +567,13 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 guard let self = self, let encryptedWords = signer.words, let words = Crypto.decrypt(encryptedWords) else { return }
                             
                 guard let encryptedPassphrase = signer.passphrase else {
-                    self.convertWords(words.utf8 ?? "", "")
+                    self.convertWords(words.utf8String ?? "", "")
                     return
                 }
                 
                 guard let passphrase = Crypto.decrypt(encryptedPassphrase) else { return }
                 
-                self.convertWords(words.utf8 ?? "", passphrase.utf8 ?? "")
+                self.convertWords(words.utf8String ?? "", passphrase.utf8String ?? "")
             }
         default:
             break

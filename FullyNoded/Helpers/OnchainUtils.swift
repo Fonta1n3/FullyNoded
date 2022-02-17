@@ -183,5 +183,17 @@ class OnchainUtils {
             completion((addresses, errorMessage))
         }
     }
+    
+    static func getAddressInfo(address: String, completion: @escaping ((addressInfo: AddressInfo?, message: String?)) -> Void) {
+        let param = "\"\(address)\""
+        Reducer.makeCommand(command: .getaddressinfo, param: param) { (response, errorMessage) in
+            guard let response = response as? [String:Any] else {
+                completion((nil, errorMessage))
+                return
+            }
+            
+            completion((AddressInfo(response), errorMessage))
+        }
+    }
      
 }

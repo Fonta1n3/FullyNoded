@@ -13,6 +13,7 @@ protocol UTXOCellDelegate: AnyObject {
     func didTapToEditLabel(_ utxo: Utxo)
     func didTapToFetchOrigin(_ utxo: Utxo)
     func didTapToMix(_ utxo: Utxo)
+    func didTapDonateChange(_ utxo: Utxo)
 }
 
 class UTXOCell: UITableViewCell {
@@ -22,6 +23,7 @@ class UTXOCell: UITableViewCell {
     private var isLocked: Bool!
     private unowned var delegate: UTXOCellDelegate!
     
+    @IBOutlet private weak var donateChange: UIButton!
     @IBOutlet private weak var lifeHashImageView: UIImageView!
     @IBOutlet private weak var fetchOriginOutlet: UIButton!
     @IBOutlet private weak var capGainLabel: UILabel!
@@ -47,6 +49,7 @@ class UTXOCell: UITableViewCell {
     @IBOutlet private weak var reusedBackground: UIView!
     @IBOutlet private weak var reusedImageView: UIImageView!
     @IBOutlet private weak var mixButtonOutlet: UIButton!
+    @IBOutlet private weak var derivationLabel: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -55,8 +58,8 @@ class UTXOCell: UITableViewCell {
         layer.borderWidth = 0.5
         layer.cornerRadius = 8
         
-        mixButtonOutlet.alpha = 0
-        
+        donateChange.alpha = 0
+                
         roundeBackgroundView.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
         isChangeBackground.clipsToBounds = true
@@ -115,14 +118,24 @@ class UTXOCell: UITableViewCell {
             reusedBackground.alpha = 0
         }
         
-        if utxo.desc != nil {
-            if utxo.desc!.contains("/1/") {
+        if let desc = utxo.desc {
+            if desc.contains("/1/") {
                 isChangeImageView.image = UIImage(systemName: "arrow.2.circlepath")
                 isChangeBackground.backgroundColor = .systemPurple
+                
+                if utxo.isJoinMarket {
+                    donateChange.alpha = 1
+                } else {
+                    donateChange.alpha = 0
+                }
+                
             } else {
                 isChangeImageView.image = UIImage(systemName: "arrow.down.left")
                 isChangeBackground.backgroundColor = .systemBlue
             }
+            let descriptor = Descriptor(desc)
+            derivationLabel.text = descriptor.derivation
+            
         } else {
             isChangeImageView.image = UIImage(systemName: "questionmark")
             isChangeBackground.backgroundColor = .clear
@@ -225,7 +238,13 @@ class UTXOCell: UITableViewCell {
         
         if let lifehash = utxo.lifehash {
             lifeHashImageView.image = lifehash
-        }        
+        }
+        
+        if utxo.isJoinMarket {
+            mixButtonOutlet.alpha = 0
+        } else {
+            mixButtonOutlet.alpha = 1
+        }
     }
     
     func selectedAnimation() {
@@ -278,6 +297,10 @@ class UTXOCell: UITableViewCell {
     
     @IBAction func mixButtonTapped(_ sender: Any) {
         delegate.didTapToMix(utxo)
+    }
+    
+    @IBAction func donateChangeTapped(_ sender: Any) {
+        delegate.didTapDonateChange(utxo)
     }
     
 }

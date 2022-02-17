@@ -167,3 +167,67 @@ public enum LND_REST: String {
         }
     }
 }
+
+let rootUrl = "api/v1"
+
+public enum JM_REST {
+    case walletall
+    case walletcreate
+    case session
+    case lockwallet(jmWallet: JMWallet)
+    case unlockwallet(jmWallet: JMWallet)
+    case walletdisplay(jmWallet: JMWallet)
+    case getaddress(jmWallet: JMWallet)
+    case coinjoin(jmWallet: JMWallet)
+    case makerStart(jmWallet: JMWallet)
+    case makerStop(jmWallet: JMWallet)
+    case takerStop(jmWallet: JMWallet)
+    case configGet(jmWallet: JMWallet)
+    case configSet(jmWallet: JMWallet)
+    case gettimelockaddress(jmWallet: JMWallet, date: String)
+    case getSeed(jmWallet: JMWallet)
+    case unfreeze(jmWallet: JMWallet)
+    case listutxos(jmWallet: JMWallet)
+    case directSend(jmWallet: JMWallet)
+    
+    var stringValue:String {
+        switch self {
+        case .walletall:
+            return "\(rootUrl)/wallet/all"
+        case .session:
+            return "\(rootUrl)/session"
+        case .walletcreate:
+            return "\(rootUrl)/wallet/create"
+        case .lockwallet(let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/lock"
+        case .unlockwallet(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/unlock"
+        case .walletdisplay(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/display"
+        case .getaddress(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/address/new/\(wallet.index)"
+        case .coinjoin(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/taker/coinjoin"
+        case .makerStart(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/maker/start"
+        case .makerStop(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/maker/stop"
+        case .takerStop(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/taker/stop"
+        case .configGet(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/configget"
+        case .configSet(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/configset"
+        case .gettimelockaddress(jmWallet: let wallet, date: let date):
+            return "\(rootUrl)/wallet/\(wallet.name)/address/timelock/new/\(date)"
+        case .getSeed(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/getseed"
+        case .unfreeze(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/freeze"
+        case .listutxos(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/utxos"
+        case .directSend(jmWallet: let wallet):
+            return "\(rootUrl)/wallet/\(wallet.name)/taker/direct-send"
+        }
+    }
+}

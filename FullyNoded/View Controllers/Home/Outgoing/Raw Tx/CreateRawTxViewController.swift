@@ -3,29 +3,16 @@
 //  BitSense
 //
 //  Created by Peter on 09/10/18.
-//  Copyright © 2018 Fontaine. All rights reserved.
+//  Copyright © 2018 Denton LLC. All rights reserved.
 //
 
 import UIKit
 
 class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
-    
-    // MARK: New privacy enhancing tx flow:
-    /// Inittiating the tx
-    /// 1. User toggles on the new shield button on the "send view" before creating a tx
-    ///      - this tells FN not to sign the psbt, and to manually select inputs so that we may run our checks.
-    ///      - rules: only bech32 inputs allowed, minimum 3 consumable utxos, outputs always equal, all either p2wpkh or wsh inputs/outputs
-    ///
-    /// 2. Enters an amount, pastes address, taps create
-    ///
-    /// 3. Either exports the psbt to someone else or signs it and sends it.
-    ///     - If exporting we prompt to export blinded as a file or as ur:bytes
-    
-    /// Receiving a blinded psbt
-    /// 1. The user will either scan an encrypted (blinded) ur:bytes animated psbt or file (keep file format identical to QR as a base64 string rep of ur:bytes)
-    /// 2. FN decrypts the blinded psbt and check to make sure it follows the rules:
-    ///     - inputs are divisible by 3, identical output amounts, all either p2wpkh or wsh inputs/outputs
-    
+    var isJmarket = false
+    var isDirectSend = false
+    var mixdepth = 0
+    var jmWallet:JMWallet?
     var isFiat = false
     var isBtc = true
     var isSats = false
@@ -46,7 +33,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var invoice:[String:Any]?
     var invoiceString = ""
     let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+    var isFidelity = false
     
+    @IBOutlet weak private var batchOutlet: UIButton!
+    @IBOutlet weak private var lightningWithdrawOutlet: UIButton!
     @IBOutlet weak private var miningTargetLabel: UILabel!
     @IBOutlet weak private var satPerByteLabel: UILabel!
     @IBOutlet weak private var sweepButton: UIStackView!
@@ -172,7 +162,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         slider.addTarget(self, action: #selector(didFinishSliding(_:)), for: .valueChanged)
         
         amountInput.text = ""
-        addAddress(address)
+        if address != "" {
+            addAddress(address)
+        }
     }
     
     @IBAction func sendToWalletAction(_ sender: Any) {
@@ -319,15 +311,15 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             self.addressInput.resignFirstResponder()
         }
         
-        guard let item = addressInput.text else {
+        guard let addressInput = addressInput.text else {
             showAlert(vc: self, title: "", message: "Enter an address or invoice.")
             return
         }
         
-        let lc = item.lowercased()
+        let lc = addressInput.lowercased()
         
         if lc.hasPrefix("lntb") || lc.hasPrefix("lightning:") || lc.hasPrefix("lnbc") || lc.hasPrefix("lnbcrt") {
-            decodeLighnting(invoice: item.lowercased().replacingOccurrences(of: "lightning:", with: ""))
+            decodeLighnting(invoice: addressInput.lowercased().replacingOccurrences(of: "lightning:", with: ""))
         } else {
             
             guard let amount = convertedAmount() else {
@@ -337,12 +329,82 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             }
             
             switch coinSelectionControl.selectedSegmentIndex {
+                
             case 0:
-                tryRaw()
+                if isDirectSend {
+                    guard let jmWallet = jmWallet else { return }
+                    
+                    let sats = Int(Double(amount)! * 100000000.0)
+                    
+                    self.spinner.addConnectingView(vc: self, description: "direct sending with JM...")
+                    
+                    JMUtils.directSend(wallet: jmWallet, address: addressInput, amount: sats, mixdepth: 0) { [weak self] (jmTx, message) in
+                        guard let self = self else { return }
+                        
+                        self.spinner.removeConnectingView()
+                        
+                        guard let jmTx = jmTx, let hex = jmTx.hex, let txid = jmTx.txid else {
+                            showAlert(vc: self, title: "No transaction info received...", message: "Message: \(message ?? "unknown")")
+                            return
+                        }
+                        
+                        FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
+                            guard let self = self else { return }
+                            
+                            var dict:[String:Any] = ["txid": txid,
+                                                     "id": UUID(),
+                                                     "memo": "JM Direct Send",
+                                                     "date": Date(),
+                                                     "label": "JM Direct Send",
+                                                     "fiatCurrency": self.fiatCurrency]
+                            
+                            self.spinner.removeConnectingView()
+                            
+                            guard let originRate = fxRate else {
+                                CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in
+                                    self.rawTxSigned = hex
+                                    self.showRaw(raw: self.rawTxSigned)
+                                }
+                                
+                                return
+                            }
+                            
+                            dict["originFxRate"] = originRate
+                            
+                            CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in
+                                self.rawTxSigned = hex
+                                self.showRaw(raw: self.rawTxSigned)
+                            }
+                        }
+                        
+                    }
+                    
+                } else if isJmarket {
+                    guard let jmWallet = jmWallet else { return }
+                    
+                    let counter = Int.random(in: 3...6)
+                    let sats = Int(Double(amount)! * 100000000.0)
+                    
+                    JMUtils.coinjoin(wallet: jmWallet,
+                                     amount_sats: sats,
+                                     mixdepth: self.mixdepth,
+                                     counterparties: counter,
+                                     address: addressInput) { [weak self] (response, message) in
+                        
+                        guard let self = self else { return }
+                        
+                        self.handleJMResponse(response, message)
+                    }
+                } else {
+                    tryRaw()
+                }
+                
             case 1:
-                self.createBlindNow(amount: amount.doubleValue, recipient: item, strict: false)
+                self.createBlindNow(amount: amount.doubleValue, recipient: addressInput, strict: false)
+                
             case 2:
-                self.createBlindNow(amount: amount.doubleValue, recipient: item, strict: true)
+                self.createBlindNow(amount: amount.doubleValue, recipient: addressInput, strict: true)
+                
             default:
                 break
             }
@@ -435,7 +497,43 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     override func viewDidAppear(_ animated: Bool) {
         if inputArray.count > 0 {
-            showAlert(vc: self, title: "Coin control ✓", message: "Only the utxo's you have just selected will be used in this transaction. You may send the total balance of the *selected utxo's* by tapping the \"⚠️ send all\" button or enter a custom amount as normal.")
+            if !isJmarket && !isFidelity {
+                showAlert(vc: self, title: "Coin control ✓", message: "Only the utxo's you have just selected will be used in this transaction. You may send the total balance of the *selected utxo's* by tapping the \"⚠️ send all\" button or enter a custom amount as normal.")
+            }
+        }
+        
+        if isJmarket || isDirectSend {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.sliderViewBackground.alpha = 0
+                self.lightningWithdrawOutlet.alpha = 0
+                self.batchOutlet.removeFromSuperview()
+                self.coinSelectionControl.alpha = 0
+                
+                if self.isDirectSend {
+                    let title = "Join Market Direct Send"
+                    let mess = "Add a recipient address for your mixdepth 0 funds. To remix select the Join Market wallet as the recipient."
+                    let alert = UIAlertController(title: title, message: mess, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in }))
+                    alert.popoverPresentationController?.sourceView = self.view
+                    self.present(alert, animated: true, completion: nil)
+                    
+                } else if self.isJmarket {
+                    let title = "Join Market Transaction"
+                    let mess = "Add a recipient address for your coinjoined funds. To remix select the Join Market wallet as the recipient."
+                    let alert = UIAlertController(title: title, message: mess, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in }))
+                    alert.popoverPresentationController?.sourceView = self.view
+                    self.present(alert, animated: true, completion: nil)
+                }
+                
+                
+            }
+        }
+        
+        if isFidelity {
+            showAlert(vc: self, title: "Fidelity Bond", message: "⚠️ This is a timelocked address.\n\nFor best privacy practices it is recommended to use the \"Send all\" button to sweep the selected utxo(s) when creating a fidelity bond.")
         }
     }
     
@@ -447,8 +545,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         outputArray.removeAll()
         inputArray.removeAll()
         inputsString = ""
+        isJmarket = false
+        isFidelity = false
     }
-    
+        
     private func promptToWithdrawalFromLightning(_ recipient: String) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -845,7 +945,15 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func sweepSelectedUtxos(_ receivingAddress: String) {
-        
+        if isJmarket {
+            //sweepToMix(receivingAddress)
+            showAlert(vc: self, title: "Join Market does not support utxo selection...", message: "You really shouldn't even see this error.")
+        } else {
+            standardSweep(receivingAddress)
+        }
+    }
+    
+    private func standardSweep(_ receivingAddress: String) {
         var param = ""
         
         if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
@@ -877,7 +985,78 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
+    private func sweepToMix(_ recipient: String) {
+        guard let jmWallet = jmWallet else { return }
+        
+        let counter = Int.random(in: 4...6)
+        
+        JMUtils.coinjoin(wallet: jmWallet,
+                         amount_sats: 0,
+                         mixdepth: self.mixdepth,
+                         counterparties: counter,
+                         address: recipient) { [weak self] (response, message) in
+
+            guard let self = self else { return }
+
+            self.handleJMResponse(response, message)
+        }
+    }
+    
+    private func handleJMResponse(_ response: [String:Any]?, _ message: String?) {
+        self.spinner.removeConnectingView()
+
+        var tit = ""
+        var mess = ""
+
+        if message == "Service already started." {
+            tit = "JM Service already running."
+            mess = "You need to quit the current service or restart the jmwalletd.py script."
+        }
+
+        if let response = response {
+            if response.isEmpty {
+                tit = "JM Transaction initiated ✓"
+                mess = "You can monitor its status by refreshing the transaction history. JM transactions may fail at which point you can try again by tapping the join button on the utxo."
+            } else {
+                tit = "JM response"
+                mess = "\(response)"
+            }
+            
+        } else if let message = message, message != "" {
+            tit = "JM message:"
+            mess = message
+
+        } else {
+            tit = "No response.."
+            mess = "Usually after a succesful taker order JM replies with an empty response, this time we got nothing at all."
+        }
+        
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+
+                    self.navigationController?.popToRootViewController(animated: true)
+                }
+            }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
     private func sweepWallet(_ receivingAddress: String) {
+        if isJmarket {
+            sweepToMix(receivingAddress)
+        } else {
+            standardWalletSweep(receivingAddress)
+        }
+    }
+    
+    private func standardWalletSweep(_ receivingAddress: String) {
         OnchainUtils.listUnspent(param: "0") { [weak self] (utxos, message) in
             guard let self = self else { return }
             
@@ -901,7 +1080,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 
                 guard utxo.confs! > 0 else {
                     self.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "Ooops", message: "You have unconfirmed utxo's, wait till they get a confirmation before trying to sweep them.")
+                    showAlert(vc: self, title: "", message: "You have unconfirmed utxo's, wait till they get a confirmation before trying to sweep them.")
                     return
                 }
                 
@@ -963,10 +1142,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func sweep() {
-        guard let receivingAddress = addressInput.text, receivingAddress != "" else {
-            showAlert(vc: self, title: "Add an address first", message: "")
-            return
-        }
+        guard let receivingAddress = addressInput.text,
+              receivingAddress != "" else {
+                  showAlert(vc: self, title: "Add an address first", message: "")
+                  return
+              }
         
         if inputArray.count > 0 {
             spinner.addConnectingView(vc: self, description: "sweeping selected utxo's...")

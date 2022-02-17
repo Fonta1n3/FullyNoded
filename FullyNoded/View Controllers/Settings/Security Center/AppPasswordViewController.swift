@@ -72,7 +72,7 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
         guard let text = textField.text, text != "", let existingHash = exisitingPassword() else { return }
                 
         /// Include to guarantee backwards compatibility
-        if text == existingHash.utf8 {
+        if text == existingHash.utf8String {
             updateViewToAddNewPassword()
             
         } else {
