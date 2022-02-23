@@ -842,9 +842,9 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         }
     }
     
-    private func prompToChoosePrimaryDesc(descriptors: [String]) {
+    private func prompToChoosePrimaryDesc(descriptors: [String], jmDescriptors: [String]) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Choose an address format.", message: "", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Choose a wallet format.", message: "", preferredStyle: .alert)
             
             for (i, descriptor) in descriptors.enumerated() {
                 let descStr = Descriptor(descriptor)
@@ -856,9 +856,60 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 }))
             }
             
+            alert.addAction(UIAlertAction(title: "Join Market", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.recoverJm(jmDescriptors: jmDescriptors)
+            }))
+            
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = vc.view
             vc.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func recoverJm(jmDescriptors: [String]) {
+        spinner.addConnectingView(vc: self, description: "creating jm wallet...")
+        
+        let blockheight = UserDefaults.standard.object(forKey: "blockheight") as? Int ?? 0
+        
+        let accountMap:[String:Any] = [
+            "descriptor":jmDescriptors[0],
+            "blockheight": blockheight,
+            "watching":Array(jmDescriptors[2...jmDescriptors.count - 1]),
+            "label":"Join Market"
+        ]
+        
+        print("account map: \(accountMap)")
+                                    
+        ImportWallet.accountMap(accountMap) { [weak self] (success, errorDescription) in
+            guard let self = self else { return }
+
+            guard success else {
+                showAlert(vc: self, title: "There was an issue creating your wallet...", message: errorDescription ?? "Unknown...")
+                return
+            }
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+
+                let tit = "JM wallet created ✓"
+
+                let mess = "A rescan was triggered, you may not see transactions or balances until the rescan completes."
+
+                let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+
+                alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { action in
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+
+                        self.tabBarController?.selectedIndex = 1
+                    }
+                }))
+
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+                self.present(alert, animated: true, completion: nil)
+            }
         }
     }
     
@@ -934,7 +985,33 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             return
         }
         
-        prompToChoosePrimaryDesc(descriptors: descriptors)
+        var passphrase = ""
+        
+        if let encryptedPassphrase = signer.passphrase {
+            guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) else {
+                showAlert(vc: self, title: "There was an issue decrypting your passphrase...", message: message ?? "Unknown")
+                return
+            }
+            
+            passphrase = decryptedPassphrase.utf8String ?? ""
+        }
+        
+        guard let mk = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase),
+              let xfp = Keys.fingerprint(masterKey: mk) else {
+                  showAlert(vc: self, title: "There was an issue deriving your master key", message: message ?? "Unknown")
+                  return
+              }
+        
+        JoinMarket.descriptors(mk, xfp) { [weak self] jmDescriptors in
+            guard let self = self else { return }
+            
+            guard let jmDescriptors = jmDescriptors else {
+                showAlert(vc: self, title: "There was an issue deriving your jm descriptors...", message: message ?? "Unknown")
+                return
+            }
+            
+            self.prompToChoosePrimaryDesc(descriptors: descriptors, jmDescriptors: jmDescriptors)
+        }
     }
     
     @objc func exportQr(_ sender: UIButton) {

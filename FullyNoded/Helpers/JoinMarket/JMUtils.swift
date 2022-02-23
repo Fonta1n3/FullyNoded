@@ -9,6 +9,7 @@
 import Foundation
 
 class JMUtils {
+    
     static func createWallet(completion: @escaping ((response: JMWallet?, message: String?)) -> Void) {
         // First check that connection works...
         let arr = Array(randomString(length: 20))
@@ -71,15 +72,15 @@ class JMUtils {
                       }
                 
                 JoinMarket.descriptors(mk, xfp) { descriptors in
-                    guard var descriptors = descriptors else {
+                    guard let descriptors = descriptors else {
                         completion((nil, "Error creating your jm descriptors."))
                         return
                     }
-                    
+                                        
                     let accountMap:[String:Any] = [
-                        "descriptor":descriptors.removeFirst(),
+                        "descriptor":descriptors[0],
                         "blockheight": blockheight,
-                        "watching":descriptors,
+                        "watching":Array(descriptors[2...descriptors.count - 1]),
                         "label":"Join Market"
                     ]
                                         
