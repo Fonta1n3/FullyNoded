@@ -343,15 +343,20 @@ class JMUtils {
     }
     
     static func getAddress(wallet: JMWallet, completion: @escaping ((address: String?, message: String?)) -> Void) {
-        JMUtils.syncIndexes(wallet: wallet) { message in
-            JMRPC.sharedInstance.command(method: .getaddress(jmWallet: wallet), param: nil) { (response, errorDesc) in
-                guard let response = response as? [String:Any],
-                let address = response["address"] as? String else {
-                    completion((nil, errorDesc ?? "unknown"))
-                    return
+        JMUtils.unlockWallet(wallet: wallet) { (unlockedWallet, message) in
+            var updatedWallet = wallet
+            guard let encryptedToken = Crypto.encrypt(unlockedWallet!.token.utf8) else { return }
+            updatedWallet.token = encryptedToken
+            JMUtils.syncIndexes(wallet: updatedWallet) { message in
+                JMRPC.sharedInstance.command(method: .getaddress(jmWallet: updatedWallet), param: nil) { (response, errorDesc) in
+                    guard let response = response as? [String:Any],
+                    let address = response["address"] as? String else {
+                        completion((nil, errorDesc ?? "unknown"))
+                        return
+                    }
+
+                    completion((address, "message"))
                 }
-                
-                completion((address, message))
             }
         }
     }

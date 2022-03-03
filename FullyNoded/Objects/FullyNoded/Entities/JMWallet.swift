@@ -13,7 +13,7 @@ public struct JMWallet: CustomStringConvertible {
     let name:String
     let password:Data
     let words:Data
-    let token:Data
+    var token:Data
     let index:Int
     let account:Int
     let fnWallet:String
