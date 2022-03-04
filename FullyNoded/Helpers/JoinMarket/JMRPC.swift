@@ -117,7 +117,7 @@ class JMRPC {
                           completion((nil, "Unable to decrypt password."))
                           return
                       }
-                
+                                
                 guard let jsonData = try? JSONSerialization.data(withJSONObject: ["password":password]) else { return }
                 
                 #if DEBUG

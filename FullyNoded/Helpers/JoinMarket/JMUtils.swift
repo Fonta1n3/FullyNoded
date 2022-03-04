@@ -9,6 +9,7 @@
 import Foundation
 
 class JMUtils {
+    
     static func createWallet(completion: @escaping ((response: JMWallet?, message: String?)) -> Void) {
         // First check that connection works...
         let arr = Array(randomString(length: 20))
@@ -71,15 +72,15 @@ class JMUtils {
                       }
                 
                 JoinMarket.descriptors(mk, xfp) { descriptors in
-                    guard var descriptors = descriptors else {
+                    guard let descriptors = descriptors else {
                         completion((nil, "Error creating your jm descriptors."))
                         return
                     }
-                    
+                                        
                     let accountMap:[String:Any] = [
-                        "descriptor":descriptors.removeFirst(),
+                        "descriptor":descriptors[0],
                         "blockheight": blockheight,
-                        "watching":descriptors,
+                        "watching":Array(descriptors[2...descriptors.count - 1]),
                         "label":"Join Market"
                     ]
                                         
@@ -184,11 +185,15 @@ class JMUtils {
             
             // check if it can be used with the current FN wallet?
             activeWallet { activeWallet in
-                guard let activeWallet = activeWallet,
-                      let watching = activeWallet.watching,
-                      watching.count == 9 else {
-                          return
-                      }
+                guard let activeWallet = activeWallet else {
+                    completion((false, "No active wallet."))
+                    return
+                }
+                
+                guard let watching = activeWallet.watching, watching.count == 9 else {
+                    recoverLocally(signer: words, walletDict: updatedWallet, completion: completion)
+                    return
+                }
                 
                 JMUtils.display(wallet: wallet) { (detail, message) in
                     guard let detail = detail else { return }
@@ -205,7 +210,8 @@ class JMUtils {
                         }
                         
                         guard addressInfo.ismine else {
-                            completion((false, "The wallet you are attempting to recover does not match the existing Fully Noded wallet. Try and switch to the correct FN wallet, unlock the correct JM wallet or create a new JM wallet instead of recovering one."))
+                            // RECOVER AS THE ACTIVE WALLET IS NOT THIS JM WALLET
+                            recoverLocally(signer: words, walletDict: updatedWallet, completion: completion)
                             return
                         }
                         
@@ -239,8 +245,81 @@ class JMUtils {
         }
     }
     
+    static func recoverLocally(signer: String, walletDict: [String:Any], completion: @escaping ((saved: Bool, message: String?)) -> Void) {
+        var cointType = "0"
+        let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+        if chain != "main" {
+            cointType = "1"
+        }
+        
+        let blockheight = UserDefaults.standard.object(forKey: "blockheight") as? Int ?? 0
+        
+        guard let mk = Keys.masterKey(words: signer, coinType: cointType, passphrase: ""),
+              let xfp = Keys.fingerprint(masterKey: mk) else {
+                  completion((false, "Error deriving master key."))
+                  return
+              }
+        
+        JoinMarket.descriptors(mk, xfp) { descriptors in
+            guard let descriptors = descriptors else {
+                completion((false, "Error creating your jm descriptors."))
+                return
+            }
+                                
+            let accountMap:[String:Any] = [
+                "descriptor":descriptors[0],
+                "blockheight": blockheight,
+                "watching":Array(descriptors[2...descriptors.count - 1]),
+                "label":"Join Market"
+            ]
+                                            
+            ImportWallet.accountMap(accountMap) { (success, errorDescription) in
+                guard success else {
+                    completion((false, errorDescription ?? "Unknown."))
+                    return
+                }
+                
+                activeWallet(completion: { activeWallet in
+                    guard let activeWallet = activeWallet else {
+                        return
+                    }
+                    
+                    var updatedJmWallet:[String:Any] = walletDict
+                    
+                    updatedJmWallet["fnWallet"] = activeWallet.name
+                    
+                    CoreDataService.saveEntity(dict: updatedJmWallet, entityName: .jmWallets) { saved in
+                        guard saved else {
+                            completion((false, "Error saving jm wallet."))
+                            return
+                        }
+                        
+                        guard let encryptedSigner = Crypto.encrypt(signer.utf8) else {
+                            completion((false, "Unable to encrypt the signer."))
+                            return
+                        }
+                        
+                        let dict:[String:Any] = ["id":UUID(), "words":encryptedSigner, "added":Date(), "label":"JM signer"]
+                        
+                        CoreDataService.saveEntity(dict: dict, entityName: .signers) { success in
+                            guard success else {
+                                completion((false, "Unable to save the encrypted signer."))
+                                return
+                            }
+                            
+                            completion((true, nil))
+                        }
+                    }
+                })
+            }
+        }
+    }
+    
     static func recoverWallet(walletName: String, password: String, completion: @escaping ((recovered: Bool, message: String?)) -> Void) {
-        guard let encryptedPassword = Crypto.encrypt(password.utf8) else { return }
+        guard let encryptedPassword = Crypto.encrypt(password.utf8) else {
+            completion((false, "unable to encrypt jm wallet password."))
+            return
+        }
         
         var walletToUnlock:[String:Any] = [
             "password": encryptedPassword,
@@ -278,7 +357,6 @@ class JMUtils {
                 }
                 
                 completion((jmWalletSaved, nil))
-                
             }
         }
     }
@@ -342,15 +420,20 @@ class JMUtils {
     }
     
     static func getAddress(wallet: JMWallet, completion: @escaping ((address: String?, message: String?)) -> Void) {
-        JMUtils.syncIndexes(wallet: wallet) { message in
-            JMRPC.sharedInstance.command(method: .getaddress(jmWallet: wallet), param: nil) { (response, errorDesc) in
-                guard let response = response as? [String:Any],
-                let address = response["address"] as? String else {
-                    completion((nil, errorDesc ?? "unknown"))
-                    return
+        JMUtils.unlockWallet(wallet: wallet) { (unlockedWallet, message) in
+            var updatedWallet = wallet
+            guard let encryptedToken = Crypto.encrypt(unlockedWallet!.token.utf8) else { return }
+            updatedWallet.token = encryptedToken
+            JMUtils.syncIndexes(wallet: updatedWallet) { message in
+                JMRPC.sharedInstance.command(method: .getaddress(jmWallet: updatedWallet), param: nil) { (response, errorDesc) in
+                    guard let response = response as? [String:Any],
+                    let address = response["address"] as? String else {
+                        completion((nil, errorDesc ?? "unknown"))
+                        return
+                    }
+
+                    completion((address, "message"))
                 }
-                
-                completion((address, message))
             }
         }
     }

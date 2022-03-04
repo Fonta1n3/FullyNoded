@@ -91,7 +91,7 @@ class MainMenuViewController: UIViewController {
         progressView.setNeedsFocusUpdate()
     }
     
-    override func viewDidAppear(_ animated: Bool) {        
+    override func viewDidAppear(_ animated: Bool) {
         if initialLoad {
             if !firstTimeHere() {
                 displayAlert(viewController: self, isError: true, message: "There was a critical error setting your devices encryption key, please delete and reinstall the app")
