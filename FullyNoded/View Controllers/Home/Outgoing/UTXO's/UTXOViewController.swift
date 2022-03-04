@@ -1347,47 +1347,32 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-//    private func promptToCreateOrRecoverJmWallet(_ utxo: Utxo) {
-//        // first get the list of JM wallets from the server
-//        spinner.addConnectingView(vc: self, description: "checking for existing JM wallets...")
-//
-//        JMUtils.wallets { [weak self] (wallets, message) in
-//            guard let self = self else { return }
-//
-//            self.spinner.removeConnectingView()
-//
-//            guard let serverWallets = wallets, !serverWallets.isEmpty else {
-//                // we know we need to create a new one
-//                self.promptToCreateJmWallet(utxo)
-//                return
-//            }
-//
-//            DispatchQueue.main.async { [weak self] in
-//                guard let self = self else { return }
-//
-//                let tit = "Would you like to use an existing JM wallet or create a new one?"
-//                let mess = ""
-//
-//                let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
-//
-//                alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { [weak self] action in
-//                    guard let self = self else { return }
-//
-//                    self.createJMWalletNow(utxo)
-//                }))
-//
-//                alert.addAction(UIAlertAction(title: "Use existing JM wallet", style: .default, handler: { [weak self] action in
-//                    guard let self = self else { return }
-//
-//                    self.useExistingJMWallet(utxo, serverWallets)
-//                }))
-//
-//                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-//                alert.popoverPresentationController?.sourceView = self.view
-//                self.present(alert, animated: true, completion: nil)
-//            }
-//        }
-//    }
+    private func promptToCreateOrRecoverJmWallet(_ utxo: Utxo, _ serverWallets: [String]) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let tit = "Would you like to use an existing JM wallet or create a new one?"
+            let mess = ""
+            
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.createJMWalletNow(utxo)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Use existing JM wallet", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.useExistingJMWallet(utxo, serverWallets)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
     
     private func useExistingJMWallet(_ utxo: Utxo, _ serverWallets: [String]) {
         DispatchQueue.main.async { [weak self] in
@@ -1416,12 +1401,12 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let title = "Enter the wallet password to unlock it."
+            let title = "Enter the wallet password to recover it."
             let message = "This is not your passphrase or seed words, this is the Join Market specific password that is used to lock and unlock the wallet."
             let style = UIAlertController.Style.alert
             let alert = UIAlertController(title: title, message: message, preferredStyle: style)
             
-            let unlock = UIAlertAction(title: "Unlock", style: .default) { [weak self] (alertAction) in
+            let unlock = UIAlertAction(title: "Recover", style: .default) { [weak self] (alertAction) in
                 guard let self = self else { return }
                 
                 guard let textFields = alert.textFields, let password = textFields[0].text else {
@@ -1429,7 +1414,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                     return
                 }
                 
-                self.spinner.addConnectingView(vc: self, description: "unlocking wallet")
+                self.spinner.addConnectingView(vc: self, description: "recovering wallet...")
                 
                 JMUtils.recoverWallet(walletName: walletName, password: password) { [weak self] (saved, message) in
                     guard let self = self else { return }
@@ -1450,6 +1435,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             alert.addTextField { textField in
                 textField.placeholder = "password"
                 textField.keyboardAppearance = .dark
+                textField.isSecureTextEntry = true
             }
             
             alert.addAction(unlock)
@@ -1707,7 +1693,11 @@ extension UTXOViewController: UTXOCellDelegate {
                 }
                 
                 JMUtils.wallets { (serverWallets, message) in
-                    guard let serverWallets = serverWallets else { return }
+                    guard let serverWallets = serverWallets else {
+                        self.spinner.removeConnectingView()
+                        showAlert(vc: self, title: "There was an issue connecting to your Join Market server.", message: message ?? "Unknown issue.")
+                        return
+                    }
                     
                     var existsOnServer = false
                     
@@ -1722,10 +1712,16 @@ extension UTXOViewController: UTXOCellDelegate {
                             }
                         }
                         
-                        if i + 1 == jmWallets.count && existsOnServer {
-                            self.promptToDepositToWallet(utxo, serverWallets)
-                        } else if i + 1 == jmWallets.count {
-                            self.promptToCreateJmWallet(utxo)
+                        if i + 1 == jmWallets.count {
+                            if !serverWallets.isEmpty {
+                                if !existsOnServer {
+                                    self.promptToCreateOrRecoverJmWallet(utxo, serverWallets)
+                                } else {
+                                    self.promptToDepositToWallet(utxo, serverWallets)
+                                }
+                            } else {
+                                self.promptToCreateJmWallet(utxo)
+                            }
                         }
                     }
                 }
