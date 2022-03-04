@@ -357,8 +357,9 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
                         
-                        self.navigationController?.popViewController(animated: true)
+                        //self.navigationController?.popViewController(animated: true)
                         NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+                        self.tabBarController?.selectedIndex = 0
                     }
                 } else {
                     self?.reloadTable()

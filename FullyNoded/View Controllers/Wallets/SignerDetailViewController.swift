@@ -880,8 +880,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             "label":"Join Market"
         ]
         
-        print("account map: \(accountMap)")
-                                    
         ImportWallet.accountMap(accountMap) { [weak self] (success, errorDescription) in
             guard let self = self else { return }
 
