@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Dispatch
 
 class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
@@ -153,57 +154,27 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
             
             self.jmActive = true
-            
             self.makerRunning = false
                             
             if status.coinjoin_in_process {
-                self.jmStatusLabelOutlet.text = "taker running"
-                self.jmActionOutlet.setTitle("stop", for: .normal)
-                self.jmActionOutlet.alpha = 1
-                self.jmActionOutlet.isEnabled = true
-                self.takerRunning = true
-                self.jmMixOutlet.tintColor = .clear
-                self.jmEarnOutlet.tintColor = .clear
-                self.jmMixOutlet.isEnabled = false
-                self.jmEarnOutlet.isEnabled = false
+                self.setTakerRunningUi()
                 
             } else if status.maker_running {
-                self.jmStatusLabelOutlet.text = "maker running"
-                self.jmActionOutlet.alpha = 1
-                self.makerRunning = true
-                self.jmMixOutlet.tintColor = .clear
-                self.jmEarnOutlet.tintColor = .clear
-                self.jmMixOutlet.isEnabled = false
-                self.jmEarnOutlet.isEnabled = false
+                self.setMakerRunningUi()
                 
             } else if status.session {
-                DispatchQueue.main.async {
-                    self.jmMixOutlet.tintColor = .systemTeal
-                    self.jmEarnOutlet.tintColor = .systemTeal
-                    self.jmMixOutlet.isEnabled = true
-                    self.jmEarnOutlet.isEnabled = true
-                    self.jmStatusImageOutlet.tintColor = .systemRed
-                    self.jmStatusLabelOutlet.text = "maker stopped"
-                    self.jmActionOutlet.setTitle("start", for: .normal)
-                    self.makerRunning = false
-                    self.jmActionOutlet.alpha = 1
-                    
-                }
+                self.setMakerStoppedUi()
                 
             } else {
-                self.jmActive = false
-                self.jmStatusLabelOutlet.text = "join market connected"
-                self.jmEarnOutlet.tintColor = .clear
-                self.jmMixOutlet.isEnabled = false
-                self.jmMixOutlet.tintColor = .clear
-                self.jmEarnOutlet.isEnabled = false
-                
-                var existsOnServer = false
+                self.setJmConnectedUi()
                 
                 JMUtils.wallets { (wallets, message) in
-                    guard let wallets = wallets else {
+                    guard let wallets = wallets, wallets.count > 0 else {
+                        self.addUtxoMixButton()
                         return
                     }
+                    
+                    var existsOnServer = false
                     
                     for (i, wallet) in wallets.enumerated() {
                         if wallet == jmWallet.name {
@@ -214,7 +185,12 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                             if existsOnServer {
                                 JMUtils.unlockWallet(wallet: jmWallet) { (unlockedWallet, message) in
                                     guard let _ = unlockedWallet else {
-                                        showAlert(vc: self, title: "Unable to unlock JM wallet...", message: message ?? "Unknown.")
+                                        if let message = message, message.contains("Wallet cannot be created/opened, it is locked") {
+                                            showAlert(vc: self, title: "Unable to unlock JM wallet.", message: "Deleting .joinmarket/wallets/.\(jmWallet.name).lock file in  on your JM server will fix this.")
+                                        } else {
+                                            showAlert(vc: self, title: "Unable to unlock JM wallet...", message: message ?? "Unknown.")
+                                        }
+                                        
                                         return
                                     }
                                     
@@ -225,48 +201,98 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                                             let jmwalletstr = JMWallet(jmwallet)
                                             if jmwalletstr.name == jmWallet.name {
                                                 self.jmWallet = jmwalletstr
-                                                
-                                                DispatchQueue.main.async {
-                                                    self.jmMixOutlet.tintColor = .systemTeal
-                                                    self.jmEarnOutlet.tintColor = .systemTeal
-                                                    self.jmMixOutlet.isEnabled = true
-                                                    self.jmEarnOutlet.isEnabled = true
-                                                    self.jmStatusImageOutlet.tintColor = .systemRed
-                                                    self.jmStatusLabelOutlet.text = "maker stopped"
-                                                    self.jmActionOutlet.setTitle("start", for: .normal)
-                                                    self.makerRunning = false
-                                                    self.jmActionOutlet.alpha = 1
-                                                }
+                                                self.setMakerStoppedUi()
                                             }
                                         }
                                     }
                                 }
                             } else {
-                                // show mix buttons on utxos to prompt jm wallet creation
-                                self.jmMixOutlet.tintColor = .clear
-                                self.jmEarnOutlet.tintColor = .clear
-                                self.jmMixOutlet.isEnabled = false
-                                self.jmEarnOutlet.isEnabled = false
-                                self.jmStatusLabelOutlet.text = ""
-                                self.jmActionOutlet.alpha = 0
-                                self.jmActionOutlet.isEnabled = false
-                                self.jmStatusImageOutlet.alpha = 0
-                                self.isJmarket = false
-                                self.isJmarketWallet = false
-                                
-                                DispatchQueue.main.async { [weak self] in
-                                    guard let self = self else { return }
-                                    
-                                    self.unlockedUtxos.removeAll()
-                                    self.selectedUTXOs.removeAll()
-                                    self.inputArray.removeAll()
-                                    self.loadUnlockedUtxos()
-                                }
+                                self.addUtxoMixButton()
                             }
                         }
                     }
                 }
             }
+        }
+    }
+    
+    private func setJmConnectedUi() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.jmActive = false
+            self.jmStatusLabelOutlet.text = "join market connected"
+            self.jmEarnOutlet.tintColor = .clear
+            self.jmMixOutlet.isEnabled = false
+            self.jmMixOutlet.tintColor = .clear
+            self.jmEarnOutlet.isEnabled = false
+        }
+    }
+    
+    private func setMakerStoppedUi() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.jmMixOutlet.tintColor = .systemTeal
+            self.jmEarnOutlet.tintColor = .systemTeal
+            self.jmMixOutlet.isEnabled = true
+            self.jmEarnOutlet.isEnabled = true
+            self.jmStatusImageOutlet.tintColor = .systemRed
+            self.jmStatusLabelOutlet.text = "maker stopped"
+            self.jmActionOutlet.setTitle("start", for: .normal)
+            self.makerRunning = false
+            self.jmActionOutlet.alpha = 1
+        }
+    }
+    
+    private func setMakerRunningUi() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.jmStatusLabelOutlet.text = "maker running"
+            self.jmActionOutlet.alpha = 1
+            self.makerRunning = true
+            self.jmMixOutlet.tintColor = .clear
+            self.jmEarnOutlet.tintColor = .clear
+            self.jmMixOutlet.isEnabled = false
+            self.jmEarnOutlet.isEnabled = false
+        }
+    }
+    
+    private func setTakerRunningUi() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.jmStatusLabelOutlet.text = "taker running"
+            self.jmActionOutlet.setTitle("stop", for: .normal)
+            self.jmActionOutlet.alpha = 1
+            self.jmActionOutlet.isEnabled = true
+            self.takerRunning = true
+            self.jmMixOutlet.tintColor = .clear
+            self.jmEarnOutlet.tintColor = .clear
+            self.jmMixOutlet.isEnabled = false
+            self.jmEarnOutlet.isEnabled = false
+        }
+    }
+    
+    private func addUtxoMixButton() {
+        // show mix buttons on utxos to prompt jm wallet creation
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.jmMixOutlet.tintColor = .clear
+            self.jmEarnOutlet.tintColor = .clear
+            self.jmMixOutlet.isEnabled = false
+            self.jmEarnOutlet.isEnabled = false
+            self.jmStatusLabelOutlet.text = ""
+            self.jmActionOutlet.alpha = 0
+            self.jmActionOutlet.isEnabled = false
+            self.jmStatusImageOutlet.alpha = 0
+            self.isJmarket = false
+            self.isJmarketWallet = false
+            self.unlockedUtxos.removeAll()
+            self.selectedUTXOs.removeAll()
+            self.inputArray.removeAll()
+            self.loadUnlockedUtxos()
         }
     }
     
@@ -336,7 +362,26 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             guard let response = response else {
                 if let message = message, message != "" {
-                    showAlert(vc: self, title: "", message: message)
+                    
+                    if message.contains("Service cannot be stopped as it is not running.") {
+                        
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.jmStatusImageOutlet.tintColor = .systemRed
+                            self.jmStatusLabelOutlet.text = "maker stopped"
+                            self.jmActionOutlet.setTitle("start", for: .normal)
+                            self.makerRunning = false
+                            
+                            self.jmMixOutlet.tintColor = .systemTeal
+                            self.jmMixOutlet.isEnabled = true
+                        }
+                        
+                        showAlert(vc: self, title: "Unable to stop maker...", message: "Looks like your maker never actually started, this can happen for a number of reasons.")
+                        
+                    } else {
+                        showAlert(vc: self, title: "", message: message)
+                    }
                 }
                 return
             }
@@ -1498,8 +1543,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             guard let decryptedPassword = Crypto.decrypt(jmWallet.password), let password = decryptedPassword.utf8String else { return }
                         
-            let tit = "Join Market wallet created successfully ✓"
-            let mess = "You must backup the password associated with your Join Market wallet incase you need to recover your wallet with Join Market, failure to do so could result in lost funds:\n\n\(password)\n\nA new Join Marklet signer has been encrypted and saved ✓\n⚠️ MAKE SURE YOU BACK IT UP OFFLINE!\n⚠️ Failure to do so could result in lost funds!"
+            let tit = "Join Market wallet created ✓"
+            let mess = "You must backup the password associated with your Join Market wallet, failure to do so could result in lost funds. These six words are your JM wallet password used to lock and unlock the wallet:\n\n\(password)\n\nA new Join Market signer has been encrypted and saved both on Fully Noded and your Join Market server ✓\n\n⚠️ Always back up your signers offline on paper or metal to prevent loss of funds."
             
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
             
@@ -1515,34 +1560,13 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-//    private func walletCreatedSuccess(_ utxo: Utxo, _ jmWallet: JMWallet) {
-//        DispatchQueue.main.async { [weak self] in
-//            guard let self = self else { return }
-//
-//            let tit = "Join Market wallet created successfully ✓"
-//            let mess = "You may now deposit funds to it."
-//
-//            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
-//
-//            alert.addAction(UIAlertAction(title: "Deposit funds", style: .default, handler: { [weak self] action in
-//                guard let self = self else { return }
-//
-//                self.promptToDeposit(utxo, jmWallet)
-//            }))
-//
-//            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-//            alert.popoverPresentationController?.sourceView = self.view
-//            self.present(alert, animated: true, completion: nil)
-//        }
-//    }
-    
     private func promptToDeposit(_ utxo: Utxo, _ jmWallet: JMWallet) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let tit = "Deposit utxo to Join Market wallet?"
+            let tit = "Deposit utxo with \(utxo.amount ?? 0.0) btc to Join Market wallet?"
             
-            let mess = "Once you deposit the utxo to your Join Market wallet you can begin joining. This action will fetch a deposit address from your Join Market wallet and present the transaction creator as normal."
+            let mess = "Once you deposit the utxo to your Join Market wallet you can begin joining and earning. This action will fetch a deposit address from your Join Market wallet and present the transaction creator as normal. For best privacy practices send all the btc from this utxo to your JM wallet"
             
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
             
