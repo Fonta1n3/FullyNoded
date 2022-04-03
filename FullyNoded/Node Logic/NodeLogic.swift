@@ -870,10 +870,6 @@ class NodeLogic {
                 let amountString = amount.avoidNotation
                 let confsCheck = transaction["confirmations"] as? Int ?? 0
                 
-                //                    if confsCheck < 0 {
-                //                        toRemove = true
-                //                    }
-                
                 let confirmations = String(confsCheck)
                 
                 if let replaced_by_txid_check = transaction["replaced_by_txid"] as? String {
@@ -912,10 +908,10 @@ class NodeLogic {
                                                 if x != i && txID == (transaction["txID"] as! String) {
                                                     if amount + amountToCompare == 0 && amount > 0 {
                                                         transactionArray[i]["selfTransfer"] = true
-                                                        
-                                                    } else if amount + amountToCompare == 0 && amount < 0 {
-                                                        transactionArray[i]["remove"] = true
-                                                    }
+
+                                                    }/* else if amount + amountToCompare == 0 && amount < 0 {
+                                                        //transactionArray[i]["remove"] = true
+                                                    }*/
                                                 }
                                             }
                                         }
@@ -925,11 +921,11 @@ class NodeLogic {
                         }
                         
                         for tx in transactionArray {
-                            if let remove = tx["remove"] as? Bool {
-                                if !remove {
+                            //if let remove = tx["remove"] as? Bool {
+                                //if !remove {
                                     arrayToReturn.append(tx)
-                                }
-                            }
+                                //}
+                            //}
                         }
                     }
                 }
