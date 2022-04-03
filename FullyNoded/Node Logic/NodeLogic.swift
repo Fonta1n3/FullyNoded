@@ -909,9 +909,9 @@ class NodeLogic {
                                                     if amount + amountToCompare == 0 && amount > 0 {
                                                         transactionArray[i]["selfTransfer"] = true
 
-                                                    } else if amount + amountToCompare == 0 && amount < 0 {
+                                                    }/* else if amount + amountToCompare == 0 && amount < 0 {
                                                         //transactionArray[i]["remove"] = true
-                                                    }
+                                                    }*/
                                                 }
                                             }
                                         }

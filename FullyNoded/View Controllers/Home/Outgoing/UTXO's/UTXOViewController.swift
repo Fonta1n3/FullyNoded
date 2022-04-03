@@ -30,10 +30,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     ]
     
     private let years = [
+        "2022",
         "2023",
         "2024",
-        "2025",
-        "2026"
+        "2025"
     ]
     
     private var month = ""
@@ -507,7 +507,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             guard let self = self else { return }
 
             let tit = "Fidelity Bond"
-            let mess = "A fidelity bond is a timelocked bitcoin address controlled by your Join market hot wallet. You must ensure your Join Market wallet is backed up as only Join Market can spend these funds.\n\nCreating a fidelity bond increases your earning potential. The higher the amount/duration of the bond, the higher the earning potential.\n\nYou will be prompted to select an expiry date for the bond, you will NOT be able to spend these funds until that date."
+            let mess = "A fidelity bond is a timelocked bitcoin address controlled by your Join Market hot wallet. You must ensure your Join Market wallet is backed up as only Join Market can spend these funds.\n\nCreating a fidelity bond increases your earning potential. The higher the amount/duration of the bond, the higher the earning potential.\n\nYou will be prompted to select an expiry date for the bond, you will NOT be able to spend these funds until that date."
 
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
 
