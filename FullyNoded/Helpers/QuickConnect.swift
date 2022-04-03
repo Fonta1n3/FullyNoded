@@ -16,6 +16,7 @@ class QuickConnect {
     /// btcrpc://rpcuser:rpcpassword@uhqefiu873h827h3ufnjecnkajbciw7bui3hbuf233b.onion:18443
     /// clightning-rpc://rpcuser:rpcpassword@kjhfefe.onion:1312?label=BTCPay%20C-Lightning
     /// lndconnect://hbdfhjwbfwbfhwbj.onion:8080?cert=xxx&macaroon=xxx
+    /// JOINMARKET http://kjwdfkjbdkcjb.onion:28183?cert=xxx
     
     static var uncleJim = false
     
@@ -23,8 +24,6 @@ class QuickConnect {
         var newNode = [String:Any]()
         newNode["id"] = UUID()
         var label = "Node"
-        
-        print("url: \(url)")
         
         guard var host = URLComponents(string: url)?.host,
             let port = URLComponents(string: url)?.port else {

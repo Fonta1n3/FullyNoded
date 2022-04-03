@@ -12,19 +12,22 @@ class JMUtils {
     
     static func createWallet(completion: @escaping ((response: JMWallet?, message: String?)) -> Void) {
         // First check that connection works...
-        let arr = Array(randomString(length: 20))
-        var pass = ""
         
-        for (i, item) in arr.enumerated() {
-            pass += "\(item)"
-            if (i + 1) % 4 == 0, i + 1 < arr.count {
-                pass += "-"
+        guard let passwordWords = Keys.seed() else { return }
+        
+        let arr = passwordWords.split(separator: " ")
+        
+        var password = ""
+            
+        for (i, word) in arr.enumerated() {
+            if i <= 6 {
+                password += word + " "
             }
         }
         
         let param:[String:Any] = [
             "walletname":"FullyNoded-\(randomString(length: 10)).jmdat",
-            "password": pass,
+            "password": password,
             "wallettype":"sw-fb"
         ]
         
@@ -39,7 +42,7 @@ class JMUtils {
             
             guard let encryptedToken = Crypto.encrypt(jmWalletCreated.token.utf8),
                   let encryptedWords = Crypto.encrypt(signer.utf8),
-                  let encryptedPass = Crypto.encrypt(pass.utf8) else {
+                  let encryptedPass = Crypto.encrypt(password.utf8) else {
                       completion((nil, "Error encrypting jm wallet credentials."))
                       return
                   }
@@ -422,7 +425,27 @@ class JMUtils {
     static func getAddress(wallet: JMWallet, completion: @escaping ((address: String?, message: String?)) -> Void) {
         JMUtils.unlockWallet(wallet: wallet) { (unlockedWallet, message) in
             var updatedWallet = wallet
-            guard let encryptedToken = Crypto.encrypt(unlockedWallet!.token.utf8) else { return }
+            
+            guard let unlockedWallet = unlockedWallet else {
+                
+                if let message = message {
+                    if message.contains("Wallet cannot be created/opened, it is locked.") {
+                        completion((nil, "Delete the hidden .lock file on your JM wallet located at /.joinmarket/wallets/.\(wallet.name).lock and try again."))
+                    } else {
+                        completion((nil, message))
+                    }
+                } else {
+                    completion((nil, message ?? "unknow error."))
+                }
+                
+                return
+            }
+            
+            guard let encryptedToken = Crypto.encrypt(unlockedWallet.token.utf8) else {
+                completion((nil, "Unable to decrypt your auth token."))
+                return
+            }
+            
             updatedWallet.token = encryptedToken
             JMUtils.syncIndexes(wallet: updatedWallet) { message in
                 JMRPC.sharedInstance.command(method: .getaddress(jmWallet: updatedWallet), param: nil) { (response, errorDesc) in
