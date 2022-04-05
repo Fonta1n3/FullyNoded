@@ -252,7 +252,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             var isLightning = false
             var isJoinMarket = false
             
-            if onionAddressField.text!.hasSuffix(":8080") {
+            if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
                 isLightning = true
             }
             
@@ -373,7 +373,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             let decryptedAddress = (onionAddressField.text)!.dataUsingUTF8StringEncoding
             
-            if onionAddressField.text!.hasSuffix(":8080") {
+            if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
                 CoreDataService.update(id: id, keyToUpdate: "isLightning", newValue: true, entity: .newNodes) { success in
                     if !success {
                         displayAlert(viewController: self, isError: true, message: "error updating isLightning")
@@ -758,7 +758,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             if let vc = segue.destination as? QRDisplayerViewController {
                 var prefix = "btcrpc"
                 
-                if onionAddressField.text!.hasSuffix(":8080") {
+                if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
                     prefix = "clightning-rpc"
                     
                     if macaroonField.text != "" {
@@ -773,7 +773,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 vc.descriptionText = ""
                 vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
                     
-            } else if isHost && !onionAddressField.text!.hasSuffix(":8080") {
+            } else if isHost && !onionAddressField.text!.hasSuffix(":8080") && !onionAddressField.text!.hasSuffix(":10080") {
                 vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(hostname!):11221/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
                 vc.headerText = "Quick Connect - Remote Control"
                 vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
