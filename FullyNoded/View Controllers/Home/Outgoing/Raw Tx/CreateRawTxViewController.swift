@@ -323,8 +323,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         } else {
             
             guard let amount = convertedAmount() else {
-                spinner.removeConnectingView()
-                showAlert(vc: self, title: "", message: "No amount or address.")
+                if !self.outputArray.isEmpty {
+                    tryRaw()
+                } else {
+                    spinner.removeConnectingView()
+                    showAlert(vc: self, title: "", message: "No amount or address.")
+                }
                 return
             }
             
