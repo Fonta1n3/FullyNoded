@@ -41,18 +41,26 @@ class QuickConnect {
         
         if url.hasPrefix("lndconnect://") {
             
-            guard let urlSafeMacaroon = URL(string: url)?.value(for: "macaroon"),
-                  let certCheck = URL(string: url)?.value(for: "cert"),
-                  let macaroonData = try? Data.decodeUrlSafeBase64(urlSafeMacaroon),
-                  let certData = try? Data.decodeUrlSafeBase64(certCheck) else {
-                completion((false, "Credentials missing."))
+            guard let macaroon = URL(string: url)?.value(for: "macaroon"),
+                  let cert = URL(string: url)?.value(for: "cert") else {
+                      completion((false, "Credentials missing."))
+                      return
+                  }
+                        
+            guard let certData = try? Data.decodeUrlSafeBase64(cert) else {
+                completion((false, "Error decoding cert."))
+                return
+            }
+            
+            guard let macData = try? Data.decodeUrlSafeBase64(macaroon) else {
+                completion((false, "Error decoding macaroon."))
                 return
             }
             
             // Encrypt credentials
-            guard let encryptedMacaroonHex = Crypto.encrypt(macaroonData.hexString.dataUsingUTF8StringEncoding),
+            guard let encryptedMacaroonHex = Crypto.encrypt(macData.hexString.dataUsingUTF8StringEncoding),
                   let encryptedCert = Crypto.encrypt(certData) else {
-                    completion((false, "error encrypting your credentials"))
+                    completion((false, "Error encrypting your credentials."))
                     return
             }
             

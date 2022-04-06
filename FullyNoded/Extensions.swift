@@ -239,31 +239,27 @@ public extension Data {
     }
     
     static func decodeUrlSafeBase64(_ value: String) throws -> Data {
-        var stringtoDecode = value.condenseWhitespace().replacingOccurrences(of: " ", with: "")
+        var stringtoDecode = value.condenseWhitespace()
         
-        if value.contains("-") || value.contains("_") {
-            stringtoDecode = value.replacingOccurrences(of: "-", with: "+")
-            stringtoDecode = stringtoDecode.replacingOccurrences(of: "_", with: "/")
-            switch (stringtoDecode.utf8.count % 4) {
-                case 2:
-                    stringtoDecode += "=="
-                case 3:
-                    stringtoDecode += "="
-                default:
-                    break
-            }
-            guard let data = Data(base64Encoded: stringtoDecode, options: [.ignoreUnknownCharacters]) else {
-                throw NSError(domain: "decodeUrlSafeBase64", code: 1,
-                            userInfo: [NSLocalizedDescriptionKey: "Can't decode base64 string"])
-            }
-            return data
-        } else {
-            guard let data = Data(base64Encoded: stringtoDecode, options: [.ignoreUnknownCharacters]) else {
-                throw NSError(domain: "decodeUrlSafeBase64", code: 1,
-                            userInfo: [NSLocalizedDescriptionKey: "Can't decode base64 string"])
-            }
-            return data
+        stringtoDecode = value.replacingOccurrences(of: "-", with: "+")
+        stringtoDecode = stringtoDecode.replacingOccurrences(of: "_", with: "/")
+        
+        switch (stringtoDecode.utf8.count % 4) {
+            case 2:
+                stringtoDecode += "=="
+            case 3:
+                stringtoDecode += "="
+            default:
+                break
         }
+        
+        guard let data = Data(base64Encoded: stringtoDecode, options: [.ignoreUnknownCharacters]) else {
+            
+            throw NSError(domain: "decodeUrlSafeBase64", code: 1,
+                          userInfo: [NSLocalizedDescriptionKey: "Can't decode base64 string"])
+        }
+        
+        return data
     }
     
     static func random(_ len: Int) -> Data {
