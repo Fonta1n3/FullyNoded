@@ -83,7 +83,7 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
                 
                 if let encryptedPassphrase = signerStruct.passphrase,
                    let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
-                   let string = decryptedPassphrase.utf8 {
+                   let string = decryptedPassphrase.utf8String {
                     passphrase = string
                 }
                 
@@ -91,7 +91,7 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
                 if let encryptedWords = signerStruct.words,
                    let decryptedSigner = Crypto.decrypt(encryptedWords),
                    signerStruct.rootTpub == nil,
-                   let words = decryptedSigner.utf8,
+                   let words = decryptedSigner.utf8String,
                    let mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
                    let xfp = Keys.fingerprint(masterKey: mkMain),
                    let encryptedXfp = Crypto.encrypt(xfp.utf8),
@@ -189,7 +189,7 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             guard let encryptedWords = signer.words,
                     let words = Crypto.decrypt(encryptedWords),
-                    var arr = words.utf8?.split(separator: " ") else { return }            
+                    var arr = words.utf8String?.split(separator: " ") else { return }            
             
             for (i, _) in arr.enumerated() {
                 if i > 0 && i < arr.count - 1 {

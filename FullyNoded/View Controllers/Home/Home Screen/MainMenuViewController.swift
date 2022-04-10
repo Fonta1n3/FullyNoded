@@ -67,11 +67,11 @@ class MainMenuViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+                
         if !Crypto.setupinit() {
             showAlert(vc: self, title: "", message: "There was an error setupinit.")
         }
-                        
+                                
         mainMenu.delegate = self
         mainMenu.alpha = 0
         mainMenu.tableFooterView = UIView(frame: .zero)
@@ -266,7 +266,7 @@ class MainMenuViewController: UIViewController {
         var activeNode:[String:Any]?
         for (i, node) in nodes.enumerated() {
             let nodeStruct = NodeStruct.init(dictionary: node)
-            if nodeStruct.isActive && !nodeStruct.isLightning {
+            if nodeStruct.isActive && !nodeStruct.isLightning && !nodeStruct.isJoinMarket {
                 activeNode = node
                 self.activeNode = node
             }

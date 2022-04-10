@@ -217,7 +217,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             
             if let encryptedPassphrase = signer.passphrase {
                 guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
-                        let string = decryptedPassphrase.utf8 else { return }
+                        let string = decryptedPassphrase.utf8String else { return }
                 
                 passphrase = string
                 self.tableDict[3]["text"] = "  " + "*********"
@@ -227,7 +227,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             
             guard let encryptedXfp = signer.xfp,
                 let decryptedXfp = Crypto.decrypt(encryptedXfp),
-                let xfp = decryptedXfp.utf8 else {
+                let xfp = decryptedXfp.utf8String else {
                     showAlert(vc: self, title: "", message: "Error getting your xfp.")
                 return
             }
@@ -237,7 +237,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             if self.network == 0 {
                 if let encryptedbip84xpub = signer.bip84xpub,
                     let decryptedbip84xpub = Crypto.decrypt(encryptedbip84xpub),
-                    let xpub = decryptedbip84xpub.utf8 {
+                    let xpub = decryptedbip84xpub.utf8String {
                     let descriptor = "wpkh([\(xfp)/84h/0h/0h]\(xpub)/0/*)"
                     
                     guard let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) else {
@@ -251,7 +251,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 
                 if let encryptedbip48xpub = signer.bip48xpub,
                     let decryptedbip48xpub = Crypto.decrypt(encryptedbip48xpub),
-                    let xpub = decryptedbip48xpub.utf8 {
+                    let xpub = decryptedbip48xpub.utf8String {
                     let cosigner = "wsh([\(xfp)/48h/0h/0h/2h]\(xpub)/0/*)"
                     
                     guard let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) else {
@@ -264,7 +264,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     
                     if let encryptedRootXpub = signer.rootXpub,
                        let decryptedRootXpub = Crypto.decrypt(encryptedRootXpub),
-                       let xpub = decryptedRootXpub.utf8 {
+                       let xpub = decryptedRootXpub.utf8String {
                         
                         guard let rootHdkey = URHelper.rootXpubToUrHdkey(xpub) else {
                             showAlert(vc: self, title: "UR error.", message: "Unable to convert your root xpub to crypto-hdkey.")
@@ -279,7 +279,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             } else {
                 if let encryptedbip84tpub = signer.bip84tpub,
                     let decryptedbip84tpub = Crypto.decrypt(encryptedbip84tpub),
-                    let tpub = decryptedbip84tpub.utf8 {
+                    let tpub = decryptedbip84tpub.utf8String {
                     let descriptor = "wpkh([\(xfp)/84h/1h/0h]\(tpub)/0/*)"
                     
                     guard let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) else {
@@ -293,7 +293,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 
                 if let encryptedbip48tpub = signer.bip48tpub,
                     let decryptedbip48tpub = Crypto.decrypt(encryptedbip48tpub),
-                   let tpub = decryptedbip48tpub.utf8 {
+                   let tpub = decryptedbip48tpub.utf8String {
                     let cosigner = "wsh([\(xfp)/48h/1h/0h/2h]\(tpub)/0/*)"
                     
                     guard let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) else {
@@ -306,7 +306,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     
                     if let encryptedRootTpub = signer.rootTpub,
                        let decryptedRootTpub = Crypto.decrypt(encryptedRootTpub),
-                       let tpub = decryptedRootTpub.utf8 {
+                       let tpub = decryptedRootTpub.utf8String {
                         
                         guard let rootHdkey = URHelper.rootXpubToUrHdkey(tpub) else {
                             showAlert(vc: self, title: "UR error.", message: "Unable to convert your root tpub to crypto-hdkey.")
@@ -321,7 +321,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             
             if let encryptedWords = signer.words {
                 guard let decrypted = Crypto.decrypt(encryptedWords),
-                        let words = decrypted.utf8 else { return }
+                        let words = decrypted.utf8String else { return }
                 
                 guard let masterKey = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase) else {
                     showAlert(vc: self, title: "", message: "Unable to derive your master key.")
@@ -452,7 +452,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private func updateSigner(_ passphrase: String) {
         if let encryptedWords = self.signer.words,
            let decryptedSigner = Crypto.decrypt(encryptedWords),
-           let words = decryptedSigner.utf8,
+           let words = decryptedSigner.utf8String,
            let mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
            let xfp = Keys.fingerprint(masterKey: mkMain),
            let encryptedXfp = Crypto.encrypt(xfp.utf8),
@@ -842,9 +842,9 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         }
     }
     
-    private func prompToChoosePrimaryDesc(descriptors: [String]) {
+    private func prompToChoosePrimaryDesc(descriptors: [String], jmDescriptors: [String]) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Choose an address format.", message: "", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Choose a wallet format.", message: "", preferredStyle: .alert)
             
             for (i, descriptor) in descriptors.enumerated() {
                 let descStr = Descriptor(descriptor)
@@ -856,9 +856,58 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 }))
             }
             
+            alert.addAction(UIAlertAction(title: "Join Market", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.recoverJm(jmDescriptors: jmDescriptors)
+            }))
+            
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = vc.view
             vc.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func recoverJm(jmDescriptors: [String]) {
+        spinner.addConnectingView(vc: self, description: "creating jm wallet...")
+        
+        let blockheight = UserDefaults.standard.object(forKey: "blockheight") as? Int ?? 0
+        
+        let accountMap:[String:Any] = [
+            "descriptor":jmDescriptors[0],
+            "blockheight": blockheight,
+            "watching":Array(jmDescriptors[2...jmDescriptors.count - 1]),
+            "label":"Join Market"
+        ]
+        
+        ImportWallet.accountMap(accountMap) { [weak self] (success, errorDescription) in
+            guard let self = self else { return }
+
+            guard success else {
+                showAlert(vc: self, title: "There was an issue creating your wallet...", message: errorDescription ?? "Unknown...")
+                return
+            }
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+
+                let tit = "JM wallet created ✓"
+
+                let mess = "A rescan was triggered, you may not see transactions or balances until the rescan completes."
+
+                let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+
+                alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { action in
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+
+                        self.tabBarController?.selectedIndex = 1
+                    }
+                }))
+
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+                self.present(alert, animated: true, completion: nil)
+            }
         }
     }
     
@@ -923,7 +972,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private func creatWalletLive() {
         guard let encryptedWords = signer.words,
                 let wordsData = Crypto.decrypt(encryptedWords),
-                let words = wordsData.utf8 else {
+                let words = wordsData.utf8String else {
                     return
                 }
         
@@ -934,7 +983,33 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             return
         }
         
-        prompToChoosePrimaryDesc(descriptors: descriptors)
+        var passphrase = ""
+        
+        if let encryptedPassphrase = signer.passphrase {
+            guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) else {
+                showAlert(vc: self, title: "There was an issue decrypting your passphrase...", message: message ?? "Unknown")
+                return
+            }
+            
+            passphrase = decryptedPassphrase.utf8String ?? ""
+        }
+        
+        guard let mk = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase),
+              let xfp = Keys.fingerprint(masterKey: mk) else {
+                  showAlert(vc: self, title: "There was an issue deriving your master key", message: message ?? "Unknown")
+                  return
+              }
+        
+        JoinMarket.descriptors(mk, xfp) { [weak self] jmDescriptors in
+            guard let self = self else { return }
+            
+            guard let jmDescriptors = jmDescriptors else {
+                showAlert(vc: self, title: "There was an issue deriving your jm descriptors...", message: message ?? "Unknown")
+                return
+            }
+            
+            self.prompToChoosePrimaryDesc(descriptors: descriptors, jmDescriptors: jmDescriptors)
+        }
     }
     
     @objc func exportQr(_ sender: UIButton) {
@@ -1124,15 +1199,11 @@ extension SignerDetailViewController: UITableViewDelegate {
         case 0:
             editLabel(dict["text"] as? String ?? "")
             
-//        case 1:
-//            switch selectedSegment {
-//            case 0:
-//                setClipBoard(dict["text"] as? String ?? "")
-//            case 1:
-//                setClipBoard(dict["ur"] as? String ?? "")
-//            default:
-//                break
-//            }
+        case 1:
+            switch selectedSegment {
+            default:
+                break
+            }
             
         case 2:
             setClipBoard(dict["text"] as? String ?? "")

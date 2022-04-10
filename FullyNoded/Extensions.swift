@@ -218,7 +218,7 @@ public extension Notification.Name {
 }
 
 public extension Data {
-    var utf8:String? {
+    var utf8String:String? {
         return String(bytes: self, encoding: .utf8)
     }
     
@@ -239,8 +239,11 @@ public extension Data {
     }
     
     static func decodeUrlSafeBase64(_ value: String) throws -> Data {
-        var stringtoDecode: String = value.replacingOccurrences(of: "-", with: "+")
+        var stringtoDecode = value.condenseWhitespace()
+        
+        stringtoDecode = value.replacingOccurrences(of: "-", with: "+")
         stringtoDecode = stringtoDecode.replacingOccurrences(of: "_", with: "/")
+        
         switch (stringtoDecode.utf8.count % 4) {
             case 2:
                 stringtoDecode += "=="
@@ -249,10 +252,13 @@ public extension Data {
             default:
                 break
         }
+        
         guard let data = Data(base64Encoded: stringtoDecode, options: [.ignoreUnknownCharacters]) else {
+            
             throw NSError(domain: "decodeUrlSafeBase64", code: 1,
-                        userInfo: [NSLocalizedDescriptionKey: "Can't decode base64 string"])
+                          userInfo: [NSLocalizedDescriptionKey: "Can't decode base64 string"])
         }
+        
         return data
     }
     

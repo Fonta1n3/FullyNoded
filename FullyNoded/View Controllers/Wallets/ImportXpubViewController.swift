@@ -122,21 +122,9 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func setCoinType() {
-        spinner.addConnectingView(vc: self, description: "fetching chain type...")
-        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
-            if let dict = response as? NSDictionary {
-                if let chain = dict["chain"] as? String {
-                    if chain == "test" {
-                        self?.coinType = "1"
-                    }
-                    self?.spinner.removeConnectingView()
-                }
-            } else {
-                self?.showError("Error getting blockchain info, please chack your connection to your node.")
-                DispatchQueue.main.async {
-                    self?.navigationController?.popToRootViewController(animated: true)
-                }
-            }
+        let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+        if chain != "main" {
+            coinType = "1"
         }
     }
     

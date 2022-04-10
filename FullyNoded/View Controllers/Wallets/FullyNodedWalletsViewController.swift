@@ -89,6 +89,8 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     
     private func getFullyNodedWallets() {
         wallets.removeAll()
+        index = 0
+        totalBtcBalance = 0.0
         CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] ws in
             guard let self = self else { return }
             
@@ -122,7 +124,6 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
                         
-                        self.walletsTable.reloadData()
                         self.loadTotalBalance()
                     }
                 }
@@ -172,10 +173,13 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                 }
                 
                 if utxos.count > 0 {
+                    var walletBalance = 0.0
                     for (x, utxo) in utxos.enumerated() {
                         self.totalBtcBalance += utxo.amount!
+                        walletBalance += utxo.amount!
                         
                         if x + 1 == utxos.count {
+                            self.wallets[self.index]["balance"] = walletBalance
                             self.index += 1
                             self.getTotals()
                         }
@@ -200,6 +204,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                 self.balanceFiatLabel.text = roundedFiat.fiatString
                 self.balanceFiatLabel.alpha = 1
                 self.initialLoad = false
+                self.walletsTable.reloadData()
                 self.spinner.removeConnectingView()
             }
         }
@@ -227,11 +232,17 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         cell.selectionStyle = .none
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.layer.borderWidth = 0.5
+        cell.sizeToFit()
         let label = cell.viewWithTag(1) as! UILabel
+        label.numberOfLines = 0
+        label.lineBreakMode = .byWordWrapping
+        label.sizeToFit()
         let button = cell.viewWithTag(2) as! UIButton
         let toggle = cell.viewWithTag(3) as! UISwitch
-        let walletStruct = Wallet(dictionary: wallets[indexPath.section])
-        label.text = walletStruct.label
+        let wallet = wallets[indexPath.section]
+        let btcBalance = (wallet["balance"] as? Double ?? 0.0)
+        let walletStruct = Wallet(dictionary: wallet)
+        label.text = walletStruct.label + "\n\(btcBalance.btc) / \((btcBalance * fxRate).balanceText)"
         button.restorationIdentifier = "\(indexPath.section)"
         toggle.restorationIdentifier = "\(indexPath.section)"
         button.addTarget(self, action: #selector(goToDetail(_:)), for: .touchUpInside)

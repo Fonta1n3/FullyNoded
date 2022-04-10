@@ -411,19 +411,37 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 showAlert(vc: self, title: "Invalid File", message: "That is not a recognized format, generally it will be a .psbt or .txn file.")
                 return
             }
+            
+//            print("data.utf8String: \(data.utf8String)")
+//            print("bas64: \(data.base64EncodedString())")
                         
-            if let text = data.utf8, text.lowercased().hasPrefix("ur:bytes") {
+            if let text = data.utf8String, text.lowercased().hasPrefix("ur:bytes") {
+                //print("text: \(text)")
                 self.reset()
                 self.blind = true
                 self.parseBlindPsbt(text)
             } else {
-                self.reset()
-                unsignedPsbt = data.base64EncodedString()
-                processPsbt(unsignedPsbt)
+                //print("psbt: \(data.base64EncodedString())")
+                
+                if Keys.validPsbt(data.base64EncodedString()) {
+                    unsignedPsbt = data.base64EncodedString()
+                    self.reset()
+                    processPsbt(unsignedPsbt)
+                } else if let psbtUtf8 = data.utf8String, Keys.validPsbt(psbtUtf8) {
+                    print("getting here")
+                    unsignedPsbt = psbtUtf8
+                    self.reset()
+                    processPsbt(psbtUtf8)
+                } else {
+                    spinner.removeConnectingView()
+                    showAlert(vc: self, title: "Invalid format", message: "That is not a valid BIP174 format.")
+                }                
             }
             
             return
         }
+        
+        //print("raw text: \(text)")
         
         reset()
         signedRawTx = text.condenseWhitespace()
@@ -519,10 +537,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         OnchainUtils.getWalletInfo { [weak self] (walletInfo, message) in
             guard let self = self else { return }
-            
-            self.spinner.removeConnectingView()
-            
+                        
             guard let walletInfo = walletInfo else {
+                self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error getting wallet info...", message: message ?? "unknown")
                 return
             }
@@ -533,8 +550,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
             
             if UserDefaults.standard.object(forKey: "passphrasePrompt") == nil {
+                self.spinner.removeConnectingView()
                 self.signNow(nil)
             } else {
+                self.spinner.removeConnectingView()
                 self.setPassphrase { [weak self] passphrase in
                     guard let self = self else { return }
                     

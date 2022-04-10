@@ -16,6 +16,7 @@ class QuickConnect {
     /// btcrpc://rpcuser:rpcpassword@uhqefiu873h827h3ufnjecnkajbciw7bui3hbuf233b.onion:18443
     /// clightning-rpc://rpcuser:rpcpassword@kjhfefe.onion:1312?label=BTCPay%20C-Lightning
     /// lndconnect://hbdfhjwbfwbfhwbj.onion:8080?cert=xxx&macaroon=xxx
+    /// JOINMARKET http://kjwdfkjbdkcjb.onion:28183?cert=xxx
     
     static var uncleJim = false
     
@@ -40,18 +41,26 @@ class QuickConnect {
         
         if url.hasPrefix("lndconnect://") {
             
-            guard let urlSafeMacaroon = URL(string: url)?.value(for: "macaroon"),
-                  let certCheck = URL(string: url)?.value(for: "cert"),
-                  let macaroonData = try? Data.decodeUrlSafeBase64(urlSafeMacaroon),
-                  let certData = try? Data.decodeUrlSafeBase64(certCheck) else {
-                completion((false, "Credentials missing."))
+            guard let macaroon = URL(string: url)?.value(for: "macaroon"),
+                  let cert = URL(string: url)?.value(for: "cert") else {
+                      completion((false, "Credentials missing."))
+                      return
+                  }
+                        
+            guard let certData = try? Data.decodeUrlSafeBase64(cert) else {
+                completion((false, "Error decoding cert."))
+                return
+            }
+            
+            guard let macData = try? Data.decodeUrlSafeBase64(macaroon) else {
+                completion((false, "Error decoding macaroon."))
                 return
             }
             
             // Encrypt credentials
-            guard let encryptedMacaroonHex = Crypto.encrypt(macaroonData.hexString.dataUsingUTF8StringEncoding),
+            guard let encryptedMacaroonHex = Crypto.encrypt(macData.hexString.dataUsingUTF8StringEncoding),
                   let encryptedCert = Crypto.encrypt(certData) else {
-                    completion((false, "error encrypting your credentials"))
+                    completion((false, "Error encrypting your credentials."))
                     return
             }
             
@@ -68,7 +77,26 @@ class QuickConnect {
         } else {
             guard let rpcPassword = URLComponents(string: url)?.password,
                 let rpcUser = URLComponents(string: url)?.user else {
-                    completion((false, "invalid url"))
+                    // try jm here.
+                    guard let certCheck = URL(string: url)?.value(for: "cert"),
+                          let certData = try? Data.decodeUrlSafeBase64(certCheck) else {
+                              completion((false, "cert missing."))
+                              return
+                          }
+                    
+                    guard let encryptedCert = Crypto.encrypt(certData) else {
+                            completion((false, "error encrypting your credentials"))
+                            return
+                    }
+                    
+                    newNode["cert"] = encryptedCert
+                    newNode["onionAddress"] = torNodeHost
+                    newNode["isLightning"] = false
+                    newNode["isActive"] = true
+                    newNode["uncleJim"] = false
+                    newNode["label"] = "Join Market"
+                    newNode["isJoinMarket"] = true
+                    processNode(newNode, url, completion: completion)
                     return
             }
                         
@@ -107,7 +135,7 @@ class QuickConnect {
     }
     
     private class func processNode(_ newNode: [String:Any], _ url: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        if url.hasPrefix("clightning-rpc") || url.hasPrefix("lndconnect") {
+        if url.hasPrefix("clightning-rpc") || url.hasPrefix("lndconnect") || url.hasPrefix("http") {
             saveNode(newNode, url, completion: completion)
             
         } else {

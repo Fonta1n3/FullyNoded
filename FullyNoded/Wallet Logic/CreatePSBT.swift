@@ -29,7 +29,7 @@ class CreatePSBT {
         }
         
         func create(params: String) {
-            Reducer.makeCommand(command: .walletcreatefundedpsbt, param: params) { (response, errorMessage) in
+            Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { (response, errorMessage) in
                 guard let result = response as? NSDictionary, let psbt = result["psbt"] as? String else {
                     var desc = errorMessage ?? "unknown error"
                     if desc.contains("Unexpected key fee_rate") {
@@ -44,7 +44,7 @@ class CreatePSBT {
                 }
             }
         }
-        
+                
         activeWallet { wallet in
             guard let wallet = wallet else {
                 // using a bitcoin core wallet
@@ -53,68 +53,60 @@ class CreatePSBT {
                         completion((nil, nil, "error getting a change address: \(errorMessage ?? "unknown")"))
                         return
                     }
-                        
+
                     if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
-                        
+
                         param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"changeAddress\": \"\(changeAddress)\"}'', true"
-                        
+
                         if inputs != "" {
                             param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"changeAddress\": \"\(changeAddress)\"}'', true"
                         }
                     } else if let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int {
-                        
+
                         param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
-                        
+
                         if inputs != "" {
                             param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
                         }
                     }
-                    
+
                     create(params: param)
                 }
-                
+
                 return
             }
             
-            //let descriptorStruct = Descriptor(wallet.receiveDescriptor)
-            
-//            guard descriptorStruct.isMulti && wallet.type != WalletType.descriptor.stringValue else {
-//                print("wallet.type: \(wallet.type)")
-//                print("descriptorStruct.isMulti: \(descriptorStruct.isMulti)")
-//                create(params: param)
-//                return
-//            }
-            
+
             let index = Int(wallet.index) + 1
-            
+
             CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { success in
                 guard success else {
                     completion((nil, nil, "error updating wallets index"))
                     return
                 }
-                
+
                 Reducer.makeCommand(command: .deriveaddresses, param: "\"\(wallet.changeDescriptor)\", [\(index),\(index)]") { (response, errorMessage) in
                     guard let result = response as? NSArray, let changeAddress = result[0] as? String else {
-                        completion((nil, nil, errorMessage ?? "error deriving multisig change address"))
+                        completion((nil, nil, errorMessage ?? "error deriving change address"))
                         return
                     }
-                        
+
                     if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
-                        
+
                         param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"changeAddress\": \"\(changeAddress)\"}'', true"
-                        
+
                         if inputs != "" {
                             param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"changeAddress\": \"\(changeAddress)\"}'', true"
                         }
                     } else if let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int {
-                        
+
                         param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
-                        
+
                         if inputs != "" {
                             param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
                         }
                     }
-                    
+
                     create(params: param)
                 }
             }

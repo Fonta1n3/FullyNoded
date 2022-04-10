@@ -13,6 +13,7 @@ class HealthCheckViewController: UIViewController, UITextFieldDelegate {
     private var signers:[[String:Any]] = [["Data":"None"]]
     private var nodes:[[String:Any]] = [["Data":"None"]]
     private var wallets:[[String:Any]] = [["Data":"None"]]
+    private var jmWallets:[[String:Any]] = [["Data":"None"]]
     private var authKeys:[[String:Any]] = [["Data":"None"]]
     private var spinner = ConnectingView()
     private var tapGesture:UITapGestureRecognizer!
@@ -21,7 +22,8 @@ class HealthCheckViewController: UIViewController, UITextFieldDelegate {
         .signers,
         .nodes,
         .wallets,
-        .authKeys
+        .authKeys,
+        .jmWallets
     ]
     
     @IBOutlet weak private var passwordField: UITextField!
@@ -32,6 +34,7 @@ class HealthCheckViewController: UIViewController, UITextFieldDelegate {
         case nodes
         case wallets
         case authKeys
+        case jmWallets
     }
 
     override func viewDidLoad() {
@@ -117,6 +120,17 @@ class HealthCheckViewController: UIViewController, UITextFieldDelegate {
                     self.authKeys = newArray
                     self.loadTableData()
                 }
+            case .jmWallets:
+                decryptedArray(jmWallets, passwordHash, entity) { [weak self] (newArray, failed) in
+                    guard let self = self else { return }
+                    
+                    if failed {
+                        didFail = true
+                    }
+                    
+                    self.jmWallets = newArray
+                    self.loadTableData()
+                }
             }
             
             if x + 1 == entities.count {
@@ -178,7 +192,7 @@ class HealthCheckViewController: UIViewController, UITextFieldDelegate {
                             
                         } else if !(entity == .nodes && key == "label") {
                             if let decrypted = Crypto.decryptForBackup(passwordHash, data),
-                                let string = decrypted.utf8 {
+                                let string = decrypted.utf8String {
                                 item["\(key)"] = string
                             } else {
                                 failed = true
@@ -209,6 +223,7 @@ class HealthCheckViewController: UIViewController, UITextFieldDelegate {
                 guard let self = self else { return }
                 
                 if let iCloudEntities = iCloudEntities {
+                    print("iCloudEntities: \(iCloudEntities)")
                     if iCloudEntities.count > 0 {
                         dataExists = iCloudEntities.count > 0
                     }
@@ -222,6 +237,8 @@ class HealthCheckViewController: UIViewController, UITextFieldDelegate {
                         self.authKeys = iCloudEntities
                     case .wallets:
                         self.wallets = iCloudEntities
+                    case .jmWallets:
+                        self.jmWallets = iCloudEntities
                     }
                     
                     if x + 1 == self.entities.count {
@@ -257,6 +274,8 @@ class HealthCheckViewController: UIViewController, UITextFieldDelegate {
             return "Wallets"
         case .authKeys:
             return "Tor Auth Keys"
+        case .jmWallets:
+            return "JM Wallets"
         }
     }
     
@@ -281,13 +300,15 @@ extension HealthCheckViewController: UITableViewDelegate {
             return wallets.count
         case .authKeys:
             return authKeys.count
+        case .jmWallets:
+            return jmWallets.count
         default:
             return 0
         }
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 4
+        return 5
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -306,6 +327,8 @@ extension HealthCheckViewController: UITableViewDelegate {
             cell.textLabel?.text = labelText(wallets, indexPath.row)
         case .authKeys:
             cell.textLabel?.text = labelText(authKeys, indexPath.row)
+        case .jmWallets:
+            cell.textLabel?.text = labelText(jmWallets, indexPath.row)
         default:
             break
         }

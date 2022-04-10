@@ -343,18 +343,39 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func deleteNow() {
-        CoreDataService.deleteEntity(id: walletId, entityName: .wallets) { [unowned vc = self] success in
-            if success {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    if vc.wallet.name == UserDefaults.standard.object(forKey: "walletName") as? String {
-                        UserDefaults.standard.removeObject(forKey: "walletName")
-                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+        func delete() {
+            CoreDataService.deleteEntity(id: walletId, entityName: .wallets) { [unowned vc = self] success in
+                if success {
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        if vc.wallet.name == UserDefaults.standard.object(forKey: "walletName") as? String {
+                            UserDefaults.standard.removeObject(forKey: "walletName")
+                            NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                        }
+                        vc.walletDeleted()
                     }
-                    vc.walletDeleted()
+                } else {
+                    showAlert(vc: vc, title: "Error", message: "We had an error deleting your wallet.")
                 }
-            } else {
-                showAlert(vc: vc, title: "Error", message: "We had an error deleting your wallet.")
             }
+        }
+        
+        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmwallets in
+            guard let jmwallets = jmwallets, !jmwallets.isEmpty else {
+                delete()
+                return
+            }
+            
+            for jmwallet in jmwallets {
+                let str = JMWallet(jmwallet)
+                if str.fnWallet == self.wallet.name {
+                    CoreDataService.deleteEntity(id: str.id, entityName: .jmWallets) { deleted in
+                        #if DEBUG
+                        print("deleted jmwallet: \(deleted)")
+                        #endif
+                    }
+                }
+            }
+            delete()
         }
     }
     

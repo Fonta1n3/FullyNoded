@@ -160,7 +160,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 
                 let accountMap:[String:Any] = [
                     "descriptor": taprootDesc,
-                    "blockheight": Int64(self.blockheight),
+                    "blockheight": Int(self.blockheight),
                     "label": "Taproot Single Sig",
                     "password": password,
                     "watching":[]

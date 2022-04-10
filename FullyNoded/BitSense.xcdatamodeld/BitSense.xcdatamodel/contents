@@ -5,23 +5,21 @@
         <attribute name="privateKey" optional="YES" attributeType="Binary"/>
         <attribute name="publicKey" optional="YES" attributeType="String"/>
     </entity>
-    <entity name="NewDescriptors" representedClassName="NewDescriptors" syncable="YES" codeGenerationType="class">
-        <attribute name="descriptor" optional="YES" attributeType="Binary"/>
+    <entity name="JMWallets" representedClassName="JMWallets" syncable="YES" codeGenerationType="class">
+        <attribute name="account" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="fnWallet" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="label" optional="YES" attributeType="String"/>
-        <attribute name="range" optional="YES" attributeType="String"/>
-    </entity>
-    <entity name="NewHDWallets" representedClassName="NewHDWallets" syncable="YES" codeGenerationType="class">
-        <attribute name="descriptor" optional="YES" attributeType="Binary"/>
-        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="label" optional="YES" attributeType="String"/>
-        <attribute name="range" optional="YES" attributeType="String"/>
+        <attribute name="index" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="password" optional="YES" attributeType="Binary"/>
+        <attribute name="token" optional="YES" attributeType="Binary"/>
+        <attribute name="words" optional="YES" attributeType="Binary"/>
     </entity>
     <entity name="NewNodes" representedClassName="NewNodes" syncable="YES" codeGenerationType="class">
         <attribute name="cert" optional="YES" attributeType="Binary"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="isActive" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="isJoinMarket" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="isLightning" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="label" optional="YES" attributeType="String"/>
         <attribute name="macaroon" optional="YES" attributeType="Binary"/>
@@ -103,13 +101,12 @@
     </entity>
     <elements>
         <element name="AuthKeys" positionX="-36" positionY="126" width="128" height="88"/>
-        <element name="NewDescriptors" positionX="-18" positionY="153" width="128" height="103"/>
-        <element name="NewHDWallets" positionX="-36" positionY="144" width="128" height="118"/>
-        <element name="NewNodes" positionX="-54" positionY="135" width="128" height="179"/>
+        <element name="NewNodes" positionX="-54" positionY="135" width="128" height="194"/>
         <element name="Peers" positionX="-36" positionY="234" width="128" height="133"/>
         <element name="Signers" positionX="-27" positionY="189" width="128" height="209"/>
         <element name="Transactions" positionX="-36" positionY="279" width="128" height="149"/>
         <element name="Utxos" positionX="-36" positionY="234" width="128" height="238"/>
         <element name="Wallets" positionX="-36" positionY="180" width="128" height="359"/>
+        <element name="JMWallets" positionX="-36" positionY="288" width="128" height="149"/>
     </elements>
 </model>

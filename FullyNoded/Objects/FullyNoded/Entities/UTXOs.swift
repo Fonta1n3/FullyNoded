@@ -34,6 +34,7 @@ public struct Utxo: CustomStringConvertible {
     let lifehash: UIImage?
     var commitment: String?
     let dict: [String:Any]
+    var isJoinMarket: Bool
     
     init(_ dictionary: [String: Any]) {
         id = dictionary["id"] as? UUID
@@ -58,6 +59,7 @@ public struct Utxo: CustomStringConvertible {
         amountSats = dictionary["amountSats"] as? String
         lifehash = dictionary["lifehash"] as? UIImage
         commitment = dictionary["commitment"] as? String
+        isJoinMarket = dictionary["isJoinMarket"] as? Bool ?? false
         dict = dictionary
     }
     

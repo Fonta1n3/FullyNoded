@@ -36,6 +36,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBOutlet var saveButton: UIButton!
     @IBOutlet weak var onionAddressField: UITextField!
     @IBOutlet weak var addressHeaderOutlet: UILabel!
+    @IBOutlet weak var macaroonHeader: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,7 +59,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             addressHeaderOutlet.text = "Address: (xxx.onion:8080 or 127.0.0.1:8080)"
         } else {
             addressHeaderOutlet.text = "Address: (xxx.onion:8332 or 127.0.0.1:8332)"
-            
         }
     }
     
@@ -250,12 +250,18 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             newNode["id"] = UUID()
             
             var isLightning = false
+            var isJoinMarket = false
             
-            if onionAddressField.text!.hasSuffix(":8080") {
+            if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
                 isLightning = true
             }
             
+            if onionAddressField.text!.hasSuffix(":28183") {
+                isJoinMarket = true
+            }
+            
             newNode["isLightning"] = isLightning
+            newNode["isJoinMarket"] = isJoinMarket
             
             if nodeLabel.text != "" {
                 newNode["label"] = nodeLabel.text!
@@ -367,7 +373,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             let decryptedAddress = (onionAddressField.text)!.dataUsingUTF8StringEncoding
             
-            if onionAddressField.text!.hasSuffix(":8080") {
+            if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
                 CoreDataService.update(id: id, keyToUpdate: "isLightning", newValue: true, entity: .newNodes) { success in
                     if !success {
                         displayAlert(viewController: self, isError: true, message: "error updating isLightning")
@@ -375,7 +381,16 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if macaroonField.text != "" {
+            if onionAddressField.text!.hasSuffix(":28183") {
+                CoreDataService.update(id: id, keyToUpdate: "isJoinMarket", newValue: true, entity: .newNodes) { success in
+                    if !success {
+                        displayAlert(viewController: self, isError: true, message: "error updating isJoinMarket")
+                    }
+                }
+            }
+            
+            if macaroonField != nil,
+                macaroonField.text != "" {
                 var macaroonData:Data?
                 
                 if let macaroonDataCheck = try? Data.decodeUrlSafeBase64(macaroonField.text!) {
@@ -398,7 +413,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if certField.text != "" {
+            if certField != nil,
+                certField.text != "" {
                 guard let certData = try? Data.decodeUrlSafeBase64(certField.text!) else { return }
                 
                 guard let encryptedCert = Crypto.encrypt(certData) else { return }
@@ -433,12 +449,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         func decryptedValue(_ encryptedValue: Data) -> String {
             guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
             
-            return decrypted.utf8 ?? ""
+            return decrypted.utf8String ?? ""
         }
         
         if selectedNode != nil {
             let node = NodeStruct(dictionary: selectedNode!)
-            //hideValues(node: node)
             
             if node.id != nil {
                 
@@ -465,7 +480,25 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
                 
                 if let enc = node.onionAddress {
-                    onionAddressField.text = decryptedValue(enc)
+                    let decrypted = decryptedValue(enc)
+                    onionAddressField.text = decrypted
+                    
+                    if decrypted.hasSuffix(":28183"),
+                        rpcUserField != nil,
+                        rpcPassword != nil,
+                        passwordHeader != nil,
+                        usernameHeader != nil,
+                        usernameHeader != nil,
+                        macaroonField != nil,
+                        macaroonHeader != nil {
+                        rpcUserField.removeFromSuperview()
+                        rpcPassword.removeFromSuperview()
+                        passwordHeader.removeFromSuperview()
+                        usernameHeader.removeFromSuperview()
+                        macaroonField.removeFromSuperview()
+                        macaroonHeader.removeFromSuperview()
+                    }
+                    
                 } else {
                     var placeHolder = "127.0.0.1:8332"
                     
@@ -536,12 +569,24 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
-        onionAddressField.resignFirstResponder()
-        nodeLabel.resignFirstResponder()
-        rpcUserField.resignFirstResponder()
-        rpcPassword.resignFirstResponder()
-        certField.resignFirstResponder()
-        macaroonField.resignFirstResponder()
+        if onionAddressField != nil {
+            onionAddressField.resignFirstResponder()
+        }
+        if nodeLabel != nil {
+            nodeLabel.resignFirstResponder()
+        }
+        if rpcUserField != nil {
+            rpcUserField.resignFirstResponder()
+        }
+        if rpcPassword != nil {
+            rpcPassword.resignFirstResponder()
+        }
+        if certField != nil {
+            certField.resignFirstResponder()
+        }
+        if macaroonField != nil {
+            macaroonField.resignFirstResponder()
+        }
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -638,6 +683,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
                 }
                 
+                if isActive && newNodeStr.isJoinMarket && str.isJoinMarket {
+                    CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                }
+                
+                if isActive && !newNodeStr.isJoinMarket && !str.isJoinMarket {
+                    CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                }
+                
             } else {
                 if selectedNode != nil {
                     let selectedNodeStr = NodeStruct(dictionary: selectedNode!)
@@ -649,6 +702,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     if isActive && !selectedNodeStr.isLightning && !str.isLightning {
                         CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
                     }
+                    
+                    if isActive && selectedNodeStr.isJoinMarket && str.isJoinMarket {
+                        CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                    }
+                    
+//                    if isActive && !selectedNodeStr.isJoinMarket && !str.isJoinMarket {
+//                        CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+//                    }
                 }
             }
             
@@ -697,7 +758,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             if let vc = segue.destination as? QRDisplayerViewController {
                 var prefix = "btcrpc"
                 
-                if onionAddressField.text!.hasSuffix(":8080") {
+                if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
                     prefix = "clightning-rpc"
                     
                     if macaroonField.text != "" {
@@ -705,27 +766,34 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     }
                 }
                 
-                if isHost && !onionAddressField.text!.hasSuffix(":8080") {
-                    vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(hostname!):11221/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
-                    vc.headerText = "Quick Connect - Remote Control"
-                    vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
-                    isHost = false
-                    vc.headerIcon = UIImage(systemName: "antenna.radiowaves.left.and.right")
+            if onionAddressField.text!.hasSuffix(":28183") {
+                // its join market
+                vc.text = "http://\(onionAddressField.text ?? "")?cert=\(certField.text ?? "")"
+                vc.headerText = "Join Market Connect"
+                vc.descriptionText = ""
+                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
                     
-                } else if self.selectedNode?["macaroon"] == nil {
-                    vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(onionAddressField.text ?? "")/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
-                    vc.headerText = "QuickConnect QR"
-                    vc.descriptionText = "You can share this QR with trusted others who you want to share your node with, they will have access to all wallets on your node!"
-                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                } else {
-                    //its LND
-                    vc.text = "\(prefix)://\(onionAddressField.text ?? "")?cert=\(certField.text ?? "")&macaroon=\(macaroonField.text ?? "")"
-                    vc.headerText = "LNDConnect QR"
-                    vc.descriptionText = "You can share this QR with trusted others who you want to share your node with, they will have access to all wallets on your node!"
-                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                }
+            } else if isHost && !onionAddressField.text!.hasSuffix(":8080") && !onionAddressField.text!.hasSuffix(":10080") {
+                vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(hostname!):11221/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
+                vc.headerText = "Quick Connect - Remote Control"
+                vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
+                isHost = false
+                vc.headerIcon = UIImage(systemName: "antenna.radiowaves.left.and.right")
                 
+            } else if self.selectedNode?["macaroon"] == nil {
+                vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(onionAddressField.text ?? "")/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
+                vc.headerText = "QuickConnect QR"
+                vc.descriptionText = "You can share this QR with trusted others who you want to share your node with, they will have access to all wallets on your node!"
+                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+            } else {
+                //its LND
+                vc.text = "\(prefix)://\(onionAddressField.text ?? "")?cert=\(certField.text ?? "")&macaroon=\(macaroonField.text ?? "")"
+                vc.headerText = "LNDConnect QR"
+                vc.descriptionText = "You can share this QR with trusted others who you want to share your node with, they will have access to all wallets on your node!"
+                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
             }
+            
+        }
         }
         
         if segue.identifier == "segueToScanNodeCreds" {
