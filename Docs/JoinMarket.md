@@ -13,7 +13,7 @@
 - `./install.sh` (follow instructions on screen; provide sudo password when prompted, you can opt out of installing the QT/GUI dependencies as FN does not need them)
 
 ### Setup the wallet daemon
-- first you need to create an ssl cert if one does not already exist and save it in your JM data directory (usually HOME/user/.joinmarket/ssl)
+- first you need to create an ssl cert if one does not already exist and save it in your JM data directory (usually `HOME/user/.joinmarket/ssl`)
 - `cd /HOME/user/.joinmarket`
 - `mkdir ssl`
 - `cd ssl`
@@ -28,9 +28,9 @@
 
 ### Configure Tor
 - open your `torrc` file, usually located at `/etc/tor/torrc`
-- add the following to it and save it:
+- add the following to it and save it (the directory is an example, use whatever you want):
     ```
-    HiddenServiceDir /HOME/user/hidden_services/jmwalletd (any path where you want your tor hostname to be saved for the jmwalletd)
+    HiddenServiceDir /HOME/user/hidden_services/jmwalletd
     HiddenServiceVersion 3
     HiddenServicePort 28183 127.0.0.1:28183
     ```
@@ -55,10 +55,10 @@ Fully Noded allows you to either create a new JM wallet or use an existing walle
 input the lock/unlock password that you used to create the JM wallet with.
 
 All JM functionality in FN is accessed in the UTXO view. Your non JM wallets will show a mix button on each utxo. If you have added a JM node you can use this button
-to sweep the utxo to a JM wallet, if no JM wallet exists on FN it will prompt you to first create or recover an JM wallet. If a JM wallet exists it will simply fetch a deposit address 
+to sweep the utxo to a JM wallet, if no JM wallet exists on FN it will prompt you to first create or recover a JM wallet. If a JM wallet exists it will simply fetch a deposit address 
 from that JM wallet and present the transaction creator as normal.
 
-During the insitial JM wallet creation/recovery process it encrypts and saves the seed words locally on FN to ensure FN can always spend
+During the initial JM wallet creation/recovery process it encrypts and saves the seed words locally on FN to ensure FN can always spend
 from your JM wallet. **Fully Noded can not spend Fidelity Bonds on its own, only JM can do that.** 
 
 Now you have a FN/JM wallet which can be used just like any other FN wallet, even if you lose your JM server.
@@ -73,8 +73,8 @@ For the above reason JM coinjoin transactions are limited to mix depths in the F
 join from, you may also specify a mix depth to join from manually. Once you have chosen the mix depth to join from you will be presented with the transaction creator as normal, just add 
 an address and amount, for best privacy sweep the entire amount to avoid change.
 
-In order to be a successful maker you need to create a (Fidelity Bond)[], just tap the bitcoin button in the top bar to create one, you will need to select a date of expiry. This utxo
-will not be able to be spent until the first if that month at midnight. **Only Join Market can spend this utxo! Ensure you have the JM wallet backed up incase something goes wrong.**
+In order to be a successful maker you need to create a Fidelity Bond, just tap the bitcoin button in the top bar to create one, you will need to select a date of expiry. This utxo
+will not be able to be spent until the first of that month at midnight. **Only Join Market can spend this utxo! Ensure you have the JM wallet backed up incase something goes wrong.**
 
 Useful resources:
 - [Joinmarket API](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/JSON-RPC-API-using-jmwalletd.md)
