@@ -36,11 +36,11 @@
 		0A212DDE26D5DA9100BF6FD4 /* JoinMarketPit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212DDD26D5DA9100BF6FD4 /* JoinMarketPit.swift */; };
 		0A212DE026DC863D00BF6FD4 /* JMOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212DDF26DC863D00BF6FD4 /* JMOffer.swift */; };
 		0A21442C26B4282300123EAC /* PromptForAuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */; };
+		0A2829402803A8B600636DE1 /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A28293F2803A8B600636DE1 /* CoreNFC.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		0A2B4D702716ABCB00B607EE /* SparrowWalletImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2B4D6F2716ABCB00B607EE /* SparrowWalletImport.swift */; };
 		0A3013D8266B361E004DA35C /* LndRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3013D7266B361E004DA35C /* LndRpc.swift */; };
 		0A337D012700316E00AD087F /* WalletDir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A337D002700316E00AD087F /* WalletDir.swift */; };
 		0A39459826E5951100CAF05F /* Taker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A39459726E5951100CAF05F /* Taker.swift */; };
-		0A43EB8B270C50C100B39274 /* BigInt in Frameworks */ = {isa = PBXBuildFile; productRef = 0A43EB8A270C50C100B39274 /* BigInt */; };
 		0A590357269875CD00510626 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590356269875CB00510626 /* Extensions.swift */; };
 		0A59035A269B080700510626 /* ConfirmLightningPaymentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590359269B080700510626 /* ConfirmLightningPaymentViewController.swift */; };
 		0A59035D269B0CA800510626 /* InvoiceStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A59035C269B0CA700510626 /* InvoiceStruct.swift */; };
@@ -257,6 +257,7 @@
 		0A212DDD26D5DA9100BF6FD4 /* JoinMarketPit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinMarketPit.swift; sourceTree = "<group>"; };
 		0A212DDF26DC863D00BF6FD4 /* JMOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMOffer.swift; sourceTree = "<group>"; };
 		0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptForAuthViewController.swift; sourceTree = "<group>"; };
+		0A28293F2803A8B600636DE1 /* CoreNFC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreNFC.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk/System/iOSSupport/System/Library/Frameworks/CoreNFC.framework; sourceTree = DEVELOPER_DIR; };
 		0A2B4D6F2716ABCB00B607EE /* SparrowWalletImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparrowWalletImport.swift; sourceTree = "<group>"; };
 		0A3013D7266B361E004DA35C /* LndRpc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LndRpc.swift; sourceTree = "<group>"; };
 		0A337D002700316E00AD087F /* WalletDir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDir.swift; sourceTree = "<group>"; };
@@ -435,8 +436,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0A2829402803A8B600636DE1 /* CoreNFC.framework in Frameworks */,
 				0A9834C626BC2E6800BAB74E /* CloudKit.framework in Frameworks */,
-				0A43EB8B270C50C100B39274 /* BigInt in Frameworks */,
 				0A1F10FD26A1AF3200BE2707 /* URKit in Frameworks */,
 				D06D788C25B817B500769157 /* LifeHash in Frameworks */,
 				D016AE7525B0284300A59E93 /* Tor.xcframework in Frameworks */,
@@ -1016,6 +1017,7 @@
 		D08C1FBB211147F600B7CA79 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0A28293F2803A8B600636DE1 /* CoreNFC.framework */,
 				0A8B41122702106C00815E65 /* Python.framework */,
 				0A9834C526BC2E6700BAB74E /* CloudKit.framework */,
 				D016AE7225B0284000A59E93 /* Tor.xcframework */,
@@ -1113,7 +1115,6 @@
 			packageProductDependencies = (
 				D06D788B25B817B500769157 /* LifeHash */,
 				0A1F10FC26A1AF3200BE2707 /* URKit */,
-				0A43EB8A270C50C100B39274 /* BigInt */,
 			);
 			productName = BitSense;
 			productReference = D00B9A242111427200E8B95A /* FullyNoded.app */;
@@ -1608,10 +1609,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-6";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNoded.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 350;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1631,8 +1632,8 @@
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
+				PROVISIONING_PROFILE_SPECIFIER = development_ios_profile;
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = development_profile_macos;
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "FullyNoded/FullyNoded-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -1793,11 +1794,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0A1F10FB26A1AF3200BE2707 /* XCRemoteSwiftPackageReference "URKit" */;
 			productName = URKit;
-		};
-		0A43EB8A270C50C100B39274 /* BigInt */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 0A43EB89270C50C100B39274 /* XCRemoteSwiftPackageReference "BigInt" */;
-			productName = BigInt;
 		};
 		D06D788B25B817B500769157 /* LifeHash */ = {
 			isa = XCSwiftPackageProductDependency;

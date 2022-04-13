@@ -302,9 +302,9 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func getReceieveAddressForFullyNodedWallet(_ wallet: Wallet) {
-        let index = Int(wallet.index) + 1
+        let index = Int(wallet.index)
         
-        CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { success in
+        CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index + 1), entity: .wallets) { success in
             guard success else { return }
             
             let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"

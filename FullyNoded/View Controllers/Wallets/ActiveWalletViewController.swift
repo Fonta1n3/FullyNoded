@@ -7,8 +7,11 @@
 //
 
 import UIKit
+import CoreNFC
 
 class ActiveWalletViewController: UIViewController {
+    
+    private var nfcSession: NFCNDEFReaderSession?
     
     private var showOnchain = false
     private var showOffchain = false

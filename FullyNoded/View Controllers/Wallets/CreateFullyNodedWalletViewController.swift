@@ -7,12 +7,14 @@
 //
 
 import UIKit
+import CoreNFC
 
 class CreateFullyNodedWalletViewController: UIViewController, UINavigationControllerDelegate, UIDocumentPickerDelegate {
     
     @IBOutlet weak var multiSigOutlet: UIButton!
     @IBOutlet weak var singleSigOutlet: UIButton!
     
+    private var nfcSession: NFCNDEFReaderSession?
     var cosigner:Descriptor?
     var isDescriptor = false
     var onDoneBlock:(((Bool)) -> Void)?
@@ -30,6 +32,32 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         singleSigOutlet.layer.cornerRadius = 8
         multiSigOutlet.layer.cornerRadius = 8
     }
+    
+    @IBAction func nfcAction(_ sender: Any) {
+        // Step 3: Check whether the current device can support NFC tag reading.
+        if !NFCNDEFReaderSession.readingAvailable {
+            showAlert(vc: self, title: "", message: "No NFC chip detected.")
+            return
+        }
+        
+        /*
+         Step 4: Initialize NFCNDEFReaderSession object with parameter
+         invalidateAfterFirstRead:
+         true: NFCNDEFReaderSession will be automatically invalidated after the didDetectNDEFs() callback get fired and the blue-tick completion animation is finished.
+         Any manual invalidation of NFCNDEFReaderSession within didDetectNDEFs() callback will be IGNORED.
+         false: NFCNDEFReaderSession will be manually invalidated by developer.
+         Thus, it is possible to scan multiple NFC tags at the same time.
+         */
+        nfcSession = NFCNDEFReaderSession.init(delegate: self, queue: nil, invalidateAfterFirstRead: true)
+        
+        // Step 5: alert message is the string shown below the scan logo. The max number of line is 3.
+        // It is not possible to use an attributed string at the alertMessage property.
+        nfcSession?.alertMessage = "Scan the BIP84 xpub from your Coldcard."
+        
+        // Step 6: To show the NFC reader dialog by beginning the NFC session
+        nfcSession?.begin()
+    }
+    
     
     @IBAction func pasteAction(_ sender: Any) {
         if let data = UIPasteboard.general.data(forPasteboardType: "com.apple.traditional-mac-plain-text") {
@@ -705,3 +733,46 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
 }
+
+extension CreateFullyNodedWalletViewController: NFCNDEFReaderSessionDelegate {
+    func readerSessionDidBecomeActive(_ session: NFCNDEFReaderSession) {
+        print("readerSessionDidBecomeActive")
+    }
+  func readerSession(_ session: NFCNDEFReaderSession, didInvalidateWithError error: Error) {
+    /*
+    Example of error message:
+       "Session is invalidated by user cancellation" --- User has cancelled the NFC reader dialog
+       "Session is invalidated due to maximum session timeout" --- Time out for scanning a NFC tag is exceeded.
+       "Feature not supported" --- Device does not support the NFC feature (iPhone 6S or older) or app is running at simulator
+    */
+    print("The session was invalidated: \(error.localizedDescription)")
+  }
+  
+  func readerSession(_ session: NFCNDEFReaderSession, didDetectNDEFs messages: [NFCNDEFMessage]) {
+    // Step 7: Retrieving the NFC data from the NFCNDEFMessage list
+      print("did detect ndefs")
+    var result = ""
+    messages.forEach { (nfcndefMessage) in
+      nfcndefMessage.records.forEach({ (nfcndefPayload) in
+          result += nfcndefPayload.payload.utf8String ?? ""
+      })
+    }
+    
+    // Step 8: didDetectNDEFs callback is run in background thread. All UI updates must be handled carefully.
+      
+      DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+          self?.nfcSession?.invalidate()
+          //showAlert(vc: self, title: "", message: "Scanned NFC tag info: " + result) // Simply show an UIAlertController with message
+          
+          print("result: \(result)")
+          
+          let xpub = "\(result.dropFirst(3))"
+          self?.processImportedString(xpub)
+          
+          
+//          let url = URL(string: "https://\(result)")
+//
+//          UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+        }
+  }
+  }

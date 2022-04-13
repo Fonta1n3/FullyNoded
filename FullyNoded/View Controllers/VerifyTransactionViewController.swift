@@ -7,9 +7,11 @@
 //
 
 import UIKit
+import CoreNFC
 
 class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate {
     
+    private var nfcSession: NFCNDEFReaderSession?
     var isChannelFunding = false
     var voutChannelFunding:Int?
     var smartFee = Double()
@@ -335,6 +337,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 self.scanQr()
             }))
             
+            alert.addAction(UIAlertAction(title: "NFC", style: .default, handler: { action in
+                self.startNFC(alertMessage: "Please scan a NFC tag.")
+            }))
+            
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = self.view
             self.present(alert, animated: true) {}
@@ -411,24 +417,17 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 showAlert(vc: self, title: "Invalid File", message: "That is not a recognized format, generally it will be a .psbt or .txn file.")
                 return
             }
-            
-//            print("data.utf8String: \(data.utf8String)")
-//            print("bas64: \(data.base64EncodedString())")
-                        
+                                    
             if let text = data.utf8String, text.lowercased().hasPrefix("ur:bytes") {
-                //print("text: \(text)")
                 self.reset()
                 self.blind = true
                 self.parseBlindPsbt(text)
             } else {
-                //print("psbt: \(data.base64EncodedString())")
-                
                 if Keys.validPsbt(data.base64EncodedString()) {
                     unsignedPsbt = data.base64EncodedString()
                     self.reset()
                     processPsbt(unsignedPsbt)
                 } else if let psbtUtf8 = data.utf8String, Keys.validPsbt(psbtUtf8) {
-                    print("getting here")
                     unsignedPsbt = psbtUtf8
                     self.reset()
                     processPsbt(psbtUtf8)
@@ -440,8 +439,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             return
         }
-        
-        //print("raw text: \(text)")
         
         reset()
         signedRawTx = text.condenseWhitespace()
@@ -2581,6 +2578,32 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             self.processPsbt(joinedPsbt)
         }
     }
+    
+    private func startNFC(alertMessage: String) {
+        // Step 3: Check whether the current device can support NFC tag reading.
+        if !NFCNDEFReaderSession.readingAvailable {
+            showAlert(vc: self, title: "", message: "No NFC chip detected.")
+            return
+        }
+        
+        /*
+         Step 4: Initialize NFCNDEFReaderSession object with parameter
+         invalidateAfterFirstRead:
+         true: NFCNDEFReaderSession will be automatically invalidated after the didDetectNDEFs() callback get fired and the blue-tick completion animation is finished.
+         Any manual invalidation of NFCNDEFReaderSession within didDetectNDEFs() callback will be IGNORED.
+         false: NFCNDEFReaderSession will be manually invalidated by developer.
+         Thus, it is possible to scan multiple NFC tags at the same time.
+         */
+        nfcSession = NFCNDEFReaderSession.init(delegate: self, queue: nil, invalidateAfterFirstRead: true)
+        
+        // Step 5: alert message is the string shown below the scan logo. The max number of line is 3.
+        // It is not possible to use an attributed string at the alertMessage property.
+        nfcSession?.alertMessage = alertMessage
+        
+        // Step 6: To show the NFC reader dialog by beginning the NFC session
+        nfcSession?.begin()
+    }
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -2833,3 +2856,42 @@ extension VerifyTransactionViewController: UITableViewDelegate {
 }
 
 extension VerifyTransactionViewController: UITableViewDataSource {}
+
+extension VerifyTransactionViewController: NFCNDEFReaderSessionDelegate {
+    func readerSessionDidBecomeActive(_ session: NFCNDEFReaderSession) {
+        print("readerSessionDidBecomeActive")
+    }
+  func readerSession(_ session: NFCNDEFReaderSession, didInvalidateWithError error: Error) {
+    /*
+    Example of error message:
+       "Session is invalidated by user cancellation" --- User has cancelled the NFC reader dialog
+       "Session is invalidated due to maximum session timeout" --- Time out for scanning a NFC tag is exceeded.
+       "Feature not supported" --- Device does not support the NFC feature (iPhone 6S or older) or app is running at simulator
+    */
+    print("The session was invalidated: \(error.localizedDescription)")
+  }
+  
+  func readerSession(_ session: NFCNDEFReaderSession, didDetectNDEFs messages: [NFCNDEFMessage]) {
+    // Step 7: Retrieving the NFC data from the NFCNDEFMessage list
+      print("did detect ndefs")
+    var result = ""
+    messages.forEach { (nfcndefMessage) in
+      nfcndefMessage.records.forEach({ (nfcndefPayload) in
+        result += nfcndefPayload.payload.utf8String ?? ""
+      })
+    }
+    
+    // Step 8: didDetectNDEFs callback is run in background thread. All UI updates must be handled carefully.
+      
+      DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+          self?.nfcSession?.invalidate()
+          showAlert(vc: self, title: "", message: "Scanned NFC tag info: " + result) // Simply show an UIAlertController with message
+          
+          print("result: \(result)")
+          
+//          let url = URL(string: "https://\(result)")
+//          
+//          UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+        }
+  }
+}
