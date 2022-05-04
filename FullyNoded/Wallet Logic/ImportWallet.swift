@@ -161,13 +161,13 @@ class ImportWallet {
                                 var params = ""
                                 
                                 for (i, watchingDesc) in watchingArray.enumerated() {
-                                    var ischange = false
+//                                    var ischange = false
+//                                    
+//                                    if watchingDesc.contains("/1/") {
+//                                        ischange = true
+//                                    }
                                     
-                                    if watchingDesc.contains("/1/") {
-                                        ischange = true
-                                    }
-                                    
-                                    let param = "{\"desc\": \"\(watchingDesc)\", \"active\": false, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": \(ischange)}"
+                                    let param = "{\"desc\": \"\(watchingDesc)\", \"active\": false, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": false}"
                                     
                                     if i < watchingArray.count && i != 0 {
                                         params += ", "

@@ -77,7 +77,7 @@ class QuickConnect {
         } else {
             guard let rpcPassword = URLComponents(string: url)?.password,
                 let rpcUser = URLComponents(string: url)?.user else {
-                    // try jm here.
+                    // try jm here. // need to also try c-lightning
                     guard let certCheck = URL(string: url)?.value(for: "cert"),
                           let certData = try? Data.decodeUrlSafeBase64(certCheck) else {
                               completion((false, "cert missing."))

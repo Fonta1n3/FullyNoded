@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0A00D6A4271BE51600ECAB22 /* TextFileImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A00D6A3271BE51600ECAB22 /* TextFileImport.swift */; };
 		0A00D6A6271E53DA00ECAB22 /* HealthCheckViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A00D6A5271E53DA00ECAB22 /* HealthCheckViewController.swift */; };
+		0A1461DD280E589100916ACC /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A1461DC280E589100916ACC /* CoreNFC.framework */; };
 		0A1F10CF26A1A47F00BE2707 /* DerivationPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10CE26A1A47F00BE2707 /* DerivationPath.swift */; };
 		0A1F10D226A1A4EE00BE2707 /* DerivationStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10D126A1A4EE00BE2707 /* DerivationStep.swift */; };
 		0A1F10D526A1A52600BE2707 /* ChildIndexSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10D426A1A52600BE2707 /* ChildIndexSpec.swift */; };
@@ -36,7 +37,6 @@
 		0A212DDE26D5DA9100BF6FD4 /* JoinMarketPit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212DDD26D5DA9100BF6FD4 /* JoinMarketPit.swift */; };
 		0A212DE026DC863D00BF6FD4 /* JMOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212DDF26DC863D00BF6FD4 /* JMOffer.swift */; };
 		0A21442C26B4282300123EAC /* PromptForAuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */; };
-		0A2829402803A8B600636DE1 /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A28293F2803A8B600636DE1 /* CoreNFC.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		0A2B4D702716ABCB00B607EE /* SparrowWalletImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2B4D6F2716ABCB00B607EE /* SparrowWalletImport.swift */; };
 		0A3013D8266B361E004DA35C /* LndRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3013D7266B361E004DA35C /* LndRpc.swift */; };
 		0A337D012700316E00AD087F /* WalletDir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A337D002700316E00AD087F /* WalletDir.swift */; };
@@ -230,6 +230,7 @@
 /* Begin PBXFileReference section */
 		0A00D6A3271BE51600ECAB22 /* TextFileImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFileImport.swift; sourceTree = "<group>"; };
 		0A00D6A5271E53DA00ECAB22 /* HealthCheckViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthCheckViewController.swift; sourceTree = "<group>"; };
+		0A1461DC280E589100916ACC /* CoreNFC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreNFC.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/iOSSupport/System/Library/Frameworks/CoreNFC.framework; sourceTree = DEVELOPER_DIR; };
 		0A1F10CE26A1A47F00BE2707 /* DerivationPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationPath.swift; sourceTree = "<group>"; };
 		0A1F10D126A1A4EE00BE2707 /* DerivationStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationStep.swift; sourceTree = "<group>"; };
 		0A1F10D426A1A52600BE2707 /* ChildIndexSpec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildIndexSpec.swift; sourceTree = "<group>"; };
@@ -257,7 +258,6 @@
 		0A212DDD26D5DA9100BF6FD4 /* JoinMarketPit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinMarketPit.swift; sourceTree = "<group>"; };
 		0A212DDF26DC863D00BF6FD4 /* JMOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMOffer.swift; sourceTree = "<group>"; };
 		0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptForAuthViewController.swift; sourceTree = "<group>"; };
-		0A28293F2803A8B600636DE1 /* CoreNFC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreNFC.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk/System/iOSSupport/System/Library/Frameworks/CoreNFC.framework; sourceTree = DEVELOPER_DIR; };
 		0A2B4D6F2716ABCB00B607EE /* SparrowWalletImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparrowWalletImport.swift; sourceTree = "<group>"; };
 		0A3013D7266B361E004DA35C /* LndRpc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LndRpc.swift; sourceTree = "<group>"; };
 		0A337D002700316E00AD087F /* WalletDir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDir.swift; sourceTree = "<group>"; };
@@ -278,7 +278,6 @@
 		0A6B365E27BD94CA00CD4F3A /* JMTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMTx.swift; sourceTree = "<group>"; };
 		0A77138326AD9C5E005CC23D /* BlindPsbt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlindPsbt.swift; sourceTree = "<group>"; };
 		0A77138526AE5E85005CC23D /* WalletInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletInfo.swift; sourceTree = "<group>"; };
-		0A8B41122702106C00815E65 /* Python.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python.framework; path = ../../../../../Library/Frameworks/Python.framework; sourceTree = "<group>"; };
 		0A9834BE26BBC93F00BAB74E /* CoreDataiCloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataiCloud.swift; sourceTree = "<group>"; };
 		0A9834C326BBCCB300BAB74E /* Backup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backup.swift; sourceTree = "<group>"; };
 		0A9834C526BC2E6700BAB74E /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
@@ -436,12 +435,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0A2829402803A8B600636DE1 /* CoreNFC.framework in Frameworks */,
 				0A9834C626BC2E6800BAB74E /* CloudKit.framework in Frameworks */,
 				0A1F10FD26A1AF3200BE2707 /* URKit in Frameworks */,
 				D06D788C25B817B500769157 /* LifeHash in Frameworks */,
 				D016AE7525B0284300A59E93 /* Tor.xcframework in Frameworks */,
 				D016AE4825AFFCA400A59E93 /* LibWally.xcframework in Frameworks */,
+				0A1461DD280E589100916ACC /* CoreNFC.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1017,8 +1016,7 @@
 		D08C1FBB211147F600B7CA79 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				0A28293F2803A8B600636DE1 /* CoreNFC.framework */,
-				0A8B41122702106C00815E65 /* Python.framework */,
+				0A1461DC280E589100916ACC /* CoreNFC.framework */,
 				0A9834C526BC2E6700BAB74E /* CloudKit.framework */,
 				D016AE7225B0284000A59E93 /* Tor.xcframework */,
 				D016AE4425AFFCA000A59E93 /* LibWally.xcframework */,
@@ -1613,7 +1611,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 350;
+				CURRENT_PROJECT_VERSION = 351;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1627,7 +1625,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.430;
+				MARKETING_VERSION = 1.431;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1652,7 +1650,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 350;
+				CURRENT_PROJECT_VERSION = 351;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1668,7 +1666,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.430;
+				MARKETING_VERSION = 1.431;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";

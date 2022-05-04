@@ -3557,12 +3557,12 @@ xxxxx</string>
                             </stackView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="47C-HD-wcH">
                                 <rect key="frame" x="16" y="378.5" width="343" height="167.5"/>
-                                <mutableString key="text">Already have a wallet or cosigner? 
+                                <string key="text">Already have a wallet or cosigner? 
 
 Use the buttons in the top right to import whatever you've got.  
 From left to right: NFC, paste text, upload file and scan QR. 
 
-Fully Noded does its best to support as many hardware and software wallet options as possible.</mutableString>
+Fully Noded does its best to support as many hardware and software wallet options as possible.</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -3653,12 +3653,17 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="xpub / xprv" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="fbb-jX-krx">
-                                <rect key="frame" x="16" y="169" width="343" height="34"/>
+                                <rect key="frame" x="16" y="211" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sLK-5X-3x7">
-                                <rect key="frame" x="91" y="211" width="191" height="43"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="optional xfp" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="P6g-Yj-thq">
+                                <rect key="frame" x="16" y="169" width="343" height="34"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sLK-5X-3x7">
+                                <rect key="frame" x="92" y="253" width="191" height="43"/>
                                 <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="43" id="Wbp-hA-5nJ"/>
@@ -3677,16 +3682,19 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <constraints>
                             <constraint firstItem="c3d-xP-e7q" firstAttribute="trailing" secondItem="0B2-xL-1ut" secondAttribute="trailing" constant="16" id="4Cg-Y5-zM9"/>
                             <constraint firstItem="M58-lH-WUq" firstAttribute="top" secondItem="c3d-xP-e7q" secondAttribute="top" constant="17" id="JVk-IT-dM8"/>
+                            <constraint firstItem="fbb-jX-krx" firstAttribute="top" secondItem="P6g-Yj-thq" secondAttribute="bottom" constant="8" symbolic="YES" id="K71-6i-x1I"/>
                             <constraint firstItem="WjC-KR-sms" firstAttribute="centerY" secondItem="M58-lH-WUq" secondAttribute="centerY" id="M37-D2-pFr"/>
+                            <constraint firstItem="c3d-xP-e7q" firstAttribute="trailing" secondItem="P6g-Yj-thq" secondAttribute="trailing" constant="16" id="SkF-9k-v4x"/>
                             <constraint firstItem="0B2-xL-1ut" firstAttribute="top" secondItem="M58-lH-WUq" secondAttribute="bottom" constant="26" id="VQR-MN-229"/>
                             <constraint firstItem="c3d-xP-e7q" firstAttribute="trailing" secondItem="fbb-jX-krx" secondAttribute="trailing" constant="16" id="W7C-xD-gS3"/>
                             <constraint firstItem="fbb-jX-krx" firstAttribute="leading" secondItem="c3d-xP-e7q" secondAttribute="leading" constant="16" id="Ye5-Nq-bVd"/>
                             <constraint firstItem="M58-lH-WUq" firstAttribute="leading" secondItem="c3d-xP-e7q" secondAttribute="leading" constant="16" id="ZRB-wy-UJz"/>
-                            <constraint firstItem="fbb-jX-krx" firstAttribute="top" secondItem="0B2-xL-1ut" secondAttribute="bottom" constant="8" id="Zid-ZH-mqy"/>
+                            <constraint firstItem="P6g-Yj-thq" firstAttribute="top" secondItem="0B2-xL-1ut" secondAttribute="bottom" constant="8" symbolic="YES" id="bWA-ed-okL"/>
                             <constraint firstItem="WjC-KR-sms" firstAttribute="leading" secondItem="M58-lH-WUq" secondAttribute="trailing" constant="8" id="d41-NV-Vyc"/>
                             <constraint firstItem="0B2-xL-1ut" firstAttribute="leading" secondItem="c3d-xP-e7q" secondAttribute="leading" constant="16" id="gG5-6h-YQp"/>
                             <constraint firstItem="sLK-5X-3x7" firstAttribute="centerX" secondItem="uv7-wI-T9f" secondAttribute="centerX" id="gLh-Sr-lfE"/>
                             <constraint firstItem="sLK-5X-3x7" firstAttribute="top" secondItem="fbb-jX-krx" secondAttribute="bottom" constant="8" id="heB-GC-0KK"/>
+                            <constraint firstItem="P6g-Yj-thq" firstAttribute="leading" secondItem="c3d-xP-e7q" secondAttribute="leading" constant="16" id="uxA-uN-Otj"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="bjo-9U-Qcx">
@@ -3702,6 +3710,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <outlet property="importOutlet" destination="sLK-5X-3x7" id="gab-wr-6bb"/>
                         <outlet property="labelField" destination="0B2-xL-1ut" id="wTB-Kn-Z4g"/>
                         <outlet property="textField" destination="fbb-jX-krx" id="znG-r9-xgg"/>
+                        <outlet property="xfpField" destination="P6g-Yj-thq" id="VF8-Ri-cj6"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanXpub" id="9TT-9o-7xG"/>
                     </connections>
                 </viewController>
@@ -7649,7 +7658,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="Cd3-qW-ujG"/>
         <segue reference="kws-xU-XdS"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="2DM-Bo-8hK"/>
+        <segue reference="9TT-9o-7xG"/>
         <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="BVG-ie-esh"/>

@@ -11,6 +11,7 @@ import CoreNFC
 
 class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate {
     
+    private var ndefMessage:NFCNDEFMessage?
     private var nfcSession: NFCNDEFReaderSession?
     var isChannelFunding = false
     var voutChannelFunding:Int?
@@ -2382,7 +2383,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 itemToExport = plain
             }
             
-            let alert = UIAlertController(title: tit, message: "Share as a file, text or QR?", preferredStyle: .alert)
+            let alert = UIAlertController(title: tit, message: "Share as a file, text, QR or NFC?", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "File", style: .default, handler: { action in
                 self.convertPSBTtoData(string: itemToExport)
@@ -2395,6 +2396,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             alert.addAction(UIAlertAction(title: "QR", style: .default, handler: { action in
                 self.qrCodeStringToExport = itemToExport
                 self.exportAsQR()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "NFC", style: .default, handler: { action in
+                self.qrCodeStringToExport = itemToExport
+                //self.exportAsNFC(itemToExport)
+                self.startNFC(alertMessage: "Tap an NFC device to send the psbt.")
             }))
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
@@ -2594,7 +2601,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
          false: NFCNDEFReaderSession will be manually invalidated by developer.
          Thus, it is possible to scan multiple NFC tags at the same time.
          */
-        nfcSession = NFCNDEFReaderSession.init(delegate: self, queue: nil, invalidateAfterFirstRead: true)
+        nfcSession = NFCNDEFReaderSession.init(delegate: self, queue: nil, invalidateAfterFirstRead: false)
         
         // Step 5: alert message is the string shown below the scan logo. The max number of line is 3.
         // It is not possible to use an attributed string at the alertMessage property.
@@ -2858,40 +2865,106 @@ extension VerifyTransactionViewController: UITableViewDelegate {
 extension VerifyTransactionViewController: UITableViewDataSource {}
 
 extension VerifyTransactionViewController: NFCNDEFReaderSessionDelegate {
+    
     func readerSessionDidBecomeActive(_ session: NFCNDEFReaderSession) {
-        print("readerSessionDidBecomeActive")
-    }
-  func readerSession(_ session: NFCNDEFReaderSession, didInvalidateWithError error: Error) {
-    /*
-    Example of error message:
-       "Session is invalidated by user cancellation" --- User has cancelled the NFC reader dialog
-       "Session is invalidated due to maximum session timeout" --- Time out for scanning a NFC tag is exceeded.
-       "Feature not supported" --- Device does not support the NFC feature (iPhone 6S or older) or app is running at simulator
-    */
-    print("The session was invalidated: \(error.localizedDescription)")
-  }
-  
-  func readerSession(_ session: NFCNDEFReaderSession, didDetectNDEFs messages: [NFCNDEFMessage]) {
-    // Step 7: Retrieving the NFC data from the NFCNDEFMessage list
-      print("did detect ndefs")
-    var result = ""
-    messages.forEach { (nfcndefMessage) in
-      nfcndefMessage.records.forEach({ (nfcndefPayload) in
-        result += nfcndefPayload.payload.utf8String ?? ""
-      })
+        guard let psbtData = Data(base64Encoded: self.qrCodeStringToExport) else { return }
+        
+        let myInt:Int64 = Int64.random(in: Int64(0)...Int64.max)
+        let id = withUnsafeBytes(of: myInt) { Data($0) }
+        let dataPayload = NFCNDEFPayload(format: .nfcExternal, type: "psbt/xff".utf8, identifier: id, payload: psbtData)
+        
+        self.ndefMessage = NFCNDEFMessage(records: [dataPayload])
+                
+        os_log("MessageSize=%d", self.ndefMessage!.length)
     }
     
-    // Step 8: didDetectNDEFs callback is run in background thread. All UI updates must be handled carefully.
-      
-      DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-          self?.nfcSession?.invalidate()
-          showAlert(vc: self, title: "", message: "Scanned NFC tag info: " + result) // Simply show an UIAlertController with message
-          
-          print("result: \(result)")
-          
-//          let url = URL(string: "https://\(result)")
-//          
-//          UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+    func readerSession(_ session: NFCNDEFReaderSession, didInvalidateWithError error: Error) {
+        print("The session was invalidated: \(error.localizedDescription)")
+    }
+    
+    func readerSession(_ session: NFCNDEFReaderSession, didDetect tags: [NFCNDEFTag]) {
+        if tags.count > 1 {
+            session.alertMessage = "More than 1 tags found. Please present only 1 tag."
+            //self.tagRemovalDetect(tags.first!)
+            return
         }
-  }
+        
+        // You connect to the desired tag.
+        let tag = tags.first!
+        session.connect(to: tag) { (error: Error?) in
+            if error != nil {
+                session.restartPolling()
+                return
+            }
+            
+            // You then query the NDEF status of tag.
+            tag.queryNDEFStatus() { (status: NFCNDEFStatus, capacity: Int, error: Error?) in
+                if error != nil {
+                    session.invalidate(errorMessage: "Fail to determine NDEF status.  Please try again.")
+                    return
+                }
+                
+                if status == .readOnly {
+                    session.invalidate(errorMessage: "Tag is not writable.")
+                    
+                    tag.readNDEF { ndefmessage, error in
+                        guard let ndefmessage = ndefmessage else {
+                            print("no message")
+                            return
+                        }
+                        
+                        var result = ""
+                        ndefmessage.records.forEach( { nfcndefPayload in
+                            result += nfcndefPayload.payload.utf8String ?? ""
+                        })
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                            self?.nfcSession?.invalidate()
+                            showAlert(vc: self, title: "", message: "Scanned NFC tag info: " + result)
+                        }
+                    }
+                    
+                } else if status == .readWrite {
+                    if self.ndefMessage!.length > capacity {
+                        session.invalidate(errorMessage: "Tag capacity is too small.  Minimum size requirement is \(self.ndefMessage!.length) bytes.")
+                        return
+                    }
+                    
+                    // When a tag is read-writable and has sufficient capacity,
+                    // write an NDEF message to it.
+                    
+                    tag.writeNDEF(self.ndefMessage!) { error in
+                        let psbtpayload = self.ndefMessage!.records[0].payload.base64EncodedString()
+                        
+                        if let error = error {
+                            session.invalidate(errorMessage: "Update tag failed: \(error.localizedDescription) PSBT: \(psbtpayload)")
+                        } else {
+                            session.alertMessage = "PSBT written ✓\n\nNext import the signed tx or psbt via sign/send/join"
+                            session.invalidate()
+                        }
+                    }
+                } else {
+                    session.invalidate(errorMessage: "Tag is not NDEF formatted.")
+                    return
+                }
+            }
+        }
+    }
+    
+    func readerSession(_ session: NFCNDEFReaderSession, didDetectNDEFs messages: [NFCNDEFMessage]) {
+        // Step 7: Retrieving the NFC data from the NFCNDEFMessage list
+        print("did detect ndefs")
+        var result = ""
+        messages.forEach { nfcndefMessage in
+            nfcndefMessage.records.forEach( { nfcndefPayload in
+                result += nfcndefPayload.payload.utf8String ?? ""
+            })
+        }
+        
+        // Step 8: didDetectNDEFs callback is run in background thread. All UI updates must be handled carefully.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            self?.nfcSession?.invalidate()
+            showAlert(vc: self, title: "", message: "Scanned NFC tag info: " + result)
+        }
+    }
 }

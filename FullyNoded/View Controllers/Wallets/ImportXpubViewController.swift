@@ -13,6 +13,8 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var importOutlet: UIButton!
     @IBOutlet weak var textField: UITextField!
     @IBOutlet weak var labelField: UITextField!
+    @IBOutlet weak var xfpField: UITextField!
+    
     @IBOutlet weak var headerLabel: UILabel!
     
     var extKey = ""
@@ -46,37 +48,37 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
         return "wpkh([\(fingerprint)/84h/\(coinType)h/0h]\(extKey)/1/*)"
     }
     
-    var bip44primbip32: String {
-        return "pkh([\(fingerprint)/44h/\(coinType)h/0h/0]\(extKey)/*)"
-    }
-    
-    var bip44changebip32: String {
-        return "pkh([\(fingerprint)/44h/\(coinType)h/0h/1]\(extKey)/*)"
-    }
-    
-    var bip49primbip32: String {
-        return "sh(wpkh([\(fingerprint)/49h/\(coinType)h/0h/0]\(extKey)/*))"
-    }
-    
-    var bip49changebip32: String {
-        return "sh(wpkh([\(fingerprint)/49h/\(coinType)h/0h/1]\(extKey)/*))"
-    }
-    
-    var bip84primbip32: String {
-        return "wpkh([\(fingerprint)/84h/\(coinType)h/0h/0]\(extKey)/*)"
-    }
-    
-    var bip84changebip32: String {
-        return "wpkh([\(fingerprint)/84h/\(coinType)h/0h/1]\(extKey)/*)"
-    }
-    
-    var plainPrim: String {
-        return "combo([\(fingerprint)]\(extKey)/0/*)"
-    }
-    
-    var plainChange: String {
-        return "combo([\(fingerprint)]\(extKey)/1/*)"
-    }
+//    var bip44primbip32: String {
+//        return "pkh([\(fingerprint)/44h/\(coinType)h/0h/0]\(extKey)/*)"
+//    }
+//
+//    var bip44changebip32: String {
+//        return "pkh([\(fingerprint)/44h/\(coinType)h/0h/1]\(extKey)/*)"
+//    }
+//
+//    var bip49primbip32: String {
+//        return "sh(wpkh([\(fingerprint)/49h/\(coinType)h/0h/0]\(extKey)/*))"
+//    }
+//
+//    var bip49changebip32: String {
+//        return "sh(wpkh([\(fingerprint)/49h/\(coinType)h/0h/1]\(extKey)/*))"
+//    }
+//
+//    var bip84primbip32: String {
+//        return "wpkh([\(fingerprint)/84h/\(coinType)h/0h/0]\(extKey)/*)"
+//    }
+//
+//    var bip84changebip32: String {
+//        return "wpkh([\(fingerprint)/84h/\(coinType)h/0h/1]\(extKey)/*)"
+//    }
+//
+//    var plainPrim: String {
+//        return "combo([\(fingerprint)]\(extKey)/0/*)"
+//    }
+//
+//    var plainChange: String {
+//        return "combo([\(fingerprint)]\(extKey)/1/*)"
+//    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -93,6 +95,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
         labelField.removeGestureRecognizer(tapGesture)
         
         if isDescriptor {
+            xfpField.removeFromSuperview()
             textField.placeholder = "descriptor"
             headerLabel.text = "Descriptor import"
             showAlert(vc: self, title: "", message: "Fully Noded currently supports extended key (xpub/xprv) based descriptors to create wallets. Creating wallets with other descriptor types will not work.")
@@ -113,8 +116,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
-        textField.resignFirstResponder()
-        labelField.resignFirstResponder()
+        resignKeyboard()
     }
     
     private func showError(_ error: String) {
@@ -142,7 +144,19 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    private func resignKeyboard() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.textField.resignFirstResponder()
+            self.labelField.resignFirstResponder()
+            self.xfpField.resignFirstResponder()
+        }
+    }
+    
     private func importKeyNow() {
+        resignKeyboard()
+        
         extKey = textField.text ?? ""
         
         if !extKey.hasPrefix("xpub") && !extKey.hasPrefix("tpub") && !extKey.hasPrefix("xprv") && !extKey.hasPrefix("tprv") {
@@ -154,7 +168,13 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
             return
         }
         
-        fingerprint = Keys.fingerprint(masterKey: extKey) ?? "00000000"
+        if xfpField.text == "" {
+            showAlert(vc: self, title: "Missing fingerprint (XFP)", message: "If you ware using a HWW it may not sign your transactions unless you manually add the fingerprint!")
+            fingerprint = Keys.fingerprint(masterKey: extKey) ?? "00000000"
+        } else {
+            fingerprint = xfpField.text ?? "00000000"
+        }
+        
         spinner.addConnectingView(vc: self, description: "importing wallet, this can take a minute...")
         importKey()
     }
@@ -163,7 +183,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
         return [bip44primAccount,
                 bip44changeAccount,
                 bip49primAccount,
-                bip49changeAccount,
+                bip49changeAccount/*,
                 bip44primbip32,
                 bip44changebip32,
                 bip49primbip32,
@@ -171,7 +191,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
                 bip84primbip32,
                 bip84changebip32,
                 plainPrim,
-                plainChange]
+                plainChange*/]
     }
     
     private func importKey() {
@@ -235,6 +255,14 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    private func addXfpToTextField(_ xfp: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.xfpField.text = xfp
+        }
+    }
+    
     private func doneAlert(_ title: String, _ message: String) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -271,6 +299,14 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
         showAlert(vc: self, title: "Hot wallet alert!", message: "Importing an extended private key will create a HOT wallet on your node.")
     }
     
+    private func isExtendedKey(_ lowercased: String) -> Bool {
+        if lowercased.hasPrefix("xprv") || lowercased.hasPrefix("tprv") || lowercased.hasPrefix("vprv") || lowercased.hasPrefix("yprv") || lowercased.hasPrefix("zprv") || lowercased.hasPrefix("uprv") || lowercased.hasPrefix("xpub") || lowercased.hasPrefix("tpub") || lowercased.hasPrefix("vpub") || lowercased.hasPrefix("ypub") || lowercased.hasPrefix("zpub") || lowercased.hasPrefix("upub") {
+            return true
+        } else {
+            return false
+        }
+    }
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -279,16 +315,20 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
             if #available(macCatalyst 14.0, *) {
                 if let vc = segue.destination as? QRScannerViewController {
                     vc.isScanningAddress = true
-                    vc.onDoneBlock = { [unowned thisVc = self] xpub in
-                        if xpub != nil {
-                            let lowercased = xpub!.lowercased()
+                    vc.onDoneBlock = { [unowned thisVc = self] text in
+                        if text != nil {
+                            let lowercased = text!.lowercased()
                             
                             if lowercased.hasPrefix("xprv") || lowercased.hasPrefix("tprv") || lowercased.hasPrefix("vprv") || lowercased.hasPrefix("yprv") || lowercased.hasPrefix("zprv") || lowercased.hasPrefix("uprv") {
                                 
                                 self.hotWalletAlert()
                             }
                             
-                            thisVc.addXpubToTextField(xpub!)
+                            if self.isExtendedKey(lowercased) {
+                                thisVc.addXpubToTextField(text!)
+                            } else {
+                                self.addXfpToTextField(text!)
+                            }
                         }
                     }
                 }
