@@ -478,6 +478,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             self.exportPsbt(blindedpsbt: nil, plainText: self.unsignedPsbt)
         }))
         
+        
+        
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
         alert.popoverPresentationController?.sourceView = self.view
         self.present(alert, animated: true) {}
@@ -864,7 +866,20 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 
                 self.psbtDict = dict
                 
-                if let inputs = dict["inputs"] as? NSArray, inputs.count > 0 {
+                // MARK TODO: Add a check for input number and offer to bypass as its a nice to have.
+                
+                if let inputs = dict["inputs"] as? NSArray,
+                    inputs.count > 0/*,
+                    let outputs = dict["outputs"] as? NSArray,
+                    outputs.count > 0 */{
+                    
+//                    guard inputs.count > 10 || outputs.count > 10 else {
+//                        // alert for having a large amount of ins/outs
+//
+//                        return
+//                    }
+                    
+                    
                     for (i, input) in inputs.enumerated() {
                         var isSigned = false
                         if let inputDict = input as? NSDictionary {
@@ -1173,7 +1188,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func verifyInputs() {
-        if index < inputTableArray.count {
+        
+        if inputTableArray.count < 10 && index < inputTableArray.count {
+            
+        //}
+        
+        //if index < inputTableArray.count {
             self.updateLabel("verifying input #\(self.index + 1) out of \(self.inputTableArray.count)")
             
             if let address = inputTableArray[index]["address"] as? String, address != "unknown", address != "" {
@@ -1278,7 +1298,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func verifyOutputs() {
-        if index < outputArray.count {
+        if index < outputArray.count && outputArray.count < 10 {
             self.updateLabel("verifying output #\(self.index + 1) out of \(self.outputArray.count)")
             
             if let address = outputArray[index]["address"] as? String, address != "" {
@@ -2495,7 +2515,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
         } else {
             DispatchQueue.main.async { [weak self] in
-                guard let self = self, let data = Data(base64Encoded: string) else { return }
+                guard let self = self/*, let data = Data(base64Encoded: string) */else { return }
+                
+                // MARK: This is what unchained capital expects, passing UC raw base64 binary errors it out.
+                let data = string.utf8
                 
                 var label = self.labelText
                 
@@ -2905,8 +2928,6 @@ extension VerifyTransactionViewController: NFCNDEFReaderSessionDelegate {
                 }
                 
                 if status == .readOnly {
-                    session.invalidate(errorMessage: "Tag is not writable.")
-                    
                     tag.readNDEF { ndefmessage, error in
                         guard let ndefmessage = ndefmessage else {
                             print("no message")

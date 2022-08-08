@@ -916,6 +916,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         let desc = Descriptor("\(primDesc)")
         
         if desc.isP2TR {
+            // MARK TODO: need to ensure this is an xprv...
             promptForEncryptionPassword(primDesc)
         } else {
             if desc.isCosigner {
