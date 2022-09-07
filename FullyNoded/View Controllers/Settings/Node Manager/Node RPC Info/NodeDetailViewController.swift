@@ -224,13 +224,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     @IBAction func exportNode(_ sender: Any) {
-        if onionAddressField.text != "" && rpcPassword.text != "" && rpcUserField.text != "" {
-            segueToExport()
-        } else if onionAddressField.text != "" && macaroonField.text != "" {
-            segueToExport()
-        } else {
-            showAlert(vc: self, title: "Incomplete node creds.", message: "This button is for sharing your nodes quick connect or lndconnect QR code so trusted others can use your node.")
-        }
+        segueToExport()
     }
     
     private func segueToExport() {
@@ -761,9 +755,17 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
                     prefix = "clightning-rpc"
                     
+                    guard macaroonField != nil else {
+                        prefix = "http"
+                        return
+                    }
+                    
                     if macaroonField.text != "" {
                         prefix = "lndconnect"
                     }
+                    
+                } else {
+                    prefix = "http"
                 }
                 
             if onionAddressField.text!.hasSuffix(":28183") {
