@@ -24,7 +24,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     var fxRate = 0.0
     var bitcoinCoreWallets = [String]()
     let spinner = ConnectingView()
-    var initialLoad = false
+    var initialLoad = true
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,8 +43,10 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     
     override func viewDidAppear(_ animated: Bool) {
         externalWallets.removeAll()
-        spinner.addConnectingView(vc: self, description: "getting total balance...")
-        getBitcoinCoreWallets()
+        if initialLoad {
+            getBitcoinCoreWallets()
+            initialLoad = false
+        }
     }
     
     @IBAction func seeExternalWalletsAction(_ sender: Any) {
@@ -56,6 +58,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func getBitcoinCoreWallets() {
+        spinner.addConnectingView(vc: self, description: "getting total balance...")
         bitcoinCoreWallets.removeAll()
         OnchainUtils.listWalletDir { [weak self] (walletDir, message) in
             guard let self = self else { return }
@@ -132,9 +135,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func loadTotalBalance() {
-        if !initialLoad {
-            spinner.label.text = "getting total balance..."
-        }
+        spinner.label.text = "getting total balance..."
         
         FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
             guard let self = self else { return }
