@@ -307,7 +307,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         if nodes!.count == 0 {
                             vc.newNode["isActive"] = true
                         } else {
-                            vc.newNode["isActive"] = false
+                            if !self.onionAddressField.text!.hasSuffix(":28183") {
+                                vc.newNode["isActive"] = false
+                            }
                         }
                         
                         CoreDataService.saveEntity(dict: vc.newNode, entityName: .newNodes) { [unowned vc = self] success in
@@ -321,20 +323,25 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if nodeLabel.text != "" && rpcPassword.text != "" && rpcUserField.text != "" && onionAddressField.text != "" {
+            guard nodeLabel.text != "", onionAddressField.text != "" else {
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "Fill out all fields first")
+                return
+            }
+            
+            if rpcPassword.text != "" && rpcUserField.text != "" {
                 save()
-            } else if nodeLabel.text != "" && onionAddressField.text != "" && macaroonField.text != "" {
+            } else if macaroonField.text != "" || certField.text != "" {
                 save()
             } else {
                 
                 displayAlert(viewController: self,
                              isError: true,
                              message: "Fill out all fields first")
-                
             }
             
         } else {
-            
             //updating
             
             let id = selectedNode!["id"] as! UUID
@@ -589,75 +596,69 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     private func nodeAddedSuccess() {
+        let addAlertTitle = "Node added successfully ✓"
+        let addAlertMessage = "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node."
+        let updatedAlertTitle = "Node updated successfully ✓"
+        let updatedAlertMessage = "Your node has been updated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection using your updated node credentials."
+        
+        func popHome() {
+            DispatchQueue.main.async { [unowned vc = self] in
+                NotificationCenter.default.post(name: .refreshNode, object: nil)
+                vc.navigationController?.popToRootViewController(animated: true)
+            }
+        }
+        
+        func popBack() {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.navigationController?.popViewController(animated: true)
+            }
+        }
+        
+        func nodeAddedAlert() {
+            DispatchQueue.main.async { [unowned vc = self] in
+                let alert = UIAlertController(title: addAlertTitle, message: addAlertMessage, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                    popHome()
+                }))
+                alert.popoverPresentationController?.sourceView = vc.view
+                vc.present(alert, animated: true) {}
+            }
+        }
+        
+        func nodeUpdatedAlert() {
+            DispatchQueue.main.async { [unowned vc = self] in
+                let alert = UIAlertController(title: updatedAlertTitle, message: updatedAlertMessage, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                    popBack()
+                }))
+                alert.popoverPresentationController?.sourceView = vc.view
+                vc.present(alert, animated: true) {}
+            }
+        }
+        
         CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
-            if nodes != nil {
-                if !vc.isLightning {
-                    if nodes!.count > 1 {
-                        vc.deActivateNodes(nodes: nodes!) {
-                            DispatchQueue.main.async { [unowned vc = self] in
-                                let alert = UIAlertController(title: "Node added successfully ✓", message: "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node.", preferredStyle: .alert)
-                                alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
-                                    DispatchQueue.main.async { [unowned vc = self] in
-                                        NotificationCenter.default.post(name: .refreshNode, object: nil)
-                                        vc.navigationController?.popToRootViewController(animated: true)
-                                    }
-                                }))
-                                alert.popoverPresentationController?.sourceView = vc.view
-                                vc.present(alert, animated: true) {}
-                            }
-                        }
-                    } else {
-                        if !vc.createNew {
-                            DispatchQueue.main.async { [unowned vc = self] in
-                                let alert = UIAlertController(title: "Node updated successfully", message: "Your node has been updated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection using your updated node credentials.", preferredStyle: .alert)
-                                alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
-                                    DispatchQueue.main.async { [unowned vc = self] in
-                                        NotificationCenter.default.post(name: .refreshNode, object: nil)
-                                        vc.navigationController?.popToRootViewController(animated: true)
-                                    }
-                                }))
-                                alert.popoverPresentationController?.sourceView = vc.view
-                                vc.present(alert, animated: true) {}
-                            }
-                        } else {
-                           DispatchQueue.main.async { [unowned vc = self] in
-                            let alert = UIAlertController(title: "Node added successfully ✓", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: .alert)
-                                alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
-                                    DispatchQueue.main.async { [unowned vc = self] in
-                                        NotificationCenter.default.post(name: .refreshNode, object: nil)
-                                        vc.navigationController?.popToRootViewController(animated: true)
-                                    }
-                                }))
-                                alert.popoverPresentationController?.sourceView = vc.view
-                                vc.present(alert, animated: true) {}
-                            }
-                        }
-                    }
+            guard let nodes = nodes else { return }
+            
+            func checkIfUpdating() {
+                if !vc.createNew {
+                    nodeUpdatedAlert()
                 } else {
-                    if !vc.createNew {
-                        DispatchQueue.main.async { [unowned vc = self] in
-                            let alert = UIAlertController(title: "Node updated successfully", message: "Your node has been updated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection using your updated node credentials.", preferredStyle: .alert)
-                            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
-                                DispatchQueue.main.async { [unowned vc = self] in
-                                    vc.navigationController?.popViewController(animated: true)
-                                }
-                            }))
-                            alert.popoverPresentationController?.sourceView = vc.view
-                            vc.present(alert, animated: true) {}
-                        }
-                    } else {
-                       DispatchQueue.main.async { [unowned vc = self] in
-                        let alert = UIAlertController(title: "Node added successfully ✓", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: .alert)
-                            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
-                                DispatchQueue.main.async { [unowned vc = self] in
-                                    vc.navigationController?.popViewController(animated: true)
-                                }
-                            }))
-                            alert.popoverPresentationController?.sourceView = vc.view
-                            vc.present(alert, animated: true) {}
-                        }
-                    }
+                    nodeAddedAlert()
                 }
+            }
+            
+            guard !vc.isLightning else {
+                checkIfUpdating()
+                return
+            }
+            
+            guard nodes.count > 1 else {
+                checkIfUpdating()
+                return
+            }
+            
+            vc.deActivateNodes(nodes: nodes) {
+                nodeAddedAlert()
             }
         }
     }
@@ -669,6 +670,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             if createNew {
                 let newNodeStr = NodeStruct(dictionary: self.newNode)
+                
                 if isActive && newNodeStr.isLightning && str.isLightning {
                     CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
                 }
@@ -682,6 +684,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
                 
                 if isActive && !newNodeStr.isJoinMarket && !str.isJoinMarket {
+                    CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                }
+                
+                if isActive && !newNodeStr.isJoinMarket && str.isJoinMarket {
                     CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
                 }
                 
@@ -700,26 +706,25 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     if isActive && selectedNodeStr.isJoinMarket && str.isJoinMarket {
                         CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
                     }
-                    
-//                    if isActive && !selectedNodeStr.isJoinMarket && !str.isJoinMarket {
-//                        CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
-//                    }
                 }
             }
             
             if i + 1 == nodes.count {
-                if createNew {
-                    let id = newNode["id"] as! UUID
-                    CoreDataService.update(id: id, keyToUpdate: "isActive", newValue: true, entity: .newNodes) { success in
-                        completion()
-                    }
-                } else {
-                    if selectedNode != nil {
-                        let selectedNodeStr = NodeStruct(dictionary: selectedNode!)
-                        
-                        if let id = selectedNodeStr.id {
-                            CoreDataService.update(id: id, keyToUpdate: "isActive", newValue: true, entity: .newNodes) { success in
-                                completion()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                    guard let self = self else { return }
+                    if self.createNew {
+                        let id = self.newNode["id"] as! UUID
+                        CoreDataService.update(id: id, keyToUpdate: "isActive", newValue: true, entity: .newNodes) { success in
+                            completion()
+                        }
+                    } else {
+                        if self.selectedNode != nil {
+                            let selectedNodeStr = NodeStruct(dictionary: self.selectedNode!)
+                            
+                            if let id = selectedNodeStr.id {
+                                CoreDataService.update(id: id, keyToUpdate: "isActive", newValue: true, entity: .newNodes) { success in
+                                    completion()
+                                }
                             }
                         }
                     }
@@ -750,52 +755,37 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "segueToExportNode" {
             if let vc = segue.destination as? QRDisplayerViewController {
-                var prefix = "btcrpc"
                 
-                if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
-                    prefix = "clightning-rpc"
+                if onionAddressField.text!.hasSuffix(":28183") {
+                    vc.text = "http://\(onionAddressField.text ?? "")?cert=\(certField.text ?? "")"
+                    vc.headerText = "Join Market Connect"
+                    vc.descriptionText = ""
+                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
                     
-                    guard macaroonField != nil else {
-                        prefix = "http"
-                        return
+                } else if isHost && !onionAddressField.text!.hasSuffix(":8080") && !onionAddressField.text!.hasSuffix(":10080") {
+                    vc.text = "btcrpc://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(hostname!):11221/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
+                    vc.headerText = "Quick Connect - Remote Control"
+                    vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
+                    isHost = false
+                    vc.headerIcon = UIImage(systemName: "antenna.radiowaves.left.and.right")
+                    
+                } else if self.selectedNode?["macaroon"] == nil {
+                    var prefix = "btcrpc"
+                    if rpcUserField.text == "lightning" {
+                        prefix = "clightning-rpc"
                     }
-                    
-                    if macaroonField.text != "" {
-                        prefix = "lndconnect"
-                    }
-                    
+                    vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(onionAddressField.text ?? "")/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
+                    vc.headerText = "QuickConnect QR"
+                    vc.descriptionText = "You can share this QR with trusted others who you want to share your node with, they will have access to all wallets on your node!"
+                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
                 } else {
-                    prefix = "http"
+                    //its LND
+                    vc.text = "lndconnect://\(onionAddressField.text ?? "")?cert=\(certField.text ?? "")&macaroon=\(macaroonField.text ?? "")"
+                    vc.headerText = "LNDConnect QR"
+                    vc.descriptionText = "You can share this QR with trusted others who you want to share your node with, they will have access to all wallets on your node!"
+                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
                 }
-                
-            if onionAddressField.text!.hasSuffix(":28183") {
-                // its join market
-                vc.text = "http://\(onionAddressField.text ?? "")?cert=\(certField.text ?? "")"
-                vc.headerText = "Join Market Connect"
-                vc.descriptionText = ""
-                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                    
-            } else if isHost && !onionAddressField.text!.hasSuffix(":8080") && !onionAddressField.text!.hasSuffix(":10080") {
-                vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(hostname!):11221/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
-                vc.headerText = "Quick Connect - Remote Control"
-                vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
-                isHost = false
-                vc.headerIcon = UIImage(systemName: "antenna.radiowaves.left.and.right")
-                
-            } else if self.selectedNode?["macaroon"] == nil {
-                vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(onionAddressField.text ?? "")/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
-                vc.headerText = "QuickConnect QR"
-                vc.descriptionText = "You can share this QR with trusted others who you want to share your node with, they will have access to all wallets on your node!"
-                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-            } else {
-                //its LND
-                vc.text = "\(prefix)://\(onionAddressField.text ?? "")?cert=\(certField.text ?? "")&macaroon=\(macaroonField.text ?? "")"
-                vc.headerText = "LNDConnect QR"
-                vc.descriptionText = "You can share this QR with trusted others who you want to share your node with, they will have access to all wallets on your node!"
-                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
             }
-            
-        }
         }
         
         if segue.identifier == "segueToScanNodeCreds" {

@@ -108,7 +108,6 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
                    let encryptedbip84tpub = Crypto.encrypt(bip84tpub.utf8),
                    let encryptedbip48xpub = Crypto.encrypt(bip48xpub.utf8),
                    let encryptedbip48tpub = Crypto.encrypt(bip48tpub.utf8) {
-                    
                     CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip84xpub", newValue: encryptedbip84xpub, entity: .signers) { _ in }
                     CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip84tpub", newValue: encryptedbip84tpub, entity: .signers) { _ in }
                     CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip48xpub", newValue: encryptedbip48xpub, entity: .signers) { _ in }
@@ -116,7 +115,7 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
                     CoreDataService.update(id: signerStruct.id, keyToUpdate: "xfp", newValue: encryptedXfp, entity: .signers) { _ in }
                     CoreDataService.update(id: signerStruct.id, keyToUpdate: "rootTpub", newValue: encryptedRootTpub, entity: .signers) { _ in }
                     CoreDataService.update(id: signerStruct.id, keyToUpdate: "rootXpub", newValue: encryptedRootXpub, entity: .signers) { _ in }
-                }                
+                }
             }
         }
     }
