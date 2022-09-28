@@ -286,9 +286,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     }
     
     private func lndGetFees() {
-        let start = Int(Calendar.current.date(byAdding: .year, value: -6, to: Date())!.timeIntervalSince1970)
-        let now = Int(Date().timeIntervalSince1970)
-        let body:[String:Any] = ["start_time":"\(start)", "end_time":"\(now)"]
+        let body:[String:Any] = ["max_events":"1000000"]
         
         LndRpc.sharedInstance.command(.fwdinghistory, body, nil, nil) { (response, error) in
             guard let response = response else { return }
