@@ -268,13 +268,9 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     }
                 }
             }
-            
         } else {
-            
             print("node count is wrong")
-            
         }
-        
     }
     
     func reloadTable() {

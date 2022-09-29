@@ -3511,7 +3511,7 @@ xxxxx</string>
                                 </constraints>
                             </imageView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="11" translatesAutoresizingMaskIntoConstraints="NO" id="6zG-h6-wiF">
-                                <rect key="frame" x="16" y="122" width="343" height="221.5"/>
+                                <rect key="frame" x="16" y="122" width="343" height="207"/>
                                 <subviews>
                                     <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GO8-o8-fXl">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
@@ -3527,14 +3527,14 @@ xxxxx</string>
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="d1Y-lU-km0">
-                                        <rect key="frame" x="0.0" y="55" width="343" height="57.5"/>
-                                        <string key="text">Creates a new single signature wallet. With segwit your node holds the public keys, Fully Noded holds the private keys encrypted on your device. With Taproot your node holds the private keys.</string>
+                                        <rect key="frame" x="0.0" y="55" width="343" height="43"/>
+                                        <string key="text">Creates a new single signature wallet. Your node holds the public keys, Fully Noded holds the private keys encrypted on your device.</string>
                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ewF-ze-dkg">
-                                        <rect key="frame" x="0.0" y="123.5" width="343" height="44"/>
+                                        <rect key="frame" x="0.0" y="109" width="343" height="44"/>
                                         <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="ozy-XE-8dP"/>
@@ -3547,7 +3547,7 @@ xxxxx</string>
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ti9-Jn-c8c">
-                                        <rect key="frame" x="0.0" y="178.5" width="343" height="43"/>
+                                        <rect key="frame" x="0.0" y="164" width="343" height="43"/>
                                         <string key="text">Add cosigners by scanning QR's, pasting text from other wallets or by deriving cosigners from existing signers stored on Fully Noded.</string>
                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                         <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -3556,11 +3556,11 @@ xxxxx</string>
                                 </subviews>
                             </stackView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="47C-HD-wcH">
-                                <rect key="frame" x="16" y="378.5" width="343" height="167.5"/>
+                                <rect key="frame" x="16" y="364" width="343" height="167.5"/>
                                 <string key="text">Already have a wallet or cosigner? 
 
 Use the buttons in the top right to import whatever you've got.  
-From left to right: NFC, paste text, upload file and scan QR. 
+From left to right: paste text, upload file and scan QR. 
 
 Fully Noded does its best to support as many hardware and software wallet options as possible.</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -3602,12 +3602,6 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 <color key="tintColor" red="0.34901961679999999" green="0.77647060160000003" blue="0.97254908080000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                 <connections>
                                     <action selector="pasteAction:" destination="0gR-Gj-FSR" id="VYg-fG-GpG"/>
-                                </connections>
-                            </barButtonItem>
-                            <barButtonItem title="NFC" image="sensor.tag.radiowaves.forward" catalog="system" id="89c-nl-seF">
-                                <color key="tintColor" red="0.35294118520000001" green="0.77647060160000003" blue="0.97647058959999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                <connections>
-                                    <action selector="nfcAction:" destination="0gR-Gj-FSR" id="Iv0-oR-XhT"/>
                                 </connections>
                             </barButtonItem>
                         </rightBarButtonItems>
@@ -3653,17 +3647,12 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="xpub / xprv" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="fbb-jX-krx">
-                                <rect key="frame" x="16" y="211" width="343" height="34"/>
+                                <rect key="frame" x="16" y="169" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="optional xfp" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="P6g-Yj-thq">
-                                <rect key="frame" x="16" y="169" width="343" height="34"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
-                            </textField>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sLK-5X-3x7">
-                                <rect key="frame" x="92" y="253" width="191" height="43"/>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sLK-5X-3x7">
+                                <rect key="frame" x="91" y="211" width="191" height="43"/>
                                 <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="43" id="Wbp-hA-5nJ"/>
@@ -3682,19 +3671,16 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <constraints>
                             <constraint firstItem="c3d-xP-e7q" firstAttribute="trailing" secondItem="0B2-xL-1ut" secondAttribute="trailing" constant="16" id="4Cg-Y5-zM9"/>
                             <constraint firstItem="M58-lH-WUq" firstAttribute="top" secondItem="c3d-xP-e7q" secondAttribute="top" constant="17" id="JVk-IT-dM8"/>
-                            <constraint firstItem="fbb-jX-krx" firstAttribute="top" secondItem="P6g-Yj-thq" secondAttribute="bottom" constant="8" symbolic="YES" id="K71-6i-x1I"/>
                             <constraint firstItem="WjC-KR-sms" firstAttribute="centerY" secondItem="M58-lH-WUq" secondAttribute="centerY" id="M37-D2-pFr"/>
-                            <constraint firstItem="c3d-xP-e7q" firstAttribute="trailing" secondItem="P6g-Yj-thq" secondAttribute="trailing" constant="16" id="SkF-9k-v4x"/>
                             <constraint firstItem="0B2-xL-1ut" firstAttribute="top" secondItem="M58-lH-WUq" secondAttribute="bottom" constant="26" id="VQR-MN-229"/>
                             <constraint firstItem="c3d-xP-e7q" firstAttribute="trailing" secondItem="fbb-jX-krx" secondAttribute="trailing" constant="16" id="W7C-xD-gS3"/>
                             <constraint firstItem="fbb-jX-krx" firstAttribute="leading" secondItem="c3d-xP-e7q" secondAttribute="leading" constant="16" id="Ye5-Nq-bVd"/>
                             <constraint firstItem="M58-lH-WUq" firstAttribute="leading" secondItem="c3d-xP-e7q" secondAttribute="leading" constant="16" id="ZRB-wy-UJz"/>
-                            <constraint firstItem="P6g-Yj-thq" firstAttribute="top" secondItem="0B2-xL-1ut" secondAttribute="bottom" constant="8" symbolic="YES" id="bWA-ed-okL"/>
+                            <constraint firstItem="fbb-jX-krx" firstAttribute="top" secondItem="0B2-xL-1ut" secondAttribute="bottom" constant="8" id="Zid-ZH-mqy"/>
                             <constraint firstItem="WjC-KR-sms" firstAttribute="leading" secondItem="M58-lH-WUq" secondAttribute="trailing" constant="8" id="d41-NV-Vyc"/>
                             <constraint firstItem="0B2-xL-1ut" firstAttribute="leading" secondItem="c3d-xP-e7q" secondAttribute="leading" constant="16" id="gG5-6h-YQp"/>
                             <constraint firstItem="sLK-5X-3x7" firstAttribute="centerX" secondItem="uv7-wI-T9f" secondAttribute="centerX" id="gLh-Sr-lfE"/>
                             <constraint firstItem="sLK-5X-3x7" firstAttribute="top" secondItem="fbb-jX-krx" secondAttribute="bottom" constant="8" id="heB-GC-0KK"/>
-                            <constraint firstItem="P6g-Yj-thq" firstAttribute="leading" secondItem="c3d-xP-e7q" secondAttribute="leading" constant="16" id="uxA-uN-Otj"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="bjo-9U-Qcx">
@@ -3710,7 +3696,6 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <outlet property="importOutlet" destination="sLK-5X-3x7" id="gab-wr-6bb"/>
                         <outlet property="labelField" destination="0B2-xL-1ut" id="wTB-Kn-Z4g"/>
                         <outlet property="textField" destination="fbb-jX-krx" id="znG-r9-xgg"/>
-                        <outlet property="xfpField" destination="P6g-Yj-thq" id="VF8-Ri-cj6"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanXpub" id="9TT-9o-7xG"/>
                     </connections>
                 </viewController>
@@ -4772,7 +4757,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
             </objects>
             <point key="canvasLocation" x="2718" y="376"/>
         </scene>
-        <!--v0.3.4-->
+        <!--v0.3.5-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -5013,7 +4998,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.3.4" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.3.5" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -5842,7 +5827,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                     </textField>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC username: (Bitcoin Core or c-lightning)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Shd-1m-99a">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC username: (Bitcoin Core, CLN)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Shd-1m-99a">
                                         <rect key="frame" x="0.0" y="130" width="343" height="17"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -5854,7 +5839,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC password: (Bitcoin Core or c-lightning)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ojR-cB-7rc">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC password: (Bitcoin Core, CLN)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ojR-cB-7rc">
                                         <rect key="frame" x="0.0" y="195" width="343" height="17"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -5878,7 +5863,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Cert: (LND)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WBC-Zb-OwL">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Cert: (LND, Join Market)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WBC-Zb-OwL">
                                         <rect key="frame" x="0.0" y="325" width="343" height="17"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -7658,7 +7643,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="Cd3-qW-ujG"/>
         <segue reference="kws-xU-XdS"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="9TT-9o-7xG"/>
+        <segue reference="07E-4w-Zh7"/>
         <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="BVG-ie-esh"/>
@@ -7706,7 +7691,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="qrcode" catalog="system" width="128" height="114"/>
         <image name="qrcode.viewfinder" catalog="system" width="128" height="115"/>
         <image name="questionmark.circle" catalog="system" width="128" height="121"/>
-        <image name="sensor.tag.radiowaves.forward" catalog="system" width="128" height="85"/>
         <image name="signature" catalog="system" width="128" height="90"/>
         <image name="slider.horizontal.3" catalog="system" width="128" height="100"/>
         <image name="square.and.arrow.up" catalog="system" width="115" height="128"/>

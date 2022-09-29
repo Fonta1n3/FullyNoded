@@ -68,7 +68,7 @@ class QuickConnect {
             newNode["label"] = "LND"
             newNode["uncleJim"] = false
             newNode["isLightning"] = true
-            newNode["isActive"] = false
+            newNode["isActive"] = true
             newNode["macaroon"] = encryptedMacaroonHex
             newNode["cert"] = encryptedCert
             
@@ -121,13 +121,12 @@ class QuickConnect {
             newNode["rpcuser"] = torNodeRPCUser
             newNode["rpcpassword"] = torNodeRPCPass
             newNode["uncleJim"] = uncleJim
+            newNode["isActive"] = true
             
-            if !url.hasPrefix("clightning-rpc") {
-                newNode["isActive"] = true
+            if !url.hasPrefix("clightning-rpc") && rpcUser != "lightning" {
                 newNode["isLightning"] = false
             } else {
                 newNode["isLightning"] = true
-                newNode["isActive"] = false
             }
             
             processNode(newNode, url, completion: completion)
@@ -135,23 +134,41 @@ class QuickConnect {
     }
     
     private class func processNode(_ newNode: [String:Any], _ url: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        if url.hasPrefix("clightning-rpc") || url.hasPrefix("lndconnect") || url.hasPrefix("http") {
-            saveNode(newNode, url, completion: completion)
+        
+        CoreDataService.retrieveEntity(entityName: .newNodes) { (nodes) in
+            guard let nodes = nodes, nodes.count > 0 else { saveNode(newNode, url, completion: completion); return }
             
-        } else {
-            // Deactivate existing nodes
-            CoreDataService.retrieveEntity(entityName: .newNodes) { (nodes) in
-                guard let nodes = nodes, nodes.count > 0 else { saveNode(newNode, url, completion: completion); return }
+            for (i, existingNode) in nodes.enumerated() {
+                let existingNodeStruct = NodeStruct(dictionary: existingNode)
+                guard let existingNodeId = existingNodeStruct.id else { return }
                 
-                for (i, node) in nodes.enumerated() {
-                    let nodeStruct = NodeStruct(dictionary: node)
-                    guard let id = nodeStruct.id else { return }
+                switch url {
+                case _ where url.hasPrefix("btcrpc"):
                     
-                    CoreDataService.update(id: id, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
-                    
-                    if i + 1 == nodes.count {
-                        saveNode(newNode, url, completion: completion)
+                    if !existingNodeStruct.isLightning && !existingNodeStruct.isJoinMarket {
+                        CoreDataService.update(id: existingNodeId, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
                     }
+                    
+                case _ where url.hasPrefix("clightning-rpc"), _ where url.hasPrefix("lndconnect"):
+                    
+                    if existingNodeStruct.isActive && existingNodeStruct.isLightning {
+                        CoreDataService.update(id: existingNodeId, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                    }
+                    
+                case _ where url.hasPrefix("http"):
+                    
+                    if existingNodeStruct.isActive && existingNodeStruct.isJoinMarket {
+                        CoreDataService.update(id: existingNodeId, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                    }
+                    
+                default:
+                    #if DEBUG
+                    print("default")
+                    #endif
+                }
+                
+                if i + 1 == nodes.count {
+                    saveNode(newNode, url, completion: completion)
                 }
             }
         }
