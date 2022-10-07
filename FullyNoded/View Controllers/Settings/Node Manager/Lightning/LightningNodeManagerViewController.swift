@@ -286,7 +286,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     }
     
     private func lndGetFees() {
-        let body:[String:Any] = ["max_events":"1000000"]
+        let body:[String:Any] = ["max_events":"50000"]
         
         LndRpc.sharedInstance.command(.fwdinghistory, body, nil, nil) { (response, error) in
             guard let response = response else { return }

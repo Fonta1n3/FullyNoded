@@ -108,7 +108,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     self.disableSignButton()
                     self.disableExportButton()
                     self.disableBumpButton()
-                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access Transactions unless you successfully authenticate with 2FA.")
+                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access transactions unless you successfully authenticate with 2FA.")
                 } else {
                     loadNow()
                 }
