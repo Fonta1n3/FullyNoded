@@ -47,7 +47,7 @@ In order to prevent loss of funds always create a backup of the following after 
 In order to be a successful "maker" it is recommended to create a fidelity bond. This is a timelocked address where you deposit funds. 
 Choose an amount and a time period for the funds to be locked. The more you deposit, the longer the duration, the higher your potential earning power.
 
-⚠️ Creating a Fidelity Bond has many factors to consider. For a thorough guide please read [this](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md).
+⚠️ Creating a Fidelity Bond has many factors to consider. Please read [this](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md) before creating a FB.
 
 - Toggle on an exisitng JM wallet you created with FN which holds a balance.
 - Navigate to utxos.
@@ -69,7 +69,9 @@ According to [this document](https://github.com/JoinMarket-Org/joinmarket-client
 ```
 NB You cannot export the private keys (which is always disadvised, anyway) of timelocked addresses to any other wallets, as they use custom scripts. You must spend them from JoinMarket itself.
 ```
+You need the JM server/wallet in order to spend the timelocked funds (for now)!
 
+To spend the expired timelocked funds using FN: 
 - Toggle on your JM node.
 - Toggle on an exisitng JM wallet you created with FN which holds a balance and an expired FB.
 - Navigate to utxos.
