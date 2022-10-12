@@ -16,7 +16,7 @@ First you need to deposit a utxo to a JM wallet that was created by FN:
     - FN looks for any JM servers that have been added to the node manager.
     - FN checks for any existing JM wallets that were created by FN.
     - You will be prompted to select an existing JM wallet to deposit to, or create a new one.
-    - FN will fetch a deposit address from index 0 in a new mixdepth (incremented by 1 account).
+    - FN will fetch a deposit address from a new mixdepth.
     - You will then be presented with the transaction creator with the JM deposit address already filled in the recipient field.
     - It is recommended to sweep the entire utxo to your JM wallet for best privacy practices.
     - Once the transaction is broadcast you can navigate back to your active wallet view and toggle on the newly created JM wallet.
