@@ -80,4 +80,13 @@ To spend the expired timelocked funds using FN:
 - Tap the 􀗕.
 - Direct send from mixdepth 0 to spend the utxo.
 
+## Recovery
+
+JM wallet recovery ought to be done with the JM software directly using [these instructions](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md#recovering-a-wallet-from-mnemonic).
+
+FN does save the seed words locally so it has the ability to spend JM funds (other then a Fidelity Bond) on its own.
+
+A dedicated recovery option in FN (using only Bitcoin Core) for JM wallets is a work in progress.
+
+
 
