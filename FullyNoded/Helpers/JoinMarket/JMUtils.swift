@@ -385,11 +385,13 @@ class JMUtils {
             var nextMixdepth = 0
             
             for (i, account) in detail.accounts.enumerated() {
-                for branch in account.branches {
-                    for entry in branch.entries {
-                        if entry.amount > 0 {                            
-                            if account.accountNumber < 4 {
-                                nextMixdepth += 1
+                if account.accountNumber > 0 {
+                    for branch in account.branches {
+                        for entry in branch.entries {
+                            if entry.amount > 0 {
+                                if account.accountNumber < 4 {
+                                    nextMixdepth += 1
+                                }
                             }
                         }
                     }
