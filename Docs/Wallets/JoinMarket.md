@@ -3,7 +3,7 @@
 General Join Market usage guide can be found [here](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md).
 Privacy minded Join Market guide can be found [here](https://github.com/openoms/bitcoin-tutorials/blob/master/joinmarket/joinmarket_private_flow.md).
 
-The following describes how Fully Noded interacts with your Join Market server/wallets.
+The following describes how to use FN with JM and how it interacts with your JM server.
 
 ## Deposit to JM
 
@@ -21,7 +21,7 @@ First you need to deposit a utxo to a JM wallet that was created by FN:
     - It is recommended to sweep the entire utxo to your JM wallet for best privacy practices.
     - Once the transaction is broadcast you can navigate back to your active wallet view and toggle on the newly created JM wallet.
     
-## Single Coinjoins
+## Single Coinjoins (aka Taker)
 
 One off coinjoins are not "private" but careful utxo management and successive coinjoins can be beneficial.
 
@@ -74,6 +74,12 @@ To spend the expired timelocked funds using FN:
 - The Fidelity Bond utxo is always frozen, you must unfreeze it to spend it.
 - Tap the 􀗕.
 - Direct send from mixdepth 0 to spend the utxo.
+
+## Maker (earn sats)
+
+You should only used previously coinjoined funds as a maker, and you ought to create a fidelity bond first.
+- In FN just toggle the maker switch on and the `yieldgenerator.py` script will run continuously until you toggle it off
+- Be patient and you ought to see your utxos transform with a few extra sats in your balance.
 
 ## Recovery
 
