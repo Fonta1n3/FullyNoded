@@ -459,7 +459,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 self.directSend(wallet)
             }))
             
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in
+                self.removeSpinner()
+            }))
+            
             alert.popoverPresentationController?.sourceView = self.view
             self.present(alert, animated: true, completion: nil)
         }
@@ -507,7 +510,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             guard let self = self else { return }
 
             let tit = "Fidelity Bond"
-            let mess = "A fidelity bond is a timelocked bitcoin address controlled by your Join Market hot wallet. You must ensure your Join Market wallet is backed up as only Join Market can spend these funds.\n\nCreating a fidelity bond increases your earning potential. The higher the amount/duration of the bond, the higher the earning potential.\n\nYou will be prompted to select an expiry date for the bond, you will NOT be able to spend these funds until that date."
+            let mess = "A fidelity bond is a timelocked bitcoin address.  FN can not spend a FB without a connection to your JM server and wallet.\n\nCreating a fidelity bond increases your earning potential. The higher the amount/duration of the bond, the higher the earning potential.\n\nYou will be prompted to select an expiry date for the bond, you will NOT be able to spend these funds until that date."
 
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
 
@@ -610,7 +613,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 guard let self = self else { return }
 
                 let tit = "Fidelity Bond"
-                let mess = "This is a timelocked bitcoin address which prevents you from spending the funds until midnight on the 1st of \(date) (UTC).\n\nOnly your Join Market hot wallet will be able to spend from this address!\n\nFully Noded will NOT be able to spend from this address on its own!\n\nYou will be presented with the transaction creator as normal with the fidelity bond address automatically entered."
+                let mess = "This is a timelocked bitcoin address which prevents you from spending the funds until midnight on the 1st of \(date) (UTC).\n\nYou will be presented with the transaction creator as normal with the fidelity bond address automatically entered."
 
                 let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
 
@@ -1366,6 +1369,12 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                         }
                     }
                 }
+                
+                alert.addAction(UIAlertAction(title: "Create new", style: .default, handler: { [weak self] action in
+                    guard let self = self else { return }
+                    
+                    self.promptToCreateJmWallet(utxo)
+                }))
                 
                 alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { [weak self] action in
                     guard let self = self else { return }
