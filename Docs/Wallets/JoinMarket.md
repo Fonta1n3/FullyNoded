@@ -39,11 +39,6 @@ If you are familiar with JM this is the equivalent of `sendpayment.py` which is 
 
 ## Create a Fidelity Bond
 
-In order to prevent loss of funds always create a backup of the following after depositing to a FB:
-- JM wallet.dat file which creates the FB.
-- JM wallet mnemonic.
-- JM wallet lock/unlock password (aka encryption phrase) FN prompted you to write down when you created the JM wallet. 
-
 In order to be a successful "maker" it is recommended to create a fidelity bond. This is a timelocked address where you deposit funds. 
 Choose an amount and a time period for the funds to be locked. The more you deposit, the longer the duration, the higher your potential earning power.
 
