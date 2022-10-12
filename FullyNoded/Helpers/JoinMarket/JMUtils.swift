@@ -387,10 +387,7 @@ class JMUtils {
             for (i, account) in detail.accounts.enumerated() {
                 for branch in account.branches {
                     for entry in branch.entries {
-                        if entry.amount > 0 {
-                            let arr = entry.hd_path.split(separator: "/")
-                            lastUsedIndex = Int("\(arr[arr.count - 1])")!
-                            
+                        if entry.amount > 0 {                            
                             if account.accountNumber < 4 {
                                 nextMixdepth += 1
                             }
