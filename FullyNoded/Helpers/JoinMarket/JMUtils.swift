@@ -12,7 +12,6 @@ class JMUtils {
     
     static func createWallet(completion: @escaping ((response: JMWallet?, message: String?)) -> Void) {
         // First check that connection works...
-        
         guard let passwordWords = Keys.seed() else { return }
         
         let arr = passwordWords.split(separator: " ")
