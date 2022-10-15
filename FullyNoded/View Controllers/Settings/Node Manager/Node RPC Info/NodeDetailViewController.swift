@@ -656,6 +656,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
+            guard let selectedNode = self.selectedNode, let isJM = selectedNode["isJoinMarket"] as? Bool, !isJM else {
+                nodeUpdatedAlert()
+                return
+            }
+                        
             guard !vc.isLightning else {
                 checkIfUpdating()
                 return
