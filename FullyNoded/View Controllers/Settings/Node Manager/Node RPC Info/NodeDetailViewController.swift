@@ -233,6 +233,20 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
+    private func encryptCert(_ certText: String) -> Data? {
+         guard let certData = Data(base64Encoded: certText.condenseWhitespace(), options: [.ignoreUnknownCharacters]) else {
+             showAlert(vc: self, title: "Error", message: "Unable to convert the cert text to base64 data.")
+             return nil
+         }
+         
+         guard let encryptedCert = Crypto.encrypt(certData) else {
+             showAlert(vc: self, title: "Error", message: "Unable to encrypt your cert data.")
+             return nil
+         }
+        
+        return encryptedCert
+    }
+    
     @IBAction func save(_ sender: Any) {
         
         func encryptedValue(_ decryptedValue: Data) -> Data? {
@@ -240,7 +254,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
         
         if createNew || selectedNode == nil {
-            
             newNode["id"] = UUID()
             
             var isLightning = false
@@ -291,9 +304,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             if certField.text != "" {
-                guard let certData = try? Data.decodeUrlSafeBase64(certField.text!) else { return }
-                
-                guard let encryptedCert = Crypto.encrypt(certData) else { return }
+                guard let encryptedCert = encryptCert(certField.text!) else {
+                    return
+                }
                 
                 newNode["cert"] = encryptedCert
             }
@@ -343,7 +356,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
         } else {
             //updating
-            
             let id = selectedNode!["id"] as! UUID
             
             if nodeLabel.text != "" {
@@ -414,11 +426,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if certField != nil,
-                certField.text != "" {
-                guard let certData = try? Data.decodeUrlSafeBase64(certField.text!) else { return }
-                
-                guard let encryptedCert = Crypto.encrypt(certData) else { return }
+            if certField != nil && certField.text != "" {
+                guard let encryptedCert = encryptCert(certField.text!) else { return }
                 
                 CoreDataService.update(id: id, keyToUpdate: "cert", newValue: encryptedCert, entity: .newNodes) { success in
                     if !success {
