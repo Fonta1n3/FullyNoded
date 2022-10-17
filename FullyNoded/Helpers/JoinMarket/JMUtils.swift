@@ -12,7 +12,6 @@ class JMUtils {
     
     static func createWallet(completion: @escaping ((response: JMWallet?, message: String?)) -> Void) {
         // First check that connection works...
-        
         guard let passwordWords = Keys.seed() else { return }
         
         let arr = passwordWords.split(separator: " ")
@@ -382,40 +381,25 @@ class JMUtils {
                 return
             }
             
-            var lastUsedIndex = 0
-            var nextAccount = 0
+            var nextMixdepth = 0
             
             for (i, account) in detail.accounts.enumerated() {
-                if account.accountNumber > 0 {
-                    for branch in account.branches {
-                        for entry in branch.entries {
-                            if entry.amount > 0 {
-                                let arr = entry.hd_path.split(separator: "/")
-                                lastUsedIndex = Int("\(arr[arr.count - 1])")!
-                                
-                                if lastUsedIndex == 4 {
-                                    nextAccount += 1
-                                }
-                            }
+                for entry in account.branches[0].entries {
+                    if entry.amount > 0 {
+                        if account.accountNumber < 4 {
+                            nextMixdepth += 1
                         }
                     }
                 }
                 
                 if i + 1 == detail.accounts.count {
-                    CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int16(lastUsedIndex + 1), entity: .jmWallets) { updated in
+                    CoreDataService.update(id: wallet.id, keyToUpdate: "account", newValue: Int16(nextMixdepth), entity: .jmWallets) { updated in
                         guard updated else {
-                            completion(("Error updating index."))
+                            completion(("Error updating account."))
                             return
                         }
                         
-                        CoreDataService.update(id: wallet.id, keyToUpdate: "account", newValue: Int16(nextAccount), entity: .jmWallets) { updated in
-                            guard updated else {
-                                completion(("Error updating account."))
-                                return
-                            }
-                            
-                            completion((nil))
-                        }
+                        completion((nil))
                     }
                 }
             }
@@ -430,7 +414,7 @@ class JMUtils {
                 
                 if let message = message {
                     if message.contains("Wallet cannot be created/opened, it is locked.") {
-                        completion((nil, "Delete the hidden .lock file on your JM wallet located at /.joinmarket/wallets/.\(wallet.name).lock and try again."))
+                        completion((nil, "Delete the hidden .lock file on your JM wallet located at /.joinmarket/wallets/.\(wallet.name).lock and try again.\n\nDO NOT DELETE THE ACTUAL WALLET FILE!"))
                     } else {
                         completion((nil, message))
                     }
@@ -668,6 +652,7 @@ class JMUtils {
                     return
                 }
                 
+                // TODO: USE TIMELOCKED DESCRIPTOR INSTEAD
                 let desc = "addr(\(address))"
                 
                 OnchainUtils.getDescriptorInfo(desc) { (descriptorInfo, message) in

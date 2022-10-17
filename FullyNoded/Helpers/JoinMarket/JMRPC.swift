@@ -58,7 +58,7 @@ class JMRPC {
                     completion((nil, "Error getting decrypting cert."))
                     return
                 }
-
+                
                 self.torClient.cert = decryptedCert.base64EncodedData()
             }
             

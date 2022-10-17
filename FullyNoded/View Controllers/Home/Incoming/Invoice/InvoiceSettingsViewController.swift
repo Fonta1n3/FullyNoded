@@ -11,10 +11,6 @@ import UIKit
 class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     @IBOutlet weak var table: UITableView!
-    var nativeSegwit = Bool()
-    var p2shSegwit = Bool()
-    var legacy = Bool()
-    let ud = UserDefaults.standard
     var isSingleKey = Bool()
     var isPrivKey = Bool()
 
@@ -38,15 +34,13 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
             return 1
         case 1:
             return 2
-        case 2:
-            return 3
         default:
             return 0
         }
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 3
+        return 2
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -77,42 +71,42 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
             check.alpha = 0
             return cell
             
-        case 2:
-            chevron.alpha = 0
-            switch indexPath.row {
-            case 0:
-                label.text = "Native Segwit"
-                if nativeSegwit {
-                    check.alpha = 1
-                    label.textColor = .white
-                } else {
-                    check.alpha = 0
-                    label.textColor = .darkGray
-                }
-                return cell
-            case 1:
-                label.text = "P2SH Segwit"
-                if p2shSegwit {
-                    check.alpha = 1
-                    label.textColor = .white
-                } else {
-                    check.alpha = 0
-                    label.textColor = .darkGray
-                }
-                return cell
-            case 2:
-                label.text = "Legacy"
-                if legacy {
-                    check.alpha = 1
-                    label.textColor = .white
-                } else {
-                    check.alpha = 0
-                    label.textColor = .darkGray
-                }
-                return cell
-            default:
-                return UITableViewCell()
-            }
+//        case 2:
+//            chevron.alpha = 0
+//            switch indexPath.row {
+//            case 0:
+//                label.text = "Native Segwit"
+//                if nativeSegwit {
+//                    check.alpha = 1
+//                    label.textColor = .white
+//                } else {
+//                    check.alpha = 0
+//                    label.textColor = .darkGray
+//                }
+//                return cell
+//            case 1:
+//                label.text = "P2SH Segwit"
+//                if p2shSegwit {
+//                    check.alpha = 1
+//                    label.textColor = .white
+//                } else {
+//                    check.alpha = 0
+//                    label.textColor = .darkGray
+//                }
+//                return cell
+//            case 2:
+//                label.text = "Legacy"
+//                if legacy {
+//                    check.alpha = 1
+//                    label.textColor = .white
+//                } else {
+//                    check.alpha = 0
+//                    label.textColor = .darkGray
+//                }
+//                return cell
+//            default:
+//                return UITableViewCell()
+//            }
         default:
             return UITableViewCell()
             
@@ -124,13 +118,11 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
         switch indexPath.section {
             
         case 0:
-            print("segue to wallet manager")
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.performSegue(withIdentifier: "segueToBitcoinCoreWallets", sender: vc)
             }
             
         case 1:
-            print("segue to import things")
             switch indexPath.row {
                 
             case 0:
@@ -146,52 +138,52 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
                 vc.performSegue(withIdentifier: "segueToImportFromAdvanced", sender: vc)
             }
             
-        case 2:
+        //case 2:
             
             //Address format
-            for row in 0 ..< tableView.numberOfRows(inSection: 2) {
-                
-                if let cell = tableView.cellForRow(at: IndexPath(row: row, section: 2)) {
-                    
-                    var key = ""
-                    
-                    switch row {
-                    case 0: key = "nativeSegwit"
-                    case 1: key = "p2shSegwit"
-                    case 2: key = "legacy"
-                    default:
-                        break
-                    }
-                    
-                    if indexPath.row == row && cell.isSelected {
-                        
-                        cell.isSelected = true
-                        self.ud.set(true, forKey: key)
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.getSettings()
-                            tableView.reloadRows(at: [IndexPath(row: row, section: 2)], with: .none)
-                            
-                        }
-                        
-                    } else {
-                        
-                        cell.isSelected = false
-                        self.ud.set(false, forKey: key)
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.getSettings()
-                            tableView.reloadRows(at: [IndexPath(row: row, section: 2)], with: .none)
-                            
-                        }
-                        
-                    }
-                    
-                }
-                
-            }
+//            for row in 0 ..< tableView.numberOfRows(inSection: 2) {
+//
+//                if let cell = tableView.cellForRow(at: IndexPath(row: row, section: 2)) {
+//
+//                    var key = ""
+//
+//                    switch row {
+//                    case 0: key = "nativeSegwit"
+//                    case 1: key = "p2shSegwit"
+//                    case 2: key = "legacy"
+//                    default:
+//                        break
+//                    }
+//
+//                    if indexPath.row == row && cell.isSelected {
+//
+//                        cell.isSelected = true
+//                        self.ud.set(true, forKey: key)
+//
+//                        DispatchQueue.main.async {
+//
+//                            self.getSettings()
+//                            tableView.reloadRows(at: [IndexPath(row: row, section: 2)], with: .none)
+//
+//                        }
+//
+//                    } else {
+//
+//                        cell.isSelected = false
+//                        self.ud.set(false, forKey: key)
+//
+//                        DispatchQueue.main.async {
+//
+//                            self.getSettings()
+//                            tableView.reloadRows(at: [IndexPath(row: row, section: 2)], with: .none)
+//
+//                        }
+//
+//                    }
+//
+//                }
+//
+//            }
         default:
             break
         }
@@ -213,8 +205,8 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
         case 1:
             textLabel.text = "Import"
             
-        case 2:
-            textLabel.text = "Address script type"
+//        case 2:
+//            textLabel.text = "Address script type"
             
         default:
             break
@@ -232,9 +224,6 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
     }
     
     func getSettings() {
-        nativeSegwit = ud.object(forKey: "nativeSegwit") as? Bool ?? true
-        p2shSegwit = ud.object(forKey: "p2shSegwit") as? Bool ?? false
-        legacy = ud.object(forKey: "legacy") as? Bool ?? false
         DispatchQueue.main.async { [unowned vc = self] in
             vc.table.reloadData()
         }
@@ -245,7 +234,6 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
             case "segueToImportFromAdvanced":
                 
                 if let vc = segue.destination as? AddLabelViewController {
-                    //vc.isDescriptor = isDescriptor
                     vc.isSingleKey = isSingleKey
                     vc.isPrivKey = isPrivKey
                 }

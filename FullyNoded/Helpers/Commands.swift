@@ -205,7 +205,7 @@ public enum JM_REST {
         case .walletdisplay(jmWallet: let wallet):
             return "\(rootUrl)/wallet/\(wallet.name)/display"
         case .getaddress(jmWallet: let wallet):
-            return "\(rootUrl)/wallet/\(wallet.name)/address/new/\(wallet.index)"
+            return "\(rootUrl)/wallet/\(wallet.name)/address/new/\(wallet.account)"
         case .coinjoin(jmWallet: let wallet):
             return "\(rootUrl)/wallet/\(wallet.name)/taker/coinjoin"
         case .makerStart(jmWallet: let wallet):

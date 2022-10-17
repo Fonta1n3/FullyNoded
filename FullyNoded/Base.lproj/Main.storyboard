@@ -4757,7 +4757,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
             </objects>
             <point key="canvasLocation" x="2718" y="376"/>
         </scene>
-        <!--v0.3.5-->
+        <!--v0.3.6-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -4998,7 +4998,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.3.5" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.3.6" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -7639,7 +7639,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="dhu-ZV-762"/>
         <segue reference="DLx-HT-rGm"/>
         <segue reference="EZr-Ut-goC"/>
-        <segue reference="kq8-dj-bJ2"/>
+        <segue reference="mRa-gP-mZ0"/>
         <segue reference="Cd3-qW-ujG"/>
         <segue reference="kws-xU-XdS"/>
         <segue reference="6KH-E3-p33"/>
