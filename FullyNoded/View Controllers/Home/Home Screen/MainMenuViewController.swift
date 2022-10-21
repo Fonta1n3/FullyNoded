@@ -919,25 +919,25 @@ extension MainMenuViewController {
     private func headerName(for section: Section) -> String {
         switch section {
         case .verificationProgress:
-            return "Verification progress"
+            return "Progress"
         case .nodeUptime:
-            return "Node uptime"
+            return "Uptime"
         case .blockchainNetwork:
-            return "Bitcoin network"
+            return "Network"
         case .nodeVersion:
-            return "Node version"
+            return "Version"
         case .peerConnections:
-            return "Peer connections"
+            return "Peers"
         case .currentBlockHeight:
-            return "Current blockheight"
+            return "Blockheight"
         case .memPool:
-            return "Node's mempool"
+            return "Mempool"
         case .p2pHiddenService:
-            return "P2P hidden service"
+            return "Hidden service p2p"
         case .miningHashrate:
-            return "Mining hashrate"
+            return "Hashrate"
         case .miningDifficulty:
-            return "Mining difficulty"
+            return "Difficulty"
         case .blockchainSizeOnDisc:
             return "Blockchain size on disc"
         case .feeRate:
@@ -945,7 +945,7 @@ extension MainMenuViewController {
         case .blockchainState:
             return "Blockchain state"
         case .totalSupply:
-            return "Total supply"
+            return "Audit total supply"
         }
     }
     
