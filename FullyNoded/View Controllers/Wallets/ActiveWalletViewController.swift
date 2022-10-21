@@ -107,7 +107,6 @@ class ActiveWalletViewController: UIViewController {
         if initialLoad && authenticated {
             initialLoad = false
             getFxRate()
-            noPasswordAlert()
         } else if !initialLoad {
             let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
             authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
@@ -147,37 +146,6 @@ class ActiveWalletViewController: UIViewController {
             self.offchainTxArray.removeAll()
             self.onchainTxArray.removeAll()
             self.walletTable.reloadData()
-        }
-    }
-    
-    private func noPasswordAlert() {
-        if KeyChain.getData("UnlockPassword") == nil && UserDefaults.standard.object(forKey: "doNotShowWarning") == nil && KeyChain.getData("userIdentifier") == nil {
-            CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
-                if let wallets = wallets, wallets.count > 0 {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-
-                        let alert = UIAlertController(title: "", message: "You really ought to add a password that is used to lock the app if you are doing wallet related stuff.", preferredStyle: .alert)
-
-                        alert.addAction(UIAlertAction(title: "Set password", style: .default, handler: { action in
-                            DispatchQueue.main.async { [weak self] in
-                                guard let self = self else { return }
-                                
-                                self.performSegue(withIdentifier: "segueToAddPassword", sender: self)
-                            }
-                        }))
-
-                        alert.addAction(UIAlertAction(title: "Do not show again", style: .destructive, handler: { action in
-                            UserDefaults.standard.set(true, forKey: "doNotShowWarning")
-                        }))
-
-                        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-
-                        alert.popoverPresentationController?.sourceView = self.view
-                        self.present(alert, animated: true, completion: nil)
-                    }
-                }
-            }
         }
     }
     
@@ -552,7 +520,7 @@ class ActiveWalletViewController: UIViewController {
         let tx = transactionArray[int]
         let id = tx["txID"] as! String
         
-        Reducer.makeCommand(command: .gettransaction, param: "\"\(id)\", true") { [weak self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .gettransaction, param: "\"\(id)\", true") { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             self.spinner.removeConnectingView()
@@ -978,7 +946,7 @@ class ActiveWalletViewController: UIViewController {
                     return
                 }
                 
-                guard errorMessage.contains("Wallet file not specified (must request wallet RPC through") || errorMessage.contains("No wallet is loaded") || errorMessage.contains("Looks like your last used wallet does not exist on this node, please activate a wallet") else {
+                guard errorMessage.contains("Wallet file not specified (must request wallet RPC through") || errorMessage.contains("No wallet is loaded") || errorMessage.contains("Looks like your last used wallet does not exist on this node, please activate a wallet") || errorMessage.contains("Requested wallet does not exist or is not loaded") else {
                     displayAlert(viewController: self, isError: true, message: errorMessage)
                     return
                 }
