@@ -23,6 +23,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     let imagePicker = UIImagePickerController()
     var scanNow = false
     
+    @IBOutlet weak var nostrRelayField: UITextField!
+    @IBOutlet weak var nostrRelayHeader: UILabel!
+    @IBOutlet weak var addressHeader: UILabel!
+    @IBOutlet weak var nostrSubscriptionHeader: UILabel!
+    @IBOutlet weak var nostrPrivkeyHeader: UILabel!
+    @IBOutlet weak var nostrPubkeyHeader: UILabel!
+    @IBOutlet weak var certHeader: UILabel!
     @IBOutlet weak var certField: UITextField!
     @IBOutlet weak var macaroonField: UITextField!
     @IBOutlet weak var passwordHeader: UILabel!
@@ -37,6 +44,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBOutlet weak var onionAddressField: UITextField!
     @IBOutlet weak var addressHeaderOutlet: UILabel!
     @IBOutlet weak var macaroonHeader: UILabel!
+    @IBOutlet weak var nostrSwitchOutlet: UISwitch!
+    @IBOutlet weak var nostrPubkeyField: UITextField!
+    @IBOutlet weak var nostrPrivkeyField: UITextField!
+    @IBOutlet weak var nostrToSubscribe: UITextField!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,10 +57,15 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         rpcPassword.delegate = self
         rpcUserField.delegate = self
         onionAddressField.delegate = self
+        nostrToSubscribe.delegate = self
         certField.delegate = self
+        nostrRelayField.delegate = self
         macaroonField.delegate = self
+        nostrPubkeyField.delegate = self
+        nostrPrivkeyField.delegate = self
         rpcPassword.isSecureTextEntry = true
         onionAddressField.isSecureTextEntry = false
+        nostrPrivkeyField.isSecureTextEntry = true
         saveButton.clipsToBounds = true
         saveButton.layer.cornerRadius = 8
         header.text = "Node Credentials"
@@ -69,6 +85,51 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             segueToScanNow()
         }
     }
+    
+    @IBAction func nostrSwitchAction(_ sender: Any) {
+        guard let node = selectedNode else {
+            self.newNode["isNostr"] = nostrSwitchOutlet.isOn
+            return
+        }
+        
+        let nodeStruct = NodeStruct(dictionary: node)
+        
+        CoreDataService.update(id: nodeStruct.id!, keyToUpdate: "isNostr", newValue: nostrSwitchOutlet.isOn, entity: .newNodes) { updated in
+            #if DEBUG
+            print("nostr setting updated success: \(updated)")
+            #endif
+        }
+        
+        guard nostrSwitchOutlet.isOn else {
+           return
+        }
+        
+        let privkey = Crypto.privateKey()
+        let pubkey = Keys.privKeyToPubKey(privkey)!
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.nostrPubkeyField.text = pubkey
+            self.nostrPrivkeyField.text = privkey.hexString
+            
+            guard let encryptedPubkey = Crypto.encrypt(Data(hexString: pubkey)!) else { return }
+            guard let encryptedPrivkey = Crypto.encrypt(privkey) else { return }
+            
+            CoreDataService.update(id: nodeStruct.id!, keyToUpdate: "nostrPubkey", newValue: encryptedPubkey, entity: .newNodes) { updated in
+                #if DEBUG
+                print("nostr pubkey updated success: \(updated)")
+                #endif
+            }
+            
+            CoreDataService.update(id: nodeStruct.id!, keyToUpdate: "nostrPrivkey", newValue: encryptedPrivkey, entity: .newNodes) { updated in
+                #if DEBUG
+                print("nostr privkey updated success: \(updated)")
+                #endif
+            }
+        }
+    }
+    
     
     @IBAction func recoverAction(_ sender: Any) {
         confirmiCloudRecovery()
@@ -270,6 +331,21 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             newNode["isLightning"] = isLightning
             newNode["isJoinMarket"] = isJoinMarket
             
+            if nostrToSubscribe.text != "" {
+                newNode["subscribeTo"] = encryptedValue(Data(hexString: nostrToSubscribe.text!)!)
+            }
+            
+            if nostrPrivkeyField.text != "" {
+                let privkey = Data(hexString: nostrPrivkeyField.text!)!
+                newNode["nostrPrivkey"] = encryptedValue(privkey)
+                let pubkey = Keys.privKeyToPubKey(privkey)!
+                newNode["nostrPubkey"] = encryptedValue(Data(hexString: pubkey)!)
+            }
+            
+            if nostrRelayField.text != nil {
+                UserDefaults.standard.setValue(nostrRelayField.text!, forKey: "nostrRelay")
+            }
+            
             if nodeLabel.text != "" {
                 newNode["label"] = nodeLabel.text!
             }
@@ -366,7 +442,34 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if rpcUserField.text != "" {
+            if nostrToSubscribe != nil, nostrToSubscribe.text != "" {
+                guard let enc = encryptedValue(Data(hexString: nostrToSubscribe.text!)!) else { return }
+                CoreDataService.update(id: id, keyToUpdate: "subscribeTo", newValue: enc, entity: .newNodes) { success in
+                    if !success {
+                        displayAlert(viewController: self, isError: true, message: "error updating subscribe to")
+                    }
+                }
+            }
+            
+            if nostrPrivkeyField != nil, nostrPrivkeyField.text != "" {
+                guard let enc = encryptedValue(Data(hexString: nostrPrivkeyField.text!)!) else { return }
+                CoreDataService.update(id: id, keyToUpdate: "nostrPrivkey", newValue: enc, entity: .newNodes) { success in
+                    if !success {
+                        displayAlert(viewController: self, isError: true, message: "error updating nostr privkey")
+                    }
+                    
+                    let newpubkey = Keys.privKeyToPubKey((Data(hexString: self.nostrPrivkeyField.text!)!))!
+                    
+                    guard let enc = encryptedValue(Data(hexString: newpubkey)!) else { return }
+                    CoreDataService.update(id: id, keyToUpdate: "nostrPubkey", newValue: enc, entity: .newNodes) { success in
+                        if !success {
+                            displayAlert(viewController: self, isError: true, message: "error updating nostr pubkey")
+                        }
+                    }
+                }
+            }
+            
+            if rpcUserField != nil, rpcUserField.text != "" {
                 guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
                 CoreDataService.update(id: id, keyToUpdate: "rpcuser", newValue: enc, entity: .newNodes) { success in
                     if !success {
@@ -375,7 +478,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if rpcPassword.text != "" {
+            if rpcPassword != nil, rpcPassword.text != "" {
                 guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
                 CoreDataService.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { success in
                     if !success {
@@ -384,26 +487,35 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            let decryptedAddress = (onionAddressField.text)!.dataUsingUTF8StringEncoding
-            
-            if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
-                CoreDataService.update(id: id, keyToUpdate: "isLightning", newValue: true, entity: .newNodes) { success in
-                    if !success {
-                        displayAlert(viewController: self, isError: true, message: "error updating isLightning")
+            if onionAddressField != nil {
+                let decryptedAddress = (onionAddressField.text)!.dataUsingUTF8StringEncoding
+                
+                if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
+                    CoreDataService.update(id: id, keyToUpdate: "isLightning", newValue: true, entity: .newNodes) { success in
+                        if !success {
+                            displayAlert(viewController: self, isError: true, message: "error updating isLightning")
+                        }
+                    }
+                }
+                if onionAddressField.text!.hasSuffix(":28183") {
+                    CoreDataService.update(id: id, keyToUpdate: "isJoinMarket", newValue: true, entity: .newNodes) { success in
+                        if !success {
+                            displayAlert(viewController: self, isError: true, message: "error updating isJoinMarket")
+                        }
+                    }
+                }
+                guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
+                
+                CoreDataService.update(id: id, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
+                    if success {
+                        vc.nodeAddedSuccess()
+                    } else {
+                        displayAlert(viewController: vc, isError: true, message: "Error updating node!")
                     }
                 }
             }
             
-            if onionAddressField.text!.hasSuffix(":28183") {
-                CoreDataService.update(id: id, keyToUpdate: "isJoinMarket", newValue: true, entity: .newNodes) { success in
-                    if !success {
-                        displayAlert(viewController: self, isError: true, message: "error updating isJoinMarket")
-                    }
-                }
-            }
-            
-            if macaroonField != nil,
-                macaroonField.text != "" {
+            if macaroonField != nil, macaroonField.text != "" {
                 var macaroonData:Data?
                 
                 if let macaroonDataCheck = try? Data.decodeUrlSafeBase64(macaroonField.text!) {
@@ -435,16 +547,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     }
                 }
             }
-            
-            guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
-            
-            CoreDataService.update(id: id, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
-                if success {
-                    vc.nodeAddedSuccess()
-                } else {
-                    displayAlert(viewController: vc, isError: true, message: "Error updating node!")
-                }
-            }
         }
     }
     
@@ -462,10 +564,85 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             return decrypted.utf8String ?? ""
         }
         
+        func decryptedNostr(_ encryptedValue: Data) -> String {
+            guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
+            
+            return decrypted.hexString
+        }
+        
         if selectedNode != nil {
             let node = NodeStruct(dictionary: selectedNode!)
             
             if node.id != nil {
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.nostrSwitchOutlet.isOn = node.isNostr
+                }
+                
+                if node.isNostr {
+                    let modelname = UIDevice.modelName
+                    
+                    if modelname != "arm64" && modelname != "x86_64" && modelname != "i386" {
+                        if rpcUserField != nil,
+                           rpcPassword != nil,
+                           passwordHeader != nil,
+                           usernameHeader != nil,
+                           usernameHeader != nil,
+                           macaroonField != nil,
+                           macaroonHeader != nil,
+                           certField != nil,
+                           certHeader != nil,
+                           addressHeader != nil,
+                           onionAddressField != nil {
+                            addressHeader.removeFromSuperview()
+                            rpcUserField.removeFromSuperview()
+                            rpcPassword.removeFromSuperview()
+                            passwordHeader.removeFromSuperview()
+                            usernameHeader.removeFromSuperview()
+                            macaroonField.removeFromSuperview()
+                            macaroonHeader.removeFromSuperview()
+                            certField.removeFromSuperview()
+                            certHeader.removeFromSuperview()
+                            onionAddressField.removeFromSuperview()
+                            
+                        }
+                    }
+                    
+                    if let encryptedPubkey = node.nostrPubkey{
+                        let nostrPubkey = decryptedNostr(encryptedPubkey)
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.nostrPubkeyField.text = nostrPubkey
+                        }
+                    }
+                    
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.nostrRelayField.text = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://relay.nostr.info"
+                    }
+                                        
+                    if let encryptedPrivkey = node.nostrPrivkey {
+                        let nostrPrivkey = decryptedNostr(encryptedPrivkey)
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.nostrPrivkeyField.text = nostrPrivkey
+                        }
+                    }
+                    
+                    if let encryptedSubscribe = node.subscribeTo {
+                        let nostrSubscribeTo = decryptedNostr(encryptedSubscribe)
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.nostrToSubscribe.text = nostrSubscribeTo
+                        }
+                    }
+                }
                 
                 if node.label != "" {
                     nodeLabel.text = node.label
@@ -488,10 +665,12 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     rpcPassword.attributedPlaceholder = NSAttributedString(string: "rpcpassword",
                                                                            attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
                 }
-                
+                                
                 if let enc = node.onionAddress {
                     let decrypted = decryptedValue(enc)
-                    onionAddressField.text = decrypted
+                    if onionAddressField != nil {
+                        onionAddressField.text = decrypted
+                    }
                     
                     if decrypted.hasSuffix(":28183"),
                         rpcUserField != nil,
@@ -571,6 +750,12 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             onionAddressField.attributedPlaceholder = NSAttributedString(string: "127.0.0.1:8332",
                                                                          attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.nostrSwitchOutlet.isOn = false
+            }
                         
             #if targetEnvironment(macCatalyst)
                 onionAddressField.text = placeHolder
@@ -596,6 +781,15 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
         if macaroonField != nil {
             macaroonField.resignFirstResponder()
+        }
+        if nostrPubkeyField != nil {
+            nostrPubkeyField.resignFirstResponder()
+        }
+        if nostrPrivkeyField != nil {
+            nostrPrivkeyField.resignFirstResponder()
+        }
+        if nostrToSubscribe != nil {
+            nostrToSubscribe.resignFirstResponder()
         }
     }
     

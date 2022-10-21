@@ -7,28 +7,180 @@
 //
 
 import Foundation
+import Starscream
 
-class MakeRPCCall {
-    
+class MakeRPCCall: WebSocketDelegate {
+        
     static let sharedInstance = MakeRPCCall()
     let torClient = TorClient.sharedInstance
     private var attempts = 0
+    var socket:WebSocket!
+    var connected:Bool = false
+    var node:NodeStruct!
+    var onDoneBlock : (((response: Any?, errorDesc: String?)) -> Void)?
+    let subId = Keys.randomPrivKey()!.hex
     
     private init() {}
     
-    func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
-        attempts += 1
-        
-        CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
-            guard let self = self else { return }
-            
-            guard let nodes = nodes, nodes.count > 0 else {
-                completion((nil, "error getting nodes from core data"))
-                return
+    func didReceive(event: WebSocketEvent, client: WebSocket) {
+        switch event {
+        case .connected/*(let headers)*/:
+            connected = true
+            activeNode { [weak self] node in
+                guard let self = self else { return }
+                
+                guard let node = node else { return }
+                
+                guard let encryptedSubscribeTo = node.subscribeTo else { return }
+                guard let decryptedSubscribeTo = Crypto.decrypt(encryptedSubscribeTo) else { return }
+                let filter:NostrFilter = NostrFilter.filter_authors(["\(decryptedSubscribeTo.hexString.dropFirst(2))"])
+                let encoder = JSONEncoder()
+                var req = "[\"REQ\",\"\(self.subId)\","
+                
+                guard let filter_json = try? encoder.encode(filter) else {
+                    print("error encoding filter to json")
+                    return
+                }
+                
+                let filter_json_str = String(decoding: filter_json, as: UTF8.self)
+                req += filter_json_str
+                req += "]"
+                
+                #if DEBUG
+                print("req: \(req)")
+                #endif
+                
+                self.socket.write(string: req) {}
             }
             
-            var activeNode: [String:Any]?
+        case .disconnected(let reason, let code):
+            #if DEBUG
+            print("websocket is disconnected: \(reason) with code: \(code)")
+            #endif
+            connected = false
             
+        case .text(let string):
+            #if DEBUG
+            print("Received text: \(string)")
+            #endif
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .withoutEscapingSlashes
+            let data = string.data(using: .utf8)!
+            guard let jsonObject = try? JSONSerialization.jsonObject(with: data, options : []) as? [Any] else { return }
+            
+            for (i, object) in jsonObject.enumerated() {
+                switch i {
+//                case 0:
+//                    if let type = object as? String {
+//                        switch type {
+//                        case "EVENT":
+//                            print("its an event")
+//                        case "EOSE":
+//                            print("its an EOSE")
+//                        default:
+//                            break
+//                        }
+//                    }
+                case 1:
+                    if let subid = object as? String {
+                        #if DEBUG
+                        print("subid: \(subid)")
+                        #endif
+                    }
+                case 2:
+                    if let dict = object as? [String:Any], let created_at = dict["created_at"] as? Int {
+                        let now = NSDate().timeIntervalSince1970
+                        let diff = (now - TimeInterval(created_at))
+                        guard diff < 2.0 else {
+                            print("command too old")
+                            return
+                        }
+                        guard let ev = self.parseEvent(event: dict) else {
+                            #if DEBUG
+                            print("event parsing failed")
+                            #endif
+                            return
+                        }
+                        
+                        let (method, param, walletName, responseCheck, errorDescCheck) = processValidReceivedContent(content: ev.content)
+                        
+                        guard let method = method else {
+                            guard let reponse = responseCheck else {
+                                self.onDoneBlock!((nil,errorDescCheck))
+                                return
+                            }
+                            
+                            guard let _ = errorDescCheck else {
+                                self.onDoneBlock!((reponse as Any,nil))
+                                return
+                            }
+                            self.onDoneBlock!((reponse as Any,errorDescCheck))
+                            return
+                        }
+                        
+                        guard let param = param else {
+                            #if DEBUG
+                            print("unable to parse method and param from recevied event.")
+                            #endif
+                            return
+                        }
+                        
+                        if let walletName = walletName {
+                            UserDefaults.standard.setValue(walletName, forKey: "walletName")
+                        }
+                                                
+                        self.executeRPCCommand(method: method, param: param) { [weak self] (response, errorDesc) in
+                            guard let self = self else { return }
+                            
+                            guard let response = response else {
+                                #if DEBUG
+                                print("errorDesc: \(errorDesc ?? "no error returned")")
+                                #endif
+                                self.sendResponseToRelay(response: response, errorDesc: errorDesc ?? "unknown error")
+                                return
+                            }
+                            
+                            #if DEBUG
+                            print("response: \(response)")
+                            #endif
+                            self.sendResponseToRelay(response: response, errorDesc: errorDesc)
+                        }
+                    }
+                default:
+                    break
+                }
+            }
+        case .error(let error):
+            #if DEBUG
+            print("error: \(error?.localizedDescription ?? "")")
+            #endif
+        default:
+            break
+        }
+    }
+    
+    func connectToRelay(completion: @escaping (Bool) -> Void) {
+        if !self.connected {
+            let relay = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://relay.nostr.info"//ws://jgqaglhautb4k6e6i2g34jakxiemqp6z4wynlirltuukgkft2xuglmqd.onion
+            let url = URL(string: relay)!
+            var request = URLRequest(url: url)
+            request.timeoutInterval = 5
+            self.socket = WebSocket(request: request)
+            self.socket.delegate = self
+            self.socket.connect()
+            completion(true)
+        } else {
+            completion(true)
+        }
+    }
+    
+    func activeNode(completion: @escaping ((NodeStruct?) -> Void)) {
+        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
+            guard let nodes = nodes, nodes.count > 0 else {
+                completion((nil))
+                return
+            }
+            var activeNode: [String:Any]?
             for node in nodes {
                 if let isActive = node["isActive"] as? Bool,
                    let isLightning = node["isLightning"] as? Bool,
@@ -39,149 +191,325 @@ class MakeRPCCall {
                     }
                 }
             }
-            
             guard let active = activeNode else {
-                completion((nil, "no active nodes!"))
+                completion((nil))
                 return
             }
-            
-            let node = NodeStruct(dictionary: active)
-            
-            guard let encAddress = node.onionAddress, let encUser = node.rpcuser, let encPassword = node.rpcpassword else {
-                completion((nil, "error getting encrypted node credentials"))
-                return
-            }
-            
-            let onionAddress = decryptedValue(encAddress)
-            let rpcusername = decryptedValue(encUser)
-            let rpcpassword = decryptedValue(encPassword)
-            
-            guard onionAddress != "", rpcusername != "", rpcpassword != "" else {
-                completion((nil, "error decrypting node credentials"))
-                return
-            }
-            
-            var walletUrl = "http://\(rpcusername):\(rpcpassword)@\(onionAddress)"
-            let ud = UserDefaults.standard
-            
-            if ud.object(forKey: "walletName") != nil {
-                if let walletName = ud.object(forKey: "walletName") as? String {
-                    let b = isWalletRPC(command: method)
-                    if b {
-                        walletUrl += "/wallet/" + walletName
-                    }
-                }
-            }
-            
-            var formattedParam = (param as! String).replacingOccurrences(of: "''", with: "")
-            formattedParam = formattedParam.replacingOccurrences(of: "'\"'\"'", with: "'")
-            
-            guard let url = URL(string: walletUrl) else {
-                completion((nil, "url error"))
-                return
-            }
-            
-            var request = URLRequest(url: url)
-            var timeout = 10.0
-            
-            switch method {
-            case .gettxoutsetinfo:
-                timeout = 1000.0
-                
-            case .importmulti, .deriveaddresses, .loadwallet:
-                timeout = 60.0
-                
-            default:
-                break
-            }
-            
-            let loginString = String(format: "%@:%@", rpcusername, rpcpassword)
-            let loginData = loginString.data(using: String.Encoding.utf8)!
-            let base64LoginString = loginData.base64EncodedString()
-            let id = UUID()
-            
-            request.timeoutInterval = timeout
-            request.httpMethod = "POST"
-            request.addValue("Basic \(base64LoginString)", forHTTPHeaderField: "Authorization")
-            request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-            request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"\(id)\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}".data(using: .utf8)
-            
+            completion(NodeStruct(dictionary: active))
+        }
+    }
+    
+    func parseEvent(event: [String:Any]) -> NostrEvent? {
+        guard let content = event["content"] as? String else { return nil }
+        guard let id = event["id"] as? String else { return nil }
+        guard let kind = event["kind"] as? Int else { return nil }
+        guard let pubkey = event["pubkey"] as? String else { return nil }
+        guard let sig = event["sig"] as? String else { return nil }
+        guard let tags = event["tags"] as? [[String]] else { return nil }
+        
+        let ev = NostrEvent(content: content,
+                            pubkey: pubkey,
+                            kind: kind,
+                            tags: tags)
+        ev.sig = sig
+        ev.id = id
+        return ev
+    }
+    
+    func processValidReceivedContent(content: String) -> (method:BTC_CLI_COMMAND?, param:Any?, wallet: String?, response:Any?, errorDesc:String?) {
+        guard let contentData = Data(base64Encoded: content) else {
+            print("error decoding content")
+            return (nil,nil,nil,nil,nil)
+        }
+        guard let decryptedContent = Crypto.decryptNostr(contentData) else {
+            print("error decrypting content");
+            return (nil,nil,nil,nil,nil)
+        }
+        guard let decryptedCommandDict = try? JSONSerialization.jsonObject(with: decryptedContent, options : []) as? [String:Any] else {
+            print("error decoding decrypted content into json")
+            return (nil,nil,nil,nil,nil)
+        }
+        
+        #if DEBUG
+        print("decryptedCommandDict: \(decryptedCommandDict)")
+        #endif
+        
+        guard let commandString = decryptedCommandDict["command"] as? String else {
             #if DEBUG
-            print("url = \(url)")
-            print("request: \("{\"jsonrpc\":\"1.0\",\"id\":\"\(id)\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}")")
+            print("no command found")
             #endif
             
-            var sesh = URLSession(configuration: .default)
-            
-            if onionAddress.contains("onion") {
-                sesh = self.torClient.session
+            guard decryptedCommandDict["response"] != nil else {
+                #if DEBUG
+                print("no response")
+                #endif
+                return (nil,nil,nil,nil,decryptedCommandDict["errorDesc"] as? String)
             }
             
-            let task = sesh.dataTask(with: request as URLRequest) { [weak self] (data, response, error) in
-                guard let self = self else { return }
+            return (nil,nil,nil,decryptedCommandDict["response"], decryptedCommandDict["errorDesc"] as? String)
+        }
+        
+        guard let method:BTC_CLI_COMMAND = .init(rawValue: commandString) else {
+            #if DEBUG
+            print("can not convert string to BTC_CLI_COMMAND")
+            #endif
+            return (nil,nil,nil,nil,nil)
+        }
+        
+        guard let paramDict = decryptedCommandDict["paramDict"] as? [String:Any] else {
+            #if DEBUG
+            print("unable to get paramDict, should at least be an empty dict.")
+            #endif
+            return (nil,nil,nil,nil,nil)
+        }
+        
+        let param = paramDict["param"] as Any
+        let wallet = decryptedCommandDict["wallet"] as? String
+        
+        return (method, param, wallet, nil, nil)
+    }
+    
+    func executeNostrRpc(method: BTC_CLI_COMMAND, param: Any) {
+        print("executeNostrRpc")
+        self.activeNode { node in
+            guard let node = node else {
+                return
+            }
+            let encoder = JSONEncoder()
+            
+            var walletName:String?
+            
+            if isWalletRPC(command: method) {
+                walletName = UserDefaults.standard.string(forKey: "walletName")
+            }
+            
+            let dict:[String:Any] = ["command":method.rawValue,"paramDict":["param":param],"wallet":walletName ?? ""]
+            
+            guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
+                print("converting to jsonData failing...")
+                return
+            }
+            
+            let encryptedContent = Crypto.encryptNostr(jsonData)!.base64EncodedString()
+            guard let encryptedPubkey = node.nostrPubkey else { return }
+            guard let decryptedNostrPubkey = Crypto.decrypt(encryptedPubkey) else { return }
+            let ev = NostrEvent(content: encryptedContent,
+                                pubkey: "\(decryptedNostrPubkey.hexString.dropFirst(2))",
+                                kind: NostrKind.text.rawValue,
+                                tags: [])
+            ev.calculate_id()
+            guard let encryptedPrivkey = node.nostrPrivkey else { return }
+            guard let decryptedPrivkey = Crypto.decrypt(encryptedPrivkey) else { return }
+            ev.sign(privkey: decryptedPrivkey.hexString)
+            if ev.validity == .ok {
+                let event_data = try! encoder.encode(ev)
+                let event = String(decoding: event_data, as: UTF8.self)
+                let encoded = "[\"EVENT\",\(event)]"
+                self.socket.write(string: encoded) {}
+            } else {
+                print("invalid event... not sending")
+            }
+        }
+    }
+    
+    func sendResponseToRelay(response: Any?, errorDesc: String?) {
+        self.activeNode { node in
+            guard let node = node else { return }
+            let dict:[String:Any] = ["response":response,"errorDesc":errorDesc ?? ""]
+            
+            guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
+                print("converting to jsonData failing...")
+                return
+            }
+            
+            let encryptedContent = Crypto.encryptNostr(jsonData)!.base64EncodedString()
+            
+            guard let encryptedPrivkey = node.nostrPrivkey else { return }
+            
+            guard let decryptedPrivkey = Crypto.decrypt(encryptedPrivkey) else { return }
+            
+            guard let pubkey = Keys.privKeyToPubKey(decryptedPrivkey) else { return }
+            
+            let ev = NostrEvent(content: encryptedContent,
+                                pubkey: "\(pubkey.dropFirst(2))",
+                                kind: NostrKind.text.rawValue,
+                                tags: [])
+            ev.calculate_id()
+            
+            ev.sign(privkey: decryptedPrivkey.hexString)
+            
+            if ev.validity == .ok {
+                let encoder = JSONEncoder()
+                let event_data = try! encoder.encode(ev)
+                let event = String(decoding: event_data, as: UTF8.self)
+                let encoded = "[\"EVENT\",\(event)]"
+                #if DEBUG
+                print("send response to relay")
+                print(encoded)
+                #endif
+                self.socket.write(string: encoded) {}
+            } else {
+                #if DEBUG
+                print("invalid event")
+                #endif
+            }
+        }
+    }
+    
+    func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
+        attempts += 1
+        
+        activeNode { [weak self] node in
+            guard let self = self else { return }
+            
+            guard let node = node else {
+                completion((nil, "No active node."))
+                return
+            }
+            
+            let modelName = UserDefaults.standard.value(forKey: "modelName") as? String ?? ""
+                        
+            if node.isNostr && modelName != "arm64" && modelName != "i386" && modelName != "x86_64" {
+                if self.connected {
+                    self.executeNostrRpc(method: method, param: param)
+                }
+            } else {
+                guard let encAddress = node.onionAddress, let encUser = node.rpcuser, let encPassword = node.rpcpassword else {
+                    completion((nil, "error getting encrypted node credentials"))
+                    return
+                }
                 
-                guard let urlContent = data else {
+                let onionAddress = decryptedValue(encAddress)
+                let rpcusername = decryptedValue(encUser)
+                let rpcpassword = decryptedValue(encPassword)
+                
+                guard onionAddress != "", rpcusername != "", rpcpassword != "" else {
+                    completion((nil, "error decrypting node credentials"))
+                    return
+                }
+                
+                var walletUrl = "http://\(rpcusername):\(rpcpassword)@\(onionAddress)"
+                let ud = UserDefaults.standard
+                
+                if ud.object(forKey: "walletName") != nil {
+                    if let walletName = ud.object(forKey: "walletName") as? String {
+                        let b = isWalletRPC(command: method)
+                        if b {
+                            walletUrl += "/wallet/" + walletName
+                        }
+                    }
+                }
+                
+                var formattedParam = (param as! String).replacingOccurrences(of: "''", with: "")
+                formattedParam = formattedParam.replacingOccurrences(of: "'\"'\"'", with: "'")
+                
+                guard let url = URL(string: walletUrl) else {
+                    completion((nil, "url error"))
+                    return
+                }
+                
+                var request = URLRequest(url: url)
+                var timeout = 10.0
+                
+                switch method {
+                case .gettxoutsetinfo:
+                    timeout = 1000.0
                     
-                    guard let error = error else {
+                case .importmulti, .deriveaddresses, .loadwallet:
+                    timeout = 60.0
+                    
+                default:
+                    break
+                }
+                
+                let loginString = String(format: "%@:%@", rpcusername, rpcpassword)
+                let loginData = loginString.data(using: String.Encoding.utf8)!
+                let base64LoginString = loginData.base64EncodedString()
+                let id = UUID()
+                
+                request.timeoutInterval = timeout
+                request.httpMethod = "POST"
+                request.addValue("Basic \(base64LoginString)", forHTTPHeaderField: "Authorization")
+                request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
+                request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"\(id)\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}".data(using: .utf8)
+                
+                #if DEBUG
+                print("url = \(url)")
+                print("request: \("{\"jsonrpc\":\"1.0\",\"id\":\"\(id)\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}")")
+                #endif
+                
+                var sesh = URLSession(configuration: .default)
+                
+                if onionAddress.contains("onion") {
+                    sesh = self.torClient.session
+                }
+                
+                let task = sesh.dataTask(with: request as URLRequest) { [weak self] (data, response, error) in
+                    guard let self = self else { return }
+                    
+                    guard let urlContent = data else {
+                        
+                        guard let error = error else {
+                            if self.attempts < 20 {
+                                self.executeRPCCommand(method: method, param: param, completion: completion)
+                            } else {
+                                self.attempts = 0
+                                completion((nil, "Unknown error, ran out of attempts"))
+                            }
+                            
+                            return
+                        }
+                        
                         if self.attempts < 20 {
                             self.executeRPCCommand(method: method, param: param, completion: completion)
                         } else {
                             self.attempts = 0
-                            completion((nil, "Unknown error, ran out of attempts"))
+                            #if DEBUG
+                            print("error: \(error.localizedDescription)")
+                            #endif
+                            completion((nil, error.localizedDescription))
                         }
                         
                         return
                     }
                     
-                    if self.attempts < 20 {
-                        self.executeRPCCommand(method: method, param: param, completion: completion)
-                    } else {
-                        self.attempts = 0
-                        #if DEBUG
-                        print("error: \(error.localizedDescription)")
-                        #endif
-                        completion((nil, error.localizedDescription))
+                    self.attempts = 0
+                    
+                    guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: .mutableLeaves) as? NSDictionary else {
+                        if let httpResponse = response as? HTTPURLResponse {
+                            switch httpResponse.statusCode {
+                            case 401:
+                                completion((nil, "Looks like your rpc credentials are incorrect, please double check them. If you changed your rpc creds in your bitcoin.conf you need to restart your node for the changes to take effect."))
+                            case 403:
+                                completion((nil, "The bitcoin-cli \(method) command has not been added to your rpcwhitelist, add \(method) to your bitcoin.conf rpcwhitelsist, reboot Bitcoin Core and try again."))
+                            default:
+                                completion((nil, "Unable to decode the response from your node, http status code: \(httpResponse.statusCode)"))
+                            }
+                        } else {
+                            completion((nil, "Unable to decode the response from your node..."))
+                        }
+                        return
                     }
                     
-                    return
-                }
-                
-                self.attempts = 0
-                
-                guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: .mutableLeaves) as? NSDictionary else {
-                    if let httpResponse = response as? HTTPURLResponse {
-                        switch httpResponse.statusCode {
-                        case 401:
-                            completion((nil, "Looks like your rpc credentials are incorrect, please double check them. If you changed your rpc creds in your bitcoin.conf you need to restart your node for the changes to take effect."))
-                        case 403:
-                            completion((nil, "The bitcoin-cli \(method) command has not been added to your rpcwhitelist, add \(method) to your bitcoin.conf rpcwhitelsist, reboot Bitcoin Core and try again."))
-                        default:
-                            completion((nil, "Unable to decode the response from your node, http status code: \(httpResponse.statusCode)"))
-                        }
-                    } else {
-                        completion((nil, "Unable to decode the response from your node..."))
+                    #if DEBUG
+                    print("json: \(json)")
+                    #endif
+                    
+                    guard let errorCheck = json["error"] as? NSDictionary else {
+                        completion((json["result"], nil))
+                        return
                     }
-                    return
+                    
+                    guard let errorMessage = errorCheck["message"] as? String else {
+                        completion((nil, "Uknown error from bitcoind"))
+                        return
+                    }
+                    
+                    completion((nil, errorMessage))
                 }
                 
-                #if DEBUG
-                print("json: \(json)")
-                #endif
-                
-                guard let errorCheck = json["error"] as? NSDictionary else {
-                    completion((json["result"], nil))
-                    return
-                }
-                
-                guard let errorMessage = errorCheck["message"] as? String else {
-                    completion((nil, "Uknown error from bitcoind"))
-                    return
-                }
-                
-                completion((nil, errorMessage))
+                task.resume()
             }
-            
-            task.resume()
         }
     }
 }

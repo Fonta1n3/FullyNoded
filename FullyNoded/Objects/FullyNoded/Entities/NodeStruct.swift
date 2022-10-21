@@ -21,6 +21,10 @@ public struct NodeStruct: CustomStringConvertible {
     let macaroon:Data?
     let cert:Data?
     let isJoinMarket:Bool
+    let isNostr:Bool
+    let nostrPubkey:Data?
+    let nostrPrivkey:Data?
+    let subscribeTo:Data?
     
     init(dictionary: [String: Any]) {
         id = dictionary["id"] as? UUID
@@ -34,6 +38,10 @@ public struct NodeStruct: CustomStringConvertible {
         macaroon = dictionary["macaroon"] as? Data
         cert = dictionary["cert"] as? Data
         isJoinMarket = dictionary["isJoinMarket"] as? Bool ?? false
+        isNostr = dictionary["isNostr"] as? Bool ?? false
+        nostrPubkey = dictionary["nostrPubkey"] as? Data
+        nostrPrivkey = dictionary["nostrPrivkey"] as? Data
+        subscribeTo = dictionary["subscribeTo"] as? Data
     }
     
     public var description: String {
