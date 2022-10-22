@@ -213,7 +213,7 @@ class NodeLogic {
         Reducer.sharedInstance.makeCommand(command: .getmempoolinfo, param: "") { (response, errorMessage) in
             if let dict = response as? NSDictionary {
                 var mempoolInfo = [String:Any]()
-                mempoolInfo["mempoolCount"] = dict["size"] as! Int
+                mempoolInfo["mempoolCount"] = dict["size"] as? Int ?? 0
                 completion((mempoolInfo, nil))
             } else {
                 completion((nil, errorMessage ?? ""))
@@ -803,7 +803,7 @@ class NodeLogic {
     
     class func parseMiningInfo(miningInfo: NSDictionary, completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         var miningInfoToReturn = [String:Any]()
-        let hashesPerSecond = miningInfo["networkhashps"] as! Double
+        let hashesPerSecond = miningInfo["networkhashps"] as? Double ?? 0.0
         let exahashesPerSecond = hashesPerSecond / 1000000000000000000
         miningInfoToReturn["networkhashps"] = Int(exahashesPerSecond).withCommas
         completion((miningInfoToReturn, nil))

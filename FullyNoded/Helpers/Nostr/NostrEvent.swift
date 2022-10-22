@@ -489,7 +489,7 @@ func make_first_contact_event(privkey: Data, content: String) -> NostrEvent? {
     
     let ev = NostrEvent(content: content,
                         pubkey: Keys.privKeyToPubKey(privkey)!,
-                        kind: NostrKind.text.rawValue,
+                        kind: NostrKind.replaceable.rawValue,
                         tags: [])
     ev.calculate_id()
     ev.sign(privkey: privkey.hexString)

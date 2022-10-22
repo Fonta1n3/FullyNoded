@@ -340,8 +340,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             
             
-            if nostrToSubscribe.text != "" {
-                newNode["subscribeTo"] = encryptedValue(Data(hexString: nostrToSubscribe.text!)!)
+            if nostrToSubscribe.text != "", let data = Data(hexString: nostrToSubscribe.text!)  {
+                newNode["subscribeTo"] = encryptedValue(data)
             }
             
             if nostrPrivkeyField.text != "" {
@@ -349,6 +349,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 newNode["nostrPrivkey"] = encryptedValue(privkey)
                 let pubkey = Keys.privKeyToPubKey(privkey)!
                 newNode["nostrPubkey"] = encryptedValue(Data(hexString: pubkey)!)
+                newNode["isNostr"] = true
+                newNode["isLightning"] = false
+                newNode["isJoinMarket"] = false
             }
             
             if nostrRelayField.text != nil {
@@ -459,8 +462,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if nostrToSubscribe != nil, nostrToSubscribe.text != "" {
-                guard let enc = encryptedValue(Data(hexString: nostrToSubscribe.text!)!) else { return }
+            if nostrToSubscribe != nil, nostrToSubscribe.text != "", let data = Data(hexString: nostrToSubscribe.text!) {
+                guard let enc = encryptedValue(data) else { return }
                 CoreDataService.update(id: id, keyToUpdate: "subscribeTo", newValue: enc, entity: .newNodes) { success in
                     if !success {
                         displayAlert(viewController: self, isError: true, message: "error updating subscribe to")
@@ -468,8 +471,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if nostrPrivkeyField != nil, nostrPrivkeyField.text != "" {
-                guard let enc = encryptedValue(Data(hexString: nostrPrivkeyField.text!)!) else { return }
+            if nostrPrivkeyField != nil, nostrPrivkeyField.text! != "" {
+                guard let data = Data(hexString: nostrPrivkeyField.text!), let enc = encryptedValue(data) else { return }
                 CoreDataService.update(id: id, keyToUpdate: "nostrPrivkey", newValue: enc, entity: .newNodes) { success in
                     if !success {
                         displayAlert(viewController: self, isError: true, message: "error updating nostr privkey")

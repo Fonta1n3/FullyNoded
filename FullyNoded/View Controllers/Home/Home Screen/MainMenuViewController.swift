@@ -67,11 +67,12 @@ class MainMenuViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        print("viewDidLoad")
         UserDefaults.standard.set(UIDevice.modelName, forKey: "modelName")
         
         UIApplication.shared.isIdleTimerDisabled = true
         
-        MakeRPCCall.sharedInstance.activeNode { [weak self] node in
+        MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let node = node else { return }
             guard let self = self else { return }
             self.activeNode = node
@@ -145,6 +146,13 @@ class MainMenuViewController: UIViewController {
                     if !MakeRPCCall.sharedInstance.connected {
                         MakeRPCCall.sharedInstance.connectToRelay { _ in }
                     }
+                }
+            } else {
+                MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
+                    guard let self = self else { return }
+                    guard let node = node else { return }
+
+                    self.activeNode = node
                 }
             }
         }        
@@ -272,6 +280,7 @@ class MainMenuViewController: UIViewController {
     }
     
     @objc func refreshNode() {
+        print("refreshNode")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -310,9 +319,9 @@ class MainMenuViewController: UIViewController {
             if i + 1 == nodes.count {
                 if activeNode != nil {
                     if activeNode!.isNostr {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                            self.loadNode(node: self.activeNode!)
-                        }
+//                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+//                            self.loadNode(node: self.activeNode!)
+//                        }
                     } else {
                         loadNode(node: self.activeNode!)
                     }
@@ -363,7 +372,13 @@ class MainMenuViewController: UIViewController {
     
     func refreshDataNow() {
         addNavBarSpinner()
-        loadTable()
+        //loadTable()
+        MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
+            guard let self = self else { return }
+            guard let node = node else { return }
+            self.activeNode = node
+            self.loadNode(node: node)
+        }
     }
     
     func showUnlockScreen() {
@@ -829,14 +844,19 @@ class MainMenuViewController: UIViewController {
                     self.mgr?.start(delegate: self)
                     
                     if let node = self.activeNode, node.isNostr {
-                        self.removeBackView()
-                        self.loadNode(node: node)
-                        
-                        DispatchQueue.main.async { [weak self] in
-                            self?.torProgressLabel.isHidden = true
-                            self?.progressView.isHidden = true
-                            self?.blurView.isHidden = true
+                        //DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                            self.removeBackView()
+                            //self.loadTable()
+                        if let activeNode = self.activeNode {
+                            self.loadNode(node: activeNode)
                         }
+                        
+                            DispatchQueue.main.async { [weak self] in
+                                self?.torProgressLabel.isHidden = true
+                                self?.progressView.isHidden = true
+                                self?.blurView.isHidden = true
+                            }
+                        //}
                     }
                 }
             }
@@ -995,7 +1015,11 @@ extension MainMenuViewController: OnionManagerDelegate {
     func torConnFinished() {
         viewHasLoaded = true
         removeBackView()
-        loadTable()
+        if let activeNode = activeNode {
+            if !activeNode.isNostr {
+                loadTable()
+            }
+        }
         
         DispatchQueue.main.async { [weak self] in
             self?.torProgressLabel.isHidden = true
@@ -1013,7 +1037,12 @@ extension MainMenuViewController: OnionManagerDelegate {
             self?.progressView.isHidden = true
             self?.blurView.isHidden = true
             self?.removeBackView()
-            self?.loadTable()
+            //self?.loadTable()
+            if let activeNode = self?.activeNode {
+                if !activeNode.isNostr {
+                    self?.loadTable()
+                }
+            }
         }
     }
 }

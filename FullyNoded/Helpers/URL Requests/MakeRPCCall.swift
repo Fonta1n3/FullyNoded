@@ -19,6 +19,7 @@ class MakeRPCCall: WebSocketDelegate {
     var node:NodeStruct!
     var onDoneBlock : (((response: Any?, errorDesc: String?)) -> Void)?
     let subId = Keys.randomPrivKey()!.hex
+    var activeNode:NodeStruct?
     
     private init() {}
     
@@ -26,11 +27,7 @@ class MakeRPCCall: WebSocketDelegate {
         switch event {
         case .connected/*(let headers)*/:
             connected = true
-            activeNode { [weak self] node in
-                guard let self = self else { return }
-                
-                guard let node = node else { return }
-                
+            if let node = activeNode {
                 guard let encryptedSubscribeTo = node.subscribeTo else { return }
                 guard let decryptedSubscribeTo = Crypto.decrypt(encryptedSubscribeTo) else { return }
                 let filter:NostrFilter = NostrFilter.filter_authors(["\(decryptedSubscribeTo.hexString.dropFirst(2))"])
@@ -88,6 +85,7 @@ class MakeRPCCall: WebSocketDelegate {
                         #endif
                     }
                 case 2:
+                    print("case 2")
                     if let dict = object as? [String:Any], let created_at = dict["created_at"] as? Int {
                         let now = NSDate().timeIntervalSince1970
                         let diff = (now - TimeInterval(created_at))
@@ -101,15 +99,15 @@ class MakeRPCCall: WebSocketDelegate {
                             #endif
                             return
                         }
-                        
+
                         let (method, param, walletName, responseCheck, errorDescCheck) = processValidReceivedContent(content: ev.content)
-                        
+
                         guard let method = method else {
                             guard let reponse = responseCheck else {
                                 self.onDoneBlock!((nil,errorDescCheck))
                                 return
                             }
-                            
+
                             guard let _ = errorDescCheck else {
                                 self.onDoneBlock!((reponse as Any,nil))
                                 return
@@ -117,21 +115,21 @@ class MakeRPCCall: WebSocketDelegate {
                             self.onDoneBlock!((reponse as Any,errorDescCheck))
                             return
                         }
-                        
+
                         guard let param = param else {
                             #if DEBUG
                             print("unable to parse method and param from recevied event.")
                             #endif
                             return
                         }
-                        
+
                         if let walletName = walletName {
                             UserDefaults.standard.setValue(walletName, forKey: "walletName")
                         }
-                                                
+
                         self.executeRPCCommand(method: method, param: param) { [weak self] (response, errorDesc) in
                             guard let self = self else { return }
-                            
+
                             guard let response = response else {
                                 #if DEBUG
                                 print("errorDesc: \(errorDesc ?? "no error returned")")
@@ -139,7 +137,7 @@ class MakeRPCCall: WebSocketDelegate {
                                 self.sendResponseToRelay(response: response, errorDesc: errorDesc ?? "unknown error")
                                 return
                             }
-                            
+
                             #if DEBUG
                             print("response: \(response)")
                             #endif
@@ -171,12 +169,12 @@ class MakeRPCCall: WebSocketDelegate {
             self.socket.connect()
             completion(true)
         } else {
-            print("not connected but completed anyway")
             completion(true)
         }
     }
     
-    func activeNode(completion: @escaping ((NodeStruct?) -> Void)) {
+    func getActiveNode(completion: @escaping ((NodeStruct?) -> Void)) {
+        print("getActiveNode")
         CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
             guard let nodes = nodes, nodes.count > 0 else {
                 completion((nil))
@@ -197,7 +195,10 @@ class MakeRPCCall: WebSocketDelegate {
                 completion((nil))
                 return
             }
-            completion(NodeStruct(dictionary: active))
+            
+            let n = NodeStruct(dictionary: active)
+            self.activeNode = n
+            completion(n)
         }
     }
     
@@ -273,10 +274,7 @@ class MakeRPCCall: WebSocketDelegate {
     
     func executeNostrRpc(method: BTC_CLI_COMMAND, param: Any) {
         print("executeNostrRpc")
-        self.activeNode { node in
-            guard let node = node else {
-                return
-            }
+        if let node = activeNode {
             let encoder = JSONEncoder()
             
             var walletName:String?
@@ -297,7 +295,7 @@ class MakeRPCCall: WebSocketDelegate {
             guard let decryptedNostrPubkey = Crypto.decrypt(encryptedPubkey) else { return }
             let ev = NostrEvent(content: encryptedContent,
                                 pubkey: "\(decryptedNostrPubkey.hexString.dropFirst(2))",
-                                kind: NostrKind.text.rawValue,
+                                kind: NostrKind.replaceable.rawValue,
                                 tags: [])
             ev.calculate_id()
             guard let encryptedPrivkey = node.nostrPrivkey else { return }
@@ -315,8 +313,7 @@ class MakeRPCCall: WebSocketDelegate {
     }
     
     func sendResponseToRelay(response: Any?, errorDesc: String?) {
-        self.activeNode { node in
-            guard let node = node else { return }
+        if let node = activeNode {
             let dict:[String:Any] = ["response":response,"errorDesc":errorDesc ?? ""]
             
             guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
@@ -334,7 +331,7 @@ class MakeRPCCall: WebSocketDelegate {
             
             let ev = NostrEvent(content: encryptedContent,
                                 pubkey: "\(pubkey.dropFirst(2))",
-                                kind: NostrKind.text.rawValue,
+                                kind: NostrKind.replaceable.rawValue,
                                 tags: [])
             ev.calculate_id()
             
@@ -361,14 +358,7 @@ class MakeRPCCall: WebSocketDelegate {
     func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
         attempts += 1
         
-        activeNode { [weak self] node in
-            guard let self = self else { return }
-            
-            guard let node = node else {
-                completion((nil, "No active node."))
-                return
-            }
-            
+        if let node = self.activeNode {
             let modelName = UserDefaults.standard.value(forKey: "modelName") as? String ?? ""
                         
             if node.isNostr && modelName != "arm64" && modelName != "i386" && modelName != "x86_64" {
