@@ -5044,7 +5044,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="CLw-iZ-OHo">
-                                                    <rect key="frame" x="15" y="9.5" width="223" height="35"/>
+                                                    <rect key="frame" x="15" y="9.5" width="81.5" height="35"/>
                                                     <subviews>
                                                         <view tag="3" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5lq-GR-dY5">
                                                             <rect key="frame" x="0.0" y="0.0" width="35" height="35"/>
@@ -5066,39 +5066,46 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                                             </constraints>
                                                         </view>
                                                         <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oKg-0X-eea">
-                                                            <rect key="frame" x="40" y="7.5" width="183" height="20.5"/>
+                                                            <rect key="frame" x="40" y="7.5" width="41.5" height="20.5"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                     </subviews>
                                                     <constraints>
-                                                        <constraint firstAttribute="trailing" secondItem="oKg-0X-eea" secondAttribute="trailing" id="CQd-vU-NrU"/>
+                                                        <constraint firstItem="5lq-GR-dY5" firstAttribute="leading" secondItem="CLw-iZ-OHo" secondAttribute="leading" id="BUT-Jf-qX4"/>
+                                                        <constraint firstItem="oKg-0X-eea" firstAttribute="leading" secondItem="5lq-GR-dY5" secondAttribute="trailing" constant="10" id="EXn-yn-g2Y"/>
                                                     </constraints>
                                                 </stackView>
                                                 <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="Xlw-4V-HS1">
-                                                    <rect key="frame" x="246" y="2" width="81.5" height="50"/>
+                                                    <rect key="frame" x="214.5" y="2" width="113" height="50"/>
                                                     <subviews>
                                                         <switch opaque="NO" tag="2" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="left" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SDX-tI-Wdo">
                                                             <rect key="frame" x="0.0" y="9.5" width="51" height="31"/>
+                                                            <constraints>
+                                                                <constraint firstAttribute="height" constant="31" id="gWJ-Qf-aAW"/>
+                                                                <constraint firstAttribute="width" constant="49" id="tBA-hJ-559"/>
+                                                            </constraints>
                                                             <color key="onTintColor" systemColor="systemTealColor"/>
                                                             <color key="thumbTintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         </switch>
                                                         <button opaque="NO" tag="5" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sTq-Ql-LCh">
-                                                            <rect key="frame" x="69" y="14" width="12.5" height="22"/>
+                                                            <rect key="frame" x="69" y="9.5" width="44" height="31"/>
+                                                            <constraints>
+                                                                <constraint firstAttribute="width" constant="44" id="fFo-W7-aFe"/>
+                                                                <constraint firstAttribute="height" constant="31" id="prZ-Y7-esu"/>
+                                                            </constraints>
                                                             <color key="tintColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <state key="normal" image="chevron.right" catalog="system"/>
                                                         </button>
                                                     </subviews>
                                                     <constraints>
-                                                        <constraint firstAttribute="width" constant="81.5" id="85K-gi-N4V"/>
                                                         <constraint firstAttribute="height" constant="50" id="8zJ-G5-8Nr"/>
                                                     </constraints>
                                                 </stackView>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="CLw-iZ-OHo" firstAttribute="centerY" secondItem="9ct-J0-fLL" secondAttribute="centerY" id="Bug-pp-iCl"/>
-                                                <constraint firstItem="Xlw-4V-HS1" firstAttribute="leading" secondItem="CLw-iZ-OHo" secondAttribute="trailing" constant="8" id="JqF-d9-6kn"/>
                                                 <constraint firstItem="CLw-iZ-OHo" firstAttribute="leading" secondItem="9ct-J0-fLL" secondAttribute="leading" constant="15" id="OS6-HQ-8Xc"/>
                                                 <constraint firstAttribute="trailing" secondItem="Xlw-4V-HS1" secondAttribute="trailing" constant="15.5" id="Owq-jN-n4H"/>
                                                 <constraint firstAttribute="bottom" secondItem="Xlw-4V-HS1" secondAttribute="bottom" constant="2" id="R8R-dj-LEB"/>
@@ -7704,14 +7711,14 @@ COLD means no keys will be generated and no private keys can be imported.</strin
     <inferredMetricsTieBreakers>
         <segue reference="5iI-Ra-crf"/>
         <segue reference="UBf-qr-XYG"/>
-        <segue reference="dhu-ZV-762"/>
+        <segue reference="aQN-4W-cSW"/>
         <segue reference="4g3-DC-Q5z"/>
         <segue reference="EZr-Ut-goC"/>
         <segue reference="mRa-gP-mZ0"/>
         <segue reference="Cd3-qW-ujG"/>
         <segue reference="kws-xU-XdS"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="07E-4w-Zh7"/>
+        <segue reference="lhS-mh-es9"/>
         <segue reference="if0-NE-c9T"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="BVG-ie-esh"/>
