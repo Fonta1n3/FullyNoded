@@ -22,6 +22,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var hostname: String?
     let imagePicker = UIImagePickerController()
     var scanNow = false
+    var isNostr = false
     
     @IBOutlet weak var nostrRelayField: UITextField!
     @IBOutlet weak var nostrRelayHeader: UILabel!
@@ -44,7 +45,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBOutlet weak var onionAddressField: UITextField!
     @IBOutlet weak var addressHeaderOutlet: UILabel!
     @IBOutlet weak var macaroonHeader: UILabel!
-    @IBOutlet weak var nostrSwitchOutlet: UISwitch!
     @IBOutlet weak var nostrPubkeyField: UITextField!
     @IBOutlet weak var nostrPrivkeyField: UITextField!
     @IBOutlet weak var nostrToSubscribe: UITextField!
@@ -76,6 +76,36 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         } else {
             addressHeaderOutlet.text = "Address: (xxx.onion:8332 or 127.0.0.1:8332)"
         }
+        
+        if isNostr {
+            createNostrCreds()
+            let modelName = UIDevice.modelName
+            if modelName != "arm64" && modelName != "x86_64" && modelName != "i386" {
+                if rpcUserField != nil,
+                   rpcPassword != nil,
+                   passwordHeader != nil,
+                   usernameHeader != nil,
+                   usernameHeader != nil,
+                   macaroonField != nil,
+                   macaroonHeader != nil,
+                   certField != nil,
+                   certHeader != nil,
+                   addressHeader != nil,
+                   onionAddressField != nil {
+                    addressHeader.removeFromSuperview()
+                    rpcUserField.removeFromSuperview()
+                    rpcPassword.removeFromSuperview()
+                    passwordHeader.removeFromSuperview()
+                    usernameHeader.removeFromSuperview()
+                    macaroonField.removeFromSuperview()
+                    macaroonHeader.removeFromSuperview()
+                    certField.removeFromSuperview()
+                    certHeader.removeFromSuperview()
+                    onionAddressField.removeFromSuperview()
+                    
+                }
+            }
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -86,47 +116,20 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
-    @IBAction func nostrSwitchAction(_ sender: Any) {
-        guard let node = selectedNode else {
-            self.newNode["isNostr"] = nostrSwitchOutlet.isOn
-            return
-        }
-        
-        let nodeStruct = NodeStruct(dictionary: node)
-        
-        CoreDataService.update(id: nodeStruct.id!, keyToUpdate: "isNostr", newValue: nostrSwitchOutlet.isOn, entity: .newNodes) { updated in
-            #if DEBUG
-            print("nostr setting updated success: \(updated)")
-            #endif
-        }
-        
-        guard nostrSwitchOutlet.isOn else {
-           return
-        }
-        
+    func createNostrCreds() {
         let privkey = Crypto.privateKey()
         let pubkey = Keys.privKeyToPubKey(privkey)!
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
             self.nostrPubkeyField.text = pubkey
             self.nostrPrivkeyField.text = privkey.hexString
-            
             guard let encryptedPubkey = Crypto.encrypt(Data(hexString: pubkey)!) else { return }
             guard let encryptedPrivkey = Crypto.encrypt(privkey) else { return }
-            
-            CoreDataService.update(id: nodeStruct.id!, keyToUpdate: "nostrPubkey", newValue: encryptedPubkey, entity: .newNodes) { updated in
-                #if DEBUG
-                print("nostr pubkey updated success: \(updated)")
-                #endif
-            }
-            
-            CoreDataService.update(id: nodeStruct.id!, keyToUpdate: "nostrPrivkey", newValue: encryptedPrivkey, entity: .newNodes) { updated in
-                #if DEBUG
-                print("nostr privkey updated success: \(updated)")
-                #endif
-            }
+            self.newNode["nostrPubkey"] = encryptedPubkey
+            self.newNode["nostrPrivkey"] = encryptedPrivkey
+            self.newNode["isNostr"] = true
+            self.nostrRelayField.text = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://relay.nostr.info"
         }
     }
     
@@ -320,16 +323,22 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             var isLightning = false
             var isJoinMarket = false
             
-            if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
-                isLightning = true
+            if onionAddressField != nil {
+                if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
+                    isLightning = true
+                }
+                
+                if onionAddressField.text!.hasSuffix(":28183") {
+                    isJoinMarket = true
+                }
+                
+                newNode["isLightning"] = isLightning
+                newNode["isJoinMarket"] = isJoinMarket
+                guard let encryptedOnionAddress = encryptedValue((onionAddressField.text)!.dataUsingUTF8StringEncoding)  else { return }
+                newNode["onionAddress"] = encryptedOnionAddress
             }
             
-            if onionAddressField.text!.hasSuffix(":28183") {
-                isJoinMarket = true
-            }
             
-            newNode["isLightning"] = isLightning
-            newNode["isJoinMarket"] = isJoinMarket
             
             if nostrToSubscribe.text != "" {
                 newNode["subscribeTo"] = encryptedValue(Data(hexString: nostrToSubscribe.text!)!)
@@ -350,45 +359,52 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 newNode["label"] = nodeLabel.text!
             }
             
-            if rpcUserField.text != "" {
-                guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
-                newNode["rpcuser"] = enc
-            }
-            
-            if rpcPassword.text != "" {
-                guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
-                newNode["rpcpassword"] = enc
-            }
-            
-            if macaroonField.text != "" {
-                var macaroonData:Data?
-                
-                if let macaroonDataCheck = try? Data.decodeUrlSafeBase64(macaroonField.text!) {
-                    macaroonData = macaroonDataCheck
-                } else if let macaroonDataCheck = Data(hexString: macaroonField.text!) {
-                    macaroonData = macaroonDataCheck
+            if rpcUserField != nil {
+                if rpcUserField.text != "" {
+                    guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
+                    newNode["rpcuser"] = enc
                 }
-                
-                guard let macaroonData = macaroonData else {
-                    showAlert(vc: self, title: "", message: "Error decoding your macaroon. It can either be in hex or base64 format.")
-                    return
-                }
-                
-                guard let encryptedMacaroonHex = Crypto.encrypt(macaroonData.hexString.dataUsingUTF8StringEncoding) else { return }
-                
-                newNode["macaroon"] = encryptedMacaroonHex
             }
             
-            if certField.text != "" {
-                guard let encryptedCert = encryptCert(certField.text!) else {
-                    return
+            if rpcPassword != nil {
+                if rpcPassword.text != "" {
+                    guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
+                    newNode["rpcpassword"] = enc
                 }
-                
-                newNode["cert"] = encryptedCert
             }
             
-            guard let encryptedOnionAddress = encryptedValue((onionAddressField.text)!.dataUsingUTF8StringEncoding)  else { return }
-            newNode["onionAddress"] = encryptedOnionAddress
+            if macaroonField != nil {
+                if macaroonField.text != "" {
+                    var macaroonData:Data?
+                    
+                    if let macaroonDataCheck = try? Data.decodeUrlSafeBase64(macaroonField.text!) {
+                        macaroonData = macaroonDataCheck
+                    } else if let macaroonDataCheck = Data(hexString: macaroonField.text!) {
+                        macaroonData = macaroonDataCheck
+                    }
+                    
+                    guard let macaroonData = macaroonData else {
+                        showAlert(vc: self, title: "", message: "Error decoding your macaroon. It can either be in hex or base64 format.")
+                        return
+                    }
+                    
+                    guard let encryptedMacaroonHex = Crypto.encrypt(macaroonData.hexString.dataUsingUTF8StringEncoding) else { return }
+                    
+                    newNode["macaroon"] = encryptedMacaroonHex
+                }
+            }
+            
+            if certField != nil {
+                if certField.text != "" {
+                    guard let encryptedCert = encryptCert(certField.text!) else {
+                        return
+                    }
+                    
+                    newNode["cert"] = encryptedCert
+                }
+            }
+            
+            
             
             func save() {
                 CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
@@ -396,7 +412,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         if nodes!.count == 0 {
                             vc.newNode["isActive"] = true
                         } else {
-                            if !self.onionAddressField.text!.hasSuffix(":28183") {
+                            if self.onionAddressField != nil, !self.onionAddressField.text!.hasSuffix(":28183") {
                                 vc.newNode["isActive"] = false
                             }
                         }
@@ -412,22 +428,23 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            guard nodeLabel.text != "", onionAddressField.text != "" else {
+            guard nodeLabel.text != "" else {
                 displayAlert(viewController: self,
                              isError: true,
                              message: "Fill out all fields first")
                 return
             }
             
-            if rpcPassword.text != "" && rpcUserField.text != "" {
+            if rpcPassword != nil, rpcPassword.text != "" && rpcUserField != nil, rpcUserField.text != "" {
                 save()
-            } else if macaroonField.text != "" || certField.text != "" {
+            } else if macaroonField != nil, macaroonField.text != "" || certField != nil, certField.text != "" {
+                save()
+            } else if nostrRelayField.text != "" && nostrPubkeyField.text != "" && nostrPrivkeyField.text != "" {
                 save()
             } else {
-                
                 displayAlert(viewController: self,
                              isError: true,
-                             message: "Fill out all fields first")
+                             message: "That combo wont work...")
             }
             
         } else {
@@ -575,11 +592,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             if node.id != nil {
                 
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.nostrSwitchOutlet.isOn = node.isNostr
-                }
+                
                 
                 if node.isNostr {
                     let modelname = UIDevice.modelName
@@ -646,24 +659,15 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 
                 if node.label != "" {
                     nodeLabel.text = node.label
-                } else {
-                    nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
-                                                                         attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
                 }
                 
                 if node.rpcuser != nil {
                     rpcUserField.text = decryptedValue(node.rpcuser!)
-                } else {
-                    rpcUserField.attributedPlaceholder = NSAttributedString(string: "rpcuser",
-                                                                            attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
                 }
                 
                 if node.rpcpassword != nil {
                     rpcPassword.text = decryptedValue(node.rpcpassword!)
                     
-                } else {
-                    rpcPassword.attributedPlaceholder = NSAttributedString(string: "rpcpassword",
-                                                                           attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
                 }
                                 
                 if let enc = node.onionAddress {
@@ -694,9 +698,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     if isLightning {
                         placeHolder = "127.0.0.1:8080"
                     }
-                    
-                    onionAddressField.attributedPlaceholder = NSAttributedString(string: placeHolder,
-                                                                                 attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
                 }
                 
                 if node.cert != nil {
@@ -710,56 +711,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     macaroonField.text = Data(hexString: hex)!.urlSafeB64String
                 }
                 
-            } else {
-                rpcPassword.attributedPlaceholder = NSAttributedString(string: "rpcpassword",
-                                                                       attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-                
-                rpcUserField.attributedPlaceholder = NSAttributedString(string: "rpcuser",
-                                                                        attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-                
-                nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
-                                                                     attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-                
-                var placeHolder = "127.0.0.1:8332"
-                
-                if isLightning {
-                    placeHolder = "127.0.0.1:8080"
-                }
-                
-                onionAddressField.attributedPlaceholder = NSAttributedString(string: placeHolder,
-                                                                             attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
             }
-        } else {
-            rpcPassword.attributedPlaceholder = NSAttributedString(string: "rpcpassword",
-                                                                   attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-            
-            rpcUserField.attributedPlaceholder = NSAttributedString(string: "rpcuser",
-                                                                    attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-            
-            nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
-                                                                 attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-            
-            var placeHolder = "127.0.0.1:8332"
-            
-            if isLightning {
-                placeHolder = "127.0.0.1:8080"
-                nodeLabel.text = "Lightning Node"
-            } else {
-                nodeLabel.text = "Bitcoin Core"
-            }
-            
-            onionAddressField.attributedPlaceholder = NSAttributedString(string: "127.0.0.1:8332",
-                                                                         attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.nostrSwitchOutlet.isOn = false
-            }
-                        
-            #if targetEnvironment(macCatalyst)
-                onionAddressField.text = placeHolder
-            #endif
         }
     }
     
@@ -799,10 +751,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     private func nodeAddedSuccess() {
-        let addAlertTitle = "Node added successfully ✓"
-        let addAlertMessage = "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node."
-        let updatedAlertTitle = "Node updated successfully ✓"
-        let updatedAlertMessage = "Your node has been updated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection using your updated node credentials."
+        let addAlertTitle = "Added successfully ✓"
+        let addAlertMessage = ""
+        let updatedAlertTitle = "Updated successfully ✓"
+        let updatedAlertMessage = ""
         
         func popHome() {
             DispatchQueue.main.async { [unowned vc = self] in

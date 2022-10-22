@@ -91,7 +91,7 @@ class MakeRPCCall: WebSocketDelegate {
                     if let dict = object as? [String:Any], let created_at = dict["created_at"] as? Int {
                         let now = NSDate().timeIntervalSince1970
                         let diff = (now - TimeInterval(created_at))
-                        guard diff < 2.0 else {
+                        guard diff < 5.0 else {
                             print("command too old")
                             return
                         }
@@ -166,10 +166,12 @@ class MakeRPCCall: WebSocketDelegate {
             var request = URLRequest(url: url)
             request.timeoutInterval = 5
             self.socket = WebSocket(request: request)
+            self.socket.respondToPingWithPong = true
             self.socket.delegate = self
             self.socket.connect()
             completion(true)
         } else {
+            print("not connected but completed anyway")
             completion(true)
         }
     }

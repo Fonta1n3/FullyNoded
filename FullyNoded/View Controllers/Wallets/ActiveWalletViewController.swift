@@ -1013,6 +1013,8 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func getFxRate() {
+        self.loadTable()
+        
         FiatConverter.sharedInstance.getFxRate { [weak self] rate in
             guard let self = self else { return }
             
@@ -1035,8 +1037,6 @@ class ActiveWalletViewController: UIViewController {
                 guard let self = self else { return }
                 
                 self.fxRateLabel.text = rate.exchangeRate
-                
-                self.loadTable()
             }
         }
     }

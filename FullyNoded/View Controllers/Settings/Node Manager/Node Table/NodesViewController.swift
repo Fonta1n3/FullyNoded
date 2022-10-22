@@ -15,6 +15,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     let ud = UserDefaults.standard
     var addButton = UIBarButtonItem()
     var editButton = UIBarButtonItem()
+    var isNostr = false
     private var authenticated = false
     @IBOutlet var nodeTable: UITableView!
     
@@ -315,6 +316,12 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             let alert = UIAlertController(title: "Scan QR or add manually?", message: "You can add the node credentials manually or scan a QR code.", preferredStyle: alertStyle)
             
+            alert.addAction(UIAlertAction(title: "Add nostr node", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                self.isNostr = true
+                self.segueToAddNodeManually()
+            }))
+            
             alert.addAction(UIAlertAction(title: "Add manually", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                 
@@ -379,6 +386,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             if let vc = segue.destination as? NodeDetailViewController {
                 vc.createNew = true
                 vc.isLightning = false
+                vc.isNostr = self.isNostr
             }
         }
         

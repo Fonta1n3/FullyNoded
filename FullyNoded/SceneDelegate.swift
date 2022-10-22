@@ -45,7 +45,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.blacked.removeFromSuperview()
         
         guard !isBooting else { isBooting = !isBooting; return }
-        
+                
         guard KeyChain.getData("UnlockPassword") != nil else {
             if !isBooting && mgr?.state != .started && mgr?.state != .connected  {
                 mgr?.start(delegate: nil)
@@ -84,6 +84,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneDidEnterBackground(_ scene: UIScene) {
         // Save changes in the application's managed object context when the application transitions to the background.
         (UIApplication.shared.delegate as? AppDelegate)?.saveContext()
+        
+        MakeRPCCall.sharedInstance.connected = false
         
         if mgr?.state != .stopped && mgr?.state != TorClient.TorState.none  {
             #if !targetEnvironment(macCatalyst)

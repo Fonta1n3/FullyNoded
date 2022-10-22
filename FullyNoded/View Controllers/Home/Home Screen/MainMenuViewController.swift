@@ -17,7 +17,7 @@ class MainMenuViewController: UIViewController {
     @IBOutlet var mainMenu: UITableView!
     var connectingView = ConnectingView()
     var nodes = [[String:Any]]()
-    var activeNode:[String:Any]?
+    var activeNode:NodeStruct?
     var existingNodeID:UUID!
     var initialLoad = false
     let spinner = UIActivityIndicatorView(style: .medium)
@@ -42,9 +42,7 @@ class MainMenuViewController: UIViewController {
     var mempoolInfo:MempoolInfo!
     var uptimeInfo:Uptime!
     var feeInfo:FeeInfo!
-    
-    var nostrNode:NodeStruct?
-        
+            
     @IBOutlet weak var headerLabel: UILabel!
     @IBOutlet weak var torProgressLabel: UILabel!
     @IBOutlet weak var progressView: UIProgressView!
@@ -73,8 +71,10 @@ class MainMenuViewController: UIViewController {
         
         UIApplication.shared.isIdleTimerDisabled = true
         
-        MakeRPCCall.sharedInstance.activeNode { node in
+        MakeRPCCall.sharedInstance.activeNode { [weak self] node in
             guard let node = node else { return }
+            guard let self = self else { return }
+            self.activeNode = node
             
             if node.isNostr {
                 MakeRPCCall.sharedInstance.connectToRelay { _ in }
@@ -112,13 +112,42 @@ class MainMenuViewController: UIViewController {
                     if KeyChain.getData("UnlockPassword") != nil {
                         if isUnlocked {
                             mgr?.start(delegate: self)
+                            if self.activeNode != nil, self.activeNode!.isNostr {
+                                removeBackView()
+                                loadTable()
+                                
+                                DispatchQueue.main.async { [weak self] in
+                                    self?.torProgressLabel.isHidden = true
+                                    self?.progressView.isHidden = true
+                                    self?.blurView.isHidden = true
+                                }
+                            }
                         }
                     } else {
                         mgr?.start(delegate: self)
+                        if self.activeNode != nil, self.activeNode!.isNostr {
+                            loadNode(node: self.activeNode!)
+                            removeBackView()
+                            loadTable()
+                            
+                            DispatchQueue.main.async { [weak self] in
+                                self?.torProgressLabel.isHidden = true
+                                self?.progressView.isHidden = true
+                                self?.blurView.isHidden = true
+                            }
+                        }
                     }
                 }
             }
-        }
+        } else {
+            if let activeNode = activeNode {
+                if activeNode.isNostr {
+                    if !MakeRPCCall.sharedInstance.connected {
+                        MakeRPCCall.sharedInstance.connectToRelay { _ in }
+                    }
+                }
+            }
+        }        
     }
     
     private func alertToAddNode() {
@@ -191,15 +220,14 @@ class MainMenuViewController: UIViewController {
         // Code specific to Mac.
         guard let activeNode = activeNode else { return }
         
-        let nodeStruct = NodeStruct(dictionary: activeNode)
         var prefix = "btcrpc"
-        if nodeStruct.isLightning {
+        if activeNode.isLightning {
             prefix = "clightning-rpc"
         }
         
-        let address = decryptedValue(nodeStruct.onionAddress!)
-        let rpcusername = decryptedValue(nodeStruct.rpcuser!)
-        let rpcpassword = decryptedValue(nodeStruct.rpcpassword!)
+        let address = decryptedValue(activeNode.onionAddress!)
+        let rpcusername = decryptedValue(activeNode.rpcuser!)
+        let rpcpassword = decryptedValue(activeNode.rpcpassword!)
         
         let macName = UIDevice.current.name
         
@@ -213,7 +241,7 @@ class MainMenuViewController: UIViewController {
             hostname = hostname.replacingOccurrences(of: "\n", with: "")
             
             DispatchQueue.main.async { [weak self] in
-                let label = nodeStruct.label.replacingOccurrences(of: " ", with: "%20")
+                let label = activeNode.label.replacingOccurrences(of: " ", with: "%20")
                 self?.host = "\(prefix)://\(rpcusername):\(rpcpassword)@\(hostname):11221/?label=\(label)"
                 self?.performSegue(withIdentifier: "segueToRemoteControl", sender: self)
             }
@@ -274,22 +302,19 @@ class MainMenuViewController: UIViewController {
     }
     
     private func loopThroughNodes(nodes: [[String:Any]]) {
-        var activeNode:[String:Any]?
         for (i, node) in nodes.enumerated() {
             let nodeStruct = NodeStruct.init(dictionary: node)
             if nodeStruct.isActive && !nodeStruct.isLightning && !nodeStruct.isJoinMarket {
-                activeNode = node
-                self.activeNode = node
+                self.activeNode = nodeStruct
             }
             if i + 1 == nodes.count {
                 if activeNode != nil {
-                    if activeNode!["isNostr"] as? Bool ?? false {
-                        self.nostrNode = nodeStruct
+                    if activeNode!.isNostr {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                            self.loadNode(node: activeNode!)
+                            self.loadNode(node: self.activeNode!)
                         }
                     } else {
-                        loadNode(node: activeNode!)
+                        loadNode(node: self.activeNode!)
                     }
                 } else {
                     removeLoader()
@@ -300,21 +325,15 @@ class MainMenuViewController: UIViewController {
         }
     }
     
-    private func loadNode(node: [String:Any]) {
-        let nodeStruct = NodeStruct(dictionary: node)
+    private func loadNode(node: NodeStruct) {
         if initialLoad {
-            existingNodeID = nodeStruct.id
-//            if nodeStruct.isNostr {
-//                //loadFromNostr()
-//            } else {
-//                loadTableData()
-//            }
+            existingNodeID = node.id
             loadTableData()
         } else {
-            checkIfNodesChanged(newNodeId: nodeStruct.id!)
+            checkIfNodesChanged(newNodeId: node.id!)
         }
         DispatchQueue.main.async { [weak self] in
-            self?.headerLabel.text = nodeStruct.label
+            self?.headerLabel.text = node.label
         }
     }
     
@@ -808,6 +827,17 @@ class MainMenuViewController: UIViewController {
                 self.isUnlocked = true
                 if self.mgr?.state != .started && self.mgr?.state != .connected  {
                     self.mgr?.start(delegate: self)
+                    
+                    if let node = self.activeNode, node.isNostr {
+                        self.removeBackView()
+                        self.loadNode(node: node)
+                        
+                        DispatchQueue.main.async { [weak self] in
+                            self?.torProgressLabel.isHidden = true
+                            self?.progressView.isHidden = true
+                            self?.blurView.isHidden = true
+                        }
+                    }
                 }
             }
             
@@ -982,6 +1012,8 @@ extension MainMenuViewController: OnionManagerDelegate {
             self?.torProgressLabel.isHidden = true
             self?.progressView.isHidden = true
             self?.blurView.isHidden = true
+            self?.removeBackView()
+            self?.loadTable()
         }
     }
 }
@@ -1054,7 +1086,7 @@ extension MainMenuViewController: UITableViewDelegate {
         let textLabel = UILabel()
         textLabel.textAlignment = .left
         textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
-        textLabel.textColor = .white
+        textLabel.textColor = .gray
         textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
         
         if let section = Section(rawValue: section) {
