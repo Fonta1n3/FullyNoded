@@ -67,25 +67,7 @@ class MakeRPCCall: WebSocketDelegate {
             
             for (i, object) in jsonObject.enumerated() {
                 switch i {
-//                case 0:
-//                    if let type = object as? String {
-//                        switch type {
-//                        case "EVENT":
-//                            print("its an event")
-//                        case "EOSE":
-//                            print("its an EOSE")
-//                        default:
-//                            break
-//                        }
-//                    }
-                case 1:
-                    if let subid = object as? String {
-                        #if DEBUG
-                        print("subid: \(subid)")
-                        #endif
-                    }
                 case 2:
-                    print("case 2")
                     if let dict = object as? [String:Any], let created_at = dict["created_at"] as? Int {
                         let now = NSDate().timeIntervalSince1970
                         let diff = (now - TimeInterval(created_at))
@@ -97,6 +79,11 @@ class MakeRPCCall: WebSocketDelegate {
                             #if DEBUG
                             print("event parsing failed")
                             #endif
+                            return
+                        }
+                        
+                        guard !ev.too_big else {
+                            onDoneBlock!((nil,"event was too big"))
                             return
                         }
 
@@ -152,6 +139,7 @@ class MakeRPCCall: WebSocketDelegate {
             #if DEBUG
             print("error: \(error?.localizedDescription ?? "")")
             #endif
+            self.connected = false
         default:
             break
         }
@@ -159,7 +147,8 @@ class MakeRPCCall: WebSocketDelegate {
     
     func connectToRelay(completion: @escaping (Bool) -> Void) {
         if !self.connected {
-            let relay = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://relay.nostr.info"//ws://jgqaglhautb4k6e6i2g34jakxiemqp6z4wynlirltuukgkft2xuglmqd.onion
+            let relay = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://relay.nostr.info"//ws://jgqaglhautb4k6e6i2g34jakxiemqp6z4wynlirltuukgkft2xuglmqd.onion//wss://nostr-pub.wellorder.net/
+            print("relay: \(relay)")
             let url = URL(string: relay)!
             var request = URLRequest(url: url)
             request.timeoutInterval = 5
@@ -295,7 +284,7 @@ class MakeRPCCall: WebSocketDelegate {
             guard let decryptedNostrPubkey = Crypto.decrypt(encryptedPubkey) else { return }
             let ev = NostrEvent(content: encryptedContent,
                                 pubkey: "\(decryptedNostrPubkey.hexString.dropFirst(2))",
-                                kind: NostrKind.replaceable.rawValue,
+                                kind: NostrKind.ephemeral.rawValue,
                                 tags: [])
             ev.calculate_id()
             guard let encryptedPrivkey = node.nostrPrivkey else { return }
@@ -331,26 +320,37 @@ class MakeRPCCall: WebSocketDelegate {
             
             let ev = NostrEvent(content: encryptedContent,
                                 pubkey: "\(pubkey.dropFirst(2))",
-                                kind: NostrKind.replaceable.rawValue,
+                                kind: NostrKind.ephemeral.rawValue,
                                 tags: [])
             ev.calculate_id()
             
             ev.sign(privkey: decryptedPrivkey.hexString)
             
-            if ev.validity == .ok {
-                let encoder = JSONEncoder()
-                let event_data = try! encoder.encode(ev)
-                let event = String(decoding: event_data, as: UTF8.self)
-                let encoded = "[\"EVENT\",\(event)]"
+            guard !ev.too_big else {
                 #if DEBUG
-                print("send response to relay")
-                print(encoded)
+                print("event too big")
                 #endif
-                self.socket.write(string: encoded) {}
-            } else {
+                
+                return
+            }
+            
+            guard ev.validity == .ok else {
                 #if DEBUG
-                print("invalid event")
+                print("event invalid")
                 #endif
+                return
+            }
+            
+            let encoder = JSONEncoder()
+            let event_data = try! encoder.encode(ev)
+            let event = String(decoding: event_data, as: UTF8.self)
+            let encoded = "[\"EVENT\",\(event)]"
+            #if DEBUG
+            print("send response to relay")
+            print(encoded)
+            #endif
+            self.socket.write(string: encoded) {
+                print("we wrote some stuff")
             }
         }
     }
