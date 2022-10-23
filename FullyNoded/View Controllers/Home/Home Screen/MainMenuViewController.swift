@@ -29,6 +29,7 @@ class MainMenuViewController: UIViewController {
     var nodeLabel = ""
     var detailImage = UIImage()
     var detailImageTint = UIColor()
+    let refreshControl = UIRefreshControl()
     
     var detailHeaderText = ""
     var detailSubheaderText = ""
@@ -81,6 +82,10 @@ class MainMenuViewController: UIViewController {
                 MakeRPCCall.sharedInstance.connectToRelay { _ in }
             }
         }
+        
+        refreshControl.attributedTitle = NSAttributedString(string: "")
+        refreshControl.addTarget(self, action: #selector(refreshNode), for: .valueChanged)
+        mainMenu.addSubview(refreshControl)
         
         if !Crypto.setupinit() {
             showAlert(vc: self, title: "", message: "There was an error setupinit.")
@@ -280,7 +285,6 @@ class MainMenuViewController: UIViewController {
     }
     
     @objc func refreshNode() {
-        print("refreshNode")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -290,7 +294,24 @@ class MainMenuViewController: UIViewController {
         
         existingNodeID = nil
         addNavBarSpinner()
-        loadTable()
+        refreshControl.endRefreshing()
+        
+        MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
+            guard let self = self else { return }
+            guard let node = node else { return }
+            self.initialLoad = false
+            if node.isNostr {
+                MakeRPCCall.sharedInstance.connected = false
+                MakeRPCCall.sharedInstance.connectToRelay { _ in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        self.loadNode(node: node)
+                    }
+                }
+            } else {
+                self.loadNode(node: node)
+            }
+            
+        }
     }
     
     private func loadTable() {
@@ -372,7 +393,6 @@ class MainMenuViewController: UIViewController {
     
     func refreshDataNow() {
         addNavBarSpinner()
-        //loadTable()
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
             guard let node = node else { return }
@@ -522,7 +542,7 @@ class MainMenuViewController: UIViewController {
                 icon.image = UIImage(systemName: "archivebox")
                 chevron.alpha = 0
             }
-        
+            
         case .memPool:
             if mempoolInfo != nil {
                 label.text = "\(mempoolInfo.mempoolCount.withCommas) transactions"
@@ -558,7 +578,7 @@ class MainMenuViewController: UIViewController {
             if uptimeInfo != nil {
                 label.text = "\(uptimeInfo.uptime / 86400) days \((uptimeInfo.uptime % 86400) / 3600) hours uptime"
                 icon.image = UIImage(systemName: "clock")
-                background.backgroundColor = .systemOrange
+                background.backgroundColor = .systemGreen
                 chevron.alpha = 0
             }
             
@@ -614,7 +634,7 @@ class MainMenuViewController: UIViewController {
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                
+                self.headerLabel.textColor = .systemGreen
                 self.blockchainInfo = blockchainInfo
                 self.mainMenu.reloadSections(IndexSet(arrayLiteral: Section.blockchainNetwork.rawValue, Section.currentBlockHeight.rawValue, Section.blockchainState.rawValue, Section.blockchainSizeOnDisc.rawValue, Section.verificationProgress.rawValue, Section.miningDifficulty.rawValue), with: .fade)
                 self.getPeerInfo()
@@ -1141,7 +1161,7 @@ extension MainMenuViewController: UITableViewDelegate {
                 command = "getblockchaininfo"
                 detailHeaderText = headerName(for: .verificationProgress)
                 if blockchainInfo.progress == "Fully verified" {
-                    detailImageTint = .systemGreen
+                    detailImageTint = .green
                     detailImage = UIImage(systemName: "checkmark.seal")!
                 } else {
                     detailImageTint = .systemRed
@@ -1198,7 +1218,7 @@ extension MainMenuViewController: UITableViewDelegate {
                 detailHeaderText = headerName(for: .blockchainNetwork)
                 detailSubheaderText = blockchainInfo.network.capitalized
                 if blockchainInfo.network == "test chain" {
-                    detailImageTint = .systemGreen
+                    detailImageTint = .green
                 } else if blockchainInfo.network == "main chain" {
                     detailImageTint = .systemOrange
                 } else {
