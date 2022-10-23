@@ -143,16 +143,10 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     @objc func editNode(_ sender: UIButton) {
         guard let id = sender.restorationIdentifier, let section = Int(id) else { return }
-        
-        let nodeStruct = NodeStruct(dictionary: nodeArray[section])
-        
-        if !nodeStruct.uncleJim {
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.selectedIndex = section
-                vc.performSegue(withIdentifier: "updateNode", sender: vc)
-            }
-        } else {
-            showAlert(vc: self, title: "Restricted", message: "You can not view node credentials for nodes shared to you.")
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.selectedIndex = section
+            self.performSegue(withIdentifier: "updateNode", sender: self)
         }
     }
     
