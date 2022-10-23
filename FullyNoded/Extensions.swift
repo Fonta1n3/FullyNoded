@@ -541,3 +541,27 @@ public extension UIViewController {
         }
     }
 }
+
+public extension ContiguousBytes {
+    @inlinable var bytes: [UInt8] {
+        withUnsafeBytes { bytesPtr in Array(bytesPtr) }
+    }
+}
+
+public extension Data {
+    @inlinable var bytesNostr: [UInt8] {
+        withUnsafeBytes { bytesPtr in Array(bytesPtr) }
+    }
+
+    func copyToUnsafeMutableBytes<T>(of value: inout T) {
+        _ = Swift.withUnsafeMutableBytes(of: &value) { ptr in
+            ptr.copyBytes(from: self.prefix(ptr.count))
+        }
+    }
+}
+
+extension Int32 {
+    var boolValue: Bool {
+        Bool(truncating: NSNumber(value: self))
+    }
+}

@@ -10,7 +10,7 @@ import Foundation
 
 class OnchainUtils {
     static func listWalletDir(completion: @escaping ((wallets: WalletDir?, message: String?)) -> Void) {
-        Reducer.makeCommand(command: .listwalletdir, param: "") { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .listwalletdir, param: "") { (response, errorMessage) in
             guard let walletDir = response as? [String:Any] else {
                 completion((nil, errorMessage ?? "Unknown Error"))
                 return
@@ -21,7 +21,7 @@ class OnchainUtils {
     }
     
     static func listWallets(completion: @escaping ((wallets: [String]?, message: String?)) -> Void) {
-        Reducer.makeCommand(command: .listwallets, param: "") { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .listwallets, param: "") { (response, errorMessage) in
             guard let response = response as? [String] else {
                 completion((nil, errorMessage ?? "Unknown error."))
                 return
@@ -32,7 +32,7 @@ class OnchainUtils {
     }
     
     static func getWalletInfo(completion: @escaping ((walletInfo: WalletInfo?, message: String?)) -> Void) {
-        Reducer.makeCommand(command: .getwalletinfo, param: "") { (response, message) in
+        Reducer.sharedInstance.makeCommand(command: .getwalletinfo, param: "") { (response, message) in
             guard let response = response as? [String:Any] else {
                 completion((nil, message ?? "Unknown error."))
                 return
@@ -43,7 +43,7 @@ class OnchainUtils {
     }
     
     static func getDescriptorInfo(_ desc: String, completion: @escaping ((descriptorInfo: DescriptorInfo?, message: String?)) -> Void) {
-        Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(desc)\"") { (response, message) in
+        Reducer.sharedInstance.makeCommand(command: .getdescriptorinfo, param: "\"\(desc)\"") { (response, message) in
             guard let response = response as? [String:Any] else {
                 completion((nil, message ?? "Unknown error."))
                 return
@@ -54,7 +54,7 @@ class OnchainUtils {
     }
     
     static func importDescriptors(_ param: String, completion: @escaping ((imported: Bool, message: String?)) -> Void) {
-        Reducer.makeCommand(command: .importdescriptors, param: param) { (response, message) in
+        Reducer.sharedInstance.makeCommand(command: .importdescriptors, param: param) { (response, message) in
             guard let responseArray = response as? [[String:Any]] else {
                 completion((false, "Error importing descriptors: \(message ?? "unknown error")"))
                 return
@@ -86,7 +86,7 @@ class OnchainUtils {
     }
     
     static func importMulti(_ param: String, completion: @escaping ((imported: Bool, message: String?)) -> Void) {
-        Reducer.makeCommand(command: .importmulti, param: param) { (response, errorDescription) in
+        Reducer.sharedInstance.makeCommand(command: .importmulti, param: param) { (response, errorDescription) in
             guard let result = response as? NSArray, result.count > 0,
                   let dict = result[0] as? NSDictionary,
                   let success = dict["success"] as? Bool,
@@ -121,7 +121,7 @@ class OnchainUtils {
     }
     
     static func getBlockchainInfo(completion: @escaping ((blockchainInfo: BlockchainInfo?, message: String?)) -> Void) {
-        Reducer.makeCommand(command: .getblockchaininfo, param: "") { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .getblockchaininfo, param: "") { (response, errorMessage) in
             guard let dict = response as? [String:Any] else {
                 completion((nil, errorMessage))
                 return
@@ -132,12 +132,12 @@ class OnchainUtils {
     }
     
     static func rescanNow(from: String, completion: @escaping ((started: Bool, message: String?)) -> Void) {
-        Reducer.makeCommand(command: .rescanblockchain, param: "\(from)") { (_, _) in }
+        Reducer.sharedInstance.makeCommand(command: .rescanblockchain, param: "\(from)") { (_, _) in }
         completion((true, nil))
     }
     
     static func createWallet(param: String, completion: @escaping ((name: String?, message: String?)) -> Void) {
-        Reducer.makeCommand(command: .createwallet, param: param) { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .createwallet, param: param) { (response, errorMessage) in
             guard let response = response as? [String:Any] else {
                 completion((nil, errorMessage))
                 return
@@ -150,7 +150,7 @@ class OnchainUtils {
     }
     
     static func listUnspent(param: String, completion: @escaping ((utxos: [Utxo]?, message: String?)) -> Void) {
-        Reducer.makeCommand(command: .listunspent, param: param) { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .listunspent, param: param) { (response, errorMessage) in
             guard let response = response as? [[String:Any]] else {
                 completion((nil, errorMessage))
                 return
@@ -174,7 +174,7 @@ class OnchainUtils {
     }
     
     static func deriveAddresses(param: String, completion: @escaping ((addresses: [String]?, message: String?)) -> Void) {
-        Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
             guard let addresses = response as? [String] else {
                 completion((nil, errorMessage))
                 return
@@ -186,7 +186,7 @@ class OnchainUtils {
     
     static func getAddressInfo(address: String, completion: @escaping ((addressInfo: AddressInfo?, message: String?)) -> Void) {
         let param = "\"\(address)\""
-        Reducer.makeCommand(command: .getaddressinfo, param: param) { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .getaddressinfo, param: param) { (response, errorMessage) in
             guard let response = response as? [String:Any] else {
                 completion((nil, errorMessage))
                 return

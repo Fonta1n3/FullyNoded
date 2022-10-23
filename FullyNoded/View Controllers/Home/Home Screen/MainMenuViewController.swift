@@ -17,7 +17,7 @@ class MainMenuViewController: UIViewController {
     @IBOutlet var mainMenu: UITableView!
     var connectingView = ConnectingView()
     var nodes = [[String:Any]]()
-    var activeNode:[String:Any]?
+    var activeNode:NodeStruct?
     var existingNodeID:UUID!
     var initialLoad = false
     let spinner = UIActivityIndicatorView(style: .medium)
@@ -29,6 +29,7 @@ class MainMenuViewController: UIViewController {
     var nodeLabel = ""
     var detailImage = UIImage()
     var detailImageTint = UIColor()
+    let refreshControl = UIRefreshControl()
     
     var detailHeaderText = ""
     var detailSubheaderText = ""
@@ -42,36 +43,53 @@ class MainMenuViewController: UIViewController {
     var mempoolInfo:MempoolInfo!
     var uptimeInfo:Uptime!
     var feeInfo:FeeInfo!
-    
+            
     @IBOutlet weak var headerLabel: UILabel!
     @IBOutlet weak var torProgressLabel: UILabel!
     @IBOutlet weak var progressView: UIProgressView!
     @IBOutlet weak var blurView: UIVisualEffectView!
     
     private enum Section: Int {
-        case verificationProgress
-        case totalSupply
         case nodeVersion
+        case verificationProgress
         case blockchainNetwork
+        case nodeUptime
         case peerConnections
+        case memPool
+        case currentBlockHeight
+        case p2pHiddenService
         case blockchainState
         case miningHashrate
-        case currentBlockHeight
         case miningDifficulty
         case blockchainSizeOnDisc
-        case memPool
         case feeRate
-        case p2pHiddenService
-        case nodeUptime
+        case totalSupply
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-                
+        print("viewDidLoad")
+        UserDefaults.standard.set(UIDevice.modelName, forKey: "modelName")
+        
+        UIApplication.shared.isIdleTimerDisabled = true
+        
+        MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
+            guard let node = node else { return }
+            guard let self = self else { return }
+            self.activeNode = node
+            
+            if node.isNostr {
+                MakeRPCCall.sharedInstance.connectToRelay { _ in }
+            }
+        }
+        
+        refreshControl.attributedTitle = NSAttributedString(string: "")
+        refreshControl.addTarget(self, action: #selector(refreshNode), for: .valueChanged)
+        mainMenu.addSubview(refreshControl)
+        
         if !Crypto.setupinit() {
             showAlert(vc: self, title: "", message: "There was an error setupinit.")
         }
-                                
         mainMenu.delegate = self
         mainMenu.alpha = 0
         mainMenu.tableFooterView = UIView(frame: .zero)
@@ -100,13 +118,49 @@ class MainMenuViewController: UIViewController {
                     if KeyChain.getData("UnlockPassword") != nil {
                         if isUnlocked {
                             mgr?.start(delegate: self)
+                            if self.activeNode != nil, self.activeNode!.isNostr {
+                                removeBackView()
+                                loadTable()
+                                
+                                DispatchQueue.main.async { [weak self] in
+                                    self?.torProgressLabel.isHidden = true
+                                    self?.progressView.isHidden = true
+                                    self?.blurView.isHidden = true
+                                }
+                            }
                         }
                     } else {
                         mgr?.start(delegate: self)
+                        if self.activeNode != nil, self.activeNode!.isNostr {
+                            loadNode(node: self.activeNode!)
+                            removeBackView()
+                            loadTable()
+                            
+                            DispatchQueue.main.async { [weak self] in
+                                self?.torProgressLabel.isHidden = true
+                                self?.progressView.isHidden = true
+                                self?.blurView.isHidden = true
+                            }
+                        }
                     }
                 }
             }
-        }
+        } else {
+            if let activeNode = activeNode {
+                if activeNode.isNostr {
+                    if !MakeRPCCall.sharedInstance.connected {
+                        MakeRPCCall.sharedInstance.connectToRelay { _ in }
+                    }
+                }
+            } else {
+                MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
+                    guard let self = self else { return }
+                    guard let node = node else { return }
+
+                    self.activeNode = node
+                }
+            }
+        }        
     }
     
     private func alertToAddNode() {
@@ -179,15 +233,14 @@ class MainMenuViewController: UIViewController {
         // Code specific to Mac.
         guard let activeNode = activeNode else { return }
         
-        let nodeStruct = NodeStruct(dictionary: activeNode)
         var prefix = "btcrpc"
-        if nodeStruct.isLightning {
+        if activeNode.isLightning {
             prefix = "clightning-rpc"
         }
         
-        let address = decryptedValue(nodeStruct.onionAddress!)
-        let rpcusername = decryptedValue(nodeStruct.rpcuser!)
-        let rpcpassword = decryptedValue(nodeStruct.rpcpassword!)
+        let address = decryptedValue(activeNode.onionAddress!)
+        let rpcusername = decryptedValue(activeNode.rpcuser!)
+        let rpcpassword = decryptedValue(activeNode.rpcpassword!)
         
         let macName = UIDevice.current.name
         
@@ -201,7 +254,7 @@ class MainMenuViewController: UIViewController {
             hostname = hostname.replacingOccurrences(of: "\n", with: "")
             
             DispatchQueue.main.async { [weak self] in
-                let label = nodeStruct.label.replacingOccurrences(of: " ", with: "%20")
+                let label = activeNode.label.replacingOccurrences(of: " ", with: "%20")
                 self?.host = "\(prefix)://\(rpcusername):\(rpcpassword)@\(hostname):11221/?label=\(label)"
                 self?.performSegue(withIdentifier: "segueToRemoteControl", sender: self)
             }
@@ -216,7 +269,6 @@ class MainMenuViewController: UIViewController {
         #endif
         
     }
-    
     
     @IBAction func showLightningNode(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
@@ -242,7 +294,24 @@ class MainMenuViewController: UIViewController {
         
         existingNodeID = nil
         addNavBarSpinner()
-        loadTable()
+        refreshControl.endRefreshing()
+        
+        MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
+            guard let self = self else { return }
+            guard let node = node else { return }
+            self.initialLoad = false
+            if node.isNostr {
+                MakeRPCCall.sharedInstance.connected = false
+                MakeRPCCall.sharedInstance.connectToRelay { _ in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        self.loadNode(node: node)
+                    }
+                }
+            } else {
+                self.loadNode(node: node)
+            }
+            
+        }
     }
     
     private func loadTable() {
@@ -263,16 +332,20 @@ class MainMenuViewController: UIViewController {
     }
     
     private func loopThroughNodes(nodes: [[String:Any]]) {
-        var activeNode:[String:Any]?
         for (i, node) in nodes.enumerated() {
             let nodeStruct = NodeStruct.init(dictionary: node)
             if nodeStruct.isActive && !nodeStruct.isLightning && !nodeStruct.isJoinMarket {
-                activeNode = node
-                self.activeNode = node
+                self.activeNode = nodeStruct
             }
             if i + 1 == nodes.count {
                 if activeNode != nil {
-                    loadNode(node: activeNode!)
+                    if activeNode!.isNostr {
+//                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+//                            self.loadNode(node: self.activeNode!)
+//                        }
+                    } else {
+                        loadNode(node: self.activeNode!)
+                    }
                 } else {
                     removeLoader()
                     connectingView.removeConnectingView()
@@ -282,16 +355,15 @@ class MainMenuViewController: UIViewController {
         }
     }
     
-    private func loadNode(node: [String:Any]) {
-        let nodeStruct = NodeStruct(dictionary: node)
+    private func loadNode(node: NodeStruct) {
         if initialLoad {
-            existingNodeID = nodeStruct.id
+            existingNodeID = node.id
             loadTableData()
         } else {
-            checkIfNodesChanged(newNodeId: nodeStruct.id!)
+            checkIfNodesChanged(newNodeId: node.id!)
         }
         DispatchQueue.main.async { [weak self] in
-            self?.headerLabel.text = nodeStruct.label
+            self?.headerLabel.text = node.label
         }
     }
     
@@ -321,7 +393,12 @@ class MainMenuViewController: UIViewController {
     
     func refreshDataNow() {
         addNavBarSpinner()
-        loadTable()
+        MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
+            guard let self = self else { return }
+            guard let node = node else { return }
+            self.activeNode = node
+            self.loadNode(node: node)
+        }
     }
     
     func showUnlockScreen() {
@@ -465,7 +542,7 @@ class MainMenuViewController: UIViewController {
                 icon.image = UIImage(systemName: "archivebox")
                 chevron.alpha = 0
             }
-        
+            
         case .memPool:
             if mempoolInfo != nil {
                 label.text = "\(mempoolInfo.mempoolCount.withCommas) transactions"
@@ -501,7 +578,7 @@ class MainMenuViewController: UIViewController {
             if uptimeInfo != nil {
                 label.text = "\(uptimeInfo.uptime / 86400) days \((uptimeInfo.uptime % 86400) / 3600) hours uptime"
                 icon.image = UIImage(systemName: "clock")
-                background.backgroundColor = .systemOrange
+                background.backgroundColor = .systemGreen
                 chevron.alpha = 0
             }
             
@@ -517,8 +594,10 @@ class MainMenuViewController: UIViewController {
         }
     }
     
+    
+    
     func loadTableData() {
-        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getblockchaininfo")
+        //displayAlert(viewController: self, isError: false, message: "bitcoin-cli getblockchaininfo")
         
         OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
             guard let self = self else { return }
@@ -555,16 +634,16 @@ class MainMenuViewController: UIViewController {
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                
+                self.headerLabel.textColor = .systemGreen
                 self.blockchainInfo = blockchainInfo
-                self.mainMenu.reloadSections(IndexSet(arrayLiteral: 0, 3, 5, 7, 8, 9), with: .fade)
+                self.mainMenu.reloadSections(IndexSet(arrayLiteral: Section.blockchainNetwork.rawValue, Section.currentBlockHeight.rawValue, Section.blockchainState.rawValue, Section.blockchainSizeOnDisc.rawValue, Section.verificationProgress.rawValue, Section.miningDifficulty.rawValue), with: .fade)
                 self.getPeerInfo()
             }
         }
     }
     
     private func getPeerInfo() {
-        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getpeerinfo")
+        //displayAlert(viewController: self, isError: false, message: "bitcoin-cli getpeerinfo")
         NodeLogic.getPeerInfo { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -578,14 +657,14 @@ class MainMenuViewController: UIViewController {
                 guard let self = self else { return }
                 
                 self.peerInfo = PeerInfo(dictionary: response)
-                self.mainMenu.reloadSections(IndexSet(arrayLiteral: 4), with: .fade)
+                self.mainMenu.reloadSections(IndexSet(arrayLiteral: Section.peerConnections.rawValue), with: .fade)
                 self.getNetworkInfo()
             }
         }
     }
     
     private func getNetworkInfo() {
-        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getnetworkinfo")
+        //displayAlert(viewController: self, isError: false, message: "bitcoin-cli getnetworkinfo")
         NodeLogic.getNetworkInfo { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -599,14 +678,14 @@ class MainMenuViewController: UIViewController {
                 guard let self = self else { return }
                 
                 self.networkInfo = NetworkInfo(dictionary: response)
-                self.mainMenu.reloadSections(IndexSet(arrayLiteral: 2, 12), with: .fade)
+                self.mainMenu.reloadSections(IndexSet(arrayLiteral: Section.nodeVersion.rawValue, Section.memPool.rawValue), with: .fade)
                 self.getMiningInfo()
             }
         }
     }
     
     private func getMiningInfo() {
-        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getmininginfo")
+        //displayAlert(viewController: self, isError: false, message: "bitcoin-cli getmininginfo")
         NodeLogic.getMiningInfo { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -620,14 +699,14 @@ class MainMenuViewController: UIViewController {
                 guard let self = self else { return }
                 
                 self.miningInfo = MiningInfo(dictionary: response)
-                self.mainMenu.reloadSections(IndexSet(arrayLiteral: 6), with: .fade)
+                self.mainMenu.reloadSections(IndexSet(arrayLiteral: Section.miningHashrate.rawValue), with: .fade)
                 self.getUptime()
             }
         }
     }
     
     private func getUptime() {
-        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getuptime")
+        //displayAlert(viewController: self, isError: false, message: "bitcoin-cli getuptime")
         NodeLogic.getUptime { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -641,14 +720,14 @@ class MainMenuViewController: UIViewController {
                 guard let self = self else { return }
                 
                 self.uptimeInfo = Uptime(dictionary: response)
-                self.mainMenu.reloadSections(IndexSet(arrayLiteral: 13), with: .fade)
+                self.mainMenu.reloadSections(IndexSet(arrayLiteral: Section.nodeUptime.rawValue), with: .fade)
                 self.getMempoolInfo()
             }
         }
     }
     
     private func getMempoolInfo() {
-        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getmempoolinfo")
+        //displayAlert(viewController: self, isError: false, message: "bitcoin-cli getmempoolinfo")
         NodeLogic.getMempoolInfo { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -662,14 +741,14 @@ class MainMenuViewController: UIViewController {
                 guard let self = self else { return }
                 
                 self.mempoolInfo = MempoolInfo(dictionary: response)
-                self.mainMenu.reloadSections(IndexSet(arrayLiteral: 10), with: .fade)
+                self.mainMenu.reloadSections(IndexSet(arrayLiteral: Section.memPool.rawValue), with: .fade)
                 self.getFeeInfo()
             }
         }
     }
     
     private func getFeeInfo() {
-        displayAlert(viewController: self, isError: false, message: "bitcoin-cli estimatesmartfee")
+        //displayAlert(viewController: self, isError: false, message: "bitcoin-cli estimatesmartfee")
         NodeLogic.estimateSmartFee { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -683,7 +762,7 @@ class MainMenuViewController: UIViewController {
                 guard let self = self else { return }
                 
                 self.feeInfo = FeeInfo(dictionary: response)
-                self.mainMenu.reloadSections(IndexSet(arrayLiteral: 11, 1), with: .fade)
+                self.mainMenu.reloadSections(IndexSet(arrayLiteral: Section.feeRate.rawValue, Section.totalSupply.rawValue), with: .fade)
                 self.removeLoader()
             }
         }
@@ -783,6 +862,22 @@ class MainMenuViewController: UIViewController {
                 self.isUnlocked = true
                 if self.mgr?.state != .started && self.mgr?.state != .connected  {
                     self.mgr?.start(delegate: self)
+                    
+                    if let node = self.activeNode, node.isNostr {
+                        //DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                            self.removeBackView()
+                            //self.loadTable()
+                        if let activeNode = self.activeNode {
+                            self.loadNode(node: activeNode)
+                        }
+                        
+                            DispatchQueue.main.async { [weak self] in
+                                self?.torProgressLabel.isHidden = true
+                                self?.progressView.isHidden = true
+                                self?.blurView.isHidden = true
+                            }
+                        //}
+                    }
                 }
             }
             
@@ -894,33 +989,33 @@ extension MainMenuViewController {
     private func headerName(for section: Section) -> String {
         switch section {
         case .verificationProgress:
-            return "Verification progress"
-        case .totalSupply:
-            return "Total supply"
-        case .nodeVersion:
-            return "Node version"
+            return "Progress"
+        case .nodeUptime:
+            return "Uptime"
         case .blockchainNetwork:
-            return "Bitcoin network"
+            return "Network"
+        case .nodeVersion:
+            return "Version"
         case .peerConnections:
-            return "Peer connections"
-        case .blockchainState:
-            return "Blockchain state"
-        case .miningHashrate:
-            return "Mining hashrate"
+            return "Peers"
         case .currentBlockHeight:
-            return "Current blockheight"
+            return "Blockheight"
+        case .memPool:
+            return "Mempool"
+        case .p2pHiddenService:
+            return "Hidden service p2p"
+        case .miningHashrate:
+            return "Hashrate"
         case .miningDifficulty:
-            return "Mining difficulty"
+            return "Difficulty"
         case .blockchainSizeOnDisc:
             return "Blockchain size on disc"
-        case .memPool:
-            return "Node's mempool"
         case .feeRate:
             return "Fee rate"
-        case .p2pHiddenService:
-            return "P2P hidden service"
-        case .nodeUptime:
-            return "Node uptime"
+        case .blockchainState:
+            return "Blockchain state"
+        case .totalSupply:
+            return "Audit total supply"
         }
     }
     
@@ -940,8 +1035,11 @@ extension MainMenuViewController: OnionManagerDelegate {
     func torConnFinished() {
         viewHasLoaded = true
         removeBackView()
-        loadTable()
-        displayAlert(viewController: self, isError: false, message: "Tor finished bootstrapping.")
+        if let activeNode = activeNode {
+            if !activeNode.isNostr {
+                loadTable()
+            }
+        }
         
         DispatchQueue.main.async { [weak self] in
             self?.torProgressLabel.isHidden = true
@@ -950,15 +1048,6 @@ extension MainMenuViewController: OnionManagerDelegate {
         }
         
         timeStamp()
-        
-//        let jmPit = JoinMarketPit.sharedInstance
-//        jmPit.connect()
-//
-//        jmPit.connectedToPit = { connected in
-//            if connected {
-//                jmPit.getOrderBook()
-//            }
-//        }
     }
     
     func torConnDifficulties() {
@@ -967,6 +1056,13 @@ extension MainMenuViewController: OnionManagerDelegate {
             self?.torProgressLabel.isHidden = true
             self?.progressView.isHidden = true
             self?.blurView.isHidden = true
+            self?.removeBackView()
+            //self?.loadTable()
+            if let activeNode = self?.activeNode {
+                if !activeNode.isNostr {
+                    self?.loadTable()
+                }
+            }
         }
     }
 }
@@ -975,6 +1071,13 @@ extension MainMenuViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch Section(rawValue: indexPath.section) {
+            
+        case .peerConnections:
+            if peerInfo == nil {
+                return blankCell()
+            } else {
+                return homeCell(indexPath)
+            }
         case .verificationProgress,
              .blockchainNetwork,
              .blockchainState,
@@ -986,12 +1089,7 @@ extension MainMenuViewController: UITableViewDelegate {
             } else {
                 return homeCell(indexPath)
             }
-        case .peerConnections:
-            if peerInfo == nil {
-                return blankCell()
-            } else {
-                return homeCell(indexPath)
-            }
+        
         case .nodeVersion,
              .p2pHiddenService:
             if networkInfo == nil {
@@ -1037,7 +1135,7 @@ extension MainMenuViewController: UITableViewDelegate {
         let textLabel = UILabel()
         textLabel.textAlignment = .left
         textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
-        textLabel.textColor = .white
+        textLabel.textColor = .gray
         textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
         
         if let section = Section(rawValue: section) {
@@ -1063,7 +1161,7 @@ extension MainMenuViewController: UITableViewDelegate {
                 command = "getblockchaininfo"
                 detailHeaderText = headerName(for: .verificationProgress)
                 if blockchainInfo.progress == "Fully verified" {
-                    detailImageTint = .systemGreen
+                    detailImageTint = .green
                     detailImage = UIImage(systemName: "checkmark.seal")!
                 } else {
                     detailImageTint = .systemRed
@@ -1120,7 +1218,7 @@ extension MainMenuViewController: UITableViewDelegate {
                 detailHeaderText = headerName(for: .blockchainNetwork)
                 detailSubheaderText = blockchainInfo.network.capitalized
                 if blockchainInfo.network == "test chain" {
-                    detailImageTint = .systemGreen
+                    detailImageTint = .green
                 } else if blockchainInfo.network == "main chain" {
                     detailImageTint = .systemOrange
                 } else {

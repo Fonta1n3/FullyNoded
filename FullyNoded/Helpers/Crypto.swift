@@ -44,6 +44,22 @@ enum Crypto {
         return try? ChaChaPoly.seal(data, using: SymmetricKey(data: key)).combined
     }
     
+    static func sign(_ data: Data) -> Data? {
+        guard let key = KeyChain.getData("privateKey") else { return nil }
+        
+        guard let privkey = try? Curve25519.Signing.PrivateKey(rawRepresentation: key.bytesNostr) else { return nil }
+        
+        return try! privkey.signature(for: data)
+    }
+    
+    static func verify(_ sig: Data, data: Data) -> Bool? {
+        guard let key = KeyChain.getData("privateKey") else { return nil }
+        guard let privkey = try? Curve25519.Signing.PrivateKey(rawRepresentation: key.bytesNostr) else { return nil }
+        let publicKeyData = privkey.publicKey.rawRepresentation
+        let pubKey = try! Curve25519.Signing.PublicKey(rawRepresentation: publicKeyData)
+        return pubKey.isValidSignature(sig, for: data)
+    }
+    
     static func blindPsbt(_ psbt: Data) -> Data? {
         guard let key = KeyChain.getData("blindingKey") else {
             return nil
@@ -55,6 +71,23 @@ enum Crypto {
     static func decryptPsbt(_ data: Data) -> Data? {
         guard let key = KeyChain.getData("blindingKey"),
             let box = try? ChaChaPoly.SealedBox.init(combined: data) else {
+                return nil
+        }
+        
+        return try? ChaChaPoly.open(box, using: SymmetricKey(data: key))
+    }
+    
+    static func encryptNostr(_ content: Data) -> Data? {
+        guard let key = KeyChain.getData("blindingKey") else {
+            return nil
+        }
+
+        return try? ChaChaPoly.seal(content, using: SymmetricKey(data: key)).combined
+    }
+    
+    static func decryptNostr(_ content: Data) -> Data? {
+        guard let key = KeyChain.getData("blindingKey"),
+            let box = try? ChaChaPoly.SealedBox.init(combined: content) else {
                 return nil
         }
         

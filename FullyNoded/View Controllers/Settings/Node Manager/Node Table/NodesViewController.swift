@@ -15,6 +15,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     let ud = UserDefaults.standard
     var addButton = UIBarButtonItem()
     var editButton = UIBarButtonItem()
+    var isNostr = false
     private var authenticated = false
     @IBOutlet var nodeTable: UITableView!
     
@@ -142,16 +143,10 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     @objc func editNode(_ sender: UIButton) {
         guard let id = sender.restorationIdentifier, let section = Int(id) else { return }
-        
-        let nodeStruct = NodeStruct(dictionary: nodeArray[section])
-        
-        if !nodeStruct.uncleJim {
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.selectedIndex = section
-                vc.performSegue(withIdentifier: "updateNode", sender: vc)
-            }
-        } else {
-            showAlert(vc: self, title: "Restricted", message: "You can not view node credentials for nodes shared to you.")
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.selectedIndex = section
+            self.performSegue(withIdentifier: "updateNode", sender: self)
         }
     }
     
@@ -315,6 +310,12 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             let alert = UIAlertController(title: "Scan QR or add manually?", message: "You can add the node credentials manually or scan a QR code.", preferredStyle: alertStyle)
             
+            alert.addAction(UIAlertAction(title: "Add nostr node", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                self.isNostr = true
+                self.segueToAddNodeManually()
+            }))
+            
             alert.addAction(UIAlertAction(title: "Add manually", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                 
@@ -379,6 +380,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             if let vc = segue.destination as? NodeDetailViewController {
                 vc.createNew = true
                 vc.isLightning = false
+                vc.isNostr = self.isNostr
             }
         }
         
