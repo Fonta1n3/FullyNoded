@@ -473,20 +473,6 @@ func get_referenced_id_set(tags: [[String]], key: String) -> Set<ReferencedId> {
 }
 
 func make_first_contact_event(privkey: Data, content: String) -> NostrEvent? {
-//    guard let privkey = keypair.privkey else {
-//        return nil
-//    }
-
-//    let rw_relay_info = RelayInfo(read: true, write: true)
-//    let relays: [String: RelayInfo] = ["wss://relay.damus.io": rw_relay_info]
-//    let relay_json = encode_json(relays)!
-//    let damus_pubkey = "3efdaebb1d8923ebd99c9e7ace3b4194ab45512e2be79c1b7d68d9243e0d2681"
-//    let tags = [
-//        ["p", damus_pubkey],
-//        ["p", keypair.pubkey] // you're a friend of yourself!
-//    ]
-    
-    
     let ev = NostrEvent(content: content,
                         pubkey: Keys.privKeyToPubKey(privkey)!,
                         kind: NostrKind.replaceable.rawValue,
@@ -495,55 +481,6 @@ func make_first_contact_event(privkey: Data, content: String) -> NostrEvent? {
     ev.sign(privkey: privkey.hexString)
     return ev
 }
-
-//func make_metadata_event(keypair: Keypair, metadata: NostrMetadata) -> NostrEvent? {
-//    guard let privkey = keypair.privkey else {
-//        return nil
-//    }
-//
-//    let metadata_json = encode_json(metadata)!
-//    let ev = NostrEvent(content: metadata_json,
-//                        pubkey: keypair.pubkey,
-//                        kind: NostrKind.metadata.rawValue,
-//                        tags: [])
-//
-//    ev.calculate_id()
-//    ev.sign(privkey: privkey)
-//    return ev
-//}
-
-//func make_boost_event(pubkey: String, privkey: String, boosted: NostrEvent) -> NostrEvent {
-//    var tags: [[String]] = boosted.tags.filter { tag in tag.count >= 2 && (tag[0] == "e" || tag[0] == "p") }
-//    tags.append(["e", boosted.id])
-//    tags.append(["p", boosted.pubkey])
-//
-//    let ev = NostrEvent(content: event_to_json(ev: boosted), pubkey: pubkey, kind: 6, tags: tags)
-//    ev.calculate_id()
-//    ev.sign(privkey: privkey)
-//    return ev
-//}
-
-//func make_like_event(pubkey: String, privkey: String, liked: NostrEvent) -> NostrEvent {
-//    var tags: [[String]] = liked.tags.filter { tag in tag.count >= 2 && (tag[0] == "e" || tag[0] == "p") }
-//    tags.append(["e", liked.id])
-//    tags.append(["p", liked.pubkey])
-//    let ev = NostrEvent(content: "", pubkey: pubkey, kind: 7, tags: tags)
-//    ev.calculate_id()
-//    ev.sign(privkey: privkey)
-//
-//    return ev
-//}
-
-//func gather_reply_ids(our_pubkey: String, from: NostrEvent) -> [ReferencedId] {
-//    var ids = get_referenced_ids(tags: from.tags, key: "e").first.map { [$0] } ?? []
-//
-//    ids.append(ReferencedId(ref_id: from.id, relay_id: nil, key: "e"))
-//    ids.append(contentsOf: from.referenced_pubkeys.filter { $0.ref_id != our_pubkey })
-//    if from.pubkey != our_pubkey {
-//        ids.append(ReferencedId(ref_id: from.pubkey, relay_id: nil, key: "p"))
-//    }
-//    return ids
-//}
 
 func event_from_json(dat: String) -> NostrEvent? {
     return try? JSONDecoder().decode(NostrEvent.self, from: Data(dat.utf8))
@@ -559,62 +496,6 @@ func event_to_json(ev: NostrEvent) -> String {
     }
     return str
 }
-
-//func decrypt_dm(_ privkey: String?, pubkey: String, content: String) -> String? {
-//    guard let privkey = privkey else {
-//        return nil
-//    }
-//    guard let shared_sec = get_shared_secret(privkey: privkey, pubkey: pubkey) else {
-//        return nil
-//    }
-//    guard let dat = decode_dm_base64(content) else {
-//        return nil
-//    }
-//    guard let dat = aes_decrypt(data: dat.content, iv: dat.iv, shared_sec: shared_sec) else {
-//        return nil
-//    }
-//    return String(data: dat, encoding: .utf8)
-//}
-
-
-//func get_shared_secret(privkey: String, pubkey: String) -> [UInt8]? {
-//    guard let privkey_bytes = try? privkey.bytes else {
-//        return nil
-//    }
-//    guard var pk_bytes = try? pubkey.bytes else {
-//        return nil
-//    }
-//    pk_bytes.insert(2, at: 0)
-//
-//    var publicKey = secp256k1_pubkey()
-//    var shared_secret = [UInt8](repeating: 0, count: 32)
-//
-//    var ok =
-//        secp256k1_ec_pubkey_parse(
-//            secp256k1.Context.raw,
-//            &publicKey,
-//            pk_bytes,
-//            pk_bytes.count) != 0
-//
-//    if !ok {
-//        return nil
-//    }
-//
-//    ok = secp256k1_ecdh(
-//        secp256k1.Context.raw,
-//        &shared_secret,
-//        &publicKey,
-//        privkey_bytes, {(output,x32,_,_) in
-//            memcpy(output,x32,32)
-//            return 1
-//        }, nil) != 0
-//
-//    if !ok {
-//        return nil
-//    }
-//
-//    return shared_secret
-//}
 
 struct DirectMessageBase64 {
     let content: [UInt8]
@@ -661,54 +542,6 @@ func base64_decode(_ content: String) -> [UInt8]? {
     }
     return dat.bytes
 }
-
-//func aes_decrypt(data: [UInt8], iv: [UInt8], shared_sec: [UInt8]) -> Data? {
-//    return aes_operation(operation: CCOperation(kCCDecrypt), data: data, iv: iv, shared_sec: shared_sec)
-//}
-
-//func aes_encrypt(data: [UInt8], iv: [UInt8], shared_sec: [UInt8]) -> Data? {
-//    return aes_operation(operation: CCOperation(kCCEncrypt), data: data, iv: iv, shared_sec: shared_sec)
-//}
-
-//func aes_operation(operation: CCOperation, data: [UInt8], iv: [UInt8], shared_sec: [UInt8]) -> Data? {
-//    let data_len = data.count
-//    let bsize = kCCBlockSizeAES128
-//    let len = Int(data_len) + bsize
-//    var decrypted_data = [UInt8](repeating: 0, count: len)
-//
-//    let key_length = size_t(kCCKeySizeAES256)
-//    if shared_sec.count != key_length {
-//        assert(false, "unexpected shared_sec len: \(shared_sec.count) != 32")
-//        return nil
-//    }
-//
-//    let algorithm: CCAlgorithm = UInt32(kCCAlgorithmAES128)
-//    let options:   CCOptions   = UInt32(kCCOptionPKCS7Padding)
-//
-//    var num_bytes_decrypted :size_t = 0
-//
-//    let status = CCCrypt(operation,  /*op:*/
-//                         algorithm,  /*alg:*/
-//                         options,    /*options:*/
-//                         shared_sec, /*key:*/
-//                         key_length, /*keyLength:*/
-//                         iv,         /*iv:*/
-//                         data,       /*dataIn:*/
-//                         data_len, /*dataInLength:*/
-//                         &decrypted_data,/*dataOut:*/
-//                         len,/*dataOutAvailable:*/
-//                         &num_bytes_decrypted/*dataOutMoved:*/
-//    )
-//
-//    if UInt32(status) != UInt32(kCCSuccess) {
-//        return nil
-//    }
-//
-//    return Data(bytes: decrypted_data, count: num_bytes_decrypted)
-//
-//}
-
-
 
 func validate_event(ev: NostrEvent) -> ValidationResult {
     let raw_id = sha256(calculate_event_commitment(ev: ev))
