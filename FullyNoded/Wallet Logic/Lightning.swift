@@ -52,7 +52,7 @@ class Lightning {
                 let index = Int(wallet.index) + 1
                 let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
                 
-                Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
+                Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
                     guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
                         completion((nil, "Error getting closing address: \(errorMessage ?? "unknown")"))
                         return
@@ -61,7 +61,7 @@ class Lightning {
                     Lightning.fundchannelstart(channelId: channelId, amount: amount, address: address, completion: completion)
                 }
             } else {
-                Reducer.makeCommand(command: .getnewaddress, param: "") { (response, errorMessage) in
+                Reducer.sharedInstance.makeCommand(command: .getnewaddress, param: "") { (response, errorMessage) in
                     guard let address = response as? String else {
                         completion((nil, "Error getting closing address: \(errorMessage ?? "unknown")"))
                         return
@@ -135,7 +135,7 @@ class Lightning {
                                _ address: String,
                                _ amount: Int, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
         
-        Reducer.makeCommand(command: .decoderawtransaction, param: "\"\(rawTx)\"") { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .decoderawtransaction, param: "\"\(rawTx)\"") { (response, errorMessage) in
             guard let response = response as? [String:Any],
                   let txid = response["txid"] as? String,
                   let outputs = response["vout"] as? NSArray,
@@ -170,7 +170,7 @@ class Lightning {
                 return
             }
             
-            Reducer.makeCommand(command: .sendrawtransaction, param: "\"\(rawTx)\"") { (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: .sendrawtransaction, param: "\"\(rawTx)\"") { (response, errorMessage) in
                 guard let _ = response as? String else {
                     completion((["rawTx":rawTx], "There was an issue broadcasting your funding transaction. Error: \(errorMessage ?? "unknown error")"))
                     return

@@ -353,7 +353,7 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     private func abortRescan() {
-        Reducer.makeCommand(command: .abortrescan, param: "") { [weak self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .abortrescan, param: "") { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             if errorMessage == nil {
@@ -466,7 +466,7 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
                 
                 let avoidReuse = "null"
                 
-                Reducer.makeCommand(command: .sendtoaddress, param: "\"\(address)\", \(amount), \(comment), \(commentTo), \(subtractFeeFromAmount), \(rbfEnabled), \(confTarget), \"unset\", \(avoidReuse), \(feeRateString)") { (response, errorMessage) in
+                Reducer.sharedInstance.makeCommand(command: .sendtoaddress, param: "\"\(address)\", \(amount), \(comment), \(commentTo), \(subtractFeeFromAmount), \(rbfEnabled), \(confTarget), \"unset\", \(avoidReuse), \(feeRateString)") { (response, errorMessage) in
                     guard let response = response else {
                         showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error")
                         

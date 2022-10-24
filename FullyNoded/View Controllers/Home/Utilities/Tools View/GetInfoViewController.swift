@@ -259,7 +259,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         spinner.addConnectingView(vc: self, description: "")
         
-        Reducer.makeCommand(command: method, param: param) { [weak self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: method, param: param) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             if errorMessage == nil {
@@ -388,7 +388,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     private func getInfoHelpText() {
         let connectingView = ConnectingView()
         connectingView.addConnectingView(vc: self, description: "help \(command)...")
-        Reducer.makeCommand(command: .help, param: "\"\(command)\"") { [weak self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .help, param: "\"\(command)\"") { [weak self] (response, errorMessage) in
             connectingView.removeConnectingView()
             if let text = response as? String {
                 guard let self = self else { return }

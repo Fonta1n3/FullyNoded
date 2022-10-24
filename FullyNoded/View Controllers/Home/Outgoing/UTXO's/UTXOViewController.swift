@@ -822,7 +822,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         let stopIndex = (startIndex - 1) + numberOfOutputs
         let descriptor = wallet.receiveDescriptor
         
-        Reducer.makeCommand(command: .deriveaddresses, param: "\"\(descriptor)\", [\(startIndex),\(stopIndex)]") { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: "\"\(descriptor)\", [\(startIndex),\(stopIndex)]") { (response, errorMessage) in
             guard let addresses = response as? [String] else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "addresses not returned...", message: errorMessage ?? "unknown error.")
@@ -951,7 +951,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     private func importdesc(params: String, utxo: Utxo, label: String) {
-        Reducer.makeCommand(command: .importdescriptors, param: params) { [weak self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .importdescriptors, param: params) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             self.updateLocally(utxo: utxo, label: label)
@@ -1003,7 +1003,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
         let param = "false, [{\"txid\":\"\(utxo.txid)\",\"vout\":\(utxo.vout)}]"
         
-        Reducer.makeCommand(command: .lockunspent, param: param) { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .lockunspent, param: param) { (response, errorMessage) in
             guard let success = response as? Bool else {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
@@ -1128,12 +1128,12 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
 //
 //                                                    let params = "[{\"desc\": \"\(desc)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"\(savedUtxoStr.label ?? "")\"}]"
 //
-//                                                    Reducer.makeCommand(command: .importdescriptors, param: params) { (_, _) in }
+//                                                    Reducer.sharedInstance.makeCommand(command: .importdescriptors, param: params) { (_, _) in }
 //
 //                                                } else {
 //                                                    let param = "[{ \"scriptPubKey\": { \"address\": \"\(unlockedUtxo.address!)\" }, \"label\": \"\(savedUtxoStr.label ?? "")\", \"timestamp\": \"now\", \"watchonly\": true, \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
 //
-//                                                    Reducer.makeCommand(command: .importmulti, param: param) { (_, _) in }
+//                                                    Reducer.sharedInstance.makeCommand(command: .importmulti, param: param) { (_, _) in }
 //                                                }
                                             }
                                         }

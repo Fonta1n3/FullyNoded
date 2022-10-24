@@ -28,7 +28,7 @@ class BlindPsbt {
         
         func getNow(recipient: String) {
             OnchainUtils.listUnspent(param: "") { (utxos, message) in
-//            Reducer.makeCommand(command: .listunspent, param: "") { (response, errorMessage) in
+//            Reducer.sharedInstance.makeCommand(command: .listunspent, param: "") { (response, errorMessage) in
                 guard let utxos = utxos, utxos.count > 0 else {
                     completion((nil, "No inputs to spend. Utxos need at least 1 confirmation."))
                     return
@@ -186,7 +186,7 @@ class BlindPsbt {
                 let startIndex = Int(wallet.index + 4)
                 let descriptor = wallet.changeDescriptor
                 
-                Reducer.makeCommand(command: .deriveaddresses, param: "\"\(descriptor)\", [\(startIndex),\(startIndex)]") { (response, errorMessage) in
+                Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: "\"\(descriptor)\", [\(startIndex),\(startIndex)]") { (response, errorMessage) in
                     guard let addresses = response as? [String] else {
                         completion((nil, "addresses not returned: \(errorMessage ?? "unknown error.")"))
                         return
@@ -220,7 +220,7 @@ class BlindPsbt {
             let descriptor = wallet.changeDescriptor
             var totalOutputAmount = 0.0
             
-            Reducer.makeCommand(command: .deriveaddresses, param: "\"\(descriptor)\", [\(startIndex),\(stopIndex)]") { (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: "\"\(descriptor)\", [\(startIndex),\(stopIndex)]") { (response, errorMessage) in
                 guard let addresses = response as? [String] else {
                     completion((nil, "addresses not returned: \(errorMessage ?? "unknown error.")"))
                     return
@@ -282,7 +282,7 @@ class BlindPsbt {
         var amountArray = [Double]()
         var inputArray = [String]()
         
-        Reducer.makeCommand(command: .decodepsbt, param: "\"\(psbt)\"") { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .decodepsbt, param: "\"\(psbt)\"") { (response, errorMessage) in
             guard let dict = response as? NSDictionary else {
                 completion((nil, errorMessage))
                 return
@@ -324,7 +324,7 @@ class BlindPsbt {
                             return
                         }
                         
-                        Reducer.makeCommand(command: .joinpsbts, param: "[\"\(ourPsbt)\", \"\(decryptedPsbtData.base64EncodedString())\"]") { (response, errorMessage) in
+                        Reducer.sharedInstance.makeCommand(command: .joinpsbts, param: "[\"\(ourPsbt)\", \"\(decryptedPsbtData.base64EncodedString())\"]") { (response, errorMessage) in
                             guard let response = response as? String else {
                                 completion((nil, "There was an error joining the psbts: \(errorMessage ?? "unknown error")"))
                                 return
@@ -366,7 +366,7 @@ class BlindPsbt {
             }
         }
                 
-        Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .walletcreatefundedpsbt, param: param) { (response, errorMessage) in
             guard let result = response as? NSDictionary, let psbt = result["psbt"] as? String else {
                 var desc = errorMessage ?? "unknown error"
                 if desc.contains("Unexpected key fee_rate") {

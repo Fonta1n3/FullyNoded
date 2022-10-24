@@ -116,7 +116,7 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
             let index = Int(wallet.index) + 1
             let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
             
-            Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
                 guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
                     showAlert(vc: self, title: "", message: errorMessage ?? "error getting closing address")
                     return
@@ -125,7 +125,7 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
                 self.promptToUseClosingAddress(amount, id, ip, port, wallet, address)
             }
         } else {
-            Reducer.makeCommand(command: .getnewaddress, param: "") { (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: .getnewaddress, param: "") { (response, errorMessage) in
                 guard let address = response as? String else {
                     showAlert(vc: self, title: "", message: errorMessage ?? "error getting closing address")
                     return
