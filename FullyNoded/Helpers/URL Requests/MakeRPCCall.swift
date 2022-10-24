@@ -62,7 +62,8 @@ class MakeRPCCall: WebSocketDelegate {
             #endif
             let encoder = JSONEncoder()
             encoder.outputFormatting = .withoutEscapingSlashes
-            let data = string.data(using: .utf8)!
+            guard let data = string.data(using: .utf8) else { return }
+            guard data.count < 32000 else { print("received data is too big, ignoring"); return }
             guard let jsonObject = try? JSONSerialization.jsonObject(with: data, options : []) as? [Any] else { return }
             
             for (i, object) in jsonObject.enumerated() {
@@ -75,15 +76,13 @@ class MakeRPCCall: WebSocketDelegate {
                             print("command too old")
                             return
                         }
+                        
+                        
+                        
                         guard let ev = self.parseEvent(event: dict) else {
                             #if DEBUG
                             print("event parsing failed")
                             #endif
-                            return
-                        }
-                        
-                        guard !ev.too_big else {
-                            onDoneBlock!((nil,"event was too big"))
                             return
                         }
 
