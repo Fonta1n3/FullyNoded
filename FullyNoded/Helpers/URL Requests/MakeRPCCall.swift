@@ -63,7 +63,7 @@ class MakeRPCCall: WebSocketDelegate {
             let encoder = JSONEncoder()
             encoder.outputFormatting = .withoutEscapingSlashes
             guard let data = string.data(using: .utf8) else { return }
-            guard data.count < 32000 else { print("received data is too big, ignoring"); return }
+            //guard data.count < 32000 else { print("received data is too big, ignoring"); return }
             guard let jsonObject = try? JSONSerialization.jsonObject(with: data, options : []) as? [Any] else { return }
             
             for (i, object) in jsonObject.enumerated() {
@@ -76,8 +76,6 @@ class MakeRPCCall: WebSocketDelegate {
                             print("command too old")
                             return
                         }
-                        
-                        
                         
                         guard let ev = self.parseEvent(event: dict) else {
                             #if DEBUG
@@ -207,37 +205,82 @@ class MakeRPCCall: WebSocketDelegate {
         return ev
     }
     
-    func processValidReceivedContent(content: String) -> (method:BTC_CLI_COMMAND?, param:Any?, wallet: String?, response:Any?, errorDesc:String?) {
+    var collectedPartArray:[String] = []
+    
+    func decryptedDict(content: String) -> [String:Any]? {
         guard let contentData = Data(base64Encoded: content) else {
             print("error decoding content")
-            return (nil,nil,nil,nil,nil)
+            return nil
         }
         guard let decryptedContent = Crypto.decryptNostr(contentData) else {
             print("error decrypting content");
-            return (nil,nil,nil,nil,nil)
+            return nil
         }
-        guard let decryptedCommandDict = try? JSONSerialization.jsonObject(with: decryptedContent, options : []) as? [String:Any] else {
+        guard let decryptedDict = try? JSONSerialization.jsonObject(with: decryptedContent, options : []) as? [String:Any] else {
             print("error decoding decrypted content into json")
-            return (nil,nil,nil,nil,nil)
+            return nil
         }
+        
+        return decryptedDict
+    }
+        
+    func processValidReceivedContent(content: String) -> (method:BTC_CLI_COMMAND?, param:Any?, wallet: String?, response:Any?, errorDesc:String?) {
+        guard let decryptedDict = decryptedDict(content: content) else {return (nil,nil,nil,nil,nil)}
         
         #if DEBUG
-        print("decryptedCommandDict: \(decryptedCommandDict)")
+        print("decryptedDict: \(decryptedDict)")
         #endif
         
-        guard let commandString = decryptedCommandDict["command"] as? String else {
+        if let part = decryptedDict["part"] as? [String:Any] {
+            
+            for (key, value) in part {
+                guard let m = Int("\(key.split(separator: ":")[0])") else { return (nil,nil,nil,nil,nil)}
+                guard let n = Int("\(key.split(separator: ":")[1])") else { return (nil,nil,nil,nil,nil)}
+                guard let encryptedValue = value as? String else {
+                    
+                    guard let valueDict = value as? [String:Any] else {
+                        return (nil,nil,nil,nil,nil)
+                    }
+                    
+                    return (nil,nil,nil,valueDict["response"], valueDict["errorDesc"] as? String)
+                }
+                
+                if m < n {
+                    collectedPartArray.append(encryptedValue)
+                } else if m == n {
+                    collectedPartArray.append(encryptedValue)
+                    var entireEncryptedResponse = ""
+                    for (i,part) in collectedPartArray.enumerated() {
+                        entireEncryptedResponse += "\(part)"
+                        if i + 1 == collectedPartArray.count {
+                            collectedPartArray.removeAll()
+                            guard let nestedDecryptedDict = self.decryptedDict(content: entireEncryptedResponse) else { return (nil,nil,nil,nil,nil)}
+                            guard let nestedPart = nestedDecryptedDict["part"] as? [String:Any] else { return (nil,nil,nil,nil,nil)}
+                            for (_,value) in nestedPart {
+                                guard let valueDict = value as? [String:Any] else {
+                                    return (nil,nil,nil,nil,nil)
+                                }
+                                return (nil,nil,nil,valueDict["response"], valueDict["errorDesc"] as? String)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        guard let commandString = decryptedDict["command"] as? String else {
             #if DEBUG
             print("no command found")
             #endif
             
-            guard decryptedCommandDict["response"] != nil else {
+            guard decryptedDict["response"] != nil else {
                 #if DEBUG
                 print("no response")
                 #endif
-                return (nil,nil,nil,nil,decryptedCommandDict["errorDesc"] as? String)
+                return (nil,nil,nil,nil,decryptedDict["errorDesc"] as? String)
             }
             
-            return (nil,nil,nil,decryptedCommandDict["response"], decryptedCommandDict["errorDesc"] as? String)
+            return (nil,nil,nil,decryptedDict["response"], decryptedDict["errorDesc"] as? String)
         }
         
         guard let method:BTC_CLI_COMMAND = .init(rawValue: commandString) else {
@@ -247,7 +290,7 @@ class MakeRPCCall: WebSocketDelegate {
             return (nil,nil,nil,nil,nil)
         }
         
-        guard let paramDict = decryptedCommandDict["paramDict"] as? [String:Any] else {
+        guard let paramDict = decryptedDict["paramDict"] as? [String:Any] else {
             #if DEBUG
             print("unable to get paramDict, should at least be an empty dict.")
             #endif
@@ -255,7 +298,7 @@ class MakeRPCCall: WebSocketDelegate {
         }
         
         let param = paramDict["param"] as Any
-        let wallet = decryptedCommandDict["wallet"] as? String
+        let wallet = decryptedDict["wallet"] as? String
         
         return (method, param, wallet, nil, nil)
     }
@@ -302,20 +345,77 @@ class MakeRPCCall: WebSocketDelegate {
     
     func sendResponseToRelay(response: Any?, errorDesc: String?) {
         if let node = activeNode {
-            let dict:[String:Any] = ["response":response,"errorDesc":errorDesc ?? ""]
+            let mofn = "1:1"
+            let part:[String:Any] = ["part":[mofn:["response":response,"errorDesc":errorDesc ?? ""]]]
             
-            guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
+            guard let jsonData = try? JSONSerialization.data(withJSONObject: part, options: .prettyPrinted) else {
                 print("converting to jsonData failing...")
                 return
             }
             
             let encryptedContent = Crypto.encryptNostr(jsonData)!.base64EncodedString()
+            let count = encryptedContent.count
             
             guard let encryptedPrivkey = node.nostrPrivkey else { return }
-            
             guard let decryptedPrivkey = Crypto.decrypt(encryptedPrivkey) else { return }
-            
             guard let pubkey = Keys.privKeyToPubKey(decryptedPrivkey) else { return }
+            
+            if count > 32000 {
+                print("needs to be split into parts before sending")
+                let numberOfRequiredParts = count / 20000
+                guard numberOfRequiredParts < 40 else { print("too many parts! \(numberOfRequiredParts)");return }
+                let parts = encryptedContent.split(by: count / numberOfRequiredParts)
+                print("parts: \(parts.count)")
+                                
+                for (i, part) in parts.enumerated() {
+                    
+                    let partDict:[String:Any] = ["part":["\(i + 1):\(parts.count)":part]]
+                    
+                    guard let partJsonData = try? JSONSerialization.data(withJSONObject: partDict, options: .prettyPrinted) else {
+                        print("converting to jsonData failing...")
+                        return
+                    }
+                    
+                    let encryptedContent = Crypto.encryptNostr(partJsonData)!.base64EncodedString()
+                    let count = encryptedContent.count
+                    print("encryptedContent.count = \(count)")
+                    
+                    let ev = NostrEvent(content: encryptedContent,
+                                        pubkey: "\(pubkey.dropFirst(2))",
+                                        kind: NostrKind.ephemeral.rawValue,
+                                        tags: [])
+                    ev.calculate_id()
+                    
+                    ev.sign(privkey: decryptedPrivkey.hexString)
+                    
+                    guard !ev.too_big else {
+                        #if DEBUG
+                        print("event too big")
+                        #endif
+                        
+                        return
+                    }
+                    
+                    guard ev.validity == .ok else {
+                        #if DEBUG
+                        print("event invalid")
+                        #endif
+                        return
+                    }
+                    
+                    let encoder = JSONEncoder()
+                    let event_data = try! encoder.encode(ev)
+                    let event = String(decoding: event_data, as: UTF8.self)
+                    let encoded = "[\"EVENT\",\(event)]"
+                    #if DEBUG
+                    print("send response to relay")
+                    print(encoded)
+                    #endif
+                    self.socket.write(string: encoded) {
+                        print("we wrote some stuff")
+                    }
+                }
+            }
             
             let ev = NostrEvent(content: encryptedContent,
                                 pubkey: "\(pubkey.dropFirst(2))",
@@ -505,5 +605,18 @@ class MakeRPCCall: WebSocketDelegate {
     }
 }
 
+    extension String {
+        func split(by length: Int) -> [String] {
+            var startIndex = self.startIndex
+            var results = [Substring]()
 
+            while startIndex < self.endIndex {
+                let endIndex = self.index(startIndex, offsetBy: length, limitedBy: self.endIndex) ?? self.endIndex
+                results.append(self[startIndex..<endIndex])
+                startIndex = endIndex
+            }
+
+            return results.map { String($0) }
+        }
+    }
 

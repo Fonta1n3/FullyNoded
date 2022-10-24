@@ -155,7 +155,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     private func processPsbt(_ psbt: String) {
         spinner.addConnectingView(vc: self, description: "processing psbt...")
                 
-        Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt)\", true, \"ALL\", true") { [weak self] (object, errorDescription) in
+        Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt)\", true, \"ALL\", true") { [weak self] (object, errorDescription) in
             guard let self = self else { return }
             
             guard let dict = object as? NSDictionary, let processedPsbt = dict["psbt"] as? String else {
@@ -168,7 +168,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func finalizePsbt(_ psbt: String) {
-        Reducer.makeCommand(command: .finalizepsbt, param: "\"\(psbt)\"") { [weak self] (object, errorDescription) in
+        Reducer.sharedInstance.makeCommand(command: .finalizepsbt, param: "\"\(psbt)\"") { [weak self] (object, errorDescription) in
             guard let self = self else { return }
 
             guard let result = object as? NSDictionary, let complete = result["complete"] as? Bool else {
@@ -607,7 +607,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 
                 self.spinner.addConnectingView(vc: self, description: "Unlocking wallet...")
                 
-                Reducer.makeCommand(command: .walletpassphrase, param: "\"\(password)\", 600") { [weak self] (response, errorMessage) in
+                Reducer.sharedInstance.makeCommand(command: .walletpassphrase, param: "\"\(password)\", 600") { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     self.spinner.removeConnectingView()
@@ -741,7 +741,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 bumpfee = .psbtbumpfee
             }
             
-            Reducer.makeCommand(command: bumpfee, param: "\"\(self.txid)\"") { [weak self] (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: bumpfee, param: "\"\(self.txid)\"") { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let result = response as? NSDictionary,
@@ -834,7 +834,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         
         func send() {
-            Reducer.makeCommand(command: .sendrawtransaction, param: param) { [weak self] (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: .sendrawtransaction, param: param) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let _ = response as? String else {
@@ -855,7 +855,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         func decodePsbt() {
-            Reducer.makeCommand(command: .decodepsbt, param: param) { [weak self] (object, errorDesc) in
+            Reducer.sharedInstance.makeCommand(command: .decodepsbt, param: param) { [weak self] (object, errorDesc) in
                 guard let self = self else { return }
                 
                 guard let dict = object as? NSDictionary else {
@@ -912,7 +912,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         func decodeTx() {
-            Reducer.makeCommand(command: .decoderawtransaction, param: param) { [weak self] (object, errorDesc) in
+            Reducer.sharedInstance.makeCommand(command: .decoderawtransaction, param: param) { [weak self] (object, errorDesc) in
                 guard let self = self else { return }
                 
                 guard let dict = object as? NSDictionary else {
@@ -1179,7 +1179,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             self.updateLabel("verifying input #\(self.index + 1) out of \(self.inputTableArray.count)")
             
             if let address = inputTableArray[index]["address"] as? String, address != "unknown", address != "" {
-                Reducer.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
+                Reducer.sharedInstance.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     guard errorMessage == nil else {
@@ -1284,7 +1284,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             self.updateLabel("verifying output #\(self.index + 1) out of \(self.outputArray.count)")
             
             if let address = outputArray[index]["address"] as? String, address != "" {
-                Reducer.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
+                Reducer.sharedInstance.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     if let dict = response as? NSDictionary {
@@ -1358,7 +1358,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             if !alreadyBroadcast {
                 updateLabel("verifying mempool accept...")
                 
-                Reducer.makeCommand(command: .testmempoolaccept, param: "[\"\(signedRawTx)\"]") { [weak self] (response, errorMessage) in
+                Reducer.sharedInstance.makeCommand(command: .testmempoolaccept, param: "[\"\(signedRawTx)\"]") { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     if let errorMessage = errorMessage {
@@ -1393,7 +1393,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         updateLabel("estimating smart fee...")
         
-        Reducer.makeCommand(command: .estimatesmartfee, param: "\(target)") { [weak self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .estimatesmartfee, param: "\(target)") { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let dict = response as? NSDictionary, let feeRate = dict["feerate"] as? Double else {
@@ -1431,7 +1431,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         func decodeRaw() {
             updateLabel("decoding inputs previous output...")
-            Reducer.makeCommand(command: .decoderawtransaction, param: param) { [weak self] (object, errorDescription) in
+            Reducer.sharedInstance.makeCommand(command: .decoderawtransaction, param: param) { [weak self] (object, errorDescription) in
                 guard let self = self else { return }
                 
                 guard let txDict = object as? NSDictionary, let outputs = txDict["vout"] as? NSArray else {
@@ -1446,14 +1446,13 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         func getRawTx() {
             updateLabel("fetching inputs previous output...")
-            Reducer.makeCommand(command: .getrawtransaction, param: "\"\(txid)\"") { [weak self] (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: .getrawtransaction, param: "\"\(txid)\"") { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let hex = response as? String else {
-                    
                     guard let errorMessage = errorMessage else {
                         self.spinner.removeConnectingView()
-                        displayAlert(viewController: self, isError: true, message: "Error parsing inputs")
+                        //displayAlert(viewController: self, isError: true, message: "Error parsing inputs")
                         return
                     }
                     
@@ -1463,7 +1462,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         return
                     }
                     
-                    Reducer.makeCommand(command: .gettransaction, param: "\"\(txid)\", true") { (response, errorMessage) in
+                    Reducer.sharedInstance.makeCommand(command: .gettransaction, param: "\"\(txid)\", true") { (response, errorMessage) in
                         guard let dict = response as? NSDictionary, let hexToParse = dict["hex"] as? String else {
                             
                             guard let useEsplora = UserDefaults.standard.object(forKey: "useEsplora") as? Bool, useEsplora else {
@@ -2041,7 +2040,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             let wallet = walletsToCheck[walletIndex]
             UserDefaults.standard.set(wallet, forKey: "walletName")
             
-            Reducer.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
                 guard let self = self else { resetActiveWallet(); return }
                 
                 if let dict = response as? NSDictionary, let solvable = dict["solvable"] as? Bool, solvable {
@@ -2303,7 +2302,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     private func broadcastWithMyNode() {
         spinner.addConnectingView(vc: self, description: "broadcasting...")
         
-        Reducer.makeCommand(command: .sendrawtransaction, param: "\"\(self.signedRawTx)\"") { [weak self] (response, errorMesage) in
+        Reducer.sharedInstance.makeCommand(command: .sendrawtransaction, param: "\"\(self.signedRawTx)\"") { [weak self] (response, errorMesage) in
             guard let self = self else { return }
             
             guard let id = response as? String else {
