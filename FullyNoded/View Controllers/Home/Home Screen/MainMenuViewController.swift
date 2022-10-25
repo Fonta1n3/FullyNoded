@@ -74,8 +74,12 @@ class MainMenuViewController: UIViewController {
         UIApplication.shared.isIdleTimerDisabled = true
         
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
-            guard let node = node else { return }
             guard let self = self else { return }
+            guard let node = node  else {
+                self.removeLoader()
+                showAlert(vc: self, title: "", message: "No active nodes, please toggle one on.")
+                return
+            }
             self.activeNode = node
             
             if node.isNostr {
@@ -869,6 +873,8 @@ class MainMenuViewController: UIViewController {
                             //self.loadTable()
                         if let activeNode = self.activeNode {
                             self.loadNode(node: activeNode)
+                        } else {
+                            showAlert(vc: self, title: "", message: "No active nodes, please toggle one on.")
                         }
                         
                             DispatchQueue.main.async { [weak self] in
@@ -1039,6 +1045,9 @@ extension MainMenuViewController: OnionManagerDelegate {
             if !activeNode.isNostr {
                 loadTable()
             }
+        } else {
+            removeLoader()
+            showAlert(vc: self, title: "", message: "No active node, please toggle on one.")
         }
         
         DispatchQueue.main.async { [weak self] in

@@ -352,12 +352,20 @@ class MakeRPCCall: WebSocketDelegate {
         }
     }
     
+    func disconnect() {
+        self.socket.disconnect()
+        self.connected = false
+    }
+    
     func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
         attempts += 1
         
         if let node = self.activeNode {
             let modelName = UserDefaults.standard.value(forKey: "modelName") as? String ?? ""
-                        
+            #if targetEnvironment(simulator)
+            guard self.connected  else { return }
+            self.executeNostrRpc(method: method, param: param)
+            #else
             if node.isNostr && modelName != "arm64" && modelName != "i386" && modelName != "x86_64" {
                 if self.connected {
                     self.executeNostrRpc(method: method, param: param)
@@ -496,6 +504,8 @@ class MakeRPCCall: WebSocketDelegate {
                 
                 task.resume()
             }
+#endif
+            
         }
     }
 }

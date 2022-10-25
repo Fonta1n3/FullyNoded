@@ -200,7 +200,6 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         
         let selectedSwitch = selectedCell.viewWithTag(2) as! UISwitch
-        
         let nodeStr = NodeStruct(dictionary: nodeArray[index])
         
         if index < nodeArray.count {
@@ -212,14 +211,30 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     }
                     
                     if vc.nodeArray.count == 1 {
+                        if nodeStr.isNostr {
+                            if !selectedSwitch.isOn {
+                                MakeRPCCall.sharedInstance.disconnect()
+                            } else {
+                                MakeRPCCall.sharedInstance.connectToRelay { _ in }
+                            }
+                        }
                         vc.reloadTable()
                     }
+                                        
                 } else {
                     displayAlert(viewController: vc, isError: true, message: "error updating node")
                 }
             }
             
             if nodeArray.count > 1 {
+                
+                if nodeStr.isNostr {
+                    if !selectedSwitch.isOn {
+                        MakeRPCCall.sharedInstance.disconnect()
+                    } else {
+                        MakeRPCCall.sharedInstance.connectToRelay { _ in }
+                    }
+                }
                 
                 for (i, node) in nodeArray.enumerated() {
                     
@@ -251,12 +266,14 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                                     vc.nodeTable.reloadData()
                                     
                                     if !nodeStr.isLightning && !nodeStr.isJoinMarket {
-                                        NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+                                        if selectedSwitch.isOn {
+                                            NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+                                        }
                                     }
                                     
-                                    if !nodeStr.isJoinMarket {
-                                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                                    }
+//                                    if !nodeStr.isJoinMarket {
+//                                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+//                                    }
                                 }
                             }
                         }

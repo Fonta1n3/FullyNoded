@@ -118,34 +118,40 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     func removeNonNostrStuff() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            let modelName = UIDevice.modelName
-            if modelName != "arm64" && modelName != "x86_64" && modelName != "i386" {
-                if self.rpcUserField != nil,
-                   self.rpcPassword != nil,
-                   self.passwordHeader != nil,
-                   self.usernameHeader != nil,
-                   self.usernameHeader != nil,
-                   self.macaroonField != nil,
-                   self.macaroonHeader != nil,
-                   self.certField != nil,
-                   self.certHeader != nil,
-                   self.addressHeader != nil,
-                   self.onionAddressField != nil {
-                    self.addressHeader.removeFromSuperview()
-                    self.rpcUserField.removeFromSuperview()
-                    self.rpcPassword.removeFromSuperview()
-                    self.passwordHeader.removeFromSuperview()
-                    self.usernameHeader.removeFromSuperview()
-                    self.macaroonField.removeFromSuperview()
-                    self.macaroonHeader.removeFromSuperview()
-                    self.certField.removeFromSuperview()
-                    self.certHeader.removeFromSuperview()
-                    self.onionAddressField.removeFromSuperview()
-                    
-                }
+        func remove() {
+            if self.rpcUserField != nil,
+               self.rpcPassword != nil,
+               self.passwordHeader != nil,
+               self.usernameHeader != nil,
+               self.usernameHeader != nil,
+               self.macaroonField != nil,
+               self.macaroonHeader != nil,
+               self.certField != nil,
+               self.certHeader != nil,
+               self.addressHeader != nil,
+               self.onionAddressField != nil {
+                self.addressHeader.removeFromSuperview()
+                self.rpcUserField.removeFromSuperview()
+                self.rpcPassword.removeFromSuperview()
+                self.passwordHeader.removeFromSuperview()
+                self.usernameHeader.removeFromSuperview()
+                self.macaroonField.removeFromSuperview()
+                self.macaroonHeader.removeFromSuperview()
+                self.certField.removeFromSuperview()
+                self.certHeader.removeFromSuperview()
+                self.onionAddressField.removeFromSuperview()
             }
+        }
+        
+        DispatchQueue.main.async {
+            #if targetEnvironment(simulator)
+                remove()
+            #else
+                let modelName = UIDevice.modelName
+                if modelName != "arm64" && modelName != "x86_64" && modelName != "i386" {
+                    remove()
+                }
+            #endif
         }
     }
     
@@ -617,39 +623,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         if selectedNode != nil {
             let node = NodeStruct(dictionary: selectedNode!)
-            
             if node.id != nil {
-                
-                
-                
                 if node.isNostr {
-                    let modelname = UIDevice.modelName
-                    
-                    if modelname != "arm64" && modelname != "x86_64" && modelname != "i386" {
-                        if rpcUserField != nil,
-                           rpcPassword != nil,
-                           passwordHeader != nil,
-                           usernameHeader != nil,
-                           usernameHeader != nil,
-                           macaroonField != nil,
-                           macaroonHeader != nil,
-                           certField != nil,
-                           certHeader != nil,
-                           addressHeader != nil,
-                           onionAddressField != nil {
-                            addressHeader.removeFromSuperview()
-                            rpcUserField.removeFromSuperview()
-                            rpcPassword.removeFromSuperview()
-                            passwordHeader.removeFromSuperview()
-                            usernameHeader.removeFromSuperview()
-                            macaroonField.removeFromSuperview()
-                            macaroonHeader.removeFromSuperview()
-                            certField.removeFromSuperview()
-                            certHeader.removeFromSuperview()
-                            onionAddressField.removeFromSuperview()
-                            
-                        }
-                    }
+                    removeNonNostrStuff()
                     
                     if let encryptedPubkey = node.nostrPubkey{
                         let nostrPubkey = decryptedNostr(encryptedPubkey)
@@ -718,13 +694,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         usernameHeader.removeFromSuperview()
                         macaroonField.removeFromSuperview()
                         macaroonHeader.removeFromSuperview()
-                    }
-                    
-                } else {
-                    var placeHolder = "127.0.0.1:8332"
-                    
-                    if isLightning {
-                        placeHolder = "127.0.0.1:8080"
                     }
                 }
                 
