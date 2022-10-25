@@ -60,7 +60,6 @@
 		0A64635028FDC8260079C5DB /* RelayConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64634F28FDC8260079C5DB /* RelayConnection.swift */; };
 		0A64635228FDC9190079C5DB /* Relay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64635128FDC9190079C5DB /* Relay.swift */; };
 		0A64635528FEF8C90079C5DB /* secp256k1 in Frameworks */ = {isa = PBXBuildFile; productRef = 0A64635428FEF8C90079C5DB /* secp256k1 */; };
-		0A64635728FF13EE0079C5DB /* NostrRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64635628FF13EE0079C5DB /* NostrRpc.swift */; };
 		0A6B365B27B1AA0C00CD4F3A /* AddressInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6B365A27B1AA0B00CD4F3A /* AddressInfo.swift */; };
 		0A6B365D27B2020F00CD4F3A /* JMUtxo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6B365C27B2020F00CD4F3A /* JMUtxo.swift */; };
 		0A6B365F27BD94CB00CD4F3A /* JMTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6B365E27BD94CA00CD4F3A /* JMTx.swift */; };
@@ -288,7 +287,6 @@
 		0A64634D28FDC2990079C5DB /* NostrKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrKind.swift; sourceTree = "<group>"; };
 		0A64634F28FDC8260079C5DB /* RelayConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelayConnection.swift; sourceTree = "<group>"; };
 		0A64635128FDC9190079C5DB /* Relay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Relay.swift; sourceTree = "<group>"; };
-		0A64635628FF13EE0079C5DB /* NostrRpc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrRpc.swift; sourceTree = "<group>"; };
 		0A6B365A27B1AA0B00CD4F3A /* AddressInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressInfo.swift; sourceTree = "<group>"; };
 		0A6B365C27B2020F00CD4F3A /* JMUtxo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMUtxo.swift; sourceTree = "<group>"; };
 		0A6B365E27BD94CA00CD4F3A /* JMTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMTx.swift; sourceTree = "<group>"; };
@@ -592,7 +590,6 @@
 				D0A2918E225114670099A2F3 /* MakeRPCCall.swift */,
 				D0257E6424D6C5F5000EB854 /* LightningRPC.swift */,
 				0A3013D7266B361E004DA35C /* LndRpc.swift */,
-				0A64635628FF13EE0079C5DB /* NostrRpc.swift */,
 			);
 			path = "URL Requests";
 			sourceTree = "<group>";
@@ -1330,7 +1327,6 @@
 				D0C1F9152531E71F0079C2B8 /* UR.swift in Sources */,
 				0A643A25274A540E007F4F44 /* JMWallet.swift in Sources */,
 				D0B80A892516020A006B88F0 /* ImportXpubViewController.swift in Sources */,
-				0A64635728FF13EE0079C5DB /* NostrRpc.swift in Sources */,
 				0A1F10D826A1A54E00BE2707 /* ChildIndex.swift in Sources */,
 				D0C20EE024A6EF3800C62AA4 /* Balances.swift in Sources */,
 				D08A92B7233E113B00409D6E /* LockedViewController.swift in Sources */,

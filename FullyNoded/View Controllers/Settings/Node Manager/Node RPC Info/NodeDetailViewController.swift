@@ -158,7 +158,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             self.nostrPubkeyField.text = pubkey
             self.nostrPrivkeyField.text = privkey.hexString
-            self.nostrRelayField.text = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://relay.nostr.info"
+            self.nostrRelayField.text = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
             self.removeNonNostrStuff()
             showAlert(vc: self, title: "Nostr creds refreshed ✓", message: "Tap save to save the change.")
         }
@@ -663,7 +663,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
                         
-                        self.nostrRelayField.text = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://relay.nostr.info"
+                        self.nostrRelayField.text = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
                     }
                                         
                     if let encryptedPrivkey = node.nostrPrivkey {

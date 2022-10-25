@@ -137,7 +137,7 @@ class MakeRPCCall: WebSocketDelegate {
     
     func connectToRelay(completion: @escaping (Bool) -> Void) {
         if !self.connected {
-            let relay = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://relay.nostr.info"
+            let relay = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
             //ws://jgqaglhautb4k6e6i2g34jakxiemqp6z4wynlirltuukgkft2xuglmqd.onion//wss://nostr-pub.wellorder.net/
             let url = URL(string: relay)!
             var request = URLRequest(url: url)
