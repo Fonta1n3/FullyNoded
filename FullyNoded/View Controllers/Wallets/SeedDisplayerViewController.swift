@@ -133,7 +133,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let title = "Add a password?"
+            let title = "Add a password"
             let message = "Taproot wallets store the private keys on your node, this password is used to encrypt them. You must remember this password as Fully Noded does not save it."
             
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -141,11 +141,21 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             let setPassword = UIAlertAction(title: "Set password", style: .default) { [weak self] alertAction in
                 guard let self = self else { return }
                 
-                let password = (alert.textFields![0] as UITextField).text
+                let password1 = (alert.textFields![0] as UITextField).text
+                let password2 = (alert.textFields![1] as UITextField).text
                 
-                guard let password = password else {
-                    showAlert(vc: self, title: "", message: "No password added, try again.")
-                    
+                guard let password1 = password1, let password2 = password2 else {
+                    DispatchQueue.main.async { [weak self] in
+                        showAlert(vc: self, title: "", message: "No password added, go back and try again.")
+                    }
+                    return
+                }
+                
+                guard password1 == password2 else {
+                    DispatchQueue.main.async { [weak self] in
+                        self?.navigationController?.popViewController(animated: true)
+                        showAlert(vc: self, title: "", message: "Passwords don't match, go back and try again.")
+                    }
                     return
                 }
                 
@@ -162,20 +172,31 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                     "descriptor": taprootDesc,
                     "blockheight": Int(self.blockheight),
                     "label": "Taproot Single Sig",
-                    "password": password,
+                    "password": password1,
                     "watching":[]
                 ]
                 
                 self.importAccountMap(accountMap)
             }
             
-            alert.addTextField { textField in
-                textField.isSecureTextEntry = true
-                textField.keyboardAppearance = .dark
+            let cancel = UIAlertAction(title: "Cancel", style: .cancel) { alertAction in
+                DispatchQueue.main.async { [weak self] in
+                    self?.navigationController?.popViewController(animated: true)
+                }
+            }
+            
+            alert.addTextField { textField1 in
+                textField1.isSecureTextEntry = true
+                textField1.keyboardAppearance = .dark
+            }
+            
+            alert.addTextField { textField2 in
+                textField2.isSecureTextEntry = true
+                textField2.keyboardAppearance = .dark
             }
             
             alert.addAction(setPassword)
-            
+            alert.addAction(cancel)
             self.present(alert, animated:true, completion: nil)
         }
     }
