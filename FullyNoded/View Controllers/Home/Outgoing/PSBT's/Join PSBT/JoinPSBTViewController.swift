@@ -44,7 +44,7 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: Any) {
-        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
             if errorMessage == nil {
                 switch method {
                 case .combinepsbt:

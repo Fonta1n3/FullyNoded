@@ -309,7 +309,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             
             let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
             
-            Reducer.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
@@ -381,7 +381,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     func getAddress(_ params: String) {
-        Reducer.makeCommand(command: .getnewaddress, param: params) { [weak self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .getnewaddress, param: params) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let address = response as? String else {

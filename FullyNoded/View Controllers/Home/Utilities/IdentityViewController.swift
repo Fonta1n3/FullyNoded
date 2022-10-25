@@ -144,7 +144,7 @@ class IdentityViewController: UIViewController, UITextViewDelegate {
     }
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
             if errorMessage == nil {
                 switch method {
                 case .signmessagewithprivkey,

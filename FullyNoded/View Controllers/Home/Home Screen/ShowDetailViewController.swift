@@ -56,7 +56,7 @@ class ShowDetailViewController: UIViewController, UITextViewDelegate, UINavigati
     
     private func getTotalSupply() {
         spinner.addConnectingView(vc: self, description: "Auditing every single utxo with your node. This requires a low time preference...")
-        Reducer.makeCommand(command: .gettxoutsetinfo, param: "") { [weak self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .gettxoutsetinfo, param: "") { [weak self] (response, errorMessage) in
             if let dict = response as? NSDictionary {
                 if let total = dict["total_amount"] as? Double, let utxos = dict["txouts"] as? Int {
                     self?.utxoCount = utxos
@@ -112,7 +112,7 @@ class ShowDetailViewController: UIViewController, UITextViewDelegate, UINavigati
     private func getInfoHelpText() {
         let connectingView = ConnectingView()
         connectingView.addConnectingView(vc: self, description: "help \(command)...")
-        Reducer.makeCommand(command: .help, param: "\"\(command)\"") { [weak self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .help, param: "\"\(command)\"") { [weak self] (response, errorMessage) in
             if let helpCheck = response as? String {
                 connectingView.removeConnectingView()
                 self?.helpText = helpCheck

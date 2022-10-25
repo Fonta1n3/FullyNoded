@@ -328,7 +328,7 @@ class ImportWallet {
         OnchainUtils.createWallet(param: param) { (name, message) in
             if password != "" {
                 UserDefaults.standard.setValue(name, forKey: "walletName")
-                Reducer.makeCommand(command: .walletpassphrase, param: "\"\(password)\", 600") { (response, errorMessage) in
+                Reducer.sharedInstance.makeCommand(command: .walletpassphrase, param: "\"\(password)\", 600") { (response, errorMessage) in
                     if errorMessage == nil {
                         completion((name, message))
                     } else {

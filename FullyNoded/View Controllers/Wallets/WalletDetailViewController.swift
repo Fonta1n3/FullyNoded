@@ -104,7 +104,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                 let arr = desc.split(separator: "#")
                 let bareDesc = "\(arr[0])"
                 
-                Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(bareDesc)\"") { [weak self] (response, errorMessage) in
+                Reducer.sharedInstance.makeCommand(command: .getdescriptorinfo, param: "\"\(bareDesc)\"") { [weak self] (response, errorMessage) in
                     if let dict = response as? NSDictionary {
                         if let descriptor = dict["descriptor"] as? String {
                             guard let self = self else { return }
@@ -147,7 +147,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private func deriveAddresses(_ descriptor: String) {
         let param = "\"\(descriptor)\", [0,2500]"
-        Reducer.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
             if let addr = response as? NSArray {
                 for (i, address) in addr.enumerated() {
                     guard let self = self else { return }

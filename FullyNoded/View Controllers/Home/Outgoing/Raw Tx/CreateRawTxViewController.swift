@@ -966,7 +966,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
         }
         
-        Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { [weak self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .walletcreatefundedpsbt, param: param) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let result = response as? NSDictionary, let psbt1 = result["psbt"] as? String else {
@@ -975,7 +975,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 return
             }
             
-            Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [weak self] (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let dict = response as? NSDictionary, let processedPSBT = dict["psbt"] as? String else {
@@ -1101,7 +1101,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(rounded(number: amount))}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"conf_target\": \(self.ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
             }
                         
-            Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { [weak self] (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: .walletcreatefundedpsbt, param: param) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let result = response as? NSDictionary, let psbt1 = result["psbt"] as? String else {
@@ -1110,7 +1110,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     return
                 }
                 
-                Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [weak self] (response, errorMessage) in
+                Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     guard let dict = response as? NSDictionary, let processedPSBT = dict["psbt"] as? String else {

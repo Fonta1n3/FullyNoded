@@ -49,7 +49,7 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
     
     private func unloadWallet(wallet: String, index: Int) {
         connectingView.addConnectingView(vc: self, description: "unloading wallet...")
-        Reducer.makeCommand(command: .unloadwallet, param: "\"\(wallet)\"") { [weak self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .unloadwallet, param: "\"\(wallet)\"") { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let _ = response else {

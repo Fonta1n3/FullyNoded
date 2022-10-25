@@ -260,7 +260,7 @@ class ProcessPSBTViewController: UIViewController {
     }
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
             if errorMessage == nil {
                 switch method {
                 case .sendrawtransaction:
@@ -394,7 +394,7 @@ class ProcessPSBTViewController: UIViewController {
     }
     
     func parsePrevTx(method: BTC_CLI_COMMAND, param: String, vout: Int) {
-        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
             if errorMessage == nil {
                 switch method {
                 case .decoderawtransaction:

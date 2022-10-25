@@ -46,7 +46,7 @@ class LockedViewController: UIViewController {
     private func loadLockedUTxos() {
         lockedUtxos.removeAll()
         
-        Reducer.makeCommand(command: .listlockunspent, param: "") { [weak self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .listlockunspent, param: "") { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let locked = response as? NSArray else {
@@ -102,7 +102,7 @@ class LockedViewController: UIViewController {
         spinner.addConnectingView(vc: self, description: "unlocking...")
         let param = "true, [{\"txid\":\"\(utxo.txid)\",\"vout\":\(utxo.vout)}]"
         
-        Reducer.makeCommand(command: .lockunspent, param: param) { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .lockunspent, param: param) { (response, errorMessage) in
             guard let success = response as? Bool else {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }

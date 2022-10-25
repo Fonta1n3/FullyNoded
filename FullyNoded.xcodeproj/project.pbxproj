@@ -37,7 +37,6 @@
 		0A2B4D702716ABCB00B607EE /* SparrowWalletImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2B4D6F2716ABCB00B607EE /* SparrowWalletImport.swift */; };
 		0A3013D8266B361E004DA35C /* LndRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3013D7266B361E004DA35C /* LndRpc.swift */; };
 		0A337D012700316E00AD087F /* WalletDir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A337D002700316E00AD087F /* WalletDir.swift */; };
-		0A3450EE2902EF5C0074A545 /* Join Market in Resources */ = {isa = PBXBuildFile; fileRef = 0A3450ED2902EF5C0074A545 /* Join Market */; };
 		0A3450F02902F0440074A545 /* JMWalletCreate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3450EF2902F0430074A545 /* JMWalletCreate.swift */; };
 		0A39459826E5951100CAF05F /* Taker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A39459726E5951100CAF05F /* Taker.swift */; };
 		0A590357269875CD00510626 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590356269875CB00510626 /* Extensions.swift */; };
@@ -268,7 +267,6 @@
 		0A2B4D6F2716ABCB00B607EE /* SparrowWalletImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparrowWalletImport.swift; sourceTree = "<group>"; };
 		0A3013D7266B361E004DA35C /* LndRpc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LndRpc.swift; sourceTree = "<group>"; };
 		0A337D002700316E00AD087F /* WalletDir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDir.swift; sourceTree = "<group>"; };
-		0A3450ED2902EF5C0074A545 /* Join Market */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Join Market"; sourceTree = "<group>"; };
 		0A3450EF2902F0430074A545 /* JMWalletCreate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMWalletCreate.swift; sourceTree = "<group>"; };
 		0A39459726E5951100CAF05F /* Taker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Taker.swift; sourceTree = "<group>"; };
 		0A590356269875CB00510626 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
@@ -1056,7 +1054,6 @@
 		D0A519B5226B3DA000860D5C /* Wallet Logic */ = {
 			isa = PBXGroup;
 			children = (
-				0A3450ED2902EF5C0074A545 /* Join Market */,
 				D0855FC922B0CEA800DBBFC2 /* CreatePSBT.swift */,
 				0A3450EF2902F0430074A545 /* JMWalletCreate.swift */,
 				D09A32FE24A8419C009FA0B2 /* CreateFullyNodedWallet.swift */,
@@ -1250,7 +1247,6 @@
 				D0452AD62246E0370013E225 /* whiteBroom.png in Resources */,
 				D049CB3924C7EFDF0039711B /* iTunesArtwork@2x.png in Resources */,
 				D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */,
-				0A3450EE2902EF5C0074A545 /* Join Market in Resources */,
 				D0452AD42246C7830013E225 /* clear.png in Resources */,
 				D0126FF82244842000412629 /* bWhite.png in Resources */,
 				D05D9732226433B60035F1DE /* strobe.png in Resources */,
@@ -1652,7 +1648,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 362;
+				CURRENT_PROJECT_VERSION = 364;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1666,7 +1662,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.442;
+				MARKETING_VERSION = 1.444;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1691,7 +1687,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 362;
+				CURRENT_PROJECT_VERSION = 364;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1707,7 +1703,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.442;
+				MARKETING_VERSION = 1.444;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";

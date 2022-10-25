@@ -29,7 +29,7 @@ class CreatePSBT {
         }
         
         func create(params: String) {
-            Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: .walletcreatefundedpsbt, param: param) { (response, errorMessage) in
                 guard let result = response as? NSDictionary, let psbt = result["psbt"] as? String else {
                     var desc = errorMessage ?? "unknown error"
                     if desc.contains("Unexpected key fee_rate") {
@@ -48,7 +48,7 @@ class CreatePSBT {
         activeWallet { wallet in
             guard let wallet = wallet else {
                 // using a bitcoin core wallet
-                Reducer.makeCommand(command: .getrawchangeaddress, param: "") { (response, errorMessage) in
+                Reducer.sharedInstance.makeCommand(command: .getrawchangeaddress, param: "") { (response, errorMessage) in
                     guard let changeAddress = response else {
                         completion((nil, nil, "error getting a change address: \(errorMessage ?? "unknown")"))
                         return
@@ -85,7 +85,7 @@ class CreatePSBT {
                     return
                 }
 
-                Reducer.makeCommand(command: .deriveaddresses, param: "\"\(wallet.changeDescriptor)\", [\(index),\(index)]") { (response, errorMessage) in
+                Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: "\"\(wallet.changeDescriptor)\", [\(index),\(index)]") { (response, errorMessage) in
                     guard let result = response as? NSArray, let changeAddress = result[0] as? String else {
                         completion((nil, nil, errorMessage ?? "error deriving change address"))
                         return

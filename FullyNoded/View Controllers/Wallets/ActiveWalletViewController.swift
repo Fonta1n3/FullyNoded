@@ -474,7 +474,6 @@ class ActiveWalletViewController: UIViewController {
             
             self.walletTable.reloadData()
             self.removeSpinner()
-            self.getWalletInfo()
         }
     }
     
@@ -959,26 +958,16 @@ class ActiveWalletViewController: UIViewController {
             }
             
             let balances = Balances(dictionary: response)
-            self.onchainBalanceBtc = balances.onchainBalance
             self.offchainBalanceBtc = balances.offchainBalance
-            self.onchainBalanceSats = balances.onchainBalance.btcToSats
             self.offchainBalanceSats = balances.offchainBalance.btcToSats
             
-            DispatchQueue.main.async {
-                if let exchangeRate = self.fxRate {
-                    let onchainBalance = balances.onchainBalance.doubleValue
-                    let onchainBalanceFiat = onchainBalance * exchangeRate
-                    self.onchainBalanceFiat = round(onchainBalanceFiat).fiatString
-                    
-                    let offchainBalance = balances.offchainBalance.doubleValue
-                    let offchainBalanceFiat = offchainBalance * exchangeRate
-                    self.offchainBalanceFiat = round(offchainBalanceFiat).fiatString
-                }
-                
-                self.sectionZeroLoaded = true
-                self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                self.loadTransactions()
+            if let exchangeRate = self.fxRate {
+                let offchainBalance = balances.offchainBalance.doubleValue
+                let offchainBalanceFiat = offchainBalance * exchangeRate
+                self.offchainBalanceFiat = round(offchainBalanceFiat).fiatString
             }
+            
+            self.getWalletInfo()
         }
     }
     
@@ -1172,7 +1161,25 @@ class ActiveWalletViewController: UIViewController {
         OnchainUtils.getWalletInfo { [weak self] (walletInfo, message) in
             guard let self = self else { return }
             
-            guard let progress = walletInfo?.progress else {
+            guard let walletInfo = walletInfo else { return }
+            
+            if let balance = walletInfo.balance {
+                DispatchQueue.main.async {
+                    self.onchainBalanceBtc = String(balance)
+                    self.onchainBalanceSats = balance.sats.replacingOccurrences(of: " sats", with: "")
+                    
+                    if let exchangeRate = self.fxRate {
+                        let onchainBalanceFiat = balance * exchangeRate
+                        self.onchainBalanceFiat = round(onchainBalanceFiat).fiatString
+                    }
+                    
+                    self.sectionZeroLoaded = true
+                    self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
+                    self.loadTransactions()
+                }
+            }
+            
+            guard let progress = walletInfo.progress else {
                 return
             }
             
@@ -1252,11 +1259,17 @@ class ActiveWalletViewController: UIViewController {
                 return
             }
             
+            self.getWalletInfo()
+            
             let balances = Balances(dictionary: response)
-            self.onchainBalanceBtc = balances.onchainBalance
             self.offchainBalanceBtc = balances.offchainBalance
-            self.onchainBalanceSats = balances.onchainBalance.btcToSats
             self.offchainBalanceSats = balances.offchainBalance.btcToSats
+            
+            if let exchangeRate = self.fxRate {
+                let offchainBalance = balances.offchainBalance.doubleValue
+                let offchainBalanceFiat = offchainBalance * exchangeRate
+                self.offchainBalanceFiat = round(offchainBalanceFiat).fiatString
+            }
             
             DispatchQueue.main.async {
                 self.sectionZeroLoaded = true

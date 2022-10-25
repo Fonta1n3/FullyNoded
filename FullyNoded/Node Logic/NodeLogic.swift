@@ -18,27 +18,11 @@ class NodeLogic {
     
     class func loadBalances(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         if !walletDisabled {
-            listUnspent(completion: completion)
+            getLightningBalances(completion: completion)
         } else {
             dictToReturn["unconfirmedBalance"] = "disabled"
             dictToReturn["onchainBalance"] = "disabled"
             completion((dictToReturn, nil))
-        }
-    }
-    
-    class func listUnspent(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        OnchainUtils.listUnspent(param: "0") { (utxos, message) in
-            if let utxos = utxos {
-                parseUtxos(utxos: utxos)
-                getLightningBalances(completion: completion)
-            } else if message != nil {
-                if message!.contains("Method not found") {
-                    walletDisabled = true
-                    completion((nil, "wallet disabled"))
-                } else {
-                    completion((nil, message ?? "Error getting utxos."))
-                }
-            }
         }
     }
     
