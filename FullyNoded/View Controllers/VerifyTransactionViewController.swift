@@ -735,7 +735,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 return
             }
             
-            if !walletInfo.private_keys_enabled,
+            if let privkeysenabled = walletInfo.private_keys_enabled, !privkeysenabled,
                 let version = UserDefaults.standard.object(forKey: "version") as? Int,
                 version >= 210000 {
                 bumpfee = .psbtbumpfee
@@ -1450,11 +1450,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 guard let self = self else { return }
                 
                 guard let hex = response as? String else {
-                    guard let errorMessage = errorMessage else {
-                        self.spinner.removeConnectingView()
-                        //displayAlert(viewController: self, isError: true, message: "Error parsing inputs")
-                        return
-                    }
+                    guard let errorMessage = errorMessage else { return }
                     
                     guard errorMessage.contains("No such mempool transaction") else {
                         self.spinner.removeConnectingView()

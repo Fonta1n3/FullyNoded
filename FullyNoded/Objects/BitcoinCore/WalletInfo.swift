@@ -11,7 +11,7 @@ import Foundation
 public struct WalletInfo: CustomStringConvertible {
     
     //let avoid_reuse: Bool
-    //let balance: String?
+    let balance: Double?
     let descriptors: Int?
     //let format: String?
     //let hdseedid: String
@@ -20,7 +20,7 @@ public struct WalletInfo: CustomStringConvertible {
     //let keypoolsize: Int
     //let keypoolsize_hd_internal: Int
     //let paytxfee: Int
-    let private_keys_enabled: Bool
+    let private_keys_enabled: Bool?
     let scanning: Bool
     //let txcount: Int
     //let unconfirmed_balance: Double?
@@ -33,8 +33,9 @@ public struct WalletInfo: CustomStringConvertible {
         //avoid_reuse = dictionary["avoid_reuse"] as? Bool ?? false
         //balance = dictionary["balance"] as? String
         descriptors = dictionary["descriptors"] as? Int
-        private_keys_enabled = dictionary["private_keys_enabled"] as! Bool
+        private_keys_enabled = dictionary["private_keys_enabled"] as? Bool
         scanning = (dictionary["scanning"] as? [String:Any] != nil)
+        balance = dictionary["balance"] as? Double
 //        if scanning {
 //
 //        } else {
