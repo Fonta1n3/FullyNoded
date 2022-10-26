@@ -139,7 +139,7 @@ class MakeRPCCall: WebSocketDelegate {
         if !self.connected {
             let relay = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
             //ws://jgqaglhautb4k6e6i2g34jakxiemqp6z4wynlirltuukgkft2xuglmqd.onion//wss://nostr-pub.wellorder.net/
-            let url = URL(string: relay)!
+            guard let url = URL(string: relay) else { return }
             var request = URLRequest(url: url)
             request.timeoutInterval = 5
             self.socket = WebSocket(request: request)

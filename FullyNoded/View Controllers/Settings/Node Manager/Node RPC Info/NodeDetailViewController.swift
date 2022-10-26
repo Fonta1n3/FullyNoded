@@ -85,6 +85,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         if isNostr {
             createNostrCreds()
+        } else {
+            //removeNonNostrStuff()
+            removeNostrStuff()
         }
     }
     
@@ -114,6 +117,32 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             guard let self = self else { return }
             self.isNostr = true
             self.performSegue(withIdentifier: "segueToScanNodeCreds", sender: self)
+        }
+    }
+    
+    func removeNostrStuff() {
+        if nostrRelayField != nil,
+           nostrPubkeyField != nil,
+           nostrRelayHeader != nil,
+           nostrToSubscribe != nil,
+           nostrPubkeyHeader != nil,
+           nostrPrivkeyField != nil,
+           nostrPrivkeyHeader != nil,
+           nostrSubscriptionHeader != nil,
+           scanNostrPubkeyQr != nil,
+           showNostrPubkeyQr != nil,
+           refreshNostrPrivkeyOutlet != nil {
+            refreshNostrPrivkeyOutlet.removeFromSuperview()
+            showNostrPubkeyQr.removeFromSuperview()
+            scanNostrPubkeyQr.removeFromSuperview()
+            nostrSubscriptionHeader.removeFromSuperview()
+            nostrRelayField.removeFromSuperview()
+            nostrRelayHeader.removeFromSuperview()
+            nostrPubkeyField.removeFromSuperview()
+            nostrPubkeyHeader.removeFromSuperview()
+            nostrToSubscribe.removeFromSuperview()
+            nostrPrivkeyField.removeFromSuperview()
+            nostrPrivkeyHeader.removeFromSuperview()
         }
     }
     
@@ -375,11 +404,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 newNode["onionAddress"] = encryptedOnionAddress
             }
             
-            if nostrToSubscribe.text != "", let data = Data(hexString: nostrToSubscribe.text!)  {
+            if nostrToSubscribe != nil, nostrToSubscribe.text != "", let data = Data(hexString: nostrToSubscribe.text!)  {
                 newNode["subscribeTo"] = encryptedValue(data)
             }
             
-            if nostrPrivkeyField.text != "" {
+            if nostrPrivkeyField != nil, nostrPrivkeyField.text != "" {
                 let privkey = Data(hexString: nostrPrivkeyField.text!)!
                 newNode["nostrPrivkey"] = encryptedValue(privkey)
                 let pubkey = Keys.privKeyToPubKey(privkey)!
@@ -387,7 +416,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 newNode["isNostr"] = true
             }
             
-            if nostrRelayField.text != nil {
+            if nostrRelayField != nil, nostrRelayField.text != nil {
                 UserDefaults.standard.setValue(nostrRelayField.text!, forKey: "nostrRelay")
             }
             
@@ -659,6 +688,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                             self.nostrToSubscribe.text = nostrSubscribeTo
                         }
                     }
+                } else {
+                    removeNostrStuff()
                 }
                 
                 if node.label != "" {
@@ -697,13 +728,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     }
                 }
                 
-                if node.cert != nil {
+                if node.cert != nil, certField != nil {
                     if let decryptedCert = Crypto.decrypt(node.cert!) {
                         certField.text = decryptedCert.urlSafeB64String
                     }
                 }
                 
-                if node.macaroon != nil {
+                if node.macaroon != nil, macaroonField != nil {
                     let hex = decryptedValue(node.macaroon!)
                     macaroonField.text = Data(hexString: hex)!.urlSafeB64String
                 }
