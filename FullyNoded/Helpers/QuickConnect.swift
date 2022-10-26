@@ -143,7 +143,7 @@ class QuickConnect {
                 guard let existingNodeId = existingNodeStruct.id else { return }
                 
                 switch url {
-                case _ where url.hasPrefix("btcrpc"):
+                case _ where url.hasPrefix("btcrpc")  || url.hasPrefix("btcstandup"):
                     
                     if !existingNodeStruct.isLightning && !existingNodeStruct.isJoinMarket {
                         CoreDataService.update(id: existingNodeId, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
