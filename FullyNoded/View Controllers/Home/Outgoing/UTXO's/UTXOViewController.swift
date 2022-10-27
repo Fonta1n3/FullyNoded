@@ -126,50 +126,62 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func getStatus(_ jmWallet: JMWallet) {
+    private func addSpinny(_ spinny: UIActivityIndicatorView) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            let spinny = UIActivityIndicatorView()
+            
             spinny.frame = self.jmStatusImageOutlet.frame
             spinny.alpha = 1
             self.view.addSubview(spinny)
             spinny.startAnimating()
+        }
+        
+    }
+    
+    private func getStatus(_ jmWallet: JMWallet) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let spinny = UIActivityIndicatorView()
+            self.addSpinny(spinny)
             self.jmStatusLabelOutlet.text = "checking join market status..."
             self.jmStatusLabelOutlet.alpha = 1
             
             JMUtils.session { [weak self] (response, message) in
                 guard let self = self else { return }
-                
-                spinny.stopAnimating()
-                spinny.alpha = 0
-                self.jmStatusImageOutlet.alpha = 1
-                
-                self.jmMixOutlet.tintColor = .systemTeal
-                self.jmEarnOutlet.tintColor = .systemTeal
-                self.jmMixOutlet.isEnabled = true
-                self.jmEarnOutlet.isEnabled = true
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    spinny.stopAnimating()
+                    spinny.alpha = 0
+                    self.jmStatusImageOutlet.alpha = 1
+                    
+                    self.jmMixOutlet.tintColor = .systemTeal
+                    self.jmEarnOutlet.tintColor = .systemTeal
+                    self.jmMixOutlet.isEnabled = true
+                    self.jmEarnOutlet.isEnabled = true
+                }
                 
                 guard let status = response else {
-                    self.jmStatusLabelOutlet.text = "join market inactive"
-                    self.jmStatusImageOutlet.tintColor = .systemRed
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        self.jmStatusLabelOutlet.text = "join market inactive"
+                        self.jmStatusImageOutlet.tintColor = .systemRed
+                    }
                     return
                 }
                 
                 self.jmActive = true
                 self.makerRunning = false
-                                
+                self.takerRunning = false
+                
                 if status.coinjoin_in_process {
                     self.setTakerRunningUi()
-                    
                 } else if status.maker_running {
                     self.setMakerRunningUi()
-                    
-                } else if status.session {
+                 } else if !status.maker_running {
                     self.setMakerStoppedUi()
-                    
-                } else {
-                    self.setJmConnectedUi()
-                    
+                }
+                                
+                if !status.session {
                     JMUtils.wallets { (wallets, message) in
                         guard let wallets = wallets, wallets.count > 0 else {
                             self.addUtxoMixButton()
@@ -216,19 +228,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                     }
                 }
             }
-        }
-    }
-    
-    private func setJmConnectedUi() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.jmActive = false
-            self.jmStatusLabelOutlet.text = "join market connected"
-            self.jmEarnOutlet.tintColor = .clear
-            self.jmMixOutlet.isEnabled = false
-            self.jmMixOutlet.tintColor = .clear
-            self.jmEarnOutlet.isEnabled = false
         }
     }
     
@@ -315,7 +314,12 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
         JMUtils.stopTaker(wallet: jmWallet) { (response, message) in
             guard message == nil else {
-                showAlert(vc: self, title: "There was an issue stopping the taker.", message: message ?? "Unknown.")
+                if message!.contains("Service cannot be stopped as it is not running") {
+                    self.getStatus(jmWallet)
+                } else {
+                    showAlert(vc: self, title: "There was an issue stopping the taker.", message: message ?? "Unknown.")
+                }
+                
                 return
             }
             
@@ -329,9 +333,14 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         JMUtils.startMaker(wallet: jmWallet) { [weak self] (response, message) in
             guard let self = self else { return }
             
-            self.spinner.removeConnectingView()
+            if let message = message {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "", message: message)
+                return
+            }
             
             guard let response = response else {
+                self.spinner.removeConnectingView()
                 return
             }
             
@@ -350,6 +359,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                     self.jmEarnOutlet.isEnabled = false
                 }
             }
+            self.spinner.removeConnectingView()
         }
     }
     
@@ -375,8 +385,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                             self.jmStatusLabelOutlet.text = "maker stopped"
                             self.jmActionOutlet.setTitle("start", for: .normal)
                             self.makerRunning = false
-                            
+                            self.jmEarnOutlet.tintColor = .systemTeal
                             self.jmMixOutlet.tintColor = .systemTeal
+                            self.jmEarnOutlet.isEnabled = true
                             self.jmMixOutlet.isEnabled = true
                         }
                         
@@ -397,8 +408,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                     self.jmStatusLabelOutlet.text = "maker stopped"
                     self.jmActionOutlet.setTitle("start", for: .normal)
                     self.makerRunning = false
-                    
+                    self.jmEarnOutlet.tintColor = .systemTeal
                     self.jmMixOutlet.tintColor = .systemTeal
+                    self.jmEarnOutlet.isEnabled = true
                     self.jmMixOutlet.isEnabled = true
                 }
             }
@@ -679,43 +691,31 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
 
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
 
-            alert.addAction(UIAlertAction(title: "Default mixdepth \(self.jmWallet!.account)", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                                                
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.isJmarket = true
-                    self.mixdepth = self.jmWallet!.account
-                    self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
-                }
-            }))
-                        
-            alert.addAction(UIAlertAction(title: "Mixdepth 0", style: .default, handler: { [weak self] action in
+            alert.addAction(UIAlertAction(title: "Mixdepth 1", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                                                 
                 self.joinMixdepthNow(0)
             }))
             
-            alert.addAction(UIAlertAction(title: "Mixdepth 1", style: .default, handler: { [weak self] action in
+            alert.addAction(UIAlertAction(title: "Mixdepth 2", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                                                 
                 self.joinMixdepthNow(1)
             }))
             
-            alert.addAction(UIAlertAction(title: "Mixdepth 2", style: .default, handler: { [weak self] action in
+            alert.addAction(UIAlertAction(title: "Mixdepth 3", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                                                 
                 self.joinMixdepthNow(2)
             }))
             
-            alert.addAction(UIAlertAction(title: "Mixdepth 3", style: .default, handler: { [weak self] action in
+            alert.addAction(UIAlertAction(title: "Mixdepth 4", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                                                 
                 self.joinMixdepthNow(3)
             }))
             
-            alert.addAction(UIAlertAction(title: "Mixdepth 4", style: .default, handler: { [weak self] action in
+            alert.addAction(UIAlertAction(title: "Mixdepth 5", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                 
                 self.joinMixdepthNow(4)
@@ -1107,7 +1107,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                             guard let self = self else { return }
                             
                             guard let savedUtxos = savedUtxos, savedUtxos.count > 0 else {
-                                self.finishedLoading()
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                    self.finishedLoading()
+                                }
+                                
                                 
                                 return
                             }
@@ -1125,19 +1128,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                                             
                                             if savedUtxoStr.txid == unlockedUtxo.txid && savedUtxoStr.vout == unlockedUtxo.vout && wallet.label != savedUtxoStr.label {
                                                 self.unlockedUtxos[i].label = savedUtxoStr.label
-                                                
-//                                                if wallet.type == WalletType.descriptor.stringValue {
-//                                                    guard let desc = unlockedUtxo.desc else { return }
-//
-//                                                    let params = "[{\"desc\": \"\(desc)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"\(savedUtxoStr.label ?? "")\"}]"
-//
-//                                                    Reducer.sharedInstance.makeCommand(command: .importdescriptors, param: params) { (_, _) in }
-//
-//                                                } else {
-//                                                    let param = "[{ \"scriptPubKey\": { \"address\": \"\(unlockedUtxo.address!)\" }, \"label\": \"\(savedUtxoStr.label ?? "")\", \"timestamp\": \"now\", \"watchonly\": true, \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
-//
-//                                                    Reducer.sharedInstance.makeCommand(command: .importmulti, param: param) { (_, _) in }
-//                                                }
                                             }
                                         }
                                         
@@ -1657,26 +1647,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 }))
             }
             
-            
-            
-//            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] action in
-//                guard let self = self else { return }
-//
-//                self.spinner.addConnectingView(vc: self, description: "getting JM deposit address...")
-//
-//                JMUtils.getAddress(wallet: jmWallet, mixdepth: ) { (address, message) in
-//                    self.spinner.removeConnectingView()
-//
-//                    guard let address = address else {
-//                        showAlert(vc: self, title: "Error getting deposit address...", message: message ?? "Unknown.")
-//                        return
-//                    }
-//
-//                    self.depositAddress = address
-//                    self.depositNow(utxo)
-//                }
-//            }))
-            
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = self.view
             self.present(alert, animated: true, completion: nil)
@@ -1701,8 +1671,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                     }
                     
                     self.depositAddress = donationAddress
-                    //self.amountTotal = utxo.amount ?? 0.0
-                    self.depositNow(utxo)                    
+                    self.depositNow(utxo)
                 }))
                 
                 alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
@@ -1853,12 +1822,9 @@ extension UTXOViewController: UTXOCellDelegate {
 extension UTXOViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
         let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
         let utxo = unlockedUtxos[indexPath.section]
-        
         cell.configure(utxo: utxo, isLocked: false, fxRate: fxRate, isSats: isSats, isBtc: isBtc, isFiat: isFiat, delegate: self)
-        
         return cell
     }
     

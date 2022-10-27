@@ -16,6 +16,16 @@ struct JMSession: CustomStringConvertible {
          session = 1;
          "wallet_name" = "FullyNoded-yJyq5ibQwT.jmdat";
      }
+     
+     {
+         "coinjoin_in_process" = 0;
+         "maker_running" = 0;
+         nickname = "<null>";
+         "offer_list" = "<null>";
+         schedule = "<null>";
+         session = 0;
+         "wallet_name" = None;
+     }
      */
     let coinjoin_in_process:Bool
     let maker_running:Bool
