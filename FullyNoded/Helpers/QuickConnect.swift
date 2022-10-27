@@ -134,39 +134,37 @@ class QuickConnect {
     }
     
     private class func processNode(_ newNode: [String:Any], _ url: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        
         CoreDataService.retrieveEntity(entityName: .newNodes) { (nodes) in
             guard let nodes = nodes, nodes.count > 0 else { saveNode(newNode, url, completion: completion); return }
             
             for (i, existingNode) in nodes.enumerated() {
                 let existingNodeStruct = NodeStruct(dictionary: existingNode)
-                guard let existingNodeId = existingNodeStruct.id else { return }
-                
-                switch url {
-                case _ where url.hasPrefix("btcrpc")  || url.hasPrefix("btcstandup"):
-                    
-                    if !existingNodeStruct.isLightning && !existingNodeStruct.isJoinMarket {
-                        CoreDataService.update(id: existingNodeId, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                if let existingNodeId = existingNodeStruct.id {
+                    switch url {
+                    case _ where url.hasPrefix("btcrpc")  || url.hasPrefix("btcstandup"):
+                        
+                        if !existingNodeStruct.isLightning && !existingNodeStruct.isJoinMarket {
+                            CoreDataService.update(id: existingNodeId, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                        }
+                        
+                    case _ where url.hasPrefix("clightning-rpc"), _ where url.hasPrefix("lndconnect"):
+                        
+                        if existingNodeStruct.isActive && existingNodeStruct.isLightning {
+                            CoreDataService.update(id: existingNodeId, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                        }
+                        
+                    case _ where url.hasPrefix("http"):
+                        
+                        if existingNodeStruct.isActive && existingNodeStruct.isJoinMarket {
+                            CoreDataService.update(id: existingNodeId, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                        }
+                        
+                    default:
+                        #if DEBUG
+                        print("default")
+                        #endif
                     }
-                    
-                case _ where url.hasPrefix("clightning-rpc"), _ where url.hasPrefix("lndconnect"):
-                    
-                    if existingNodeStruct.isActive && existingNodeStruct.isLightning {
-                        CoreDataService.update(id: existingNodeId, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
-                    }
-                    
-                case _ where url.hasPrefix("http"):
-                    
-                    if existingNodeStruct.isActive && existingNodeStruct.isJoinMarket {
-                        CoreDataService.update(id: existingNodeId, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
-                    }
-                    
-                default:
-                    #if DEBUG
-                    print("default")
-                    #endif
                 }
-                
                 if i + 1 == nodes.count {
                     saveNode(newNode, url, completion: completion)
                 }
