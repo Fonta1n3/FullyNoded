@@ -85,9 +85,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         if isNostr {
             createNostrCreds()
-        } else {
-            //removeNonNostrStuff()
-            removeNostrStuff()
         }
     }
     
@@ -656,7 +653,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 if node.isNostr {
                     removeNonNostrStuff()
                     
-                    if let encryptedPubkey = node.nostrPubkey{
+                    if let encryptedPubkey = node.nostrPubkey {
                         let nostrPubkey = decryptedNostr(encryptedPubkey)
                         DispatchQueue.main.async { [weak self] in
                             guard let self = self else { return }
@@ -739,6 +736,12 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     macaroonField.text = Data(hexString: hex)!.urlSafeB64String
                 }
                 
+            }
+        } else {
+            if isNostr {
+                removeNonNostrStuff()
+            } else {
+                removeNostrStuff()
             }
         }
     }
