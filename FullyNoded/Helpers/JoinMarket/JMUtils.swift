@@ -373,40 +373,8 @@ class JMUtils {
             completion((WalletDetail(response), nil))
         }
     }
-        
-    static func syncIndexes(wallet: JMWallet, completion: @escaping ((String?)) -> Void) {
-        JMUtils.display(wallet: wallet) { (detail, message) in
-            guard let detail = detail else {
-                completion((message ?? "Unknown."))
-                return
-            }
-            
-            var nextMixdepth = 0
-            
-            for (i, account) in detail.accounts.enumerated() {
-                for entry in account.branches[0].entries {
-                    if entry.amount > 0 {
-                        if account.accountNumber < 4 {
-                            nextMixdepth += 1
-                        }
-                    }
-                }
-                
-                if i + 1 == detail.accounts.count {
-                    CoreDataService.update(id: wallet.id, keyToUpdate: "account", newValue: Int16(nextMixdepth), entity: .jmWallets) { updated in
-                        guard updated else {
-                            completion(("Error updating account."))
-                            return
-                        }
-                        
-                        completion((nil))
-                    }
-                }
-            }
-        }
-    }
     
-    static func getAddress(wallet: JMWallet, completion: @escaping ((address: String?, message: String?)) -> Void) {
+    static func getAddress(wallet: JMWallet, mixdepth: Int, completion: @escaping ((address: String?, message: String?)) -> Void) {
         JMUtils.unlockWallet(wallet: wallet) { (unlockedWallet, message) in
             var updatedWallet = wallet
             
@@ -431,16 +399,14 @@ class JMUtils {
             }
             
             updatedWallet.token = encryptedToken
-            JMUtils.syncIndexes(wallet: updatedWallet) { message in
-                JMRPC.sharedInstance.command(method: .getaddress(jmWallet: updatedWallet), param: nil) { (response, errorDesc) in
-                    guard let response = response as? [String:Any],
-                    let address = response["address"] as? String else {
-                        completion((nil, errorDesc ?? "unknown"))
-                        return
-                    }
-
-                    completion((address, "message"))
+            JMRPC.sharedInstance.command(method: .getaddress(jmWallet: updatedWallet, mixdepth: mixdepth), param: nil) { (response, errorDesc) in
+                guard let response = response as? [String:Any],
+                let address = response["address"] as? String else {
+                    completion((nil, errorDesc ?? "unknown"))
+                    return
                 }
+
+                completion((address, "message"))
             }
         }
     }

@@ -94,7 +94,7 @@ class JMRPC {
                 
             case .lockwallet(let wallet),
                     .walletdisplay(let wallet),
-                    .getaddress(jmWallet: let wallet),
+                    .getaddress(jmWallet: let wallet, mixdepth: _),
                     .makerStop(jmWallet: let wallet),
                     .takerStop(jmWallet: let wallet),
                     .getSeed(jmWallet: let wallet),
@@ -119,11 +119,7 @@ class JMRPC {
                       }
                                 
                 guard let jsonData = try? JSONSerialization.data(withJSONObject: ["password":password]) else { return }
-                
-                #if DEBUG
-                print("JM param: \(String(describing: param))")
-                #endif
-                
+                                
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")
                 request.setValue("\(jsonData.count)", forHTTPHeaderField: "Content-Length")
                 request.httpBody = jsonData

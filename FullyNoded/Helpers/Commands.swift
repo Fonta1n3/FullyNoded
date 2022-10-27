@@ -177,7 +177,7 @@ public enum JM_REST {
     case lockwallet(jmWallet: JMWallet)
     case unlockwallet(jmWallet: JMWallet)
     case walletdisplay(jmWallet: JMWallet)
-    case getaddress(jmWallet: JMWallet)
+    case getaddress(jmWallet: JMWallet, mixdepth: Int)
     case coinjoin(jmWallet: JMWallet)
     case makerStart(jmWallet: JMWallet)
     case makerStop(jmWallet: JMWallet)
@@ -204,8 +204,8 @@ public enum JM_REST {
             return "\(rootUrl)/wallet/\(wallet.name)/unlock"
         case .walletdisplay(jmWallet: let wallet):
             return "\(rootUrl)/wallet/\(wallet.name)/display"
-        case .getaddress(jmWallet: let wallet):
-            return "\(rootUrl)/wallet/\(wallet.name)/address/new/\(wallet.account)"
+        case .getaddress(jmWallet: let wallet, mixdepth: let mixdepth):
+            return "\(rootUrl)/wallet/\(wallet.name)/address/new/\(mixdepth)"
         case .coinjoin(jmWallet: let wallet):
             return "\(rootUrl)/wallet/\(wallet.name)/taker/coinjoin"
         case .makerStart(jmWallet: let wallet):
