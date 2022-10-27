@@ -191,8 +191,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             self.nostrPubkeyField.text = pubkey
             self.nostrPrivkeyField.text = privkey.hexString
             self.nostrRelayField.text = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
+            self.nodeLabel.text = "Nostr Node"
             self.removeNonNostrStuff()
-            showAlert(vc: self, title: "Nostr creds refreshed ✓", message: "Tap save to save the change.")
+            showAlert(vc: self, title: "", message: "Nostr node credentials created ✓")
         }
     }
     
@@ -401,8 +402,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 newNode["onionAddress"] = encryptedOnionAddress
             }
             
+            var shouldSubscribe = false
             if nostrToSubscribe != nil, nostrToSubscribe.text != "", let data = Data(hexString: nostrToSubscribe.text!)  {
                 newNode["subscribeTo"] = encryptedValue(data)
+                shouldSubscribe = true
             }
             
             if nostrPrivkeyField != nil, nostrPrivkeyField.text != "" {
@@ -472,6 +475,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         
                         CoreDataService.saveEntity(dict: vc.newNode, entityName: .newNodes) { [unowned vc = self] success in
                             if success {
+                                if shouldSubscribe {
+                                    if MakeRPCCall.sharedInstance.connected {
+                                        MakeRPCCall.sharedInstance.disconnect()
+                                        MakeRPCCall.sharedInstance.connectToRelay { _ in}
+                                    }
+                                    
+                                }
                                 vc.nodeAddedSuccess()
                             } else {
                                 displayAlert(viewController: vc, isError: true, message: "Error saving tor node")
@@ -782,12 +792,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     private func nodeAddedSuccess() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Saved ✓", message: ".", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true) {}
-        }
+        showAlert(vc: self, title: "Credentials saved ✓", message: "")
     }
     
     func addBtcRpcQr(url: String) {

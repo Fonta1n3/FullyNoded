@@ -48,11 +48,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 }
                 
                 if vc.nodeArray.count == 0 {
-                    
-                    displayAlert(viewController: vc,
-                                 isError: true,
-                                 message: "No nodes added yet, tap the + sign to add one")
-                    
+                    showAlert(vc: self, title: "", message: "No nodes added yet, tap the + sign to add one.")
                 }
                 
                 DispatchQueue.main.async { [unowned vc = self] in

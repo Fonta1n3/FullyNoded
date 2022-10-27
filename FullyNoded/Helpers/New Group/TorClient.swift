@@ -49,9 +49,16 @@ class TorClient: NSObject, URLSessionDelegate {
         weak var weakDelegate = delegate
         state = .started
         
+        var proxyPort = 19050
+        var dnsPort = 12345
+        #if targetEnvironment(simulator)
+        proxyPort = 19052
+        dnsPort = 12347
+        #endif
+        
         sessionConfiguration.connectionProxyDictionary = [kCFProxyTypeKey: kCFProxyTypeSOCKS,
                                                           kCFStreamPropertySOCKSProxyHost: "localhost",
-                                                          kCFStreamPropertySOCKSProxyPort: 19050]
+                                                          kCFStreamPropertySOCKSProxyPort: proxyPort]
         
         session = URLSession(configuration: sessionConfiguration, delegate: self, delegateQueue: .main)
         
@@ -74,9 +81,9 @@ class TorClient: NSObject, URLSessionDelegate {
                 self.thread = nil
                 
                 self.config.options = [
-                    "DNSPort": "12345",
+                    "DNSPort": "\(dnsPort)",
                     "AutomapHostsOnResolve": "1",
-                    "SocksPort": "19050",//OnionTrafficOnly
+                    "SocksPort": "\(proxyPort)",//OnionTrafficOnly
                     "AvoidDiskWrites": "1",
                     "ClientOnionAuthDir": "\(self.authDirPath)",
                     "LearnCircuitBuildTimeout": "1",
@@ -167,7 +174,6 @@ class TorClient: NSObject, URLSessionDelegate {
     
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         guard let trust = challenge.protectionSpace.serverTrust else {
-            print("did not receive trust")
             return
         }
         

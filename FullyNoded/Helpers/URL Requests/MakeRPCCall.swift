@@ -353,8 +353,10 @@ class MakeRPCCall: WebSocketDelegate {
     }
     
     func disconnect() {
-        self.socket.disconnect()
-        self.connected = false
+        if socket != nil {
+            self.socket.disconnect()
+            self.connected = false
+        }
     }
     
     func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
