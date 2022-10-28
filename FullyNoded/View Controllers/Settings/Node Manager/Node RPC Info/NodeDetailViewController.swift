@@ -389,31 +389,36 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             var isLightning = false
             var isJoinMarket = false
             
-            if onionAddressField != nil {
-                if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
+            if onionAddressField != nil, let onionAddressText = onionAddressField.text, onionAddressText.isContiguousUTF8 {
+                if onionAddressText.hasSuffix(":8080") || onionAddressText.hasSuffix(":10080") {
                     isLightning = true
                 }
-                if onionAddressField.text!.hasSuffix(":28183") {
+                if onionAddressText.hasSuffix(":28183") {
                     isJoinMarket = true
                 }
                 newNode["isLightning"] = isLightning
                 newNode["isJoinMarket"] = isJoinMarket
-                guard let encryptedOnionAddress = encryptedValue((onionAddressField.text)!.dataUsingUTF8StringEncoding)  else { return }
+               guard let encryptedOnionAddress = encryptedValue(onionAddressText.utf8)  else {
+                    showAlert(vc: self, title: "", message: "Error encrypting the address.")
+                    return }
                 newNode["onionAddress"] = encryptedOnionAddress
             }
             
             var shouldSubscribe = false
-            if nostrToSubscribe != nil, nostrToSubscribe.text != "", let data = Data(hexString: nostrToSubscribe.text!)  {
+            if nostrToSubscribe != nil, nostrToSubscribe.text != nil, nostrToSubscribe.text! != "",  nostrToSubscribe.text!.isAlphanumeric, let data = Data(hexString: nostrToSubscribe.text!)  {
                 newNode["subscribeTo"] = encryptedValue(data)
                 shouldSubscribe = true
             }
             
-            if nostrPrivkeyField != nil, nostrPrivkeyField.text != "" {
-                let privkey = Data(hexString: nostrPrivkeyField.text!)!
-                newNode["nostrPrivkey"] = encryptedValue(privkey)
-                let pubkey = Keys.privKeyToPubKey(privkey)!
-                newNode["nostrPubkey"] = encryptedValue(Data(hexString: pubkey)!)
-                newNode["isNostr"] = true
+            if nostrPrivkeyField != nil, nostrPrivkeyField.text != "", nostrPrivkeyField.text!.isAlphanumeric {
+                if let privkey = Data(hexString: nostrPrivkeyField.text!) {
+                    newNode["nostrPrivkey"] = encryptedValue(privkey)
+                    guard let pubkey = Keys.privKeyToPubKey(privkey) else { return }
+                    newNode["nostrPubkey"] = encryptedValue(Data(hexString: pubkey)!)
+                    newNode["isNostr"] = true
+                } else {
+                    showAlert(vc: self, title: "", message: "Invalid nostr private key.")
+                }
             }
             
             if nostrRelayField != nil, nostrRelayField.text != nil {
@@ -425,14 +430,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             if rpcUserField != nil {
-                if rpcUserField.text != "" {
+                if rpcUserField.text != "", rpcUserField.text!.isContiguousUTF8 {
                     guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
                     newNode["rpcuser"] = enc
                 }
             }
             
             if rpcPassword != nil {
-                if rpcPassword.text != "" {
+                if rpcPassword.text != "", rpcPassword.text!.isContiguousUTF8 {
                     guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
                     newNode["rpcpassword"] = enc
                 }
@@ -496,17 +501,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                              message: "Fill out all fields first")
                 return
             }
-            if rpcPassword != nil, rpcPassword.text != "" && rpcUserField != nil, rpcUserField.text != "" {
-                save()
-            } else if macaroonField != nil, macaroonField.text != "" || certField != nil, certField.text != "" {
-                save()
-            } else if nostrRelayField.text != "" && nostrPubkeyField.text != "" && nostrPrivkeyField.text != "" {
-                save()
-            } else {
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "That combo wont work...")
-            }
+            save()
         } else {
             //updating
             let id = selectedNode!["id"] as! UUID
@@ -519,24 +514,24 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if nostrPrivkeyField != nil, nostrPrivkeyField.text != "" {
+            if nostrPrivkeyField != nil, nostrPrivkeyField.text != "", nostrPrivkeyField.text!.isAlphanumeric {
                 guard let data = Data(hexString: nostrPrivkeyField.text!), let enc = encryptedValue(data) else { return }
                 CoreDataService.update(id: id, keyToUpdate: "nostrPrivkey", newValue: enc, entity: .newNodes) { success in
                     if !success {
                         displayAlert(viewController: self, isError: true, message: "error updating nostr privkey")
                     }
                     
-                    let newpubkey = Keys.privKeyToPubKey((Data(hexString: self.nostrPrivkeyField.text!)!))!
-                    
-                    guard let enc = encryptedValue(Data(hexString: newpubkey)!) else { return }
-                    
+                    guard let pubkeydata = Data(hexString: self.nostrPrivkeyField.text!),
+                            let newpubkey = Keys.privKeyToPubKey(pubkeydata),
+                          let enc = encryptedValue(Data(hexString: newpubkey)!)else { return }
+                                        
                     CoreDataService.update(id: id, keyToUpdate: "nostrPubkey", newValue: enc, entity: .newNodes) { [weak self] success in
                         guard let self = self else { return }
                         if !success {
                             displayAlert(viewController: self, isError: true, message: "error updating nostr pubkey")
                         }
                         
-                        if self.nostrToSubscribe != nil, self.nostrToSubscribe.text != "", let data = Data(hexString: self.nostrToSubscribe.text!) {
+                        if self.nostrToSubscribe != nil, self.nostrToSubscribe.text != "", self.nostrToSubscribe.text!.isAlphanumeric, let data = Data(hexString: self.nostrToSubscribe.text!) {
                             guard let enc = encryptedValue(data) else { return }
                             CoreDataService.update(id: id, keyToUpdate: "subscribeTo", newValue: enc, entity: .newNodes) { success in
                                 if !success {
@@ -554,7 +549,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if rpcUserField != nil, rpcUserField.text != "" {
+            if rpcUserField != nil, rpcUserField.text != "", rpcUserField.text!.isContiguousUTF8 {
                 guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
                 CoreDataService.update(id: id, keyToUpdate: "rpcuser", newValue: enc, entity: .newNodes) { success in
                     if !success {
@@ -563,7 +558,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if rpcPassword != nil, rpcPassword.text != "" {
+            if rpcPassword != nil, rpcPassword.text != "", rpcPassword.text!.isContiguousUTF8 {
                 guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
                 CoreDataService.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { success in
                     if !success {
@@ -572,8 +567,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if onionAddressField != nil {
-                let decryptedAddress = (onionAddressField.text)!.dataUsingUTF8StringEncoding
+            if onionAddressField != nil, let addressText = onionAddressField.text, addressText.isContiguousUTF8 {
+                let decryptedAddress = addressText.dataUsingUTF8StringEncoding
                 
                 if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
                     CoreDataService.update(id: id, keyToUpdate: "isLightning", newValue: true, entity: .newNodes) { success in

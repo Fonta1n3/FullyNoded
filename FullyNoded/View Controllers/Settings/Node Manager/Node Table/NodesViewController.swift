@@ -32,6 +32,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        isNostr = false
         getNodes()
     }
     
