@@ -442,7 +442,10 @@ class QRScannerViewController: UIViewController {
         avCaptureVideoPreviewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
         avCaptureVideoPreviewLayer.frame = self.scannerView.bounds
         self.scannerView.layer.addSublayer(avCaptureVideoPreviewLayer)
-        self.avCaptureSession.startRunning()
+        DispatchQueue.background(delay: 0.0, completion:  { [weak self] in
+            guard let self = self else { return }
+            self.avCaptureSession.startRunning()
+        })
     }
     
     private func removeScanner() {
@@ -470,7 +473,6 @@ class QRScannerViewController: UIViewController {
             self.avCaptureSession.startRunning()
         }
     }
-    
 }
 
 // Helper function inserted by Swift 4.2 migrator.
@@ -558,6 +560,18 @@ extension QRScannerViewController: UIImagePickerControllerDelegate {
         }
     }
     
+}
+
+extension DispatchQueue {
+
+    static func background(delay: Double = 0.0, background: (()->Void)? = nil, completion: (() -> Void)? = nil) {
+        DispatchQueue.global(qos: .background).async {
+            background?()
+            if let completion = completion {
+                    completion()
+            }
+        }
+    }
 }
 
 @available(macCatalyst 14.0, *)
