@@ -488,7 +488,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         }
     }
     
-    @objc func export(_ sender: UIButton) {
+    @objc func exportQrNow(_ sender: UIButton) {
         segueToQr()
     }
     

@@ -111,20 +111,33 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     }
     
     private func addKeyStore(_ xfp: String, _ xpub: String) {
-        guard let rawDerivationPath = derivationProcessed() else { return }
-        
-        let prefix = rawDerivationPath.replacingOccurrences(of: "m/", with: "\(xfp)/")
-        
-        keys.append(["fingerprint":xfp,"xpub":xpub])
-        
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            guard let rawDerivationPath = self.derivationProcessed() else { return }
             
+            let prefix = rawDerivationPath.replacingOccurrences(of: "m/", with: "\(xfp)/")
+            
+            self.setKeyUi(xfp, xpub, prefix)
+        }
+    }
+    
+    func setKeyUi(_ xfp: String, _ xpub: String, _ prefix: String) {
+        keys.append(["fingerprint":xfp,"xpub":xpub])
+        
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            self.textView.text += "#\(self.keys.count):\n\n" + "Origin: [\(prefix)]\n\n" + "Key: " + xpub + "\n\n"
+//            self.fingerprintField.text = ""
+//            self.xpubField.text = ""
+//            self.derivationField.isUserInteractionEnabled = false
+//        }
+        //DispatchQueue.main.async {
             self.textView.text += "#\(self.keys.count):\n\n" + "Origin: [\(prefix)]\n\n" + "Key: " + xpub + "\n\n"
             self.fingerprintField.text = ""
             self.xpubField.text = ""
             self.derivationField.isUserInteractionEnabled = false
-        }
+        //}
     }
     
     @IBAction func addAction(_ sender: Any) {

@@ -480,7 +480,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         }
     }
     
-    @objc func export(_ sender: UIButton) {
+    @objc func exportButtonAction(_ sender: UIButton) {
         guard let sectionString = sender.restorationIdentifier, let section = Int(sectionString) else { return }
         
         switch Section(rawValue: section) {
@@ -750,7 +750,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     private func configureExportButton(_ button: UIButton, indexPath: IndexPath) {
         button.restorationIdentifier = "\(indexPath.section)"
         button.showsTouchWhenHighlighted = true
-        button.addTarget(self, action: #selector(export(_:)), for: .touchUpInside)
+        button.addTarget(self, action: #selector(exportButtonAction(_:)), for: .touchUpInside)
     }
     
     private func configureCell(_ cell: UITableViewCell) {
