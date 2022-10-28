@@ -19,7 +19,6 @@
 		0A1F10E526A1A6C200BE2707 /* CBORExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10E426A1A6C200BE2707 /* CBORExtensions.swift */; };
 		0A1F10E826A1A83E00BE2707 /* IntUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10E726A1A83E00BE2707 /* IntUtils.swift */; };
 		0A1F10EB26A1A8C300BE2707 /* DataExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10EA26A1A8C300BE2707 /* DataExtension.swift */; };
-		0A1F10FD26A1AF3200BE2707 /* URKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0A1F10FC26A1AF3200BE2707 /* URKit */; };
 		0A1F110526A2783000BE2707 /* UseInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F110026A2783000BE2707 /* UseInfo.swift */; };
 		0A1F110626A2783000BE2707 /* HDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F110126A2783000BE2707 /* HDKey.swift */; };
 		0A1F110726A2783000BE2707 /* KeyType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F110226A2783000BE2707 /* KeyType.swift */; };
@@ -70,6 +69,7 @@
 		0A9834C626BC2E6800BAB74E /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A9834C526BC2E6700BAB74E /* CloudKit.framework */; };
 		0A9834CA26BC3CF500BAB74E /* Backup.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 0A9834C826BC3CF500BAB74E /* Backup.xcdatamodeld */; };
 		0A9FDC9126A84CE30050C4AE /* WalletTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9FDC9026A84CE30050C4AE /* WalletTypes.swift */; };
+		0AB0B694290C374F00A1C201 /* URKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0AB0B693290C374F00A1C201 /* URKit */; };
 		0AD9490A273C051B00AF83F5 /* ExternalFNWalletsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD94909273C051B00AF83F5 /* ExternalFNWalletsViewController.swift */; };
 		0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
@@ -452,7 +452,7 @@
 			files = (
 				0A64634228FDBF020079C5DB /* Starscream in Frameworks */,
 				0A9834C626BC2E6800BAB74E /* CloudKit.framework in Frameworks */,
-				0A1F10FD26A1AF3200BE2707 /* URKit in Frameworks */,
+				0AB0B694290C374F00A1C201 /* URKit in Frameworks */,
 				D06D788C25B817B500769157 /* LifeHash in Frameworks */,
 				0A64635528FEF8C90079C5DB /* secp256k1 in Frameworks */,
 				D016AE7525B0284300A59E93 /* Tor.xcframework in Frameworks */,
@@ -1135,9 +1135,9 @@
 			name = FullyNoded;
 			packageProductDependencies = (
 				D06D788B25B817B500769157 /* LifeHash */,
-				0A1F10FC26A1AF3200BE2707 /* URKit */,
 				0A64634128FDBF020079C5DB /* Starscream */,
 				0A64635428FEF8C90079C5DB /* secp256k1 */,
+				0AB0B693290C374F00A1C201 /* URKit */,
 			);
 			productName = BitSense;
 			productReference = D00B9A242111427200E8B95A /* FullyNoded.app */;
@@ -1211,9 +1211,9 @@
 			mainGroup = D00B9A1B2111427200E8B95A;
 			packageReferences = (
 				D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */,
-				0A1F10FB26A1AF3200BE2707 /* XCRemoteSwiftPackageReference "URKit" */,
 				0A64634028FDBF020079C5DB /* XCRemoteSwiftPackageReference "Starscream" */,
 				0A64635328FEF8C90079C5DB /* XCRemoteSwiftPackageReference "secp256k1.swift" */,
+				0AB0B692290C374F00A1C201 /* XCRemoteSwiftPackageReference "URKit" */,
 			);
 			productRefGroup = D00B9A252111427200E8B95A /* Products */;
 			projectDirPath = "";
@@ -1644,7 +1644,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 371;
+				CURRENT_PROJECT_VERSION = 373;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1658,7 +1658,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.451;
+				MARKETING_VERSION = 1.453;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1683,7 +1683,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 371;
+				CURRENT_PROJECT_VERSION = 373;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1699,7 +1699,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.451;
+				MARKETING_VERSION = 1.453;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1794,14 +1794,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		0A1F10FB26A1AF3200BE2707 /* XCRemoteSwiftPackageReference "URKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Fonta1n3/URKit";
-			requirement = {
-				branch = master;
-				kind = branch;
-			};
-		};
 		0A64634028FDBF020079C5DB /* XCRemoteSwiftPackageReference "Starscream" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/daltoniam/Starscream";
@@ -1818,6 +1810,14 @@
 				minimumVersion = 0.9.2;
 			};
 		};
+		0AB0B692290C374F00A1C201 /* XCRemoteSwiftPackageReference "URKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Fonta1n3/URKit";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/BlockchainCommons/LifeHash";
@@ -1829,11 +1829,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		0A1F10FC26A1AF3200BE2707 /* URKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 0A1F10FB26A1AF3200BE2707 /* XCRemoteSwiftPackageReference "URKit" */;
-			productName = URKit;
-		};
 		0A64634128FDBF020079C5DB /* Starscream */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 0A64634028FDBF020079C5DB /* XCRemoteSwiftPackageReference "Starscream" */;
@@ -1843,6 +1838,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0A64635328FEF8C90079C5DB /* XCRemoteSwiftPackageReference "secp256k1.swift" */;
 			productName = secp256k1;
+		};
+		0AB0B693290C374F00A1C201 /* URKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0AB0B692290C374F00A1C201 /* XCRemoteSwiftPackageReference "URKit" */;
+			productName = URKit;
 		};
 		D06D788B25B817B500769157 /* LifeHash */ = {
 			isa = XCSwiftPackageProductDependency;
