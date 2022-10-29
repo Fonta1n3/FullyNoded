@@ -199,6 +199,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
         
         param["memo"] = "\(memoValue)"
+        param["private"] = true
         
         LndRpc.sharedInstance.command(.addinvoice, param, nil, nil) { (response, error) in
             guard let dict = response, let bolt11 = dict["payment_request"] as? String else {
