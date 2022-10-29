@@ -389,7 +389,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             var isLightning = false
             var isJoinMarket = false
             
-            if onionAddressField != nil, let onionAddressText = onionAddressField.text, onionAddressText.isContiguousUTF8 {
+            if onionAddressField != nil, let onionAddressText = onionAddressField.text {
                 if onionAddressText.hasSuffix(":8080") || onionAddressText.hasSuffix(":10080") {
                     isLightning = true
                 }
@@ -398,6 +398,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
                 newNode["isLightning"] = isLightning
                 newNode["isJoinMarket"] = isJoinMarket
+                let arr = onionAddressText.split(separator: ":")
+                guard arr.count == 2 else { return }
                guard let encryptedOnionAddress = encryptedValue(onionAddressText.utf8)  else {
                     showAlert(vc: self, title: "", message: "Error encrypting the address.")
                     return }
@@ -549,7 +551,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if rpcUserField != nil, rpcUserField.text != "", rpcUserField.text!.isContiguousUTF8 {
+            if rpcUserField != nil, rpcUserField.text != "" {
                 guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
                 CoreDataService.update(id: id, keyToUpdate: "rpcuser", newValue: enc, entity: .newNodes) { success in
                     if !success {
@@ -558,7 +560,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if rpcPassword != nil, rpcPassword.text != "", rpcPassword.text!.isContiguousUTF8 {
+            if rpcPassword != nil, rpcPassword.text != "" {
                 guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
                 CoreDataService.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { success in
                     if !success {
@@ -567,7 +569,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if onionAddressField != nil, let addressText = onionAddressField.text, addressText.isContiguousUTF8 {
+            if onionAddressField != nil, let addressText = onionAddressField.text {
                 let decryptedAddress = addressText.dataUsingUTF8StringEncoding
                 
                 if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
@@ -584,6 +586,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         }
                     }
                 }
+                
+                let arr = addressText.split(separator: ":")
+                guard arr.count == 2 else { return }
+                
                 guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
                 
                 CoreDataService.update(id: id, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
