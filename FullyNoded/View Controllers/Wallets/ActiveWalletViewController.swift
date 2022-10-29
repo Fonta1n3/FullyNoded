@@ -967,7 +967,8 @@ class ActiveWalletViewController: UIViewController {
                 self.offchainBalanceFiat = round(offchainBalanceFiat).fiatString
             }
             
-            self.getWalletInfo()
+            self.getWalletBalance()
+            //self.getWalletInfo()
         }
     }
     
@@ -1156,47 +1157,49 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    private func getWalletInfo() {
+    private func getWalletBalance() {
         if let _ = UserDefaults.standard.object(forKey: "walletName") as? String {
-            OnchainUtils.getWalletInfo { [weak self] (walletInfo, message) in
-                guard let self = self else { return }
+            OnchainUtils.getBalance { (balance, message) in
+                guard let balance = balance else { return }
                 
-                
-                
-                guard let walletInfo = walletInfo else {
-                    if let message = message {
-                        showAlert(vc: self, title: "", message: message)
-                        self.removeSpinner()
+                DispatchQueue.main.async {
+                    self.onchainBalanceBtc = String(balance)
+                    self.onchainBalanceSats = balance.sats.replacingOccurrences(of: " sats", with: "")
+                    
+                    if let exchangeRate = self.fxRate {
+                        let onchainBalanceFiat = balance * exchangeRate
+                        self.onchainBalanceFiat = round(onchainBalanceFiat).fiatString
                     }
-                    return
+                    
+                    self.sectionZeroLoaded = true
+                    self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
+                    self.loadTransactions()
                 }
-                
-                if let balance = walletInfo.balance {
-                    DispatchQueue.main.async {
-                        self.onchainBalanceBtc = String(balance)
-                        self.onchainBalanceSats = balance.sats.replacingOccurrences(of: " sats", with: "")
-                        
-                        if let exchangeRate = self.fxRate {
-                            let onchainBalanceFiat = balance * exchangeRate
-                            self.onchainBalanceFiat = round(onchainBalanceFiat).fiatString
-                        }
-                        
-                        self.sectionZeroLoaded = true
-                        self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                        self.loadTransactions()
-                    }
-                }
-                
-                guard let progress = walletInfo.progress else {
-                    return
-                }
-                
-                showAlert(vc: self, title: "Wallet scanning \(Int(progress * 100))% complete", message: "Your wallet is currently rescanning the blockchain, you need to wait until it completes before you will see your balances and transactions.")
             }
+            getWalletInfo()
         } else {
             chooseWallet()
         }
-        
+    }
+    
+    private func getWalletInfo() {
+        OnchainUtils.getWalletInfo { [weak self] (walletInfo, message) in
+            guard let self = self else { return }
+            
+            guard let walletInfo = walletInfo else {
+                if let message = message {
+                    showAlert(vc: self, title: "", message: message)
+                    self.removeSpinner()
+                }
+                return
+            }
+            
+            guard let progress = walletInfo.progress else {
+                return
+            }
+            
+            showAlert(vc: self, title: "Wallet scanning \(Int(progress * 100))% complete", message: "Your wallet is currently rescanning the blockchain, you need to wait until it completes before you will see your balances and transactions.")
+        }
     }
     
     private func promptToCreateWallet() {
@@ -1271,7 +1274,8 @@ class ActiveWalletViewController: UIViewController {
                 return
             }
             
-            self.getWalletInfo()
+            //self.getWalletInfo()
+            self.getWalletBalance()
             
             let balances = Balances(dictionary: response)
             self.offchainBalanceBtc = balances.offchainBalance
