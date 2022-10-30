@@ -354,7 +354,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     @IBAction func exportNode(_ sender: Any) {
-        segueToExport()
+        if !isNostr {
+            segueToExport()
+        } else {
+            showAlert(vc: self, title: "", message: "To export a nostr node just tap the QR on the public key.")
+        }
     }
     
     private func segueToExport() {
