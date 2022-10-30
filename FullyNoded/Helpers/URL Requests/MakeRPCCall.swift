@@ -325,7 +325,7 @@ class MakeRPCCall: WebSocketDelegate {
         if let node = activeNode {
             guard let encryptedPrivkey = node.nostrPrivkey,
                   let decryptedPrivkey = Crypto.decrypt(encryptedPrivkey),
-                  let pubkey = Keys.privKeyToPubKey(decryptedPrivkey)else { return }
+                  let pubkey = Keys.privKeyToPubKey(decryptedPrivkey) else { return }
             let ev = NostrEvent(content: content,
                                 pubkey: "\(pubkey.dropFirst(2))",
                                 kind: NostrKind.ephemeral.rawValue,
