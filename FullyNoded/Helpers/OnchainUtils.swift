@@ -195,5 +195,17 @@ class OnchainUtils {
             completion((AddressInfo(response), errorMessage))
         }
     }
+    
+    static func getBalance(completion: @escaping ((balance: Double?, message: String?)) -> Void) {
+        let param = "\"*\", 0, true"
+        Reducer.sharedInstance.makeCommand(command: .getbalance, param: param) { (response, errorMessage) in
+            guard let response = response as? Double else {
+                completion((nil, errorMessage))
+                return
+            }
+            
+            completion((response, errorMessage))
+        }
+    }
      
 }

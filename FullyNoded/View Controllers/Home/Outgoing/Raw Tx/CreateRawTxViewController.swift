@@ -822,18 +822,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    @IBAction func makeADonationAction(_ sender: Any) {
-        if let address = Keys.donationAddress() {
-            addAddress(address)
-            
-            showAlert(
-                vc: self,
-                title: "Thank you!",
-                message: "A donation address has automatically been added so you may build a transaction which will fund further development of Fully Noded."
-            )
-        }
-    }
-    
     private func addAddress(_ address: String) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }

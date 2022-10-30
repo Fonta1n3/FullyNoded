@@ -459,19 +459,17 @@ class QRScannerViewController: UIViewController {
     }
     
     private func stopScanner() {
-        DispatchQueue.main.async { [weak self] in
+        DispatchQueue.background(delay: 0.0, completion:  { [weak self] in
             guard let self = self else { return }
-            
             self.avCaptureSession.stopRunning()
-        }
+        })
     }
     
     private func startScanner() {
-        DispatchQueue.main.async { [weak self] in
+        DispatchQueue.background(delay: 0.0, completion:  { [weak self] in
             guard let self = self else { return }
-            
             self.avCaptureSession.startRunning()
-        }
+        })
     }
 }
 

@@ -305,28 +305,31 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     
     @IBAction func showHostAction(_ sender: Any) {
-        #if targetEnvironment(macCatalyst)
-            // Code specific to Mac.
-            let hostAddress = onionAddressField.text ?? ""
-            let macName = UIDevice.current.name
-            if hostAddress.contains("127.0.0.1") || hostAddress.contains("localhost") || hostAddress.contains(macName) {
-                hostname = TorClient.sharedInstance.hostname()
-                if hostname != nil {
-                    hostname = hostname?.replacingOccurrences(of: "\n", with: "")
-                    isHost = true
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        vc.performSegue(withIdentifier: "segueToExportNode", sender: vc)
-                    }
-                } else {
-                    showAlert(vc: self, title: "", message: "There was an error getting your hostname for remote connection... Please make sure you are connected to the internet and that Tor successfully bootstrapped.")
+    #if targetEnvironment(macCatalyst)
+        // Code specific to Mac.
+        guard let hostAddress = onionAddressField.text, hostAddress != "" else {
+            showAlert(vc: self, title: "", message: "This feature only works once the node has been saved.")
+            return
+        }
+        let macName = UIDevice.current.name
+        if hostAddress.contains("127.0.0.1") || hostAddress.contains("localhost") || hostAddress.contains(macName) {
+            hostname = TorClient.sharedInstance.hostname()
+            if hostname != nil {
+                hostname = hostname?.replacingOccurrences(of: "\n", with: "")
+                isHost = true
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.performSegue(withIdentifier: "segueToExportNode", sender: vc)
                 }
             } else {
-                showAlert(vc: self, title: "", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.\n\nTo take advantage of this feature just download Bitcoin Core and run it.\n\nThen add your local node to Fully Noded - Desktop using 127.0.0.1:8332 as the address.\n\nYou can then tap this button to get a QR code which will allow you to connect your node via your iPhone or iPad on the mobile app.")
+                showAlert(vc: self, title: "", message: "There was an error getting your hostname for remote connection... Please make sure you are connected to the internet and that Tor successfully bootstrapped.")
             }
-        #else
-            // Code to exclude from Mac.
-            showAlert(vc: self, title: "", message: "This is a macOS feature only, when you use Fully Noded - Desktop, it has the ability to display a QR code you can scan with your iPhone or iPad to connect to your node remotely.")
-        #endif
+        } else {
+            showAlert(vc: self, title: "", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.\n\nTo take advantage of this feature just download Bitcoin Core and run it.\n\nThen add your local node to Fully Noded - Desktop using 127.0.0.1:8332 as the address.\n\nYou can then tap this button to get a QR code which will allow you to connect your node via your iPhone or iPad on the mobile app.")
+        }
+    #else
+        // Code to exclude from Mac.
+        showAlert(vc: self, title: "", message: "This is a macOS feature only, when you use Fully Noded - Desktop, it has the ability to display a QR code you can scan with your iPhone or iPad to connect to your node remotely.")
+    #endif
     }
     
     
@@ -351,7 +354,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     @IBAction func exportNode(_ sender: Any) {
-        segueToExport()
+        if !isNostr {
+            segueToExport()
+        } else {
+            showAlert(vc: self, title: "", message: "To export a nostr node just tap the QR on the public key.")
+        }
     }
     
     private func segueToExport() {
@@ -389,7 +396,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             var isLightning = false
             var isJoinMarket = false
             
-            if onionAddressField != nil, let onionAddressText = onionAddressField.text, onionAddressText.isContiguousUTF8 {
+            if onionAddressField != nil, let onionAddressText = onionAddressField.text {
                 if onionAddressText.hasSuffix(":8080") || onionAddressText.hasSuffix(":10080") {
                     isLightning = true
                 }
@@ -398,6 +405,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
                 newNode["isLightning"] = isLightning
                 newNode["isJoinMarket"] = isJoinMarket
+                let arr = onionAddressText.split(separator: ":")
+                guard arr.count == 2 else { return }
                guard let encryptedOnionAddress = encryptedValue(onionAddressText.utf8)  else {
                     showAlert(vc: self, title: "", message: "Error encrypting the address.")
                     return }
@@ -549,7 +558,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if rpcUserField != nil, rpcUserField.text != "", rpcUserField.text!.isContiguousUTF8 {
+            if rpcUserField != nil, rpcUserField.text != "" {
                 guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
                 CoreDataService.update(id: id, keyToUpdate: "rpcuser", newValue: enc, entity: .newNodes) { success in
                     if !success {
@@ -558,7 +567,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if rpcPassword != nil, rpcPassword.text != "", rpcPassword.text!.isContiguousUTF8 {
+            if rpcPassword != nil, rpcPassword.text != "" {
                 guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
                 CoreDataService.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { success in
                     if !success {
@@ -567,7 +576,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if onionAddressField != nil, let addressText = onionAddressField.text, addressText.isContiguousUTF8 {
+            if onionAddressField != nil, let addressText = onionAddressField.text {
                 let decryptedAddress = addressText.dataUsingUTF8StringEncoding
                 
                 if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
@@ -584,6 +593,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         }
                     }
                 }
+                
+                let arr = addressText.split(separator: ":")
+                guard arr.count == 2 else { return }
+                
                 guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
                 
                 CoreDataService.update(id: id, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
