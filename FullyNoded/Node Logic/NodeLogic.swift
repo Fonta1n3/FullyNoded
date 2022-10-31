@@ -228,7 +228,7 @@ class NodeLogic {
     
     class func loadSectionTwo(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
         if !walletDisabled {
-            Reducer.sharedInstance.makeCommand(command: .listtransactions, param: "\"*\", 1000, 0, true") { (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: .listtransactions, param: "\"*\", 100, 0, true") { (response, errorMessage) in
                 if let transactions = response as? NSArray {
                     parseTransactions(transactions: transactions)
                 }
@@ -936,7 +936,7 @@ class NodeLogic {
                     "isLightning": false,
                     "sortDate": date
                 ])
-                
+                                
                 func saveLocally() {
                     var labelToSave = "no transaction label"
                     

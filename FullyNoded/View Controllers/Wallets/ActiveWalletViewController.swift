@@ -474,6 +474,7 @@ class ActiveWalletViewController: UIViewController {
             
             self.walletTable.reloadData()
             self.removeSpinner()
+            self.getWalletInfo()
         }
     }
     
@@ -935,6 +936,7 @@ class ActiveWalletViewController: UIViewController {
     
     private func loadBalances() {
         NodeLogic.walletDisabled = walletDisabled
+        
         NodeLogic.loadBalances { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -967,8 +969,10 @@ class ActiveWalletViewController: UIViewController {
                 self.offchainBalanceFiat = round(offchainBalanceFiat).fiatString
             }
             
-            self.getWalletBalance()
+            
             //self.getWalletInfo()
+            self.getWalletBalance()
+            
         }
     }
     
@@ -1176,7 +1180,6 @@ class ActiveWalletViewController: UIViewController {
                     self.loadTransactions()
                 }
             }
-            getWalletInfo()
         } else {
             chooseWallet()
         }
@@ -1260,7 +1263,7 @@ class ActiveWalletViewController: UIViewController {
             guard let response = response else {
                 self.removeSpinner()
                 
-                guard let errorMessage = errorMessage else {
+               guard let errorMessage = errorMessage else {
                     displayAlert(viewController: self, isError: true, message: "unknown error")
                     return
                 }
@@ -1274,9 +1277,6 @@ class ActiveWalletViewController: UIViewController {
                 return
             }
             
-            //self.getWalletInfo()
-            self.getWalletBalance()
-            
             let balances = Balances(dictionary: response)
             self.offchainBalanceBtc = balances.offchainBalance
             self.offchainBalanceSats = balances.offchainBalance.btcToSats
@@ -1287,12 +1287,7 @@ class ActiveWalletViewController: UIViewController {
                 self.offchainBalanceFiat = round(offchainBalanceFiat).fiatString
             }
             
-            DispatchQueue.main.async {
-                self.sectionZeroLoaded = true
-                self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .none)
-            }
-            
-            self.loadTransactions()
+            self.getWalletBalance()
         }
     }
     

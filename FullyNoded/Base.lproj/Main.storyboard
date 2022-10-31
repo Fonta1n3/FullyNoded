@@ -2842,6 +2842,9 @@ xxxxx</string>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yyu-4l-B7V">
                                                     <rect key="frame" x="16" y="17" width="221" height="20.5"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" constant="221" id="KML-Q3-ihT"/>
+                                                    </constraints>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
@@ -7757,7 +7760,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="EZr-Ut-goC"/>
         <segue reference="mRa-gP-mZ0"/>
         <segue reference="Cd3-qW-ujG"/>
-        <segue reference="kws-xU-XdS"/>
+        <segue reference="oY9-Pq-H5b"/>
         <segue reference="6KH-E3-p33"/>
         <segue reference="CQp-9r-70w"/>
         <segue reference="aV5-mq-s3Q"/>

@@ -200,10 +200,13 @@ class OnchainUtils {
         let param = "\"*\", 0, true"
         Reducer.sharedInstance.makeCommand(command: .getbalance, param: param) { (response, errorMessage) in
             guard let response = response as? Double else {
-                completion((nil, errorMessage))
+                guard let responseInt = response as? Int else {
+                    completion((nil, errorMessage))
+                    return
+                }
+                completion((Double(responseInt), errorMessage))
                 return
             }
-            
             completion((response, errorMessage))
         }
     }
