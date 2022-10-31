@@ -217,7 +217,7 @@ class MakeRPCCall: WebSocketDelegate {
         #endif
         if let part = decryptedDict["part"] as? [String:Any] {
             for (key, value) in part {
-                guard let m = Int("\(key.split(separator: ":")[0])"), let n = Int("\(key.split(separator: ":")[1])") else { return (nil,nil,nil,nil,nil)}
+                guard let m = Int("\(key.split(separator: ":")[0])"), let n = Int("\(key.split(separator: ":")[1])") else { print("m of n parsing failed"); return (nil,nil,nil,nil,nil)}
                 guard let encryptedValue = value as? String else {
                     guard let valueDict = value as? [String:Any] else { return (nil,nil,nil,nil,nil)}
                     return (nil,nil,nil,valueDict["response"], valueDict["errorDesc"] as? String)
@@ -232,9 +232,16 @@ class MakeRPCCall: WebSocketDelegate {
                         if i + 1 == collectedPartArray.count {
                             collectedPartArray.removeAll()
                             guard let nestedDecryptedDict = self.decryptedDict(content: entireEncryptedResponse),
-                                    let nestedPart = nestedDecryptedDict["part"] as? [String:Any] else { return (nil,nil,nil,nil,nil)}
+                                    let nestedPart = nestedDecryptedDict["part"] as? [String:Any] else {
+                                print("failed decrypting the entire response")
+                                return (nil,nil,nil,nil,nil)
+                            }
                             for (_,value) in nestedPart {
-                                guard let valueDict = value as? [String:Any] else { return (nil,nil,nil,nil,nil)}
+                                guard let valueDict = value as? [String:Any] else {
+                                    print("failed getting the valueDict")
+                                    return (nil,nil,nil,nil,nil)
+                                }
+                                
                                 return (nil,nil,nil,valueDict["response"],valueDict["errorDesc"] as? String)
                             }
                         }

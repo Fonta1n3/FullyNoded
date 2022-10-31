@@ -16,16 +16,15 @@ class Reducer {
     
     func makeCommand(command: BTC_CLI_COMMAND, param: Any, completion: @escaping ((response: Any?, errorMessage: String?)) -> Void) {
         let torRPC = MakeRPCCall.sharedInstance
-        
         torRPC.onDoneBlock = { nostrResponse in
+            if nostrResponse.response != nil {
+                completion((nostrResponse.response!, nil))
+            }
+            
             if let errDesc = nostrResponse.errorDesc {
                 if errDesc != "" {
                     handleError(errorDesc: nostrResponse.errorDesc!)
                 }
-            }
-            
-            if nostrResponse.response != nil {
-                completion((nostrResponse.response!, nil))
             }
         }
                 
