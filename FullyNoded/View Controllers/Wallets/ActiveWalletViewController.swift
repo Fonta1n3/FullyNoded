@@ -937,6 +937,8 @@ class ActiveWalletViewController: UIViewController {
     private func loadBalances() {
         NodeLogic.walletDisabled = walletDisabled
         
+        
+        
         NodeLogic.loadBalances { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -968,12 +970,9 @@ class ActiveWalletViewController: UIViewController {
                 let offchainBalanceFiat = offchainBalance * exchangeRate
                 self.offchainBalanceFiat = round(offchainBalanceFiat).fiatString
             }
-            
-            
-            //self.getWalletInfo()
-            self.getWalletBalance()
-            
         }
+        
+        self.getWalletBalance()
     }
     
     private func chooseWallet() {
@@ -1068,12 +1067,7 @@ class ActiveWalletViewController: UIViewController {
                         foundMatch = true
                         date = dateCheck
                         uuid = uuidCheck
-                        //self.addOriginRate(date, uuid)
                     }
-                }
-                
-                if t + 1 == txs.count {
-                    print("foundMatch: \(foundMatch)")
                 }
                 
                 if t + 1 == txs.count && !foundMatch {
@@ -1163,8 +1157,14 @@ class ActiveWalletViewController: UIViewController {
     
     private func getWalletBalance() {
         if let _ = UserDefaults.standard.object(forKey: "walletName") as? String {
-            OnchainUtils.getBalance { (balance, message) in
-                guard let balance = balance else { return }
+            OnchainUtils.getBalance { [weak self] (balance, message) in
+                guard let self = self else { return }
+                
+                guard let balance = balance else {
+                    self.removeSpinner()
+                    showAlert(vc: self, title: "", message: message ?? "Unknown error getting balance.")
+                    return
+                }
                 
                 DispatchQueue.main.async {
                     self.onchainBalanceBtc = String(balance)
@@ -1286,9 +1286,9 @@ class ActiveWalletViewController: UIViewController {
                 let offchainBalanceFiat = offchainBalance * exchangeRate
                 self.offchainBalanceFiat = round(offchainBalanceFiat).fiatString
             }
-            
-            self.getWalletBalance()
         }
+        
+        self.getWalletBalance()
     }
     
     private func loadTransactions() {

@@ -314,7 +314,6 @@ class MainMenuViewController: UIViewController {
             } else {
                 self.loadNode(node: node)
             }
-            
         }
     }
     
