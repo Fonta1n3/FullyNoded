@@ -30,7 +30,7 @@ You can follow this [youtube tutorial](https://www.youtube.com/watch?v=idcpRlTR1
 - Tap Save on your iPhone.
 - Tapping save automatically connects you to the Nostr relay and lets them know
   who you are subscribed to.
-- Activate the nodes
+- Activate the nodes.
 - Go to the home screen, pull to refresh on your iPhone to see the data load
   blazingly fast.
 
@@ -41,7 +41,7 @@ Nostr node was indeed saved and activated and that the mac has a valid connectio
 to your node. If it was try rebooting FN on both devices. Lastly, ensure your relay
 is alive! You can always switch relays or run your own.
 
-# How FN utilizes Nostr
+## How FN utilizes Nostr
 In v0.4.0 Nostr functionality was added. FN iPhone and FN Mac both became Nostr clients.
 When a user navigates to Node manager and adds a node you will now have the option
 to create a Nostr node. The Nostr credentials are in the same format that bitcoin
