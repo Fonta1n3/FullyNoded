@@ -324,7 +324,6 @@ class QRScannerViewController: UIViewController {
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.dismiss(animated: true) {
                     vc.stopScanner()
-                    vc.avCaptureSession.stopRunning()
                     vc.onDoneBlock!(text)
                 }
             }
@@ -332,7 +331,6 @@ class QRScannerViewController: UIViewController {
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.dismiss(animated: true) {
                     vc.stopScanner()
-                    vc.avCaptureSession.stopRunning()
                     vc.onDoneBlock!(text)
                 }
             }
@@ -340,7 +338,6 @@ class QRScannerViewController: UIViewController {
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.dismiss(animated: true) {
                     vc.stopScanner()
-                    vc.avCaptureSession.stopRunning()
                     vc.onDoneBlock!(text)
                 }
             }
@@ -442,17 +439,14 @@ class QRScannerViewController: UIViewController {
         avCaptureVideoPreviewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
         avCaptureVideoPreviewLayer.frame = self.scannerView.bounds
         self.scannerView.layer.addSublayer(avCaptureVideoPreviewLayer)
-        DispatchQueue.background(delay: 0.0, completion:  { [weak self] in
-            guard let self = self else { return }
-            self.avCaptureSession.startRunning()
-        })
+        self.startScanner()
     }
     
     private func removeScanner() {
+        stopScanner()
+        
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
-            self.avCaptureSession.stopRunning()
             self.torchButton.removeFromSuperview()
             self.uploadButton.removeFromSuperview()
         }
@@ -495,8 +489,8 @@ extension QRScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                
-                self.avCaptureSession.stopRunning()
+                self.stopScanner()
+                //self.avCaptureSession.stopRunning()
                 let impact = UIImpactFeedbackGenerator()
                 impact.impactOccurred()
                 AudioServicesPlaySystemSound(1103)
@@ -509,7 +503,7 @@ extension QRScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
                 guard let self = self else { return }
                 
-                self.avCaptureSession.startRunning()
+                self.startScanner()
             }
         }
     }
