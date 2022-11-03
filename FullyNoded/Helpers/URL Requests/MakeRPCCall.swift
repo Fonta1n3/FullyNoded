@@ -83,6 +83,10 @@ class MakeRPCCall: WebSocketDelegate {
             
             for (i, object) in jsonObject.enumerated() {
                 switch i {
+//                case 0:
+//                    if object as? String == "EOSE" {
+//                        
+//                    }
                 case 2:
                     if let dict = object as? [String:Any], let created_at = dict["created_at"] as? Int {
                         let now = NSDate().timeIntervalSince1970
@@ -97,6 +101,7 @@ class MakeRPCCall: WebSocketDelegate {
                         }
 
                         let (method, param, walletName, responseCheck, errorDescCheck) = processValidReceivedContent(content: ev.content)
+                        
                         guard let method = method else {
                             guard let reponse = responseCheck else {
                                 self.onDoneBlock!((nil,errorDescCheck))
@@ -405,7 +410,7 @@ class MakeRPCCall: WebSocketDelegate {
         
         if let node = self.activeNode {
             #if targetEnvironment(simulator)
-            guard self.connected  else { return }
+            guard self.connected  else { print("not connected"); return }
             self.executeNostrRpc(method: method, param: param)
             #else
             if node.isNostr && !self.isiOSAppOnMac {
