@@ -43,10 +43,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func sceneWillEnterForeground(_ scene: UIScene) {
         self.blacked.removeFromSuperview()
-        
         guard !isBooting else { isBooting = !isBooting; return }
                 
         guard KeyChain.getData("UnlockPassword") != nil else {
+            DispatchQueue.background(delay: 0.2, completion:  {
+                MakeRPCCall.sharedInstance.connectToRelay { connected in
+                    DispatchQueue.main.async {
+                        NotificationCenter.default.post(name: .refreshNode, object: nil)
+                    }
+                }
+            })
             if !isBooting && mgr?.state != .started && mgr?.state != .connected  {
                 mgr?.start(delegate: nil)
             } else {
@@ -71,6 +77,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         loginVC.onDoneBlock = { [weak self] in
             guard let self = self else { return }
+            
+            DispatchQueue.background(delay: 0.2, completion:  {
+                MakeRPCCall.sharedInstance.connectToRelay { connected in
+                    DispatchQueue.main.async {
+                        NotificationCenter.default.post(name: .refreshNode, object: nil)
+                    }
+                }
+            })
             
             if !self.isBooting && self.mgr?.state != .started && self.mgr?.state != .connected  {
                 self.mgr?.start(delegate: nil)
