@@ -564,7 +564,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                                 if self.nostrRelayField != nil, let txt = self.nostrRelayField.text {
                                     UserDefaults.standard.setValue(txt, forKey: "nostrRelay")
                                     MakeRPCCall.sharedInstance.connected = false
-                                    MakeRPCCall.sharedInstance.connectToRelay { _ in }
+                                    MakeRPCCall.sharedInstance.connectToRelay { _ in
+                                        DispatchQueue.main.async {
+                                            NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                        }
+                                    }
                                 }
                             }
                         }
