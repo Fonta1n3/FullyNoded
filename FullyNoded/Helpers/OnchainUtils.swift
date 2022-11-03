@@ -197,7 +197,7 @@ class OnchainUtils {
     }
     
     static func getBalance(completion: @escaping ((balance: Double?, message: String?)) -> Void) {
-        let param = "\"*\", 0, true"
+        let param = "\"*\", 0, true, false"
         Reducer.sharedInstance.makeCommand(command: .getbalance, param: param) { (response, errorMessage) in
             guard let response = response as? Double else {
                 guard let responseInt = response as? Int else {

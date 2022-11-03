@@ -17,13 +17,19 @@ class Reducer {
     func makeCommand(command: BTC_CLI_COMMAND, param: Any, completion: @escaping ((response: Any?, errorMessage: String?)) -> Void) {
         let torRPC = MakeRPCCall.sharedInstance
         torRPC.onDoneBlock = { nostrResponse in
-            if nostrResponse.response != nil {
-                completion((nostrResponse.response!, nil))
-            }
+            
             
             if let errDesc = nostrResponse.errorDesc {
                 if errDesc != "" {
                     handleError(errorDesc: nostrResponse.errorDesc!)
+                } else {
+                    if nostrResponse.response != nil {
+                        completion((nostrResponse.response!, nil))
+                    }
+                }
+            } else {
+                if nostrResponse.response != nil {
+                    completion((nostrResponse.response!, nil))
                 }
             }
         }
@@ -31,7 +37,7 @@ class Reducer {
         func makeTorCommand() {
             torRPC.executeRPCCommand(method: command, param: param) { (response, errorDesc) in
                 if response != nil {
-                    completion((response!, nil))
+                    completion((response, nil))
                 } else if errorDesc != nil {
                     handleError(errorDesc: errorDesc!)
                 }

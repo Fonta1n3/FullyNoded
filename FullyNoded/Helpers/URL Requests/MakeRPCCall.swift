@@ -18,6 +18,17 @@ class MakeRPCCall: WebSocketDelegate {
     var connected:Bool = false
     var onDoneBlock : (((response: Any?, errorDesc: String?)) -> Void)?
     var activeNode:NodeStruct?
+    var isiOSAppOnMac: Bool = {
+    #if targetEnvironment(macCatalyst)
+        return true
+    #else
+        if #available(iOS 14.0, *) {
+            return ProcessInfo.processInfo.isiOSAppOnMac
+        } else {
+            return false
+        }
+    #endif
+        }()
     
     private init() {}
     
@@ -72,12 +83,17 @@ class MakeRPCCall: WebSocketDelegate {
             
             for (i, object) in jsonObject.enumerated() {
                 switch i {
+//                case 0:
+//                    if object as? String == "EOSE" {
+//                        
+//                    }
                 case 2:
                     if let dict = object as? [String:Any], let created_at = dict["created_at"] as? Int {
                         let now = NSDate().timeIntervalSince1970
                         let diff = (now - TimeInterval(created_at))
                         guard diff < 5.0 else { return }
                         guard let ev = self.parseEvent(event: dict) else {
+                            self.onDoneBlock!((nil,"Nostr event parsing failed..."))
                             #if DEBUG
                             print("event parsing failed")
                             #endif
@@ -85,7 +101,7 @@ class MakeRPCCall: WebSocketDelegate {
                         }
 
                         let (method, param, walletName, responseCheck, errorDescCheck) = processValidReceivedContent(content: ev.content)
-
+                        
                         guard let method = method else {
                             guard let reponse = responseCheck else {
                                 self.onDoneBlock!((nil,errorDescCheck))
@@ -96,10 +112,11 @@ class MakeRPCCall: WebSocketDelegate {
                                 self.onDoneBlock!((reponse as Any,nil))
                                 return
                             }
+                            
                             self.onDoneBlock!((reponse as Any,errorDescCheck))
                             return
                         }
-
+                        
                         guard let param = param else {
                             #if DEBUG
                             print("unable to parse method and param from recevied event.")
@@ -216,12 +233,21 @@ class MakeRPCCall: WebSocketDelegate {
         print("decryptedDict: \(decryptedDict)")
         #endif
         if let part = decryptedDict["part"] as? [String:Any] {
+            
             for (key, value) in part {
-                guard let m = Int("\(key.split(separator: ":")[0])"), let n = Int("\(key.split(separator: ":")[1])") else { print("m of n parsing failed"); return (nil,nil,nil,nil,nil)}
+                guard let m = Int("\(key.split(separator: ":")[0])"),
+                        let n = Int("\(key.split(separator: ":")[1])") else {
+                    print("m of n parsing failed")
+                    return (nil,nil,nil,nil,nil)
+                }
+                
                 guard let encryptedValue = value as? String else {
-                    guard let valueDict = value as? [String:Any] else { return (nil,nil,nil,nil,nil)}
+                    guard let valueDict = value as? [String:Any] else {
+                        return (nil,nil,nil,nil,nil)
+                    }
                     return (nil,nil,nil,valueDict["response"], valueDict["errorDesc"] as? String)
                 }
+                
                 if m < n {
                     collectedPartArray.append(encryptedValue)
                 } else if m == n {
@@ -231,11 +257,17 @@ class MakeRPCCall: WebSocketDelegate {
                         entireEncryptedResponse += "\(part)"
                         if i + 1 == collectedPartArray.count {
                             collectedPartArray.removeAll()
-                            guard let nestedDecryptedDict = self.decryptedDict(content: entireEncryptedResponse),
-                                    let nestedPart = nestedDecryptedDict["part"] as? [String:Any] else {
+                            
+                            guard let nestedDecryptedDict = self.decryptedDict(content: entireEncryptedResponse) else {
                                 print("failed decrypting the entire response")
-                                return (nil,nil,nil,nil,nil)
+                                return (nil,nil,nil,nil,"failed decrypting the entire response")
                             }
+                            
+                            guard let nestedPart = nestedDecryptedDict["part"] as? [String:Any] else {
+                                return (nil,nil,nil,nil,"No nested part dictionary.")
+                            }
+                            
+                            
                             for (_,value) in nestedPart {
                                 guard let valueDict = value as? [String:Any] else {
                                     print("failed getting the valueDict")
@@ -307,11 +339,14 @@ class MakeRPCCall: WebSocketDelegate {
         let encryptedContent = Crypto.encryptNostr(jsonData)!.base64EncodedString()
         let count = encryptedContent.count
         if count > 32000 {
-            var numberOfRequiredParts = count / 20000
+            var numberOfRequiredParts = count / 18000
             if numberOfRequiredParts == 1 {
                 numberOfRequiredParts += 2
             }
-            guard numberOfRequiredParts < 40 else { return }
+            guard numberOfRequiredParts < 40 else {
+                onDoneBlock!((nil, "Event is too large requires 40 or more parts..."))
+                return
+            }
             let parts = encryptedContent.split(by: count / numberOfRequiredParts)
             for (i, part) in parts.enumerated() {
                 let partDict:[String:Any] = ["part":["\(i + 1):\(parts.count)":part]]
@@ -324,8 +359,9 @@ class MakeRPCCall: WebSocketDelegate {
                 let encryptedContent = Crypto.encryptNostr(partJsonData)!.base64EncodedString()
                 writeEvent(content: encryptedContent)
             }
+        } else {
+            writeEvent(content: encryptedContent)
         }
-        writeEvent(content: encryptedContent)
     }
     
     func writeEvent(content: String) {
@@ -340,12 +376,15 @@ class MakeRPCCall: WebSocketDelegate {
             ev.calculate_id()
             ev.sign(privkey: decryptedPrivkey.hexString)
             guard !ev.too_big else {
+                self.collectedPartArray.removeAll()
+                self.onDoneBlock!((nil, "Nostr event is too big to send..."))
                 #if DEBUG
-                print("event too big")
+                print("event too big: \(content.count)")
                 #endif
                 return
             }
             guard ev.validity == .ok else {
+                self.onDoneBlock!((nil, "Nostr event is invalid!"))
                 #if DEBUG
                 print("event invalid")
                 #endif
@@ -370,12 +409,11 @@ class MakeRPCCall: WebSocketDelegate {
         attempts += 1
         
         if let node = self.activeNode {
-            let modelName = UserDefaults.standard.value(forKey: "modelName") as? String ?? ""
             #if targetEnvironment(simulator)
-            guard self.connected  else { return }
+            guard self.connected  else { print("not connected"); return }
             self.executeNostrRpc(method: method, param: param)
             #else
-            if node.isNostr && modelName != "arm64" && modelName != "i386" && modelName != "x86_64" {
+            if node.isNostr && !self.isiOSAppOnMac {
                 if self.connected {
                     self.executeNostrRpc(method: method, param: param)
                 }

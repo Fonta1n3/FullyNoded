@@ -24,6 +24,18 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var scanNow = false
     var isNostr = false
     
+    var isiOSAppOnMac: Bool = {
+    #if targetEnvironment(macCatalyst)
+        return true
+    #else
+        if #available(iOS 14.0, *) {
+            return ProcessInfo.processInfo.isiOSAppOnMac
+        } else {
+            return false
+        }
+    #endif
+    }()
+    
     @IBOutlet weak var scanNostrPubkeyQr: UIButton!
     @IBOutlet weak var showNostrPubkeyQr: UIButton!
     @IBOutlet weak var refreshNostrPrivkeyOutlet: UIButton!
@@ -169,14 +181,16 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
         }
         
+        
+        
         DispatchQueue.main.async {
             #if targetEnvironment(simulator)
-                remove()
+            remove()
             #else
-                let modelName = UIDevice.modelName
-                if modelName != "arm64" && modelName != "x86_64" && modelName != "i386" {
-                    remove()
-                }
+            //let modelName = UIDevice.modelName
+            if /*modelName != "arm64" && modelName != "x86_64" && modelName != "i386" && */!self.isiOSAppOnMac {
+                remove()
+            }
             #endif
         }
     }
@@ -550,7 +564,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                                 if self.nostrRelayField != nil, let txt = self.nostrRelayField.text {
                                     UserDefaults.standard.setValue(txt, forKey: "nostrRelay")
                                     MakeRPCCall.sharedInstance.connected = false
-                                    MakeRPCCall.sharedInstance.connectToRelay { _ in }
+                                    MakeRPCCall.sharedInstance.connectToRelay { _ in
+                                        DispatchQueue.main.async {
+                                            NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                        }
+                                    }
                                 }
                             }
                         }

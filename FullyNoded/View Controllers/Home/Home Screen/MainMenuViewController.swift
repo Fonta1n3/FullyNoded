@@ -83,7 +83,7 @@ class MainMenuViewController: UIViewController {
             self.activeNode = node
             
             if node.isNostr {
-                MakeRPCCall.sharedInstance.connectToRelay { _ in }
+                //MakeRPCCall.sharedInstance.connectToRelay { _ in }
             }
         }
         
@@ -125,7 +125,6 @@ class MainMenuViewController: UIViewController {
                             if self.activeNode != nil, self.activeNode!.isNostr {
                                 removeBackView()
                                 loadTable()
-                                
                                 DispatchQueue.main.async { [weak self] in
                                     self?.torProgressLabel.isHidden = true
                                     self?.progressView.isHidden = true
@@ -135,36 +134,25 @@ class MainMenuViewController: UIViewController {
                         }
                     } else {
                         mgr?.start(delegate: self)
-                        if self.activeNode != nil, self.activeNode!.isNostr {
-                            loadNode(node: self.activeNode!)
-                            removeBackView()
-                            loadTable()
-                            
-                            DispatchQueue.main.async { [weak self] in
-                                self?.torProgressLabel.isHidden = true
-                                self?.progressView.isHidden = true
-                                self?.blurView.isHidden = true
-                            }
+                        self.refreshNode()
+                        self.removeBackView()
+                        self.loadTable()
+                        DispatchQueue.main.async { [weak self] in
+                            self?.torProgressLabel.isHidden = true
+                            self?.progressView.isHidden = true
+                            self?.blurView.isHidden = true
                         }
                     }
                 }
             }
         } else {
-            if let activeNode = activeNode {
-                if activeNode.isNostr {
-                    if !MakeRPCCall.sharedInstance.connected {
-                        MakeRPCCall.sharedInstance.connectToRelay { _ in }
-                    }
-                }
-            } else {
-                MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
-                    guard let self = self else { return }
-                    guard let node = node else { return }
-
-                    self.activeNode = node
-                }
+            MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
+                guard let self = self else { return }
+                guard let node = node else { return }
+                
+                self.activeNode = node
             }
-        }        
+        }
     }
     
     private func alertToAddNode() {
@@ -292,7 +280,7 @@ class MainMenuViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.tabBarController?.selectedIndex = 0
+            //self.tabBarController?.selectedIndex = 0
             self.refreshTable()
         }
         
@@ -314,7 +302,6 @@ class MainMenuViewController: UIViewController {
             } else {
                 self.loadNode(node: node)
             }
-            
         }
     }
     
@@ -391,6 +378,9 @@ class MainMenuViewController: UIViewController {
     }
     
     @objc func refreshData(_ sender: Any) {
+//        MakeRPCCall.sharedInstance.connectToRelay { connected in
+//            print("connected: \(connected)")
+//        }
         refreshTable()
         refreshDataNow()
     }
@@ -864,25 +854,31 @@ class MainMenuViewController: UIViewController {
                 guard let self = self else { return }
                 
                 self.isUnlocked = true
+                
+                
+                
                 if self.mgr?.state != .started && self.mgr?.state != .connected  {
                     self.mgr?.start(delegate: self)
                     
                     if let node = self.activeNode, node.isNostr {
-                        //DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                            self.removeBackView()
-                            //self.loadTable()
-                        if let activeNode = self.activeNode {
-                            self.loadNode(node: activeNode)
-                        } else {
-                            showAlert(vc: self, title: "", message: "No active nodes, please toggle one on.")
-                        }
-                        
-                            DispatchQueue.main.async { [weak self] in
-                                self?.torProgressLabel.isHidden = true
-                                self?.progressView.isHidden = true
-                                self?.blurView.isHidden = true
-                            }
-                        //}
+                        DispatchQueue.background(delay: 0.0, completion:  {
+                            //MakeRPCCall.sharedInstance.connectToRelay { connected in
+                                
+                                DispatchQueue.main.async { [weak self] in
+                                    guard let self = self else { return }
+                                    self.removeBackView()
+                                    //self.loadNode(node: node)
+                                    self.refreshNode()
+                                    DispatchQueue.main.async { [weak self] in
+                                        self?.torProgressLabel.isHidden = true
+                                        self?.progressView.isHidden = true
+                                        self?.blurView.isHidden = true
+                                    }
+                                }
+                            //}
+                        })
+                    } else {
+                        showAlert(vc: self, title: "", message: "No active nodes, please toggle one on.")
                     }
                 }
             }
