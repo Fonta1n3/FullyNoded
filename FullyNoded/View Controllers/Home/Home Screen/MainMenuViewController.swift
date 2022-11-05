@@ -280,7 +280,6 @@ class MainMenuViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            //self.tabBarController?.selectedIndex = 0
             self.refreshTable()
         }
         
@@ -294,11 +293,10 @@ class MainMenuViewController: UIViewController {
             self.initialLoad = false
             if node.isNostr {
                 MakeRPCCall.sharedInstance.connected = false
-                MakeRPCCall.sharedInstance.connectToRelay { _ in
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self.loadNode(node: node)
-                    }
+                MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in
+                    self.loadNode(node: node)
                 }
+                MakeRPCCall.sharedInstance.connectToRelay { _ in }
             } else {
                 self.loadNode(node: node)
             }

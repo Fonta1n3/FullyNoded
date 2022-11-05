@@ -17,6 +17,7 @@ class MakeRPCCall: WebSocketDelegate {
     var socket:WebSocket!
     var connected:Bool = false
     var onDoneBlock : (((response: Any?, errorDesc: String?)) -> Void)?
+    var eoseReceivedBlock : (((Bool)) -> Void)?
     var activeNode:NodeStruct?
     var isiOSAppOnMac: Bool = {
     #if targetEnvironment(macCatalyst)
@@ -83,10 +84,10 @@ class MakeRPCCall: WebSocketDelegate {
             
             for (i, object) in jsonObject.enumerated() {
                 switch i {
-//                case 0:
-//                    if object as? String == "EOSE" {
-//                        
-//                    }
+                case 0:
+                    if object as? String == "EOSE" {
+                        self.eoseReceivedBlock?(true)
+                    }
                 case 2:
                     if let dict = object as? [String:Any], let created_at = dict["created_at"] as? Int {
                         let now = NSDate().timeIntervalSince1970
