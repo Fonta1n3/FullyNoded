@@ -61,7 +61,6 @@ class URHelper {
     
     static func parseUr(urString: String) -> (descriptors: [String]?, error: String?) {
         let lowercased = urString.lowercased()
-        
         switch lowercased {
         case _ where lowercased.hasPrefix("ur:crypto-hdkey"):
             return parseHdkey(urString: urString)
@@ -209,7 +208,7 @@ class URHelper {
         guard case let CBOR.tagged(embeddedTag, embeddedCbor) = taggedCbor else {
             return (nil, "No tagged CBOR in your witness script hash CBOR.")
         }
-        
+                
         switch embeddedTag {
         case 406:
             return parseMultisig(isBIP67: false, script: "wsh(multi())", cbor: embeddedCbor)
@@ -378,7 +377,6 @@ class URHelper {
         }
         
         guard let threshold = thresholdCheck else { return (nil, "Invalid multisig hdkey, no threshold provided.") }
-        print("script: \(script)")
         switch script {
         case "wsh(multi())":
             return (["wsh(multi(\(threshold)\(keys)))"], nil)
@@ -426,8 +424,8 @@ class URHelper {
                 
                 for (i, elem) in accounts.enumerated() {
                     if case let CBOR.tagged(tag, taggedCbor) = elem {
-                        
                         switch tag.rawValue {
+                            
                         case 400:
                             // script-hash
                             if case let CBOR.tagged(embeddedTag, embeddedCbor) = taggedCbor {

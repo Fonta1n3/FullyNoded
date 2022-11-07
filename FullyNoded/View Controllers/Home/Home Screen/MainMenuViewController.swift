@@ -76,15 +76,13 @@ class MainMenuViewController: UIViewController {
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
             guard let node = node  else {
-                self.removeLoader()
-                showAlert(vc: self, title: "", message: "No active nodes, please toggle one on.")
+                //self.removeLoader()
+                //showAlert(vc: self, title: "", message: "No active nodes, please toggle one on.")
                 return
             }
             self.activeNode = node
             
-            if node.isNostr {
-                //MakeRPCCall.sharedInstance.connectToRelay { _ in }
-            }
+//
         }
         
         refreshControl.attributedTitle = NSAttributedString(string: "")
@@ -111,6 +109,12 @@ class MainMenuViewController: UIViewController {
         torProgressLabel.layer.zPosition = 1
         progressView.layer.zPosition = 1
         progressView.setNeedsFocusUpdate()
+        
+        MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in
+            DispatchQueue.main.async { [weak self] in
+                self?.refreshNode()
+            }
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -269,23 +273,27 @@ class MainMenuViewController: UIViewController {
     }
     
     func addNavBarSpinner() {
-        spinner.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
-        dataRefresher = UIBarButtonItem(customView: spinner)
-        navigationItem.setRightBarButton(dataRefresher, animated: true)
-        spinner.startAnimating()
-        spinner.alpha = 1
+        print("addNavBarSpinner")
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.spinner.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
+            self.dataRefresher = UIBarButtonItem(customView: self.spinner)
+            self.navigationItem.setRightBarButton(self.dataRefresher, animated: true)
+            self.spinner.startAnimating()
+            self.spinner.alpha = 1
+        }
     }
     
     @objc func refreshNode() {
+        print("refreshNode")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             self.refreshTable()
+            self.existingNodeID = nil
+            self.addNavBarSpinner()
+            self.refreshControl.endRefreshing()
         }
-        
-        existingNodeID = nil
-        addNavBarSpinner()
-        refreshControl.endRefreshing()
         
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
@@ -384,6 +392,7 @@ class MainMenuViewController: UIViewController {
     }
     
     func refreshDataNow() {
+        
         addNavBarSpinner()
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
@@ -619,6 +628,7 @@ class MainMenuViewController: UIViewController {
                     showAlert(vc: self, title: "Connection issue...", message: message)
                 }
                 
+                print("here?")
                 self.removeLoader()
                 
                 return
@@ -858,23 +868,21 @@ class MainMenuViewController: UIViewController {
                 if self.mgr?.state != .started && self.mgr?.state != .connected  {
                     self.mgr?.start(delegate: self)
                     
-                    if let node = self.activeNode, node.isNostr {
-                        DispatchQueue.background(delay: 0.0, completion:  {
-                            //MakeRPCCall.sharedInstance.connectToRelay { connected in
-                                
+                    if let node = self.activeNode {
+                        if node.isNostr {
+                            MakeRPCCall.sharedInstance.connectToRelay { connected in
                                 DispatchQueue.main.async { [weak self] in
                                     guard let self = self else { return }
                                     self.removeBackView()
-                                    //self.loadNode(node: node)
-                                    self.refreshNode()
+                                    //self.refreshNode()
                                     DispatchQueue.main.async { [weak self] in
                                         self?.torProgressLabel.isHidden = true
                                         self?.progressView.isHidden = true
                                         self?.blurView.isHidden = true
                                     }
                                 }
-                            //}
-                        })
+                            }
+                        }
                     } else {
                         showAlert(vc: self, title: "", message: "No active nodes, please toggle one on.")
                     }

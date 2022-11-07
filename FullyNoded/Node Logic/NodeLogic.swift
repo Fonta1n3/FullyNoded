@@ -839,16 +839,11 @@ class NodeLogic {
     
     class func parseTransactions(transactions: NSArray) {
         arrayToReturn.removeAll()
-        
-        var transactionArray = [[String:Any]]()
-        
-        for (t, item) in transactions.enumerated() {
-            
+                
+        for item in transactions {
             if let transaction = item as? NSDictionary {
-                var toRemove = false
                 var label = String()
                 var replaced_by_txid = String()
-                
                 let address = transaction["address"] as? String ?? ""
                 let amount = transaction["amount"] as? Double ?? 0.0
                 let amountString = amount.avoidNotation
@@ -858,10 +853,6 @@ class NodeLogic {
                 
                 if let replaced_by_txid_check = transaction["replaced_by_txid"] as? String {
                     replaced_by_txid = replaced_by_txid_check
-                    
-                    if replaced_by_txid != "" {
-                        toRemove = true
-                    }
                 }
                 
                 if let labelCheck = transaction["label"] as? String {
@@ -881,45 +872,12 @@ class NodeLogic {
                 dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
                 let dateString = dateFormatter.string(from: date)
                 
-                func finishParsingTxs() {
-                    if t + 1 == transactions.count {
-                        for (i, tx) in transactionArray.enumerated() {
-                            if let _ = tx["amount"] as? String {
-                                if let amount = Double(tx["amount"] as! String) {
-                                    if let txID = tx["txID"] as? String {
-                                        for (x, transaction) in transactionArray.enumerated() {
-                                            if let amountToCompare = Double(transaction["amount"] as! String) {
-                                                if x != i && txID == (transaction["txID"] as! String) {
-                                                    if amount + amountToCompare == 0 && amount > 0 {
-                                                        transactionArray[i]["selfTransfer"] = true
-
-                                                    }/* else if amount + amountToCompare == 0 && amount < 0 {
-                                                        //transactionArray[i]["remove"] = true
-                                                    }*/
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        
-                        for tx in transactionArray {
-                            //if let remove = tx["remove"] as? Bool {
-                                //if !remove {
-                                    arrayToReturn.append(tx)
-                                //}
-                            //}
-                        }
-                    }
-                }
-                
                 let amountSats = amountString.btcToSats
                 let amountBtc = amountString.doubleValue.avoidNotation
                 let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
                 let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
                 
-                transactionArray.append([
+                let tx = [
                     "address": address,
                     "amountBtc": amountBtc,
                     "amountSats": amountSats,
@@ -931,11 +889,13 @@ class NodeLogic {
                     "txID": txID,
                     "replacedBy": replaced_by_txid,
                     "selfTransfer": false,
-                    "remove": toRemove,
+                    "remove": false,
                     "onchain": true,
                     "isLightning": false,
                     "sortDate": date
-                ])
+                ] as [String:Any]
+                
+                arrayToReturn.append(tx)
                                 
                 func saveLocally() {
                     var labelToSave = "no transaction label"
@@ -958,7 +918,6 @@ class NodeLogic {
                 CoreDataService.retrieveEntity(entityName: .transactions) { txs in
                     guard let txs = txs, txs.count > 0 else {
                         saveLocally()
-                        finishParsingTxs()
                         return
                     }
                     
@@ -972,10 +931,6 @@ class NodeLogic {
                         if i + 1 == txs.count {
                             if !alreadySaved {
                                 saveLocally()
-                            }
-                            
-                            if t + 1 == transactions.count {
-                                finishParsingTxs()
                             }
                         }
                     }
