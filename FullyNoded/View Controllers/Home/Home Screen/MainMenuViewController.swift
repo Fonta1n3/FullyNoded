@@ -68,23 +68,14 @@ class MainMenuViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("viewDidLoad")
         UserDefaults.standard.set(UIDevice.modelName, forKey: "modelName")
         
         UIApplication.shared.isIdleTimerDisabled = true
         
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
-            guard let node = node  else {
-                self.removeLoader()
-                showAlert(vc: self, title: "", message: "No active nodes, please toggle one on.")
-                return
-            }
+            guard let node = node  else { return }
             self.activeNode = node
-            
-            if node.isNostr {
-                //MakeRPCCall.sharedInstance.connectToRelay { _ in }
-            }
         }
         
         refreshControl.attributedTitle = NSAttributedString(string: "")
@@ -111,6 +102,12 @@ class MainMenuViewController: UIViewController {
         torProgressLabel.layer.zPosition = 1
         progressView.layer.zPosition = 1
         progressView.setNeedsFocusUpdate()
+        
+        MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in
+            DispatchQueue.main.async { [weak self] in
+                self?.refreshNode()
+            }
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -223,7 +220,10 @@ class MainMenuViewController: UIViewController {
     @IBAction func showRemoteControl(_ sender: Any) {
         #if targetEnvironment(macCatalyst)
         // Code specific to Mac.
-        guard let activeNode = activeNode else { return }
+        guard let activeNode = activeNode else {
+            showAlert(vc: self, title: "", message: "Please activate a node first.")
+            return
+        }
         
         var prefix = "btcrpc"
         if activeNode.isLightning {
@@ -233,7 +233,6 @@ class MainMenuViewController: UIViewController {
         let address = decryptedValue(activeNode.onionAddress!)
         let rpcusername = decryptedValue(activeNode.rpcuser!)
         let rpcpassword = decryptedValue(activeNode.rpcpassword!)
-        
         let macName = UIDevice.current.name
         
         if address.contains("127.0.0.1") || address.contains("localhost") || address.contains(macName) {
@@ -252,7 +251,10 @@ class MainMenuViewController: UIViewController {
             }
             
         } else {
-            showAlert(vc: self, title: "", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.\n\nTo take advantage of this feature just download Bitcoin Core and run it.\n\nThen add your local node to Fully Noded - Desktop using 127.0.0.1:8332 as the address.\n\nYou can then tap this button to get a QR code which will allow you to connect your node via your iPhone or iPad on the mobile app.")
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                showAlert(vc: self, title: "", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.")
+            }
         }
         
         #else
@@ -269,23 +271,26 @@ class MainMenuViewController: UIViewController {
     }
     
     func addNavBarSpinner() {
-        spinner.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
-        dataRefresher = UIBarButtonItem(customView: spinner)
-        navigationItem.setRightBarButton(dataRefresher, animated: true)
-        spinner.startAnimating()
-        spinner.alpha = 1
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.spinner.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
+            self.dataRefresher = UIBarButtonItem(customView: self.spinner)
+            self.navigationItem.setRightBarButton(self.dataRefresher, animated: true)
+            self.spinner.startAnimating()
+            self.spinner.alpha = 1
+        }
     }
     
     @objc func refreshNode() {
+        print("refreshNode")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             self.refreshTable()
+            self.existingNodeID = nil
+            self.addNavBarSpinner()
+            self.refreshControl.endRefreshing()
         }
-        
-        existingNodeID = nil
-        addNavBarSpinner()
-        refreshControl.endRefreshing()
         
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
@@ -384,6 +389,7 @@ class MainMenuViewController: UIViewController {
     }
     
     func refreshDataNow() {
+        
         addNavBarSpinner()
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
@@ -619,6 +625,7 @@ class MainMenuViewController: UIViewController {
                     showAlert(vc: self, title: "Connection issue...", message: message)
                 }
                 
+                print("here?")
                 self.removeLoader()
                 
                 return
@@ -858,23 +865,21 @@ class MainMenuViewController: UIViewController {
                 if self.mgr?.state != .started && self.mgr?.state != .connected  {
                     self.mgr?.start(delegate: self)
                     
-                    if let node = self.activeNode, node.isNostr {
-                        DispatchQueue.background(delay: 0.0, completion:  {
-                            //MakeRPCCall.sharedInstance.connectToRelay { connected in
-                                
+                    if let node = self.activeNode {
+                        if node.isNostr {
+                            MakeRPCCall.sharedInstance.connectToRelay { connected in
                                 DispatchQueue.main.async { [weak self] in
                                     guard let self = self else { return }
                                     self.removeBackView()
-                                    //self.loadNode(node: node)
-                                    self.refreshNode()
+                                    //self.refreshNode()
                                     DispatchQueue.main.async { [weak self] in
                                         self?.torProgressLabel.isHidden = true
                                         self?.progressView.isHidden = true
                                         self?.blurView.isHidden = true
                                     }
                                 }
-                            //}
-                        })
+                            }
+                        }
                     } else {
                         showAlert(vc: self, title: "", message: "No active nodes, please toggle one on.")
                     }

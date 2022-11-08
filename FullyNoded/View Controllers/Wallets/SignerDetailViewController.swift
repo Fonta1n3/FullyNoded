@@ -1115,7 +1115,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             vc.descriptionText = descriptionText
             vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
             vc.headerText = headerText
-            vc.text = stringToExport.uppercased()
+            vc.text = stringToExport
         default:
             break
         }

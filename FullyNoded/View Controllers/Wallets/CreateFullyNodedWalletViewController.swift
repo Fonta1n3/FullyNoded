@@ -609,6 +609,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         self.ccXfp = desc.fingerprint
                         self.xpub = desc.accountXpub
                         self.deriv = desc.derivation
+                        self.cosigner = desc
                         DispatchQueue.main.async { [weak self] in
                             guard let self = self else { return }
                             
@@ -686,7 +687,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             
         case "segueToCreateMultiSig":
             guard let vc = segue.destination as? CreateMultisigViewController else { fallthrough }
-            
             vc.cosigner = cosigner
             
         case "segueToImportDescriptor":

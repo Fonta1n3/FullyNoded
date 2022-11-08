@@ -111,34 +111,28 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     }
     
     private func addKeyStore(_ xfp: String, _ xpub: String) {
+            guard let rawDerivationPath = derivationProcessed() else { return }
+            let prefix = rawDerivationPath.replacingOccurrences(of: "m/", with: "\(xfp)/")
+        
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            guard let rawDerivationPath = self.derivationProcessed() else { return }
-            
-            let prefix = rawDerivationPath.replacingOccurrences(of: "m/", with: "\(xfp)/")
-            
-            self.setKeyUi(xfp, xpub, prefix)
+            self.keys.append(["fingerprint":xfp,"xpub":xpub])
+            self.textView.text += self.keystring(prefix: prefix, xpub: xpub)
+            self.fingerprintField.text = ""
+            self.xpubField.text = ""
         }
     }
     
-    func setKeyUi(_ xfp: String, _ xpub: String, _ prefix: String) {
-        keys.append(["fingerprint":xfp,"xpub":xpub])
-        
+    private func keystring(prefix: String, xpub: String) -> String {
+        return "#\(self.keys.count):\n\n" + "Origin: [\(prefix)]\n\n" + "Key: " + xpub + "\n\n"
+    }
+    
+//    func setKeyUi(_ xfp: String, _ xpub: String, _ prefix: String) {
 //        DispatchQueue.main.async { [weak self] in
 //            guard let self = self else { return }
 //
-//            self.textView.text += "#\(self.keys.count):\n\n" + "Origin: [\(prefix)]\n\n" + "Key: " + xpub + "\n\n"
-//            self.fingerprintField.text = ""
-//            self.xpubField.text = ""
-//            self.derivationField.isUserInteractionEnabled = false
 //        }
-        //DispatchQueue.main.async {
-            self.textView.text += "#\(self.keys.count):\n\n" + "Origin: [\(prefix)]\n\n" + "Key: " + xpub + "\n\n"
-            self.fingerprintField.text = ""
-            self.xpubField.text = ""
-            self.derivationField.isUserInteractionEnabled = false
-        //}
-    }
+//    }
     
     @IBAction func addAction(_ sender: Any) {
         guard let xpub = xpubField.text, xpub != "" else {
@@ -451,7 +445,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             
         } else if item.lowercased().hasPrefix("ur:crypto-hdkey") || item.lowercased().hasPrefix("ur:crypto-account") || item.lowercased().hasPrefix("ur:crypto-seed") {
             let (descriptors, error) = URHelper.parseUr(urString: item.lowercased())
-            
             guard error == nil, let descriptors = descriptors, descriptors.count > 0 else {
                 showAlert(vc: self, title: "Error", message: error ?? "Unknown error decoding the QR code.")
                 return
