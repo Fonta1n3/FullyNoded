@@ -68,21 +68,14 @@ class MainMenuViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("viewDidLoad")
         UserDefaults.standard.set(UIDevice.modelName, forKey: "modelName")
         
         UIApplication.shared.isIdleTimerDisabled = true
         
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
-            guard let node = node  else {
-                //self.removeLoader()
-                //showAlert(vc: self, title: "", message: "No active nodes, please toggle one on.")
-                return
-            }
+            guard let node = node  else { return }
             self.activeNode = node
-            
-//
         }
         
         refreshControl.attributedTitle = NSAttributedString(string: "")
@@ -227,7 +220,10 @@ class MainMenuViewController: UIViewController {
     @IBAction func showRemoteControl(_ sender: Any) {
         #if targetEnvironment(macCatalyst)
         // Code specific to Mac.
-        guard let activeNode = activeNode else { return }
+        guard let activeNode = activeNode else {
+            showAlert(vc: self, title: "", message: "Please activate a node first.")
+            return
+        }
         
         var prefix = "btcrpc"
         if activeNode.isLightning {
@@ -237,7 +233,6 @@ class MainMenuViewController: UIViewController {
         let address = decryptedValue(activeNode.onionAddress!)
         let rpcusername = decryptedValue(activeNode.rpcuser!)
         let rpcpassword = decryptedValue(activeNode.rpcpassword!)
-        
         let macName = UIDevice.current.name
         
         if address.contains("127.0.0.1") || address.contains("localhost") || address.contains(macName) {
@@ -256,7 +251,10 @@ class MainMenuViewController: UIViewController {
             }
             
         } else {
-            showAlert(vc: self, title: "", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.\n\nTo take advantage of this feature just download Bitcoin Core and run it.\n\nThen add your local node to Fully Noded - Desktop using 127.0.0.1:8332 as the address.\n\nYou can then tap this button to get a QR code which will allow you to connect your node via your iPhone or iPad on the mobile app.")
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                showAlert(vc: self, title: "", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.")
+            }
         }
         
         #else
@@ -273,7 +271,6 @@ class MainMenuViewController: UIViewController {
     }
     
     func addNavBarSpinner() {
-        print("addNavBarSpinner")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.spinner.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
