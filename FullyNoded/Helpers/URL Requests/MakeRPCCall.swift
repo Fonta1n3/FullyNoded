@@ -195,7 +195,15 @@ class MakeRPCCall: WebSocketDelegate {
     
     func decryptedDict(content: String) -> [String:Any]? {
         guard let contentData = Data(base64Encoded: content),
-                let decryptedContent = Crypto.decryptNostr(contentData) else { return nil }
+                let node = activeNode,
+                let encryptedWords = node.nostrWords,
+              let decryptedWords = Crypto.decrypt(encryptedWords),
+              let words = decryptedWords.utf8String,
+              let decryptedContent = Crypto.decryptNostr(contentData, words) else {
+            onDoneBlock!((nil, "Error decrypting content..."))
+            return nil
+        }
+        
         guard let decryptedDict = try? JSONSerialization.jsonObject(with: decryptedContent, options : []) as? [String:Any] else {
             #if DEBUG
             print("converting to jsonData failing...")
@@ -229,7 +237,12 @@ class MakeRPCCall: WebSocketDelegate {
             #endif
             return
         }
-        let encryptedContent = Crypto.encryptNostr(jsonData)!.base64EncodedString()
+        guard let node = activeNode,
+              let encryptedWords = node.nostrWords,
+            let decryptedWords = Crypto.decrypt(encryptedWords),
+              let words = decryptedWords.utf8String else { onDoneBlock!((nil, "Error encrypting content...")); return }
+        
+        let encryptedContent = Crypto.encryptNostr(jsonData, words)!.base64EncodedString()
         writeEvent(content: encryptedContent)
     }
 

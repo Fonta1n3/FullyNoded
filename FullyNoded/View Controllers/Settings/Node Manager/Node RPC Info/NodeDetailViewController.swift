@@ -24,18 +24,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var scanNow = false
     var isNostr = false
     
-    var isiOSAppOnMac: Bool = {
-    #if targetEnvironment(macCatalyst)
-        return true
-    #else
-        if #available(iOS 14.0, *) {
-            return ProcessInfo.processInfo.isiOSAppOnMac
-        } else {
-            return false
-        }
-    #endif
-    }()
-    
+    @IBOutlet weak var seeEncryptionWordsButton: UIButton!
+    @IBOutlet weak var nostrEncryptionWordsField: UITextField!
+    @IBOutlet weak var nostrEncryptionWordsHeader: UILabel!
     @IBOutlet weak var scanNostrPubkeyQr: UIButton!
     @IBOutlet weak var showNostrPubkeyQr: UIButton!
     @IBOutlet weak var refreshNostrPrivkeyOutlet: UIButton!
@@ -74,6 +65,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         onionAddressField.delegate = self
         nostrToSubscribe.delegate = self
         certField.delegate = self
+        nostrEncryptionWordsField.delegate = self
         nostrRelayField.delegate = self
         macaroonField.delegate = self
         nostrPubkeyField.delegate = self
@@ -85,6 +77,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         saveButton.layer.cornerRadius = 8
         scanNostrPubkeyQr.setTitle("", for: .normal)
         showNostrPubkeyQr.setTitle("", for: .normal)
+        seeEncryptionWordsButton.setTitle("", for: .normal)
         refreshNostrPrivkeyOutlet.setTitle("", for: .normal)
         header.text = "Node Credentials"
         navigationController?.delegate = self
@@ -108,6 +101,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
+    @IBAction func seeEncryptionWordsAction(_ sender: Any) {
+        showAlert(vc: self, title: "", message: self.nostrEncryptionWordsField.text ?? "None exist yet.")
+    }
+    
+    
     @IBAction func refreshNostrPrivkeyAction(_ sender: Any) {
         createNostrCreds()
     }
@@ -130,33 +128,44 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     func removeNostrStuff() {
-        if nostrRelayField != nil,
-           nostrPubkeyField != nil,
-           nostrRelayHeader != nil,
-           nostrToSubscribe != nil,
-           nostrPubkeyHeader != nil,
-           nostrPrivkeyField != nil,
-           nostrPrivkeyHeader != nil,
-           nostrSubscriptionHeader != nil,
-           scanNostrPubkeyQr != nil,
-           showNostrPubkeyQr != nil,
-           refreshNostrPrivkeyOutlet != nil {
-            refreshNostrPrivkeyOutlet.removeFromSuperview()
-            showNostrPubkeyQr.removeFromSuperview()
-            scanNostrPubkeyQr.removeFromSuperview()
-            nostrSubscriptionHeader.removeFromSuperview()
-            nostrRelayField.removeFromSuperview()
-            nostrRelayHeader.removeFromSuperview()
-            nostrPubkeyField.removeFromSuperview()
-            nostrPubkeyHeader.removeFromSuperview()
-            nostrToSubscribe.removeFromSuperview()
-            nostrPrivkeyField.removeFromSuperview()
-            nostrPrivkeyHeader.removeFromSuperview()
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            if self.nostrRelayField != nil,
+               self.nostrPubkeyField != nil,
+               self.nostrRelayHeader != nil,
+               self.nostrToSubscribe != nil,
+               self.nostrPubkeyHeader != nil,
+               self.nostrPrivkeyField != nil,
+               self.nostrPrivkeyHeader != nil,
+               self.nostrSubscriptionHeader != nil,
+               self.scanNostrPubkeyQr != nil,
+               self.showNostrPubkeyQr != nil,
+               self.refreshNostrPrivkeyOutlet != nil,
+               self.nostrEncryptionWordsField != nil,
+               self.nostrEncryptionWordsField != nil,
+               self.seeEncryptionWordsButton != nil {
+                self.seeEncryptionWordsButton.removeFromSuperview()
+                self.nostrEncryptionWordsField.removeFromSuperview()
+                self.nostrEncryptionWordsHeader.removeFromSuperview()
+                self.refreshNostrPrivkeyOutlet.removeFromSuperview()
+                self.showNostrPubkeyQr.removeFromSuperview()
+                self.scanNostrPubkeyQr.removeFromSuperview()
+                self.nostrSubscriptionHeader.removeFromSuperview()
+                self.nostrRelayField.removeFromSuperview()
+                self.nostrRelayHeader.removeFromSuperview()
+                self.nostrPubkeyField.removeFromSuperview()
+                self.nostrPubkeyHeader.removeFromSuperview()
+                self.nostrToSubscribe.removeFromSuperview()
+                self.nostrPrivkeyField.removeFromSuperview()
+                self.nostrPrivkeyHeader.removeFromSuperview()
+            }
         }
     }
     
     func removeNonNostrStuff() {
-        func remove() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             if self.rpcUserField != nil,
                self.rpcPassword != nil,
                self.passwordHeader != nil,
@@ -178,16 +187,25 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 self.certField.removeFromSuperview()
                 self.certHeader.removeFromSuperview()
                 self.onionAddressField.removeFromSuperview()
+                self.scanQROutlet.tintColor = .clear
             }
-        }
-        DispatchQueue.main.async {
-            remove()
         }
     }
     
     func createNostrCreds() {
         let privkey = Crypto.privateKey()
         let pubkey = Keys.privKeyToPubKey(privkey)!
+        guard let seed = Keys.seed() else { return }
+        let arr = seed.split(separator: " ")
+        var encryptionWords = ""
+        for (i, word) in arr.enumerated() {
+            if i < 5 {
+                encryptionWords += word
+                if i < 4 {
+                    encryptionWords += " "
+                }
+            }
+        }
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -196,6 +214,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             self.nostrPrivkeyField.text = privkey.hexString
             self.nostrRelayField.text = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
             self.nodeLabel.text = "Nostr Node"
+            self.nostrEncryptionWordsField.isSecureTextEntry = true
+            self.nostrEncryptionWordsField.text = encryptionWords
             self.removeNonNostrStuff()
             showAlert(vc: self, title: "", message: "Nostr node credentials created ✓")
         }
@@ -480,6 +500,12 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
+            if let encryptionWordsField = self.nostrEncryptionWordsField, let encryptionWords = encryptionWordsField.text {
+                guard let encryptedWords = Crypto.encrypt(encryptionWords.utf8) else { return }
+                
+                newNode["nostrWords"] = encryptedWords
+            }
+            
             func save() {
                 CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
                     if nodes != nil {
@@ -549,14 +575,25 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                             CoreDataService.update(id: id, keyToUpdate: "subscribeTo", newValue: enc, entity: .newNodes) { success in
                                 if !success {
                                     displayAlert(viewController: self, isError: true, message: "error updating subscribe to")
-                                }
-                                
-                                if self.nostrRelayField != nil, let txt = self.nostrRelayField.text {
-                                    UserDefaults.standard.setValue(txt, forKey: "nostrRelay")
-                                    MakeRPCCall.sharedInstance.connected = false
-                                    MakeRPCCall.sharedInstance.connectToRelay { _ in
-                                        DispatchQueue.main.async {
-                                            NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                } else {
+                                    if self.nostrRelayField != nil, let txt = self.nostrRelayField.text {
+                                        
+                                        if let encryptionWordsField = self.nostrEncryptionWordsField, let encryptionWords = encryptionWordsField.text {
+                                            guard let encryptedWords = Crypto.encrypt(encryptionWords.utf8) else { return }
+                                            
+                                            CoreDataService.update(id: id, keyToUpdate: "nostrWords", newValue: encryptedWords, entity: .newNodes) { saved in
+                                                if saved {
+                                                    UserDefaults.standard.setValue(txt, forKey: "nostrRelay")
+                                                    MakeRPCCall.sharedInstance.connected = false
+                                                    MakeRPCCall.sharedInstance.connectToRelay { _ in
+                                                        DispatchQueue.main.async {
+                                                            NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                                        }
+                                                    }
+                                                } else {
+                                                    showAlert(vc: self, title: "", message: "Error updating encryption words.")
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -649,7 +686,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            showAlert(vc: self, title: "Credentials saved ✓", message: "")
+            nodeAddedSuccess()
         }
     }
     
@@ -675,9 +712,21 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         if selectedNode != nil {
             let node = NodeStruct(dictionary: selectedNode!)
+            isNostr = node.isNostr
             if node.id != nil {
                 if node.isNostr {
                     removeNonNostrStuff()
+                    
+                    if let encryptedWords = node.nostrWords {
+                        guard let decryptedWords = Crypto.decrypt(encryptedWords) else { return }
+                        
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.nostrEncryptionWordsField.isSecureTextEntry = true
+                            self.nostrEncryptionWordsField.text = decryptedWords.utf8String!
+                        }
+                    }
                     
                     if let encryptedPubkey = node.nostrPubkey {
                         let nostrPubkey = decryptedNostr(encryptedPubkey)
@@ -800,6 +849,15 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         if nostrToSubscribe != nil {
             nostrToSubscribe.resignFirstResponder()
         }
+        if nostrEncryptionWordsField != nil {
+            nostrEncryptionWordsField.resignFirstResponder()
+        }
+    }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        if textField == nostrEncryptionWordsField {
+            nostrEncryptionWordsField.isSecureTextEntry = true
+        }
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -808,7 +866,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     private func nodeAddedSuccess() {
-        showAlert(vc: self, title: "Credentials saved ✓", message: "")
+        if selectedNode == nil {
+            selectedNode = newNode
+            createNew = false
+            showAlert(vc: self, title: "Node saved ✓", message: "")
+        } else {
+            showAlert(vc: self, title: "Node updated ✓", message: "")
+        }
+        
     }
     
     func addBtcRpcQr(url: String) {

@@ -234,13 +234,13 @@
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Ihm-1X-hpr">
                                                     <rect key="frame" x="217.5" y="11" width="109.5" height="29"/>
                                                     <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" tag="5" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Jun-15-2018 22:28" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oE6-dQ-nw7">
+                                                        <label opaque="NO" userInteractionEnabled="NO" tag="5" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Jun-15-2018 22:28" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oE6-dQ-nw7">
                                                             <rect key="frame" x="0.0" y="0.0" width="109.5" height="14.5"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                             <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
-                                                        <label opaque="NO" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="44342 Confs" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3Zi-o2-EG2">
+                                                        <label opaque="NO" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="44342 Confs" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3Zi-o2-EG2">
                                                             <rect key="frame" x="0.0" y="14.5" width="109.5" height="14.5"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                             <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -288,13 +288,13 @@
                                                     <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" tag="4" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Groceries" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QUk-HX-zhZ">
+                                                <label opaque="NO" userInteractionEnabled="NO" tag="4" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Groceries" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QUk-HX-zhZ">
                                                     <rect key="frame" x="16" y="140" width="263" height="17"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                     <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" tag="11" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Groceries" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zAg-cb-nc5">
+                                                <label opaque="NO" userInteractionEnabled="NO" tag="11" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Groceries" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zAg-cb-nc5">
                                                     <rect key="frame" x="16" y="97.5" width="62.5" height="17"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="17" id="5sZ-yn-MEM"/>
@@ -303,43 +303,43 @@
                                                     <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="utxo label:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GJa-3H-e6Q">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="utxo label:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GJa-3H-e6Q">
                                                     <rect key="frame" x="16" y="122.5" width="58.5" height="14.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                     <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="transaction label:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="M9l-cP-pX6">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="transaction label:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="M9l-cP-pX6">
                                                     <rect key="frame" x="16" y="81" width="98" height="14.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                     <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="transaction memo:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Rcj-YL-Sd1">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="transaction memo:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Rcj-YL-Sd1">
                                                     <rect key="frame" x="16" y="252" width="105.5" height="14.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                     <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="fiat value current:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7HR-IX-uHk">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="fiat value current:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7HR-IX-uHk">
                                                     <rect key="frame" x="16" y="165" width="99.5" height="14.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                     <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="at time of transaction:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mSR-MF-OgT">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="at time of transaction:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mSR-MF-OgT">
                                                     <rect key="frame" x="16" y="208.5" width="124.5" height="14.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                     <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" tag="9" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="$1,987 USD" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="j15-PJ-5Li">
+                                                <label opaque="NO" userInteractionEnabled="NO" tag="9" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="$1,987 USD" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="j15-PJ-5Li">
                                                     <rect key="frame" x="16" y="183.5" width="76.5" height="17"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                     <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" tag="12" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="$35 USD" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xGs-ch-XfM">
+                                                <label opaque="NO" userInteractionEnabled="NO" tag="12" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="$35 USD" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xGs-ch-XfM">
                                                     <rect key="frame" x="16" y="227" width="59" height="17"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="17" id="FJD-FW-q29"/>
@@ -361,7 +361,7 @@
                                                         <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="large"/>
                                                     </state>
                                                 </button>
-                                                <button opaque="NO" tag="15" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Wu0-bi-1p1">
+                                                <button opaque="NO" tag="15" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Wu0-bi-1p1">
                                                     <rect key="frame" x="208" y="80" width="121" height="17"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="121" id="U1A-EO-8hw"/>
@@ -372,7 +372,7 @@
                                                         <color key="titleColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </state>
                                                 </button>
-                                                <button opaque="NO" tag="16" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ABr-IV-uTq">
+                                                <button opaque="NO" tag="16" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ABr-IV-uTq">
                                                     <rect key="frame" x="246" y="245" width="83" height="29"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="83" id="lfj-KP-CER"/>
@@ -382,7 +382,7 @@
                                                         <color key="titleColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </state>
                                                 </button>
-                                                <button opaque="NO" tag="13" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kEf-MO-41S">
+                                                <button opaque="NO" tag="13" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kEf-MO-41S">
                                                     <rect key="frame" x="16" y="227" width="34" height="17"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="17" id="H7i-SE-HMS"/>
@@ -2938,7 +2938,7 @@ xxxxx</string>
                                             <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" ambiguous="YES" editable="NO" text="signers" translatesAutoresizingMaskIntoConstraints="NO" id="iQl-LS-l1G">
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" editable="NO" text="signers" translatesAutoresizingMaskIntoConstraints="NO" id="iQl-LS-l1G">
                                                     <rect key="frame" x="8" y="5" width="327" height="34"/>
                                                     <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <constraints>
@@ -5320,7 +5320,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="9" translatesAutoresizingMaskIntoConstraints="NO" id="qBh-RP-hWz">
-                                <rect key="frame" x="16" y="73" width="343" height="643"/>
+                                <rect key="frame" x="16" y="73" width="343" height="704"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tcf-UB-YOb">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="9"/>
@@ -5429,7 +5429,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                                 <color key="tintColor" red="0.35294118520000001" green="0.77647060160000003" blue="0.97647058959999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                 <state key="normal" title="Button"/>
                                                 <buttonConfiguration key="configuration" style="plain">
-                                                    <imageReference key="image" image="qrcode" catalog="system" symbolScale="medium"/>
+                                                    <imageReference key="image" image="qrcode" catalog="system" symbolScale="large"/>
+                                                    <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" scale="large"/>
                                                 </buttonConfiguration>
                                                 <connections>
                                                     <action selector="showNostrPubkeyAction:" destination="B99-yZ-naR" eventType="touchUpInside" id="1P7-0d-B51"/>
@@ -5460,7 +5461,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                                 <color key="tintColor" red="0.35294118520000001" green="0.77647060160000003" blue="0.97647058959999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                 <state key="normal" title="Button"/>
                                                 <buttonConfiguration key="configuration" style="plain">
-                                                    <imageReference key="image" image="arrow.clockwise" catalog="system" symbolScale="medium"/>
+                                                    <imageReference key="image" image="arrow.clockwise" catalog="system" symbolScale="large"/>
+                                                    <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" scale="large"/>
                                                 </buttonConfiguration>
                                                 <connections>
                                                     <action selector="refreshNostrPrivkeyAction:" destination="B99-yZ-naR" eventType="touchUpInside" id="4sR-WA-kA3"/>
@@ -5491,7 +5493,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                                 <color key="tintColor" red="0.35294118520000001" green="0.77647060160000003" blue="0.97647058959999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                 <state key="normal" title="Button"/>
                                                 <buttonConfiguration key="configuration" style="plain">
-                                                    <imageReference key="image" image="qrcode.viewfinder" catalog="system" symbolScale="medium"/>
+                                                    <imageReference key="image" image="qrcode.viewfinder" catalog="system" symbolScale="large"/>
+                                                    <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" scale="large"/>
                                                 </buttonConfiguration>
                                                 <connections>
                                                     <action selector="scanNostrPubkeyAction:" destination="B99-yZ-naR" eventType="touchUpInside" id="jA1-R4-wnX"/>
@@ -5520,8 +5523,40 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
+                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0nC-j7-uAk">
+                                        <rect key="frame" x="0.0" y="610" width="343" height="9"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Encryption words" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="F0q-UT-3X6">
+                                                <rect key="frame" x="0.0" y="0.0" width="76.5" height="9"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="9" id="jXl-f0-OJQ"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" type="system" pointSize="9"/>
+                                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kwB-do-h4l">
+                                                <rect key="frame" x="76.5" y="0.0" width="266.5" height="9"/>
+                                                <color key="tintColor" red="0.35294118520000001" green="0.77647060160000003" blue="0.97647058959999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                <state key="normal" title="Button"/>
+                                                <buttonConfiguration key="configuration" style="plain">
+                                                    <imageReference key="image" image="eye" catalog="system" symbolScale="large"/>
+                                                    <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" scale="large"/>
+                                                </buttonConfiguration>
+                                                <connections>
+                                                    <action selector="seeEncryptionWordsAction:" destination="B99-yZ-naR" eventType="touchUpInside" id="feQ-nt-ahS"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                    <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="five words used as an encryption key" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="PI1-qm-Nv4">
+                                        <rect key="frame" x="0.0" y="628" width="343" height="34"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
+                                    </textField>
                                     <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="p2J-sn-A5I">
-                                        <rect key="frame" x="0.0" y="610" width="343" height="33"/>
+                                        <rect key="frame" x="0.0" y="671" width="343" height="33"/>
                                         <color key="backgroundColor" red="0.10627468621666161" green="0.12334513322948933" blue="0.15055580547360392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <state key="normal" title="Save">
@@ -5575,6 +5610,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="macaroonField" destination="cPw-T1-Xd9" id="k5s-S4-m2c"/>
                         <outlet property="macaroonHeader" destination="vSy-Vj-wcK" id="9Ue-6n-u0E"/>
                         <outlet property="nodeLabel" destination="LM8-fJ-o94" id="kkD-Ha-NwZ"/>
+                        <outlet property="nostrEncryptionWordsField" destination="PI1-qm-Nv4" id="KUM-FG-kL1"/>
+                        <outlet property="nostrEncryptionWordsHeader" destination="F0q-UT-3X6" id="SJ6-ZU-g3c"/>
                         <outlet property="nostrPrivkeyField" destination="aZB-cK-8l0" id="0M0-Wu-IjN"/>
                         <outlet property="nostrPrivkeyHeader" destination="zaa-Xx-grG" id="xEQ-L6-RYS"/>
                         <outlet property="nostrPubkeyField" destination="d3S-5p-8Gb" id="RvL-H6-GMS"/>
@@ -5591,6 +5628,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="saveButton" destination="p2J-sn-A5I" id="ZWz-y2-s1b"/>
                         <outlet property="scanNostrPubkeyQr" destination="h9x-Ys-5JF" id="y6G-qY-bUg"/>
                         <outlet property="scanQROutlet" destination="awp-qu-L3a" id="pQ4-ao-MZ5"/>
+                        <outlet property="seeEncryptionWordsButton" destination="kwB-do-h4l" id="ggz-6Q-8Mp"/>
                         <outlet property="showNostrPubkeyQr" destination="reH-db-j8C" id="a3Y-ta-aJF"/>
                         <outlet property="usernameHeader" destination="Shd-1m-99a" id="WmB-Kw-SMe"/>
                         <segue destination="GlR-4A-eAx" kind="show" identifier="segueToExportNode" id="8MS-xS-DMP"/>
@@ -5641,7 +5679,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                                     </constraints>
                                                 </view>
                                                 <label opaque="NO" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="g8N-Kl-HFT">
-                                                    <rect key="frame" x="58" y="17" width="42" height="20.5"/>
+                                                    <rect key="frame" x="58" y="16.5" width="42" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
@@ -7107,8 +7145,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="Cd3-qW-ujG"/>
         <segue reference="oY9-Pq-H5b"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="CQp-9r-70w"/>
-        <segue reference="aV5-mq-s3Q"/>
+        <segue reference="07E-4w-Zh7"/>
+        <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="7PS-EL-3d2"/>
     </inferredMetricsTieBreakers>
