@@ -214,14 +214,13 @@ public struct Wallet_Process_PSBT: CustomStringConvertible {
     init(_ dict: [String:Any]) {
         let psbt = dict["psbt"] as? String ?? ""
         let sign = dict["sign"] as? Bool ?? true
-        let sighashtype = dict["sighashtype"] as? String ?? ""
+        //let sighashtype = dict["sighashtype"] as? String ?? ""
         let bip32derivs = dict["bip32derivs"] as? Bool ?? true
         let finalize = dict["finalize"] as? Bool ?? true
         
         param = [
             "psbt": psbt,
             "sign": sign,
-            "sighashtype": sighashtype,
             "bip32derivs": bip32derivs,
             "finalize": finalize
         ]
@@ -698,7 +697,8 @@ public struct List_Unspent: CustomStringConvertible {
     let param:[String:Any]
     init(_ dict: [String:Any]) {
         let minconf = dict["minconf"] as? Int ?? 0
-        param = ["minconf": minconf]
+        let query_options = ["maximumCount": 100]
+        param = ["minconf": minconf, "query_options": query_options]
     }
 }
 

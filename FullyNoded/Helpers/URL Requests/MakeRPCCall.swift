@@ -210,57 +210,10 @@ class MakeRPCCall: WebSocketDelegate {
         #if DEBUG
         print("decryptedDict: \(decryptedDict)")
         #endif
-        if let part = decryptedDict["part"] as? [String:Any] {
-            for (key, value) in part {
-                guard let m = Int("\(key.split(separator: ":")[0])"),
-                      let n = Int("\(key.split(separator: ":")[1])") else {
-                    print("m of n parsing failed")
-                    return (nil,nil)
-                }
-                
-                guard let encryptedValue = value as? String else {
-                    guard let valueDict = value as? [String:Any] else {
-                        return (nil,nil)
-                    }
-                    return (valueDict["response"], valueDict["errorDesc"] as? String)
-                }
-                
-                if m < n {
-                    collectedPartArray.append(encryptedValue)
-                } else if m == n {
-                    collectedPartArray.append(encryptedValue)
-                    var entireEncryptedResponse = ""
-                    for (i,part) in collectedPartArray.enumerated() {
-                        entireEncryptedResponse += "\(part)"
-                        if i + 1 == collectedPartArray.count {
-                            collectedPartArray.removeAll()
-                            
-                            guard let nestedDecryptedDict = self.decryptedDict(content: entireEncryptedResponse) else {
-                                print("failed decrypting the entire response")
-                                return (nil,"failed decrypting the entire response")
-                            }
-                            
-                            guard let nestedPart = nestedDecryptedDict["part"] as? [String:Any] else {
-                                return (nil,"No nested part dictionary.")
-                            }
-                            
-                            
-                            for (_,value) in nestedPart {
-                                guard let valueDict = value as? [String:Any] else {
-                                    print("failed getting the valueDict")
-                                    return (nil,nil)
-                                }
-                                
-                                return (valueDict["response"],valueDict["errorDesc"] as? String)
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            return(nil,nil)
-        }
-        return (nil, nil)
+        
+        let response = decryptedDict["response"]
+        let errorDesc = decryptedDict["errorDesc"] as? String
+        return (response, errorDesc)
     }
     
     

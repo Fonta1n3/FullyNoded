@@ -163,7 +163,7 @@ class Lightning {
             }
             
             let param:Send_Raw_Transaction = .init(["hexstring":rawTx])
-            Reducer.sharedInstance.makeCommand(command: .sendrawtransaction(param: param)) { (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: .sendrawtransaction(param)) { (response, errorMessage) in
                 guard let _ = response as? String else {
                     completion((["rawTx":rawTx], "There was an issue broadcasting your funding transaction. Error: \(errorMessage ?? "unknown error")"))
                     return

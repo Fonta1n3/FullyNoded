@@ -412,24 +412,17 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 showAlert(vc: self, title: "Invalid File", message: "That is not a recognized format, generally it will be a .psbt or .txn file.")
                 return
             }
-            
-//            print("data.utf8String: \(data.utf8String)")
-//            print("bas64: \(data.base64EncodedString())")
                         
             if let text = data.utf8String, text.lowercased().hasPrefix("ur:bytes") {
-                //print("text: \(text)")
                 self.reset()
                 self.blind = true
                 self.parseBlindPsbt(text)
             } else {
-                //print("psbt: \(data.base64EncodedString())")
-                
                 if Keys.validPsbt(data.base64EncodedString()) {
                     unsignedPsbt = data.base64EncodedString()
                     self.reset()
                     processPsbt(unsignedPsbt)
                 } else if let psbtUtf8 = data.utf8String, Keys.validPsbt(psbtUtf8) {
-                    print("getting here")
                     unsignedPsbt = psbtUtf8
                     self.reset()
                     processPsbt(psbtUtf8)
@@ -441,8 +434,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             return
         }
-        
-        //print("raw text: \(text)")
         
         reset()
         signedRawTx = text.condenseWhitespace()
@@ -511,7 +502,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     private func send() {
         isSigning = false
         
-        if signedRawTx != "" {
+        if self.signedRawTx != "" {
             if !isChannelFunding {
                 broadcast()
             } else {
@@ -648,7 +639,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         Signer.sign(psbt: self.unsignedPsbt, passphrase: passphrase) { [weak self] (signedPsbt, rawTx, errorMessage) in
             guard let self = self else { return }
-                        
+            
             self.disableSignButton()
             
             if rawTx != nil {
@@ -1440,7 +1431,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     func parsePrevTx(method: BTC_CLI_COMMAND, vout: Int, txid: String) {
-        
         func decodeRaw() {
             updateLabel("decoding inputs previous output...")
             Reducer.sharedInstance.makeCommand(command: method) { [weak self] (object, errorDescription) in
@@ -1459,9 +1449,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         func getRawTx() {
             updateLabel("fetching inputs previous output...")
             Reducer.sharedInstance.makeCommand(command: method) { [weak self] (response, errorMessage) in
-                guard let self = self else { return }
+                guard let self = self, let response = response as? [String:Any] else { return }
                 
-                guard let hex = response as? String else {
+                guard let hex = response["hex"] as? String else {
                     guard let errorMessage = errorMessage else { return }
                     
                     guard errorMessage.contains("No such mempool transaction") else {
@@ -1503,7 +1493,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                             return
                         }
                         
-                        //print("input #\(self.index + 1), searching for vout \(vout)")
                         let param_decode_raw:Decode_Raw_Tx = .init(["hexstring":hexToParse])
                         self.parsePrevTx(method: .decoderawtransaction(param: param_decode_raw), vout: vout, txid: txid)
                     }
@@ -2311,8 +2300,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func broadcastWithMyNode() {
         spinner.addConnectingView(vc: self, description: "broadcasting...")
-        let param:Send_Raw_Transaction = .init(["hexstring":self.signedRawTx])
-        Reducer.sharedInstance.makeCommand(command: .sendrawtransaction(param: param)) { [weak self] (response, errorMesage) in
+        let paramDict:[String:Any] = ["hexstring":self.signedRawTx]
+        let param:Send_Raw_Transaction = .init(paramDict)
+        Reducer.sharedInstance.makeCommand(command: .sendrawtransaction(param)) { [weak self] (response, errorMesage) in
             guard let self = self else { return }
             
             guard let id = response as? String else {

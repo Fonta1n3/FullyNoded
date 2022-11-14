@@ -1226,7 +1226,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
         if outputs.count == 0 {
             if let amount = convertedAmount(), self.addressInput.text != "" {
-                outputs.append([address:amount])
+                outputs.append([self.addressInput.text!:amount])
                 getRawTx()
                 
             } else {

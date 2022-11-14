@@ -180,18 +180,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 self.onionAddressField.removeFromSuperview()
             }
         }
-        
-        
-        
         DispatchQueue.main.async {
-            #if targetEnvironment(simulator)
             remove()
-            #else
-            //let modelName = UIDevice.modelName
-            if /*modelName != "arm64" && modelName != "x86_64" && modelName != "i386" && */!self.isiOSAppOnMac {
-                remove()
-            }
-            #endif
         }
     }
     

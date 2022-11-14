@@ -57,13 +57,12 @@ public enum BTC_CLI_COMMAND {
     case getnetworkinfo
     case getmininginfo
     case estimatesmartfee(param: Estimate_Smart_Fee_Param)
-    case sendrawtransaction(param: Send_Raw_Transaction)
+    case sendrawtransaction(_ param: Send_Raw_Transaction)
     case encryptwallet(_ param: Encrypt_Wallet)
     case walletpassphrase(param: Wallet_Passphrase)
     case walletlock
     case walletpassphrasechange(_ param: Wallet_Change_Passphrase)
     case gettxoutsetinfo
-    //case help
     case testmempoolaccept(_ param: Test_Mempool_Accept)
     case psbtbumpfee(param: Bump_Fee)
     case importdescriptors(param: Import_Descriptors)
@@ -124,8 +123,6 @@ public enum BTC_CLI_COMMAND {
             return "decodepsbt"
         case .walletcreatefundedpsbt:
             return "walletcreatefundedpsbt"
-//        case .fundrawtransaction:
-//            return "fundrawtransaction"
         case .uptime:
             return "uptime"
         case .importmulti:
@@ -142,8 +139,6 @@ public enum BTC_CLI_COMMAND {
             return "getnewaddress"
         case .gettransaction:
             return "gettransaction"
-//        case .signrawtransactionwithwallet:
-//            return "signrawtransactionwithwallet"
         case .createrawtransaction:
             return "createrawtransaction"
         case .getrawchangeaddress:
@@ -172,14 +167,6 @@ public enum BTC_CLI_COMMAND {
             return "estimatesmartfee"
         case .sendrawtransaction:
             return "sendrawtransaction"
-//        case .importaddress:
-//            return "importaddress"
-//        case .signmessagewithprivkey:
-//            return "signmessagewithprivkey"
-//        case .verifymessage:
-//            return "verifymessage"
-//        case .signmessage:
-//            return "signmessage"
         case .encryptwallet:
             return "encryptwallet"
         case .walletpassphrase:
@@ -194,8 +181,6 @@ public enum BTC_CLI_COMMAND {
             return "psbtbumpfee"
         case .testmempoolaccept:
             return "testmempoolaccept"
-//        case .help:
-//            return "help"
         case .gettxoutsetinfo:
             return "gettxoutsetinfo"
         case .walletpassphrasechange:
@@ -204,23 +189,6 @@ public enum BTC_CLI_COMMAND {
             return "walletlock"
        }
     }
-    
-//    var param:String? {
-//        switch self {
-//        case .getbalance(param: let getBalance):
-//            return getBalance.param
-//        case .createwallet(param: let createWallet):
-//            return createWallet.param
-//        case .estimatesmartfee(param: let estimateSmartFee):
-//            return estimateSmartFee.param
-//        case .getdescriptorinfo(param: let descInfo):
-//            return descInfo.param
-////        case .importdescriptors(param: let importDesc):
-////            return importDesc.param
-//        default:
-//            return nil
-//        }
-//    }
     
     var paramDict:[String:Any] {
         switch self {
@@ -268,6 +236,8 @@ public enum BTC_CLI_COMMAND {
             return joinPsbt.param
         case .finalizepsbt(let finalizePsbt):
             return finalizePsbt.param
+        case .sendrawtransaction(let p):
+            return p.param
         default:
             return [:]
         }
@@ -302,7 +272,6 @@ public enum BTC_CLI_COMMAND {
         walletprocesspsbt(param: .init([:])),
         decodepsbt(param: .init([:])),
         walletcreatefundedpsbt(param: .init([:])),
-        //fundrawtransaction,
         uptime,
         importmulti,
         getdescriptorinfo(param: .init([:])),
@@ -311,7 +280,6 @@ public enum BTC_CLI_COMMAND {
         decoderawtransaction(param: .init([:])),
         getnewaddress(param: .init([:])),
         gettransaction(.init([:])),
-        //signrawtransactionwithwallet,
         createrawtransaction,
         getrawchangeaddress,
         getwalletinfo,
@@ -326,17 +294,12 @@ public enum BTC_CLI_COMMAND {
         getnetworkinfo,
         getmininginfo,
         estimatesmartfee(param: .init([:])),
-        sendrawtransaction(param: .init([:])),
-//        importaddress,
-//        signmessagewithprivkey,
-//        verifymessage,
-//        signmessage,
+        sendrawtransaction(.init([:])),
         encryptwallet(.init([:])),
         walletpassphrase(param: .init([:])),
         walletlock,
         walletpassphrasechange(.init([:])),
         gettxoutsetinfo,
-        //help,
         testmempoolaccept(.init([:])),
         psbtbumpfee(param: .init([:])),
         importdescriptors(param: .init([:]))
