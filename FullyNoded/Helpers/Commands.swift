@@ -6,77 +6,358 @@
 //  Copyright © 2019 Fontaine. All rights reserved.
 //
 
-public enum BTC_CLI_COMMAND: String {
-    case abortrescan = "abortrescan"
-    case listlockunspent = "listlockunspent"
-    case lockunspent = "lockunspent"
-    case getblock = "getblock"
-    case getbestblockhash = "getbestblockhash"
-    case getaddressesbylabel = "getaddressesbylabel"
-    case listlabels = "listlabels"
-    case decodescript = "decodescript"
-    case combinepsbt = "combinepsbt"
-    case utxoupdatepsbt = "utxoupdatepsbt"
-    case listaddressgroupings = "listaddressgroupings"
-    case converttopsbt = "converttopsbt"
-    case getaddressinfo = "getaddressinfo"
-    case createmultisig = "createmultisig"
-    case analyzepsbt = "analyzepsbt"
-    case createpsbt = "createpsbt"
-    case joinpsbts = "joinpsbts"
-    case getmempoolinfo = "getmempoolinfo"
-    case signrawtransactionwithkey = "signrawtransactionwithkey"
-    case listwallets = "listwallets"
-    case unloadwallet = "unloadwallet"
-    case rescanblockchain = "rescanblockchain"
-    case listwalletdir = "listwalletdir"
-    case loadwallet = "loadwallet"
-    case createwallet = "createwallet"
-    case finalizepsbt = "finalizepsbt"
-    case walletprocesspsbt = "walletprocesspsbt"
-    case decodepsbt = "decodepsbt"
-    case walletcreatefundedpsbt = "walletcreatefundedpsbt"
-    case fundrawtransaction = "fundrawtransaction"
-    case uptime = "uptime"
-    case importmulti = "importmulti"
-    case getdescriptorinfo = "getdescriptorinfo"
-    case deriveaddresses = "deriveaddresses"
-    case getrawtransaction = "getrawtransaction"
-    case decoderawtransaction = "decoderawtransaction"
-    case getnewaddress = "getnewaddress"
-    case gettransaction = "gettransaction"
-    case signrawtransactionwithwallet = "signrawtransactionwithwallet"
-    case createrawtransaction = "createrawtransaction"
-    case getrawchangeaddress = "getrawchangeaddress"
-    case getwalletinfo = "getwalletinfo"
-    case getblockchaininfo = "getblockchaininfo"
-    case getbalance = "getbalance"
-    case sendtoaddress = "sendtoaddress"
-    case getunconfirmedbalance = "getunconfirmedbalance"
-    case listtransactions = "listtransactions"
-    case listunspent = "listunspent"
-    case bumpfee = "bumpfee"
-    case importprivkey = "importprivkey"
-    case abandontransaction = "abandontransaction"
-    case getpeerinfo = "getpeerinfo"
-    case getnetworkinfo = "getnetworkinfo"
-    case getmininginfo = "getmininginfo"
-    case estimatesmartfee = "estimatesmartfee"
-    case sendrawtransaction = "sendrawtransaction"
-    case importaddress = "importaddress"
-    case signmessagewithprivkey = "signmessagewithprivkey"
-    case verifymessage = "verifymessage"
-    case signmessage = "signmessage"
-    case encryptwallet = "encryptwallet"
-    case walletpassphrase = "walletpassphrase"
-    case walletlock = "walletlock"
-    case walletpassphrasechange = "walletpassphrasechange"
-    case gettxoutsetinfo = "gettxoutsetinfo"
-    case help = "help"
-    case testmempoolaccept = "testmempoolaccept"
-    case psbtbumpfee = "psbtbumpfee"
-    case importdescriptors = "importdescriptors"
+public enum BTC_CLI_COMMAND {
+    case abortrescan
+    case listlockunspent
+    case lockunspent(_ param: Lock_Unspent)
+    case getblock
+    case getbestblockhash
+    case getaddressesbylabel
+    case listlabels
+    case decodescript
+    case combinepsbt
+    case utxoupdatepsbt
+    case listaddressgroupings
+    case converttopsbt
+    case getaddressinfo(param: Get_Address_Info)
+    case analyzepsbt
+    case createpsbt
+    case joinpsbts(_ param: Join_Psbt)
+    case getmempoolinfo
+    case signrawtransactionwithkey
+    case listwallets
+    case unloadwallet
+    case rescanblockchain(_ param: Rescan_Blockchain)
+    case listwalletdir
+    case loadwallet
+    case createwallet(param: Create_Wallet_Param)
+    case finalizepsbt(_ param: Finalize_Psbt)
+    case walletprocesspsbt(param: Wallet_Process_PSBT)
+    case decodepsbt(param: Decode_Psbt)
+    case walletcreatefundedpsbt(param: Wallet_Create_Funded_Psbt)
+    case uptime
+    case importmulti
+    case getdescriptorinfo(param: Get_Descriptor_Info)
+    case deriveaddresses(param: Derive_Addresses)
+    case getrawtransaction(param: Get_Raw_Tx)
+    case decoderawtransaction(param: Decode_Raw_Tx)
+    case getnewaddress(param: Get_New_Address)
+    case gettransaction(_ param: Get_Tx)
+    case createrawtransaction
+    case getrawchangeaddress
+    case getwalletinfo
+    case getblockchaininfo
+    case getbalance(param: Get_Balance_Param)
+    case sendtoaddress
+    case listtransactions(_ param: List_Transactions)
+    case listunspent(_ param: List_Unspent)
+    case bumpfee(param: Bump_Fee)
+    case importprivkey
+    case getpeerinfo
+    case getnetworkinfo
+    case getmininginfo
+    case estimatesmartfee(param: Estimate_Smart_Fee_Param)
+    case sendrawtransaction(param: Send_Raw_Transaction)
+    case encryptwallet(_ param: Encrypt_Wallet)
+    case walletpassphrase(param: Wallet_Passphrase)
+    case walletlock
+    case walletpassphrasechange(_ param: Wallet_Change_Passphrase)
+    case gettxoutsetinfo
+    //case help
+    case testmempoolaccept(_ param: Test_Mempool_Accept)
+    case psbtbumpfee(param: Bump_Fee)
+    case importdescriptors(param: Import_Descriptors)
+    
+    var stringValue:String {
+        switch self {
+        case .abortrescan:
+            return "abortrescan"
+        case .listlockunspent:
+            return "listlockunspent"
+        case .lockunspent:
+            return "lockunspent"
+        case .getblock:
+            return "getblock"
+        case .getbestblockhash:
+            return "getbestblockhash"
+        case .getaddressesbylabel:
+            return "getaddressesbylabel"
+        case .listlabels:
+            return "listlabels"
+        case .decodescript:
+            return "decodescript"
+        case .combinepsbt:
+            return "combinepsbt"
+        case .utxoupdatepsbt:
+            return "utxoupdatepsbt"
+        case .listaddressgroupings:
+            return "listaddressgroupings"
+        case .converttopsbt:
+            return "converttopsbt"
+        case .getaddressinfo:
+            return "getaddressinfo"
+        case .analyzepsbt:
+            return "analyzepsbt"
+        case .createpsbt:
+            return "createpsbt"
+        case .joinpsbts:
+            return "joinpsbts"
+        case .getmempoolinfo:
+            return "getmempoolinfo"
+        case .signrawtransactionwithkey:
+            return "signrawtransactionwithkey"
+        case .listwallets:
+            return "listwallets"
+        case .unloadwallet:
+            return "unloadwallet"
+        case .rescanblockchain:
+            return "rescanblockchain"
+        case .listwalletdir:
+            return "listwalletdir"
+        case .loadwallet:
+            return "loadwallet"
+        case .finalizepsbt:
+            return "finalizepsbt"
+        case .walletprocesspsbt:
+            return "walletprocesspsbt"
+        case .decodepsbt:
+            return "decodepsbt"
+        case .walletcreatefundedpsbt:
+            return "walletcreatefundedpsbt"
+//        case .fundrawtransaction:
+//            return "fundrawtransaction"
+        case .uptime:
+            return "uptime"
+        case .importmulti:
+            return "importmulti"
+        case .getdescriptorinfo:
+            return "getdescriptorinfo"
+        case .deriveaddresses:
+            return "deriveaddresses"
+        case .getrawtransaction:
+            return "getrawtransaction"
+        case .decoderawtransaction:
+            return "decoderawtransaction"
+        case .getnewaddress:
+            return "getnewaddress"
+        case .gettransaction:
+            return "gettransaction"
+//        case .signrawtransactionwithwallet:
+//            return "signrawtransactionwithwallet"
+        case .createrawtransaction:
+            return "createrawtransaction"
+        case .getrawchangeaddress:
+            return "getrawchangeaddress"
+        case .getwalletinfo:
+            return "getwalletinfo"
+        case .getblockchaininfo:
+            return "getblockchaininfo"
+        case .sendtoaddress:
+            return "sendtoaddress"
+        case .listtransactions:
+            return "listtransactions"
+        case .listunspent:
+            return "listunspent"
+        case .bumpfee:
+            return "bumpfee"
+        case .importprivkey:
+            return "importprivkey"
+        case .getpeerinfo:
+            return "getpeerinfo"
+        case .getnetworkinfo:
+            return "getnetworkinfo"
+        case .getmininginfo:
+            return "getmininginfo"
+        case .estimatesmartfee:
+            return "estimatesmartfee"
+        case .sendrawtransaction:
+            return "sendrawtransaction"
+//        case .importaddress:
+//            return "importaddress"
+//        case .signmessagewithprivkey:
+//            return "signmessagewithprivkey"
+//        case .verifymessage:
+//            return "verifymessage"
+//        case .signmessage:
+//            return "signmessage"
+        case .encryptwallet:
+            return "encryptwallet"
+        case .walletpassphrase:
+            return "walletpassphrase"
+        case .getbalance:
+            return "getbalance"
+        case .createwallet:
+            return "createwallet"
+        case .importdescriptors:
+            return "importdescriptors"
+        case .psbtbumpfee:
+            return "psbtbumpfee"
+        case .testmempoolaccept:
+            return "testmempoolaccept"
+//        case .help:
+//            return "help"
+        case .gettxoutsetinfo:
+            return "gettxoutsetinfo"
+        case .walletpassphrasechange:
+            return "walletpassphrasechange"
+        case .walletlock:
+            return "walletlock"
+       }
+    }
+    
+//    var param:String? {
+//        switch self {
+//        case .getbalance(param: let getBalance):
+//            return getBalance.param
+//        case .createwallet(param: let createWallet):
+//            return createWallet.param
+//        case .estimatesmartfee(param: let estimateSmartFee):
+//            return estimateSmartFee.param
+//        case .getdescriptorinfo(param: let descInfo):
+//            return descInfo.param
+////        case .importdescriptors(param: let importDesc):
+////            return importDesc.param
+//        default:
+//            return nil
+//        }
+//    }
+    
+    var paramDict:[String:Any] {
+        switch self {
+        case .getbalance(param: let getBalance):
+            return getBalance.param
+        case .createwallet(param: let createWallet):
+            return createWallet.param
+        case .estimatesmartfee(param: let estimateSmartFee):
+            return estimateSmartFee.param
+        case .getdescriptorinfo(param: let descInfo):
+            return descInfo.param
+        case .importdescriptors(param: let importDesc):
+            return importDesc.param
+        case .walletprocesspsbt(param: let walletProcessPsbt):
+            return walletProcessPsbt.param
+        case .walletpassphrase(param: let walletPassphrase):
+            return walletPassphrase.param
+        case .deriveaddresses(param: let deriveAddresses):
+            return deriveAddresses.param
+        case .getnewaddress(param: let getNewAddress):
+            return getNewAddress.param
+        case .decodepsbt(param: let decodePsbt):
+            return decodePsbt.param
+        case .decoderawtransaction(param: let decodeRaw):
+            return decodeRaw.param
+        case .getaddressinfo(param: let getAddressInfo):
+            return getAddressInfo.param
+        case .testmempoolaccept(param: let testAccept):
+            return testAccept.param
+        case .getrawtransaction(param: let getTx):
+            return getTx.param
+        case .gettransaction(param: let getTx):
+            return getTx.param
+        case .walletcreatefundedpsbt(param: let walletCreatePsbt):
+            return walletCreatePsbt.param
+        case .walletpassphrasechange(param: let changePassphrase):
+            return changePassphrase.param
+        case .listtransactions(para: let listTransactions):
+            return listTransactions.param
+        case .rescanblockchain(let rescanBlockchain):
+            return rescanBlockchain.param
+        case .listunspent(let listUnspent):
+            return listUnspent.param
+        case .joinpsbts(let joinPsbt):
+            return joinPsbt.param
+        case .finalizepsbt(let finalizePsbt):
+            return finalizePsbt.param
+        default:
+            return [:]
+        }
+    }
+    
+    static let all: [BTC_CLI_COMMAND] = [
+        abortrescan,
+        listlockunspent,
+        lockunspent(.init([:])),
+        getblock,
+        getbestblockhash,
+        getaddressesbylabel,
+        listlabels,
+        decodescript,
+        combinepsbt,
+        utxoupdatepsbt,
+        listaddressgroupings,
+        converttopsbt,
+        getaddressinfo(param: .init([:])),
+        analyzepsbt,
+        createpsbt,
+        joinpsbts(.init([:])),
+        getmempoolinfo,
+        signrawtransactionwithkey,
+        listwallets,
+        unloadwallet,
+        rescanblockchain(.init([:])),
+        listwalletdir,
+        loadwallet,
+        createwallet(param: .init([:])),
+        finalizepsbt(.init([:])),
+        walletprocesspsbt(param: .init([:])),
+        decodepsbt(param: .init([:])),
+        walletcreatefundedpsbt(param: .init([:])),
+        //fundrawtransaction,
+        uptime,
+        importmulti,
+        getdescriptorinfo(param: .init([:])),
+        deriveaddresses(param: .init([:])),
+        getrawtransaction(param: .init([:])),
+        decoderawtransaction(param: .init([:])),
+        getnewaddress(param: .init([:])),
+        gettransaction(.init([:])),
+        //signrawtransactionwithwallet,
+        createrawtransaction,
+        getrawchangeaddress,
+        getwalletinfo,
+        getblockchaininfo,
+        getbalance(param: .init([:])),
+        sendtoaddress,
+        listtransactions(.init([:])),
+        listunspent(.init([:])),
+        bumpfee(param: .init([:])),
+        importprivkey,
+        getpeerinfo,
+        getnetworkinfo,
+        getmininginfo,
+        estimatesmartfee(param: .init([:])),
+        sendrawtransaction(param: .init([:])),
+//        importaddress,
+//        signmessagewithprivkey,
+//        verifymessage,
+//        signmessage,
+        encryptwallet(.init([:])),
+        walletpassphrase(param: .init([:])),
+        walletlock,
+        walletpassphrasechange(.init([:])),
+        gettxoutsetinfo,
+        //help,
+        testmempoolaccept(.init([:])),
+        psbtbumpfee(param: .init([:])),
+        importdescriptors(param: .init([:]))
+    ]
+    
+    init?(_ rawDesc: String) {
+        var c:BTC_CLI_COMMAND?
+        for com in BTC_CLI_COMMAND.all {
+            switch com {
+            case _ where rawDesc == com.stringValue:
+                c = com
+            default:
+                break
+            }
+        }
+        guard let c = c else { return nil }
+        self = c
+    }
 }
+
+
 
 public enum LIGHTNING_CLI: String {
     case getinfo = "getinfo"

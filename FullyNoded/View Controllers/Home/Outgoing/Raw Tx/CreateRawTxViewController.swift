@@ -22,10 +22,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var rawTxSigned = String()
     var address = String()
     var amount = String()
-    var outputs = [Any]()
-    var inputArray = [Any]()
-    var inputsString = ""
-    var outputsString = ""
+    var outputs:[[String:Any]] = []
+    var inputs:[[String:Any]] = []
+    //var inputsString = ""
+    //var outputsString = ""
     var txt = ""
     var utxoTotal = 0.0
     let ud = UserDefaults.standard
@@ -66,7 +66,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     var spinner = ConnectingView()
     var spendableBalance = Double()
-    var outputArray = [[String:String]]()
+    //var outputArray = [[String:String]]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -226,7 +226,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     private func getAddressFromWallet(_ wallet: Wallet) {
         spinner.addConnectingView(vc: self, description: "getting address...")
         
-        let param = "\"\(wallet.receiveDescriptor)\", [\(wallet.index + 1), \(wallet.index + 1)]"
+        let index = Int(wallet.index + 1)
+        let param:Derive_Addresses = .init(["descriptor": wallet.receiveDescriptor, "range": [index, index]])
         
         OnchainUtils.deriveAddresses(param: param) { [weak self] (addresses, message) in
             guard let self = self else { return }
@@ -323,7 +324,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         } else {
             
             guard let amount = convertedAmount() else {
-                if !self.outputArray.isEmpty {
+                if !self.outputs.isEmpty {
                     tryRaw()
                 } else {
                     spinner.removeConnectingView()
@@ -486,7 +487,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             return
         }
                 
-        outputArray.append(["address":address, "amount":amount] as [String : String])
+        outputs.append([address:amount])
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -500,7 +501,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     
     override func viewDidAppear(_ animated: Bool) {
-        if inputArray.count > 0 {
+        if inputs.count > 0 {
             if !isJmarket && !isFidelity {
                 showAlert(vc: self, title: "Coin control ✓", message: "Only the utxo's you have just selected will be used in this transaction. You may send the total balance of the *selected utxo's* by tapping the \"⚠️ send all\" button or enter a custom amount as normal.")
             }
@@ -545,10 +546,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         amountInput.text = ""
         addressInput.text = ""
         outputs.removeAll()
-        outputsString = ""
-        outputArray.removeAll()
-        inputArray.removeAll()
-        inputsString = ""
+        //outputsString = ""
+        //outputArray.removeAll()
+        inputs.removeAll()
+        //inputsString = ""
         isJmarket = false
         isFidelity = false
     }
@@ -879,7 +880,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return outputArray.count
+        return outputs.count
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -889,15 +890,16 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         cell.backgroundColor = view.backgroundColor
-        if outputArray.count > 0 {
-            if outputArray.count > 1 {
+        if outputs.count > 0 {
+            if outputs.count > 1 {
                 tableView.separatorColor = .darkGray
                 tableView.separatorStyle = .singleLine
             }
-            let address = outputArray[indexPath.row]["address"]!
-            let amount = outputArray[indexPath.row]["amount"]!
-            cell.textLabel?.text = "\n#\(indexPath.row + 1)\n\nSending: \(String(describing: amount))\n\nTo: \(String(describing: address))"
-            cell.textLabel?.textColor = .lightGray
+            let dict = outputs[indexPath.row]
+            for (key, value) in dict {
+                cell.textLabel?.text = "\n#\(indexPath.row + 1)\n\nSending: \(String(describing: value))\n\nTo: \(String(describing: key))"
+                cell.textLabel?.textColor = .lightGray
+            }
         } else {
            cell.textLabel?.text = ""
         }
@@ -919,7 +921,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             var title = "⚠️ Send total balance?\n\nYou will not be able to use RBF when sweeping!"
             var message = "This action will send ALL the bitcoin this wallet holds to the provided address. If your fee is too low this transaction could get stuck for a long time."
             
-            if self.inputArray.count > 0 {
+            if self.inputs.count > 0 {
                 title = "⚠️ Send total balance from the selected utxo's?"
                 message = "You selected specific utxo's to sweep, this action will sweep \(self.utxoTotal) btc to the address you provide.\n\nIt is important to set a high fee as you may not use RBF if you sweep all your utxo's!"
             }
@@ -946,15 +948,27 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func standardSweep(_ receivingAddress: String) {
-        var param = ""
+        var paramDict:[String:Any] = [:]
+        
+        paramDict["inputs"] = inputs
+        paramDict["outputs"] = [receivingAddress: (rounded(number: utxoTotal))]
+        paramDict["bip32derivs"] = true
         
         if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
-            param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+            
+            
+            paramDict["options"] = ["includeWatching": true, "replaceable": true, "fee_rate": feeRate, "subtractFeeFromOutputs": [0], "changeAddress": receivingAddress]
+            
+            //param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
         } else {
-            param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+            //param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+            
+            paramDict["options"] = ["includeWatching": true, "replaceable": true, "conf_target": ud.object(forKey: "feeTarget") as? Int ?? 432, "subtractFeeFromOutputs": [0], "changeAddress": receivingAddress]
         }
         
-        Reducer.sharedInstance.makeCommand(command: .walletcreatefundedpsbt, param: param) { [weak self] (response, errorMessage) in
+        let param:Wallet_Create_Funded_Psbt = .init(paramDict)
+        
+        Reducer.sharedInstance.makeCommand(command: .walletcreatefundedpsbt(param: param)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let result = response as? NSDictionary, let psbt1 = result["psbt"] as? String else {
@@ -963,7 +977,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 return
             }
             
-            Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [weak self] (response, errorMessage) in
+            let param_process:Wallet_Process_PSBT = .init(["psbt": psbt1])
+            Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt(param: param_process)) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let dict = response as? NSDictionary, let processedPSBT = dict["psbt"] as? String else {
@@ -1049,7 +1064,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func standardWalletSweep(_ receivingAddress: String) {
-        OnchainUtils.listUnspent(param: "0") { [weak self] (utxos, message) in
+        let param: List_Unspent = .init(["minconf": 0])
+        OnchainUtils.listUnspent(param: param) { [weak self] (utxos, message) in
             guard let self = self else { return }
             
             guard let utxos = utxos else {
@@ -1058,8 +1074,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 return
             }
             
-            var inputArray = [Any]()
-            var inputs = ""
+            var inputArray:[[String:Any]] = []
             var amount = Double()
             var spendFromCold = Bool()
             
@@ -1079,17 +1094,42 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 inputArray.append(utxo.input)
             }
             
-            inputs = inputArray.processedInputs
+            //inputs = inputArray.processedInputs
             
-            var param = ""
+//            var param = ""
+//
+//            if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
+//                param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(rounded(number: amount))}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+//            } else {
+//                param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(rounded(number: amount))}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"conf_target\": \(self.ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+//            }
+            
+            var paramDict:[String:Any] = [:]
+            var options:[String:Any] = [:]
+            paramDict["inputs"] = inputArray
+            paramDict["outputs"] = [receivingAddress: (rounded(number: amount))]
+            paramDict["bip32derivs"] = true
+            
+            options["includeWathing"] = spendFromCold
+            options["replaceable"] = true
+            options["subtractFeeFromOutputs"] = [0]
+            options["changeAddress"] = receivingAddress
             
             if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
-                param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(rounded(number: amount))}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+                options["fee_rate"] = feeRate
+                
+                //param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
             } else {
-                param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(rounded(number: amount))}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"conf_target\": \(self.ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+                //param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+                
+                options["conf_taget"] = self.ud.object(forKey: "feeTarget") as? Int ?? 432
             }
+            
+            paramDict["options"] = options
+            
+            let param:Wallet_Create_Funded_Psbt = .init(paramDict)
                         
-            Reducer.sharedInstance.makeCommand(command: .walletcreatefundedpsbt, param: param) { [weak self] (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: .walletcreatefundedpsbt(param: param)) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let result = response as? NSDictionary, let psbt1 = result["psbt"] as? String else {
@@ -1098,7 +1138,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     return
                 }
                 
-                Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [weak self] (response, errorMessage) in
+                let process_param: Wallet_Process_PSBT = .init(["psbt": psbt1])
+                Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt(param: process_param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     guard let dict = response as? NSDictionary, let processedPSBT = dict["psbt"] as? String else {
@@ -1140,7 +1181,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                   return
               }
         
-        if inputArray.count > 0 {
+        if inputs.count > 0 {
             spinner.addConnectingView(vc: self, description: "sweeping selected utxo's...")
             sweepSelectedUtxos(receivingAddress)
         } else {
@@ -1165,43 +1206,40 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         spinner.addConnectingView(vc: self, description: "creating psbt...")
         
         func convertOutputs() {
-            for output in outputArray {
-                if let amount = output["amount"] {
-                    if let address = output["address"] {
-                        if address != "" {
-                            outputs.append([address:amount.doubleValue])
-                        }
-                    }
-                }
-            }
+//            for output in outputs {
+//                if let amount = output["amount"] {
+//                    if let address = output["address"] {
+//                        if address != "" {
+//                            outputs.append([address:amount.doubleValue])
+//                        }
+//                    }
+//                }
+//            }
             
-            if inputArray.count > 0 {
-                self.inputsString = inputArray.processedInputs
-            }
+//            if inputArray.count > 0 {
+//                self.inputsString = inputArray.processedInputs
+//            }
             
-            outputsString = outputs.processedOutputs
+            //outputsString = outputs.processedOutputs
             getRawTx()
         }
         
-        if outputArray.count == 0 {
+        if outputs.count == 0 {
             if let amount = convertedAmount(), self.addressInput.text != "" {
-                
-                let dict = ["address":addressInput.text!, "amount":amount] as [String : String]
-                
-                outputArray.append(dict)
-                convertOutputs()
+                outputs.append([address:amount])
+                getRawTx()
                 
             } else {
                 spinner.removeConnectingView()
                 showAlert(vc: self, title: "", message: "You need to fill out an amount and a recipient")
             }
             
-        } else if outputArray.count > 0 && self.amountInput.text != "" || self.amountInput.text != "0.0" && self.addressInput.text != "" {
+        } else if outputs.count > 0 && self.amountInput.text != "" || self.amountInput.text != "0.0" && self.addressInput.text != "" {
             spinner.removeConnectingView()
             displayAlert(viewController: self, isError: true, message: "If you want to add multiple recipients please tap the \"+\" and add them all first.")
             
-        } else if outputArray.count > 0 {
-            convertOutputs()
+        } else if outputs.count > 0 {
+            getRawTx()
             
         } else {
             spinner.removeConnectingView()
@@ -1678,7 +1716,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     func getRawTx() {
-        CreatePSBT.create(inputs: inputArray.processedInputs, outputs: outputsString) { [weak self] (psbt, rawTx, errorMessage) in
+        CreatePSBT.create(inputs: inputs, outputs: outputs) { [weak self] (psbt, rawTx, errorMessage) in
             guard let self = self else { return }
             
             self.spinner.removeConnectingView()
@@ -1693,8 +1731,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                                 
             } else {
                 self.outputs.removeAll()
-                self.outputsString = ""
-                self.outputArray.removeAll()
+                //self.outputsString = ""
+                //self.outputArray.removeAll()
                 
                 DispatchQueue.main.async {
                     self.outputsTable.reloadData()

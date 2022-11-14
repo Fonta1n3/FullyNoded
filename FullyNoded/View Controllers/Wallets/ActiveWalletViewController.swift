@@ -519,8 +519,8 @@ class ActiveWalletViewController: UIViewController {
         
         let tx = transactionArray[int]
         let id = tx["txID"] as! String
-        
-        Reducer.sharedInstance.makeCommand(command: .gettransaction, param: "\"\(id)\", true") { [weak self] (response, errorMessage) in
+        let param:Get_Tx = .init(["txid":id, "verbose": true])
+        Reducer.sharedInstance.makeCommand(command: .gettransaction(param)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             self.spinner.removeConnectingView()

@@ -103,8 +103,9 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                 
                 let arr = desc.split(separator: "#")
                 let bareDesc = "\(arr[0])"
+                let param:Get_Descriptor_Info = .init(["descriptor":bareDesc])
                 
-                Reducer.sharedInstance.makeCommand(command: .getdescriptorinfo, param: "\"\(bareDesc)\"") { [weak self] (response, errorMessage) in
+                Reducer.sharedInstance.makeCommand(command: .getdescriptorinfo(param: param)) { [weak self] (response, errorMessage) in
                     if let dict = response as? NSDictionary {
                         if let descriptor = dict["descriptor"] as? String {
                             guard let self = self else { return }
@@ -146,8 +147,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func deriveAddresses(_ descriptor: String) {
-        let param = "\"\(descriptor)\", [0,2500]"
-        Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
+        let param:Derive_Addresses = .init(["descriptor":descriptor, "range":[0,2500]])
+        Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { [weak self] (response, errorMessage) in
             if let addr = response as? NSArray {
                 for (i, address) in addr.enumerated() {
                     guard let self = self else { return }
@@ -936,26 +937,30 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private func importDescriptors(index: Int, maxRange: Int, descriptorsToImport: [String]) {
         let descriptorStruct = Descriptor(wallet.receiveDescriptor)
-        var keypool = true
-        
-        if descriptorStruct.isMulti {
-            keypool = false
-        }
         
         if index < descriptorsToImport.count {
             updateSpinnerText(text: "importing descriptor #\(index + 1), \(maxRange - Int(wallet.maxIndex) + 1) public keys...")
             
             let descriptor = descriptorsToImport[index]
+            var paramDict:[String:Any] = [:]
+            var requests:[[String:Any]] = []
+            var request:[String:Any] = [:]
+            request["desc"] = descriptor
+            request["range"] = [wallet.maxIndex, maxRange]
+            request["timestamp"] = "now"
             
-            var params = "[{ \"desc\": \"\(descriptor)\", \"timestamp\": \"now\", \"range\": [\(wallet.maxIndex),\(maxRange)], \"watchonly\": true, \"label\": \"\(wallet.label)\", \"keypool\": false, \"internal\": false }], {\"rescan\": false}"
-            
-            if descriptor.contains(wallet.receiveDescriptor) {
-                params = "[{ \"desc\": \"\(descriptor)\", \"timestamp\": \"now\", \"range\": [\(wallet.maxIndex),\(maxRange)], \"watchonly\": true, \"label\": \"\(wallet.label)\", \"keypool\": \(keypool), \"internal\": false }], {\"rescan\": false}"
-            } else if descriptor.contains(wallet.changeDescriptor) {
-                params = "[{ \"desc\": \"\(descriptor)\", \"timestamp\": \"now\", \"range\": [\(wallet.maxIndex),\(maxRange)], \"watchonly\": true, \"keypool\": \(keypool), \"internal\": \(keypool) }], {\"rescan\": false}"
+            if descriptor.contains(wallet.changeDescriptor) {
+                request["internal"] = true
+                
+            } else {
+                request["label"] = wallet.label
             }
             
-            importMulti(params: params) { [weak self] success in
+            requests = [request]
+            paramDict["requests"] = requests
+            let param:Import_Descriptors = .init(paramDict)
+            
+            importDesc(param: param) { [weak self] success in
                 if success {
                     self?.importDescriptors(index: index + 1, maxRange: maxRange, descriptorsToImport: descriptorsToImport)
                 } else {
@@ -996,9 +1001,9 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         }
     }
     
-    private func importMulti(params: String, completion: @escaping ((Bool)) -> Void) {
-        OnchainUtils.importMulti(params) { (imported, message) in
-            completion((imported))
+    private func importDesc(param: Import_Descriptors, completion: @escaping ((Bool)) -> Void) {
+        OnchainUtils.importDescriptors(param) { (imported, _) in
+            completion(imported)
         }
     }
     

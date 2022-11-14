@@ -101,43 +101,20 @@ class MakeRPCCall: WebSocketDelegate {
                             return
                         }
 
-                        let (method, param, walletName, responseCheck, errorDescCheck) = processValidReceivedContent(content: ev.content)
+                        let (responseCheck, errorDescCheck) = processValidReceivedContent(content: ev.content)
                         
-                        guard let method = method else {
-                            guard let reponse = responseCheck else {
-                                self.onDoneBlock!((nil,errorDescCheck))
-                                return
-                            }
-
-                            guard let _ = errorDescCheck else {
-                                self.onDoneBlock!((reponse as Any,nil))
-                                return
-                            }
-                            
-                            self.onDoneBlock!((reponse as Any,errorDescCheck))
-                            return
-                        }
-                        
-                        guard let param = param else {
-                            #if DEBUG
-                            print("unable to parse method and param from recevied event.")
-                            #endif
+                        guard let reponse = responseCheck else {
+                            self.onDoneBlock!((nil,errorDescCheck))
                             return
                         }
 
-                        if let walletName = walletName {
-                            UserDefaults.standard.setValue(walletName, forKey: "walletName")
+                        guard let _ = errorDescCheck else {
+                            self.onDoneBlock!((reponse as Any,nil))
+                            return
                         }
-
-                        self.executeRPCCommand(method: method, param: param) { [weak self] (response, errorDesc) in
-                            guard let self = self else { return }
-
-                            guard let response = response else {
-                                self.sendResponseToRelay(response: response, errorDesc: errorDesc ?? "unknown error")
-                                return
-                            }
-                            self.sendResponseToRelay(response: response, errorDesc: errorDesc)
-                        }
+                        
+                        self.onDoneBlock!((reponse as Any,errorDescCheck))
+                        return
                     }
                 default:
                     break
@@ -228,25 +205,24 @@ class MakeRPCCall: WebSocketDelegate {
         return decryptedDict
     }
         
-    func processValidReceivedContent(content: String) -> (method:BTC_CLI_COMMAND?, param:Any?, wallet: String?, response:Any?, errorDesc:String?) {
-        guard let decryptedDict = decryptedDict(content: content) else {return (nil,nil,nil,nil,nil)}
+    func processValidReceivedContent(content: String) -> (response:Any?, errorDesc:String?) {
+        guard let decryptedDict = decryptedDict(content: content) else {return (nil,nil)}
         #if DEBUG
         print("decryptedDict: \(decryptedDict)")
         #endif
         if let part = decryptedDict["part"] as? [String:Any] {
-            
             for (key, value) in part {
                 guard let m = Int("\(key.split(separator: ":")[0])"),
-                        let n = Int("\(key.split(separator: ":")[1])") else {
+                      let n = Int("\(key.split(separator: ":")[1])") else {
                     print("m of n parsing failed")
-                    return (nil,nil,nil,nil,nil)
+                    return (nil,nil)
                 }
                 
                 guard let encryptedValue = value as? String else {
                     guard let valueDict = value as? [String:Any] else {
-                        return (nil,nil,nil,nil,nil)
+                        return (nil,nil)
                     }
-                    return (nil,nil,nil,valueDict["response"], valueDict["errorDesc"] as? String)
+                    return (valueDict["response"], valueDict["errorDesc"] as? String)
                 }
                 
                 if m < n {
@@ -261,63 +237,39 @@ class MakeRPCCall: WebSocketDelegate {
                             
                             guard let nestedDecryptedDict = self.decryptedDict(content: entireEncryptedResponse) else {
                                 print("failed decrypting the entire response")
-                                return (nil,nil,nil,nil,"failed decrypting the entire response")
+                                return (nil,"failed decrypting the entire response")
                             }
                             
                             guard let nestedPart = nestedDecryptedDict["part"] as? [String:Any] else {
-                                return (nil,nil,nil,nil,"No nested part dictionary.")
+                                return (nil,"No nested part dictionary.")
                             }
                             
                             
                             for (_,value) in nestedPart {
                                 guard let valueDict = value as? [String:Any] else {
                                     print("failed getting the valueDict")
-                                    return (nil,nil,nil,nil,nil)
+                                    return (nil,nil)
                                 }
                                 
-                                return (nil,nil,nil,valueDict["response"],valueDict["errorDesc"] as? String)
+                                return (valueDict["response"],valueDict["errorDesc"] as? String)
                             }
                         }
                     }
                 }
             }
+        } else {
+            return(nil,nil)
         }
-        
-        guard let commandString = decryptedDict["command"] as? String else {
-            #if DEBUG
-            print("no command found")
-            #endif
-            guard decryptedDict["response"] != nil else {
-                #if DEBUG
-                print("no response")
-                #endif
-                return (nil,nil,nil,nil,decryptedDict["errorDesc"] as? String)
-            }
-            return (nil,nil,nil,decryptedDict["response"], decryptedDict["errorDesc"] as? String)
-        }
-        guard let method:BTC_CLI_COMMAND = .init(rawValue: commandString) else {
-            #if DEBUG
-            print("can not convert string to BTC_CLI_COMMAND")
-            #endif
-            return (nil,nil,nil,nil,nil)
-        }
-        guard let paramDict = decryptedDict["paramDict"] as? [String:Any] else {
-            #if DEBUG
-            print("unable to get paramDict, should at least be an empty dict.")
-            #endif
-            return (nil,nil,nil,nil,nil)
-        }
-        let param = paramDict["param"] as Any
-        let wallet = decryptedDict["wallet"] as? String
-        return (method, param, wallet, nil, nil)
+        return (nil, nil)
     }
     
-    func executeNostrRpc(method: BTC_CLI_COMMAND, param: Any) {
+    
+    func executeNostrRpc(method: BTC_CLI_COMMAND) {
         var walletName:String?
         if isWalletRPC(command: method) {
             walletName = UserDefaults.standard.string(forKey: "walletName")
         }
-        let dict:[String:Any] = ["command":method.rawValue,"paramDict":["param":param],"wallet":walletName ?? ""]
+        let dict:[String:Any] = ["command":method.stringValue,"paramDict":["param":method.paramDict],"wallet":walletName ?? ""]
         guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
             #if DEBUG
             print("converting to jsonData failing...")
@@ -327,43 +279,7 @@ class MakeRPCCall: WebSocketDelegate {
         let encryptedContent = Crypto.encryptNostr(jsonData)!.base64EncodedString()
         writeEvent(content: encryptedContent)
     }
-    
-    func sendResponseToRelay(response: Any?, errorDesc: String?) {
-        let mofn = "1:1"
-        let part:[String:Any] = ["part":[mofn:["response":response,"errorDesc":errorDesc ?? ""]]]
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: part, options: .prettyPrinted) else {
-            #if DEBUG
-            print("converting to jsonData failing...")
-            #endif
-            return
-        }
-        let encryptedContent = Crypto.encryptNostr(jsonData)!.base64EncodedString()
-        let count = encryptedContent.count
-        if count > 32000 {
-            var numberOfRequiredParts = count / 18000
-            if numberOfRequiredParts == 1 {
-                numberOfRequiredParts += 2
-            }
-            guard numberOfRequiredParts < 40 else {
-                onDoneBlock!((nil, "Event is too large requires 40 or more parts..."))
-                return
-            }
-            let parts = encryptedContent.split(by: count / numberOfRequiredParts)
-            for (i, part) in parts.enumerated() {
-                let partDict:[String:Any] = ["part":["\(i + 1):\(parts.count)":part]]
-                guard let partJsonData = try? JSONSerialization.data(withJSONObject: partDict, options: .prettyPrinted) else {
-                    #if DEBUG
-                    print("converting to jsonData failing...")
-                    #endif
-                    return
-                }
-                let encryptedContent = Crypto.encryptNostr(partJsonData)!.base64EncodedString()
-                writeEvent(content: encryptedContent)
-            }
-        } else {
-            writeEvent(content: encryptedContent)
-        }
-    }
+
     
     func writeEvent(content: String) {
         if let node = activeNode {
@@ -399,6 +315,7 @@ class MakeRPCCall: WebSocketDelegate {
         }
     }
     
+    
     func disconnect() {
         if socket != nil {
             self.socket.disconnect()
@@ -406,17 +323,14 @@ class MakeRPCCall: WebSocketDelegate {
         }
     }
     
-    func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
+    
+    func executeRPCCommand(method: BTC_CLI_COMMAND, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
         attempts += 1
         
         if let node = self.activeNode {
-            #if targetEnvironment(simulator)
-            guard self.connected  else { print("not connected"); return }
-            self.executeNostrRpc(method: method, param: param)
-            #else
-            if node.isNostr && !self.isiOSAppOnMac {
+            if node.isNostr {
                 if self.connected {
-                    self.executeNostrRpc(method: method, param: param)
+                    self.executeNostrRpc(method: method)
                 }
             } else {
                 guard let encAddress = node.onionAddress, let encUser = node.rpcuser, let encPassword = node.rpcpassword else {
@@ -445,9 +359,6 @@ class MakeRPCCall: WebSocketDelegate {
                     }
                 }
                 
-                var formattedParam = (param as! String).replacingOccurrences(of: "''", with: "")
-                formattedParam = formattedParam.replacingOccurrences(of: "'\"'\"'", with: "'")
-                
                 guard let url = URL(string: walletUrl) else {
                     completion((nil, "url error"))
                     return
@@ -470,17 +381,27 @@ class MakeRPCCall: WebSocketDelegate {
                 let loginString = String(format: "%@:%@", rpcusername, rpcpassword)
                 let loginData = loginString.data(using: String.Encoding.utf8)!
                 let base64LoginString = loginData.base64EncodedString()
-                let id = UUID()
+                let id = UUID().uuidString
                 
                 request.timeoutInterval = timeout
                 request.httpMethod = "POST"
                 request.addValue("Basic \(base64LoginString)", forHTTPHeaderField: "Authorization")
                 request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-                request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"\(id)\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}".data(using: .utf8)
+                
+                let dict:[String:Any] = ["jsonrpc":"1.0","id":id,"method":method.stringValue,"params":method.paramDict]
+                
+                guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
+                    #if DEBUG
+                    print("converting to jsonData failing...")
+                    #endif
+                    return
+                }
+                
+                request.httpBody = jsonData
                 
                 #if DEBUG
                 print("url = \(url)")
-                print("request: \("{\"jsonrpc\":\"1.0\",\"id\":\"\(id)\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}")")
+                print("request: \(dict)")
                 #endif
                 
                 var sesh = URLSession(configuration: .default)
@@ -496,7 +417,7 @@ class MakeRPCCall: WebSocketDelegate {
                         
                         guard let error = error else {
                             if self.attempts < 20 {
-                                self.executeRPCCommand(method: method, param: param, completion: completion)
+                                self.executeRPCCommand(method: method, completion: completion)
                             } else {
                                 self.attempts = 0
                                 completion((nil, "Unknown error, ran out of attempts"))
@@ -506,7 +427,7 @@ class MakeRPCCall: WebSocketDelegate {
                         }
                         
                         if self.attempts < 20 {
-                            self.executeRPCCommand(method: method, param: param, completion: completion)
+                            self.executeRPCCommand(method: method, completion: completion)
                         } else {
                             self.attempts = 0
                             completion((nil, error.localizedDescription))
@@ -552,8 +473,6 @@ class MakeRPCCall: WebSocketDelegate {
                 
                 task.resume()
             }
-#endif
-            
         }
     }
 }

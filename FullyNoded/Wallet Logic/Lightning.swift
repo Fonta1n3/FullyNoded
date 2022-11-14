@@ -49,10 +49,8 @@ class Lightning {
             }
             
             if wallet.type != WalletType.descriptor.stringValue {
-                let index = Int(wallet.index) + 1
-                let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
-                
-                Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
+                let param:Derive_Addresses = .init(["descriptor":wallet.receiveDescriptor, "range": [index,index]])
+                Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { (response, errorMessage) in
                     guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
                         completion((nil, "Error getting closing address: \(errorMessage ?? "unknown")"))
                         return
@@ -61,14 +59,7 @@ class Lightning {
                     Lightning.fundchannelstart(channelId: channelId, amount: amount, address: address, completion: completion)
                 }
             } else {
-                Reducer.sharedInstance.makeCommand(command: .getnewaddress, param: "") { (response, errorMessage) in
-                    guard let address = response as? String else {
-                        completion((nil, "Error getting closing address: \(errorMessage ?? "unknown")"))
-                        return
-                    }
-                    
-                    Lightning.fundchannelstart(channelId: channelId, amount: amount, address: address, completion: completion)
-                }
+                completion((nil, "Descriptor wallet required."))
             }
         }
     }
@@ -103,7 +94,7 @@ class Lightning {
         
         let btcAmount = "\(rounded(number: Double(amount) / 100000000.0).avoidNotation)"
         
-        CreatePSBT.create(inputs: "", outputs: "\"\(address)\":\(btcAmount)") { (psbt, rawTx, errorMessage) in
+        CreatePSBT.create(inputs: [], outputs: [[address:btcAmount]]) { (psbt, rawTx, errorMessage) in
             guard errorMessage == nil else {
                 completion((nil, "Error creating funding psbt: \(errorMessage ?? "unknown error")"))
                 return
@@ -135,7 +126,8 @@ class Lightning {
                                _ address: String,
                                _ amount: Int, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
         
-        Reducer.sharedInstance.makeCommand(command: .decoderawtransaction, param: "\"\(rawTx)\"") { (response, errorMessage) in
+        let param:Decode_Raw_Tx = .init(["hexstring":rawTx])
+        Reducer.sharedInstance.makeCommand(command: .decoderawtransaction(param: param)) { (response, errorMessage) in
             guard let response = response as? [String:Any],
                   let txid = response["txid"] as? String,
                   let outputs = response["vout"] as? NSArray,
@@ -170,7 +162,8 @@ class Lightning {
                 return
             }
             
-            Reducer.sharedInstance.makeCommand(command: .sendrawtransaction, param: "\"\(rawTx)\"") { (response, errorMessage) in
+            let param:Send_Raw_Transaction = .init(["hexstring":rawTx])
+            Reducer.sharedInstance.makeCommand(command: .sendrawtransaction(param: param)) { (response, errorMessage) in
                 guard let _ = response as? String else {
                     completion((["rawTx":rawTx], "There was an issue broadcasting your funding transaction. Error: \(errorMessage ?? "unknown error")"))
                     return

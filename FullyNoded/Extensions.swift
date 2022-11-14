@@ -10,8 +10,8 @@ import Foundation
 import UIKit
 
 public extension Utxo {
-    var input: String {
-        return "{\"txid\":\"\(self.txid)\",\"vout\": \(self.vout),\"sequence\": 1}"
+    var input: [String:Any] {
+        return ["txid": self.txid, "vout": self.vout, "sequence": 1]
     }
 }
 

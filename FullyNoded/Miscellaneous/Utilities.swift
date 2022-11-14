@@ -224,20 +224,19 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
     switch command {
     case .listtransactions,
          .getbalance,
-         .getunconfirmedbalance,
          .getnewaddress,
          .getwalletinfo,
          .getrawchangeaddress,
          .importmulti,
          .importprivkey,
          .rescanblockchain,
-         .fundrawtransaction,
+         //.fundrawtransaction,
          .listunspent,
          .walletprocesspsbt,
          .gettransaction,
          .getaddressinfo,
          .bumpfee,
-         .signrawtransactionwithwallet,
+         //.signrawtransactionwithwallet,
          .listaddressgroupings,
          .listlabels,
          .getaddressesbylabel,
@@ -250,8 +249,8 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
          .walletpassphrasechange,
          .walletlock,
          .psbtbumpfee,
-         .importdescriptors,
-         .signmessage:
+         .importdescriptors:
+         //.signmessage:
         boolToReturn = true
         
     default:

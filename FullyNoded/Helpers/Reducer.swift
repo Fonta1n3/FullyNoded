@@ -14,7 +14,7 @@ class Reducer {
     
     private init() {}
     
-    func makeCommand(command: BTC_CLI_COMMAND, param: Any, completion: @escaping ((response: Any?, errorMessage: String?)) -> Void) {
+    func makeCommand(command: BTC_CLI_COMMAND, completion: @escaping ((response: Any?, errorMessage: String?)) -> Void) {
         let torRPC = MakeRPCCall.sharedInstance
         torRPC.onDoneBlock = { nostrResponse in
             
@@ -35,7 +35,7 @@ class Reducer {
         }
                 
         func makeTorCommand() {
-            torRPC.executeRPCCommand(method: command, param: param) { (response, errorDesc) in
+            torRPC.executeRPCCommand(method: command) { (response, errorDesc) in
                 if response != nil {
                     completion((response, nil))
                 } else if errorDesc != nil {
@@ -63,7 +63,8 @@ class Reducer {
         }
         
         func loadWallet(walletName: String) {
-            torRPC.executeRPCCommand(method: .loadwallet, param: "\"\(walletName)\"") { (response, errorDesc) in
+            //"\"\(walletName)\""
+            torRPC.executeRPCCommand(method: .loadwallet) { (response, errorDesc) in
                 if errorDesc == nil {
                     makeTorCommand()
                 } else if errorDesc!.contains("Duplicate -wallet filename specified") {

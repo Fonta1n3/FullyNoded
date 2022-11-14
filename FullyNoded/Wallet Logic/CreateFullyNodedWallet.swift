@@ -127,18 +127,18 @@ enum Keys {
         guard let mk = Keys.masterKey(words: signer, coinType: cointType, passphrase: ""),
               let xfp = Keys.fingerprint(masterKey: mk),
               let bip84Xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: cointType, account: 0),
-              let bip49Xpub = Keys.xpub(path: "m/49'/\(cointType)'/0'", masterKey: mk),
-              let bip44Xpub = Keys.xpub(path: "m/44'/\(cointType)'/0'", masterKey: mk),
-              let bip86Xprv = Keys.xprv(path: "m/86'/\(cointType)'/0'", masterKey: mk),// Needs to be a hot wallet until libwally updates for taproot
-              let bip48Xpub = Keys.xpub(path: "m/48'/\(cointType)'/0'/2'", masterKey: mk) else {
+              let bip49Xpub = Keys.xpub(path: "m/49h/\(cointType)h/0h", masterKey: mk),
+              let bip44Xpub = Keys.xpub(path: "m/44h/\(cointType)h/0h", masterKey: mk),
+              let bip86Xprv = Keys.xprv(path: "m/86h/\(cointType)h/0h", masterKey: mk),// Needs to be a hot wallet until libwally updates for taproot
+              let bip48Xpub = Keys.xpub(path: "m/48h/\(cointType)h/0h/2h", masterKey: mk) else {
             return (nil, "Error deriving descriptors.")
         }
         
-        let cosigner = "wsh([\(xfp)/48'/\(cointType)'/0'/2']\(bip48Xpub)/0/*)"
-        let bip84 = "wpkh([\(xfp)/84'/\(cointType)'/0']\(bip84Xpub)/0/*)"
-        let bip49 = "sh(wpkh([\(xfp)/49'/\(cointType)'/0']\(bip49Xpub)/0/*))"
-        let bip86 = "tr([\(xfp)/86'/\(cointType)'/0']\(bip86Xprv)/0/*)"
-        let bip44 = "pkh([\(xfp)/44'/\(cointType)'/0']\(bip44Xpub)/0/*)"
+        let cosigner = "wsh([\(xfp)/48h/\(cointType)h/0h/2h]\(bip48Xpub)/0/*)"
+        let bip84 = "wpkh([\(xfp)/84h/\(cointType)h/0h]\(bip84Xpub)/0/*)"
+        let bip49 = "sh(wpkh([\(xfp)/49h/\(cointType)h/0h]\(bip49Xpub)/0/*))"
+        let bip86 = "tr([\(xfp)/86h/\(cointType)h/0h]\(bip86Xprv)/0/*)"
+        let bip44 = "pkh([\(xfp)/44h/\(cointType)h/0h]\(bip44Xpub)/0/*)"
         
         return ([bip84, bip49, bip44, cosigner, bip86], nil)
     }
@@ -198,7 +198,7 @@ enum Keys {
     
     static func bip84AccountXpub(masterKey: String, coinType: String, account: Int16) -> String? {
         guard let hdMasterKey = try? HDKey(base58: masterKey),
-            let path = try? BIP32Path(string: "m/84'/\(coinType)'/\(account)'"),
+            let path = try? BIP32Path(string: "m/84h/\(coinType)h/\(account)h"),
             let accountKey = try? hdMasterKey.derive(using: path) else { return nil }
         
         return accountKey.xpub

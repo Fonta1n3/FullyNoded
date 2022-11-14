@@ -152,7 +152,7 @@ class NodeLogic {
     }
     
     class func getPeerInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .getpeerinfo, param: "") { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .getpeerinfo) { (response, errorMessage) in
             if let peerInfo = response as? NSArray {
                 parsePeerInfo(peerInfo: peerInfo, completion: completion)
             } else {
@@ -162,7 +162,7 @@ class NodeLogic {
     }
     
     class func getNetworkInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .getnetworkinfo, param: "") { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .getnetworkinfo) { (response, errorMessage) in
             if let networkInfo = response as? NSDictionary {
                 parseNetworkInfo(networkInfo: networkInfo, completion: completion)
             } else {
@@ -172,7 +172,7 @@ class NodeLogic {
     }
     
     class func getMiningInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .getmininginfo, param: "") { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .getmininginfo) { (response, errorMessage) in
             if let miningInfo = response as? NSDictionary {
                 parseMiningInfo(miningInfo: miningInfo, completion: completion)
             } else {
@@ -182,7 +182,7 @@ class NodeLogic {
     }
     
     class func getUptime(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .uptime, param: "") { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .uptime) { (response, errorMessage) in
             if let uptime = response as? Double {
                 var toReturn = [String:Any]()
                 toReturn["uptime"] = Int(uptime)
@@ -194,7 +194,7 @@ class NodeLogic {
     }
     
     class func getMempoolInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .getmempoolinfo, param: "") { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .getmempoolinfo) { (response, errorMessage) in
             if let dict = response as? NSDictionary {
                 var mempoolInfo = [String:Any]()
                 mempoolInfo["mempoolCount"] = dict["size"] as? Int ?? 0
@@ -207,7 +207,8 @@ class NodeLogic {
     
     class func estimateSmartFee(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         let feeRate = UserDefaults.standard.integer(forKey: "feeTarget")
-        Reducer.sharedInstance.makeCommand(command: .estimatesmartfee, param: "\(feeRate)") { (response, errorMessage) in
+        let param:Estimate_Smart_Fee_Param = .init(["conf_target":feeRate])
+        Reducer.sharedInstance.makeCommand(command: .estimatesmartfee(param: param)) { (response, errorMessage) in
             if let result = response as? NSDictionary {
                 if let feeRate = result["feerate"] as? Double {
                     let btcperbyte = feeRate / 1000
@@ -228,7 +229,8 @@ class NodeLogic {
     
     class func loadSectionTwo(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
         if !walletDisabled {
-            Reducer.sharedInstance.makeCommand(command: .listtransactions, param: "\"*\", 100, 0, true") { (response, errorMessage) in
+            let param:List_Transactions = .init(["count": 100])
+            Reducer.sharedInstance.makeCommand(command: .listtransactions(param)) { (response, errorMessage) in
                 if let transactions = response as? NSArray {
                     parseTransactions(transactions: transactions)
                 }

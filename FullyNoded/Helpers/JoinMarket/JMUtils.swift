@@ -620,8 +620,9 @@ class JMUtils {
                 
                 // TODO: USE TIMELOCKED DESCRIPTOR INSTEAD
                 let desc = "addr(\(address))"
+                let param:Get_Descriptor_Info = .init(["descriptor": desc])
                 
-                OnchainUtils.getDescriptorInfo(desc) { (descriptorInfo, message) in
+                OnchainUtils.getDescriptorInfo(param) { (descriptorInfo, message) in
                     guard let descInfo = descriptorInfo else { return }
                     
                     let newDesc = descInfo.descriptor
@@ -639,7 +640,15 @@ class JMUtils {
                         if fnWalletStr.name == fnWallet {
                             CoreDataService.update(id: fnWalletStr.id, keyToUpdate: "watching", newValue: watching, entity: .wallets) { saved in
                                 // here we can import the address into core
-                                let params = "[{\"desc\": \"\(newDesc)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"JM Fidelity Bond Expiry \(date)\"}]"
+                                let params:Import_Descriptors = .init([
+                                    "requests":
+                                    ["desc": newDesc,
+                                     "active": false,
+                                     "timestamp": "now",
+                                     "internal": false,
+                                     "label": "JM Fidelity Bond Expiry \(date)"
+                                    ]
+                                ] as [String:Any])
                                 
                                 OnchainUtils.importDescriptors(params) { (imported, message) in
                                     completion((address, errorDesc))

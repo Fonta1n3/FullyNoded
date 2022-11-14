@@ -154,8 +154,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func processPsbt(_ psbt: String) {
         spinner.addConnectingView(vc: self, description: "processing psbt...")
-                
-        Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt)\", true, \"ALL\", true") { [weak self] (object, errorDescription) in
+        let param:Wallet_Process_PSBT = .init(["psbt": psbt])
+        Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt(param: param)) { [weak self] (object, errorDescription) in
             guard let self = self else { return }
             
             guard let dict = object as? NSDictionary, let processedPsbt = dict["psbt"] as? String else {
@@ -168,7 +168,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func finalizePsbt(_ psbt: String) {
-        Reducer.sharedInstance.makeCommand(command: .finalizepsbt, param: "\"\(psbt)\"") { [weak self] (object, errorDescription) in
+        let param:Finalize_Psbt = .init(["psbt": psbt])
+        Reducer.sharedInstance.makeCommand(command: .finalizepsbt(param)) { [weak self] (object, errorDescription) in
             guard let self = self else { return }
 
             guard let result = object as? NSDictionary, let complete = result["complete"] as? Bool else {
@@ -606,8 +607,13 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 let password = (alert.textFields![0] as UITextField).text ?? ""
                 
                 self.spinner.addConnectingView(vc: self, description: "Unlocking wallet...")
-                
-                Reducer.sharedInstance.makeCommand(command: .walletpassphrase, param: "\"\(password)\", 600") { [weak self] (response, errorMessage) in
+                let param:Wallet_Passphrase = .init(
+                    [
+                        "passphrase": password,
+                        "timeout": 600
+                    ]
+                )
+                Reducer.sharedInstance.makeCommand(command: .walletpassphrase(param: param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     self.spinner.removeConnectingView()
@@ -724,8 +730,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func bumpFee() {
         spinner.addConnectingView(vc: self, description: "increasing fee...")
-        
-        var bumpfee:BTC_CLI_COMMAND = .bumpfee
+        let paramDict:Bump_Fee = .init(["txid":txid])
+        var bumpfee:BTC_CLI_COMMAND = .bumpfee(param: paramDict)
         
         OnchainUtils.getWalletInfo { [weak self] (walletInfo, message) in
             guard let self = self else { return }
@@ -738,10 +744,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             if let privkeysenabled = walletInfo.private_keys_enabled, !privkeysenabled,
                 let version = UserDefaults.standard.object(forKey: "version") as? Int,
                 version >= 210000 {
-                bumpfee = .psbtbumpfee
+                bumpfee = .psbtbumpfee(param: paramDict)
             }
             
-            Reducer.sharedInstance.makeCommand(command: bumpfee, param: "\"\(self.txid)\"") { [weak self] (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: bumpfee) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let result = response as? NSDictionary,
@@ -818,11 +824,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             if self.unsignedPsbt == "" {
                 self.updateLabel("decoding raw transaction...")
-                self.executeNodeCommand(method: .decoderawtransaction, param: "\"\(self.signedRawTx)\"")
+                let param:Decode_Raw_Tx = .init(["hexstring":self.signedRawTx])
+                self.executeNodeCommand(method: .decoderawtransaction(param: param))
             } else {
                 self.updateLabel("decoding psbt...")
-                
-                self.executeNodeCommand(method: .decodepsbt, param: "\"\(self.unsignedPsbt)\"")
+                let param:Decode_Psbt = .init(["psbt":self.unsignedPsbt])
+                self.executeNodeCommand(method: .decodepsbt(param: param))
             }
         }
     }
@@ -831,10 +838,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         view.endEditing(true)
     }
     
-    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
+    func executeNodeCommand(method: BTC_CLI_COMMAND) {
         
         func send() {
-            Reducer.sharedInstance.makeCommand(command: .sendrawtransaction, param: param) { [weak self] (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: method) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let _ = response as? String else {
@@ -855,7 +862,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         func decodePsbt() {
-            Reducer.sharedInstance.makeCommand(command: .decodepsbt, param: param) { [weak self] (object, errorDesc) in
+            Reducer.sharedInstance.makeCommand(command: method) { [weak self] (object, errorDesc) in
                 guard let self = self else { return }
                 
                 guard let dict = object as? NSDictionary else {
@@ -912,7 +919,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         func decodeTx() {
-            Reducer.sharedInstance.makeCommand(command: .decoderawtransaction, param: param) { [weak self] (object, errorDesc) in
+            Reducer.sharedInstance.makeCommand(command: method) { [weak self] (object, errorDesc) in
                 guard let self = self else { return }
                 
                 guard let dict = object as? NSDictionary else {
@@ -998,7 +1005,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                             }
                             
                             if i + 1 == utxos.count && parseIt {
-                                self.parsePrevTx(method: .gettransaction, param: "\"\(txid)\", true", vout: vout, txid: txid)
+                                let param:Get_Tx = .init(["txid": txid, "verbose": true])
+                                self.parsePrevTx(method: .gettransaction(param), vout: vout, txid: txid)
                             } else if i + 1 == utxos.count && !parseIt {
                                 
                                 if index + 1 < self.inputArray.count {
@@ -1012,7 +1020,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     }
                 }
             } else {
-                parsePrevTx(method: .gettransaction, param: "\"\(txid)\", true", vout: vout, txid: txid)
+                let param:Get_Tx = .init(["txid": txid, "verbose": true])
+                parsePrevTx(method: .gettransaction(param), vout: vout, txid: txid)
             }
         }
     }
@@ -1179,7 +1188,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             self.updateLabel("verifying input #\(self.index + 1) out of \(self.inputTableArray.count)")
             
             if let address = inputTableArray[index]["address"] as? String, address != "unknown", address != "" {
-                Reducer.sharedInstance.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
+                let param:Get_Address_Info = .init(["address":address])
+                Reducer.sharedInstance.makeCommand(command: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     guard errorMessage == nil else {
@@ -1284,7 +1294,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             self.updateLabel("verifying output #\(self.index + 1) out of \(self.outputArray.count)")
             
             if let address = outputArray[index]["address"] as? String, address != "" {
-                Reducer.sharedInstance.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
+                let param:Get_Address_Info = .init(["address":address])
+                Reducer.sharedInstance.makeCommand(command: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     if let dict = response as? NSDictionary {
@@ -1357,8 +1368,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             if !alreadyBroadcast {
                 updateLabel("verifying mempool accept...")
-                
-                Reducer.sharedInstance.makeCommand(command: .testmempoolaccept, param: "[\"\(signedRawTx)\"]") { [weak self] (response, errorMessage) in
+                let param:Test_Mempool_Accept = .init(["rawtxs":[signedRawTx]])
+                Reducer.sharedInstance.makeCommand(command: .testmempoolaccept(param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     if let errorMessage = errorMessage {
@@ -1392,8 +1403,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let target = UserDefaults.standard.object(forKey: "feeTarget") as? Int ?? 432
         
         updateLabel("estimating smart fee...")
+        let param:Estimate_Smart_Fee_Param = .init(["conf_target": target])
         
-        Reducer.sharedInstance.makeCommand(command: .estimatesmartfee, param: "\(target)") { [weak self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .estimatesmartfee(param: param)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let dict = response as? NSDictionary, let feeRate = dict["feerate"] as? Double else {
@@ -1427,11 +1439,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
     }
     
-    func parsePrevTx(method: BTC_CLI_COMMAND, param: String, vout: Int, txid: String) {
+    func parsePrevTx(method: BTC_CLI_COMMAND, vout: Int, txid: String) {
         
         func decodeRaw() {
             updateLabel("decoding inputs previous output...")
-            Reducer.sharedInstance.makeCommand(command: .decoderawtransaction, param: param) { [weak self] (object, errorDescription) in
+            Reducer.sharedInstance.makeCommand(command: method) { [weak self] (object, errorDescription) in
                 guard let self = self else { return }
                 
                 guard let txDict = object as? NSDictionary, let outputs = txDict["vout"] as? NSArray else {
@@ -1446,7 +1458,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         func getRawTx() {
             updateLabel("fetching inputs previous output...")
-            Reducer.sharedInstance.makeCommand(command: .getrawtransaction, param: "\"\(txid)\"") { [weak self] (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: method) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let hex = response as? String else {
@@ -1458,7 +1470,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         return
                     }
                     
-                    Reducer.sharedInstance.makeCommand(command: .gettransaction, param: "\"\(txid)\", true") { (response, errorMessage) in
+                    let param_get_tx:Get_Tx = .init(["txid":txid, "verbose": true])
+                    Reducer.sharedInstance.makeCommand(command: .gettransaction(param_get_tx)) { (response, errorMessage) in
                         guard let dict = response as? NSDictionary, let hexToParse = dict["hex"] as? String else {
                             
                             guard let useEsplora = UserDefaults.standard.object(forKey: "useEsplora") as? Bool, useEsplora else {
@@ -1484,20 +1497,21 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                                     self.parsePrevTxOutput(outputs: [], vout: 0)
                                     return
                                 }
-                                
-                                self.parsePrevTx(method: .decoderawtransaction, param: "\"\(rawHex)\"", vout: vout, txid: txid)
+                                let param_decode_raw:Decode_Raw_Tx = .init(["hexstring":rawHex])
+                                self.parsePrevTx(method: .decoderawtransaction(param: param_decode_raw), vout: vout, txid: txid)
                             }
                             return
                         }
                         
-                        print("input #\(self.index + 1), searching for vout \(vout)")
-                        self.parsePrevTx(method: .decoderawtransaction, param: "\"\(hexToParse)\"", vout: vout, txid: txid)
+                        //print("input #\(self.index + 1), searching for vout \(vout)")
+                        let param_decode_raw:Decode_Raw_Tx = .init(["hexstring":hexToParse])
+                        self.parsePrevTx(method: .decoderawtransaction(param: param_decode_raw), vout: vout, txid: txid)
                     }
                     
                     return
                 }
-                
-                self.parsePrevTx(method: .decoderawtransaction, param: "\"\(hex)\"", vout: vout, txid: txid)
+                let param_decode_raw:Decode_Raw_Tx = .init(["hexstring":hex])
+                self.parsePrevTx(method: .decoderawtransaction(param: param_decode_raw), vout: vout, txid: txid)
             }
         }
         
@@ -2035,8 +2049,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         if walletIndex < walletsToCheck.count {
             let wallet = walletsToCheck[walletIndex]
             UserDefaults.standard.set(wallet, forKey: "walletName")
-            
-            Reducer.sharedInstance.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
+            let param:Get_Address_Info = .init(["address":address])
+            Reducer.sharedInstance.makeCommand(command: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
                 guard let self = self else { resetActiveWallet(); return }
                 
                 if let dict = response as? NSDictionary, let solvable = dict["solvable"] as? Bool, solvable {
@@ -2297,8 +2311,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func broadcastWithMyNode() {
         spinner.addConnectingView(vc: self, description: "broadcasting...")
-        
-        Reducer.sharedInstance.makeCommand(command: .sendrawtransaction, param: "\"\(self.signedRawTx)\"") { [weak self] (response, errorMesage) in
+        let param:Send_Raw_Transaction = .init(["hexstring":self.signedRawTx])
+        Reducer.sharedInstance.makeCommand(command: .sendrawtransaction(param: param)) { [weak self] (response, errorMesage) in
             guard let self = self else { return }
             
             guard let id = response as? String else {

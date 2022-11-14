@@ -7,6 +7,7 @@
 //
 
 import CryptoKit
+import RNCryptor
 
 enum Crypto {
     
@@ -78,20 +79,23 @@ enum Crypto {
     }
     
     static func encryptNostr(_ content: Data) -> Data? {
-        guard let key = KeyChain.getData("blindingKey") else {
-            return nil
-        }
-
-        return try? ChaChaPoly.seal(content, using: SymmetricKey(data: key)).combined
+//        guard let key = KeyChain.getData("blindingKey") else {
+//            return nil
+//        }
+//
+//        return try? ChaChaPoly.seal(content, using: SymmetricKey(data: key)).combined
+        let password = "hexagon unitedkingdom zero nobody alpha"
+        return RNCryptor.encrypt(data: content, withPassword: password)
     }
     
     static func decryptNostr(_ content: Data) -> Data? {
-        guard let key = KeyChain.getData("blindingKey"),
-            let box = try? ChaChaPoly.SealedBox.init(combined: content) else {
-                return nil
-        }
-        
-        return try? ChaChaPoly.open(box, using: SymmetricKey(data: key))
+//        guard let key = KeyChain.getData("blindingKey"),
+//            let box = try? ChaChaPoly.SealedBox.init(combined: content) else {
+//                return nil
+//        }
+//
+//        return try? ChaChaPoly.open(box, using: SymmetricKey(data: key))
+        return try? RNCryptor.decrypt(data: content, withPassword: "hexagon unitedkingdom zero nobody alpha")
     }
     
     static func decrypt(_ data: Data) -> Data? {

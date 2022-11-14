@@ -152,8 +152,8 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
             let wallet = wallets[index]
             let walletStruct = Wallet(dictionary: wallet)
             UserDefaults.standard.set(walletStruct.name, forKey: "walletName")
-            
-            OnchainUtils.listUnspent(param: "0") { [weak self] (utxos, message) in
+            let param:List_Unspent = .init(["minconf": 0])
+            OnchainUtils.listUnspent(param: param) { [weak self] (utxos, message) in
                 guard let self = self else { return }
                 
                 guard let utxos = utxos else {

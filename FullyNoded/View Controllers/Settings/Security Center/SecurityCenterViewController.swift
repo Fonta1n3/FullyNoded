@@ -197,7 +197,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                 changePassphrase()
                 
             case 2:
-                executNodeCommand(method: .walletlock, param: "")
+                executNodeCommand(method: .walletlock)
                 
             case 3:
                 decryptWallet()
@@ -328,10 +328,10 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         }
     }
     
-    func executNodeCommand(method: BTC_CLI_COMMAND, param: Any) {
+    func executNodeCommand(method: BTC_CLI_COMMAND) {
         let connectingView = ConnectingView()
         connectingView.addConnectingView(vc: self, description: "")
-        Reducer.sharedInstance.makeCommand(command: method, param: param) { [weak self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: method) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             if errorMessage == nil {
@@ -373,8 +373,8 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                 let textField1 = (alert.textFields![0] as UITextField).text
                 let textField2 = (alert.textFields![1] as UITextField).text
                 if textField1 != "" && textField2 != "" && textField1 == textField2 {
-                    vc.executNodeCommand(method: .encryptwallet, param: "\"\(textField1!)\"")
-                    
+                    let param: Encrypt_Wallet = .init(["passphrase":textField1!])
+                    vc.executNodeCommand(method: .encryptwallet(param))
                 } else {
                     alert.dismiss(animated: true, completion: {
                         DispatchQueue.main.async { [unowned vc = self] in
@@ -406,9 +406,10 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             let message = "Enter your passphrase\n\nThis will decrypt your wallet for 10 minutes\n\nAfter 10 minutes you will need to decrypt it again"
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             let decrypt = UIAlertAction(title: "Decrypt", style: .default) { [unowned vc = self] (alertAction) in
-                let textField = (alert.textFields![0] as UITextField).text
-                if textField != "" {
-                    vc.executNodeCommand(method: .walletpassphrase, param: "\"\(textField!)\", 600")
+                let text = (alert.textFields![0] as UITextField).text
+                if text != "" {
+                    let param: Wallet_Passphrase = .init(["passphrase":text, "timeout": 600])
+                    vc.executNodeCommand(method: .walletpassphrase(param: param))
                 }
             }
             alert.addTextField { (textField) in
@@ -433,7 +434,8 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                 let textField2 = (alert.textFields![1] as UITextField).text
                 let textField3 = (alert.textFields![2] as UITextField).text
                 if textField1 != "" && textField2 != "" && textField3 != "" && textField2 == textField3 {
-                    vc.executNodeCommand(method: .walletpassphrasechange, param: "\"\(textField1!)\", \"\(textField3!)\"")
+                    let param: Wallet_Change_Passphrase = .init(["oldpassphrase": textField1!, "newpassphrase": textField3!])
+                    vc.executNodeCommand(method: .walletpassphrasechange(param))
                 } else {
                     alert.dismiss(animated: true, completion: {
                         DispatchQueue.main.async { [unowned vc = self] in

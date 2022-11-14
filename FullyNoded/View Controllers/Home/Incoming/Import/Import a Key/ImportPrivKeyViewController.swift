@@ -116,9 +116,9 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                     
                     if walletInfo.descriptors != 0 {
                         self.importDescriptor(key: key)
-                    } else {
-                        self.importmulti(key: key)
-                    }
+                    }// else {
+                        //self.importmulti(key: key)
+                    //}
                 }
 
             default:
@@ -130,21 +130,22 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    private func importmulti(key: String) {
-        let param = "[{ \"scriptPubKey\": { \"address\": \"\(key)\" }, \"label\": \"\(self.label)\", \"timestamp\": \"now\", \"watchonly\": true, \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
-        
-        OnchainUtils.importMulti(param) { (imported, message) in
-            if imported {
-                self.triggerRescan()
-            } else {
-                self.connectingView.removeConnectingView()
-                showAlert(vc: self, title: "", message: message ?? "unknown error importmulti")
-            }
-        }
-    }
+//    private func importmulti(key: String) {
+//        let param = "[{ \"scriptPubKey\": { \"address\": \"\(key)\" }, \"label\": \"\(self.label)\", \"timestamp\": \"now\", \"watchonly\": true, \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
+//        
+//        OnchainUtils.importMulti(param) { (imported, message) in
+//            if imported {
+//                self.triggerRescan()
+//            } else {
+//                self.connectingView.removeConnectingView()
+//                showAlert(vc: self, title: "", message: message ?? "unknown error importmulti")
+//            }
+//        }
+//    }
     
     private func importDescriptor(key: String) {
-        OnchainUtils.getDescriptorInfo("addr(\(key))") { (descriptorInfo, message) in
+        let param:Get_Descriptor_Info = .init(["descriptor": "addr(\(key))"])
+        OnchainUtils.getDescriptorInfo(param) { (descriptorInfo, message) in
             if let message = message, message != "" {
                 self.connectingView.removeConnectingView()
                 showAlert(vc: self, title: "", message: message)
@@ -157,7 +158,16 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 return
             }
             
-            let param = "[{\"desc\": \"\(descriptorInfo.descriptor)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"\(self.label)\"}]"
+            let param:Import_Descriptors = .init([
+                "requests":
+                [
+                    "desc": descriptorInfo.descriptor,
+                    "active": false,
+                    "timestamp": "now",
+                    "internal": false,
+                    "label": self.label
+                ]
+            ] as [String:Any])
             
             OnchainUtils.importDescriptors(param) { (imported, message) in
                 self.connectingView.removeConnectingView()
@@ -201,7 +211,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func importPrivKey(param: String) {
-        Reducer.sharedInstance.makeCommand(command: .importprivkey, param: param) { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .importprivkey) { (response, errorMessage) in
             self.connectingView.removeConnectingView()
             if errorMessage == nil {
                 self.triggerRescan()

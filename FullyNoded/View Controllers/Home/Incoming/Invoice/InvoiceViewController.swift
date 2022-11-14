@@ -110,11 +110,11 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         view.layer.borderWidth = 0.5
     }
     
-    @IBAction func getAddressInfoAction(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            self?.performSegue(withIdentifier: "getAddressInfo", sender: self)
-        }
-    }
+//    @IBAction func getAddressInfoAction(_ sender: Any) {
+//        DispatchQueue.main.async { [weak self] in
+//            self?.performSegue(withIdentifier: "getAddressInfo", sender: self)
+//        }
+//    }
     
     @IBAction func shareAddressAction(_ sender: Any) {
         shareText(addressString)
@@ -308,9 +308,9 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { success in
             guard success else { return }
             
-            let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
+            let param:Derive_Addresses = .init(["descriptor":wallet.receiveDescriptor, "range":[index,index]])
             
-            Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
+                                                Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
@@ -331,17 +331,19 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     func fetchAddress() {
-        var params = ""
+        var addressType = ""
         
         if self.nativeSegwit {
-            params = "\"\", \"bech32\""
+            addressType = "bech32"
         } else if self.legacy {
-            params = "\"\", \"legacy\""
+            addressType = "legacy"
         } else if self.p2shSegwit {
-            params = "\"\", \"p2sh-segwit\""
+            addressType = "p2sh-segwit"
         }
         
-        self.getAddress(params)
+        let param:Get_New_Address = .init(["address_type":addressType])
+        
+        self.getAddress(param)
     }
     
     func showAddress(address: String) {
@@ -381,8 +383,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    func getAddress(_ params: String) {
-        Reducer.sharedInstance.makeCommand(command: .getnewaddress, param: params) { [weak self] (response, errorMessage) in
+    func getAddress(_ params: Get_New_Address) {
+        Reducer.sharedInstance.makeCommand(command: .getnewaddress(param: params)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let address = response as? String else {
@@ -496,11 +498,11 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         view.endEditing(true)
     }
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "getAddressInfo" {
-            guard let vc = segue.destination as? GetInfoViewController else { return }
-            vc.address = addressString
-            vc.getAddressInfo = true
-        }
-    }
+//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+//        if segue.identifier == "getAddressInfo" {
+//            guard let vc = segue.destination as? GetInfoViewController else { return }
+//            vc.address = addressString
+//            vc.getAddressInfo = true
+//        }
+//    }
 }

@@ -321,9 +321,8 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     
     private func getAddress(_ wallet: Wallet, _ channel: [String:Any]) {
         let index = Int(wallet.index) + 1
-        let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
-        
-        Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
+        let param:Derive_Addresses = .init(["descriptor": wallet.receiveDescriptor, "range":[index,index]])
+        Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let addresses = response as? NSArray, let address = addresses[0] as? String else {

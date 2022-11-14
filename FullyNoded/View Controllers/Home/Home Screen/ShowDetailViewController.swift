@@ -56,7 +56,7 @@ class ShowDetailViewController: UIViewController, UITextViewDelegate, UINavigati
     
     private func getTotalSupply() {
         spinner.addConnectingView(vc: self, description: "Auditing every single utxo with your node. This requires a low time preference...")
-        Reducer.sharedInstance.makeCommand(command: .gettxoutsetinfo, param: "") { [weak self] (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .gettxoutsetinfo) { [weak self] (response, errorMessage) in
             if let dict = response as? NSDictionary {
                 if let total = dict["total_amount"] as? Double, let utxos = dict["txouts"] as? Int {
                     self?.utxoCount = utxos
@@ -98,45 +98,45 @@ class ShowDetailViewController: UIViewController, UITextViewDelegate, UINavigati
         if (URL.absoluteString == releases) || (URL.absoluteString == bitcoinp2pnetwork) {
             UIApplication.shared.open(URL) { (Bool) in }
         } else {
-            getInfoHelpText()
+            //getInfoHelpText()
         }
         return false
     }
     
-    private func showHelp() {
-        DispatchQueue.main.async { [weak self] in
-            self?.performSegue(withIdentifier: "showHelpSegue", sender: self)
-        }
-    }
+//    private func showHelp() {
+//        DispatchQueue.main.async { [weak self] in
+//            self?.performSegue(withIdentifier: "showHelpSegue", sender: self)
+//        }
+//    }
     
-    private func getInfoHelpText() {
-        let connectingView = ConnectingView()
-        connectingView.addConnectingView(vc: self, description: "help \(command)...")
-        Reducer.sharedInstance.makeCommand(command: .help, param: "\"\(command)\"") { [weak self] (response, errorMessage) in
-            if let helpCheck = response as? String {
-                connectingView.removeConnectingView()
-                self?.helpText = helpCheck
-                self?.showHelp()
-            }
-        }
-    }
+//    private func getInfoHelpText() {
+//        let connectingView = ConnectingView()
+//        connectingView.addConnectingView(vc: self, description: "help \(command)...")
+//        Reducer.sharedInstance.makeCommand(command: .help, param: "\"\(command)\"") { [weak self] (response, errorMessage) in
+//            if let helpCheck = response as? String {
+//                connectingView.removeConnectingView()
+//                self?.helpText = helpCheck
+//                self?.showHelp()
+//            }
+//        }
+//    }
     
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-        switch segue.identifier {
-        case "showHelpSegue":
-            if let vc = segue.destination as? HelpViewController {
-                vc.textViewText = helpText
-                vc.labelText = command
-            }
-        default:
-            break
-        }
-    }
+//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+//        // Get the new view controller using segue.destination.
+//        // Pass the selected object to the new view controller.
+//        switch segue.identifier {
+//        case "showHelpSegue":
+//            if let vc = segue.destination as? HelpViewController {
+//                vc.textViewText = helpText
+//                vc.labelText = command
+//            }
+//        default:
+//            break
+//        }
+//    }
     
 
 }

@@ -42,7 +42,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private var amountTotal = 0.0
     private let refresher = UIRefreshControl()
     private var unlockedUtxos = [Utxo]()
-    private var inputArray = [String]()
+    private var inputArray:[[String:Any]] = []
     private var selectedUTXOs = [Utxo]()
     private var spinner = ConnectingView()
     private var wallet:Wallet?
@@ -812,9 +812,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
         
         let numberOfOutputs = Int(totalAmount / denom)
-        
-        let inputs = inputArray.processedInputs
-        
+                
         guard let wallet = self.wallet else {
             self.spinner.removeConnectingView()
             showAlert(vc: self, title: "", message: "This feature is only available for Fully Noded wallets.")
@@ -825,7 +823,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         let stopIndex = (startIndex - 1) + numberOfOutputs
         let descriptor = wallet.receiveDescriptor
         
-        Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: "\"\(descriptor)\", [\(startIndex),\(stopIndex)]") { (response, errorMessage) in
+        let param:Derive_Addresses = .init(["descriptor": descriptor, "range": [startIndex,stopIndex]])
+        Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
             guard let addresses = response as? [String] else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "addresses not returned...", message: errorMessage ?? "unknown error.")
@@ -839,7 +840,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 outputs.append(output)
             }
             
-            CreatePSBT.create(inputs: inputs, outputs: outputs.processedOutputs) { (psbt, rawTx, errorMessage) in
+            CreatePSBT.create(inputs: self.inputArray, outputs: outputs) { (psbt, rawTx, errorMessage) in
                 guard let psbt = psbt else {
                     self.spinner.removeConnectingView()
                     showAlert(vc: self, title: "psbt not returned...", message: errorMessage ?? "unknown error.")
@@ -902,7 +903,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
         let descStruct = Descriptor(wallet.receiveDescriptor)
         
-        guard let address = utxo.address else {
+        guard let _ = utxo.address else {
             showAlert(vc: self, title: "Ooops", message: "We do not have an address or info on whether that utxo is watch-only or not.")
             return
         }
@@ -932,13 +933,22 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 if wallet.type == WalletType.descriptor.stringValue {
                     guard let desc = utxo.desc else { return }
                     
-                    let params = "[{\"desc\": \"\(desc)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"\(label)\"}]"
+                    let params:Import_Descriptors = .init([
+                        "requests": [
+                            "desc": desc,
+                            "active": false,
+                            "timestamp": "now",
+                            "internal": false,
+                            "label": label
+                        ]
+                    ] as [String:Any])
+                    
                     self.importdesc(params: params, utxo: utxo, label: label)
                     
-                } else {
-                    let param = "[{ \"scriptPubKey\": { \"address\": \"\(address)\" }, \"label\": \"\(label)\", \"timestamp\": \"now\", \"watchonly\": \(!isHot), \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
-                    self.importmulti(param: param, utxo: utxo, label: label)
-                }
+                }// else {
+//                    let param = "[{ \"scriptPubKey\": { \"address\": \"\(address)\" }, \"label\": \"\(label)\", \"timestamp\": \"now\", \"watchonly\": \(!isHot), \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
+//                    self.importmulti(param: param, utxo: utxo, label: label)
+                //}
             }
             
             alert.addTextField { (textField) in
@@ -953,24 +963,24 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func importdesc(params: String, utxo: Utxo, label: String) {
-        Reducer.sharedInstance.makeCommand(command: .importdescriptors, param: params) { [weak self] (response, errorMessage) in
+    private func importdesc(params: Import_Descriptors, utxo: Utxo, label: String) {
+        Reducer.sharedInstance.makeCommand(command: .importdescriptors(param: params)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             self.updateLocally(utxo: utxo, label: label)
         }
     }
     
-    private func importmulti(param: String, utxo: Utxo, label: String) {
-        OnchainUtils.importMulti(param) { (imported, message) in
-            if imported {
-                self.updateLocally(utxo: utxo, label: label)
-            } else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Something went wrong...", message: "error: \(message ?? "unknown error")")
-            }
-        }
-    }
+//    private func importmulti(param: String, utxo: Utxo, label: String) {
+//        OnchainUtils.importMulti(param) { (imported, message) in
+//            if imported {
+//                self.updateLocally(utxo: utxo, label: label)
+//            } else {
+//                self.spinner.removeConnectingView()
+//                showAlert(vc: self, title: "Something went wrong...", message: "error: \(message ?? "unknown error")")
+//            }
+//        }
+//    }
     
     private func updateLocally(utxo: Utxo, label: String) {
         func saved() {
@@ -1004,9 +1014,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private func lock(_ utxo: Utxo) {
         spinner.addConnectingView(vc: self, description: "locking...")
         
-        let param = "false, [{\"txid\":\"\(utxo.txid)\",\"vout\":\(utxo.vout)}]"
+        let param:Lock_Unspent = .init(["unlock":false, "transactions": ["txid":utxo.txid,"vout":utxo.vout]])
         
-        Reducer.sharedInstance.makeCommand(command: .lockunspent, param: param) { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .lockunspent(param)) { (response, errorMessage) in
             guard let success = response as? Bool else {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
@@ -1044,8 +1054,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
         for utxo in selectedUTXOs {
             amountTotal += utxo.amount ?? 0.0
-            let input = "{\"txid\":\"\(utxo.txid)\",\"vout\": \(utxo.vout),\"sequence\": 1}"
-            
+            let input:[String:Any] = ["txid": utxo.txid, "vout": utxo.vout, "sequence": 1]
             inputArray.append(input)
         }
     }
@@ -1072,7 +1081,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             self.addSpinner()
         }
         
-        OnchainUtils.listUnspent(param: "0") { [weak self] (utxos, message) in
+        let param:List_Unspent = .init(["minconf":0])
+        OnchainUtils.listUnspent(param: param) { [weak self] (utxos, message) in
             guard let self = self else { return }
             
             guard let utxos = utxos else {
@@ -1701,7 +1711,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             vc.isDirectSend = isDirectSend
             vc.mixdepth = mixdepth
             vc.jmWallet = jmWallet
-            vc.inputArray = inputArray
+            vc.inputs = inputArray
             vc.utxoTotal = amountTotal
             vc.address = depositAddress ?? ""
             
