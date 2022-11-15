@@ -147,7 +147,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func deriveAddresses(_ descriptor: String) {
-        let param:Derive_Addresses = .init(["descriptor":descriptor, "range":[0,2500]])
+        let param:Derive_Addresses = .init(["descriptor":descriptor, "range":[0,100]])
         Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { [weak self] (response, errorMessage) in
             if let addr = response as? NSArray {
                 for (i, address) in addr.enumerated() {
