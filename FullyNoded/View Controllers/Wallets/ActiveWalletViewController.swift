@@ -1030,6 +1030,9 @@ class ActiveWalletViewController: UIViewController {
                 guard let self = self else { return }
                 
                 self.fxRateLabel.text = rate.exchangeRate
+                if self.onchainBalanceFiat == "" {
+                    self.getWalletBalance()
+                }
             }
         }
     }

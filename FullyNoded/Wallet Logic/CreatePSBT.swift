@@ -11,7 +11,6 @@ import Foundation
 class CreatePSBT {
     
     class func create(inputs: [[String:Any]], outputs: [[String:Any]], completion: @escaping ((psbt: String?, rawTx: String?, errorMessage: String?)) -> Void) {
-        //var param = ""
         var paramDict:[String:Any] = [:]
         paramDict["outputs"] = outputs
         paramDict["inputs"] = inputs
