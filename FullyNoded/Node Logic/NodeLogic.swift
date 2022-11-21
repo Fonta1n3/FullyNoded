@@ -658,132 +658,132 @@ class NodeLogic {
         }
     }
     
-    private class func saveUtxoLocally(_ utxo: Utxo) {
-        activeWallet { wallet in
-            // Only save utxos for Fully Noded wallets
-            guard let wallet = wallet else { return }
-            
-            CoreDataService.retrieveEntity(entityName: .utxos) { savedUtxos in
-                if let savedUtxos = savedUtxos, savedUtxos.count > 0 {
-                    var alreadySaved = false
-                    var updateLabel = false
-                    
-                    for (i, savedUtxo) in savedUtxos.enumerated() {
-                        let savedUtxoStr = Utxo(savedUtxo)
-                        
-                        if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout {
-                            alreadySaved = true
-                            
-                            if savedUtxoStr.label == "" && utxo.label != "" {
-                                updateLabel = true
-                            }
-                        }
-
-                        if i + 1 == savedUtxos.count {
-                            if !alreadySaved {
-                                saveUtxo(utxo, wallet)
-                            } else if updateLabel {
-                                if savedUtxoStr.label != nil && savedUtxoStr.label != "" {
-                                    updateUtxoLabel(id: savedUtxoStr.id!, newLabel: savedUtxoStr.label ?? "")
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    saveUtxo(utxo, wallet)
-                }
-            }
-        }
-    }
+//    private class func saveUtxoLocally(_ utxo: Utxo) {
+//        activeWallet { wallet in
+//            // Only save utxos for Fully Noded wallets
+//            guard let wallet = wallet else { return }
+//            
+//            CoreDataService.retrieveEntity(entityName: .utxos) { savedUtxos in
+//                if let savedUtxos = savedUtxos, savedUtxos.count > 0 {
+//                    var alreadySaved = false
+//                    var updateLabel = false
+//                    
+//                    for (i, savedUtxo) in savedUtxos.enumerated() {
+//                        let savedUtxoStr = Utxo(savedUtxo)
+//                        
+//                        if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout {
+//                            alreadySaved = true
+//                            
+//                            if savedUtxoStr.label == "" && utxo.label != "" {
+//                                updateLabel = true
+//                            }
+//                        }
+//
+//                        if i + 1 == savedUtxos.count {
+//                            if !alreadySaved {
+//                                saveUtxo(utxo, wallet)
+//                            } else if updateLabel {
+//                                if savedUtxoStr.label != nil && savedUtxoStr.label != "" {
+//                                    updateUtxoLabel(id: savedUtxoStr.id!, newLabel: savedUtxoStr.label ?? "")
+//                                }
+//                            }
+//                        }
+//                    }
+//                } else {
+//                    saveUtxo(utxo, wallet)
+//                }
+//            }
+//        }
+//    }
     
-    class private func updateUtxoLabel(id: UUID, newLabel: String) {
-        CoreDataService.update(id: id, keyToUpdate: "label", newValue: newLabel, entity: .utxos) { success in
-            #if DEBUG
-            print("updated utxo locally: \(success)\nlabel: \(newLabel)")
-            #endif
-        }
-    }
+//    class private func updateUtxoLabel(id: UUID, newLabel: String) {
+//        CoreDataService.update(id: id, keyToUpdate: "label", newValue: newLabel, entity: .utxos) { success in
+//            #if DEBUG
+//            print("updated utxo locally: \(success)\nlabel: \(newLabel)")
+//            #endif
+//        }
+//    }
     
-    class private func saveUtxo(_ utxo: Utxo, _ wallet: Wallet) {
-        var dict = [String:Any]()
-        dict["txid"] = utxo.txid
-        dict["vout"] = utxo.vout
-        dict["label"] = utxo.label
-        dict["id"] = UUID()
-        dict["walletId"] = wallet.id
-        dict["address"] = utxo.address
-        dict["amount"] = utxo.amount
-        dict["desc"] = utxo.desc
-        dict["solvable"] = utxo.solvable
-        dict["confirmations"] = utxo.confs
-        dict["safe"] = utxo.safe
-        dict["spendable"] = utxo.spendable
-        
-        CoreDataService.saveEntity(dict: dict, entityName: .utxos) { success in
-            #if DEBUG
-            print("saved utxo locally: \(success)\nlabel: \(utxo.label ?? "")")
-            #endif
-        }
-    }
+//    class private func saveUtxo(_ utxo: Utxo, _ wallet: Wallet) {
+//        var dict = [String:Any]()
+//        dict["txid"] = utxo.txid
+//        dict["vout"] = utxo.vout
+//        dict["label"] = utxo.label
+//        dict["id"] = UUID()
+//        dict["walletId"] = wallet.id
+//        dict["address"] = utxo.address
+//        dict["amount"] = utxo.amount
+//        dict["desc"] = utxo.desc
+//        dict["solvable"] = utxo.solvable
+//        dict["confirmations"] = utxo.confs
+//        dict["safe"] = utxo.safe
+//        dict["spendable"] = utxo.spendable
+//
+//        CoreDataService.saveEntity(dict: dict, entityName: .utxos) { success in
+//            #if DEBUG
+//            print("saved utxo locally: \(success)\nlabel: \(utxo.label ?? "")")
+//            #endif
+//        }
+//    }
     
-    class func parseUtxos(utxos: [Utxo]) {
-        var amount = 0.0
-        var indexArray = [Int]()
-        
-        for (x, utxo) in utxos.enumerated() {
-            saveUtxoLocally(utxo)
-            
-            amount += utxo.amount!
-            
-            if let desc = utxo.desc {
-                let str = Descriptor(desc)
-                var paths:[String]!
-                
-                if str.isMulti {
-                    paths = str.derivationArray
-                } else {
-                    paths = [str.derivation]
-                }
-                
-                for path in paths {
-                    let arr = path.split(separator: "/")
-                    for (i, comp) in arr.enumerated() {
-                        if i + 1 == arr.count {
-                            if let int = Int(comp) {
-                                indexArray.append(int)
-                            }
-                        }
-                    }
-                }
-            }
-            
-            if x + 1 == utxos.count {
-                activeWallet { wallet in
-                    if let wallet = wallet {
-                        if indexArray.count > 0 {
-                            let maxIndex = indexArray.reduce(Int.min, { max($0, $1) })
-                            if wallet.index < maxIndex {
-                                CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(maxIndex), entity: .wallets) { success in
-                                    if success {
-                                        print("updated index from utxo")
-                                    } else {
-                                        print("failed to update index from utxo")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        if amount == 0.0 {
-            dictToReturn["onchainBalance"] = "0.00000000"
-        } else {
-            dictToReturn["onchainBalance"] = "\((round(100000000*amount)/100000000).avoidNotation)"
-        }
-        
-    }
+//    class func parseUtxos(utxos: [Utxo]) {
+//        var amount = 0.0
+//        var indexArray = [Int]()
+//
+//        for (x, utxo) in utxos.enumerated() {
+//            saveUtxoLocally(utxo)
+//
+//            amount += utxo.amount!
+//
+//            if let desc = utxo.desc {
+//                let str = Descriptor(desc)
+//                var paths:[String]!
+//
+//                if str.isMulti {
+//                    paths = str.derivationArray
+//                } else {
+//                    paths = [str.derivation]
+//                }
+//
+//                for path in paths {
+//                    let arr = path.split(separator: "/")
+//                    for (i, comp) in arr.enumerated() {
+//                        if i + 1 == arr.count {
+//                            if let int = Int(comp) {
+//                                indexArray.append(int)
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//
+//            if x + 1 == utxos.count {
+//                activeWallet { wallet in
+//                    if let wallet = wallet {
+//                        if indexArray.count > 0 {
+//                            let maxIndex = indexArray.reduce(Int.min, { max($0, $1) })
+//                            if wallet.index < maxIndex {
+//                                CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(maxIndex), entity: .wallets) { success in
+//                                    if success {
+//                                        print("updated index from utxo")
+//                                    } else {
+//                                        print("failed to update index from utxo")
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        if amount == 0.0 {
+//            dictToReturn["onchainBalance"] = "0.00000000"
+//        } else {
+//            dictToReturn["onchainBalance"] = "\((round(100000000*amount)/100000000).avoidNotation)"
+//        }
+//
+//    }
     
     // MARK: Section 1 parsers
     
