@@ -75,9 +75,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             guard let self = self else { return }
             
             DispatchQueue.background(delay: 0.2, completion:  {
-                MakeRPCCall.sharedInstance.connectToRelay { _ in
-                    DispatchQueue.main.async {
-                        NotificationCenter.default.post(name: .refreshNode, object: nil)
+                MakeRPCCall.sharedInstance.connectToRelay()
+                MakeRPCCall.sharedInstance.eoseReceivedBlock = { subscribed
+                    if subscribed {
+                        DispatchQueue.main.async {
+                            NotificationCenter.default.post(name: .refreshNode, object: nil)
+                        }
                     }
                 }
             })
