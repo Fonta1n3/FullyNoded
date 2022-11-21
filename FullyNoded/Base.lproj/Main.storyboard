@@ -5609,6 +5609,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="header" destination="DTI-AZ-owi" id="puY-tw-wga"/>
                         <outlet property="macaroonField" destination="cPw-T1-Xd9" id="k5s-S4-m2c"/>
                         <outlet property="macaroonHeader" destination="vSy-Vj-wcK" id="9Ue-6n-u0E"/>
+                        <outlet property="masterStackView" destination="qBh-RP-hWz" id="hkr-Yq-lZJ"/>
                         <outlet property="nodeLabel" destination="LM8-fJ-o94" id="kkD-Ha-NwZ"/>
                         <outlet property="nostrEncryptionWordsField" destination="PI1-qm-Nv4" id="KUM-FG-kL1"/>
                         <outlet property="nostrEncryptionWordsHeader" destination="F0q-UT-3X6" id="SJ6-ZU-g3c"/>
