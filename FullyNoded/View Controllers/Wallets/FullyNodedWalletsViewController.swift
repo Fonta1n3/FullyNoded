@@ -152,11 +152,11 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
             let wallet = wallets[index]
             let walletStruct = Wallet(dictionary: wallet)
             UserDefaults.standard.set(walletStruct.name, forKey: "walletName")
-            let param:List_Unspent = .init(["minconf": 0])
-            OnchainUtils.listUnspent(param: param) { [weak self] (utxos, message) in
+            
+            OnchainUtils.getBalance { [weak self] (balance, message) in
                 guard let self = self else { return }
                 
-                guard let utxos = utxos else {
+                guard let balance = balance else {
                     self.spinner.removeConnectingView()
                     
                     guard let message = message else {
@@ -173,22 +173,10 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                     return
                 }
                 
-                if utxos.count > 0 {
-                    var walletBalance = 0.0
-                    for (x, utxo) in utxos.enumerated() {
-                        self.totalBtcBalance += utxo.amount!
-                        walletBalance += utxo.amount!
-                        
-                        if x + 1 == utxos.count {
-                            self.wallets[self.index]["balance"] = walletBalance
-                            self.index += 1
-                            self.getTotals()
-                        }
-                    }
-                } else {
-                    self.index += 1
-                    self.getTotals()
-                }
+                self.wallets[self.index]["balance"] = balance
+                self.index += 1
+                self.totalBtcBalance += balance
+                self.getTotals()
             }
         } else {
             DispatchQueue.main.async { [weak self] in
