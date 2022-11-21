@@ -586,16 +586,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                                             CoreDataService.update(id: id, keyToUpdate: "nostrWords", newValue: encryptedWords, entity: .newNodes) { saved in
                                                 if saved {
                                                     UserDefaults.standard.setValue(txt, forKey: "nostrRelay")
-                                                    MakeRPCCall.sharedInstance.connected = false
-                                                    MakeRPCCall.sharedInstance.connectToRelay()
-                                                    MakeRPCCall.sharedInstance.eoseReceivedBlock = { subscribed in
-                                                        if subscribed {
-                                                            DispatchQueue.main.async {
-                                                                NotificationCenter.default.post(name: .refreshNode, object: nil)
-                                                            }
-                                                        } else {
-                                                            showAlert(vc: self, title: "", message: "error subscribing.")
-                                                        }
+                                                    DispatchQueue.main.async {
+                                                        NotificationCenter.default.post(name: .refreshNode, object: nil)
                                                     }
                                                 } else {
                                                     showAlert(vc: self, title: "", message: "Error updating encryption words.")
