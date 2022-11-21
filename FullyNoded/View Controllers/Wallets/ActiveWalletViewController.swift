@@ -89,8 +89,9 @@ class ActiveWalletViewController: UIViewController {
                 self.authenticated = response
                 
                 if response {
-                    self.getFxRate()
                     self.initialLoad = false
+                    self.loadTable()
+                    self.getFxRate()
                 } else {
                     showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
                     self.removeSpinner()
@@ -106,6 +107,7 @@ class ActiveWalletViewController: UIViewController {
         
         if initialLoad && authenticated {
             initialLoad = false
+            loadTable()
             getFxRate()
         } else if !initialLoad {
             let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
@@ -432,7 +434,11 @@ class ActiveWalletViewController: UIViewController {
                 guard let wallet = wallet else {
                     self.wallet = nil
                     self.walletLabel = UserDefaults.standard.object(forKey: "walletName") as? String ?? ""
-                    self.loadBalances()
+                    if self.walletLabel == "" {
+                        self.promptToChooseWallet()
+                    } else {
+                        self.loadBalances()
+                    }
                     return
                 }
                 
@@ -936,43 +942,40 @@ class ActiveWalletViewController: UIViewController {
     
     private func loadBalances() {
         NodeLogic.walletDisabled = walletDisabled
+        self.getWalletBalance(refreshTxs: true)
         
-        
-        
-        NodeLogic.loadBalances { [weak self] (response, errorMessage) in
-            guard let self = self else { return }
-            
-            guard let response = response else {
-                self.removeSpinner()
+        func loadOffchain() {
+            NodeLogic.loadBalances { [weak self] (response, errorMessage) in
+                guard let self = self else { return }
                 
-                guard let errorMessage = errorMessage else {
+                guard let response = response else {
+                    guard let errorMessage = errorMessage else { return }
+                    self.removeSpinner()
+                    showAlert(vc: self, title: "", message: errorMessage)
+                    
                     return
                 }
                 
-                guard errorMessage.contains("Wallet file not specified (must request wallet RPC through") || errorMessage.contains("No wallet is loaded") || errorMessage.contains("Looks like your last used wallet does not exist on this node, please activate a wallet") || errorMessage.contains("Requested wallet does not exist or is not loaded") else {
-                    displayAlert(viewController: self, isError: true, message: errorMessage)
-                    return
+                let balances = Balances(dictionary: response)
+                self.offchainBalanceBtc = balances.offchainBalance
+                self.offchainBalanceSats = balances.offchainBalance.btcToSats
+                
+                if let exchangeRate = self.fxRate {
+                    let offchainBalance = balances.offchainBalance.doubleValue
+                    let offchainBalanceFiat = offchainBalance * exchangeRate
+                    self.offchainBalanceFiat = round(offchainBalanceFiat).fiatString
                 }
-                
-                self.removeSpinner()
-                self.existingWallet = "multiple wallets"
-                self.chooseWallet()
-                
-                return
-            }
-            
-            let balances = Balances(dictionary: response)
-            self.offchainBalanceBtc = balances.offchainBalance
-            self.offchainBalanceSats = balances.offchainBalance.btcToSats
-            
-            if let exchangeRate = self.fxRate {
-                let offchainBalance = balances.offchainBalance.doubleValue
-                let offchainBalanceFiat = offchainBalance * exchangeRate
-                self.offchainBalanceFiat = round(offchainBalanceFiat).fiatString
             }
         }
         
-        self.getWalletBalance()
+        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
+            for node in nodes ?? [] {
+                let s = NodeStruct(dictionary: node)
+                if s.isLightning && s.isActive {
+                    loadOffchain()
+                }
+            }
+        }
     }
     
     private func chooseWallet() {
@@ -1006,8 +1009,6 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func getFxRate() {
-        self.loadTable()
-        
         FiatConverter.sharedInstance.getFxRate { [weak self] rate in
             guard let self = self else { return }
             
@@ -1018,7 +1019,7 @@ class ActiveWalletViewController: UIViewController {
                     self.fxRateLabel.text = "no fx rate data"
                 }
                 
-                self.loadTable()
+                //self.loadTable()
                 
                 return
             }
@@ -1030,9 +1031,8 @@ class ActiveWalletViewController: UIViewController {
                 guard let self = self else { return }
                 
                 self.fxRateLabel.text = rate.exchangeRate
-                if self.onchainBalanceFiat == "" {
-                    self.getWalletBalance()
-                }
+                self.onchainBalanceFiat = (self.onchainBalanceBtc.doubleValue * Double(rate)).fiatString
+                self.walletTable.reloadSections(.init(arrayLiteral: 0), with: .none)
             }
         }
     }
@@ -1158,7 +1158,7 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    private func getWalletBalance() {
+    private func getWalletBalance(refreshTxs: Bool) {
         if let _ = UserDefaults.standard.object(forKey: "walletName") as? String {
             OnchainUtils.getBalance { [weak self] (balance, message) in
                 guard let self = self else { return }
@@ -1180,7 +1180,9 @@ class ActiveWalletViewController: UIViewController {
                     
                     self.sectionZeroLoaded = true
                     self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                    self.loadTransactions()
+                    if refreshTxs {
+                        self.loadTransactions()
+                    }
                 }
             }
         } else {
@@ -1291,7 +1293,7 @@ class ActiveWalletViewController: UIViewController {
             }
         }
         
-        self.getWalletBalance()
+        self.getWalletBalance(refreshTxs: true)
     }
     
     private func loadTransactions() {
@@ -1366,6 +1368,7 @@ class ActiveWalletViewController: UIViewController {
         }
         
         addNavBarSpinner()
+        loadTable()
         getFxRate()
     }
     
