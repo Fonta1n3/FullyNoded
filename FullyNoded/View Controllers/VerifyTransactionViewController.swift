@@ -910,6 +910,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         func decodeTx() {
+            print("decodeTx")
             Reducer.sharedInstance.makeCommand(command: method) { [weak self] (object, errorDesc) in
                 guard let self = self else { return }
                 
@@ -1014,6 +1015,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 let param:Get_Tx = .init(["txid": txid, "verbose": true])
                 parsePrevTx(method: .gettransaction(param), vout: vout, txid: txid)
             }
+        } else if dict["txid"] as? String == "coinbase" {
+            self.parsePrevTxOutput(outputs: [], vout: 0)
         }
     }
     
@@ -1024,6 +1027,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     let dict = ["inputNumber":index + 1, "txid":txid, "vout":vout as Any] as [String : Any]
                     inputArray.append(dict)
                     
+                    if index + 1 == inputs.count {
+                        completion()
+                    }
+                } else if let _ = input["coinbase"] as? String {
+                    let dict = ["inputNumber":index + 1, "txid":"coinbase"] as [String : Any]
+                    inputArray.append(dict)
                     if index + 1 == inputs.count {
                         completion()
                     }
@@ -1431,6 +1440,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     func parsePrevTx(method: BTC_CLI_COMMAND, vout: Int, txid: String) {
+        print("parsePrevTx: \(method) \(method.paramDict)")
         func decodeRaw() {
             updateLabel("decoding inputs previous output...")
             Reducer.sharedInstance.makeCommand(command: method) { [weak self] (object, errorDescription) in
