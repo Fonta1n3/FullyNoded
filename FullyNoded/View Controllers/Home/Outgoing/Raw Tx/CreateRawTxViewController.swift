@@ -951,12 +951,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         var paramDict:[String:Any] = [:]
         
         paramDict["inputs"] = inputs
-        paramDict["outputs"] = [receivingAddress: (rounded(number: utxoTotal))]
+        paramDict["outputs"] = [[receivingAddress: (rounded(number: utxoTotal))]]
         paramDict["bip32derivs"] = true
         
-        if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
-            
-            
+        if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {            
             paramDict["options"] = ["includeWatching": true, "replaceable": true, "fee_rate": feeRate, "subtractFeeFromOutputs": [0], "changeAddress": receivingAddress]
             
             //param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
@@ -1107,7 +1105,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             var paramDict:[String:Any] = [:]
             var options:[String:Any] = [:]
             paramDict["inputs"] = inputArray
-            paramDict["outputs"] = [receivingAddress: (rounded(number: amount))]
+            paramDict["outputs"] = [[receivingAddress: (rounded(number: amount))]]
             paramDict["bip32derivs"] = true
             
             options["includeWathing"] = spendFromCold
