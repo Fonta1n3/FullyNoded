@@ -103,11 +103,11 @@ class MainMenuViewController: UIViewController {
         progressView.layer.zPosition = 1
         progressView.setNeedsFocusUpdate()
         
-        MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in
-            DispatchQueue.main.async { [weak self] in
-                self?.refreshNode()
-            }
-        }
+//        MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in
+//            DispatchQueue.main.async { [weak self] in
+//                self?.refreshNode()
+//            }
+//        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -298,10 +298,11 @@ class MainMenuViewController: UIViewController {
             self.initialLoad = false
             if node.isNostr {
                 MakeRPCCall.sharedInstance.connected = false
+                MakeRPCCall.sharedInstance.connectToRelay()
                 MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in
                     self.loadNode(node: node)
                 }
-                MakeRPCCall.sharedInstance.connectToRelay { _ in }
+               
             } else {
                 self.loadNode(node: node)
             }
@@ -867,18 +868,23 @@ class MainMenuViewController: UIViewController {
                     
                     if let node = self.activeNode {
                         if node.isNostr {
-                            MakeRPCCall.sharedInstance.connectToRelay { connected in
+                            MakeRPCCall.sharedInstance.connectToRelay()
+                            print("we connect here first after unlock")
+                            MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in
+                                MakeRPCCall.sharedInstance.connected = true
+                                print("this obviously passes ya?")
                                 DispatchQueue.main.async { [weak self] in
                                     guard let self = self else { return }
                                     self.removeBackView()
-                                    //self.refreshNode()
                                     DispatchQueue.main.async { [weak self] in
                                         self?.torProgressLabel.isHidden = true
                                         self?.progressView.isHidden = true
                                         self?.blurView.isHidden = true
+                                        self?.loadNode(node: node)
                                     }
                                 }
                             }
+                                
                         }
                     } else {
                         showAlert(vc: self, title: "", message: "No active nodes, please toggle one on.")

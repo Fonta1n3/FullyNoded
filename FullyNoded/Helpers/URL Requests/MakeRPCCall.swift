@@ -57,7 +57,6 @@ class MakeRPCCall: WebSocketDelegate {
     func didReceive(event: WebSocketEvent, client: WebSocket) {
         switch event {
         case .connected:
-            connected = true
             if let node = activeNode {
                 writeReqEvent(node: node)
             }
@@ -86,6 +85,8 @@ class MakeRPCCall: WebSocketDelegate {
                 switch i {
                 case 0:
                     if object as? String == "EOSE" {
+                        print("its an eose")
+                        self.connected = true
                         self.eoseReceivedBlock?(true)
                     }
                 case 2:
@@ -130,21 +131,16 @@ class MakeRPCCall: WebSocketDelegate {
         }
     }
     
-    func connectToRelay(completion: @escaping (Bool) -> Void) {
-        if !self.connected {
-            let relay = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
-            //ws://jgqaglhautb4k6e6i2g34jakxiemqp6z4wynlirltuukgkft2xuglmqd.onion//wss://nostr-pub.wellorder.net/
-            guard let url = URL(string: relay) else { return }
-            var request = URLRequest(url: url)
-            request.timeoutInterval = 5
-            self.socket = WebSocket(request: request)
-            self.socket.respondToPingWithPong = true
-            self.socket.delegate = self
-            self.socket.connect()
-            completion(true)
-        } else {
-            completion(true)
-        }
+    func connectToRelay() {
+        print("connectToRelay")
+        let relay = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
+        guard let url = URL(string: relay) else { return }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 5
+        self.socket = WebSocket(request: request)
+        self.socket.respondToPingWithPong = true
+        self.socket.delegate = self
+        self.socket.connect()
     }
     
     func getActiveNode(completion: @escaping ((NodeStruct?) -> Void)) {
@@ -226,6 +222,7 @@ class MakeRPCCall: WebSocketDelegate {
     
     
     func executeNostrRpc(method: BTC_CLI_COMMAND) {
+        print("executeNostrRpc")
         var walletName:String?
         if isWalletRPC(command: method) {
             walletName = UserDefaults.standard.string(forKey: "walletName")
@@ -291,15 +288,27 @@ class MakeRPCCall: WebSocketDelegate {
     
     
     func executeRPCCommand(method: BTC_CLI_COMMAND, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
+        print("executeRPCCommand")
         attempts += 1
         
         if let node = self.activeNode {
             if node.isNostr {
                 if self.connected {
                     self.executeNostrRpc(method: method)
+                } else {
+                    self.connectToRelay()
+                    self.eoseReceivedBlock = { subscribed in
+                        if subscribed {
+                            self.executeNostrRpc(method: method)
+                        } else {
+                            completion((nil, "Not subscribed to relay after attempting to auto reconnect."))
+                        }
+                    }
                 }
             } else {
-                guard let encAddress = node.onionAddress, let encUser = node.rpcuser, let encPassword = node.rpcpassword else {
+                guard let encAddress = node.onionAddress,
+                        let encUser = node.rpcuser,
+                        let encPassword = node.rpcpassword else {
                     completion((nil, "error getting encrypted node credentials"))
                     return
                 }

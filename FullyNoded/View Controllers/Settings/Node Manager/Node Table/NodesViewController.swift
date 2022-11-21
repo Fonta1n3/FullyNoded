@@ -212,7 +212,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                             if !selectedSwitch.isOn {
                                 MakeRPCCall.sharedInstance.disconnect()
                             } else {
-                                MakeRPCCall.sharedInstance.connectToRelay { _ in }
+                                MakeRPCCall.sharedInstance.connectToRelay()
                             }
                         }
                         vc.reloadTable()
@@ -229,7 +229,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     if !selectedSwitch.isOn {
                         MakeRPCCall.sharedInstance.disconnect()
                     } else {
-                        MakeRPCCall.sharedInstance.connectToRelay { _ in }
+                        MakeRPCCall.sharedInstance.connectToRelay()
                     }
                 }
                 
