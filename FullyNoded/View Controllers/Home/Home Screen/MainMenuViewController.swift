@@ -102,12 +102,6 @@ class MainMenuViewController: UIViewController {
         torProgressLabel.layer.zPosition = 1
         progressView.layer.zPosition = 1
         progressView.setNeedsFocusUpdate()
-        
-//        MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in
-//            DispatchQueue.main.async { [weak self] in
-//                self?.refreshNode()
-//            }
-//        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -282,7 +276,6 @@ class MainMenuViewController: UIViewController {
     }
     
     @objc func refreshNode() {
-        print("refreshNode")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -382,9 +375,6 @@ class MainMenuViewController: UIViewController {
     }
     
     @objc func refreshData(_ sender: Any) {
-//        MakeRPCCall.sharedInstance.connectToRelay { connected in
-//            print("connected: \(connected)")
-//        }
         refreshTable()
         refreshDataNow()
     }

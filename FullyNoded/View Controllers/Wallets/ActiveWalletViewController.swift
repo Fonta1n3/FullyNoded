@@ -1102,7 +1102,7 @@ class ActiveWalletViewController: UIViewController {
                             }
                             
                             let newTxStruct = TransactionStruct(dictionary: dict)
-                            guard let date = newTxStruct.date, let uuid = newTxStruct.id else { print("actually failing here"); return }
+                            guard let date = newTxStruct.date, let uuid = newTxStruct.id else { return }
                             
                             self.addOriginRate(date, uuid)
                         }

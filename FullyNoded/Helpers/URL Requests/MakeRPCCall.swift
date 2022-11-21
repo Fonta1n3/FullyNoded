@@ -85,7 +85,6 @@ class MakeRPCCall: WebSocketDelegate {
                 switch i {
                 case 0:
                     if object as? String == "EOSE" {
-                        print("its an eose")
                         self.connected = true
                         self.eoseReceivedBlock?(true)
                     }
@@ -132,7 +131,6 @@ class MakeRPCCall: WebSocketDelegate {
     }
     
     func connectToRelay() {
-        print("connectToRelay")
         let relay = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
         guard let url = URL(string: relay) else { return }
         var request = URLRequest(url: url)
@@ -222,7 +220,6 @@ class MakeRPCCall: WebSocketDelegate {
     
     
     func executeNostrRpc(method: BTC_CLI_COMMAND) {
-        print("executeNostrRpc")
         var walletName:String?
         if isWalletRPC(command: method) {
             walletName = UserDefaults.standard.string(forKey: "walletName")
@@ -288,7 +285,6 @@ class MakeRPCCall: WebSocketDelegate {
     
     
     func executeRPCCommand(method: BTC_CLI_COMMAND, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
-        print("executeRPCCommand")
         attempts += 1
         
         if let node = self.activeNode {

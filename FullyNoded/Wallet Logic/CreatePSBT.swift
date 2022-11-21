@@ -19,22 +19,10 @@ class CreatePSBT {
         options["includeWatching"] = true
         options["replaceable"] = true
         
-        
         if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
-            //param = "[], ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate)}, true"
             options["feeRate"] = feeRate
-            
-//            if inputs != "" {
-//                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate)}, true"
-//                paramDict = inputs
-//            }
-            
         } else if let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int {
-//            param = "[], ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget)}, true"
-//
-//            if inputs != "" {
-//                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget)}, true"
-//            }
+
             options["conf_target"] = feeTarget
         }
         
@@ -66,30 +54,10 @@ class CreatePSBT {
                     options["changeAddress"] = changeAddress
                     paramDict["options"] = options
                     let param:Wallet_Create_Funded_Psbt = .init(paramDict)
-
-//                    if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
-//
-//                        //param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"changeAddress\": \"\(changeAddress)\"}'', true"
-//                        options["changeAddress"] = changeAddress
-//
-////                        if inputs != "" {
-////                            param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"changeAddress\": \"\(changeAddress)\"}'', true"
-////                        }
-//                    } else if let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int {
-//
-//                        param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
-//
-//                        if inputs != "" {
-//                            param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
-//                        }
-//                    }
-
                     create(param: param)
                 }
-
                 return
             }
-            
 
             let index = Int(wallet.index) + 1
 
@@ -108,24 +76,6 @@ class CreatePSBT {
                     options["changeAddress"] = changeAddress
                     paramDict["options"] = options
                     let param:Wallet_Create_Funded_Psbt = .init(paramDict)
-
-//                    if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
-//
-//                        param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"changeAddress\": \"\(changeAddress)\"}'', true"
-//
-//                        if inputs != "" {
-//                            param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"changeAddress\": \"\(changeAddress)\"}'', true"
-//                        }
-//
-//                    } else if let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int {
-//
-//                        param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
-//
-//                        if inputs != "" {
-//                            param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
-//                        }
-//                    }
-
                     create(param: param)
                 }
             }

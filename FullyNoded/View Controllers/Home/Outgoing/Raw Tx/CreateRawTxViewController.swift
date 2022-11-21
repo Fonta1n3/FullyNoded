@@ -1092,16 +1092,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 inputArray.append(utxo.input)
             }
             
-            //inputs = inputArray.processedInputs
-            
-//            var param = ""
-//
-//            if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
-//                param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(rounded(number: amount))}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
-//            } else {
-//                param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(rounded(number: amount))}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"conf_target\": \(self.ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
-//            }
-            
             var paramDict:[String:Any] = [:]
             var options:[String:Any] = [:]
             paramDict["inputs"] = inputArray
@@ -1115,11 +1105,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
             if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
                 options["fee_rate"] = feeRate
-                
-                //param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
             } else {
-                //param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
-                
                 options["conf_taget"] = self.ud.object(forKey: "feeTarget") as? Int ?? 432
             }
             
@@ -1202,25 +1188,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     @objc func tryRaw() {
         spinner.addConnectingView(vc: self, description: "creating psbt...")
-        
-        func convertOutputs() {
-//            for output in outputs {
-//                if let amount = output["amount"] {
-//                    if let address = output["address"] {
-//                        if address != "" {
-//                            outputs.append([address:amount.doubleValue])
-//                        }
-//                    }
-//                }
-//            }
-            
-//            if inputArray.count > 0 {
-//                self.inputsString = inputArray.processedInputs
-//            }
-            
-            //outputsString = outputs.processedOutputs
-            getRawTx()
-        }
         
         if outputs.count == 0 {
             if let amount = convertedAmount(), self.addressInput.text != "" {
@@ -1729,9 +1696,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                                 
             } else {
                 self.outputs.removeAll()
-                //self.outputsString = ""
-                //self.outputArray.removeAll()
-                
                 DispatchQueue.main.async {
                     self.outputsTable.reloadData()
                 }

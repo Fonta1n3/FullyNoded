@@ -48,6 +48,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard KeyChain.getData("UnlockPassword") != nil else {
             DispatchQueue.background(delay: 0.2, completion:  {
                 MakeRPCCall.sharedInstance.connectToRelay()
+                MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in }
             })
             if !isBooting && mgr?.state != .started && mgr?.state != .connected  {
                 mgr?.start(delegate: nil)

@@ -64,7 +64,7 @@ public enum BTC_CLI_COMMAND {
     case walletpassphrasechange(_ param: Wallet_Change_Passphrase)
     case gettxoutsetinfo
     case testmempoolaccept(_ param: Test_Mempool_Accept)
-    case psbtbumpfee(param: Bump_Fee)
+    case psbtbumpfee(param: PSBT_Bump_Fee)
     case importdescriptors(param: Import_Descriptors)
     
     var stringValue:String {
@@ -237,6 +237,8 @@ public enum BTC_CLI_COMMAND {
         case .finalizepsbt(let finalizePsbt):
             return finalizePsbt.param
         case .sendrawtransaction(let p):
+            return p.param
+        case .psbtbumpfee(param: let p):
             return p.param
         default:
             return [:]

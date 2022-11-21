@@ -721,8 +721,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func bumpFee() {
         spinner.addConnectingView(vc: self, description: "increasing fee...")
-        let paramDict:Bump_Fee = .init(["txid":txid])
-        var bumpfee:BTC_CLI_COMMAND = .bumpfee(param: paramDict)
+        let param_bump_fee:Bump_Fee = .init(["txid":self.txid])
+        let param_psbt_bump_fee:PSBT_Bump_Fee = .init(["txid":self.txid])
+        let bumpfee:BTC_CLI_COMMAND = .bumpfee(param: param_bump_fee)
+        let psbtBumpFee:BTC_CLI_COMMAND = .psbtbumpfee(param: param_psbt_bump_fee)
+        var command:BTC_CLI_COMMAND!
+        command = bumpfee
         
         OnchainUtils.getWalletInfo { [weak self] (walletInfo, message) in
             guard let self = self else { return }
@@ -735,10 +739,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             if let privkeysenabled = walletInfo.private_keys_enabled, !privkeysenabled,
                 let version = UserDefaults.standard.object(forKey: "version") as? Int,
                 version >= 210000 {
-                bumpfee = .psbtbumpfee(param: paramDict)
+                command = psbtBumpFee
             }
             
-            Reducer.sharedInstance.makeCommand(command: bumpfee) { [weak self] (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: command) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let result = response as? NSDictionary,
@@ -910,7 +914,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         func decodeTx() {
-            print("decodeTx")
             Reducer.sharedInstance.makeCommand(command: method) { [weak self] (object, errorDesc) in
                 guard let self = self else { return }
                 
@@ -1440,7 +1443,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     func parsePrevTx(method: BTC_CLI_COMMAND, vout: Int, txid: String) {
-        print("parsePrevTx: \(method) \(method.paramDict)")
         func decodeRaw() {
             updateLabel("decoding inputs previous output...")
             Reducer.sharedInstance.makeCommand(command: method) { [weak self] (object, errorDescription) in
@@ -2325,7 +2327,24 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     self.disableSendButton()
                     self.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "", message: "Transaction sent ✓")
+                    //showAlert(vc: self, title: "", message: "Transaction sent ✓")
+                    // should pop back to wallet view
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        let alert = UIAlertController(title: "Transaction sent ✓",
+                                                      message: "",
+                                                      preferredStyle: .alert)
+                        
+                        alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { [weak self] action in
+                            self?.navigationController?.popToRootViewController(animated: true)
+                        }))
+//                        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { [weak self] action in
+//                            self?.navigationController?.popToRootViewController(animated: true)
+//                        }))
+                        alert.popoverPresentationController?.sourceView = self.view
+                        self.present(alert, animated: true) {}
+                    }
                 } else {
                     self.spinner.removeConnectingView()
                     showAlert(vc: self, title: "Hmmm we got a strange response...", message: id)
