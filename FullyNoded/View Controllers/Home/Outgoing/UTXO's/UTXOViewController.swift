@@ -1099,11 +1099,11 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             DispatchQueue.background(delay: 0.0, completion: {
                 for (i, utxo) in utxos.enumerated() {
-                    var dateToSave:Date?
-                    var txUUID:UUID?
-                    var capGain:String?
-                    var originValue:String?
-                    var amountFiat:String?
+//                    var dateToSave:Date?
+//                    var txUUID:UUID?
+//                    var capGain:String?
+//                    var originValue:String?
+//                    var amountFiat:String?
                     
                     var utxoDict = utxo.dict
                     utxoDict["isJoinMarket"] = self.isJmarketWallet
@@ -1113,116 +1113,118 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                         
                         if i + 1 == utxos.count {
                             self.unlockedUtxos = self.unlockedUtxos.sorted { $0.confs ?? 0 < $1.confs ?? 0 }
+                            self.finishedLoading()
                             
-                            CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] savedUtxos in
-                                guard let self = self else { return }
-                                
-                                guard let savedUtxos = savedUtxos, savedUtxos.count > 0 else {
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                        self.finishedLoading()
-                                    }
-                                    
-                                    
-                                    return
-                                }
-                                
-                                for (u, unlockedUtxo) in self.unlockedUtxos.enumerated() {
-                                    
-                                    func loopSavedUtxos() {
-                                        for (s, savedUtxo) in savedUtxos.enumerated() {
-                                            let savedUtxoStr = Utxo(savedUtxo)
-                                            
-                                            /// We always use the Bitcoin Core address label as the utxo label, when recovering with a new node the user will see the
-                                            /// label the user added via Fully Noded. Fully Noded automatically saves the utxo labels.
-                                            
-                                            if let wallet = self.wallet {
-                                                
-                                                if savedUtxoStr.txid == unlockedUtxo.txid && savedUtxoStr.vout == unlockedUtxo.vout && wallet.label != savedUtxoStr.label {
-                                                    self.unlockedUtxos[i].label = savedUtxoStr.label
-                                                }
-                                            }
-                                            
-                                            if s + 1 == savedUtxos.count && u + 1 == self.unlockedUtxos.count {
-                                                self.finishedLoading()
-                                            }
-                                        }
-                                    }
-                                    
-                                    if unlockedUtxo.label == "" || unlockedUtxo.label == self.wallet?.label {
-                                        loopSavedUtxos()
-                                    } else if u + 1 == self.unlockedUtxos.count {
-                                        self.finishedLoading()
-                                    }
-                                }
-                            }
+//                            CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] savedUtxos in
+//                                guard let self = self else { return }
+//
+//                                guard let savedUtxos = savedUtxos, savedUtxos.count > 0 else {
+//                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+//                                        self.finishedLoading()
+//                                    }
+//
+//
+//                                    return
+//                                }
+//
+//                                for (u, unlockedUtxo) in self.unlockedUtxos.enumerated() {
+//
+//                                    func loopSavedUtxos() {
+//                                        for (s, savedUtxo) in savedUtxos.enumerated() {
+//                                            let savedUtxoStr = Utxo(savedUtxo)
+//
+//                                            /// We always use the Bitcoin Core address label as the utxo label, when recovering with a new node the user will see the
+//                                            /// label the user added via Fully Noded. Fully Noded automatically saves the utxo labels.
+//
+//                                            if let wallet = self.wallet {
+//
+//                                                if savedUtxoStr.txid == unlockedUtxo.txid && savedUtxoStr.vout == unlockedUtxo.vout && wallet.label != savedUtxoStr.label {
+//                                                    self.unlockedUtxos[i].label = savedUtxoStr.label
+//                                                }
+//                                            }
+//
+//                                            if s + 1 == savedUtxos.count && u + 1 == self.unlockedUtxos.count {
+//                                                self.finishedLoading()
+//                                            }
+//                                        }
+//                                    }
+//
+//                                    if unlockedUtxo.label == "" || unlockedUtxo.label == self.wallet?.label {
+//                                        loopSavedUtxos()
+//                                    } else if u + 1 == self.unlockedUtxos.count {
+//                                        self.finishedLoading()
+//                                    }
+//                                }
+//                            }
                         }
                     }
                     
                     let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
                     let amountBtc = utxo.amount!
                     utxoDict["amountSats"] = amountBtc.sats
-                    utxoDict["lifehash"] = LifeHash.image(utxo.address ?? "")
+                    //utxoDict["lifehash"] = LifeHash.image(utxo.address ?? "")
+                    finish()
                     
-                    CoreDataService.retrieveEntity(entityName: .transactions) { txs in
-                        if let txs = txs, txs.count > 0 {
-                            
-                            for (i, tx) in txs.enumerated() {
-                                let txStruct = TransactionStruct(dictionary: tx)
-                                
-                                if txStruct.txid == utxo.txid {
-                                    dateToSave = txStruct.date
-                                    txUUID = txStruct.id
-                                    
-                                    if txStruct.fiatCurrency == currency, let currentFxRate = self.fxRate {
-                                        let currentFiatValue = currentFxRate * amountBtc
-                                        amountFiat = currentFiatValue.fiatString
-                                        
-                                        if let originRate = txStruct.fxRate {
-                                            let originFiatValue = originRate * amountBtc
-                                            var gain = currentFiatValue - originFiatValue
-                                            
-                                            if originFiatValue > 0 {
-                                                originValue = originFiatValue.fiatString
-                                                
-                                                if gain > 1.0 {
-                                                    let ratio = gain / originFiatValue
-                                                    let percentage = Int(ratio * 100.0)
-                                                    
-                                                    if percentage > 1 {
-                                                        capGain = "gain of \(gain.fiatString) / \(percentage)%"
-                                                    } else {
-                                                        capGain = "gain of \(gain.fiatString)"
-                                                    }
-                                                    
-                                                } else if gain < 0.0 {
-                                                    gain = gain * -1.0
-                                                    let ratio = gain / originFiatValue
-                                                    let percentage = Int(ratio * 100.0)
-                                                    
-                                                    if percentage > 1 {
-                                                        capGain = "loss of \(gain.fiatString) / \(percentage)%"
-                                                    } else {
-                                                        capGain = "loss of \(gain.fiatString)"
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                
-                                if i + 1 == txs.count {
-                                    utxoDict["capGain"] = capGain
-                                    utxoDict["originValue"] = originValue
-                                    utxoDict["date"] = dateToSave
-                                    utxoDict["txUUID"] = txUUID
-                                    utxoDict["amountFiat"] = amountFiat
-                                    finish()
-                                }
-                            }
-                        } else {
-                            finish()
-                        }
-                    }
+//                    CoreDataService.retrieveEntity(entityName: .transactions) { txs in
+//                        if let txs = txs, txs.count > 0 {
+//
+//                            for (i, tx) in txs.enumerated() {
+//                                let txStruct = TransactionStruct(dictionary: tx)
+//
+//                                if txStruct.txid == utxo.txid {
+//                                    dateToSave = txStruct.date
+//                                    txUUID = txStruct.id
+//
+//                                    if txStruct.fiatCurrency == currency, let currentFxRate = self.fxRate {
+//                                        let currentFiatValue = currentFxRate * amountBtc
+//                                        amountFiat = currentFiatValue.fiatString
+//
+//                                        if let originRate = txStruct.fxRate {
+//                                            let originFiatValue = originRate * amountBtc
+//                                            var gain = currentFiatValue - originFiatValue
+//
+//                                            if originFiatValue > 0 {
+//                                                originValue = originFiatValue.fiatString
+//
+//                                                if gain > 1.0 {
+//                                                    let ratio = gain / originFiatValue
+//                                                    let percentage = Int(ratio * 100.0)
+//
+//                                                    if percentage > 1 {
+//                                                        capGain = "gain of \(gain.fiatString) / \(percentage)%"
+//                                                    } else {
+//                                                        capGain = "gain of \(gain.fiatString)"
+//                                                    }
+//
+//                                                } else if gain < 0.0 {
+//                                                    gain = gain * -1.0
+//                                                    let ratio = gain / originFiatValue
+//                                                    let percentage = Int(ratio * 100.0)
+//
+//                                                    if percentage > 1 {
+//                                                        capGain = "loss of \(gain.fiatString) / \(percentage)%"
+//                                                    } else {
+//                                                        capGain = "loss of \(gain.fiatString)"
+//                                                    }
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//
+//                                if i + 1 == txs.count {
+//                                    utxoDict["capGain"] = capGain
+//                                    utxoDict["originValue"] = originValue
+//                                    utxoDict["date"] = dateToSave
+//                                    utxoDict["txUUID"] = txUUID
+//                                    utxoDict["amountFiat"] = amountFiat
+//                                    finish()
+//                                }
+//                            }
+//                        } else {
+//                            finish()
+//                        }
+//                    }
                 }
             }
         )}
