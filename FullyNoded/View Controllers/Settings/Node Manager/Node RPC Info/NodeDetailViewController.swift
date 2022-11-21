@@ -24,6 +24,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var scanNow = false
     var isNostr = false
     
+    @IBOutlet weak var masterStackView: UIStackView!
     @IBOutlet weak var seeEncryptionWordsButton: UIButton!
     @IBOutlet weak var nostrEncryptionWordsField: UITextField!
     @IBOutlet weak var nostrEncryptionWordsHeader: UILabel!
@@ -57,6 +58,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        masterStackView.alpha = 0
         navigationController?.delegate = self
         configureTapGesture()
         nodeLabel.delegate = self
@@ -221,97 +223,97 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
-    @IBAction func recoverAction(_ sender: Any) {
-        confirmiCloudRecovery()
-    }
+//    @IBAction func recoverAction(_ sender: Any) {
+//        confirmiCloudRecovery()
+//    }
     
-    private func confirmiCloudRecovery() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let title = "Recover iCloud backup?"
-            let message = "You need to input the same encryption password that was used when you created the backup. If the incorrect password is entered your data will not be decrypted."
-            
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            
-            let recover = UIAlertAction(title: "Recover", style: .default) { [weak self] alertAction in
-                guard let self = self else { return }
-                
-                let text = (alert.textFields![0] as UITextField).text
-                let confirm = (alert.textFields![0] as UITextField).text
-                
-                guard let text = text,
-                      let confirm = confirm,
-                      text == confirm,
-                      let hash = self.hash(text) else {
-                    showAlert(vc: self, title: "", message: "Passwords don't match!")
-                    
-                    return
-                }
-                
-                self.spinner.addConnectingView(vc: self, description: "recovering...")
-                
-                BackupiCloud.recover(passwordHash: hash) { [weak self] (recovered, errorMess) in
-                    guard let self = self else { return }
-                    
-                    let message = errorMess ?? ""
-                    
-                    if message.contains("No data exists in iCloud") {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-                            BackupiCloud.recover(passwordHash: hash) { [weak self] (recovered, errorMess) in
-                                guard let self = self else { return }
-                                
-                                self.spinner.removeConnectingView()
-                                
-                                if recovered {
-                                    DispatchQueue.main.async { [weak self] in
-                                        guard let self = self else { return }
-                                        
-                                        self.navigationController?.popViewController(animated: true)
-                                        NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
-                                    }
-                                } else {
-                                    showAlert(vc: self, title: "", message: "Recovery failed... \(errorMess ?? "")")
-                                }
-                            }
-                        }
-                    } else {
-                        self.spinner.removeConnectingView()
-                        
-                        if recovered {
-                            DispatchQueue.main.async { [weak self] in
-                                guard let self = self else { return }
-                                
-                                self.navigationController?.popViewController(animated: true)
-                                NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
-                            }
-                        } else {
-                            showAlert(vc: self, title: "", message: "Recovery failed... \(errorMess ?? "")")
-                        }
-                    }
-                }
-            }
-            
-            alert.addTextField { textField in
-                textField.placeholder = "encryption password"
-                textField.isSecureTextEntry = true
-                textField.keyboardAppearance = .dark
-            }
-            
-            alert.addTextField { textField in
-                textField.placeholder = "confirm password"
-                textField.isSecureTextEntry = true
-                textField.keyboardAppearance = .dark
-            }
-            
-            alert.addAction(recover)
-            
-            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
-            alert.addAction(cancel)
-            
-            self.present(alert, animated:true, completion: nil)
-        }
-    }
+//    private func confirmiCloudRecovery() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            let title = "Recover iCloud backup?"
+//            let message = "You need to input the same encryption password that was used when you created the backup. If the incorrect password is entered your data will not be decrypted."
+//
+//            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+//
+//            let recover = UIAlertAction(title: "Recover", style: .default) { [weak self] alertAction in
+//                guard let self = self else { return }
+//
+//                let text = (alert.textFields![0] as UITextField).text
+//                let confirm = (alert.textFields![0] as UITextField).text
+//
+//                guard let text = text,
+//                      let confirm = confirm,
+//                      text == confirm,
+//                      let hash = self.hash(text) else {
+//                    showAlert(vc: self, title: "", message: "Passwords don't match!")
+//
+//                    return
+//                }
+//
+//                self.spinner.addConnectingView(vc: self, description: "recovering...")
+//
+//                BackupiCloud.recover(passwordHash: hash) { [weak self] (recovered, errorMess) in
+//                    guard let self = self else { return }
+//
+//                    let message = errorMess ?? ""
+//
+//                    if message.contains("No data exists in iCloud") {
+//                        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+//                            BackupiCloud.recover(passwordHash: hash) { [weak self] (recovered, errorMess) in
+//                                guard let self = self else { return }
+//
+//                                self.spinner.removeConnectingView()
+//
+//                                if recovered {
+//                                    DispatchQueue.main.async { [weak self] in
+//                                        guard let self = self else { return }
+//
+//                                        self.navigationController?.popViewController(animated: true)
+//                                        NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+//                                    }
+//                                } else {
+//                                    showAlert(vc: self, title: "", message: "Recovery failed... \(errorMess ?? "")")
+//                                }
+//                            }
+//                        }
+//                    } else {
+//                        self.spinner.removeConnectingView()
+//
+//                        if recovered {
+//                            DispatchQueue.main.async { [weak self] in
+//                                guard let self = self else { return }
+//
+//                                self.navigationController?.popViewController(animated: true)
+//                                NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+//                            }
+//                        } else {
+//                            showAlert(vc: self, title: "", message: "Recovery failed... \(errorMess ?? "")")
+//                        }
+//                    }
+//                }
+//            }
+//
+//            alert.addTextField { textField in
+//                textField.placeholder = "encryption password"
+//                textField.isSecureTextEntry = true
+//                textField.keyboardAppearance = .dark
+//            }
+//
+//            alert.addTextField { textField in
+//                textField.placeholder = "confirm password"
+//                textField.isSecureTextEntry = true
+//                textField.keyboardAppearance = .dark
+//            }
+//
+//            alert.addAction(recover)
+//
+//            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+//            alert.addAction(cancel)
+//
+//            self.present(alert, animated:true, completion: nil)
+//        }
+//    }
     
     private func hash(_ text: String) -> Data? {
         return Data(hexString: Crypto.sha256hash(text))
@@ -520,10 +522,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         CoreDataService.saveEntity(dict: vc.newNode, entityName: .newNodes) { [unowned vc = self] success in
                             if success {
                                 if shouldSubscribe {
-                                    if MakeRPCCall.sharedInstance.connected {
-                                        MakeRPCCall.sharedInstance.disconnect()
-                                        MakeRPCCall.sharedInstance.connectToRelay { _ in}
-                                    }
+                                    //if MakeRPCCall.sharedInstance.connected {
+                                        //MakeRPCCall.sharedInstance.disconnect()
+                                        MakeRPCCall.sharedInstance.connectToRelay()
+                                    //}
                                     
                                 }
                                 vc.nodeAddedSuccess()
@@ -585,9 +587,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                                                 if saved {
                                                     UserDefaults.standard.setValue(txt, forKey: "nostrRelay")
                                                     MakeRPCCall.sharedInstance.connected = false
-                                                    MakeRPCCall.sharedInstance.connectToRelay { _ in
-                                                        DispatchQueue.main.async {
-                                                            NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                                    MakeRPCCall.sharedInstance.connectToRelay()
+                                                    MakeRPCCall.sharedInstance.eoseReceivedBlock = { subscribed in
+                                                        if subscribed {
+                                                            DispatchQueue.main.async {
+                                                                NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                                            }
+                                                        } else {
+                                                            showAlert(vc: self, title: "", message: "error subscribing.")
                                                         }
                                                     }
                                                 } else {
@@ -818,6 +825,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             } else {
                 removeNostrStuff()
             }
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.masterStackView.alpha = 1
         }
     }
     
