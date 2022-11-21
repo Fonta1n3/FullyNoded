@@ -111,37 +111,37 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             icon.image = UIImage(systemName: "desktopcomputer")
             background.backgroundColor = .systemBlue
             
-        case 1:
-            switch indexPath.row {
-            case 0:
-                label.text = "Wallet backup"
-                icon.image = UIImage(systemName: "square.grid.3x1.folder.badge.plus")
-                background.backgroundColor = .systemGreen
-            case 1:
-                label.text = "Wallet recovery"
-                icon.image = UIImage(systemName: "square.grid.3x1.folder.badge.plus")
-                background.backgroundColor = .systemPurple
-            case 2:
-                label.text = "Create/update iCloud backup"
-                icon.image = UIImage(systemName: "icloud.and.arrow.up")
-                background.backgroundColor = .systemIndigo
-            case 3:
-                label.text = "Recover from iCloud"
-                icon.image = UIImage(systemName: "icloud.and.arrow.down")
-                background.backgroundColor = .systemBlue
-            case 4:
-                label.text = "Delete iCloud backup"
-                icon.image = UIImage(systemName: "xmark.icloud")
-                background.backgroundColor = .systemRed
-            case 5:
-                label.text = "iCloud health check"
-                icon.image = UIImage(systemName: "heart.text.square")
-                background.backgroundColor = .systemPink
-            default:
-                break
-            }
+        //case 1:
+//            switch indexPath.row {
+//            case 0:
+//                label.text = "Wallet backup"
+//                icon.image = UIImage(systemName: "square.grid.3x1.folder.badge.plus")
+//                background.backgroundColor = .systemGreen
+//            case 1:
+//                label.text = "Wallet recovery"
+//                icon.image = UIImage(systemName: "square.grid.3x1.folder.badge.plus")
+//                background.backgroundColor = .systemPurple
+//            case 2:
+//                label.text = "Create/update iCloud backup"
+//                icon.image = UIImage(systemName: "icloud.and.arrow.up")
+//                background.backgroundColor = .systemIndigo
+//            case 3:
+//                label.text = "Recover from iCloud"
+//                icon.image = UIImage(systemName: "icloud.and.arrow.down")
+//                background.backgroundColor = .systemBlue
+//            case 4:
+//                label.text = "Delete iCloud backup"
+//                icon.image = UIImage(systemName: "xmark.icloud")
+//                background.backgroundColor = .systemRed
+//            case 5:
+//                label.text = "iCloud health check"
+//                icon.image = UIImage(systemName: "heart.text.square")
+//                background.backgroundColor = .systemPink
+//            default:
+//                break
+//            }
             
-        case 2:
+        case 1:
             label.text = "Security Center"
             icon.image = UIImage(systemName: "lock.shield")
             background.backgroundColor = .systemOrange
@@ -292,31 +292,24 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.section {
-        case 0, 2:
+        case 0, 1:
             return settingsCell(indexPath)
             
-        case 1:
-            switch indexPath.row {
-            case 0, 1, 2, 3, 4, 5: return settingsCell(indexPath)
-            default:
-                return UITableViewCell()
-            }
-            
-        case 3:
+        case 2:
             switch indexPath.row {
             case 0: return esploraCell(indexPath)
             default:
                 return UITableViewCell()
             }
             
-        case 4:
+        case 3:
             if indexPath.row == 0 {
                 return blockchainInfoCell(indexPath)
             } else {
                 return coinDeskCell(indexPath)
             }
             
-        case 5:
+        case 4:
             let useBlockchainInfo = UserDefaults.standard.object(forKey: "useBlockchainInfo") as? Bool ?? true
             
             var currencies:[[String:String]] = blockchainInfoCurrencies
@@ -344,20 +337,17 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         switch section {
         case 0:
             textLabel.text = "Nodes"
-            
+                        
         case 1:
-            textLabel.text = "Backup/Recovery"
-            
-        case 2:
             textLabel.text = "Security"
             
-        case 3:
+        case 2:
             textLabel.text = "Privacy"
             
-        case 4:
+        case 3:
             textLabel.text = "Exchange Rate API"
             
-        case 5:
+        case 4:
             textLabel.text = "Fiat Currency"
             
         default:
@@ -369,31 +359,23 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        if authenticated {
-            return 6
-        } else {
-            return 0
-        }
+        guard authenticated else { return 0 }
+        return 5
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if authenticated {
-            if section == 4 {
-                return 2
-            } else if section == 5 {
-                let useBlockchainInfo = UserDefaults.standard.object(forKey: "useBlockchainInfo") as? Bool ?? true
-                if useBlockchainInfo {
-                    return blockchainInfoCurrencies.count
-                } else {
-                    return coindeskCurrencies.count
-                }
-            } else if section == 1 {
-                return 6
+        guard authenticated else { return 0 }
+        if section == 3 {
+            return 2
+        } else if section == 4 {
+            let useBlockchainInfo = UserDefaults.standard.object(forKey: "useBlockchainInfo") as? Bool ?? true
+            if useBlockchainInfo {
+                return blockchainInfoCurrencies.count
             } else {
-                return 1
+                return coindeskCurrencies.count
             }
         } else {
-            return 0
+            return 1
         }
     }
     
@@ -418,23 +400,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             }
             
         case 1:
-            switch indexPath.row {
-            case 0:
-                warnToBackup()
-            case 1:
-                alertToRecover()
-            case 2:
-                promptToEnableiCloud()
-            case 3:
-                confirmiCloudRecovery()
-            case 4:
-                promptToDeleteiCloud()
-            case 5:
-                healthCheck()
-            default:
-                break
-            }
-        case 2:
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
@@ -447,13 +412,13 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    private func healthCheck() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.performSegue(withIdentifier: "segueToHealthCheck", sender: self)
-        }
-    }
+//    private func healthCheck() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            self.performSegue(withIdentifier: "segueToHealthCheck", sender: self)
+//        }
+//    }
     
     @objc func toggleCurrency(_ sender: UISwitch) {
         let currency = sender.restorationIdentifier!
@@ -467,234 +432,234 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
 
-            self.settingsTable.reloadSections(IndexSet(arrayLiteral: 5), with: .fade)
+            self.settingsTable.reloadSections(IndexSet(arrayLiteral: 4), with: .fade)
         }
     }
     
-    private func promptToEnableiCloud() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let tit = "Create/update iCloud backup?"
-            
-            let mess = "Create an independent, encrypted iCloud database using a password of your choice. If you already created a backup this updates it.\n\nIf you forget your encryption password this backup will be completely useless! YOU MUST SAVE THE ENCRYPTION PASSWORD OFFLINE IN ORDER TO RECOVER YOUR BACKUP\n\nThis backs up signers, nodes, wallets, and Tor auth keys."
-            
-            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Create/update backup", style: .default, handler: { action in
-                self.confirmiCloudEnable()
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            self.present(alert, animated: true, completion: nil)
-        }
-    }
+//    private func promptToEnableiCloud() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            let tit = "Create/update iCloud backup?"
+//
+//            let mess = "Create an independent, encrypted iCloud database using a password of your choice. If you already created a backup this updates it.\n\nIf you forget your encryption password this backup will be completely useless! YOU MUST SAVE THE ENCRYPTION PASSWORD OFFLINE IN ORDER TO RECOVER YOUR BACKUP\n\nThis backs up signers, nodes, wallets, and Tor auth keys."
+//
+//            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+//
+//            alert.addAction(UIAlertAction(title: "Create/update backup", style: .default, handler: { action in
+//                self.confirmiCloudEnable()
+//            }))
+//
+//            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+//            self.present(alert, animated: true, completion: nil)
+//        }
+//    }
     
-    private func promptToDeleteiCloud() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let tit = "Delete iCloud backup?"
-            
-            let mess = "This will delete your iCloud backup!"
-            
-            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Delete iCloud backup", style: .destructive, handler: { action in
-                self.spinner.addConnectingView(vc: self, description: "deleting iCloud data...")
-                
-                BackupiCloud.destroy { destroyed in
-                    UserDefaults.standard.setValue(false, forKey: "iCloudBackup")
-                    self.spinner.removeConnectingView()
-                    
-                    if destroyed {
-                        let _ = KeyChain.remove(key: "iCloudSHA")
-                        
-                        showAlert(vc: self, title: "", message: "iCloud backup deleted.")
-                        
-                        DispatchQueue.main.async { [weak self] in
-                            guard let self = self else { return }
-                            
-                            self.settingsTable.reloadSections(IndexSet(arrayLiteral: 1), with: .none)
-                        }
-                    } else {
-                        showAlert(vc: self, title: "Error", message: "iCloud backup NOT deleted.")
-                    }
-                }
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            self.present(alert, animated: true, completion: nil)
-        }
-    }
+//    private func promptToDeleteiCloud() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            let tit = "Delete iCloud backup?"
+//
+//            let mess = "This will delete your iCloud backup!"
+//
+//            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+//
+//            alert.addAction(UIAlertAction(title: "Delete iCloud backup", style: .destructive, handler: { action in
+//                self.spinner.addConnectingView(vc: self, description: "deleting iCloud data...")
+//
+//                BackupiCloud.destroy { destroyed in
+//                    UserDefaults.standard.setValue(false, forKey: "iCloudBackup")
+//                    self.spinner.removeConnectingView()
+//
+//                    if destroyed {
+//                        let _ = KeyChain.remove(key: "iCloudSHA")
+//
+//                        showAlert(vc: self, title: "", message: "iCloud backup deleted.")
+//
+//                        DispatchQueue.main.async { [weak self] in
+//                            guard let self = self else { return }
+//
+//                            self.settingsTable.reloadSections(IndexSet(arrayLiteral: 1), with: .none)
+//                        }
+//                    } else {
+//                        showAlert(vc: self, title: "Error", message: "iCloud backup NOT deleted.")
+//                    }
+//                }
+//            }))
+//
+//            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+//            self.present(alert, animated: true, completion: nil)
+//        }
+//    }
     
     private func hash(_ text: String) -> Data? {
         return Data(hexString: Crypto.sha256hash(text))
     }
     
-    private func confirmiCloudEnable() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let title = "Create/update iCloud backup?"
-            let message = "You need to input a password which will be used to encrypt your iCloud backup."
-            
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            
-            let enable = UIAlertAction(title: "Create/update", style: .default) { [weak self] alertAction in
-                guard let self = self else { return }
-                
-                let text = (alert.textFields![0] as UITextField).text
-                let confirmText = (alert.textFields![1] as UITextField).text
-                
-                guard let text = text,
-                      let confirmText = confirmText,
-                      confirmText == text,
-                      let hash = self.hash(text) else {
-                    showAlert(vc: self, title: "", message: "Please ensure both encryption passwords match.")
-                    
-                    return
-                }
-                
-                self.createiCloudBackupNow(hash)
-            }
-            
-            alert.addTextField { textField in
-                textField.placeholder = "encryption password"
-                textField.isSecureTextEntry = true
-                textField.keyboardAppearance = .dark
-                textField.autocorrectionType = .no
-                textField.spellCheckingType = .no
-            }
-            
-            alert.addTextField { textField in
-                textField.placeholder = "confirm password"
-                textField.isSecureTextEntry = true
-                textField.keyboardAppearance = .dark
-                textField.autocorrectionType = .no
-                textField.spellCheckingType = .no
-            }
-            
-            alert.addAction(enable)
-            
-            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
-            alert.addAction(cancel)
-            
-            self.present(alert, animated:true, completion: nil)
-        }
-    }
+//    private func confirmiCloudEnable() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            let title = "Create/update iCloud backup?"
+//            let message = "You need to input a password which will be used to encrypt your iCloud backup."
+//
+//            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+//
+//            let enable = UIAlertAction(title: "Create/update", style: .default) { [weak self] alertAction in
+//                guard let self = self else { return }
+//
+//                let text = (alert.textFields![0] as UITextField).text
+//                let confirmText = (alert.textFields![1] as UITextField).text
+//
+//                guard let text = text,
+//                      let confirmText = confirmText,
+//                      confirmText == text,
+//                      let hash = self.hash(text) else {
+//                    showAlert(vc: self, title: "", message: "Please ensure both encryption passwords match.")
+//
+//                    return
+//                }
+//
+//                self.createiCloudBackupNow(hash)
+//            }
+//
+//            alert.addTextField { textField in
+//                textField.placeholder = "encryption password"
+//                textField.isSecureTextEntry = true
+//                textField.keyboardAppearance = .dark
+//                textField.autocorrectionType = .no
+//                textField.spellCheckingType = .no
+//            }
+//
+//            alert.addTextField { textField in
+//                textField.placeholder = "confirm password"
+//                textField.isSecureTextEntry = true
+//                textField.keyboardAppearance = .dark
+//                textField.autocorrectionType = .no
+//                textField.spellCheckingType = .no
+//            }
+//
+//            alert.addAction(enable)
+//
+//            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+//            alert.addAction(cancel)
+//
+//            self.present(alert, animated:true, completion: nil)
+//        }
+//    }
     
-    private func createiCloudBackupNow(_ passwordHash: Data) {
-        self.spinner.addConnectingView(vc: self, description: "creating iCloud backup...")
-        
-        BackupiCloud.backup(encryptionKey: passwordHash) { (backedup, message) in
-            self.spinner.removeConnectingView()
-            
-            guard backedup else {
-                showAlert(vc: self, title: "", message: message ?? "There was an error creating your iCould backup.")
-                
-                return
-            }
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                showAlert(vc: self, title: "", message: "Encrypted iCloud backup updated ✓")
-                self.settingsTable.reloadSections(IndexSet(arrayLiteral: 1), with: .none)
-            }
-        }
-    }
+//    private func createiCloudBackupNow(_ passwordHash: Data) {
+//        self.spinner.addConnectingView(vc: self, description: "creating iCloud backup...")
+//
+//        BackupiCloud.backup(encryptionKey: passwordHash) { (backedup, message) in
+//            self.spinner.removeConnectingView()
+//
+//            guard backedup else {
+//                showAlert(vc: self, title: "", message: message ?? "There was an error creating your iCould backup.")
+//
+//                return
+//            }
+//
+//            DispatchQueue.main.async { [weak self] in
+//                guard let self = self else { return }
+//
+//                showAlert(vc: self, title: "", message: "Encrypted iCloud backup updated ✓")
+//                self.settingsTable.reloadSections(IndexSet(arrayLiteral: 1), with: .none)
+//            }
+//        }
+//    }
     
-    private func confirmiCloudRecovery() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let title = "Recover iCloud backup?"
-            let message = "Input the encryption password that was used when you created this backup. Inputting the incorrect password here means your recovery data will get bricked."
-            
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            
-            let enable = UIAlertAction(title: "Recover", style: .default) { [weak self] alertAction in
-                guard let self = self else { return }
-                
-                let text = (alert.textFields![0] as UITextField).text
-                let confirmText = (alert.textFields![1] as UITextField).text
-                
-                guard let text = text,
-                      let confirmText = confirmText,
-                      text == confirmText,
-                      let hash = self.hash(text) else {
-                    showAlert(vc: self, title: "", message: "Passwords don't match.")
-                    
-                    return
-                }
-                
-                self.spinner.addConnectingView(vc: self, description: "recovering...")
-                
-                BackupiCloud.recover(passwordHash: hash) { [weak self] (recovered, message) in
-                    guard let self = self else { return }
-                    
-                    self.spinner.removeConnectingView()
-                    
-                    if recovered {
-                        let def = "Your data was recovered."
-                        showAlert(vc: self, title: "", message: message == "" ? def : message ?? def)
-                    } else {
-                        showAlert(vc: self, title: "", message: message ?? "There was an issue recovering your data... Please let us know about it.")
-                    }
-                }
-            }
-            
-            alert.addTextField { textField in
-                textField.placeholder = "encryption password"
-                textField.isSecureTextEntry = true
-                textField.keyboardAppearance = .dark
-                textField.autocorrectionType = .no
-                textField.spellCheckingType = .no
-            }
-            
-            alert.addTextField { textField in
-                textField.placeholder = "confirm password"
-                textField.isSecureTextEntry = true
-                textField.keyboardAppearance = .dark
-                textField.autocorrectionType = .no
-                textField.spellCheckingType = .no
-            }
-            
-            alert.addAction(enable)
-            
-            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
-            alert.addAction(cancel)
-            
-            self.present(alert, animated:true, completion: nil)
-        }
-    }
+//    private func confirmiCloudRecovery() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            let title = "Recover iCloud backup?"
+//            let message = "Input the encryption password that was used when you created this backup. Inputting the incorrect password here means your recovery data will get bricked."
+//
+//            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+//
+//            let enable = UIAlertAction(title: "Recover", style: .default) { [weak self] alertAction in
+//                guard let self = self else { return }
+//
+//                let text = (alert.textFields![0] as UITextField).text
+//                let confirmText = (alert.textFields![1] as UITextField).text
+//
+//                guard let text = text,
+//                      let confirmText = confirmText,
+//                      text == confirmText,
+//                      let hash = self.hash(text) else {
+//                    showAlert(vc: self, title: "", message: "Passwords don't match.")
+//
+//                    return
+//                }
+//
+//                self.spinner.addConnectingView(vc: self, description: "recovering...")
+//
+//                BackupiCloud.recover(passwordHash: hash) { [weak self] (recovered, message) in
+//                    guard let self = self else { return }
+//
+//                    self.spinner.removeConnectingView()
+//
+//                    if recovered {
+//                        let def = "Your data was recovered."
+//                        showAlert(vc: self, title: "", message: message == "" ? def : message ?? def)
+//                    } else {
+//                        showAlert(vc: self, title: "", message: message ?? "There was an issue recovering your data... Please let us know about it.")
+//                    }
+//                }
+//            }
+//
+//            alert.addTextField { textField in
+//                textField.placeholder = "encryption password"
+//                textField.isSecureTextEntry = true
+//                textField.keyboardAppearance = .dark
+//                textField.autocorrectionType = .no
+//                textField.spellCheckingType = .no
+//            }
+//
+//            alert.addTextField { textField in
+//                textField.placeholder = "confirm password"
+//                textField.isSecureTextEntry = true
+//                textField.keyboardAppearance = .dark
+//                textField.autocorrectionType = .no
+//                textField.spellCheckingType = .no
+//            }
+//
+//            alert.addAction(enable)
+//
+//            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+//            alert.addAction(cancel)
+//
+//            self.present(alert, animated:true, completion: nil)
+//        }
+//    }
     
-    private func alertToRecover() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.performSegue(withIdentifier: "segueToRecoveryDetail", sender: self)
-        }
-    }
+//    private func alertToRecover() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            self.performSegue(withIdentifier: "segueToRecoveryDetail", sender: self)
+//        }
+//    }
     
-    private func warnToBackup() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let tit = "WARNING!"
-            let mess = "THIS BACKUP DOES ***NOT*** INCLUDE ANY PRIVATE KEY MATERIAL!\n\nAlways backup your signers offline on paper or metal, ensuring you keep them safe and secure."
-            
-            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
-                self.alertToBackup()
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            self.present(alert, animated: true, completion: nil)
-        }
-    }
+//    private func warnToBackup() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            let tit = "WARNING!"
+//            let mess = "THIS BACKUP DOES ***NOT*** INCLUDE ANY PRIVATE KEY MATERIAL!\n\nAlways backup your signers offline on paper or metal, ensuring you keep them safe and secure."
+//
+//            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+//
+//            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
+//                self.alertToBackup()
+//            }))
+//
+//            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+//            self.present(alert, animated: true, completion: nil)
+//        }
+//    }
     
     private func alertToBackup() {
         DispatchQueue.main.async { [weak self] in
@@ -812,7 +777,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
 
-            self.settingsTable.reloadRows(at: [IndexPath(row: 0, section: 3)], with: .none)
+            self.settingsTable.reloadRows(at: [IndexPath(row: 0, section: 2)], with: .none)
         }
     }
     
@@ -822,7 +787,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
 
-            self.settingsTable.reloadSections(IndexSet(arrayLiteral: 4, 5), with: .fade)
+            self.settingsTable.reloadSections(IndexSet(arrayLiteral: 3, 4), with: .fade)
         }
     }
     
@@ -843,7 +808,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
 
-            self.settingsTable.reloadSections(IndexSet(arrayLiteral: 4, 5), with: .fade)
+            self.settingsTable.reloadSections(IndexSet(arrayLiteral: 3, 4), with: .fade)
         }
     }
         
