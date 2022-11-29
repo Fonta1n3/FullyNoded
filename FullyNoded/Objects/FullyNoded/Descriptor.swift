@@ -247,13 +247,15 @@ public struct Descriptor: CustomStringConvertible {
             dictionary["isMulti"] = false
             
             if descriptor.contains("[") && descriptor.contains("]") {
-                
                 let arr1 = descriptor.split(separator: "[")
                 dictionary["keysWithPath"] = ["[" + "\(arr1[1])"]
                 let arr2 = arr1[1].split(separator: "]")
                 let derivation = arr2[0]
                 dictionary["prefix"] = "[\(derivation)]"
-                dictionary["fingerprint"] = "\((derivation.split(separator: "/"))[0])"
+                let derivarr = derivation.split(separator: "/")
+                let index = derivarr[derivarr.count - 1]
+                dictionary["index"] = Int(index)
+                dictionary["fingerprint"] = "\(derivarr[0])"
                 let extendedKeyWithPath = arr2[1]
                 let arr4 = extendedKeyWithPath.split(separator: "/")
                 let extendedKey = arr4[0]
