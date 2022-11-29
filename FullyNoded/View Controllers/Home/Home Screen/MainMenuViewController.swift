@@ -101,6 +101,52 @@ class MainMenuViewController: UIViewController {
         torProgressLabel.layer.zPosition = 1
         progressView.layer.zPosition = 1
         progressView.setNeedsFocusUpdate()
+        migrateJmWallet()
+    }
+    
+    func migrateJmWallet() {
+        func deleteJmWallets() {
+            CoreDataService.deleteAllData(entity: .jmWallets) { _ in }
+        }
+        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmWallets in
+            guard let jmWallets = jmWallets, jmWallets.count > 0 else { return }
+            
+            CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+                guard let wallets = wallets, wallets.count > 0 else { return }
+                
+                for (i, jmWallet) in jmWallets.enumerated() {
+                    let jmWStrct = JMWallet(jmWallet)
+                    
+                    for (x, w) in wallets.enumerated() {
+                        if w["id"] != nil {
+                            let wStrct = Wallet(dictionary: w)
+                            if jmWStrct.fnWallet == wStrct.name {
+                                // same wallet we can update here
+                                CoreDataService.update(id: wStrct.id, keyToUpdate: "token", newValue: jmWStrct.token, entity: .wallets) { _ in
+                                    
+                                    CoreDataService.update(id: wStrct.id, keyToUpdate: "password", newValue: jmWStrct.password, entity: .wallets) { _ in
+                                        
+                                        CoreDataService.update(id: wStrct.id, keyToUpdate: "isJm", newValue: true, entity: .wallets) { _ in
+                                            
+                                            CoreDataService.update(id: wStrct.id, keyToUpdate: "jmWalletName", newValue: jmWStrct.name, entity: .wallets) { _ in
+                                                
+                                                if i + 1 == jmWallets.count && x + 1 == jmWallets.count {
+                                                    deleteJmWallets()
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } else if i + 1 == jmWallets.count  && x + 1 == jmWallets.count {
+                                deleteJmWallets()
+                            }
+                        } else if i + 1 == jmWallets.count  && x + 1 == jmWallets.count {
+                            deleteJmWallets()
+                        }
+                    }
+                }
+            }
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {

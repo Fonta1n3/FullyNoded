@@ -16,20 +16,20 @@ public struct JMWallet: CustomStringConvertible {
     var token:Data
     //let index:Int
     //let account:Int
-    //let fnWallet:String
+    let fnWallet:String
     //let descriptors: Data?
     //let bitcoinCoreWallet: String?
     //let fnWalletId: UUID?
     
     init(_ dictionary: [String: Any]) {
         id = dictionary["id"] as! UUID
-        name = dictionary["jmWalletName"] as! String
+        name = dictionary["name"] as! String
         password = dictionary["password"] as! Data
         //words = dictionary["words"] as! Data
         token = dictionary["token"] as! Data
         //account = Int(dictionary["account"] as! Int16)
         //index = Int(dictionary["index"] as! Int16)
-        //fnWallet = dictionary["fnWallet"] as? String ?? ""
+        fnWallet = dictionary["fnWallet"] as? String ?? ""
         //descriptors = dictionary["descriptors"] as? Data
         //bitcoinCoreWallet = dictionary["bitcoinCoreWallet"] as? String
         //fnWalletId = dictionary["fnWalletId"] as? UUID
