@@ -32,7 +32,7 @@ class ActiveWalletViewController: UIViewController {
     private var wallet:Wallet?
     private var isBolt11 = false
     private var fxRate:Double?
-    private var alertStyle = UIAlertController.Style.alert
+    private var alertStyle = UIAlertController.Style.actionSheet
     private let barSpinner = UIActivityIndicatorView(style: .medium)
     private let ud = UserDefaults.standard
     private let spinner = ConnectingView()
@@ -51,6 +51,7 @@ class ActiveWalletViewController: UIViewController {
     private var isAuthenticating = false
     private var initialLoad = true
     private var isRecovering = false
+    private var showOffchainBalance = false
     var fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     
     @IBOutlet weak private var currencyControl: UISegmentedControl!
@@ -480,12 +481,11 @@ class ActiveWalletViewController: UIViewController {
             
             self.walletTable.reloadData()
             self.removeSpinner()
-            self.getWalletInfo()
         }
     }
     
     private func updateTransactionArray() {
-        CoreDataService.retrieveEntity(entityName: .transactions) { [weak self] transactions in
+       CoreDataService.retrieveEntity(entityName: .transactions) { [weak self] transactions in
             guard let self = self else { return }
             
             guard let transactions = transactions, transactions.count > 0, self.transactionArray.count > 0 else {
@@ -494,22 +494,22 @@ class ActiveWalletViewController: UIViewController {
             }
             
             let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
-            
+
             for (i, transaction) in transactions.enumerated() {
-                let localTransactionStruct = TransactionStruct(dictionary: transaction)
+                
+               let localTransactionStruct = TransactionStruct(dictionary: transaction)
                 
                 for (t, tx) in self.transactionArray.enumerated() {
                     if (tx["txID"] as! String) == localTransactionStruct.txid {
                         self.transactionArray[t]["memo"] = localTransactionStruct.memo
                         self.transactionArray[t]["transactionLabel"] = localTransactionStruct.label
-                        
                         if let originRate = localTransactionStruct.fxRate, originRate > 0 {
                             if localTransactionStruct.fiatCurrency == currency {
                                 self.transactionArray[t]["originRate"] = originRate
                             }
                         }
                     }
-                    
+
                     if i + 1 == transactions.count && t + 1 == self.transactionArray.count {
                         self.finishedLoading()
                     }
@@ -518,24 +518,21 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
+    
     @objc func goToDetail(_ sender: UIButton) {
         spinner.addConnectingView(vc: self, description: "getting raw transaction...")
         
         guard let intString = sender.restorationIdentifier, let int = Int(intString) else { return }
-        
         let tx = transactionArray[int]
         let id = tx["txID"] as! String
         let param:Get_Tx = .init(["txid":id, "verbose": true])
         Reducer.sharedInstance.makeCommand(command: .gettransaction(param)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
-            
             self.spinner.removeConnectingView()
-            
             guard let dict = response as? NSDictionary, let hex = dict["hex"] as? String else {
                 showAlert(vc: self, title: "There was an issue getting the transaction.", message: errorMessage ?? "unknown error")
                 return
             }
-            
             DispatchQueue.main.async {
                 self.confs = Int(tx["confirmations"] as! String)!
                 self.hex = hex
@@ -544,36 +541,76 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    private func balancesCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = walletTable.dequeueReusableCell(withIdentifier: "BalancesCell", for: indexPath)
+    
+    private func onchainBalancesCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let cell = walletTable.dequeueReusableCell(withIdentifier: "OnBalancesCell", for: indexPath)
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.layer.borderWidth = 0.5
         cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
-        
+        if let offchainBalanceLabel = cell.viewWithTag(2) as? UILabel, let offchainBalanceView = cell.viewWithTag(66) {
+            offchainBalanceLabel.removeFromSuperview()
+            offchainBalanceView.removeFromSuperview()
+        }
         let onchainBalanceLabel = cell.viewWithTag(1) as! UILabel
-        let offchainBalanceLabel = cell.viewWithTag(2) as! UILabel
         
-        if onchainBalanceBtc == "" {
+        
+        if onchainBalanceBtc == "" || onchainBalanceBtc == "0.0" {
             onchainBalanceBtc = "0.00000000"
         }
-        
-        if offchainBalanceBtc == "" {
-            offchainBalanceBtc = "0.00000000"
-        }
-        
+                
         if isBtc {
             onchainBalanceLabel.text = onchainBalanceBtc
-            offchainBalanceLabel.text = offchainBalanceBtc
         }
         
         if isSats {
             onchainBalanceLabel.text = onchainBalanceSats
-            offchainBalanceLabel.text = offchainBalanceSats
         }
         
         if isFiat {
             onchainBalanceLabel.text = onchainBalanceFiat
+        }
+                
+        return cell
+    }
+    
+    private func offchainOnchainBalancesCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let cell = walletTable.dequeueReusableCell(withIdentifier: "OffOnBalancesCell", for: indexPath)
+        cell.layer.borderColor = UIColor.lightGray.cgColor
+        cell.layer.borderWidth = 0.5
+        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+        let offchainBalanceLabel = cell.viewWithTag(2) as! UILabel
+        let offchainBalanceView = cell.viewWithTag(66)!
+        let onchainBalanceLabel = cell.viewWithTag(1) as! UILabel
+        
+        if offchainBalanceBtc == "" {
+            offchainBalanceBtc = "0.00000000"
+        }
+        if isBtc {
+            offchainBalanceLabel.text = offchainBalanceBtc
+        }
+        if isSats {
+            offchainBalanceLabel.text = offchainBalanceSats
+        }
+        if isFiat {
             offchainBalanceLabel.text = offchainBalanceFiat
+        }
+        offchainBalanceLabel.alpha = 1
+        offchainBalanceView.alpha = 1
+        
+        if onchainBalanceBtc == "" || onchainBalanceBtc == "0.0" {
+            onchainBalanceBtc = "0.00000000"
+        }
+                
+        if isBtc {
+            onchainBalanceLabel.text = onchainBalanceBtc
+        }
+        
+        if isSats {
+            onchainBalanceLabel.text = onchainBalanceSats
+        }
+        
+        if isFiat {
+            onchainBalanceLabel.text = onchainBalanceFiat
         }
                 
         return cell
@@ -589,39 +626,26 @@ class ActiveWalletViewController: UIViewController {
         let categoryImage = cell.viewWithTag(1) as! UIImageView
         let amountLabel = cell.viewWithTag(2) as! UILabel
         let confirmationsLabel = cell.viewWithTag(3) as! UILabel
-        let utxoLabel = cell.viewWithTag(4) as! UILabel
         let dateLabel = cell.viewWithTag(5) as! UILabel
         let lightningImage = cell.viewWithTag(7) as! UIImageView
         let onchainImage = cell.viewWithTag(8) as! UIImageView
         let currentFiatValueLabel = cell.viewWithTag(9) as! UILabel
-        let memoLabel = cell.viewWithTag(10) as! UITextView
+        let memoLabel = cell.viewWithTag(10) as! UILabel
         let transactionLabel = cell.viewWithTag(11) as! UILabel
-        let originFiatValueLabel = cell.viewWithTag(12) as! UILabel
-        let fetchOriginRateButton = cell.viewWithTag(13) as! UIButton
         let seeDetailButton = cell.viewWithTag(14) as! UIButton
         let editLabelButton = cell.viewWithTag(15) as! UIButton
-        let loadLightningMemoButton = cell.viewWithTag(16) as! UIButton
         
         amountLabel.alpha = 1
         confirmationsLabel.alpha = 1
-        utxoLabel.alpha = 1
         dateLabel.alpha = 1
-        fetchOriginRateButton.alpha = 0
-        loadLightningMemoButton.alpha = 0
         
         let index = indexPath.section - 1
-        
-        fetchOriginRateButton.addTarget(self, action: #selector(getHistoricRate(_:)), for: .touchUpInside)
-        fetchOriginRateButton.restorationIdentifier = "\(index)"
-        
+                
         seeDetailButton.addTarget(self, action: #selector(goToDetail(_:)), for: .touchUpInside)
         seeDetailButton.restorationIdentifier = "\(index)"
         
         editLabelButton.addTarget(self, action: #selector(editTx(_:)), for: .touchUpInside)
         editLabelButton.restorationIdentifier = "\(index)"
-        
-        loadLightningMemoButton.addTarget(self, action: #selector(fetchMemo(_:)), for: .touchUpInside)
-        loadLightningMemoButton.restorationIdentifier = "\(index)"
         
         var dict = self.transactionArray[index]
         
@@ -629,34 +653,27 @@ class ActiveWalletViewController: UIViewController {
             dict = self.onchainTxArray[index]
         }
         
-        if showOffchain {
+        if showOffchain && offchainTxArray.count > 0 {
             dict = self.offchainTxArray[index]
-        }
-        
-        let selfTransfer = dict["selfTransfer"] as! Bool
-        
-        let confs = dict["confirmations"] as! String
-        
-        if confs.contains("complete") {
-            confirmationsLabel.text = "Sent"
-        } else if confs.contains("paid") {
-            confirmationsLabel.text = "Received"
-        } else if confs.contains("Sent") {
-            confirmationsLabel.text = "Sent"
-        } else {
-            confirmationsLabel.text = confs + " " + "confs"
-        }
-        
-        var utxoLabelText = dict["label"] as? String ?? "no utxo label"
-        
-        if utxoLabelText == "" || utxoLabelText == "," {
-            utxoLabelText = "no utxo label"
+            let confs = dict["confirmations"] as! String
+            
+            if confs.contains("complete") {
+                confirmationsLabel.text = "Sent"
+            } else if confs.contains("paid") {
+                confirmationsLabel.text = "Received"
+            } else if confs.contains("Sent") {
+                confirmationsLabel.text = "Sent"
+            } else {
+                confirmationsLabel.text = confs + " " + "confs"
+            }
         }
         
         let isOnchain = dict["onchain"] as? Bool ?? false
         if isOnchain {
             seeDetailButton.alpha = 1
             onchainImage.alpha = 1
+            let confs = dict["confirmations"] as! String
+            confirmationsLabel.text = confs + " " + "confs"
         } else {
             onchainImage.alpha = 0
         }
@@ -668,14 +685,6 @@ class ActiveWalletViewController: UIViewController {
             
             if !isOnchain {
                 seeDetailButton.alpha = 0
-            }
-            
-            if dict["memo"] as? String == nil || dict["memo"] as? String == "" || dict["memo"] as? String == "no transaction memo" {
-                if !isOnchain {
-                    loadLightningMemoButton.alpha = 1
-                }
-            } else {
-                loadLightningMemoButton.alpha = 0
             }
         } else {
             lightningImage.alpha = 0
@@ -690,10 +699,7 @@ class ActiveWalletViewController: UIViewController {
         let amountBtc = dict["amountBtc"] as! String
         let amountSats = dict["amountSats"] as! String
         let amountFiat = dict["amountFiat"] as! String
-        
-        utxoLabel.text = utxoLabelText
         editLabelButton.alpha = 1
-        fetchOriginRateButton.alpha = 1
         
         var gainText = ""
         
@@ -714,8 +720,6 @@ class ActiveWalletViewController: UIViewController {
                 originValueFiat = originValueFiat * -1.0
             }
             
-            originFiatValueLabel.text = originValueFiat.fiatString
-            
             if let exchangeRate = fxRate {
                 var gain = round((btcAmount * exchangeRate) - originValueFiat)
                 
@@ -726,11 +730,6 @@ class ActiveWalletViewController: UIViewController {
                     gainText = " / loss of \(gain.fiatString) / \(Int((gain / originValueFiat) * 100.0))%"
                 }
             }
-            fetchOriginRateButton.alpha = 0
-            
-        } else {
-            originFiatValueLabel.text = ""
-            fetchOriginRateButton.alpha = 1
         }
         
         if let _ = fxRate {
@@ -786,14 +785,6 @@ class ActiveWalletViewController: UIViewController {
             
             amountText = amountText.replacingOccurrences(of: "+", with: "")
             amountLabel.text = amountText
-        }
-        
-        if selfTransfer {
-            amountLabel.text = (amountLabel.text!).replacingOccurrences(of: "+", with: "")
-            amountLabel.text = (amountLabel.text!).replacingOccurrences(of: "-", with: "")
-            amountLabel.textColor = .darkGray
-            categoryImage.image = UIImage.init(systemName: "arrow.triangle.2.circlepath")
-            categoryImage.tintColor = .darkGray
         }
         
         return cell
@@ -942,7 +933,7 @@ class ActiveWalletViewController: UIViewController {
     
     private func loadBalances() {
         NodeLogic.walletDisabled = walletDisabled
-        self.getWalletBalance(refreshTxs: true)
+        self.getWalletBalance()
         
         func loadOffchain() {
             NodeLogic.loadBalances { [weak self] (response, errorMessage) in
@@ -965,13 +956,20 @@ class ActiveWalletViewController: UIViewController {
                     let offchainBalanceFiat = offchainBalance * exchangeRate
                     self.offchainBalanceFiat = round(offchainBalanceFiat).fiatString
                 }
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    self.walletTable.reloadSections(.init(arrayLiteral: 0), with: .none)
+                }
             }
         }
         
         CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
+            self.showOffchainBalance = false
             for node in nodes ?? [] {
                 let s = NodeStruct(dictionary: node)
                 if s.isLightning && s.isActive {
+                    self.showOffchainBalance = true
                     loadOffchain()
                 }
             }
@@ -990,16 +988,18 @@ class ActiveWalletViewController: UIViewController {
                 
                 for (i, coreWallet) in coreWallets.wallets.enumerated() {
                     for (x, localWallet) in localWallets.enumerated() {
-                        let localWalletStruct = Wallet(dictionary: localWallet)
-                        if coreWallet == localWalletStruct.name {
-                            walletExists = true
-                        }
-                        
-                        if i + 1 == coreWallets.wallets.count && x + 1 == localWallets.count {
-                            if walletExists {
-                                self.promptToChooseWallet()
-                            } else {
-                                self.promptToCreateWallet()
+                        if localWallet["id"] != nil {
+                            let localWalletStruct = Wallet(dictionary: localWallet)
+                            if coreWallet == localWalletStruct.name {
+                                walletExists = true
+                            }
+                            
+                            if i + 1 == coreWallets.wallets.count && x + 1 == localWallets.count {
+                                if walletExists {
+                                    self.promptToChooseWallet()
+                                } else {
+                                    self.promptToCreateWallet()
+                                }
                             }
                         }
                     }
@@ -1032,140 +1032,31 @@ class ActiveWalletViewController: UIViewController {
                 
                 self.fxRateLabel.text = rate.exchangeRate
                 self.onchainBalanceFiat = (self.onchainBalanceBtc.doubleValue * Double(rate)).fiatString
-                self.walletTable.reloadSections(.init(arrayLiteral: 0), with: .none)
+                //self.walletTable.reloadSections(.init(arrayLiteral: 0), with: .none)
             }
         }
     }
     
-    @objc func getHistoricRate(_ sender: UIButton) {
-        spinner.addConnectingView(vc: self, description: "fetching historic rate...")
-        
-        guard let intString = sender.restorationIdentifier, let int = Int(intString) else {
-            self.spinner.removeConnectingView()
-            showAlert(vc: self, title: "", message: "Unable to determine historic rate.")
-            return
-        }
-        
-        let tx = transactionArray[int]
-        let id = tx["txID"] as! String
-        
-        CoreDataService.retrieveEntity(entityName: .transactions) { [weak self] txs in
-            guard let self = self else { return }
-            
-            guard let txs = txs, txs.count > 0 else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "", message: "Unable to determine historic rate.")
-                return
-            }
-            
-            var foundMatch = false
-            var date:Date?
-            var uuid:UUID?
-            
-            for (t, tx) in txs.enumerated() {
-                let txStruct = TransactionStruct(dictionary: tx)
-                
-                if txStruct.txid == id {
-                    if let dateCheck = txStruct.date, let uuidCheck = txStruct.id {
-                        foundMatch = true
-                        date = dateCheck
-                        uuid = uuidCheck
-                    }
-                }
-                
-                if t + 1 == txs.count && !foundMatch {
-                    if self.wallet != nil {
-                        // not been saved so save it
-                        var dateToSave:Date!
-                        
-                        if let date = tx["date"] as? Date {
-                            dateToSave = date
-                        } else if let dateString = tx["date"] as? String {
-                            if let datestr = self.dateFromStr(date: dateString) {
-                                dateToSave = datestr
-                            }
-                        }
-                        
-                        let dict = [
-                            "txid":id,
-                            "id":UUID(),
-                            "walletId":self.wallet!.id,
-                            "memo":"no transaction memo",
-                            "date":dateToSave!,
-                            "label":"no transaction label"
-                        ] as [String:Any]
-                        
-                        CoreDataService.saveEntity(dict: dict, entityName: .transactions) { success in
-                            guard success else {
-                                showAlert(vc: self, title: "", message: "Error saving your transaction.")
-                                return
-                            }
-                            
-                            let newTxStruct = TransactionStruct(dictionary: dict)
-                            guard let date = newTxStruct.date, let uuid = newTxStruct.id else { return }
-                            
-                            self.addOriginRate(date, uuid)
-                        }
-                    } else {
-                        self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "", message: "This usually means you are using the nodes default wallet, this feature only works with Fully Noded wallets.")
-                    }
-                } else if t + 1 == txs.count {
-                    guard let date = date, let uuid = uuid else { return }
-                    
-                    self.addOriginRate(date, uuid)
-                }
-            }
-        }
-    }
     
     private func dateFromStr(date: String) -> Date? {
         dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
         return dateFormatter.date(from: date)
     }
     
-    private func addOriginRate(_ date: Date, _ id: UUID) {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let dateString = dateFormatter.string(from: date)
-        
-        let today = dateFormatter.string(from: Date())
-        
-        if dateString == today {
-            self.spinner.removeConnectingView()
-            showAlert(vc: self, title: "", message: "You need to wait for the transaction to be at least one day old before fetching the historic rate.")
-        } else {
-            FiatConverter.sharedInstance.getOriginRate(date: dateString) { [weak self] originRate in
-                guard let self = self else { return }
-                                
-                guard let originRate = originRate else {
-                    self.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "", message: "There was an issue fetching the historic exchange rate, please let us know about it.")
-                    return
-                }
-                
-                CoreDataService.update(id: id, keyToUpdate: "originFxRate", newValue: originRate, entity: .transactions) { success in
-                    guard success else {
-                        self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "", message: "There was an issue saving the historic exchange rate, please let us know about it.")
-                        return
-                    }
-                    
-                    self.addNavBarSpinner()
-                    self.loadTransactions()
-                }
-            }
-        }
-    }
     
-    private func getWalletBalance(refreshTxs: Bool) {
+    private func getWalletBalance() {
         if let _ = UserDefaults.standard.object(forKey: "walletName") as? String {
             OnchainUtils.getBalance { [weak self] (balance, message) in
                 guard let self = self else { return }
                 
                 guard let balance = balance else {
                     self.removeSpinner()
-                    showAlert(vc: self, title: "", message: message ?? "Unknown error getting balance.")
+                    if (message ?? "").hasPrefix("loadwallet") {
+                        self.chooseWallet()
+                    } else {
+                        showAlert(vc: self, title: "", message: message ?? "Unknown error getting balance.")
+                    }
+                    
                     return
                 }
                 
@@ -1180,9 +1071,7 @@ class ActiveWalletViewController: UIViewController {
                     
                     self.sectionZeroLoaded = true
                     self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                    if refreshTxs {
-                        self.loadTransactions()
-                    }
+                    self.getWalletInfo()
                 }
             }
         } else {
@@ -1202,11 +1091,43 @@ class ActiveWalletViewController: UIViewController {
                 return
             }
             
+            self.syncIndexes()
+            
             guard let progress = walletInfo.progress else {
                 return
             }
             
             showAlert(vc: self, title: "Wallet scanning \(Int(progress * 100))% complete", message: "Your wallet is currently rescanning the blockchain, you need to wait until it completes before you will see your balances and transactions.")
+        }
+    }
+    
+    private func syncIndexes() {
+        let p:List_Unspent = .init(["minconf":0])
+        OnchainUtils.listUnspent(param: p) { [weak self] (utxos, message) in
+            guard let self = self else { return }
+            guard let utxos = utxos, utxos.count > 0, let wallet = self.wallet else { self.loadTransactions(); return }
+            for utxo in utxos {
+                guard let utxo_desc = utxo.desc else { self.loadTransactions(); return }
+                let desc = Descriptor(utxo_desc)
+                guard let index = desc.index else { self.loadTransactions(); return }
+                if index >= wallet.index {
+                    let newIndex = Int64(index + 1)
+                    if newIndex >= wallet.maxIndex {
+                        showAlert(vc: self, title: "Action required", message: "Go to wallet info, scroll to \"gap limit\", and tap the + button to increase the gap limit.")
+                    }
+                    CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: newIndex, entity: .wallets) { updated in
+                        #if DEBUG
+                        print("incremented index to \(newIndex): \(updated)")
+                        #endif
+                        guard updated else {
+                            self.loadTransactions()
+                            showAlert(vc: self, title: "", message: "Unable to update your wallet index.")
+                            return
+                        }
+                        self.loadTransactions()
+                    }
+                }
+            }
         }
     }
     
@@ -1269,14 +1190,14 @@ class ActiveWalletViewController: UIViewController {
                 self.removeSpinner()
                 
                guard let errorMessage = errorMessage else {
-                    displayAlert(viewController: self, isError: true, message: "unknown error")
+                   showAlert(vc: self, title: "", message: "unknown error loading balances.")
                     return
                 }
                 
-                if errorMessage.contains("Looks like your last used wallet does not exist on this node, please activate a wallet") {
+                if errorMessage.contains("Your last used wallet does not exist on this node, please activate a wallet.") {
                     self.chooseWallet()
                 } else {
-                    displayAlert(viewController: self, isError: true, message: errorMessage)
+                    showAlert(vc: self, title: "", message: errorMessage)
                 }
                 
                 return
@@ -1293,7 +1214,7 @@ class ActiveWalletViewController: UIViewController {
             }
         }
         
-        self.getWalletBalance(refreshTxs: true)
+        self.getWalletBalance()
     }
     
     private func loadTransactions() {
@@ -1310,8 +1231,7 @@ class ActiveWalletViewController: UIViewController {
                 guard let errorMessage = errorMessage else {
                     return
                 }
-                
-                displayAlert(viewController: self, isError: true, message: errorMessage)
+                showAlert(vc: self, title: "", message: errorMessage)
                 return
             }
             
@@ -1599,7 +1519,11 @@ extension ActiveWalletViewController: UITableViewDelegate {
         switch indexPath.section {
         case 0:
             if sectionZeroLoaded {
-                return balancesCell(indexPath)
+                if showOffchainBalance {
+                    return offchainOnchainBalancesCell(indexPath)
+                } else {
+                    return onchainBalancesCell(indexPath)
+                }
             } else {
                 return blankCell()
             }
@@ -1674,13 +1598,17 @@ extension ActiveWalletViewController: UITableViewDelegate {
         switch indexPath.section {
         case 0:
             if sectionZeroLoaded {
-                return 100
+                if showOffchainBalance {
+                    return 100
+                } else {
+                    return 80
+                }
             } else {
                 return 47
             }
         default:
             if sectionZeroLoaded {
-                return 339
+                return 230
             } else {
                 return 47
             }
@@ -1702,7 +1630,7 @@ extension ActiveWalletViewController: UITableViewDataSource {
             } else {
                 return 1 + transactionArray.count
             }
-            
+
         } else {
             return 2
         }

@@ -14,7 +14,7 @@ public struct Utxo: CustomStringConvertible {
     let id: UUID?
     var label: String?
     let address: String?
-    let amount: Double?
+    var amount: Double?
     let desc: String?
     let solvable: Bool?
     let txid: String
@@ -35,6 +35,28 @@ public struct Utxo: CustomStringConvertible {
     var commitment: String?
     let dict: [String:Any]
     var isJoinMarket: Bool
+    let frozen: Bool?
+    let mixdepth: Int?
+    let path: String?
+    let value: Int?
+    
+    
+    /*
+     JM utxo
+     {
+     address = tb1q2njwafd6h6cs0pd5qjj2jwg0gvcxvqcslqx636;
+     confirmations = 6;
+     external = 0;
+     frozen = 0;
+     label = "";
+     mixdepth = 0;
+     path = "m/84'/1'/0'/0/0";
+     tries = 0;
+     "tries_remaining" = 3;
+     utxo = "a65a026014c62ee4656ba189b001d22839ea8cd502bc511053db97811bd2c8c4:0";
+     value = 999890;
+     }
+     */
     
     init(_ dictionary: [String: Any]) {
         id = dictionary["id"] as? UUID
@@ -42,7 +64,6 @@ public struct Utxo: CustomStringConvertible {
         address = dictionary["address"] as? String
         amount = dictionary["amount"] as? Double
         desc = dictionary["desc"] as? String
-        solvable = dictionary["solvable"] as? Bool
         txid = dictionary["txid"] as? String ?? ""
         vout = dictionary["vout"] as? Int64 ?? 0
         walletId = dictionary["walletId"] as? UUID
@@ -59,7 +80,15 @@ public struct Utxo: CustomStringConvertible {
         amountSats = dictionary["amountSats"] as? String
         lifehash = dictionary["lifehash"] as? UIImage
         commitment = dictionary["commitment"] as? String
-        isJoinMarket = dictionary["isJoinMarket"] as? Bool ?? false
+        frozen = dictionary["frozen"] as? Bool
+        mixdepth = dictionary["mixdepth"] as? Int
+        path = dictionary["path"] as? String
+        value = dictionary["value"] as? Int
+        isJoinMarket = dictionary["isJoinMarket"] as? Bool ?? (mixdepth != nil)
+        solvable = dictionary["solvable"] as? Bool ?? (mixdepth != nil)
+        if mixdepth != nil {
+            amount = (dictionary["value"] as! Int).satsToBtcDouble
+        }
         dict = dictionary
     }
     

@@ -101,7 +101,7 @@ class JMRPC {
                     .listutxos(jmWallet: let wallet):
                 httpMethod = "GET"
                 
-                guard let decryptedToken = Crypto.decrypt(wallet.token),
+                guard let decryptedToken = Crypto.decrypt(wallet.token!),
                       let token = decryptedToken.utf8String else {
                           completion((nil, "Unable to decrypt token."))
                           return
@@ -112,7 +112,7 @@ class JMRPC {
             case .unlockwallet(jmWallet: let wallet):
                 httpMethod = "POST"
                 
-                guard let decryptedPassword = Crypto.decrypt(wallet.password),
+                guard let decryptedPassword = Crypto.decrypt(wallet.password!),
                       let password = decryptedPassword.utf8String else {
                           completion((nil, "Unable to decrypt password."))
                           return
@@ -137,7 +137,7 @@ class JMRPC {
                 
                 httpMethod = "POST"
                 
-                guard let decryptedToken = Crypto.decrypt(wallet.token),
+                guard let decryptedToken = Crypto.decrypt(wallet.token!),
                       let token = decryptedToken.utf8String else {
                           completion((nil, "Unable to decrypt token."))
                           return
@@ -148,7 +148,7 @@ class JMRPC {
             case .gettimelockaddress(jmWallet: let wallet, date: _):
                 httpMethod = "GET"
                 
-                guard let decryptedToken = Crypto.decrypt(wallet.token),
+                guard let decryptedToken = Crypto.decrypt(wallet.token!),
                       let token = decryptedToken.utf8String else {
                           completion((nil, "Unable to decrypt token."))
                           return
@@ -239,12 +239,16 @@ class JMRPC {
                     return
                 }
                 
-                if message == "Invalid credentials." {
-                    // should be able to auto unlock here...
-                    message = "Invalid token, you need to restart your jm daemon and try again."
-                }
+//                if message == "Invalid credentials.", let jmwallet = self.jmwallet {
+//                    // should be able to auto unlock here...
+//                    
+//                //} else if message == "No wallet loaded."{
+//                    
+//                } else {
+                    completion((nil, message))
+                //}
                 
-                completion((nil, message))
+                
             }
             
             task.resume()

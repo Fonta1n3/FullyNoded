@@ -68,8 +68,7 @@ class MainMenuViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        UserDefaults.standard.set(UIDevice.modelName, forKey: "modelName")
-        
+        UserDefaults.standard.set(UIDevice.modelName, forKey: "modelName")        
         UIApplication.shared.isIdleTimerDisabled = true
         
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in

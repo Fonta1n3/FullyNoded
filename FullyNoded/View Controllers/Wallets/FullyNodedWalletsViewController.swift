@@ -106,28 +106,33 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                 
                 return
             }
-                        
+            
             for (i, wallet) in ws.enumerated() {
-                let walletStruct = Wallet(dictionary: wallet)
-                
-                var isInternal = false
-                
-                for (b, bitcoinCoreWallet) in self.bitcoinCoreWallets.enumerated() {
-                    if bitcoinCoreWallet == walletStruct.name {
-                        isInternal = true
-                        self.wallets.append(wallet)
+                if wallet["id"] != nil {
+                    let walletStruct = Wallet(dictionary: wallet)
+                    var isInternal = false
+                    for (b, bitcoinCoreWallet) in self.bitcoinCoreWallets.enumerated() {
+                        if bitcoinCoreWallet == walletStruct.name && !walletStruct.isJm {
+                            isInternal = true
+                            self.wallets.append(wallet)
+                        } else if bitcoinCoreWallet == walletStruct.name && walletStruct.isJm {
+                            isInternal = true
+                            var walletToAppend = wallet
+                            walletToAppend["label"] = walletStruct.label + " " + walletStruct.jmWalletName
+                            self.wallets.append(walletToAppend)
+                        }
+
+                        if b + 1 == self.bitcoinCoreWallets.count && !isInternal {
+                            self.externalWallets.append(walletStruct)
+                        }
                     }
-                    
-                    if b + 1 == self.bitcoinCoreWallets.count && !isInternal {
-                        self.externalWallets.append(walletStruct)
-                    }
-                }
-                
-                if i + 1 == ws.count {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        self.loadTotalBalance()
+
+                    if i + 1 == ws.count {
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+
+                            self.loadTotalBalance()
+                        }
                     }
                 }
             }

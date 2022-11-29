@@ -168,7 +168,7 @@ class ImportWallet {
                                     let param_dict = [
                                         "desc": watchingDesc,
                                         "active": false,
-                                        "range": [0,2500],
+                                        "range": [0,100],
                                         "next_index": 0,
                                         "timestamp": "now",
                                         "internal": ischange
@@ -195,6 +195,7 @@ class ImportWallet {
                         }
                     }
                 } else {
+                    completion((false, "Fully Noded works with Bitcoin Core 0.21 minimum."))
 //                    importReceiveDesc(recDesc, label, keypool) { (success, errorMessage) in
 //                        guard success else {
 //                            UserDefaults.standard.removeObject(forKey: "walletName")
@@ -284,13 +285,13 @@ class ImportWallet {
     
     class func coldcard(dict: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
         isColdcard = true
-
+        
         var wallet = [String:Any]()
         wallet["type"] = "Single-Sig"
         wallet["label"] = "Coldcard"
         wallet["id"] = UUID()
         wallet["blockheight"] = 0
-        wallet["maxIndex"] = 2500
+        wallet["maxIndex"] = 100
         wallet["index"] = 0
         
         let fingerprint = dict["xfp"] as! String
@@ -364,7 +365,7 @@ class ImportWallet {
                 [
                     ["desc": recDesc,
                      "active": recDescIsActive,
-                     "range": [0,2500],
+                     "range": [0,100],
                      "next_index": 0,
                      "timestamp": "now",
                      "internal": false
@@ -372,7 +373,7 @@ class ImportWallet {
                     [
                         "desc": changeDesc,
                         "active": changeDescIsActive,
-                        "range": [0,2500],
+                        "range": [0,100],
                         "next_index": 0,
                         "timestamp": "now",
                         "internal": true
@@ -440,11 +441,11 @@ class ImportWallet {
             
             let descStruct = Descriptor(desc)
             
-            if descStruct.isHot {
+            //if descStruct.isHot {
                 completion((desc + "#" + descriptorInfo.checksum, message))
-            } else {
-                completion((descriptorInfo.descriptor, message))
-            }
+//            } else {
+//                completion((descriptorInfo.descriptor, message))
+//            }
         }
     }
     

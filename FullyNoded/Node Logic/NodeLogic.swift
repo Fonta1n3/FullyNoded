@@ -321,7 +321,7 @@ class NodeLogic {
     class func getPaidLND(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
         let lnd = LndRpc.sharedInstance
         
-        lnd.command(.listinvoices, nil, nil, ["reversed":true, "num_max_invoices": "1000"]) { (response, error) in
+        lnd.command(.listinvoices, nil, nil, ["reversed":true, "num_max_invoices": "100"]) { (response, error) in
             
             guard let paidInvoices = response?["invoices"] as? [[String:Any]], paidInvoices.count > 0 else {
                 arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
@@ -900,6 +900,9 @@ class NodeLogic {
                 arrayToReturn.append(tx)
                                 
                 func saveLocally() {
+                    #if DEBUG
+                    print("saveLocally")
+                    #endif
                     var labelToSave = "no transaction label"
                     
                     if label != "" {

@@ -817,15 +817,17 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             self.fxRate = exchangeRate
             
-            if self.unsignedPsbt == "" {
-                self.updateLabel("decoding raw transaction...")
-                let param:Decode_Raw_Tx = .init(["hexstring":self.signedRawTx])
-                self.executeNodeCommand(method: .decoderawtransaction(param: param))
-            } else {
-                self.updateLabel("decoding psbt...")
-                let param:Decode_Psbt = .init(["psbt":self.unsignedPsbt])
-                self.executeNodeCommand(method: .decodepsbt(param: param))
-            }
+            
+        }
+        
+        if self.unsignedPsbt == "" {
+            self.updateLabel("decoding raw transaction...")
+            let param:Decode_Raw_Tx = .init(["hexstring":self.signedRawTx])
+            self.executeNodeCommand(method: .decoderawtransaction(param: param))
+        } else {
+            self.updateLabel("decoding psbt...")
+            let param:Decode_Psbt = .init(["psbt":self.unsignedPsbt])
+            self.executeNodeCommand(method: .decodepsbt(param: param))
         }
     }
     
@@ -1179,7 +1181,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     self.miningFee = "\(txfeeString) btc / error fetching fx rate"
                 }
             } else {
-                self.miningFee = "No fee data. Go to settings to opt in to Esplora use."
+                self.miningFee = "No fee data. Your node may be pruned."
             }
             
             verifyInputs()
@@ -1458,10 +1460,43 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
         }
         
+//        func checkEsplora(txid: String) {
+//            guard let useEsplora = UserDefaults.standard.object(forKey: "useEsplora") as? Bool, useEsplora else {
+//                if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraAlert") == nil {
+//                    showAlert(vc: self, title: "Unable to fetch input.", message: "Pruned nodes can not lookup input details for inputs that are associated with transactions which are not owned by the active wallet. In order to see inputs in detail you can enable Esplora (Blockstream's block explorer) over Tor in \"Settings\".")
+//
+//                    UserDefaults.standard.setValue(true, forKey: "useEsploraAlert")
+//                }
+//
+//                self.parsePrevTxOutput(outputs: [], vout: 0)
+//                return
+//            }
+//
+//            self.updateLabel("fetching inputs previous output with Esplora...")
+//
+//            let fetcher = GetTx.sharedInstance
+//            fetcher.fetch(txid: txid) { [weak self] rawHex in
+//                guard let self = self else { return }
+//
+//                guard let rawHex = rawHex else {
+//                    // Esplora must be down, pass an empty array instead
+//                    self.parsePrevTxOutput(outputs: [], vout: 0)
+//                    return
+//                }
+//                let param_decode_raw:Decode_Raw_Tx = .init(["hexstring":rawHex])
+//                self.parsePrevTx(method: .decoderawtransaction(param: param_decode_raw), vout: vout, txid: txid)
+//            }
+//            return
+//        }
+        
         func getRawTx() {
             updateLabel("fetching inputs previous output...")
             Reducer.sharedInstance.makeCommand(command: method) { [weak self] (response, errorMessage) in
-                guard let self = self, let response = response as? [String:Any] else { return }
+                guard let self = self else { return }
+                guard let response = response as? [String:Any] else {
+                    self.parsePrevTxOutput(outputs: [], vout: 0)
+                    return
+                }
                 
                 guard let hex = response["hex"] as? String else {
                     guard let errorMessage = errorMessage else { return }
@@ -1474,34 +1509,36 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     
                     let param_get_tx:Get_Tx = .init(["txid":txid, "verbose": true])
                     Reducer.sharedInstance.makeCommand(command: .gettransaction(param_get_tx)) { (response, errorMessage) in
+                        print("are we here")
                         guard let dict = response as? NSDictionary, let hexToParse = dict["hex"] as? String else {
-                            
-                            guard let useEsplora = UserDefaults.standard.object(forKey: "useEsplora") as? Bool, useEsplora else {
-                                
-                                if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraAlert") == nil {
-                                    showAlert(vc: self, title: "Unable to fetch input.", message: "Pruned nodes can not lookup input details for inputs that are associated with transactions which are not owned by the active wallet. In order to see inputs in detail you can enable Esplora (Blockstream's block explorer) over Tor in \"Settings\".")
-                                    
-                                    UserDefaults.standard.setValue(true, forKey: "useEsploraAlert")
-                                }
-                                
-                                self.parsePrevTxOutput(outputs: [], vout: 0)
-                                return
-                            }
-                            
-                            self.updateLabel("fetching inputs previous output with Esplora...")
-                            
-                            let fetcher = GetTx.sharedInstance
-                            fetcher.fetch(txid: txid) { [weak self] rawHex in
-                                guard let self = self else { return }
-                                
-                                guard let rawHex = rawHex else {
-                                    // Esplora must be down, pass an empty array instead
-                                    self.parsePrevTxOutput(outputs: [], vout: 0)
-                                    return
-                                }
-                                let param_decode_raw:Decode_Raw_Tx = .init(["hexstring":rawHex])
-                                self.parsePrevTx(method: .decoderawtransaction(param: param_decode_raw), vout: vout, txid: txid)
-                            }
+//                            guard let useEsplora = UserDefaults.standard.object(forKey: "useEsplora") as? Bool, useEsplora else {
+//                                if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraAlert") == nil {
+//                                    showAlert(vc: self, title: "Unable to fetch input.", message: "Pruned nodes can not lookup input details for inputs that are associated with transactions which are not owned by the active wallet. In order to see inputs in detail you can enable Esplora (Blockstream's block explorer) over Tor in \"Settings\".")
+//
+//                                    UserDefaults.standard.setValue(true, forKey: "useEsploraAlert")
+//                                }
+//
+//                                self.parsePrevTxOutput(outputs: [], vout: 0)
+//                                return
+//                            }
+//
+//                            self.updateLabel("fetching inputs previous output with Esplora...")
+//
+//                            let fetcher = GetTx.sharedInstance
+//                            fetcher.fetch(txid: txid) { [weak self] rawHex in
+//                                guard let self = self else { return }
+//
+//                                guard let rawHex = rawHex else {
+//                                    // Esplora must be down, pass an empty array instead
+//                                    self.parsePrevTxOutput(outputs: [], vout: 0)
+//                                    return
+//                                }
+//                                let param_decode_raw:Decode_Raw_Tx = .init(["hexstring":rawHex])
+//                                self.parsePrevTx(method: .decoderawtransaction(param: param_decode_raw), vout: vout, txid: txid)
+//                            }
+//                            return
+                            //checkEsplora(txid: txid)
+                            self.parsePrevTxOutput(outputs: [], vout: 0)
                             return
                         }
                         
@@ -2357,15 +2394,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Broadcast with your node?",
-                                          message: "You can optionally broadcast this transaction using Blockstream's esplora API over Tor V3 for improved privacy.",
+            let alert = UIAlertController(title: "Send transaction?",
+                                          message: "",
                                           preferredStyle: .alert)
             
-            alert.addAction(UIAlertAction(title: "Privately", style: .default, handler: { action in
-                self.broadcastPrivately()
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Use my node", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "Send", style: .default, handler: { action in
                 self.broadcastWithMyNode()
             }))
             

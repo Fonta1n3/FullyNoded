@@ -7,7 +7,10 @@
     </entity>
     <entity name="JMWallets" representedClassName="JMWallets" syncable="YES" codeGenerationType="class">
         <attribute name="account" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="bitcoinCoreWallet" optional="YES" attributeType="String"/>
+        <attribute name="descriptors" optional="YES" attributeType="Binary"/>
         <attribute name="fnWallet" optional="YES" attributeType="String"/>
+        <attribute name="fnWalletId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="index" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>
@@ -86,6 +89,9 @@
         <attribute name="changeDescriptor" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="index" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="isJm" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="jmWalletId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="jmWalletName" optional="YES" attributeType="String"/>
         <attribute name="label" optional="YES" attributeType="String"/>
         <attribute name="maxIndex" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="mixDepthFourExt" optional="YES" attributeType="Binary"/>
@@ -100,7 +106,9 @@
         <attribute name="mixDepthZeroInt" optional="YES" attributeType="Binary"/>
         <attribute name="mixIndexes" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData"/>
         <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="password" optional="YES" attributeType="Binary"/>
         <attribute name="receiveDescriptor" optional="YES" attributeType="String"/>
+        <attribute name="token" optional="YES" attributeType="Binary"/>
         <attribute name="type" optional="YES" attributeType="String"/>
         <attribute name="watching" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData"/>
     </entity>

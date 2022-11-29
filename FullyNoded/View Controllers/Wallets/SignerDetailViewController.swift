@@ -377,31 +377,33 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             var signableWallets = ""
             
             for (w, wallet) in wallets.enumerated() {
-                let walletStruct = Wallet(dictionary: wallet)
-                let descriptor = Descriptor(walletStruct.receiveDescriptor)
-                
-                if descriptor.isMulti {
-                    for (x, xpub) in descriptor.multiSigKeys.enumerated() {
-                        if let derivedXpub = Keys.xpub(path: descriptor.derivationArray[x], masterKey: masterKey) {
-                            if xpub == derivedXpub {
+                if wallet["id"] != nil {
+                    let walletStruct = Wallet(dictionary: wallet)
+                    let descriptor = Descriptor(walletStruct.receiveDescriptor)
+                    
+                    if descriptor.isMulti {
+                        for (x, xpub) in descriptor.multiSigKeys.enumerated() {
+                            if let derivedXpub = Keys.xpub(path: descriptor.derivationArray[x], masterKey: masterKey) {
+                                if xpub == derivedXpub {
+                                    signableWallets += walletStruct.label + "  "
+                                }
+                            }
+                        }
+                    } else {
+                        if let derivedXpub = Keys.xpub(path: descriptor.derivation, masterKey: masterKey) {
+                            if descriptor.accountXpub == derivedXpub {
                                 signableWallets += walletStruct.label + "  "
                             }
                         }
                     }
-                } else {
-                    if let derivedXpub = Keys.xpub(path: descriptor.derivation, masterKey: masterKey) {
-                        if descriptor.accountXpub == derivedXpub {
-                            signableWallets += walletStruct.label + "  "
+                    
+                    if w + 1 == wallets.count {
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.tableDict[5]["text"] = "  " + signableWallets
+                            self.reloadTable()
                         }
-                    }
-                }
-                
-                if w + 1 == wallets.count {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        self.tableDict[5]["text"] = "  " + signableWallets
-                        self.reloadTable()
                     }
                 }
             }

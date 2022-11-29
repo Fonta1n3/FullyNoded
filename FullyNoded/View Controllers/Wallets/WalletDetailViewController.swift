@@ -148,7 +148,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private func deriveAddresses(_ descriptor: String) {
         let param:Derive_Addresses = .init(["descriptor":descriptor, "range":[0,100]])
-        Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { [weak self] (response, errorMessage) in
+        OnchainUtils.deriveAddresses(param: param) { [weak self] (response, message) in
             if let addr = response as? NSArray {
                 for (i, address) in addr.enumerated() {
                     guard let self = self else { return }
@@ -191,33 +191,35 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             guard let self = self, let wallets = wallets, wallets.count > 0 else { return }
             
             for w in wallets {
-                let walletStruct = Wallet(dictionary: w)
-                if walletStruct.id == self.walletId {
-                    self.wallet = walletStruct
-                    
-                    if self.wallet.receiveDescriptor.contains("xpub") || self.wallet.receiveDescriptor.contains("xprv") {
-                        self.coinType = "0"
-                    } else {
-                        self.coinType = "1"
+                if w["id"] != nil {
+                    let walletStruct = Wallet(dictionary: w)
+                    if walletStruct.id == self.walletId {
+                        self.wallet = walletStruct
+                        
+                        if self.wallet.receiveDescriptor.contains("xpub") || self.wallet.receiveDescriptor.contains("xprv") {
+                            self.coinType = "0"
+                        } else {
+                            self.coinType = "1"
+                        }
+                        
+                        self.json = AccountMap.create(wallet: self.wallet) ?? ""
+                        
+                        let generator = QRGenerator()
+                        generator.textInput = self.json
+                        self.backupText = self.json
+                        self.backupQrImage = generator.getQRCode()
+                        
+                        if let urOutput = URHelper.descriptorToUrOutput(Descriptor(self.wallet.receiveDescriptor)) {
+                            generator.textInput = urOutput.uppercased()
+                            self.exportText = urOutput
+                            self.exportWalletImage = generator.getQRCode()
+                        } else {
+                            showAlert(vc: self, title: "", message: "Unable to convert your wallet to crypto-output.")
+                        }
+                        
+                        self.findSigner()
+                        self.getAddresses()
                     }
-                    
-                    self.json = AccountMap.create(wallet: self.wallet) ?? ""
-                    
-                    let generator = QRGenerator()
-                    generator.textInput = self.json
-                    self.backupText = self.json
-                    self.backupQrImage = generator.getQRCode()
-                    
-                    if let urOutput = URHelper.descriptorToUrOutput(Descriptor(self.wallet.receiveDescriptor)) {
-                        generator.textInput = urOutput.uppercased()
-                        self.exportText = urOutput
-                        self.exportWalletImage = generator.getQRCode()
-                    } else {
-                        showAlert(vc: self, title: "", message: "Unable to convert your wallet to crypto-output.")
-                    }                    
-                    
-                    self.findSigner()
-                    self.getAddresses()
                 }
             }
         }
@@ -344,39 +346,18 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func deleteNow() {
-        func delete() {
-            CoreDataService.deleteEntity(id: walletId, entityName: .wallets) { [unowned vc = self] success in
-                if success {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        if vc.wallet.name == UserDefaults.standard.object(forKey: "walletName") as? String {
-                            UserDefaults.standard.removeObject(forKey: "walletName")
-                            NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                        }
-                        vc.walletDeleted()
+        CoreDataService.deleteEntity(id: walletId, entityName: .wallets) { [unowned vc = self] success in
+            if success {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    if vc.wallet.name == UserDefaults.standard.object(forKey: "walletName") as? String {
+                        UserDefaults.standard.removeObject(forKey: "walletName")
+                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     }
-                } else {
-                    showAlert(vc: vc, title: "Error", message: "We had an error deleting your wallet.")
+                    vc.walletDeleted()
                 }
+            } else {
+                showAlert(vc: vc, title: "Error", message: "We had an error deleting your wallet.")
             }
-        }
-        
-        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmwallets in
-            guard let jmwallets = jmwallets, !jmwallets.isEmpty else {
-                delete()
-                return
-            }
-            
-            for jmwallet in jmwallets {
-                let str = JMWallet(jmwallet)
-                if str.fnWallet == self.wallet.name {
-                    CoreDataService.deleteEntity(id: str.id, entityName: .jmWallets) { deleted in
-                        #if DEBUG
-                        print("deleted jmwallet: \(deleted)")
-                        #endif
-                    }
-                }
-            }
-            delete()
         }
     }
     
@@ -430,9 +411,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             guard let self = self, let wallets = wallets, wallets.count > 0 else { return }
             
             for w in wallets {
-                let str = Wallet(dictionary: w)
-                if str.id == self.walletId {
-                    self.wallet = str
+                if w["id"] != nil {
+                    let str = Wallet(dictionary: w)
+                    if str.id == self.walletId {
+                        self.wallet = str
+                    }
                 }
             }
         }
@@ -936,8 +919,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func importDescriptors(index: Int, maxRange: Int, descriptorsToImport: [String]) {
-        let descriptorStruct = Descriptor(wallet.receiveDescriptor)
-        
         if index < descriptorsToImport.count {
             updateSpinnerText(text: "importing descriptor #\(index + 1), \(maxRange - Int(wallet.maxIndex) + 1) public keys...")
             

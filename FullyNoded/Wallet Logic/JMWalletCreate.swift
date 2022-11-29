@@ -47,7 +47,7 @@ class JoinMarket {
         if chain != "main" {
             cointType = "1"
         }
-        return "wpkh([\(xfp)/84'/\(cointType)'/\(mixDepth)']\(xpub)/\(branch)/*)"
+        return "wpkh([\(xfp)/84h/\(cointType)h/\(mixDepth)h]\(xpub)/\(branch)/*)"
     }
     
     static func xpub(_ mixDepth: Int, _ mk: String) -> String? {
@@ -56,6 +56,6 @@ class JoinMarket {
         if chain != "main" {
             cointType = "1"
         }
-        return Keys.xpub(path: "m/84'/\(cointType)'/\(mixDepth)'", masterKey: mk)
+        return Keys.xpub(path: "m/84h/\(cointType)h/\(mixDepth)h", masterKey: mk)
     }
 }

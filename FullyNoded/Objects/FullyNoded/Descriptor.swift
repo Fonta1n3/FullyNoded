@@ -39,9 +39,9 @@ public struct Descriptor: CustomStringConvertible {
     let prefix:String
     let pubkey:String
     let isTaproot:Bool
+    let index: Int?
     
     init(_ descriptor: String) {
-        
         var dictionary = [String:Any]()
         
         if descriptor.contains("&") {
@@ -113,7 +113,7 @@ public struct Descriptor: CustomStringConvertible {
                     
                     /// extracting the xpubs and their paths so we can derive the individual multisig addresses locally
                     for key in keysWithPath {
-                        var path = String()
+                        var path = ""
                         if key.contains("/") {
                             if key.contains("[") && key.contains("]") {
                                 // remove the bracket with deriv/fingerprint
@@ -121,6 +121,7 @@ public struct Descriptor: CustomStringConvertible {
                                 let rootPath = arr[0].replacingOccurrences(of: "[", with: "")
                                 
                                 let rootPathArr = rootPath.split(separator: "/")
+                                dictionary["index"] = Int(rootPathArr[rootPathArr.count - 1])
                                 if rootPathArr.count > 0 {
                                     fingerprints.append("[\(rootPathArr[0])]")
                                 }
@@ -433,6 +434,7 @@ public struct Descriptor: CustomStringConvertible {
         fingerprint = dictionary["fingerprint"] as? String ?? ""
         prefix = dictionary["prefix"] as? String ?? ""
         pubkey = dictionary["pubkey"] as? String ?? ""
+        index = dictionary["index"] as? Int
     }
     
     public var description: String {

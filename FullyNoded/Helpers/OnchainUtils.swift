@@ -174,8 +174,7 @@ class OnchainUtils {
         }
     }
     
-    static func deriveAddresses(param: Derive_Addresses, completion: @escaping ((addresses: [String]?, message: String?)) -> Void) {
-        print("deriveAddresses")
+    static func deriveAddresses(param: Derive_Addresses, completion: @escaping ((addresses: [String]?, message: String?)) -> Void) {        
         Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { (response, errorMessage) in
             guard let addresses = response as? [String] else {
                 completion((nil, errorMessage))

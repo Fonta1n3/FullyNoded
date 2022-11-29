@@ -32,7 +32,11 @@ public struct Wallet: CustomStringConvertible {
     let mixDepthFourExt: Data?
     let mixDepthFourInt: Data?
     let mixIndexes:[[Int]]?
-    
+    let isJm: Bool
+    let jmWalletId: UUID?
+    var token: Data?
+    let password: Data?
+    let jmWalletName: String
     
     init(dictionary: [String: Any]) {
         id = dictionary["id"] as! UUID
@@ -57,6 +61,12 @@ public struct Wallet: CustomStringConvertible {
         mixDepthFourExt = dictionary["mixDepthFourExt"] as? Data
         mixDepthFourInt = dictionary["mixDepthFourInt"] as? Data
         mixIndexes = dictionary["mixIndexes"] as? [[Int]]
+        isJm = dictionary["isJm"] as? Bool ?? false
+        jmWalletId = dictionary["jmWalletId"] as? UUID
+        token = dictionary["token"] as? Data
+        password = dictionary["password"] as? Data
+        jmWalletName = dictionary["jmWalletName"] as? String ?? ""
+        
     }
     
     public var description: String {

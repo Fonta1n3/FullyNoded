@@ -118,7 +118,7 @@ class UTXOCell: UITableViewCell {
             reusedBackground.alpha = 0
         }
         
-        if let desc = utxo.desc {
+        if let desc = utxo.desc ?? utxo.path {
             if desc.contains("/1/") {
                 isChangeImageView.image = UIImage(systemName: "arrow.2.circlepath")
                 isChangeBackground.backgroundColor = .systemPurple
@@ -139,6 +139,10 @@ class UTXOCell: UITableViewCell {
         } else {
             isChangeImageView.image = UIImage(systemName: "questionmark")
             isChangeBackground.backgroundColor = .clear
+        }
+        
+        if let path = utxo.path, let mixdepth = utxo.mixdepth {
+            derivationLabel.text = path + " mixdepth: \(mixdepth)"
         }
                 
         if let amount = utxo.amount {
@@ -220,25 +224,6 @@ class UTXOCell: UITableViewCell {
             confirmationsLabel.text = "?"
             confirmationsLabel.textColor = .lightGray
         }
-        
-//        if utxo.spendable != nil {
-//            print("utxo.spendable: \(utxo.spendable)")
-//            if utxo.spendable! {
-//                spendableLabel.text = "Node hot"
-//                spendableLabel.textColor = .systemGreen
-//            } else {
-//                spendableLabel.text = "Node cold"
-//                spendableLabel.textColor = .systemBlue
-//
-//            }
-//        } else {
-//            spendableLabel.text = "?"
-//            spendableLabel.textColor = .lightGray
-//        }
-        
-//        if let lifehash = utxo.lifehash {
-//            lifeHashImageView.image = lifehash
-//        }
         
         if utxo.isJoinMarket {
             mixButtonOutlet.alpha = 0
