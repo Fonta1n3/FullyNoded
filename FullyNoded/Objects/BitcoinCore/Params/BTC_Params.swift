@@ -740,6 +740,22 @@ public struct Finalize_Psbt: CustomStringConvertible {
     }
 }
 
+public struct Load_Wallet: CustomStringConvertible {
+    public var description: String {
+        return ""
+    }
+    /*
+     Arguments:
+     1. filename           (string, required) The wallet directory or .dat file.
+     2. load_on_startup    (boolean, optional) Save wallet name to persistent settings and load on startup. True to add wallet to startup list, false to remove, null to leave unchanged.
+     */
+    let param: [String:Any]
+    init(_ dict: [String:Any]) {
+        let filename = dict["filename"] as? String ?? ""
+        param = ["filename": filename]
+    }
+}
+
 
 
 

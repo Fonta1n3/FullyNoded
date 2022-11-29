@@ -29,7 +29,7 @@ public enum BTC_CLI_COMMAND {
     case unloadwallet
     case rescanblockchain(_ param: Rescan_Blockchain)
     case listwalletdir
-    case loadwallet
+    case loadwallet(_ param: Load_Wallet)
     case createwallet(param: Create_Wallet_Param)
     case finalizepsbt(_ param: Finalize_Psbt)
     case walletprocesspsbt(param: Wallet_Process_PSBT)
@@ -240,6 +240,8 @@ public enum BTC_CLI_COMMAND {
             return p.param
         case .psbtbumpfee(param: let p):
             return p.param
+        case .loadwallet(let p):
+            return p.param
         default:
             return [:]
         }
@@ -268,7 +270,7 @@ public enum BTC_CLI_COMMAND {
         unloadwallet,
         rescanblockchain(.init([:])),
         listwalletdir,
-        loadwallet,
+        loadwallet(.init([:])),
         createwallet(param: .init([:])),
         finalizepsbt(.init([:])),
         walletprocesspsbt(param: .init([:])),

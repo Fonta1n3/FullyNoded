@@ -63,8 +63,8 @@ class Reducer {
         }
         
         func loadWallet(walletName: String) {
-            //"\"\(walletName)\""
-            torRPC.executeRPCCommand(method: .loadwallet) { (response, errorDesc) in
+            let param:Load_Wallet = .init(["filename": walletName])
+            torRPC.executeRPCCommand(method: .loadwallet(param)) { (response, errorDesc) in
                 if errorDesc == nil {
                     makeTorCommand()
                 } else if errorDesc!.contains("Duplicate -wallet filename specified") {
