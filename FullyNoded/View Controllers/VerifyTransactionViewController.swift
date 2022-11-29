@@ -2168,21 +2168,23 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             guard let wallets = wallets, wallets.count > 0, let activeWallet = self.wallet else { return }
             
             for (i, wallet) in wallets.enumerated() {
-                let walletStruct = Wallet(dictionary: wallet)
-                
-            if activeWallet.id != walletStruct.id {
-                    for (b, bitcoinCoreWallet) in self.bitcoinCoreWallets.enumerated() {
-                        if bitcoinCoreWallet == walletStruct.name {
-                            walletsToCheck.append(walletStruct.name)
-                        }
-                        if b + 1 == self.bitcoinCoreWallets.count {
-                            if i + 1 == wallets.count {
-                                self.checkEachWallet(address, walletsToCheck, int)
+                if wallet["id"] != nil {
+                    let walletStruct = Wallet(dictionary: wallet)
+                    
+                    if activeWallet.id != walletStruct.id {
+                        for (b, bitcoinCoreWallet) in self.bitcoinCoreWallets.enumerated() {
+                            if bitcoinCoreWallet == walletStruct.name {
+                                walletsToCheck.append(walletStruct.name)
+                            }
+                            if b + 1 == self.bitcoinCoreWallets.count {
+                                if i + 1 == wallets.count {
+                                    self.checkEachWallet(address, walletsToCheck, int)
+                                }
                             }
                         }
+                    } else if i + 1 == wallets.count {
+                        self.checkEachWallet(address, walletsToCheck, int)
                     }
-                } else if i + 1 == wallets.count {
-                    self.checkEachWallet(address, walletsToCheck, int)
                 }
             }
         }
