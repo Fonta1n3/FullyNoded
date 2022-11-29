@@ -45,6 +45,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         case addressExplorer
     }
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -59,7 +60,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         
         load()
     }
-    
     
     
     private func exportJson() {
@@ -82,87 +82,32 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func getAddresses() {
-        var desc = wallet.receiveDescriptor
-        
-        if wallet.type == WalletType.single.stringValue {
-            let ud = UserDefaults.standard
-            let nativeSegwit = ud.object(forKey: "nativeSegwit") as? Bool ?? true
-            let p2shSegwit = ud.object(forKey: "p2shSegwit") as? Bool ?? false
-            let legacy = ud.object(forKey: "legacy") as? Bool ?? false
-            
-            if desc.hasPrefix("combo") {
-                
-                if nativeSegwit {
-                    desc = desc.replacingOccurrences(of: "combo", with: "wpkh")
-                } else if legacy {
-                    desc = desc.replacingOccurrences(of: "combo", with: "pkh")
-                } else if p2shSegwit {
-                    desc = desc.replacingOccurrences(of: "combo", with: "sh(wpkh")
-                    desc = desc.replacingOccurrences(of: "#", with: ")#")
-                }
-                
-                let arr = desc.split(separator: "#")
-                let bareDesc = "\(arr[0])"
-                let param:Get_Descriptor_Info = .init(["descriptor":bareDesc])
-                
-                Reducer.sharedInstance.makeCommand(command: .getdescriptorinfo(param: param)) { [weak self] (response, errorMessage) in
-                    if let dict = response as? NSDictionary {
-                        if let descriptor = dict["descriptor"] as? String {
-                            guard let self = self else { return }
-                            self.deriveAddresses(descriptor)
-                        }
-                    }
-                }
-                
-            } else if wallet.watching != nil {
-                let descriptors = wallet.watching!
-                var prefix = ""
-                var descriptorToUse = ""
-                if nativeSegwit {
-                    descriptorToUse = wallet.receiveDescriptor
-                    
-                } else if legacy {
-                    prefix = "pkh"
-                    for desc in descriptors {
-                        if desc.hasPrefix(prefix) && desc.contains("/0/*") {
-                            descriptorToUse = desc
-                        }
-                    }
-                    
-                } else if p2shSegwit {
-                    prefix = "sh(wpkh("
-                    for desc in descriptors {
-                        if desc.hasPrefix(prefix) && desc.contains("/0/*") {
-                            descriptorToUse = desc
-                        }
-                    }
-                }
-                deriveAddresses(descriptorToUse)
-            } else {
-                deriveAddresses(desc)
-            }
-        } else {
-            deriveAddresses(wallet.receiveDescriptor)
-        }
+        let desc = wallet.receiveDescriptor
+        deriveAddresses(wallet.receiveDescriptor)
     }
     
     private func deriveAddresses(_ descriptor: String) {
-        let param:Derive_Addresses = .init(["descriptor":descriptor, "range":[0,100]])
-        OnchainUtils.deriveAddresses(param: param) { [weak self] (response, message) in
-            if let addr = response as? NSArray {
-                for (i, address) in addr.enumerated() {
-                    guard let self = self else { return }
-                    self.addresses += "#\(i): \(address)\n\n"
-                    if i + 1 == addr.count {
-                        DispatchQueue.main.async { [weak self] in
-                            self?.spinner.removeConnectingView()
-                            self?.detailTable.reloadSections(IndexSet(arrayLiteral: Section.addressExplorer.rawValue), with: .none)
+        let p:Get_Descriptor_Info = .init(["descriptor": descriptor])
+        OnchainUtils.getDescriptorInfo(p) { (descriptorInfo, message) in
+            guard let descriptorInfo = descriptorInfo else { return }
+            let desc = descriptorInfo.descriptor
+            let param:Derive_Addresses = .init(["descriptor":desc, "range":[0,100]])
+            OnchainUtils.deriveAddresses(param: param) { [weak self] (response, message) in
+                if let addr = response as? NSArray {
+                    for (i, address) in addr.enumerated() {
+                        guard let self = self else { return }
+                        self.addresses += "#\(i): \(address)\n\n"
+                        if i + 1 == addr.count {
+                            DispatchQueue.main.async { [weak self] in
+                                self?.spinner.removeConnectingView()
+                                self?.detailTable.reloadSections(IndexSet(arrayLiteral: Section.addressExplorer.rawValue), with: .none)
+                            }
                         }
                     }
+                } else {
+                    self?.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "We were unable to derive your addresses", message: "")
                 }
-            } else {
-                self?.spinner.removeConnectingView()
-                showAlert(vc: self, title: "We were unable to derive your addresses", message: "")
             }
         }
     }

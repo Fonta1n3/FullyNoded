@@ -21,19 +21,19 @@ public struct Wallet: CustomStringConvertible {
     let watching:[String]?
     let account:Int16
     let blockheight:Int
-    let mixDepthZeroExt: Data?
-    let mixDepthZeroInt: Data?
-    let mixDepthOneExt: Data?
-    let mixDepthOneInt: Data?
-    let mixDepthTwoExt: Data?
-    let mixDepthTwoInt: Data?
-    let mixDepthThreeExt: Data?
-    let mixDepthThreeInt: Data?
-    let mixDepthFourExt: Data?
-    let mixDepthFourInt: Data?
-    let mixIndexes:[[Int]]?
+//    let mixDepthZeroExt: Data?
+//    let mixDepthZeroInt: Data?
+//    let mixDepthOneExt: Data?
+//    let mixDepthOneInt: Data?
+//    let mixDepthTwoExt: Data?
+//    let mixDepthTwoInt: Data?
+//    let mixDepthThreeExt: Data?
+//    let mixDepthThreeInt: Data?
+//    let mixDepthFourExt: Data?
+//    let mixDepthFourInt: Data?
+    //let mixIndexes:[[Int]]?
     let isJm: Bool
-    let jmWalletId: UUID?
+    //let jmWalletId: UUID?
     var token: Data?
     let password: Data?
     let jmWalletName: String
@@ -50,19 +50,19 @@ public struct Wallet: CustomStringConvertible {
         watching = dictionary["watching"] as? [String]
         account = dictionary["account"] as? Int16 ?? 0
         blockheight = Int(exactly: dictionary["blockheight"] as? Int64 ?? 0)!
-        mixDepthZeroExt = dictionary["mixDepthZeroExt"] as? Data
-        mixDepthZeroInt = dictionary["mixDepthZeroInt"] as? Data
-        mixDepthOneExt = dictionary["mixDepthOneExt"] as? Data
-        mixDepthOneInt = dictionary["mixDepthOneInt"] as? Data
-        mixDepthTwoExt = dictionary["mixDepthTwoExt"] as? Data
-        mixDepthTwoInt = dictionary["mixDepthTwoInt"] as? Data
-        mixDepthThreeExt = dictionary["mixDepthThreeExt"] as? Data
-        mixDepthThreeInt = dictionary["mixDepthThreeInt"] as? Data
-        mixDepthFourExt = dictionary["mixDepthFourExt"] as? Data
-        mixDepthFourInt = dictionary["mixDepthFourInt"] as? Data
-        mixIndexes = dictionary["mixIndexes"] as? [[Int]]
+//        mixDepthZeroExt = dictionary["mixDepthZeroExt"] as? Data
+//        mixDepthZeroInt = dictionary["mixDepthZeroInt"] as? Data
+//        mixDepthOneExt = dictionary["mixDepthOneExt"] as? Data
+//        mixDepthOneInt = dictionary["mixDepthOneInt"] as? Data
+//        mixDepthTwoExt = dictionary["mixDepthTwoExt"] as? Data
+//        mixDepthTwoInt = dictionary["mixDepthTwoInt"] as? Data
+//        mixDepthThreeExt = dictionary["mixDepthThreeExt"] as? Data
+//        mixDepthThreeInt = dictionary["mixDepthThreeInt"] as? Data
+//        mixDepthFourExt = dictionary["mixDepthFourExt"] as? Data
+//        mixDepthFourInt = dictionary["mixDepthFourInt"] as? Data
+        //mixIndexes = dictionary["mixIndexes"] as? [[Int]]
         isJm = dictionary["isJm"] as? Bool ?? false
-        jmWalletId = dictionary["jmWalletId"] as? UUID
+       // jmWalletId = dictionary["jmWalletId"] as? UUID
         token = dictionary["token"] as? Data
         password = dictionary["password"] as? Data
         jmWalletName = dictionary["jmWalletName"] as? String ?? ""
