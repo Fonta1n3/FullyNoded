@@ -1126,6 +1126,8 @@ class ActiveWalletViewController: UIViewController {
                         }
                         self.loadTransactions()
                     }
+                } else {
+                    self.loadTransactions()
                 }
             }
         }
