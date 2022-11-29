@@ -134,6 +134,14 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                             self.loadTotalBalance()
                         }
                     }
+                } else {
+                    if i + 1 == ws.count {
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+
+                            self.loadTotalBalance()
+                        }
+                    }
                 }
             }
         }
@@ -144,8 +152,8 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         
         FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
             guard let self = self else { return }
-            
-            guard let fxRate = fxRate else { self.spinner.removeConnectingView(); return }
+
+            guard let fxRate = fxRate else { self.spinner.removeConnectingView();  self.getTotals(); return }
             guard self.wallets.count > 0 else { self.spinner.removeConnectingView(); return }
             self.fxRate = fxRate
             self.getTotals()
