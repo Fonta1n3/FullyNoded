@@ -586,13 +586,13 @@ public struct Wallet_Create_Funded_Psbt: CustomStringConvertible {
     init(_ dict: [String:Any]) {
         let inputs = dict["inputs"] as? [[String:Any]] ?? []
         let outputs = dict["outputs"] as? [[String:Any]] ?? []
-        let locktime = dict["locktime"] as? Int ?? 0
+        //let locktime = dict["locktime"] as? Int ?? 0
         let options = dict["options"] as? [String:Any] ?? [:]
         let bip32derivs = dict["bip32derivs"] as? Bool ?? true
         param = [
             "inputs": inputs,
             "outputs": outputs,
-            "locktime": locktime,
+            //"locktime": locktime,
             "options": options,
             "bip32derivs": bip32derivs
         ]
@@ -665,7 +665,7 @@ public struct Rescan_Blockchain: CustomStringConvertible {
      */
     let param:[String:Any]
     init(_ dict: [String:Any]) {
-        let start_height = dict["start_height"] as? Int ?? 100
+        let start_height = dict["start_height"] as? Int ?? 0
         param = ["start_height": start_height]
     }
 }
@@ -754,6 +754,156 @@ public struct Load_Wallet: CustomStringConvertible {
         let filename = dict["filename"] as? String ?? ""
         param = ["filename": filename]
     }
+}
+
+public struct Create_Psbt: CustomStringConvertible {
+    public var description: String {
+        return ""
+    }
+    
+    /*
+     1. inputs                      (json array, required) The inputs
+          [
+            {                       (json object)
+              "txid": "hex",        (string, required) The transaction id
+              "vout": n,            (numeric, required) The output number
+              "sequence": n,        (numeric, optional, default=depends on the value of the 'replaceable' and 'locktime' arguments) The sequence number
+            },
+            ...
+          ]
+     2. outputs                     (json array, required) The outputs (key-value pairs), where none of the keys are duplicated.
+                                    That is, each address can only appear once and there can only be one 'data' object.
+                                    For compatibility reasons, a dictionary, which holds the key-value pairs directly, is also
+                                    accepted as second parameter.
+          [
+            {                       (json object)
+              "address": amount,    (numeric or string, required) A key-value pair. The key (string) is the bitcoin address, the value (float or string) is the amount in BTC
+              ...
+            },
+            {                       (json object)
+              "data": "hex",        (string, required) A key-value pair. The key must be "data", the value is hex-encoded data
+            },
+            ...
+          ]
+     3. locktime                    (numeric, optional, default=0) Raw locktime. Non-0 value also locktime-activates inputs
+     4. replaceable                 (boolean, optional, default=false) Marks this transaction as BIP125-replaceable.
+                                    Allows this transaction to be replaced by a transaction with higher fees. If provided, it is an error if explicit sequence numbers are incompatible.
+     */
+    let param: [String:Any]
+    let inputs:[[String:Any]]
+    let outputs:[[String:Any]]
+    init(_ dict:[String:Any]) {
+        inputs = dict["inputs"] as? [[String:Any]] ?? [[:]]
+        outputs = dict["outputs"] as? [[String:Any]] ?? [[:]]
+        param = ["inputs": inputs, "outputs": outputs, "replaceable": true]
+    }
+}
+
+
+public struct Utxo_Update_Psbt: CustomStringConvertible {
+     /*
+      utxoupdatepsbt "psbt" ( ["",{"desc":"str","range":n or [n,n]},...] )
+
+      Updates all segwit inputs and outputs in a PSBT with data from output descriptors, the UTXO set or the mempool.
+
+      Arguments:
+      1. psbt                          (string, required) A base64 string of a PSBT
+      2. descriptors                   (json array, optional) An array of either strings or objects
+           [
+             "",                       (string) An output descriptor
+             {                         (json object) An object with an output descriptor and extra information
+               "desc": "str",          (string, required) An output descriptor
+               "range": n or [n,n],    (numeric or array, optional, default=1000) Up to what index HD chains should be explored (either end or [begin,end])
+             },
+             ...
+           ]
+
+      Result:
+      "str"    (string) The base64-encoded partially signed transaction with inputs updated
+
+      Examples:
+      > bitcoin-cli utxoupdatepsbt "psbt"
+      */
+    let psbt: String
+    let descriptors: [[String:Any]]
+    let param: [String:Any]
+    public var description: String {
+        return ""
+    }
+    init(_ dict: [String:Any]) {
+        psbt = dict["psbt"] as! String
+        descriptors = dict["descriptors"] as? [[String:Any]] ?? [[:]]
+        param = ["psbt": psbt, "descriptors": descriptors]
+       
+    }
+}
+
+public struct Scan_Tx_Out: CustomStringConvertible {
+    /*
+     Arguments:
+     1. action                        (string, required) The action to execute
+                                      "start" for starting a scan
+                                      "abort" for aborting the current scan (returns true when abort was successful)
+                                      "status" for progress report (in %) of the current scan
+     2. scanobjects                   (json array) Array of scan objects. Required for "start" action
+                                      Every scan object is either a string descriptor or an object:
+          [
+            "descriptor",             (string) An output descriptor
+            {                         (json object) An object with output descriptor and metadata
+              "desc": "str",          (string, required) An output descriptor
+              "range": n or [n,n],    (numeric or array, optional, default=1000) The range of HD chain indexes to explore (either end or [begin,end])
+            },
+            ...
+          ]
+
+     Result (When action=='abort'):
+     true|false    (boolean)
+
+     Result (When action=='status' and no scan is in progress):
+     null    (json null)
+
+     Result (When action=='status' and scan is in progress):
+     {                    (json object)
+       "progress" : n     (numeric) The scan progress
+     }
+
+     Result (When action=='start'):
+     {                                (json object)
+       "success" : true|false,        (boolean) Whether the scan was completed
+       "txouts" : n,                  (numeric) The number of unspent transaction outputs scanned
+       "height" : n,                  (numeric) The current block height (index)
+       "bestblock" : "hex",           (string) The hash of the block at the tip of the chain
+       "unspents" : [                 (json array)
+         {                            (json object)
+           "txid" : "hex",            (string) The transaction id
+           "vout" : n,                (numeric) The vout value
+           "scriptPubKey" : "hex",    (string) The script key
+           "desc" : "str",            (string) A specialized descriptor for the matched scriptPubKey
+           "amount" : n,              (numeric) The total amount in BTC of the unspent output
+           "height" : n               (numeric) Height of the unspent transaction output
+         },
+         ...
+       ],
+       "total_amount" : n             (numeric) The total amount of all found unspent outputs in BTC
+     }
+     */
+    
+    let action: String
+    var scanobjects: [[String:Any]] = [[:]]
+    let descriptor: String
+    let scanObject: [String:Any]
+    let param: [String:Any]
+    public var description: String {
+        return ""
+    }
+    init(_ dict: [String:Any]) {
+        action = dict["action"] as! String
+        descriptor = dict["descriptor"] as! String
+        scanObject = ["desc": descriptor, "range": [50001,100000]]
+        scanobjects[0] = scanObject
+        param = ["action": action, "scanobjects": scanobjects]
+    }
+    
 }
 
 
