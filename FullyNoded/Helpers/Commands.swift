@@ -7,6 +7,7 @@
 //
 
 public enum BTC_CLI_COMMAND {
+    case scantxoutset(_ param: Scan_Tx_Out)
     case abortrescan
     case listlockunspent
     case lockunspent(_ param: Lock_Unspent)
@@ -16,12 +17,12 @@ public enum BTC_CLI_COMMAND {
     case listlabels
     case decodescript
     case combinepsbt
-    case utxoupdatepsbt
+    case utxoupdatepsbt(_ param: Utxo_Update_Psbt)
     case listaddressgroupings
     case converttopsbt
     case getaddressinfo(param: Get_Address_Info)
     case analyzepsbt
-    case createpsbt
+    case createpsbt(_ param: Create_Psbt)
     case joinpsbts(_ param: Join_Psbt)
     case getmempoolinfo
     case signrawtransactionwithkey
@@ -69,6 +70,8 @@ public enum BTC_CLI_COMMAND {
     
     var stringValue:String {
         switch self {
+        case .scantxoutset:
+            return "scantxoutset"
         case .abortrescan:
             return "abortrescan"
         case .listlockunspent:
@@ -242,12 +245,19 @@ public enum BTC_CLI_COMMAND {
             return p.param
         case .loadwallet(let p):
             return p.param
+        case .createpsbt(let p):
+            return p.param
+        case .utxoupdatepsbt(let p):
+            return p.param
+        case .scantxoutset(let p):
+            return p.param
         default:
             return [:]
         }
     }
     
     static let all: [BTC_CLI_COMMAND] = [
+        scantxoutset(.init([:])),
         abortrescan,
         listlockunspent,
         lockunspent(.init([:])),
@@ -257,12 +267,12 @@ public enum BTC_CLI_COMMAND {
         listlabels,
         decodescript,
         combinepsbt,
-        utxoupdatepsbt,
+        utxoupdatepsbt(.init([:])),
         listaddressgroupings,
         converttopsbt,
         getaddressinfo(param: .init([:])),
         analyzepsbt,
-        createpsbt,
+        createpsbt(.init([:])),
         joinpsbts(.init([:])),
         getmempoolinfo,
         signrawtransactionwithkey,
