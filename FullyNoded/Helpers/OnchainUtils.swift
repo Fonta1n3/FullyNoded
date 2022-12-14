@@ -107,14 +107,14 @@ class OnchainUtils {
             }
             
             guard blockchainInfo.pruned else {
-                OnchainUtils.rescanNow(from: "0") { (started, message) in
+                OnchainUtils.rescanNow(from: 0) { (started, message) in
                     completion((started, message))
                 }
                 
                 return
             }
             
-            OnchainUtils.rescanNow(from: "\(blockchainInfo.pruneheight)") { (started, message) in
+            OnchainUtils.rescanNow(from: blockchainInfo.pruneheight) { (started, message) in
                 completion((started, message))
             }
         }
@@ -131,10 +131,18 @@ class OnchainUtils {
         }
     }
     
-    static func rescanNow(from: String, completion: @escaping ((started: Bool, message: String?)) -> Void) {
+    static func rescanNow(from: Int, completion: @escaping ((started: Bool, message: String?)) -> Void) {
         let param: Rescan_Blockchain = .init(["start_height": from])
-        Reducer.sharedInstance.makeCommand(command: .rescanblockchain(param)) { (_, _) in }
+        // current behavior of bitcoin core is to wait until the rescan completes before responding, which is terrible ux.
+        // this command may fail, as a work around users need to refresh the home screen to see if it was successful.
+        Reducer.sharedInstance.makeCommand(command: .rescanblockchain(param)) { (_, _) in
+//            guard let errorMess = errorMess else {
+//                completion((false, "unknown issue starting rescan."))
+//                return
+//            }
+        }
         completion((true, nil))
+        
     }
     
     static func createWallet(param: Create_Wallet_Param, completion: @escaping ((name: String?, message: String?)) -> Void) {
@@ -177,7 +185,23 @@ class OnchainUtils {
     static func deriveAddresses(param: Derive_Addresses, completion: @escaping ((addresses: [String]?, message: String?)) -> Void) {        
         Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { (response, errorMessage) in
             guard let addresses = response as? [String] else {
-                completion((nil, errorMessage))
+                
+                if let em = errorMessage, em.contains("Missing checksum") {
+                    
+                    let getdescinfo_p: Get_Descriptor_Info = .init(["descriptor":(param.param["descriptor"] as! String)])
+                    
+                    OnchainUtils.getDescriptorInfo(getdescinfo_p) { (descriptorInfo, message_) in
+                        guard let descInfo = descriptorInfo else {
+                            completion((nil, message_))
+                            return
+                        }
+                        let newp:Derive_Addresses = .init(["descriptor": descInfo.descriptor, "range": param.param["range"] as! NSArray])
+                        OnchainUtils.deriveAddresses(param: newp, completion: completion)
+                    }
+                    
+                } else {
+                    completion((nil, errorMessage))
+                }
                 return
             }
             
@@ -217,5 +241,40 @@ class OnchainUtils {
             completion((response, errorMessage))
         }
     }
+    
+    // MARK: TODO - add an address tool here to look up signers that can sign for a specific address.
+    
+    //        CoreDataService.retrieveEntity(entityName: .signers) { signers in
+    //            guard let signers = signers else { return }
+    //            for signer in signers {
+    //                let s = SignerStruct(dictionary: signer)
+    //                if let encWords = s.words {
+    //                    guard let decryptedWords = Crypto.decrypt(encWords), let mk = Keys.masterKey(words: decryptedWords.utf8String!, coinType: "0", passphrase: ""), let xfp = Keys.fingerprint(masterKey: mk) else { return }
+    //
+    //
+    //                    let possibleAddresses = [
+    //
+    //                    ]
+    //                    JoinMarket.descriptors(mk, xfp) { descriptors in
+    //                        guard let descriptors = descriptors else { return }
+    //                        for descriptor in descriptors {
+    //                            let p:Derive_Addresses = .init(["descriptor":descriptor, "range":[0,10]])
+    //                            OnchainUtils.deriveAddresses(param: p) { (addresses, message) in
+    //                                guard let addresses = addresses else { return }
+    //                                for address in addresses {
+    //                                    for possibleAddress in possibleAddresses {
+    //                                        if address == possibleAddress {
+    //                                            print("words: \(decryptedWords.utf8String!)")
+    //                                            print("DING: \(address)")
+    //                                        }
+    //                                    }
+    //                                }
+    //                            }
+    //                        }
+    //                    }
+    //                }
+    //
+    //            }
+    //        }
      
 }
