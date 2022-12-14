@@ -86,16 +86,13 @@ class JMUtils {
                         "name": ""
                     ]
                     
-                    JMUtils.configGet(wallet: Wallet(dictionary: fnWallet), section: "BLOCKCHAIN", field: "rpc_wallet_file") { (response, message) in
-                        guard let response = response else {
+                    JMUtils.configGet(wallet: Wallet(dictionary: fnWallet), section: "BLOCKCHAIN", field: "rpc_wallet_file") { (jm_rpc_wallet, message) in
+                        guard let jm_rpc_wallet = jm_rpc_wallet else {
                             completion((nil, message ?? "error fetching Bitcoin Core rpc wallet name in jm config."))
                             return
                         }
                         
-                        fnWallet["name"] = response
-                        
-                        print("fnWallet: \(fnWallet)")
-                        
+                        fnWallet["name"] = jm_rpc_wallet
                         
                         CoreDataService.saveEntity(dict: fnWallet, entityName: .wallets) { fnWalletSaved in
                             guard fnWalletSaved else {
@@ -342,11 +339,11 @@ class JMUtils {
     }
     
     static func startMaker(wallet: Wallet, completion: @escaping ((response: [String:Any]?, message: String?)) -> Void) {
-        let txfee = Int.random(in: 250...550)
-        let cjfee_a = Int.random(in: 400...650)
-        let cjfee_r = Double.random(in: 0.0000189...0.000025)
+        let txfee = 0
+        let cjfee_a = Int.random(in: 5000...10000)
+        let cjfee_r = Double.random(in: 0.00002...0.000025)
         let minsize = Int.random(in: 99999...299999)
-        let orderType = ["sw0reloffer", "sw0absoffer"].randomElement()!
+        let orderType = "sw0reloffer"
         
         let param:[String:Any] = [
             "txfee": txfee,
