@@ -68,7 +68,7 @@ class MainMenuViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        UserDefaults.standard.set(UIDevice.modelName, forKey: "modelName")        
+        UserDefaults.standard.set(UIDevice.modelName, forKey: "modelName")
         UIApplication.shared.isIdleTimerDisabled = true
         
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
@@ -110,26 +110,26 @@ class MainMenuViewController: UIViewController {
         }
         CoreDataService.retrieveEntity(entityName: .jmWallets) { jmWallets in
             guard let jmWallets = jmWallets, jmWallets.count > 0 else { return }
-            
+
             CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
                 guard let wallets = wallets, wallets.count > 0 else { return }
-                
+
                 for (i, jmWallet) in jmWallets.enumerated() {
                     let jmWStrct = JMWallet(jmWallet)
-                    
+
                     for (x, w) in wallets.enumerated() {
                         if w["id"] != nil {
                             let wStrct = Wallet(dictionary: w)
                             if jmWStrct.fnWallet == wStrct.name {
                                 // same wallet we can update here
                                 CoreDataService.update(id: wStrct.id, keyToUpdate: "token", newValue: jmWStrct.token, entity: .wallets) { _ in
-                                    
+
                                     CoreDataService.update(id: wStrct.id, keyToUpdate: "password", newValue: jmWStrct.password, entity: .wallets) { _ in
-                                        
+
                                         CoreDataService.update(id: wStrct.id, keyToUpdate: "isJm", newValue: true, entity: .wallets) { _ in
-                                            
+
                                             CoreDataService.update(id: wStrct.id, keyToUpdate: "jmWalletName", newValue: jmWStrct.name, entity: .wallets) { _ in
-                                                
+
                                                 if i + 1 == jmWallets.count && x + 1 == jmWallets.count {
                                                     deleteJmWallets()
                                                 }
@@ -904,10 +904,8 @@ class MainMenuViewController: UIViewController {
                     if let node = self.activeNode {
                         if node.isNostr {
                             MakeRPCCall.sharedInstance.connectToRelay()
-                            print("we connect here first after unlock")
                             MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in
                                 MakeRPCCall.sharedInstance.connected = true
-                                print("this obviously passes ya?")
                                 DispatchQueue.main.async { [weak self] in
                                     guard let self = self else { return }
                                     self.removeBackView()
