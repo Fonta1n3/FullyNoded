@@ -15,7 +15,7 @@ public struct Wallet: CustomStringConvertible {
     let changeDescriptor:String
     let receiveDescriptor:String
     let type:String
-    let name:String
+    var name:String
     let maxIndex:Int64
     let index:Int64
     let watching:[String]?
@@ -35,8 +35,8 @@ public struct Wallet: CustomStringConvertible {
     let isJm: Bool
     //let jmWalletId: UUID?
     var token: Data?
-    let password: Data?
-    let jmWalletName: String
+    var password: Data?
+    var jmWalletName: String
     
     init(dictionary: [String: Any]) {
         id = dictionary["id"] as! UUID
