@@ -47,15 +47,7 @@ class ImportWallet {
         
         if self.version >= 210100 {
             wallet["type"] = "Native-Descriptor"
-        }// else {
-//            if descStruct.isMulti {
-//                wallet["type"] = "Multi-Sig"
-//                keypool = false
-//            } else {
-//                wallet["type"] = "Single-Sig"
-//                keypool = true
-//            }
-        //}
+        }
         
         primDescriptor = primDescriptor.replacingOccurrences(of: "'", with: "h")
         let arr = primDescriptor.split(separator: "#")
@@ -196,39 +188,6 @@ class ImportWallet {
                     }
                 } else {
                     completion((false, "Fully Noded works with Bitcoin Core 0.21 minimum."))
-//                    importReceiveDesc(recDesc, label, keypool) { (success, errorMessage) in
-//                        guard success else {
-//                            UserDefaults.standard.removeObject(forKey: "walletName")
-//                            completion((false, "error importing receive descriptor: \(errorMessage ?? "unknown error")"))
-//                            return
-//                        }
-//
-//                        importChangeDesc(changeDesc, keypool) { (success, errorMessage) in
-//                            guard success else {
-//                                UserDefaults.standard.removeObject(forKey: "walletName")
-//                                completion((false, "error importing change descriptor: \(errorMessage ?? "unknown error")"))
-//                                return
-//                            }
-//
-//                            if watching.count > 0 {
-//                                index = 0
-//                                processedWatching.removeAll()
-//
-//                                importWatching(watching: watching) { (watchingArray, errorMessage) in
-//                                    guard let watchingArray = watchingArray else {
-//                                        UserDefaults.standard.removeObject(forKey: "walletName")
-//                                        completion((false, "error importing watching descriptors: \(errorMessage ?? "unknown error importing watching descriptors")"))
-//                                        return
-//                                    }
-//
-//                                    wallet["watching"] = watchingArray
-//                                    rescan(wallet: wallet, completion: completion)
-//                                }
-//                            } else {
-//                                rescan(wallet: wallet, completion: completion)
-//                            }
-//                        }
-//                    }
                 }
             }
         }
@@ -390,18 +349,6 @@ class ImportWallet {
         }        
     }
     
-//    class func importReceiveDesc(_ recDesc: String, _ label: String, _ keypool: Bool, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-//        let recParams = "[{ \"desc\": \"\(recDesc)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": \(!isHot), \"label\": \"\(label)\", \"keypool\": \(keypool), \"internal\": false }], {\"rescan\": false}"
-//
-//        importMultiDesc(params: recParams, completion: completion)
-//    }
-    
-//    class func importChangeDesc(_ changeDesc: String, _ keypool: Bool, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-//        let changeParams = "[{ \"desc\": \"\(changeDesc)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": \(!isHot), \"keypool\": \(keypool), \"internal\": true }], {\"rescan\": false}"
-//
-//        importMultiDesc(params: changeParams, completion: completion)
-//    }
-    
     class func walletExistsOnNode(_ hash: String, completion: @escaping ((String?)) -> Void) {
         OnchainUtils.listWalletDir { (walletDir, message) in
             if let walletDir = walletDir {
@@ -438,14 +385,8 @@ class ImportWallet {
                 completion((nil, message))
                 return
             }
-            
             let descStruct = Descriptor(desc)
-            
-            //if descStruct.isHot {
-                completion((desc + "#" + descriptorInfo.checksum, message))
-//            } else {
-//                completion((descriptorInfo.descriptor, message))
-//            }
+            completion((desc + "#" + descriptorInfo.checksum, message))
         }
     }
     
@@ -471,8 +412,10 @@ class ImportWallet {
             var alreadySaved = false
             
             for (i, existingWallet) in wallets.enumerated() {
-                let existingWalletStr = Wallet(dictionary: existingWallet)
-                alreadySaved = existingWalletStr.name == walletToSave.name
+                if existingWallet["id"] != nil {
+                    let existingWalletStr = Wallet(dictionary: existingWallet)
+                    alreadySaved = existingWalletStr.name == walletToSave.name
+                }
                 
                 if i + 1 == wallets.count {
                     if !alreadySaved {
@@ -486,50 +429,15 @@ class ImportWallet {
     }
     
     class func rescan(wallet: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
-        //if !isRecovering {
-            let walletStr = Wallet(dictionary: wallet)
-            OnchainUtils.rescanNow(from: "\(walletStr.blockheight)") { (started, message) in
-                if started {
-                    saveLocally(wallet: wallet, completion: completion)
-                } else {
-                    completion((false, message ?? "error rescanning"))
-                }
+        let walletStr = Wallet(dictionary: wallet)
+        OnchainUtils.rescanNow(from: walletStr.blockheight) { (started, message) in
+            if started {
+                saveLocally(wallet: wallet, completion: completion)
+            } else {
+                completion((false, message ?? "error rescanning"))
             }
-//        } else {
-//            saveLocally(wallet: wallet, completion: completion)
-//        }
+        }
     }
-    
-//    class func importMultiDesc(params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-//        OnchainUtils.importMulti(params) { (imported, message) in
-//            completion((imported, message))
-//        }
-//    }
-    
-//    class func importWatching(watching: [String], completion: @escaping ((watchingArray: [String]?, errorMessage: String?)) -> Void) {
-//        if index < watching.count {
-//            getDescriptorInfo(desc: watching[index]) { (desc, errMessage) in
-//                guard let desc = desc else {
-//                    completion((nil, errMessage))
-//                    return
-//                }
-//
-//                let params = "[{ \"desc\": \"\(desc)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"watching\", \"keypool\": false, \"internal\": false }], {\"rescan\": false}"
-//
-//                importMultiDesc(params: params) { (success, errorMessage) in
-//                    if success {
-//                        processedWatching.append(desc)
-//                        index += 1
-//                        importWatching(watching: watching, completion: completion)
-//                    } else {
-//                        completion((nil, "Error importing descriptor: \(errorMessage ?? "unknown error")"))
-//                    }
-//                }
-//            }
-//        } else {
-//            completion((processedWatching, nil))
-//        }
-//    }
     
     class func processWatching(watching: [String], completion: @escaping ((watchingArray: [String]?, errorMessage: String?)) -> Void) {
         if index < watching.count {
