@@ -5364,7 +5364,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                     </textField>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC username (Bitcoin Core, CLN)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Shd-1m-99a">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC username (Bitcoin Core)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Shd-1m-99a">
                                         <rect key="frame" x="0.0" y="122" width="343" height="9"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="9" id="jpP-jZ-aa6"/>
@@ -5379,7 +5379,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC password (Bitcoin Core, CLN)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ojR-cB-7rc">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC password (Bitcoin Core)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ojR-cB-7rc">
                                         <rect key="frame" x="0.0" y="183" width="343" height="9"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="9" id="hKg-mn-f2P"/>
@@ -5620,6 +5620,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="addressHeaderOutlet" destination="1oS-WI-SUN" id="Oiu-pO-bzi"/>
                         <outlet property="certField" destination="b2n-IJ-p4P" id="2Oa-RW-RkX"/>
                         <outlet property="certHeader" destination="WBC-Zb-OwL" id="SCu-mB-h5r"/>
+                        <outlet property="exportNodeOutlet" destination="gwp-vI-ePE" id="9uW-yf-7jK"/>
                         <outlet property="header" destination="DTI-AZ-owi" id="puY-tw-wga"/>
                         <outlet property="macaroonField" destination="cPw-T1-Xd9" id="k5s-S4-m2c"/>
                         <outlet property="macaroonHeader" destination="vSy-Vj-wcK" id="9Ue-6n-u0E"/>
@@ -5645,6 +5646,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="scanNostrPubkeyQr" destination="h9x-Ys-5JF" id="y6G-qY-bUg"/>
                         <outlet property="scanQROutlet" destination="awp-qu-L3a" id="pQ4-ao-MZ5"/>
                         <outlet property="seeEncryptionWordsButton" destination="kwB-do-h4l" id="ggz-6Q-8Mp"/>
+                        <outlet property="showHostOutlet" destination="dnk-QA-bMo" id="Sz6-Jm-1kg"/>
                         <outlet property="showNostrPubkeyQr" destination="reH-db-j8C" id="a3Y-ta-aJF"/>
                         <outlet property="usernameHeader" destination="Shd-1m-99a" id="WmB-Kw-SMe"/>
                         <segue destination="GlR-4A-eAx" kind="show" identifier="segueToExportNode" id="8MS-xS-DMP"/>

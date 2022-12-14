@@ -16,6 +16,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var addButton = UIBarButtonItem()
     var editButton = UIBarButtonItem()
     var isNostr = false
+    var isLightning = false
+    var isJoinMarket = false
     private var authenticated = false
     @IBOutlet var nodeTable: UITableView!
     
@@ -324,15 +326,33 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             let alert = UIAlertController(title: "Scan QR or add manually?", message: "You can add the node credentials manually or scan a QR code.", preferredStyle: alertStyle)
             
-            alert.addAction(UIAlertAction(title: "Add nostr node", style: .default, handler: { [weak self] action in
+            alert.addAction(UIAlertAction(title: "Nostrnode", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                 self.isNostr = true
                 self.segueToAddNodeManually()
             }))
             
-            alert.addAction(UIAlertAction(title: "Add manually", style: .default, handler: { [weak self] action in
+            alert.addAction(UIAlertAction(title: "Bitcoin Core", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                 
+                self.isLightning = false
+                self.isJoinMarket = false
+                self.segueToAddNodeManually()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Join Market", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.isLightning = false
+                self.isJoinMarket = true
+                self.segueToAddNodeManually()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Lightning", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.isLightning = true
+                self.isJoinMarket = false
                 self.segueToAddNodeManually()
             }))
             
@@ -393,26 +413,9 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         if segue.identifier == "segueToAddBitcoinCoreNode" {
             if let vc = segue.destination as? NodeDetailViewController {
                 vc.createNew = true
-                vc.isLightning = false
+                vc.isLightning = self.isLightning
+                vc.isJoinMarket = self.isJoinMarket
                 vc.isNostr = self.isNostr
-            }
-        }
-        
-        if segue.identifier == "segueToAddLightningNode" {
-            if let vc = segue.destination as? NodeDetailViewController {
-                vc.isLightning = true
-                vc.createNew = true
-                CoreDataService.retrieveEntity(entityName: .newNodes) { (nodes) in
-                    if nodes != nil {
-                        for node in nodes! {
-                            let str = NodeStruct(dictionary: node)
-                            if str.isLightning {
-                                vc.createNew = false
-                                vc.selectedNode = node
-                            }
-                        }
-                    }
-                }
             }
         }
         

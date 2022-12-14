@@ -23,6 +23,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     let imagePicker = UIImagePickerController()
     var scanNow = false
     var isNostr = false
+    var isJoinMarket = false
     
     @IBOutlet weak var masterStackView: UIStackView!
     @IBOutlet weak var seeEncryptionWordsButton: UIButton!
@@ -56,6 +57,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBOutlet weak var nostrPrivkeyField: UITextField!
     @IBOutlet weak var nostrToSubscribe: UITextField!
     @IBOutlet weak var networkControlOutlet: UISegmentedControl!
+    @IBOutlet weak var showHostOutlet: UIBarButtonItem!
+    @IBOutlet weak var exportNodeOutlet: UIBarButtonItem!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -86,7 +89,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         navigationController?.delegate = self
         
         if isLightning {
-            addressHeaderOutlet.text = "Address: (xxx.onion:8080 or 127.0.0.1:8080)"
+            addressHeaderOutlet.text = "Address: (localhost:9737)"
         } else {
             addressHeaderOutlet.text = "Address: (xxx.onion:8332 or 127.0.0.1:8332)"
         }
@@ -190,6 +193,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 self.nostrToSubscribe.removeFromSuperview()
                 self.nostrPrivkeyField.removeFromSuperview()
                 self.nostrPrivkeyHeader.removeFromSuperview()
+                self.macaroonField.removeFromSuperview()
+                self.macaroonHeader.removeFromSuperview()
+                self.certField.removeFromSuperview()
+                self.certHeader.removeFromSuperview()
+                self.networkControlOutlet.alpha = 0
             }
         }
     }
@@ -790,6 +798,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     }
                 } else {
                     removeNostrStuff()
+                    if node.isLightning {
+                        removeNonLightning()
+                    }
                 }
                 
                 if node.label != "" {
@@ -825,6 +836,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         usernameHeader.removeFromSuperview()
                         macaroonField.removeFromSuperview()
                         macaroonHeader.removeFromSuperview()
+                        exportNodeOutlet.tintColor = .clear
+                        scanQROutlet.tintColor = .clear
+                        showHostOutlet.tintColor = .clear
+                        networkControlOutlet.alpha = 0
                     }
                 }
                 
@@ -846,10 +861,48 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             } else {
                 removeNostrStuff()
             }
+            
+            if isLightning {
+                removeNonLightning()
+            }
+            
+            if isJoinMarket {
+                removeNonJm()
+            }
         }
         
         DispatchQueue.main.async { [weak self] in
             self?.masterStackView.alpha = 1
+        }
+    }
+    
+    private func removeNonJm() {
+        DispatchQueue.main.async {
+            self.addressHeaderOutlet.text = "Address: (localhost:28183)"
+            self.rpcUserField.removeFromSuperview()
+            self.networkControlOutlet.alpha = 0
+            self.exportNodeOutlet.tintColor = .clear
+            self.scanQROutlet.tintColor = .clear
+            self.showHostOutlet.tintColor = .clear
+            self.rpcPassword.removeFromSuperview()
+            self.passwordHeader.removeFromSuperview()
+            self.usernameHeader.removeFromSuperview()
+            self.macaroonField.removeFromSuperview()
+            self.macaroonHeader.removeFromSuperview()
+        }
+    }
+    
+    private func removeNonLightning() {
+        DispatchQueue.main.async {
+            self.addressHeaderOutlet.text = "Address: (localhost:9737)"
+            self.rpcUserField.removeFromSuperview()
+            self.networkControlOutlet.alpha = 0
+            self.exportNodeOutlet.tintColor = .clear
+            self.scanQROutlet.tintColor = .clear
+            self.showHostOutlet.tintColor = .clear
+            self.rpcPassword.placeholder = "sparko key"
+            self.passwordHeader.text = "sparko key"
+            self.usernameHeader.removeFromSuperview()
         }
     }
     
