@@ -820,15 +820,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func withdrawFromCL(address: String, sats: Int) {
-        var param = "\"\(address)\", \(sats)"
-        
+        var param:[String:Any] = ["destination":address, "satoshi":sats]
         if sats == 0 {
-            param = "\"\(address)\", \"all\""
+            param["satoshi"] = "all"
         }
-        
         let commandId = UUID()
-        
-        LightningRPC.command(id: commandId, method: .withdraw, param: param) { [weak self] (uuid, response, errorDesc) in
+        //destination satoshi [feerate] [minconf] [utxos]
+        LightningRPC.sharedInstance.command(id: commandId, method: .withdraw, param: param) { [weak self] (uuid, response, errorDesc) in
             guard commandId == uuid, let self = self else { return }
             
             self.spinner.removeConnectingView()
@@ -871,8 +869,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     private func getCLAddress() {
         let commandId = UUID()
-        LightningRPC.command(id: commandId, method: .newaddr, param: "") { [weak self] (uuid, response, errorDesc) in
-            guard commandId == uuid, let self = self else { return }
+        LightningRPC.sharedInstance.command(id: commandId, method: .newaddr, param: nil) { [weak self] (uuid, response, errorDesc) in
+            guard let self = self else { return }
                         
             guard let dict = response as? NSDictionary, let address = dict["bech32"] as? String else {
                 showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching lightning wallet address")
@@ -1107,23 +1105,17 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     private func standardSweep(_ receivingAddress: String) {
         var paramDict:[String:Any] = [:]
-        
         paramDict["inputs"] = inputs
         paramDict["outputs"] = [[receivingAddress: "\(rounded(number: utxoTotal))"]]
         paramDict["bip32derivs"] = true
         
         if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {            
             paramDict["options"] = ["includeWatching": true, "replaceable": true, "fee_rate": feeRate, "subtractFeeFromOutputs": [0], "changeAddress": receivingAddress]
-            
-            //param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
         } else {
-            //param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
-            
             paramDict["options"] = ["includeWatching": true, "replaceable": true, "conf_target": ud.object(forKey: "feeTarget") as? Int ?? 432, "subtractFeeFromOutputs": [0], "changeAddress": receivingAddress]
         }
         
         let param:Wallet_Create_Funded_Psbt = .init(paramDict)
-        
         Reducer.sharedInstance.makeCommand(command: .walletcreatefundedpsbt(param: param)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -1558,7 +1550,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     private func decodeFromCL(_ invoice: String) {
         let commandId = UUID()
         
-        LightningRPC.command(id: commandId, method: .decodepay, param: "\"\(invoice)\"") { [weak self] (uuid, response, errorDesc) in
+        LightningRPC.sharedInstance.command(id: commandId, method: .decodepay, param: ["bolt11": invoice]) { [weak self] (uuid, response, errorDesc) in
             guard let self = self, commandId == uuid else { return }
             
             self.spinner.removeConnectingView()
@@ -1751,20 +1743,20 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func payFromCL(invoice: String, msat: Int?, dict: [String:Any]) {
-        var params = ""
-        
-        if msat != nil {
-            params = "\"\(invoice)\", \(msat!)"
-        } else {
-            params = "\"\(invoice)\""
+        //bolt11 [msatoshi] [label] [riskfactor] [maxfeepercent] [retry_for] [maxdelay] [exemptfee] [localinvreqid] [exclude] [maxfee] [description]
+        var param:[String:Any] = [:]
+        param["invoice"] = invoice
+        if let msat = msat {
+            param["msatoshi"] = msat
         }
         
         let memo = dict["description"] as? String ?? "no memo added"
+        param["label"] = memo
         let payment_hash = dict["payment_hash"] as? String ?? ""
         
         let commandId = UUID()
         
-        LightningRPC.command(id: commandId, method: .pay, param: params) { [weak self] (uuid, response, errorDesc) in
+        LightningRPC.sharedInstance.command(id: commandId, method: .pay, param: param) { [weak self] (uuid, response, errorDesc) in
             guard let self = self, commandId == uuid else { return }
             
             self.spinner.removeConnectingView()
