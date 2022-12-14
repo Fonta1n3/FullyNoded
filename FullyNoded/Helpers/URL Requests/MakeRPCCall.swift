@@ -19,17 +19,7 @@ class MakeRPCCall: WebSocketDelegate {
     var onDoneBlock : (((response: Any?, errorDesc: String?)) -> Void)?
     var eoseReceivedBlock : (((Bool)) -> Void)?
     var activeNode:NodeStruct?
-    var isiOSAppOnMac: Bool = {
-    #if targetEnvironment(macCatalyst)
-        return true
-    #else
-        if #available(iOS 14.0, *) {
-            return ProcessInfo.processInfo.isiOSAppOnMac
-        } else {
-            return false
-        }
-    #endif
-        }()
+    var lastSentId:String?
     
     private init() {}
     
@@ -57,7 +47,7 @@ class MakeRPCCall: WebSocketDelegate {
     func didReceive(event: WebSocketEvent, client: WebSocket) {
         switch event {
         case .connected:
-            if let node = activeNode {
+            if !self.connected, let node = activeNode {
                 writeReqEvent(node: node)
             }
             
@@ -101,7 +91,12 @@ class MakeRPCCall: WebSocketDelegate {
                             return
                         }
 
-                        let (responseCheck, errorDescCheck) = processValidReceivedContent(content: ev.content)
+                        let (responseCheck, errorDescCheck, requestId) = processValidReceivedContent(content: ev.content)
+                        
+                        guard self.lastSentId == requestId else {
+                            self.onDoneBlock!((nil, "Ignoring out of order response."))
+                            return
+                        }
                         
                         guard let reponse = responseCheck else {
                             self.onDoneBlock!((nil,errorDescCheck))
@@ -207,15 +202,16 @@ class MakeRPCCall: WebSocketDelegate {
         return decryptedDict
     }
         
-    func processValidReceivedContent(content: String) -> (response:Any?, errorDesc:String?) {
-        guard let decryptedDict = decryptedDict(content: content) else {return (nil,nil)}
+    func processValidReceivedContent(content: String) -> (response:Any?, errorDesc:String?, requestId: String?) {
+        guard let decryptedDict = decryptedDict(content: content) else {return (nil,nil,nil)}
         #if DEBUG
         print("decryptedDict: \(decryptedDict)")
         #endif
         
         let response = decryptedDict["response"]
-        let errorDesc = decryptedDict["errorDesc"] as? String
-        return (response, errorDesc)
+        let errorDesc = decryptedDict["error_desc"] as? String
+        let requestId = decryptedDict["request_id"] as? String
+        return (response, errorDesc, requestId)
     }
     
     
@@ -224,7 +220,86 @@ class MakeRPCCall: WebSocketDelegate {
         if isWalletRPC(command: method) {
             walletName = UserDefaults.standard.string(forKey: "walletName")
         }
-        let dict:[String:Any] = ["command":method.stringValue,"paramDict":["param":method.paramDict],"wallet":walletName ?? ""]
+        let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+        #if DEBUG
+        print("chain: \(chain)")
+        #endif
+        var port = 8332
+        switch chain {
+        case "test":
+            port = 18332
+        case "regtest":
+            port = 18443
+        case "signet":
+            port = 38332
+        default:
+            break
+        }
+        let id = UUID()
+        self.lastSentId = id.uuidString
+        let dict:[String:Any] = [
+            "request_id": id.uuidString,
+            "port": port,
+            "command":method.stringValue,
+            "param":method.paramDict,
+            "wallet":walletName ?? "",
+            "http_method": "POST"
+        ]
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
+            #if DEBUG
+            print("converting to jsonData failing...")
+            #endif
+            return
+        }
+        guard let node = activeNode,
+              let encryptedWords = node.nostrWords,
+            let decryptedWords = Crypto.decrypt(encryptedWords),
+              let words = decryptedWords.utf8String else { onDoneBlock!((nil, "Error encrypting content...")); return }
+        
+        let encryptedContent = Crypto.encryptNostr(jsonData, words)!.base64EncodedString()
+        writeEvent(content: encryptedContent)
+    }
+    
+    
+    func executeNostrJmRpc(method: JM_REST, httpMethod: String, token: String?, httpBody: [String:Any]?) {
+        let id = UUID()
+        self.lastSentId = id.uuidString
+        var dict:[String:Any] = [
+            "port": 28183,
+            "http_method": httpMethod,
+            "url_path": method.stringValue,
+            "request_id": id.uuidString
+        ]
+        if let httpBody = httpBody {
+            dict["http_body"] = httpBody
+        }
+        if let token = token {
+            dict["token"] = token
+        }
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
+            #if DEBUG
+            print("converting to jsonData failing...")
+            #endif
+            return
+        }
+        guard let node = activeNode,
+              let encryptedWords = node.nostrWords,
+            let decryptedWords = Crypto.decrypt(encryptedWords),
+              let words = decryptedWords.utf8String else { onDoneBlock!((nil, "Error encrypting content...")); return }
+        
+        let encryptedContent = Crypto.encryptNostr(jsonData, words)!.base64EncodedString()
+        writeEvent(content: encryptedContent)
+    }
+    
+    
+    func executeClnNostrRpc(http_body: [String:Any]) {
+        let id = UUID()
+        self.lastSentId = id.uuidString
+        let dict:[String:Any] = [
+            "request_id": id.uuidString,
+            "port": 9737,
+            "http_body":http_body
+        ]
         guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
             #if DEBUG
             print("converting to jsonData failing...")
@@ -286,7 +361,6 @@ class MakeRPCCall: WebSocketDelegate {
     
     func executeRPCCommand(method: BTC_CLI_COMMAND, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
         attempts += 1
-        
         if let node = self.activeNode {
             if node.isNostr {
                 if self.connected {
