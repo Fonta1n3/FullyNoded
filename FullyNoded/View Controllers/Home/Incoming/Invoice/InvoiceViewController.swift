@@ -184,7 +184,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 self.createCLInvoice()
                 return
             }
-            
             self.createLNDInvoice()
         }
     }
@@ -204,7 +203,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                     amount = "\(Int(int))"
                 }
             }
-            
             param["value"] = amount
         }
         
@@ -237,40 +235,40 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func createCLInvoice() {
-        var millisats = "\"any\""
-        
-        var description = labelField.text ?? "Fully Noded c-lightning invoice ⚡️"
+        var param:[String:Any] = ["expiry": 86400]
+        var description = labelField.text ?? "Fully Noded CLN invoice"
         
         if description == "" {
-            description = "Fully Noded c-lightning invoice ⚡️"
+            description = "Fully Noded CLN invoice"
         }
         
-        let label = "Fully Noded c-lightning invoice ⚡️ \(randomString(length: 10))"
+        let label = "Fully Noded CLN invoice \(randomString(length: 10))"
+        param["label"] = label
         
         if amountField.text != "" {
             if isBtc {
                 if let dbl = Double(amountField.text!) {
-                    let int = Int(dbl * 100000000000.0)
-                    millisats = "\(int)"
+                    param["amount_msat"] = Int(dbl * 100000000000.0)
                 }
             } else if isSats {
                 if let int = Double(amountField.text!) {
-                    millisats = "\(Int(int * 1000))"
+                    param["amount_msat"] = Int(int * 1000)
                 }
             }
+        } else {
+            param["amount_msat"] = "any"
         }
         
         if messageField.text != "" {
             description += "\n\nmessage: " + messageField.text!
         }
-        
-        let param = "\(millisats), \"\(label)\", \"\(description)\", \(86400)"
+        param["description"] = description
         let commandId = UUID()
         
-        LightningRPC.command(id: commandId, method: .invoice, param: param) { [weak self] (uuid, response, errorDesc) in
-            guard commandId == uuid, let self = self else { return }
+        LightningRPC.sharedInstance.command(id: commandId, method: .invoice, param: param) { [weak self] (uuid, response, errorDesc) in
+            guard let self = self else { return }
             
-            guard let dict = response as? NSDictionary, let bolt11 = dict["bolt11"] as? String else {
+            guard let dict = response as? [String:Any], let bolt11 = dict["bolt11"] as? String else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error", message: errorDesc ?? "we had an issue getting your lightning invoice")
                 return
@@ -307,19 +305,12 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 self.fetchAddress()
                 return
             }
-            
-            let descriptorStruct = Descriptor(wallet.receiveDescriptor)
-            
-            if wallet.type == WalletType.descriptor.stringValue || wallet.type == "JoinMarket" {
+            if wallet.isJm {
+                self.getReceiveAddressJm(wallet: wallet)
+            } else if wallet.type == WalletType.descriptor.stringValue {
                 self.getReceieveAddressForFullyNodedWallet(wallet)
-            } else if wallet.isJm {
-                    self.getReceiveAddressJm(wallet: wallet)
             } else {
-                if descriptorStruct.isMulti {
-                    self.getReceieveAddressForFullyNodedWallet(wallet)
-                } else {
-                    self.fetchAddress()
-                }
+                self.fetchAddress()
             }
         }
     }
@@ -374,33 +365,48 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     private func getJmAddressFromMixDepth(mixDepth: Int, wallet: Wallet) {
         spinner.addConnectingView(vc: self, description: "getting address from jm...")
         var w = wallet
-        JMRPC.sharedInstance.command(method: .getaddress(jmWallet: w, mixdepth: mixDepth), param: nil) { [weak self] (response, errorDesc) in
-            guard let self = self else { return }
-            self.spinner.removeConnectingView()
-            
-            if errorDesc == "Invalid credentials." {
-                JMUtils.unlockWallet(wallet: w) { [weak self] (unlockedWallet, message) in
-                    guard let self = self else { return }
-                    guard let unlockedWallet = unlockedWallet else { return }
-                    
-                    guard let encryptedToken = Crypto.encrypt(unlockedWallet.token.utf8) else {
-                        self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "", message: "Unable to decrypt your jm auth token.")
-                        return
+        if w.token != nil {
+            JMRPC.sharedInstance.command(method: .getaddress(jmWallet: w, mixdepth: mixDepth), param: nil) { [weak self] (response, errorDesc) in
+                guard let self = self else { return }
+                
+                if errorDesc == "Invalid credentials." {
+                    JMUtils.unlockWallet(wallet: w) { [weak self] (unlockedWallet, message) in
+                        guard let self = self else { return }
+                        guard let unlockedWallet = unlockedWallet else { return }
+                        
+                        guard let encryptedToken = Crypto.encrypt(unlockedWallet.token.utf8) else {
+                            self.spinner.removeConnectingView()
+                            showAlert(vc: self, title: "", message: "Unable to decrypt your jm auth token.")
+                            return
+                        }
+                        
+                        w.token = encryptedToken
+                        self.getJmAddressFromMixDepth(mixDepth: mixDepth, wallet: w)
                     }
                     
-                    w.token = encryptedToken
-                    self.getJmAddressFromMixDepth(mixDepth: mixDepth, wallet: w)
+                } else {
+                    guard let response = response as? [String:Any],
+                    let address = response["address"] as? String else {
+                        showAlert(vc: self, title: "", message: errorDesc ?? "unknown error getting jm address.")
+                        return
+                    }
+                    self.spinner.removeConnectingView()
+                    self.showAddress(address: address)
                 }
+            }
+        } else {
+            JMUtils.unlockWallet(wallet: w) { [weak self] (unlockedWallet, message) in
+                guard let self = self else { return }
+                guard let unlockedWallet = unlockedWallet else { return }
                 
-            } else {
-                guard let response = response as? [String:Any],
-                let address = response["address"] as? String else {
-                    showAlert(vc: self, title: "", message: errorDesc ?? "unknown error getting jm address.")
+                guard let encryptedToken = Crypto.encrypt(unlockedWallet.token.utf8) else {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "", message: "Unable to decrypt your jm auth token.")
                     return
                 }
-
-                self.showAddress(address: address)
+                
+                w.token = encryptedToken
+                self.getJmAddressFromMixDepth(mixDepth: mixDepth, wallet: w)
             }
         }
     }
