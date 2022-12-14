@@ -92,7 +92,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
             
             self.wallet = wallet
-            self.checkForJmWallet()
         }
     }
     
@@ -103,7 +102,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         unlockedUtxos.removeAll()
         selectedUTXOs.removeAll()
         inputArray.removeAll()
-        loadUnlockedUtxos()
+        checkForJmWallet()
     }
     
     private func checkForJmWallet() {
@@ -111,6 +110,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         if wallet.isJm {
             self.isJmarketWallet = true
             self.getStatus(wallet)
+        } else {
+            loadUnlockedUtxos()
         }
     }
     
@@ -123,7 +124,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             self.view.addSubview(spinny)
             spinny.startAnimating()
         }
-        
     }
     
     private func getStatus(_ wallet: Wallet) {
@@ -136,23 +136,14 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             JMUtils.session { [weak self] (response, message) in
                 guard let self = self else { return }
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    spinny.stopAnimating()
-                    spinny.alpha = 0
-                    self.jmStatusImageOutlet.alpha = 1
-                    
-                    self.jmMixOutlet.tintColor = .systemTeal
-                    self.jmEarnOutlet.tintColor = .systemTeal
-                    self.jmMixOutlet.isEnabled = true
-                    self.jmEarnOutlet.isEnabled = true
-                }
-                
                 guard let status = response else {
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
                         self.jmStatusLabelOutlet.text = "join market inactive"
                         self.jmStatusImageOutlet.tintColor = .systemRed
+                        self.hideJmSpinner(spinny: spinny)
+                        self.loadUnlockedUtxos()
+                        showAlert(vc: self, title: "", message: "Join Market server doesn't seem to be responding, are you sure it is on?")
                     }
                     return
                 }
@@ -172,6 +163,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 if !status.session {
                     JMUtils.wallets { (wallets, message) in
                         guard let wallets = wallets, wallets.count > 0 else {
+                            self.hideJmSpinner(spinny: spinny)
                             self.addUtxoMixButton()
                             return
                         }
@@ -188,8 +180,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                                     JMUtils.unlockWallet(wallet: self.wallet!) { (unlockedWallet, message) in
                                         guard let unlockedWallet = unlockedWallet else {
                                             if let message = message, message.contains("Wallet cannot be created/opened, it is locked") {
+                                                self.hideJmSpinner(spinny: spinny)
                                                 showAlert(vc: self, title: "Unable to unlock JM wallet.", message: "Deleting .joinmarket/wallets/.\(self.wallet!.jmWalletName).lock file in  on your JM server will fix this.")
                                             } else {
+                                                self.hideJmSpinner(spinny: spinny)
                                                 showAlert(vc: self, title: "Unable to unlock JM wallet...", message: message ?? "Unknown.")
                                             }
                                             
@@ -197,21 +191,44 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                                         }
                                         
                                         guard let encryptedToken = Crypto.encrypt(unlockedWallet.token.utf8) else {
+                                            self.hideJmSpinner(spinny: spinny)
                                             showAlert(vc: self, title: "", message: "Unable to decrypt your jm auth token.")
                                             return
                                         }
                                         
                                         self.wallet!.token = encryptedToken
                                         self.setMakerStoppedUi()
+                                        self.loadUnlockedUtxos()
+                                        self.hideJmSpinner(spinny: spinny)
                                     }
                                 } else {
                                     self.addUtxoMixButton()
+                                    self.hideJmSpinner(spinny: spinny)
+                                    self.loadUnlockedUtxos()
+                                    
                                 }
                             }
                         }
                     }
+                } else {
+                    self.hideJmSpinner(spinny: spinny)
+                    self.loadUnlockedUtxos()
                 }
             }
+        }
+    }
+    
+    private func hideJmSpinner(spinny: UIActivityIndicatorView) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            spinny.stopAnimating()
+            spinny.alpha = 0
+            self.jmStatusImageOutlet.alpha = 1
+            
+            self.jmMixOutlet.tintColor = .systemTeal
+            self.jmEarnOutlet.tintColor = .systemTeal
+            self.jmMixOutlet.isEnabled = true
+            self.jmEarnOutlet.isEnabled = true
         }
     }
     
@@ -869,19 +886,19 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     private func getUtxosFromJm(jmwallet: Wallet) {
-        print("getUtxosFromJm")
         JMRPC.sharedInstance.command(method: .listutxos(jmWallet: jmwallet), param: nil) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
             if errorDesc == "Invalid credentials." {
-                print("WTFFFFF")
                 JMUtils.unlockWallet(wallet: jmwallet) { (unlockedWallet, message) in
-                    guard let unlockedWallet = unlockedWallet else { print("here"); return }
+                    guard let unlockedWallet = unlockedWallet else {
+                        showAlert(vc: self, title: "Join Market message", message: message ?? "unknown error unlocking your jm wallet.")
+                        return
+                    }
                     
                     guard let encryptedToken = Crypto.encrypt(unlockedWallet.token.utf8) else {
                         showAlert(vc: self, title: "", message: "Unable to decrypt your jm auth token.")
                         return
                     }
-                    print("even more wtf")
                     self.wallet!.token = encryptedToken
                     self.getUtxosFromJm(jmwallet: self.wallet!)
                 }
