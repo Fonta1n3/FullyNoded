@@ -13,11 +13,18 @@ class JMRPC {
     static let sharedInstance = JMRPC()
     let torClient = TorClient.sharedInstance
     private var attempts = 0
+    private var token:String?
+    private var isNostr = false
     
     private init() {}
     
     func command(method: JM_REST, param: [String:Any]?, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
         attempts += 1
+        
+        var paramToUse:[String:Any] = [:]
+        if let param = param {
+            paramToUse = param
+        }
         
         CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
             guard let self = self else { return }
@@ -27,30 +34,38 @@ class JMRPC {
                 return
             }
             
-            var activeNode: [String:Any]?
+            var activeNode: NodeStruct?
             
             for node in nodes {
-                if let isActive = node["isActive"] as? Bool,
-                   let isLightning = node["isLightning"] as? Bool,
-                   !isLightning,
-                   let isJoinMarket = node["isJoinMarket"] as? Bool,
-                   isJoinMarket {
-                    if isActive {
-                        activeNode = node
+                let n = NodeStruct(dictionary: node)
+                if n.isActive {
+                    if n.isNostr {
+                        self.isNostr = true
+                        activeNode = n
+                    } else {
+                        if !n.isLightning, n.isJoinMarket {
+                            if n.isActive {
+                                activeNode = n
+                            }
+                        }
                     }
+                    
                 }
             }
             
-            guard let active = activeNode else {
+            guard let node = activeNode else {
                 completion((nil, "no active nodes!"))
                 return
             }
             
-            let node = NodeStruct(dictionary: active)
+            var onionAddress:String?
+            var sesh = URLSession(configuration: .default)
             
-            guard let encAddress = node.onionAddress else {
-                completion((nil, "error getting encrypted node credentials"))
-                return
+            if let encAddress = node.onionAddress {
+                onionAddress = decryptedValue(encAddress)
+                if onionAddress!.contains("onion") {
+                    sesh = self.torClient.session
+                }
             }
             
             if let encryptedCert = node.cert {
@@ -62,14 +77,7 @@ class JMRPC {
                 self.torClient.cert = decryptedCert.base64EncodedData()
             }
             
-            let onionAddress = decryptedValue(encAddress)
-            
-            guard onionAddress != "" else {
-                completion((nil, "error decrypting node credentials"))
-                return
-            }
-            
-            let walletUrl = "https://\(onionAddress)/\(method.stringValue)"
+            let walletUrl = "https://\(onionAddress ?? "localhost")/\(method.stringValue)"
                         
              guard let url = URL(string: walletUrl) else {
                 completion((nil, "url error"))
@@ -78,13 +86,6 @@ class JMRPC {
             
             var request = URLRequest(url: url)
             var timeout = 10.0
-            
-            var sesh = URLSession(configuration: .default)
-            
-            if onionAddress.contains("onion") {
-                sesh = self.torClient.session
-            }
-            
             var httpMethod:String!
             
             switch method {
@@ -106,7 +107,7 @@ class JMRPC {
                           completion((nil, "Unable to decrypt token."))
                           return
                       }
-                
+                self.token = token
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
                 
             case .unlockwallet(jmWallet: let wallet):
@@ -118,11 +119,7 @@ class JMRPC {
                           return
                       }
                                 
-                guard let jsonData = try? JSONSerialization.data(withJSONObject: ["password":password]) else { return }
-                                
-                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                request.setValue("\(jsonData.count)", forHTTPHeaderField: "Content-Length")
-                request.httpBody = jsonData
+                paramToUse = ["password":password]
                 
             case .walletcreate:
                 httpMethod = "POST"
@@ -142,7 +139,7 @@ class JMRPC {
                           completion((nil, "Unable to decrypt token."))
                           return
                       }
-                
+                self.token = token
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
                 
             case .gettimelockaddress(jmWallet: let wallet, date: _):
@@ -153,105 +150,118 @@ class JMRPC {
                           completion((nil, "Unable to decrypt token."))
                           return
                       }
-                
+                self.token = token
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             }
             
-            if let param = param {
-                #if DEBUG
-                print("JM param: \(param)")
-                #endif
-                
-                guard let jsonData = try? JSONSerialization.data(withJSONObject: param) else {
+            if !paramToUse.isEmpty {
+                guard let jsonData = try? JSONSerialization.data(withJSONObject: paramToUse) else {
                     completion((nil, "Unable to encode your params into json data."))
                     return
                 }
-                
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")
                 request.setValue("\(jsonData.count)", forHTTPHeaderField: "Content-Length")
+                print("jsonData.count: \(jsonData.count)")
                 request.httpBody = jsonData
-                
-            } else {
-                request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
             }
             
             request.timeoutInterval = timeout
             request.httpMethod = httpMethod
             request.url = url
             
-            #if DEBUG
-            print("url = \(url)")
-            #endif
-                        
-            let task = sesh.dataTask(with: request as URLRequest) { [weak self] (data, response, error) in
-                guard let self = self else { return }
-                                
-                guard let urlContent = data else {
+//            #if DEBUG
+//            print("url = \(url)")
+//            print("httpMethod = \(httpMethod)")
+//            print("self.token = \(self.token)")
+//            print("httpBody = \(paramToUse)")
+//            #endif
+            
+            if self.isNostr {
+                MakeRPCCall.sharedInstance.executeNostrJmRpc(method: method,
+                                                             httpMethod: httpMethod,
+                                                             token: self.token,
+                                                             httpBody: paramToUse)
+                self.token = nil
+                request.httpBody = nil
+
+                MakeRPCCall.sharedInstance.onDoneBlock = { jmResponse in
+//                    #if DEBUG
+//                    print("jm nostr response: \(jmResponse)")
+//                    #endif
+                    guard let response = jmResponse.response as? [String:Any] else { completion((nil, jmResponse.errorDesc)); return }
+//                    #if DEBUG
+//                    print("response: \(response)")
+//                    #endif
                     
-                    guard let error = error else {
+                    guard let message = response["message"] as? String else {
+                        completion((response, nil))
+                        return
+                    }
+
+                    completion((nil, message))
+                }
+            } else {
+                let task = sesh.dataTask(with: request as URLRequest) { [weak self] (data, response, error) in
+                    guard let self = self else { return }
+
+                    guard let urlContent = data else {
+
+                        guard let error = error else {
+                            if self.attempts < 20 {
+                                self.command(method: method, param: param, completion: completion)
+                            } else {
+                                self.attempts = 0
+                                completion((nil, "Unknown error, ran out of attempts"))
+                            }
+
+                            return
+                        }
+
                         if self.attempts < 20 {
                             self.command(method: method, param: param, completion: completion)
                         } else {
                             self.attempts = 0
-                            completion((nil, "Unknown error, ran out of attempts"))
+                            #if DEBUG
+                            print("error: \(error.localizedDescription)")
+                            #endif
+                            completion((nil, error.localizedDescription))
                         }
-                        
+
                         return
                     }
-                    
-                    if self.attempts < 20 {
-                        self.command(method: method, param: param, completion: completion)
-                    } else {
-                        self.attempts = 0
-                        #if DEBUG
-                        print("error: \(error.localizedDescription)")
-                        #endif
-                        completion((nil, error.localizedDescription))
-                    }
-                    
-                    return
-                }
-                
-                self.attempts = 0
-                
-                guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: .mutableLeaves) as? NSDictionary else {
-                    if let httpResponse = response as? HTTPURLResponse {
-                        switch httpResponse.statusCode {
-                        case 401:
-                            completion((nil, "Looks like your rpc credentials are incorrect, please double check them. If you changed your rpc creds in your bitcoin.conf you need to restart your node for the changes to take effect."))
-                        case 403:
-                            completion((nil, "The bitcoin-cli \(method) command has not been added to your rpcwhitelist, add \(method) to your bitcoin.conf rpcwhitelsist, reboot Bitcoin Core and try again."))
-                        default:
-                            completion((nil, "Unable to decode the response from your node, http status code: \(httpResponse.statusCode)"))
+
+                    self.attempts = 0
+
+                    guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: .mutableLeaves) as? NSDictionary else {
+                        if let httpResponse = response as? HTTPURLResponse {
+                            switch httpResponse.statusCode {
+                            case 401:
+                                completion((nil, "Looks like your rpc credentials are incorrect, please double check them. If you changed your rpc creds in your bitcoin.conf you need to restart your node for the changes to take effect."))
+                            case 403:
+                                completion((nil, "The bitcoin-cli \(method) command has not been added to your rpcwhitelist, add \(method) to your bitcoin.conf rpcwhitelsist, reboot Bitcoin Core and try again."))
+                            default:
+                                completion((nil, "Unable to decode the response from your node, http status code: \(httpResponse.statusCode)"))
+                            }
+                        } else {
+                            completion((nil, "Unable to decode the response from your node..."))
                         }
-                    } else {
-                        completion((nil, "Unable to decode the response from your node..."))
+                        return
                     }
-                    return
-                }
-                
-                #if DEBUG
-                print("json: \(json)")
-                #endif
-                
-                guard var message = json["message"] as? String else {
-                    completion((json, nil))
-                    return
-                }
-                
-//                if message == "Invalid credentials.", let jmwallet = self.jmwallet {
-//                    // should be able to auto unlock here...
-//                    
-//                //} else if message == "No wallet loaded."{
-//                    
-//                } else {
+
+                    #if DEBUG
+                    print("json: \(json)")
+                    #endif
+
+                    guard let message = json["message"] as? String else {
+                        completion((json, nil))
+                        return
+                    }
+
                     completion((nil, message))
-                //}
+                }
                 
-                
+                task.resume()
             }
-            
-            task.resume()
         }
     }
 }
