@@ -22,11 +22,10 @@ class CreatePSBT {
         if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
             options["feeRate"] = feeRate
         } else if let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int {
-
             options["conf_target"] = feeTarget
         }
         
-        func create(param: Wallet_Create_Funded_Psbt) {
+        func wallet_create(param: Wallet_Create_Funded_Psbt) {
             Reducer.sharedInstance.makeCommand(command: .walletcreatefundedpsbt(param: param)) { (response, errorMessage) in
                 guard let result = response as? NSDictionary, let psbt = result["psbt"] as? String else {
                     var desc = errorMessage ?? "unknown error"
@@ -42,7 +41,7 @@ class CreatePSBT {
                 }
             }
         }
-                
+        
         activeWallet { wallet in
             guard let wallet = wallet else {
                 // using a bitcoin core wallet
@@ -54,7 +53,7 @@ class CreatePSBT {
                     options["changeAddress"] = changeAddress
                     paramDict["options"] = options
                     let param:Wallet_Create_Funded_Psbt = .init(paramDict)
-                    create(param: param)
+                    wallet_create(param: param)
                 }
                 return
             }
@@ -67,16 +66,15 @@ class CreatePSBT {
                     return
                 }
                 let param: Derive_Addresses = .init(["descriptor":wallet.changeDescriptor, "range": [index,index]])
-                Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { (response, errorMessage) in
-                    guard let result = response as? NSArray, let changeAddress = result[0] as? String else {
-                        completion((nil, nil, errorMessage ?? "error deriving change address"))
+                OnchainUtils.deriveAddresses(param: param) { (addresses, message) in
+                    guard let addresses = addresses as? NSArray, let changeAddress = addresses[0] as? String else {
+                        completion((nil, nil, message ?? "error deriving change address"))
                         return
                     }
-                    
                     options["changeAddress"] = changeAddress
                     paramDict["options"] = options
                     let param:Wallet_Create_Funded_Psbt = .init(paramDict)
-                    create(param: param)
+                    wallet_create(param: param)
                 }
             }
         }

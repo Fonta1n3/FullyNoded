@@ -218,6 +218,89 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
+//    private func openClnFromJm(_ utxo: Utxo, address: String) {
+//        JMRPC.sharedInstance.command(method: .listutxos(jmWallet: self.wallet!), param: nil) { (response, errorDesc) in
+//            
+//            func parseresponse(response: Any?, errorDesc: String?) {
+//                guard let response = response as? [String:Any], let utxos = response["utxos"] as? [[String:Any]] else {
+//                    //completion((nil, nil, "no jm utxos"))
+//                    return
+//                }
+//                
+//                guard utxos.count > 0 else {
+//                    //completion((nil, nil, "no jm utxos"))
+//                    return
+//                }
+//                
+//                func createNow(_ paramDict_: [String:Any], descriptors: [[String:Any]]) {
+//                    var processedDesc = descriptors
+//                    let gdi:Get_Descriptor_Info = .init(["descriptor":descriptors[0]["desc"] as! String])
+//                    
+//                    OnchainUtils.getDescriptorInfo(gdi) { (descriptorInfo, mess) in
+//                        guard let descriptorInfo = descriptorInfo else {
+//                            //completion((nil, nil, mess))
+//                            return
+//                        }
+//                        
+//                        processedDesc[0]["desc"] = descriptorInfo.descriptor
+//                        
+//                        let param:Create_Psbt = .init(paramDict_)
+//                        Reducer.sharedInstance.makeCommand(command: .createpsbt(param)) { (response, errorMessage) in
+//                            guard let psbt = response as? String else {
+//                                var desc = errorMessage ?? "unknown error"
+//                                if desc.contains("Unexpected key fee_rate") {
+//                                    desc = "In order to set the fee rate manually you must update to Bitcoin Core 0.21."
+//                                }
+//                                //completion((nil, nil, desc))
+//                                return
+//                            }
+//                            let p: Utxo_Update_Psbt = .init(["psbt": psbt, "descriptors":descriptors])
+//                            Reducer.sharedInstance.makeCommand(command: .utxoupdatepsbt(p)) { (response, errorMessag) in
+//                                guard let updatedpsbt = response as? String else {
+//                                    //completion((nil, nil, errorMessag))
+//                                    return
+//                                }
+//                                print("updatedpsbt: \(updatedpsbt)")
+//                                Signer.sign(psbt: updatedpsbt, passphrase: nil) { (psbt, rawTx, errorMessage) in
+//                                    //completion((psbt, rawTx, errorMessage))
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//                if !utxo.frozen!, utxo.confs! > 0, utxo.tries_remaining! > 0 {
+//                    let utxo_string = utxo.utxo!
+//                    let txid = utxo_string.split(separator: ":")[0]
+//                    let vout = Int(utxo_string.split(separator: ":")[1])!
+//                    let inputs = [["txid": txid, "sequence": 1, "vout": vout]]
+//                    let btcAmount = utxo.amount
+//                    let outputs = [[address:btcAmount]]
+//                }
+//            }
+//            
+//            if errorDesc == "Invalid credentials." {
+//                JMUtils.unlockWallet(wallet: self.wallet!) { (unlockedWallet, message) in
+//                    guard let unlockedWallet = unlockedWallet else {
+//                        //completion((nil, nil, "error getting jm utxos: " + (message ?? "unknown")))
+//                        return
+//                    }
+//                    
+//                    guard let encryptedToken = Crypto.encrypt(unlockedWallet.token.utf8) else {
+//                        //completion((nil, nil, "Unable to decrypt your jm auth token."))
+//                        return
+//                    }
+//                    self.wallet!.token = encryptedToken
+//                    
+//                    JMRPC.sharedInstance.command(method: .listutxos(jmWallet: self.wallet!), param: nil) { (response, errorDesc) in
+//                        parseresponse(response: response, errorDesc: errorDesc)
+//                    }
+//                }
+//            } else {
+//                parseresponse(response: response, errorDesc: errorDesc)
+//            }
+//        }
+//    }
+    
     private func hideJmSpinner(spinny: UIActivityIndicatorView) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
