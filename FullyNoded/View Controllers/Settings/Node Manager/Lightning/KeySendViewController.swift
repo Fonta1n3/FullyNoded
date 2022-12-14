@@ -175,20 +175,19 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
     private func keysendCL(sats: Double) {
         let msats = Int(sats * 1000.0)
         let commandId = UUID()
-        LightningRPC.command(id: commandId, method: .keysend, param: "\"\(id)\", \(msats), \"Fully Noded Keysend ⚡️\"") { [weak self] (uuid, response, errorDesc) in
-            if commandId == uuid {
-                self?.spinner.removeConnectingView()
-                if let dict = response as? NSDictionary {
-                    if let complete = dict["status"] as? String {
-                        if complete == "complete" {
-                            self?.success(dict: dict)
-                        } else {
-                            showAlert(vc: self, title: "Error", message: "\(dict)")
-                        }
+        let p:[String:Any] = ["destination":id, "msatoshi": msats, "label": "Fully Noded keysend"]
+        LightningRPC.sharedInstance.command(id: commandId, method: .keysend, param: p) { [weak self] (uuid, response, errorDesc) in
+            self?.spinner.removeConnectingView()
+            if let dict = response as? NSDictionary {
+                if let complete = dict["status"] as? String {
+                    if complete == "complete" {
+                        self?.success(dict: dict)
+                    } else {
+                        showAlert(vc: self, title: "Error", message: "\(dict)")
                     }
-                } else {
-                    showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown key send error")
                 }
+            } else {
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown key send error")
             }
         }
     }
