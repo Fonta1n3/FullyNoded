@@ -828,9 +828,9 @@ class ActiveWalletViewController: UIViewController {
     
     private func decodeInvoiceCL(invoice: String, section: Int) {
         let commandId = UUID()
-        
-        LightningRPC.command(id: commandId, method: .decodepay, param: "\"\(invoice)\"") { [weak self] (uuid, response, errorDesc) in
-            guard let self = self, commandId == uuid else { return }
+        //bolt11 [description]
+        LightningRPC.sharedInstance.command(id: commandId, method: .decodepay, param: ["bolt11": invoice]) { [weak self] (uuid, response, errorDesc) in
+            guard let self = self else { return }
                         
             guard let dict = response as? [String:Any], let txid = dict["payment_hash"] as? String, let description = dict["description"] as? String else {
                 showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error")
@@ -934,43 +934,12 @@ class ActiveWalletViewController: UIViewController {
     private func loadBalances() {
         NodeLogic.walletDisabled = walletDisabled
         self.getWalletBalance()
-        
-        func loadOffchain() {
-            NodeLogic.loadBalances { [weak self] (response, errorMessage) in
-                guard let self = self else { return }
-                
-                guard let response = response else {
-                    guard let errorMessage = errorMessage else { return }
-                    self.removeSpinner()
-                    showAlert(vc: self, title: "", message: errorMessage)
-                    
-                    return
-                }
-                
-                let balances = Balances(dictionary: response)
-                self.offchainBalanceBtc = balances.offchainBalance
-                self.offchainBalanceSats = balances.offchainBalance.btcToSats
-                
-                if let exchangeRate = self.fxRate {
-                    let offchainBalance = balances.offchainBalance.doubleValue
-                    let offchainBalanceFiat = offchainBalance * exchangeRate
-                    self.offchainBalanceFiat = round(offchainBalanceFiat).fiatString
-                }
-                
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    self.walletTable.reloadSections(.init(arrayLiteral: 0), with: .none)
-                }
-            }
-        }
-        
         CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
             self.showOffchainBalance = false
             for node in nodes ?? [] {
                 let s = NodeStruct(dictionary: node)
                 if s.isLightning && s.isActive {
                     self.showOffchainBalance = true
-                    loadOffchain()
                 }
             }
         }
@@ -1018,9 +987,6 @@ class ActiveWalletViewController: UIViewController {
                     
                     self.fxRateLabel.text = "no fx rate data"
                 }
-                
-                //self.loadTable()
-                
                 return
             }
             
@@ -1032,7 +998,6 @@ class ActiveWalletViewController: UIViewController {
                 
                 self.fxRateLabel.text = rate.exchangeRate
                 self.onchainBalanceFiat = (self.onchainBalanceBtc.doubleValue * Double(rate)).fiatString
-                //self.walletTable.reloadSections(.init(arrayLiteral: 0), with: .none)
             }
         }
     }
@@ -1101,15 +1066,43 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
+    private func loadLightning() {
+        NodeLogic.loadBalances { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            guard let response = response else {
+                guard let errorMessage = errorMessage else { return }
+                self.removeSpinner()
+                showAlert(vc: self, title: "", message: errorMessage)
+                return
+            }
+            
+            let balances = Balances(dictionary: response)
+            self.offchainBalanceBtc = balances.offchainBalance
+            self.offchainBalanceSats = balances.offchainBalance.btcToSats
+            
+            if let exchangeRate = self.fxRate {
+                let offchainBalance = balances.offchainBalance.doubleValue
+                let offchainBalanceFiat = offchainBalance * exchangeRate
+                self.offchainBalanceFiat = round(offchainBalanceFiat).fiatString
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.walletTable.reloadSections(.init(arrayLiteral: 0), with: .none)
+                self.loadTransactions()
+            }
+        }
+    }
+    
     private func syncIndexes() {
         let p:List_Unspent = .init(["minconf":0])
         OnchainUtils.listUnspent(param: p) { [weak self] (utxos, message) in
             guard let self = self else { return }
-            guard let utxos = utxos, utxos.count > 0, let wallet = self.wallet else { self.loadTransactions(); return }
+            guard let utxos = utxos, utxos.count > 0, let wallet = self.wallet else { self.getOffchainBalanceAndTransactions(); return }
             for utxo in utxos {
-                guard let utxo_desc = utxo.desc else { self.loadTransactions(); return }
+                guard let utxo_desc = utxo.desc else { self.getOffchainBalanceAndTransactions(); return }
                 let desc = Descriptor(utxo_desc)
-                guard let index = desc.index else { self.loadTransactions(); return }
+                guard let index = desc.index else { self.getOffchainBalanceAndTransactions(); return }
                 if index >= wallet.index {
                     let newIndex = Int64(index + 1)
                     if newIndex >= wallet.maxIndex {
@@ -1120,16 +1113,24 @@ class ActiveWalletViewController: UIViewController {
                         print("incremented index to \(newIndex): \(updated)")
                         #endif
                         guard updated else {
-                            self.loadTransactions()
+                            self.getOffchainBalanceAndTransactions()
                             showAlert(vc: self, title: "", message: "Unable to update your wallet index.")
                             return
                         }
-                        self.loadTransactions()
+                        self.getOffchainBalanceAndTransactions()
                     }
                 } else {
-                    self.loadTransactions()
+                    self.getOffchainBalanceAndTransactions()
                 }
             }
+        }
+    }
+    
+    private func getOffchainBalanceAndTransactions() {
+        if self.showOffchainBalance {
+            self.loadLightning()
+        } else {
+            self.loadTransactions()
         }
     }
     
@@ -1184,38 +1185,6 @@ class ActiveWalletViewController: UIViewController {
     func reloadWalletData() {
         transactionArray.removeAll()
         sectionZeroLoaded = false
-        
-        NodeLogic.loadBalances { [weak self] (response, errorMessage) in
-            guard let self = self else { return }
-            
-            guard let response = response else {
-                self.removeSpinner()
-                
-               guard let errorMessage = errorMessage else {
-                   showAlert(vc: self, title: "", message: "unknown error loading balances.")
-                    return
-                }
-                
-                if errorMessage.contains("Your last used wallet does not exist on this node, please activate a wallet.") {
-                    self.chooseWallet()
-                } else {
-                    showAlert(vc: self, title: "", message: errorMessage)
-                }
-                
-                return
-            }
-            
-            let balances = Balances(dictionary: response)
-            self.offchainBalanceBtc = balances.offchainBalance
-            self.offchainBalanceSats = balances.offchainBalance.btcToSats
-            
-            if let exchangeRate = self.fxRate {
-                let offchainBalance = balances.offchainBalance.doubleValue
-                let offchainBalanceFiat = offchainBalance * exchangeRate
-                self.offchainBalanceFiat = round(offchainBalanceFiat).fiatString
-            }
-        }
-        
         self.getWalletBalance()
     }
     
