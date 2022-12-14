@@ -39,7 +39,8 @@ public struct Utxo: CustomStringConvertible {
     let mixdepth: Int?
     let path: String?
     let value: Int?
-    
+    let tries_remaining: Int?
+    let utxo: String?
     
     /*
      JM utxo
@@ -89,6 +90,8 @@ public struct Utxo: CustomStringConvertible {
         if mixdepth != nil {
             amount = (dictionary["value"] as! Int).satsToBtcDouble
         }
+        tries_remaining = dictionary["tries_remaining"] as? Int
+        utxo = dictionary["utxo"] as? String
         dict = dictionary
     }
     
