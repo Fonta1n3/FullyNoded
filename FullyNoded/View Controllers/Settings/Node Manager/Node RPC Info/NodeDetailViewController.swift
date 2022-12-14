@@ -55,6 +55,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBOutlet weak var nostrPubkeyField: UITextField!
     @IBOutlet weak var nostrPrivkeyField: UITextField!
     @IBOutlet weak var nostrToSubscribe: UITextField!
+    @IBOutlet weak var networkControlOutlet: UISegmentedControl!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -93,6 +94,20 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         if isNostr {
             createNostrCreds()
         }
+        
+        let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+        switch chain {
+        case "main":
+            networkControlOutlet.selectedSegmentIndex = 0
+        case "test":
+            networkControlOutlet.selectedSegmentIndex = 1
+        case "regtest":
+            networkControlOutlet.selectedSegmentIndex = 2
+        case "signet":
+            networkControlOutlet.selectedSegmentIndex = 3
+        default:
+            break
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -103,10 +118,24 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
+    @IBAction func switchNetworkAction(_ sender: Any) {
+        switch networkControlOutlet.selectedSegmentIndex {
+        case 0: updateChain("main")
+        case 1: updateChain("test")
+        case 2: updateChain("signet")
+        case 3: updateChain("regtest")
+        default:
+            break
+        }
+    }
+    
+    private func updateChain(_ chain: String) {
+        UserDefaults.standard.set(chain, forKey: "chain")
+    }
+    
     @IBAction func seeEncryptionWordsAction(_ sender: Any) {
         showAlert(vc: self, title: "", message: self.nostrEncryptionWordsField.text ?? "None exist yet.")
     }
-    
     
     @IBAction func refreshNostrPrivkeyAction(_ sender: Any) {
         createNostrCreds()
@@ -423,7 +452,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             var isJoinMarket = false
             
             if onionAddressField != nil, let onionAddressText = onionAddressField.text {
-                if onionAddressText.hasSuffix(":8080") || onionAddressText.hasSuffix(":10080") {
+                if onionAddressText.hasSuffix(":8080") || onionAddressText.hasSuffix(":10080") || onionAddressText.hasSuffix(":9737") {
                     isLightning = true
                 }
                 if onionAddressText.hasSuffix(":28183") {
@@ -623,7 +652,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             if onionAddressField != nil, let addressText = onionAddressField.text {
                 let decryptedAddress = addressText.dataUsingUTF8StringEncoding
                 
-                if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") {
+                if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") || onionAddressField.text!.hasSuffix(":9737") {
                     CoreDataService.update(id: id, keyToUpdate: "isLightning", newValue: true, entity: .newNodes) { success in
                         if !success {
                             displayAlert(viewController: self, isError: true, message: "error updating isLightning")
