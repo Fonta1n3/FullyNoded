@@ -64,18 +64,22 @@ class LightningRPC {
             }
             
             let node = NodeStruct(dictionary: lightningNode)
+            var sesh = URLSession(configuration: .default)
             
             if let encAddress = node.onionAddress {
                 potentialAddress = decryptedValue(encAddress)
+                if let add = potentialAddress, add.contains("onion") {
+                    sesh = LightningRPC.torClient.session
+                }
             }
             
             if let encSparkoKey = node.rpcpassword {
-                potentialAddress = decryptedValue(encSparkoKey)
+                potentialSparkoKey = decryptedValue(encSparkoKey)
             }
             
             guard let sparkoKey = potentialSparkoKey else { return }
             
-            let lightningUrl = "http://\(potentialAddress ?? "localhost"):9737/rpc"
+            let lightningUrl = "http://\(potentialAddress ?? "localhost:9737")/rpc"
             
             guard let url = URL(string: lightningUrl) else {
                 completion((id, nil, "url error"))
@@ -114,13 +118,7 @@ class LightningRPC {
                 #if DEBUG
                 print("url = \(url)")
                 print("request: \("{\"method\":\"\(method.rawValue)\",\"params\":[\(param)]}")")
-                #endif
-                
-                var sesh = URLSession(configuration: .default)
-                
-    //            if onionAddress.contains("onion") {
-    //                sesh = self.torClient.session
-    //            }
+                #endif                
                 
                 let task = sesh.dataTask(with: request as URLRequest) { (data, response, error) in
                     guard error == nil else {
