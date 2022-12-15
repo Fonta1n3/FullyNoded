@@ -118,7 +118,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                         } else if bitcoinCoreWallet == walletStruct.name && walletStruct.isJm {
                             isInternal = true
                             var walletToAppend = wallet
-                            walletToAppend["label"] = walletStruct.label + " " + walletStruct.jmWalletName
+                            walletToAppend["label"] = walletStruct.name + ": " + walletStruct.jmWalletName
                             self.wallets.append(walletToAppend)
                         }
 
