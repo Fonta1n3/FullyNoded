@@ -1070,7 +1070,7 @@ class ActiveWalletViewController: UIViewController {
         NodeLogic.loadBalances { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             guard let response = response else {
-                guard let errorMessage = errorMessage else { return }
+                guard let errorMessage = errorMessage else { print("we here?"); return }
                 self.removeSpinner()
                 showAlert(vc: self, title: "", message: errorMessage)
                 return
@@ -1127,7 +1127,9 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func getOffchainBalanceAndTransactions() {
+        print("getOffchainBalanceAndTransactions ")
         if self.showOffchainBalance {
+            print("loadLightning")
             self.loadLightning()
         } else {
             self.loadTransactions()
@@ -1138,7 +1140,7 @@ class ActiveWalletViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Looks like you have not yet created a Fully Noded wallet, tap create to get started, if you are not yet ready you can always tap the + button in the top left.", message: "", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "Create a wallet.", message: "Or do it later by tapping the + button in the top left.", preferredStyle: self.alertStyle)
             
             alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { action in
                 DispatchQueue.main.async { [weak self] in
@@ -1158,15 +1160,24 @@ class ActiveWalletViewController: UIViewController {
     private func promptToChooseWallet() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            self.removeSpinner()
             
             let alert = UIAlertController(title: "None of your wallets seem to be toggled on, please choose which wallet you want to use.", message: "", preferredStyle: self.alertStyle)
             
-            alert.addAction(UIAlertAction(title: "Choose", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "Activate existing wallet", style: .default, handler: { action in
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
                     self.tabBarController?.selectedIndex = 1
                     self.goChooseWallet()
+                }
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Create new wallet", style: .default, handler: { action in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.promptToCreateWallet()
                 }
             }))
             
@@ -1189,6 +1200,7 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func loadTransactions() {
+        print("loadTransactions")
         NodeLogic.walletDisabled = walletDisabled
         NodeLogic.arrayToReturn.removeAll()
         transactionArray.removeAll()

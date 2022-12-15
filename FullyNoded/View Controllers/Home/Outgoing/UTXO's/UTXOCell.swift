@@ -80,6 +80,7 @@ class UTXOCell: UITableViewCell {
         //lifeHashImageView.layer.magnificationFilter = .nearest
         
         selectionStyle = .none
+        mixButtonOutlet.alpha = 0
     }
     
     func configure(utxo: Utxo, isLocked: Bool, fxRate: Double?, isSats: Bool, isBtc: Bool, isFiat: Bool, delegate: UTXOCellDelegate) {

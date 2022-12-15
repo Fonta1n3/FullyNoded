@@ -10,7 +10,11 @@ import Foundation
 
 class JMUtils {
     
-    static func createWallet(completion: @escaping ((response: Wallet?, message: String?)) -> Void) {
+    static func createWallet(completion: @escaping ((response: Wallet?,
+                                                     words: String?,
+                                                     passphrase: String?,
+                                                     message: String?)) -> Void) {
+        
         guard let passwordWords = Keys.seed() else { return }
         let arr = passwordWords.split(separator: " ")
         var password = ""
@@ -31,7 +35,7 @@ class JMUtils {
         
         JMRPC.sharedInstance.command(method: .walletcreate, param: param) { (response, errorDesc) in
             guard let response = response as? [String:Any] else {
-                completion((nil, errorDesc ?? "Unknown."))
+                completion((nil, nil, nil, errorDesc ?? "Unknown."))
                 return
             }
             
@@ -41,7 +45,7 @@ class JMUtils {
             guard let encryptedToken = Crypto.encrypt(jmWalletCreated.token.utf8),
                   let encryptedWords = Crypto.encrypt(signer.utf8),
                   let encryptedPass = Crypto.encrypt(password.utf8) else {
-                completion((nil, "Error encrypting jm wallet credentials."))
+                completion((nil, nil, nil, "Error encrypting jm wallet credentials."))
                 return
             }
             
@@ -54,7 +58,7 @@ class JMUtils {
             
             CoreDataService.saveEntity(dict: dict, entityName: .signers) { success in
                 guard success else {
-                    completion((nil, "Unable to save the signer."))
+                    completion((nil, nil, nil, "Unable to save the signer."))
                     return
                 }
                 
@@ -65,7 +69,7 @@ class JMUtils {
                 
                 JoinMarket.descriptors(mk, xfp) { descriptors in
                     guard let descriptors = descriptors else {
-                        completion((nil, "Error creating your jm descriptors."))
+                        completion((nil, nil, nil, "Error creating your jm descriptors."))
                         return
                     }
                     
@@ -88,7 +92,7 @@ class JMUtils {
                     
                     JMUtils.configGet(wallet: Wallet(dictionary: fnWallet), section: "BLOCKCHAIN", field: "rpc_wallet_file") { (jm_rpc_wallet, message) in
                         guard let jm_rpc_wallet = jm_rpc_wallet else {
-                            completion((nil, message ?? "error fetching Bitcoin Core rpc wallet name in jm config."))
+                            completion((nil, nil, nil, message ?? "error fetching Bitcoin Core rpc wallet name in jm config."))
                             return
                         }
                         
@@ -96,11 +100,11 @@ class JMUtils {
                         
                         CoreDataService.saveEntity(dict: fnWallet, entityName: .wallets) { fnWalletSaved in
                             guard fnWalletSaved else {
-                                completion((nil, "Error saving fn wallet."))
+                                completion((nil, nil, nil, "Error saving fn wallet."))
                                 return
                             }
                             
-                            completion((response: Wallet(dictionary: fnWallet), nil))
+                            completion((Wallet(dictionary: fnWallet), signer, password, nil))
                         }
                     }
                 }

@@ -1176,58 +1176,58 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func promptToDepositToWallet(_ utxo: Utxo, _ serverWallets: [String]) {
-        //CoreDataService.retrieveEntity(entityName: .jmWallets) { wallets in
-            //guard let wallets = wallets else { return }
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                let tit = "Deposit \(utxo.amount ?? 0.0) utxo to Join Market wallet?"
-                
-                let mess = "Once you deposit the utxo to your Join Market wallet you can begin joining. This action will fetch a deposit address from your Join Market wallet and present the transaction creator as normal."
-                
-                let alert = UIAlertController(title: tit, message: mess, preferredStyle: .actionSheet)
-                
-                CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
-                    guard let wallets = wallets, !wallets.isEmpty else {
-                        return
-                    }
-                    
-                    for wallet in wallets {
-                        if wallet["id"] != nil {
-                            let str = Wallet(dictionary: wallet)
-                            for serverWallet in serverWallets {
-                                if serverWallet == str.jmWalletName {
-                                    alert.addAction(UIAlertAction(title: str.jmWalletName, style: .default, handler: { [weak self] action in
-                                        guard let self = self else { return }
-                                        
-                                        self.spinner.addConnectingView(vc: self, description: "fetching jm deposit address...")
-                                        self.getJmAddressNow(wallet: str, utxo: utxo)
-                                    }))
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                alert.addAction(UIAlertAction(title: "Create new", style: .default, handler: { [weak self] action in
-                    guard let self = self else { return }
-                    
-                    self.promptToCreateJmWallet(utxo)
-                }))
-                
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { [weak self] action in
-                    guard let self = self else { return }
-                    
-                    self.spinner.removeConnectingView()
-                }))
-                
-                alert.popoverPresentationController?.sourceView = self.view
-                self.present(alert, animated: true, completion: nil)
-            }
-        //}
-    }
+//    private func promptToDepositToWallet(_ utxo: Utxo, _ serverWallets: [String]) {
+//        //CoreDataService.retrieveEntity(entityName: .jmWallets) { wallets in
+//            //guard let wallets = wallets else { return }
+//
+//            DispatchQueue.main.async { [weak self] in
+//                guard let self = self else { return }
+//
+//                let tit = "Deposit \(utxo.amount ?? 0.0) utxo to Join Market wallet?"
+//
+//                let mess = "Once you deposit the utxo to your Join Market wallet you can begin joining. This action will fetch a deposit address from your Join Market wallet and present the transaction creator as normal."
+//
+//                let alert = UIAlertController(title: tit, message: mess, preferredStyle: .actionSheet)
+//
+//                CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+//                    guard let wallets = wallets, !wallets.isEmpty else {
+//                        return
+//                    }
+//
+//                    for wallet in wallets {
+//                        if wallet["id"] != nil {
+//                            let str = Wallet(dictionary: wallet)
+//                            for serverWallet in serverWallets {
+//                                if serverWallet == str.jmWalletName {
+//                                    alert.addAction(UIAlertAction(title: str.jmWalletName, style: .default, handler: { [weak self] action in
+//                                        guard let self = self else { return }
+//
+//                                        self.spinner.addConnectingView(vc: self, description: "fetching jm deposit address...")
+//                                        self.getJmAddressNow(wallet: str, utxo: utxo)
+//                                    }))
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//
+//                alert.addAction(UIAlertAction(title: "Create new", style: .default, handler: { [weak self] action in
+//                    guard let self = self else { return }
+//
+//                    self.promptToCreateJmWallet(utxo)
+//                }))
+//
+//                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { [weak self] action in
+//                    guard let self = self else { return }
+//
+//                    self.spinner.removeConnectingView()
+//                }))
+//
+//                alert.popoverPresentationController?.sourceView = self.view
+//                self.present(alert, animated: true, completion: nil)
+//            }
+//        //}
+//    }
     
     private func getJmAddressNow(wallet: Wallet, utxo: Utxo) {
         DispatchQueue.main.async { [weak self] in
@@ -1266,76 +1266,76 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     
-    private func createJMWalletNow(_ utxo: Utxo) {
-        self.spinner.addConnectingView(vc: self, description: "creating JM wallet (this can take 30 seconds or so, please be patient)...")
-        
-        let currentWallet = self.wallet?.name ?? ""
-        
-        JMUtils.createWallet { [weak self] (response, message) in
-            guard let self = self else { return }
-            
-            self.spinner.removeConnectingView()
-            
-            guard let jmWallet = response else {
-                if let mess = message, mess.contains("Wallet already unlocked.") {
-                    self.promptToLockWallets()
-                } else {
-                    showAlert(vc: self, title: "There was an issue creating your JM wallet.", message: message ?? "Unknown.")
-                }
-                
-                return
-            }
-            
-            UserDefaults.standard.setValue(currentWallet, forKey: "walletName")
-            self.jmWalletCreated(utxo, jmWallet)
-        }
-    }
+//    private func createJMWalletNow(_ utxo: Utxo) {
+//        self.spinner.addConnectingView(vc: self, description: "creating JM wallet (this can take 30 seconds or so, please be patient)...")
+//
+//        let currentWallet = self.wallet?.name ?? ""
+//
+//        JMUtils.createWallet { [weak self] (response, message) in
+//            guard let self = self else { return }
+//
+//            self.spinner.removeConnectingView()
+//
+//            guard let jmWallet = response else {
+//                if let mess = message, mess.contains("Wallet already unlocked.") {
+//                    self.promptToLockWallets()
+//                } else {
+//                    showAlert(vc: self, title: "There was an issue creating your JM wallet.", message: message ?? "Unknown.")
+//                }
+//
+//                return
+//            }
+//
+//            UserDefaults.standard.setValue(currentWallet, forKey: "walletName")
+//            self.jmWalletCreated(utxo, jmWallet)
+//        }
+//    }
     
     
-    private func promptToCreateJmWallet(_ utxo: Utxo) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let tit = "Create a Join Market wallet?"
-            
-            let mess = "In order to join your utxos you need to create a Join Market wallet. This will be like your other Fully Noded wallets with the added ability to instantly join and earn interest on your balance."
-            
-            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .actionSheet)
-            
-            alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                self.createJMWalletNow(utxo)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true, completion: nil)
-        }
-    }
+//    private func promptToCreateJmWallet(_ utxo: Utxo) {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            let tit = "Create a Join Market wallet?"
+//
+//            let mess = "In order to join your utxos you need to create a Join Market wallet. This will be like your other Fully Noded wallets with the added ability to instantly join and earn interest on your balance."
+//
+//            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .actionSheet)
+//
+//            alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { [weak self] action in
+//                guard let self = self else { return }
+//
+//                self.createJMWalletNow(utxo)
+//            }))
+//
+//            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+//            alert.popoverPresentationController?.sourceView = self.view
+//            self.present(alert, animated: true, completion: nil)
+//        }
+//    }
     
-    private func jmWalletCreated(_ utxo: Utxo, _ wallet: Wallet) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            guard let decryptedPassword = Crypto.decrypt(wallet.password!), let password = decryptedPassword.utf8String else { return }
-                        
-            let tit = "Join Market wallet created ✓"
-            let mess = "The Join Market signer has been encrypted and saved on Fully Noded and your Join Market server ✓\n\n⚠️ Always back up your signers offline on paper or metal to prevent loss of funds! To access the signer go to signers and it will be labeled Join Market."
-            
-            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .actionSheet)
-            
-            alert.addAction(UIAlertAction(title: "Deposit", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                self.promptToDeposit(utxo, wallet)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true, completion: nil)
-        }
-    }
+//    private func jmWalletCreated(_ utxo: Utxo, _ wallet: Wallet) {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            guard let decryptedPassword = Crypto.decrypt(wallet.password!), let password = decryptedPassword.utf8String else { return }
+//
+//            let tit = "Join Market wallet created ✓"
+//            let mess = "The Join Market signer has been encrypted and saved on Fully Noded and your Join Market server ✓\n\n⚠️ Always back up your signers offline on paper or metal to prevent loss of funds! To access the signer go to signers and it will be labeled Join Market."
+//
+//            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .actionSheet)
+//
+//            alert.addAction(UIAlertAction(title: "Deposit", style: .default, handler: { [weak self] action in
+//                guard let self = self else { return }
+//
+//                self.promptToDeposit(utxo, wallet)
+//            }))
+//
+//            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+//            alert.popoverPresentationController?.sourceView = self.view
+//            self.present(alert, animated: true, completion: nil)
+//        }
+//    }
     
     private func promptToDeposit(_ utxo: Utxo, _ wallet: Wallet) {
         DispatchQueue.main.async { [weak self] in
@@ -1452,79 +1452,80 @@ extension UTXOViewController: UTXOCellDelegate {
     }
     
     func didTapToMix(_ utxo: Utxo) {
-        spinner.addConnectingView(vc: self, description: "checking nodes, wallet and utxo...")
-        
-        CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
-            guard let self = self else { return }
-            
-            guard let nodes = nodes, !nodes.isEmpty else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "No nodes", message: "")
-                return
-            }
-            
-            var jmNodeActive = false
-            var isAny = false
-            
-            for node in nodes {
-                let str = NodeStruct(dictionary: node)
-                if str.isJoinMarket {
-                    isAny = true
-                    if str.isActive {
-                        jmNodeActive = true
-                    }
-                }
-            }
-            
-            guard isAny else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Add a Join Market node first.", message: "")
-                return
-            }
-            
-            guard jmNodeActive else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Activate your Join Market node first.", message: "")
-                return
-            }
-            
-            CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
-                guard let wallets = wallets, !wallets.isEmpty else {
-                    self.promptToCreateJmWallet(utxo)
-                    return
-                }
-                
-                JMUtils.wallets { (serverWallets, message) in
-                    guard let serverWallets = serverWallets else {
-                        self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "There was an issue connecting to your Join Market server.", message: message ?? "Unknown issue.")
-                        return
-                    }
-                    
-                    var existsOnServer = false
-                    for serverWallet in serverWallets {
-                        for wallet in wallets {
-                            if wallet["id"] != nil {
-                                let w = Wallet(dictionary: wallet)
-                                if serverWallet == w.jmWalletName && w.isJm {
-                                    existsOnServer = true
-                                }
-                            }
-                        }
-                    }
-                    
-                    if !serverWallets.isEmpty {
-                        if !existsOnServer {
-                            self.promptToCreateJmWallet(utxo)
-                        } else {
-                            self.promptToDepositToWallet(utxo, serverWallets)
-                        }
-                    } else {
-                        self.promptToCreateJmWallet(utxo)
-                    }
-                }
-            }
-        }
+        //spinner.addConnectingView(vc: self, description: "checking nodes, wallet and utxo...")
+
+//        CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
+//            guard let self = self else { return }
+//
+//            guard let nodes = nodes, !nodes.isEmpty else {
+//                self.spinner.removeConnectingView()
+//                showAlert(vc: self, title: "No nodes", message: "")
+//                return
+//            }
+//
+//            var jmNodeActive = false
+//            var isAny = false
+//
+//            for node in nodes {
+//                let str = NodeStruct(dictionary: node)
+//                if str.isJoinMarket {
+//                    isAny = true
+//                    if str.isActive {
+//                        jmNodeActive = true
+//                    }
+//                }
+//            }
+//
+//            guard isAny else {
+//                self.spinner.removeConnectingView()
+//                showAlert(vc: self, title: "Add a Join Market node first.", message: "")
+//                return
+//            }
+//
+//            guard jmNodeActive else {
+//                self.spinner.removeConnectingView()
+//                showAlert(vc: self, title: "Activate your Join Market node first.", message: "")
+//                return
+//            }
+//
+//            CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+//                guard let wallets = wallets, !wallets.isEmpty else {
+//                    //self.promptToCreateJmWallet(utxo)
+//                    showAlert(vc: self, title: "", message: "No wallets...")
+//                    return
+//                }
+//
+//                JMUtils.wallets { (serverWallets, message) in
+//                    guard let serverWallets = serverWallets else {
+//                        self.spinner.removeConnectingView()
+//                        showAlert(vc: self, title: "There was an issue connecting to your Join Market server.", message: message ?? "Unknown issue.")
+//                        return
+//                    }
+//
+//                    var existsOnServer = false
+//                    for serverWallet in serverWallets {
+//                        for wallet in wallets {
+//                            if wallet["id"] != nil {
+//                                let w = Wallet(dictionary: wallet)
+//                                if serverWallet == w.jmWalletName && w.isJm {
+//                                    existsOnServer = true
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//                    if !serverWallets.isEmpty {
+//                        if !existsOnServer {
+//                            self.promptToCreateJmWallet(utxo)
+//                        } else {
+//                            self.promptToDepositToWallet(utxo, serverWallets)
+//                        }
+//                    } else {
+//                        self.promptToCreateJmWallet(utxo)
+//                    }
+//                }
+//            }
+//        }
     }
     
     func didTapDonateChange(_ utxo: Utxo) {

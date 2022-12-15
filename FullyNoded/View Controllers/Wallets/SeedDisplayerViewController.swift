@@ -23,6 +23,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     var blockheight:Int64!
     var version:Int = 0
     var dict = [String:Any]()
+    var jmMessage = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -80,7 +81,18 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
         
         self.version = version
-        self.getWords()
+        if jmMessage != "" {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.textView.text = self.jmMessage
+                showAlert(vc: self, title: "", message: "Join Market Wallet created ✓")
+                NotificationCenter.default.post(name: .refreshWallet, object: nil)
+            }
+        } else {
+            getWords()
+        }
+        
     }
     
     @IBAction func savedAction(_ sender: Any) {

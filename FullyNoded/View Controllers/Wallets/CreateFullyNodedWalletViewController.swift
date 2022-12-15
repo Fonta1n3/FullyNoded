@@ -21,6 +21,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     var xpub = ""
     var deriv = ""
     var extendedKey = ""
+    var jmMessage = ""
     var isSegwit = false
     var isTaproot = false
     
@@ -151,6 +152,103 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             self.performSegue(withIdentifier: "segueToCreateMultiSig", sender: self)
         }
     }
+    
+    @IBAction func createJmWalletAction(_ sender: Any) {
+        spinner.addConnectingView(vc: self, description: "checking for existing jm wallets on your server...")
+        JMUtils.wallets { (jmWallets, message) in
+            guard let jmWallets = jmWallets else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "JM Server issue", message: message ?? "unknown")
+                return
+            }
+            
+            if jmWallets.count > 0 {
+                // select a wallet to use
+            } else {
+                DispatchQueue.main.async {
+                    self.spinner.label.text = "creating new wallet..."
+                }
+                
+                JMUtils.createWallet { (wallet, words, passphrase, message) in
+                    self.spinner.removeConnectingView()
+                    
+                    guard let jmWallet = wallet, let words = words, let passphrase = passphrase else {
+                        if let mess = message, mess.contains("Wallet already unlocked.") {
+                            self.promptToLockWallets()
+                        } else {
+                            showAlert(vc: self, title: "There was an issue creating your JM wallet.", message: message ?? "Unknown.")
+                        }
+                        
+                        return
+                    }
+                    UserDefaults.standard.setValue(jmWallet.name, forKey: "walletName")
+                    self.jmMessage = """
+                    In order to avoid lost funds back up the following information:
+                    
+                    Join Market Seed Words:
+                    \(words)
+                    
+                    Join Market wallet encryption passphrase:
+                    \(passphrase)
+                    
+                    Join Market wallet file:
+                    \(jmWallet.jmWalletName)
+                    """
+                    self.segueToSingleSigCreator()
+                }
+            }
+        }
+    }
+    
+    private func promptToLockWallets() {
+        CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+            guard let wallets = wallets else { return }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                let tit = "You have an existing Join Market wallet which is unlocked, you need to lock it before we can create a new one."
+                
+                let mess = ""
+                
+                let alert = UIAlertController(title: tit, message: mess, preferredStyle: .actionSheet)
+                
+                JMUtils.wallets { (server_wallets, message) in
+                    guard let server_wallets = server_wallets else { return }
+                    for server_wallet in server_wallets {
+                        DispatchQueue.main.async {
+                            alert.addAction(UIAlertAction(title: server_wallet, style: .default, handler: { [weak self] action in
+                                guard let self = self else { return }
+                                
+                                self.spinner.addConnectingView(vc: self, description: "locking wallet...")
+                                
+                                for fnwallet in wallets {
+                                    if fnwallet["id"] != nil {
+                                        let str = Wallet(dictionary: fnwallet)
+                                        if str.jmWalletName == server_wallet {
+                                            JMUtils.lockWallet(wallet: str) { [weak self] (locked, message) in
+                                                guard let self = self else { return }
+                                                self.spinner.removeConnectingView()
+                                                if locked {
+                                                    showAlert(vc: self, title: "Wallet locked ✓", message: "Try joining the utxo again.")
+                                                } else {
+                                                    showAlert(vc: self, title: message ?? "Unknown issue locking that wallet...", message: "FN can only work with one JM wallet at a time, it looks like you need to restart your JM daemon in order to create a new wallet. Restart JM daemon and try again.")
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }))
+                        }
+                    }
+                }
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+                alert.popoverPresentationController?.sourceView = self.view
+                self.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
@@ -667,6 +765,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             
             vc.isSegwit = isSegwit
             vc.isTaproot = isTaproot
+            vc.jmMessage = jmMessage
             
         case "segueToScanner":
             if #available(macCatalyst 14.0, *) {
