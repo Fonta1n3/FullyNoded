@@ -9,6 +9,33 @@
 import Foundation
 
 class JMUtils {
+    static func getDescriptors(wallet: Wallet, completion: @escaping ((descriptors: [String]?,  message: String?)) -> Void) {
+        JMRPC.sharedInstance.command(method: .getSeed(jmWallet: wallet), param: nil) { (response, errorDesc) in
+            guard let dict = response as? [String:Any],
+                  let words = dict["seedphrase"] as? String else {
+                completion((nil, errorDesc))
+                return
+            }
+            
+            let chain = UserDefaults.standard.string(forKey: "chain")
+            var coinType = "0"
+            if chain != "main" {
+                coinType = "1"
+            }
+            
+            guard let mk = Keys.masterKey(words: words, coinType: coinType, passphrase: ""),
+                  let xfp = Keys.fingerprint(masterKey: mk) else {
+                completion((nil, "error deriving mk/xfp."))
+                return
+            }
+            
+            JoinMarket.descriptors(mk, xfp, completion: { descriptors in
+                guard let descriptors = descriptors else { completion((nil, "error deriving descriptors")); return }
+                
+                completion((descriptors, nil))
+            })
+        }
+    }
     
     static func createWallet(completion: @escaping ((response: Wallet?,
                                                      words: String?,
@@ -154,14 +181,8 @@ class JMUtils {
                 return
             }
             
-            CoreDataService.update(id: wallet.id, keyToUpdate: "token", newValue: updatedToken, entity: .wallets) { updated in
-                guard updated else {
-                    completion((nil, "Unable to save new token."))
-                    return
-                }
-                
-                completion((walletUnlock, nil))
-            }
+            CoreDataService.update(id: wallet.id, keyToUpdate: "token", newValue: updatedToken, entity: .wallets) { _ in }
+            completion((walletUnlock, nil))            
         }
     }
 
