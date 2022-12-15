@@ -1177,7 +1177,8 @@ class ActiveWalletViewController: UIViewController {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
-                    self.promptToCreateWallet()
+                    self.tabBarController?.selectedIndex = 1
+                    self.performSegue(withIdentifier: "createFullyNodedWallet", sender: self)
                 }
             }))
             
@@ -1550,7 +1551,11 @@ extension ActiveWalletViewController: UITableViewDelegate {
         
         switch section {
         case 0:
-            textLabel.text = walletLabel
+            if let w = self.wallet, w.isJm {
+                textLabel.text = w.name + ": " + walletLabel
+            } else {
+                textLabel.text = walletLabel
+            }
             
         case 1:
             if self.transactionArray.count > 0 {
