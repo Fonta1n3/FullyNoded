@@ -61,112 +61,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         load()
     }
     
-//    private func recoverJm() {
-//        JMUtils.wallets { (response, message) in
-//            guard let jmwallets = response else {
-//                showAlert(vc: self, title: "", message: message ?? "unable to get jm wallets from join market server.")
-//                return
-//            }
-//            
-//            DispatchQueue.main.async { [weak self] in
-//                guard let self = self else { return }
-//                
-//                let title = "Recover Join Market?"
-//                
-//                let alert = UIAlertController(title: title, message: "This is intended to sync an existing FN wallet to a recovered Join Market wallet.", preferredStyle: .alert)
-//                
-//                let recover = UIAlertAction(title: "Recover", style: .default) { [weak self] alertAction in
-//                    guard let self = self else { return }
-//                    self.spinner.addConnectingView(vc: self, description: "attempting join market wallet update")
-//                    let coreWalletName = (alert.textFields![0] as UITextField).text
-//                    let jmWalletName = (alert.textFields![1] as UITextField).text
-//                    let jmWalletPassphrase = (alert.textFields![2] as UITextField).text
-//                    
-//                    guard let coreWalletName = coreWalletName,
-//                          let jmWalletName = jmWalletName,
-//                          let jmWalletPassphrase = jmWalletPassphrase else {
-//                        showAlert(vc: self, title: "", message: "Something missing...")
-//                        return
-//                    }
-//                    
-//                    var matches = false
-//                    for existingJmWallet in jmwallets {
-//                        if existingJmWallet == jmWalletName {
-//                            matches = true
-//                        }
-//                    }
-//                    
-//                    guard matches else {
-//                        showAlert(vc: self, title: "", message: "No matching wallet names on JM server.")
-//                        return
-//                    }
-//                    
-//                    CoreDataService.update(id: self.wallet.id, keyToUpdate: "name", newValue: coreWalletName, entity: .wallets) { updatedName in
-//                        guard updatedName else { showAlert(vc: self, title: "", message: "error updating core wallet name"); return }
-//                        
-//                        CoreDataService.update(id: self.wallet.id, keyToUpdate: "jmWalletName", newValue: jmWalletName, entity: .wallets) { updatedJmName in
-//                            guard updatedJmName else { showAlert(vc: self, title: "", message: "error updating jm wallet name"); return }
-//                            
-//                            guard let encryptedPassword = Crypto.encrypt(jmWalletPassphrase.utf8) else { showAlert(vc: self, title: "", message: "error encrypting passphrase"); return }
-//                            
-//                            CoreDataService.update(id: self.wallet.id, keyToUpdate: "password", newValue: encryptedPassword, entity: .wallets) { updatedPassword in
-//                                guard updatedPassword else { showAlert(vc: self, title: "", message: "error updating jm wallet passphrase"); return }
-//                                
-//                                self.wallet.password = encryptedPassword
-//                                self.wallet.name = coreWalletName
-//                                self.wallet.jmWalletName = jmWalletName
-//                                
-//                                JMUtils.unlockWallet(wallet: self.wallet) { [weak self] (unlockedWallet, message) in
-//                                    guard let self = self else { return }
-//                                    guard let _ = unlockedWallet else {
-//                                        showAlert(vc: self, title: "", message: message ?? "unknown error when attempting to unlock \(self.wallet.name)")
-//                                        return
-//                                    }
-//                                                                        
-//                                    CoreDataService.update(id: self.wallet.id, keyToUpdate: "isJm", newValue: true, entity: .wallets) { updatedIsJm in
-//                                        guard updatedIsJm else { showAlert(vc: self, title: "", message: "error updating isJm"); return }
-//                                        
-//                                        UserDefaults.standard.setValue(coreWalletName, forKey: "walletName")
-//                                        self.spinner.removeConnectingView()
-//                                        
-//                                        DispatchQueue.main.async {
-//                                            NotificationCenter.default.post(name: .refreshWallet, object: nil)
-//                                        }
-//                                        
-//                                        showAlert(vc: self, title: "", message: "Wallet updated, you may now use with JM by tapping utxos.")
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//                
-//                alert.addTextField { coreWalletNameField in
-//                    coreWalletNameField.placeholder = "bitcoin core wallet name"
-//                    coreWalletNameField.keyboardAppearance = .dark
-//                }
-//                
-//                alert.addTextField { jmWalletNameField in
-//                    jmWalletNameField.placeholder = "join market wallet name"
-//                    jmWalletNameField.keyboardAppearance = .dark
-//                }
-//                
-//                alert.addTextField { jmWalletPassphrase in
-//                    jmWalletPassphrase.placeholder = "join market wallet passphrase"
-//                    jmWalletPassphrase.isSecureTextEntry = true
-//                    jmWalletPassphrase.keyboardAppearance = .dark
-//                }
-//                
-//                alert.addAction(recover)
-//                
-//                let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
-//                alert.addAction(cancel)
-//                
-//                self.present(alert, animated:true, completion: nil)
-//            }
-//        }
-//    }
-    
     @IBAction func rescanAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -215,7 +109,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func getAddresses() {
-        let desc = wallet.receiveDescriptor
         deriveAddresses(wallet.receiveDescriptor)
     }
     
@@ -427,11 +320,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         CoreDataService.deleteEntity(id: walletId, entityName: .wallets) { [unowned vc = self] success in
             if success {
                 DispatchQueue.main.async { [unowned vc = self] in
+                    vc.walletDeleted()
                     if vc.wallet.name == UserDefaults.standard.object(forKey: "walletName") as? String {
                         UserDefaults.standard.removeObject(forKey: "walletName")
                         NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     }
-                    vc.walletDeleted()
                 }
             } else {
                 showAlert(vc: vc, title: "Error", message: "We had an error deleting your wallet.")
