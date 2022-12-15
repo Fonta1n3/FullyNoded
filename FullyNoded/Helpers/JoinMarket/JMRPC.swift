@@ -112,6 +112,7 @@ class JMRPC {
                 
             case .unlockwallet(jmWallet: let wallet):
                 httpMethod = "POST"
+                timeout = 1000
                 
                 guard let decryptedPassword = Crypto.decrypt(wallet.password!),
                       let password = decryptedPassword.utf8String else {
