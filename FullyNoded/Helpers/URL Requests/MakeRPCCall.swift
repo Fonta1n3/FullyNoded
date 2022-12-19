@@ -24,6 +24,7 @@ class MakeRPCCall: WebSocketDelegate {
     private init() {}
     
     func writeReqEvent(node: NodeStruct) {
+        print("writeReqEvent")
         guard let encryptedSubscribeTo = node.subscribeTo else { return }
         guard let decryptedSubscribeTo = Crypto.decrypt(encryptedSubscribeTo) else { return }
         let filter:NostrFilter = NostrFilter.filter_authors(["\(decryptedSubscribeTo.hexString.dropFirst(2))"])
@@ -43,6 +44,8 @@ class MakeRPCCall: WebSocketDelegate {
         #endif
         self.socket.write(string: req) {}
     }
+    
+    
     
     func didReceive(event: WebSocketEvent, client: WebSocket) {
         switch event {
@@ -126,14 +129,25 @@ class MakeRPCCall: WebSocketDelegate {
     }
     
     func connectToRelay() {
-        let relay = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
-        guard let url = URL(string: relay) else { return }
-        var request = URLRequest(url: url)
-        request.timeoutInterval = 5
-        self.socket = WebSocket(request: request)
-        self.socket.respondToPingWithPong = true
-        self.socket.delegate = self
-        self.socket.connect()
+        print("connectToRelay")
+        StreamManager.shared.openWebSocket(urlString: "wss://nostr-relay.wlvs.space")
+//        StreamManager.shared.subscribeToService { subscriptionResponse in
+//            print("subscriptionResponse: \(subscriptionResponse)")
+//        }
+        //let relay = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
+//        if !StreamManager.shared.isStreaming {
+//            StreamManager.shared.startStreaming()
+//        }
+//        guard let url = URL(string: relay) else { return }
+//        var request = URLRequest(url: url)
+//        request.timeoutInterval = 5
+//        var streamTask: URLSessionStreamTask!
+//        var sesh = URLSession(configuration: .default)//TorClient.sharedInstance.session
+//        streamTask = sesh.streamTask(withHostName: "localhost", port: 28283)
+//        streamTask.resume()
+//        self.socket = WebSocket(request: request)
+//        self.socket.delegate = self
+//        self.socket.connect()
     }
     
     func getActiveNode(completion: @escaping ((NodeStruct?) -> Void)) {
@@ -216,6 +230,7 @@ class MakeRPCCall: WebSocketDelegate {
     
     
     func executeNostrRpc(method: BTC_CLI_COMMAND) {
+        print("executeNostrRpc")
         var walletName:String?
         if isWalletRPC(command: method) {
             walletName = UserDefaults.standard.string(forKey: "walletName")
@@ -319,34 +334,37 @@ class MakeRPCCall: WebSocketDelegate {
     func writeEvent(content: String) {
         if let node = activeNode {
             guard let encryptedPrivkey = node.nostrPrivkey,
-                  let decryptedPrivkey = Crypto.decrypt(encryptedPrivkey),
-                  let pubkey = Keys.privKeyToPubKey(decryptedPrivkey) else { return }
-            let ev = NostrEvent(content: content,
-                                pubkey: "\(pubkey.dropFirst(2))",
-                                kind: NostrKind.ephemeral.rawValue,
-                                tags: [])
-            ev.calculate_id()
-            ev.sign(privkey: decryptedPrivkey.hexString)
-            guard !ev.too_big else {
-                self.collectedPartArray.removeAll()
-                self.onDoneBlock!((nil, "Nostr event is too big to send..."))
-                #if DEBUG
-                print("event too big: \(content.count)")
-                #endif
-                return
-            }
-            guard ev.validity == .ok else {
-                self.onDoneBlock!((nil, "Nostr event is invalid!"))
-                #if DEBUG
-                print("event invalid")
-                #endif
-                return
-            }
-            let encoder = JSONEncoder()
-            let event_data = try! encoder.encode(ev)
-            let event = String(decoding: event_data, as: UTF8.self)
-            let encoded = "[\"EVENT\",\(event)]"
-            self.socket.write(string: encoded) {}
+                  let decryptedPrivkey = Crypto.decrypt(encryptedPrivkey) else { return }
+            StreamManager.shared.writeEvent(activeNode: node, content: content, privkey: decryptedPrivkey)
+//            let ev = NostrEvent(content: content,
+//                                pubkey: "\(pubkey.dropFirst(2))",
+//                                kind: NostrKind.ephemeral.rawValue,
+//                                tags: [])
+//            ev.calculate_id()
+//            ev.sign(privkey: decryptedPrivkey.hexString)
+//            guard !ev.too_big else {
+//                self.collectedPartArray.removeAll()
+//                self.onDoneBlock!((nil, "Nostr event is too big to send..."))
+//                #if DEBUG
+//                print("event too big: \(content.count)")
+//                #endif
+//                return
+//            }
+//            guard ev.validity == .ok else {
+//                self.onDoneBlock!((nil, "Nostr event is invalid!"))
+//                #if DEBUG
+//                print("event invalid")
+//                #endif
+//                return
+//            }
+//            let encoder = JSONEncoder()
+//            let event_data = try! encoder.encode(ev)
+//            let event = String(decoding: event_data, as: UTF8.self)
+//            let encoded = "[\"EVENT\",\(event)]"
+//            StreamManager.shared.subscribeToService { subscriptionResponse in
+//                print("subscriptionResponse: \(subscriptionResponse)")
+//            }
+            //self.socket.write(string: encoded) {}
         }
     }
     
@@ -363,18 +381,19 @@ class MakeRPCCall: WebSocketDelegate {
         attempts += 1
         if let node = self.activeNode {
             if node.isNostr {
-                if self.connected {
-                    self.executeNostrRpc(method: method)
-                } else {
-                    self.connectToRelay()
-                    self.eoseReceivedBlock = { subscribed in
-                        if subscribed {
-                            self.executeNostrRpc(method: method)
-                        } else {
-                            completion((nil, "Not subscribed to relay after attempting to auto reconnect."))
-                        }
-                    }
-                }
+                
+//                if self.connected {
+//                    self.executeNostrRpc(method: method)
+//                } else {
+//                    self.connectToRelay()
+//                    self.eoseReceivedBlock = { subscribed in
+//                        if subscribed {
+//                            self.executeNostrRpc(method: method)
+//                        } else {
+//                            completion((nil, "Not subscribed to relay after attempting to auto reconnect."))
+//                        }
+//                    }
+//                }
             } else {
                 guard let encAddress = node.onionAddress,
                         let encUser = node.rpcuser,
@@ -522,18 +541,20 @@ class MakeRPCCall: WebSocketDelegate {
     }
 }
 
-    extension String {
-        func split(by length: Int) -> [String] {
-            var startIndex = self.startIndex
-            var results = [Substring]()
-
-            while startIndex < self.endIndex {
-                let endIndex = self.index(startIndex, offsetBy: length, limitedBy: self.endIndex) ?? self.endIndex
-                results.append(self[startIndex..<endIndex])
-                startIndex = endIndex
-            }
-
-            return results.map { String($0) }
+extension String {
+    func split(by length: Int) -> [String] {
+        var startIndex = self.startIndex
+        var results = [Substring]()
+        
+        while startIndex < self.endIndex {
+            let endIndex = self.index(startIndex, offsetBy: length, limitedBy: self.endIndex) ?? self.endIndex
+            results.append(self[startIndex..<endIndex])
+            startIndex = endIndex
         }
+        
+        return results.map { String($0) }
     }
+}
+
+
 
