@@ -7,147 +7,26 @@
 //
 
 import Foundation
-import Starscream
 
-class MakeRPCCall: WebSocketDelegate {
+class MakeRPCCall {
         
     static let sharedInstance = MakeRPCCall()
     let torClient = TorClient.sharedInstance
     private var attempts = 0
-    var socket:WebSocket!
     var connected:Bool = false
     var onDoneBlock : (((response: Any?, errorDesc: String?)) -> Void)?
-    var eoseReceivedBlock : (((Bool)) -> Void)?
     var activeNode:NodeStruct?
     var lastSentId:String?
     
+    
     private init() {}
     
-    func writeReqEvent(node: NodeStruct) {
-        print("writeReqEvent")
-        guard let encryptedSubscribeTo = node.subscribeTo else { return }
-        guard let decryptedSubscribeTo = Crypto.decrypt(encryptedSubscribeTo) else { return }
-        let filter:NostrFilter = NostrFilter.filter_authors(["\(decryptedSubscribeTo.hexString.dropFirst(2))"])
-        let encoder = JSONEncoder()
-        var req = "[\"REQ\",\"\(Keys.randomPrivKey()!.hex)\","
-        guard let filter_json = try? encoder.encode(filter) else {
-            #if DEBUG
-            print("converting to jsonData failing...")
-            #endif
-            return
-        }
-        let filter_json_str = String(decoding: filter_json, as: UTF8.self)
-        req += filter_json_str
-        req += "]"
-        #if DEBUG
-        print("req: \(req)")
-        #endif
-        self.socket.write(string: req) {}
-    }
-    
-    
-    
-    func didReceive(event: WebSocketEvent, client: WebSocket) {
-        switch event {
-        case .connected:
-            if !self.connected, let node = activeNode {
-                writeReqEvent(node: node)
-            }
-            
-        case .disconnected(let reason, let code):
-            #if DEBUG
-            print("websocket is disconnected: \(reason) with code: \(code)")
-            #endif
-            connected = false
-            
-        case .text(let string):
-            #if DEBUG
-            print("Received text: \(string)")
-            #endif
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = .withoutEscapingSlashes
-            guard let data = string.data(using: .utf8) else { return }
-            guard let jsonObject = try? JSONSerialization.jsonObject(with: data, options : []) as? [Any] else {
-                #if DEBUG
-                print("converting to json failing...")
-                #endif
-                return
-            }
-            
-            for (i, object) in jsonObject.enumerated() {
-                switch i {
-                case 0:
-                    if object as? String == "EOSE" {
-                        self.connected = true
-                        self.eoseReceivedBlock?(true)
-                    }
-                case 2:
-                    if let dict = object as? [String:Any], let created_at = dict["created_at"] as? Int {
-                        let now = NSDate().timeIntervalSince1970
-                        let diff = (now - TimeInterval(created_at))
-                        guard diff < 5.0 else { return }
-                        guard let ev = self.parseEvent(event: dict) else {
-                            self.onDoneBlock!((nil,"Nostr event parsing failed..."))
-                            #if DEBUG
-                            print("event parsing failed")
-                            #endif
-                            return
-                        }
 
-                        let (responseCheck, errorDescCheck, requestId) = processValidReceivedContent(content: ev.content)
-                        
-                        guard self.lastSentId == requestId else {
-                            self.onDoneBlock!((nil, "Ignoring out of order response."))
-                            return
-                        }
-                        
-                        guard let reponse = responseCheck else {
-                            self.onDoneBlock!((nil,errorDescCheck))
-                            return
-                        }
-
-                        guard let _ = errorDescCheck else {
-                            self.onDoneBlock!((reponse as Any,nil))
-                            return
-                        }
-                        
-                        self.onDoneBlock!((reponse as Any,errorDescCheck))
-                        return
-                    }
-                default:
-                    break
-                }
-            }
-        case .error(let error):
-            #if DEBUG
-            print("error: \(error?.localizedDescription ?? "")")
-            #endif
-            self.connected = false
-        default:
-            break
-        }
-    }
     
-    func connectToRelay() {
-        print("connectToRelay")
-        StreamManager.shared.openWebSocket(urlString: "wss://nostr-relay.wlvs.space")
-//        StreamManager.shared.subscribeToService { subscriptionResponse in
-//            print("subscriptionResponse: \(subscriptionResponse)")
-//        }
-        //let relay = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
-//        if !StreamManager.shared.isStreaming {
-//            StreamManager.shared.startStreaming()
-//        }
-//        guard let url = URL(string: relay) else { return }
-//        var request = URLRequest(url: url)
-//        request.timeoutInterval = 5
-//        var streamTask: URLSessionStreamTask!
-//        var sesh = URLSession(configuration: .default)//TorClient.sharedInstance.session
-//        streamTask = sesh.streamTask(withHostName: "localhost", port: 28283)
-//        streamTask.resume()
-//        self.socket = WebSocket(request: request)
-//        self.socket.delegate = self
-//        self.socket.connect()
+    func connectToRelay(node: NodeStruct) {
+        StreamManager.shared.node = node
+        let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
+        StreamManager.shared.openWebSocket(urlString: urlString)
     }
     
     func getActiveNode(completion: @escaping ((NodeStruct?) -> Void)) {
@@ -178,59 +57,8 @@ class MakeRPCCall: WebSocketDelegate {
         }
     }
     
-    func parseEvent(event: [String:Any]) -> NostrEvent? {
-        guard let content = event["content"] as? String else { return nil }
-        guard let id = event["id"] as? String else { return nil }
-        guard let kind = event["kind"] as? Int else { return nil }
-        guard let pubkey = event["pubkey"] as? String else { return nil }
-        guard let sig = event["sig"] as? String else { return nil }
-        guard let tags = event["tags"] as? [[String]] else { return nil }
-        let ev = NostrEvent(content: content,
-                            pubkey: pubkey,
-                            kind: kind,
-                            tags: tags)
-        ev.sig = sig
-        ev.id = id
-        return ev
-    }
-    
-    var collectedPartArray:[String] = []
-    
-    func decryptedDict(content: String) -> [String:Any]? {
-        guard let contentData = Data(base64Encoded: content),
-                let node = activeNode,
-                let encryptedWords = node.nostrWords,
-              let decryptedWords = Crypto.decrypt(encryptedWords),
-              let words = decryptedWords.utf8String,
-              let decryptedContent = Crypto.decryptNostr(contentData, words) else {
-            onDoneBlock!((nil, "Error decrypting content..."))
-            return nil
-        }
-        
-        guard let decryptedDict = try? JSONSerialization.jsonObject(with: decryptedContent, options : []) as? [String:Any] else {
-            #if DEBUG
-            print("converting to jsonData failing...")
-            #endif
-            return nil
-        }
-        return decryptedDict
-    }
-        
-    func processValidReceivedContent(content: String) -> (response:Any?, errorDesc:String?, requestId: String?) {
-        guard let decryptedDict = decryptedDict(content: content) else {return (nil,nil,nil)}
-        #if DEBUG
-        print("decryptedDict: \(decryptedDict)")
-        #endif
-        
-        let response = decryptedDict["response"]
-        let errorDesc = decryptedDict["error_desc"] as? String
-        let requestId = decryptedDict["request_id"] as? String
-        return (response, errorDesc, requestId)
-    }
-    
     
     func executeNostrRpc(method: BTC_CLI_COMMAND) {
-        print("executeNostrRpc")
         var walletName:String?
         if isWalletRPC(command: method) {
             walletName = UserDefaults.standard.string(forKey: "walletName")
@@ -251,7 +79,7 @@ class MakeRPCCall: WebSocketDelegate {
             break
         }
         let id = UUID()
-        self.lastSentId = id.uuidString
+        StreamManager.shared.lastSentId = id.uuidString
         let dict:[String:Any] = [
             "request_id": id.uuidString,
             "port": port,
@@ -272,7 +100,7 @@ class MakeRPCCall: WebSocketDelegate {
               let words = decryptedWords.utf8String else { onDoneBlock!((nil, "Error encrypting content...")); return }
         
         let encryptedContent = Crypto.encryptNostr(jsonData, words)!.base64EncodedString()
-        writeEvent(content: encryptedContent)
+        StreamManager.shared.writeEvent(content: encryptedContent)
     }
     
     
@@ -303,7 +131,7 @@ class MakeRPCCall: WebSocketDelegate {
               let words = decryptedWords.utf8String else { onDoneBlock!((nil, "Error encrypting content...")); return }
         
         let encryptedContent = Crypto.encryptNostr(jsonData, words)!.base64EncodedString()
-        writeEvent(content: encryptedContent)
+        StreamManager.shared.writeEvent(content: encryptedContent)
     }
     
     
@@ -327,53 +155,7 @@ class MakeRPCCall: WebSocketDelegate {
               let words = decryptedWords.utf8String else { onDoneBlock!((nil, "Error encrypting content...")); return }
         
         let encryptedContent = Crypto.encryptNostr(jsonData, words)!.base64EncodedString()
-        writeEvent(content: encryptedContent)
-    }
-
-    
-    func writeEvent(content: String) {
-        if let node = activeNode {
-            guard let encryptedPrivkey = node.nostrPrivkey,
-                  let decryptedPrivkey = Crypto.decrypt(encryptedPrivkey) else { return }
-            StreamManager.shared.writeEvent(activeNode: node, content: content, privkey: decryptedPrivkey)
-//            let ev = NostrEvent(content: content,
-//                                pubkey: "\(pubkey.dropFirst(2))",
-//                                kind: NostrKind.ephemeral.rawValue,
-//                                tags: [])
-//            ev.calculate_id()
-//            ev.sign(privkey: decryptedPrivkey.hexString)
-//            guard !ev.too_big else {
-//                self.collectedPartArray.removeAll()
-//                self.onDoneBlock!((nil, "Nostr event is too big to send..."))
-//                #if DEBUG
-//                print("event too big: \(content.count)")
-//                #endif
-//                return
-//            }
-//            guard ev.validity == .ok else {
-//                self.onDoneBlock!((nil, "Nostr event is invalid!"))
-//                #if DEBUG
-//                print("event invalid")
-//                #endif
-//                return
-//            }
-//            let encoder = JSONEncoder()
-//            let event_data = try! encoder.encode(ev)
-//            let event = String(decoding: event_data, as: UTF8.self)
-//            let encoded = "[\"EVENT\",\(event)]"
-//            StreamManager.shared.subscribeToService { subscriptionResponse in
-//                print("subscriptionResponse: \(subscriptionResponse)")
-//            }
-            //self.socket.write(string: encoded) {}
-        }
-    }
-    
-    
-    func disconnect() {
-        if socket != nil {
-            self.socket.disconnect()
-            self.connected = false
-        }
+        StreamManager.shared.writeEvent(content: encryptedContent)
     }
     
     
@@ -381,19 +163,18 @@ class MakeRPCCall: WebSocketDelegate {
         attempts += 1
         if let node = self.activeNode {
             if node.isNostr {
-                
-//                if self.connected {
-//                    self.executeNostrRpc(method: method)
-//                } else {
-//                    self.connectToRelay()
-//                    self.eoseReceivedBlock = { subscribed in
-//                        if subscribed {
-//                            self.executeNostrRpc(method: method)
-//                        } else {
-//                            completion((nil, "Not subscribed to relay after attempting to auto reconnect."))
-//                        }
-//                    }
-//                }
+                if StreamManager.shared.connected {
+                    self.executeNostrRpc(method: method)
+                } else {
+                    StreamManager.shared.eoseReceivedBlock = { subscribed in
+                        if subscribed {
+                            self.executeNostrRpc(method: method)
+                        } else {
+                            completion((nil, "Not subscribed to relay after attempting to auto reconnect."))
+                        }
+                    }
+                    self.connectToRelay(node: node)
+                }
             } else {
                 guard let encAddress = node.onionAddress,
                         let encUser = node.rpcuser,

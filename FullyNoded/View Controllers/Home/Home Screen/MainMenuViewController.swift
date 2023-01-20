@@ -335,12 +335,12 @@ class MainMenuViewController: UIViewController {
             guard let node = node else { return }
             self.initialLoad = false
             if node.isNostr {
-                MakeRPCCall.sharedInstance.connected = false
-                MakeRPCCall.sharedInstance.connectToRelay()
-                MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in
+                StreamManager.shared.node = node
+                let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
+                StreamManager.shared.eoseReceivedBlock = { _ in
                     self.loadNode(node: node)
                 }
-               
+                StreamManager.shared.openWebSocket(urlString: urlString)
             } else {
                 self.loadNode(node: node)
             }
@@ -372,11 +372,7 @@ class MainMenuViewController: UIViewController {
             }
             if i + 1 == nodes.count {
                 if activeNode != nil {
-                    if activeNode!.isNostr {
-//                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-//                            self.loadNode(node: self.activeNode!)
-//                        }
-                    } else {
+                    if !activeNode!.isNostr {
                         loadNode(node: self.activeNode!)
                     }
                 } else {
@@ -894,30 +890,29 @@ class MainMenuViewController: UIViewController {
             vc.onDoneBlock = { [weak self] in
                 guard let self = self else { return }
                 
-                self.isUnlocked = true
-                
-                
+                self.isUnlocked = true                
                 
                 if self.mgr?.state != .started && self.mgr?.state != .connected  {
                     self.mgr?.start(delegate: self)
                     
                     if let node = self.activeNode {
                         if node.isNostr {
-                            MakeRPCCall.sharedInstance.connectToRelay()
-                            MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in
-                                MakeRPCCall.sharedInstance.connected = true
-                                DispatchQueue.main.async { [weak self] in
-                                    guard let self = self else { return }
-                                    self.removeBackView()
-                                    DispatchQueue.main.async { [weak self] in
-                                        self?.torProgressLabel.isHidden = true
-                                        self?.progressView.isHidden = true
-                                        self?.blurView.isHidden = true
-                                        self?.loadNode(node: node)
-                                    }
-                                }
-                            }
-                                
+                            // If not using tor then uncomment this, and remove from tor protocol func
+//                            StreamManager.shared.node = node
+//                            let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
+//                            StreamManager.shared.eoseReceivedBlock = { _ in
+//                                DispatchQueue.main.async { [weak self] in
+//                                    guard let self = self else { return }
+//                                    self.removeBackView()
+//                                    DispatchQueue.main.async { [weak self] in
+//                                        self?.torProgressLabel.isHidden = true
+//                                        self?.progressView.isHidden = true
+//                                        self?.blurView.isHidden = true
+//                                        self?.loadNode(node: node)
+//                                    }
+//                                }
+//                            }
+//                            StreamManager.shared.openWebSocket(urlString: urlString)
                         }
                     } else {
                         showAlert(vc: self, title: "", message: "No active nodes, please toggle one on.")
@@ -1082,6 +1077,22 @@ extension MainMenuViewController: OnionManagerDelegate {
         if let activeNode = activeNode {
             if !activeNode.isNostr {
                 loadTable()
+            } else {
+                StreamManager.shared.node = activeNode
+                let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
+                StreamManager.shared.eoseReceivedBlock = { _ in
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        self.removeBackView()
+                        DispatchQueue.main.async { [weak self] in
+//                            self?.torProgressLabel.isHidden = true
+//                            self?.progressView.isHidden = true
+//                            self?.blurView.isHidden = true
+                            self?.loadNode(node: activeNode)
+                        }
+                    }
+                }
+                StreamManager.shared.openWebSocket(urlString: urlString)
             }
         } else {
             removeLoader()

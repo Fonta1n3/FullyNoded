@@ -48,15 +48,11 @@
 		0A643A2B274A8D44007F4F44 /* WalletUnlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A643A2A274A8D44007F4F44 /* WalletUnlock.swift */; };
 		0A643A2D274B375F007F4F44 /* WalletDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A643A2C274B375F007F4F44 /* WalletDetail.swift */; };
 		0A643A33274C9A80007F4F44 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A643A32274C9A80007F4F44 /* Session.swift */; };
-		0A64633F28FDBE040079C5DB /* Nostr.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64633E28FDBE040079C5DB /* Nostr.swift */; };
-		0A64634228FDBF020079C5DB /* Starscream in Frameworks */ = {isa = PBXBuildFile; productRef = 0A64634128FDBF020079C5DB /* Starscream */; };
 		0A64634428FDC01B0079C5DB /* NostrResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64634328FDC01B0079C5DB /* NostrResponse.swift */; };
 		0A64634628FDC06B0079C5DB /* NostrRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64634528FDC06B0079C5DB /* NostrRequest.swift */; };
 		0A64634828FDC0940079C5DB /* NostrFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64634728FDC0940079C5DB /* NostrFilter.swift */; };
 		0A64634A28FDC0ED0079C5DB /* NostrEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64634928FDC0ED0079C5DB /* NostrEvent.swift */; };
 		0A64634E28FDC2990079C5DB /* NostrKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64634D28FDC2990079C5DB /* NostrKind.swift */; };
-		0A64635028FDC8260079C5DB /* RelayConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64634F28FDC8260079C5DB /* RelayConnection.swift */; };
-		0A64635228FDC9190079C5DB /* Relay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64635128FDC9190079C5DB /* Relay.swift */; };
 		0A64635528FEF8C90079C5DB /* secp256k1 in Frameworks */ = {isa = PBXBuildFile; productRef = 0A64635428FEF8C90079C5DB /* secp256k1 */; };
 		0A6B365B27B1AA0C00CD4F3A /* AddressInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6B365A27B1AA0B00CD4F3A /* AddressInfo.swift */; };
 		0A6B365D27B2020F00CD4F3A /* JMUtxo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6B365C27B2020F00CD4F3A /* JMUtxo.swift */; };
@@ -273,14 +269,11 @@
 		0A643A2A274A8D44007F4F44 /* WalletUnlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletUnlock.swift; sourceTree = "<group>"; };
 		0A643A2C274B375F007F4F44 /* WalletDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDetail.swift; sourceTree = "<group>"; };
 		0A643A32274C9A80007F4F44 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
-		0A64633E28FDBE040079C5DB /* Nostr.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Nostr.swift; sourceTree = "<group>"; };
 		0A64634328FDC01B0079C5DB /* NostrResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrResponse.swift; sourceTree = "<group>"; };
 		0A64634528FDC06B0079C5DB /* NostrRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrRequest.swift; sourceTree = "<group>"; };
 		0A64634728FDC0940079C5DB /* NostrFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrFilter.swift; sourceTree = "<group>"; };
 		0A64634928FDC0ED0079C5DB /* NostrEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrEvent.swift; sourceTree = "<group>"; };
 		0A64634D28FDC2990079C5DB /* NostrKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrKind.swift; sourceTree = "<group>"; };
-		0A64634F28FDC8260079C5DB /* RelayConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelayConnection.swift; sourceTree = "<group>"; };
-		0A64635128FDC9190079C5DB /* Relay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Relay.swift; sourceTree = "<group>"; };
 		0A6B365A27B1AA0B00CD4F3A /* AddressInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressInfo.swift; sourceTree = "<group>"; };
 		0A6B365C27B2020F00CD4F3A /* JMUtxo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMUtxo.swift; sourceTree = "<group>"; };
 		0A6B365E27BD94CA00CD4F3A /* JMTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMTx.swift; sourceTree = "<group>"; };
@@ -439,7 +432,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0A64634228FDBF020079C5DB /* Starscream in Frameworks */,
 				0A9834C626BC2E6800BAB74E /* CloudKit.framework in Frameworks */,
 				0AB0B694290C374F00A1C201 /* URKit in Frameworks */,
 				D06D788C25B817B500769157 /* LifeHash in Frameworks */,
@@ -579,14 +571,11 @@
 		0A64633D28FDBDA60079C5DB /* Nostr */ = {
 			isa = PBXGroup;
 			children = (
-				0A64633E28FDBE040079C5DB /* Nostr.swift */,
 				0A64634328FDC01B0079C5DB /* NostrResponse.swift */,
 				0A64634528FDC06B0079C5DB /* NostrRequest.swift */,
 				0A64634728FDC0940079C5DB /* NostrFilter.swift */,
 				0A64634928FDC0ED0079C5DB /* NostrEvent.swift */,
 				0A64634D28FDC2990079C5DB /* NostrKind.swift */,
-				0A64634F28FDC8260079C5DB /* RelayConnection.swift */,
-				0A64635128FDC9190079C5DB /* Relay.swift */,
 			);
 			path = Nostr;
 			sourceTree = "<group>";
@@ -1087,7 +1076,6 @@
 			name = FullyNoded;
 			packageProductDependencies = (
 				D06D788B25B817B500769157 /* LifeHash */,
-				0A64634128FDBF020079C5DB /* Starscream */,
 				0A64635428FEF8C90079C5DB /* secp256k1 */,
 				0AB0B693290C374F00A1C201 /* URKit */,
 				0AF73247291AF7D9009F6296 /* RNCryptor */,
@@ -1164,7 +1152,6 @@
 			mainGroup = D00B9A1B2111427200E8B95A;
 			packageReferences = (
 				D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */,
-				0A64634028FDBF020079C5DB /* XCRemoteSwiftPackageReference "Starscream" */,
 				0A64635328FEF8C90079C5DB /* XCRemoteSwiftPackageReference "secp256k1.swift" */,
 				0AB0B692290C374F00A1C201 /* XCRemoteSwiftPackageReference "URKit" */,
 				0AF73246291AF7D9009F6296 /* XCRemoteSwiftPackageReference "RNCryptor" */,
@@ -1266,7 +1253,6 @@
 				D0C20ED424A6DFE600C62AA4 /* PeerInfo.swift in Sources */,
 				D09F9E5024B1BAC3006B588C /* SignerDetailViewController.swift in Sources */,
 				0A64634628FDC06B0079C5DB /* NostrRequest.swift in Sources */,
-				0A64633F28FDBE040079C5DB /* Nostr.swift in Sources */,
 				0A1F10DE26A1A5F200BE2707 /* ChildIndexRange.swift in Sources */,
 				0A643A2B274A8D44007F4F44 /* WalletUnlock.swift in Sources */,
 				D09A330524A8C4F6009FA0B2 /* Wallet.swift in Sources */,
@@ -1357,7 +1343,6 @@
 				D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */,
 				0A00D6A4271BE51600ECAB22 /* TextFileImport.swift in Sources */,
 				D0384E2F246AC4B1002FEE94 /* XpubConverter.swift in Sources */,
-				0A64635228FDC9190079C5DB /* Relay.swift in Sources */,
 				0A643A21274A4CD5007F4F44 /* WalletCreated.swift in Sources */,
 				D08A92B5233C979600409D6E /* FiatConverter.swift in Sources */,
 				0A212D9226CBE17600BF6FD4 /* MixIndexes.swift in Sources */,
@@ -1382,7 +1367,6 @@
 				0A1F10CF26A1A47F00BE2707 /* DerivationPath.swift in Sources */,
 				D06FD7D025062F7A00481185 /* GetTx.swift in Sources */,
 				D09F9E4E24B06A63006B588C /* SignerStruct.swift in Sources */,
-				0A64635028FDC8260079C5DB /* RelayConnection.swift in Sources */,
 				D0F3919024BFE48600EA8A2A /* AccountMap.swift in Sources */,
 				0AF73250291DDFC4009F6296 /* BTC_Params.swift in Sources */,
 				D0C20EDC24A6E51D00C62AA4 /* MempoolInfo.swift in Sources */,
@@ -1742,14 +1726,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		0A64634028FDBF020079C5DB /* XCRemoteSwiftPackageReference "Starscream" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/daltoniam/Starscream";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.0.0;
-			};
-		};
 		0A64635328FEF8C90079C5DB /* XCRemoteSwiftPackageReference "secp256k1.swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/GigaBitcoin/secp256k1.swift.git";
@@ -1785,11 +1761,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		0A64634128FDBF020079C5DB /* Starscream */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 0A64634028FDBF020079C5DB /* XCRemoteSwiftPackageReference "Starscream" */;
-			productName = Starscream;
-		};
 		0A64635428FEF8C90079C5DB /* secp256k1 */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 0A64635328FEF8C90079C5DB /* XCRemoteSwiftPackageReference "secp256k1.swift" */;

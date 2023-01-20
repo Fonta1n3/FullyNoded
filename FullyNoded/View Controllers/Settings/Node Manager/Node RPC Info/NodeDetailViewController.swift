@@ -193,10 +193,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 self.nostrToSubscribe.removeFromSuperview()
                 self.nostrPrivkeyField.removeFromSuperview()
                 self.nostrPrivkeyHeader.removeFromSuperview()
-                self.macaroonField.removeFromSuperview()
-                self.macaroonHeader.removeFromSuperview()
-                self.certField.removeFromSuperview()
-                self.certHeader.removeFromSuperview()
                 self.networkControlOutlet.alpha = 0
             }
         }
@@ -558,13 +554,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         
                         CoreDataService.saveEntity(dict: vc.newNode, entityName: .newNodes) { [unowned vc = self] success in
                             if success {
-                                if shouldSubscribe {
-                                    //if MakeRPCCall.sharedInstance.connected {
-                                        //MakeRPCCall.sharedInstance.disconnect()
-                                        MakeRPCCall.sharedInstance.connectToRelay()
-                                    //}
-                                    
-                                }
                                 vc.nodeAddedSuccess()
                             } else {
                                 displayAlert(viewController: vc, isError: true, message: "Error saving tor node")
