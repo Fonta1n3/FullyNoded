@@ -125,8 +125,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         switch networkControlOutlet.selectedSegmentIndex {
         case 0: updateChain("main")
         case 1: updateChain("test")
-        case 2: updateChain("signet")
-        case 3: updateChain("regtest")
+        case 2: updateChain("regtest")
+        case 3: updateChain("signet")
         default:
             break
         }
