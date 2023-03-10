@@ -20,7 +20,6 @@ class MakeRPCCall {
     
     
     private init() {}
-    
 
     
     func connectToRelay(node: NodeStruct) {

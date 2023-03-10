@@ -27,7 +27,8 @@ final class StreamManager: NSObject {
     
     func receive() {
         let workItem = DispatchWorkItem { [weak self] in
-            guard let self = self, let webSocket = self.webSocket else { print("websocket is nil"); return }
+            guard let self = self else { return }
+            guard let webSocket = self.webSocket else { print("websocket is nil"); return }
             webSocket.receive(completionHandler: { [weak self] result in
                 guard let self = self else { return }
                 self.timer.invalidate()
@@ -40,7 +41,7 @@ final class StreamManager: NSObject {
                 self.receive()
             })
         }
-        DispatchQueue.global().asyncAfter(deadline: .now() + 1 , execute: workItem)
+        DispatchQueue.global().asyncAfter(deadline: .now() + 1, execute: workItem)
     }
     
     
@@ -145,7 +146,7 @@ final class StreamManager: NSObject {
         guard let node = node else { print("no node"); return }
         guard let encryptedNostrPrivKey = node.nostrPrivkey else { print("no encrypted private key"); return }
         guard let decryptedPrivKey = Crypto.decrypt(encryptedNostrPrivKey) else { print("unable to decrypt nostr priv key"); return }
-        guard let pubkey = Keys.privKeyToPubKey(decryptedPrivKey) else { return }
+        guard let pubkey = Keys.privKeyToPubKey(decryptedPrivKey) else { print("no pubkey"); return }
         
         let ev = NostrEvent(content: content,
                             pubkey: "\(pubkey.dropFirst(2))",

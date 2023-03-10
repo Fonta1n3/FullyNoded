@@ -657,7 +657,6 @@ class MainMenuViewController: UIViewController {
                     showAlert(vc: self, title: "Connection issue...", message: message)
                 }
                 
-                print("here?")
                 self.removeLoader()
                 
                 return
