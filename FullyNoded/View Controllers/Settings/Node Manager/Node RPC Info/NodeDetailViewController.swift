@@ -465,8 +465,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
                 newNode["isLightning"] = isLightning
                 newNode["isJoinMarket"] = isJoinMarket
-                let arr = onionAddressText.split(separator: ":")
-                guard arr.count == 2 else { return }
+                
                guard let encryptedOnionAddress = encryptedValue(onionAddressText.utf8)  else {
                     showAlert(vc: self, title: "", message: "Error encrypting the address.")
                     return }
@@ -499,14 +498,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             if rpcUserField != nil {
-                if rpcUserField.text != "", rpcUserField.text!.isContiguousUTF8 {
+                if rpcUserField.text != "" {
                     guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
                     newNode["rpcuser"] = enc
                 }
             }
             
             if rpcPassword != nil {
-                if rpcPassword.text != "", rpcPassword.text!.isContiguousUTF8 {
+                if rpcPassword.text != "" {
                     guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
                     newNode["rpcpassword"] = enc
                 }
