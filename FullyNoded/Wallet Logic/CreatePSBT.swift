@@ -20,7 +20,7 @@ class CreatePSBT {
         options["replaceable"] = true
         
         if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
-            options["feeRate"] = feeRate
+            options["fee_rate"] = feeRate
         } else if let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int {
             options["conf_target"] = feeTarget
         }
