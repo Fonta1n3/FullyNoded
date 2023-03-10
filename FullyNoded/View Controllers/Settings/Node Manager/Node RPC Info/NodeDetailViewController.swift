@@ -24,6 +24,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var scanNow = false
     var isNostr = false
     var isJoinMarket = false
+    var isBitcoinCore = false
     
     @IBOutlet weak var masterStackView: UIStackView!
     @IBOutlet weak var seeEncryptionWordsButton: UIButton!
@@ -89,9 +90,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         navigationController?.delegate = self
         
         if isLightning {
-            addressHeaderOutlet.text = "Address: (localhost:9737)"
+            addressHeaderOutlet.text = "Address (localhost:9737)"
         } else {
-            addressHeaderOutlet.text = "Address: (xxx.onion:8332 or 127.0.0.1:8332)"
+            addressHeaderOutlet.text = "Address (127.0.0.1:8332)"
         }
         
         if isNostr {
@@ -789,6 +790,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     removeNostrStuff()
                     if node.isLightning {
                         removeNonLightning()
+                    } else {
+                        if !node.isJoinMarket {
+                            removeNonBitcoinCoreStuff()
+                        }
                     }
                 }
                 
@@ -855,6 +860,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 removeNonLightning()
             }
             
+            if isBitcoinCore {
+                removeNonBitcoinCoreStuff()
+            }
+            
             if isJoinMarket {
                 removeNonJm()
             }
@@ -862,6 +871,16 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         DispatchQueue.main.async { [weak self] in
             self?.masterStackView.alpha = 1
+        }
+    }
+    
+    private func removeNonBitcoinCoreStuff() {
+        DispatchQueue.main.async {
+            self.macaroonField.removeFromSuperview()
+            self.macaroonHeader.removeFromSuperview()
+            self.certField.removeFromSuperview()
+            self.certHeader.removeFromSuperview()
+            self.networkControlOutlet.alpha = 1
         }
     }
     
@@ -883,14 +902,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     private func removeNonLightning() {
         DispatchQueue.main.async {
-            self.addressHeaderOutlet.text = "Address: (localhost:9737)"
+            self.addressHeaderOutlet.text = "Address (localhost:9737)"
             self.rpcUserField.removeFromSuperview()
             self.networkControlOutlet.alpha = 0
             self.exportNodeOutlet.tintColor = .clear
             self.scanQROutlet.tintColor = .clear
             self.showHostOutlet.tintColor = .clear
-            self.rpcPassword.placeholder = "sparko key"
-            self.passwordHeader.text = "sparko key"
+            self.rpcPassword.placeholder = "Sparko key"
+            self.passwordHeader.text = "Sparko key (CLN)"
             self.usernameHeader.removeFromSuperview()
         }
     }

@@ -18,6 +18,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var isNostr = false
     var isLightning = false
     var isJoinMarket = false
+    var isBitcoinCore = false
     private var authenticated = false
     @IBOutlet var nodeTable: UITableView!
     
@@ -329,6 +330,9 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             alert.addAction(UIAlertAction(title: "Nostrnode", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                 self.isNostr = true
+                self.isLightning = false
+                self.isJoinMarket = false
+                self.isBitcoinCore = false
                 self.segueToAddNodeManually()
             }))
             
@@ -337,6 +341,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 
                 self.isLightning = false
                 self.isJoinMarket = false
+                self.isBitcoinCore = true
                 self.segueToAddNodeManually()
             }))
             
@@ -345,6 +350,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 
                 self.isLightning = false
                 self.isJoinMarket = true
+                self.isBitcoinCore = false
                 self.segueToAddNodeManually()
             }))
             
@@ -353,6 +359,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 
                 self.isLightning = true
                 self.isJoinMarket = false
+                self.isBitcoinCore = false
                 self.segueToAddNodeManually()
             }))
             
@@ -406,7 +413,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             if let vc = segue.destination as? NodeDetailViewController {
                 vc.selectedNode = self.nodeArray[selectedIndex]
                 vc.createNew = false
-                vc.isLightning = false
+                //vc.isLightning = false
             }
         }
         
@@ -416,6 +423,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 vc.isLightning = self.isLightning
                 vc.isJoinMarket = self.isJoinMarket
                 vc.isNostr = self.isNostr
+                vc.isBitcoinCore = self.isBitcoinCore
             }
         }
         
