@@ -75,16 +75,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         loginVC.onDoneBlock = { [weak self] in
             guard let self = self else { return }
             
-            DispatchQueue.background(delay: 0.2, completion:  {
-                MakeRPCCall.sharedInstance.connectToRelay()
-//                MakeRPCCall.sharedInstance.eoseReceivedBlock = { subscribed in
-//                    if subscribed {
-//                        DispatchQueue.main.async {
-//                            NotificationCenter.default.post(name: .refreshNode, object: nil)
-//                        }
-//                    }
-//                }
-            })
+//            DispatchQueue.background(delay: 0.2, completion:  {
+//                //MakeRPCCall.sharedInstance.connectToRelay(node: )
+////                MakeRPCCall.sharedInstance.eoseReceivedBlock = { subscribed in
+////                    if subscribed {
+////                        DispatchQueue.main.async {
+////                            NotificationCenter.default.post(name: .refreshNode, object: nil)
+////                        }
+////                    }
+////                }
+//            })
             
             if !self.isBooting && self.mgr?.state != .started && self.mgr?.state != .connected  {
                 self.mgr?.start(delegate: nil)

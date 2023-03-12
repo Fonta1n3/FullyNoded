@@ -17,8 +17,6 @@ class Reducer {
     func makeCommand(command: BTC_CLI_COMMAND, completion: @escaping ((response: Any?, errorMessage: String?)) -> Void) {
         let torRPC = MakeRPCCall.sharedInstance
         StreamManager.shared.onDoneBlock = { nostrResponse in
-            
-            
             if let errDesc = nostrResponse.errorDesc {
                 if errDesc != "" {
                     handleError(errorDesc: nostrResponse.errorDesc!)
