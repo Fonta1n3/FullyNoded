@@ -105,7 +105,8 @@ class MakeRPCCall {
     
     func executeNostrJmRpc(method: JM_REST, httpMethod: String, token: String?, httpBody: [String:Any]?) {
         let id = UUID()
-        self.lastSentId = id.uuidString
+        StreamManager.shared.lastSentId = id.uuidString
+        
         var dict:[String:Any] = [
             "port": 28183,
             "http_method": httpMethod,
@@ -136,7 +137,7 @@ class MakeRPCCall {
     
     func executeClnNostrRpc(http_body: [String:Any]) {
         let id = UUID()
-        self.lastSentId = id.uuidString
+        StreamManager.shared.lastSentId = id.uuidString
         let dict:[String:Any] = [
             "request_id": id.uuidString,
             "port": 9737,
