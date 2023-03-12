@@ -874,18 +874,27 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     private func removeNonBitcoinCoreStuff() {
-        DispatchQueue.main.async {
-            self.macaroonField.removeFromSuperview()
-            self.macaroonHeader.removeFromSuperview()
-            self.certField.removeFromSuperview()
-            self.certHeader.removeFromSuperview()
-            self.networkControlOutlet.alpha = 1
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            if self.macaroonField != nil {
+                self.macaroonField.removeFromSuperview()
+            }
+            if self.macaroonHeader != nil {
+                self.macaroonHeader.removeFromSuperview()
+            }
+            if self.certField != nil {
+                self.certField.removeFromSuperview()
+            }
+            if self.certHeader != nil {
+                self.certHeader.removeFromSuperview()
+            }
+            //self.networkControlOutlet.alpha = 1
         }
     }
     
     private func removeNonJm() {
         DispatchQueue.main.async {
-            self.addressHeaderOutlet.text = "Address: (localhost:28183)"
+            self.addressHeaderOutlet.text = "Address (localhost:28183)"
             self.rpcUserField.removeFromSuperview()
             self.networkControlOutlet.alpha = 0
             self.exportNodeOutlet.tintColor = .clear
