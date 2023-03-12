@@ -30,14 +30,14 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     ]
     
     private let years = [
-        "2022",
         "2023",
         "2024",
-        "2025"
+        "2025",
+        "2026"
     ]
     
     private var month = ""
-    private var year = "2022"
+    private var year = "2023"
     private var mixdepth = 0
     private var amountTotal = 0.0
     private let refresher = UIRefreshControl()
