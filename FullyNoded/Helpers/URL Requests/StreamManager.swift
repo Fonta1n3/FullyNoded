@@ -85,7 +85,7 @@ final class StreamManager: NSObject {
         if let dict = arr[2] as? [String:Any], let created_at = dict["created_at"] as? Int {
             let now = NSDate().timeIntervalSince1970
             let diff = (now - TimeInterval(created_at))
-            guard diff < 5.0 else { return }
+            guard diff < 5.0 else { print("diff > 5, ignoring."); return }
             guard let ev = self.parseEvent(event: dict) else {
                 self.onDoneBlock!((nil,"Nostr event parsing failed..."))
                 #if DEBUG
@@ -95,23 +95,23 @@ final class StreamManager: NSObject {
             }
             
             let (responseCheck, errorDescCheck, requestId) = self.processValidReceivedContent(content: ev.content)
-            
+                        
             guard self.lastSentId == requestId else {
                 self.onDoneBlock!((nil, "Ignoring out of order response."))
                 return
             }
             
-            guard let reponse = responseCheck else {
-                self.onDoneBlock!((nil,errorDescCheck))
+            guard let response = responseCheck else {
+                self.onDoneBlock!((nil, errorDescCheck))
                 return
             }
             
             guard let _ = errorDescCheck else {
-                self.onDoneBlock!((reponse as Any,nil))
+                self.onDoneBlock!((response as Any,nil))
                 return
             }
             
-            self.onDoneBlock!((reponse as Any,errorDescCheck))
+            self.onDoneBlock!((response as Any,errorDescCheck))
         }
     }
     
@@ -250,7 +250,7 @@ final class StreamManager: NSObject {
     
     
     private func updateCounting(seconds: Int) {
-        if seconds == 10 {
+        if seconds == 30 {
             self.timer.invalidate()
             self.onDoneBlock!((nil, "Timed out after \(seconds) seconds, no response from your nostr relay..."))
         }
@@ -261,8 +261,7 @@ final class StreamManager: NSObject {
         if let url = URL(string: urlString) {
             let request = URLRequest(url: url)
             let session = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
-            let webSocket = session.webSocketTask(with: request)
-            self.webSocket = webSocket
+            self.webSocket = session.webSocketTask(with: request)
             self.opened = true
             self.webSocket?.resume()
         }
