@@ -333,7 +333,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 OnchainUtils.getAddressInfo(address: address) { (addressInfo, message) in
                     guard let addressInfo = addressInfo else { return }
                     
-                    showAlert(vc: self, title: "Address added ✓", message: "This address was derived from \(wallet.label): \(addressInfo.desc), solvable: \(addressInfo.solvable)")
+                    showAlert(vc: self, title: "Address added ✓", message: "Derived from \(wallet.label): \(addressInfo.desc), solvable: \(addressInfo.solvable)")
                 }
             }
         }
@@ -612,14 +612,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBAction func lightningWithdrawAction(_ sender: Any) {
         guard let item = addressInput.text, item != "" else {
             showAlert(vc: self, title: "", message: "Add a recipient address first.")
-            
             return
         }
         
         if item.hasPrefix("lntb") || item.hasPrefix("lightning:") || item.hasPrefix("lnbc") || item.hasPrefix("lnbcrt") {
             decodeLighnting(invoice: item.replacingOccurrences(of: "lightning:", with: ""))
         } else {
-            promptToWithdrawalFromLightning(item)
+            promptWithdrawalLightning(item)
         }
     }
     
@@ -712,7 +711,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         isFidelity = false
     }
         
-    private func promptToWithdrawalFromLightning(_ recipient: String) {
+    private func promptWithdrawalLightning(_ recipient: String) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
