@@ -52,7 +52,7 @@ class JMUtils {
             }
         }
         
-        let jmWalletName = "FullyNoded-\(randomString(length: 10)).jmdat"
+        let jmWalletName = "FullyNoded-\(randomString(length: 6).uppercased()).jmdat"
         
         let param:[String:Any] = [
             "walletname": jmWalletName,
