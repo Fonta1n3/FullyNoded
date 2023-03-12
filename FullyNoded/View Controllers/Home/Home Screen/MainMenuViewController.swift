@@ -897,21 +897,21 @@ class MainMenuViewController: UIViewController {
                     if let node = self.activeNode {
                         if node.isNostr {
                             // If not using tor then uncomment this, and remove from tor protocol func
-//                            StreamManager.shared.node = node
-//                            let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
-//                            StreamManager.shared.eoseReceivedBlock = { _ in
-//                                DispatchQueue.main.async { [weak self] in
-//                                    guard let self = self else { return }
-//                                    self.removeBackView()
-//                                    DispatchQueue.main.async { [weak self] in
-//                                        self?.torProgressLabel.isHidden = true
-//                                        self?.progressView.isHidden = true
-//                                        self?.blurView.isHidden = true
-//                                        self?.loadNode(node: node)
-//                                    }
-//                                }
-//                            }
-//                            StreamManager.shared.openWebSocket(urlString: urlString)
+                            StreamManager.shared.node = node
+                            let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
+                            StreamManager.shared.eoseReceivedBlock = { _ in
+                                DispatchQueue.main.async { [weak self] in
+                                    guard let self = self else { return }
+                                    self.removeBackView()
+                                    DispatchQueue.main.async { [weak self] in
+                                        self?.torProgressLabel.isHidden = true
+                                        self?.progressView.isHidden = true
+                                        self?.blurView.isHidden = true
+                                        self?.loadNode(node: node)
+                                    }
+                                }
+                            }
+                            StreamManager.shared.openWebSocket(urlString: urlString)
                         }
                     } else {
                         showAlert(vc: self, title: "", message: "No active nodes, please toggle one on.")
@@ -1077,21 +1077,18 @@ extension MainMenuViewController: OnionManagerDelegate {
             if !activeNode.isNostr {
                 loadTable()
             } else {
-                StreamManager.shared.node = activeNode
-                let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
-                StreamManager.shared.eoseReceivedBlock = { _ in
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        self.removeBackView()
-                        DispatchQueue.main.async { [weak self] in
-//                            self?.torProgressLabel.isHidden = true
-//                            self?.progressView.isHidden = true
-//                            self?.blurView.isHidden = true
-                            self?.loadNode(node: activeNode)
-                        }
-                    }
-                }
-                StreamManager.shared.openWebSocket(urlString: urlString)
+//                StreamManager.shared.node = activeNode
+//                let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
+//                StreamManager.shared.eoseReceivedBlock = { _ in
+//                    DispatchQueue.main.async { [weak self] in
+//                        guard let self = self else { return }
+//                        self.removeBackView()
+//                        DispatchQueue.main.async { [weak self] in
+//                            self?.loadNode(node: activeNode)
+//                        }
+//                    }
+//                }
+//                StreamManager.shared.openWebSocket(urlString: urlString)
             }
         } else {
             removeLoader()
