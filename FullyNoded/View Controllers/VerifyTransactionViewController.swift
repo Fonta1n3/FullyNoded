@@ -66,7 +66,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.isChannelFunding = true
         navigationController?.delegate = self
         
         verifyTable.delegate = self
@@ -1093,22 +1092,22 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         amountString += " btc / \(fiatAmount(btc: amount))"
                     }
                                         
-                    if let clightningFundingSPK = UserDefaults.standard.object(forKey: "scriptPubKey") as? String {
-                        if let hex = scriptpubkey["hex"] as? String {
-                            if hex == clightningFundingSPK {
-                                if let clightningFundingAddr = UserDefaults.standard.object(forKey: "address") as? String {
-                                    for address in addresses {
-                                        if (address as? String) == clightningFundingAddr {
-                                            self.isChannelFunding = true
-                                            if let vout = output["n"] as? Int {
-                                                self.voutChannelFunding = vout
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+//                    if let clightningFundingSPK = UserDefaults.standard.object(forKey: "scriptPubKey") as? String {
+//                        if let hex = scriptpubkey["hex"] as? String {
+//                            if hex == clightningFundingSPK {
+//                                if let clightningFundingAddr = UserDefaults.standard.object(forKey: "address") as? String {
+//                                    for address in addresses {
+//                                        if (address as? String) == clightningFundingAddr {
+//                                            self.isChannelFunding = true
+//                                            if let vout = output["n"] as? Int {
+//                                                self.voutChannelFunding = vout
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
                                         
                     let outputDict:[String:Any] = [
                         "index": number,
