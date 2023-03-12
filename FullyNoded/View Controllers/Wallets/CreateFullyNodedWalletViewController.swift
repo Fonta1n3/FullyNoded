@@ -168,7 +168,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 self.promptToChooseJmWallet(jmWallets: jmWallets)
             } else {
                 DispatchQueue.main.async {
-                    self.spinner.label.text = "creating new wallet..."
+                    self.spinner.label.text = "creating new wallet (can take some time)..."
                 }
                 
                 JMUtils.createWallet { (wallet, words, passphrase, message) in
@@ -184,11 +184,15 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         return
                     }
                     UserDefaults.standard.setValue(jmWallet.name, forKey: "walletName")
+                    var formattedWords = ""
+                    for (i, word) in words.description.split(separator: " ").enumerated() {
+                        formattedWords += "\(i + 1). \(word) "
+                    }
                     self.jmMessage = """
                     In order to avoid lost funds back up the following information:
                     
                     Join Market Seed Words:
-                    \(words)
+                    \(formattedWords)
                     
                     Join Market wallet encryption passphrase:
                     \(passphrase)
@@ -240,7 +244,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let title = "Unlock the wallet."
+            let title = "Unlock \(jmWallet)"
             
             let alert = UIAlertController(title: title, message: "Input your JM wallet encryption passphrase to unlock the wallet.", preferredStyle: .alert)
             
