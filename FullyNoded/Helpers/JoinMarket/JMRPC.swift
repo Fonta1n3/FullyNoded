@@ -162,7 +162,6 @@ class JMRPC {
                 }
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")
                 request.setValue("\(jsonData.count)", forHTTPHeaderField: "Content-Length")
-                print("jsonData.count: \(jsonData.count)")
                 request.httpBody = jsonData
             }
             
@@ -185,20 +184,13 @@ class JMRPC {
                 self.token = nil
                 request.httpBody = nil
 
-                MakeRPCCall.sharedInstance.onDoneBlock = { jmResponse in
-//                    #if DEBUG
-//                    print("jm nostr response: \(jmResponse)")
-//                    #endif
+                StreamManager.shared.onDoneBlock = { jmResponse in
                     guard let response = jmResponse.response as? [String:Any] else { completion((nil, jmResponse.errorDesc)); return }
-//                    #if DEBUG
-//                    print("response: \(response)")
-//                    #endif
                     
                     guard let message = response["message"] as? String else {
                         completion((response, nil))
                         return
                     }
-
                     completion((nil, message))
                 }
             } else {
