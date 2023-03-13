@@ -1058,9 +1058,10 @@ class ActiveWalletViewController: UIViewController {
     private func getWalletBalance() {
         if let _ = UserDefaults.standard.object(forKey: "walletName") as? String {
             if wallet!.isJm {
-                JMUtils.display(wallet: wallet!) { (detail, message) in
-                    guard let walletDetail = detail else {
-                        if message == "Invalid credentials." {
+                JMRPC.sharedInstance.command(method: .listutxos(jmWallet: wallet!), param: nil) { [weak self] (response, errorDesc) in
+                    guard let self = self else { return }
+                    guard let response = response as? [String:Any] else {
+                        if errorDesc == "Invalid credentials." {
                             JMUtils.unlockWallet(wallet: self.wallet!) { (unlockedWallet, unlock_message) in
                                 guard let _ = unlockedWallet else {
                                     showAlert(vc: self, title: "", message: unlock_message ?? "Unknown error unlocking wallet.")
@@ -1079,18 +1080,20 @@ class ActiveWalletViewController: UIViewController {
                                 }
                             }
                         } else {
-                            showAlert(vc: self, title: "", message: message ?? "Unknown issue getting wallet detail.")
+                            showAlert(vc: self, title: "", message: errorDesc ?? "Unknown issue getting jm utxos.")
                         }
                         
                         return
                     }
-                    
+                    guard let utxos = response["utxos"] as? [[String:Any]] else { return }
                     var totalBalance = 0.0
-                    for account in walletDetail.accounts {
-                        totalBalance += account.account_balance
+                    for utxo in utxos {
+                        let value = utxo["value"] as! Int
+                        totalBalance += value.satsToBtcDouble
                     }
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
+                        totalBalance = Double(round(100000000 * totalBalance) / 100000000)
                         self.onchainBalanceBtc = String(totalBalance)
                         self.onchainBalanceSats = totalBalance.sats.replacingOccurrences(of: " sats", with: "")
                         self.sectionZeroLoaded = true
