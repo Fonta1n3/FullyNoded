@@ -57,6 +57,8 @@ final class StreamManager: NSObject {
                         parseEose(arr: jsonArray)
                     case "EVENT":
                         parseEventDict(arr: jsonArray)
+                    case "OK":
+                        onDoneBlock!((nil, jsonArray[3] as? String))
                     default:
                         break
                     }
