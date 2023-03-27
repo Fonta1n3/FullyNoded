@@ -10,6 +10,7 @@ import UIKit
 
 class ActiveWalletViewController: UIViewController {
     
+    private var showOnchainOnly = false
     private var showOnchain = false
     private var showOffchain = false
     private var existingWallet = ""
@@ -51,7 +52,6 @@ class ActiveWalletViewController: UIViewController {
     private var isAuthenticating = false
     private var initialLoad = true
     private var isRecovering = false
-    private var showOffchainBalance = false
     var fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     
     @IBOutlet weak private var currencyControl: UISegmentedControl!
@@ -425,7 +425,7 @@ class ActiveWalletViewController: UIViewController {
     
     private func loadTable() {
         if authenticated {
-            self.sectionZeroLoaded = false
+            sectionZeroLoaded = false
             existingWallet = ""
             walletLabel = ""
             
@@ -436,13 +436,43 @@ class ActiveWalletViewController: UIViewController {
                     self.wallet = nil
                     self.walletLabel = UserDefaults.standard.object(forKey: "walletName") as? String ?? ""
                     if self.walletLabel == "" {
-                        self.promptToChooseWallet()
+                        CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
+                            guard let self = self, let nodes = nodes else { return }
+                            
+                            guard nodes.count > 0 else { return }
+                            
+                            var anyOffchain = false
+                            var anyOnchain = false
+                            for (i, node) in nodes.enumerated() {
+                                let nodeStr = NodeStruct(dictionary: node)
+                                if !nodeStr.isLightning, !nodeStr.isJoinMarket, !nodeStr.isNostr {
+                                    anyOnchain = true
+                                }
+                                if nodeStr.isActive && nodeStr.isLightning {
+                                    anyOffchain = true
+                                }
+                                
+                                if i + 1 == nodes.count {
+                                    if anyOnchain {
+                                        self.showOnchain = true
+                                        self.promptToChooseWallet()
+                                    } else if anyOffchain {
+                                        self.showOnchain = false
+                                        self.showOffchain = true
+                                        self.loadLightning()
+                                    }
+                                }
+                            }
+                        }
+                        
+                        
                     } else {
                         self.loadBalances()
                     }
                     return
                 }
                 
+                self.showOnchain = true
                 self.wallet = wallet
                 self.existingWallet = wallet.name
                 self.walletLabel = wallet.label
@@ -594,10 +624,15 @@ class ActiveWalletViewController: UIViewController {
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.layer.borderWidth = 0.5
         cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+        
+        let iconImageView = cell.viewWithTag(67) as! UIImageView
+        iconImageView.image = .init(systemName: "link")
+        
         if let offchainBalanceLabel = cell.viewWithTag(2) as? UILabel, let offchainBalanceView = cell.viewWithTag(66) {
             offchainBalanceLabel.removeFromSuperview()
             offchainBalanceView.removeFromSuperview()
         }
+        
         let onchainBalanceLabel = cell.viewWithTag(1) as! UILabel
         
         
@@ -620,7 +655,48 @@ class ActiveWalletViewController: UIViewController {
         return cell
     }
     
+    private func offchainBalancesCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let cell = walletTable.dequeueReusableCell(withIdentifier: "OnBalancesCell", for: indexPath)
+        cell.layer.borderColor = UIColor.lightGray.cgColor
+        cell.layer.borderWidth = 0.5
+        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+        
+        let offchainBalanceLabel = cell.viewWithTag(1) as! UILabel
+        let iconImageView = cell.viewWithTag(67) as! UIImageView
+        iconImageView.image = .init(systemName: "bolt")
+        
+        if offchainBalanceBtc == "" {
+            offchainBalanceBtc = "0.00000000"
+        }
+        if isBtc {
+            offchainBalanceLabel.text = offchainBalanceBtc
+        }
+        if isSats {
+            offchainBalanceLabel.text = offchainBalanceSats
+        }
+        if isFiat {
+            offchainBalanceLabel.text = offchainBalanceFiat
+        }
+        //offchainBalanceLabel.alpha = 1
+        //offchainBalanceView.alpha = 1
+        
+//        if isBtc {
+//            offchainBalanceLabel.text = onchainBalanceBtc
+//        }
+//
+//        if isSats {
+//            offchainBalanceLabel.text = onchainBalanceSats
+//        }
+//
+//        if isFiat {
+//            offchainBalanceLabel.text = onchainBalanceFiat
+//        }
+                
+        return cell
+    }
+    
     private func offchainOnchainBalancesCell(_ indexPath: IndexPath) -> UITableViewCell {
+        print("offchainOnchainBalancesCell")
         let cell = walletTable.dequeueReusableCell(withIdentifier: "OffOnBalancesCell", for: indexPath)
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.layer.borderWidth = 0.5
@@ -696,7 +772,7 @@ class ActiveWalletViewController: UIViewController {
         
         var dict = self.transactionArray[index]
         
-        if showOnchain {
+        if showOnchainOnly  {
             dict = self.onchainTxArray[index]
         }
         
@@ -981,12 +1057,13 @@ class ActiveWalletViewController: UIViewController {
     private func loadBalances() {
         NodeLogic.walletDisabled = walletDisabled
         getWalletBalance()
-        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
-            self.showOffchainBalance = false
+        CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
+            guard let self = self else { return }
+            self.showOffchain = false
             for node in nodes ?? [] {
                 let s = NodeStruct(dictionary: node)
                 if s.isLightning && s.isActive {
-                    self.showOffchainBalance = true
+                    self.showOffchain = true
                 }
             }
         }
@@ -1180,6 +1257,7 @@ class ActiveWalletViewController: UIViewController {
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
+                self.sectionZeroLoaded = true
                 self.walletTable.reloadSections(.init(arrayLiteral: 0), with: .none)
                 self.loadTransactions()
             }
@@ -1219,7 +1297,7 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func getOffchainBalanceAndTransactions() {
-        if self.showOffchainBalance {
+        if self.showOffchain {
             self.loadLightning()
         } else {
             self.loadTransactions()
@@ -1417,7 +1495,7 @@ class ActiveWalletViewController: UIViewController {
                     
                     if i + 1 == self.transactionArray.count, self.offchainTxArray.count > 0 {
                         self.showOffchain = true
-                        self.showOnchain = false
+                        self.showOnchainOnly = false
                         self.reloadTable()
                     }
                 }
@@ -1432,7 +1510,7 @@ class ActiveWalletViewController: UIViewController {
                     }
                     
                     if i + 1 == self.transactionArray.count, self.onchainTxArray.count > 0 {
-                        self.showOnchain = true
+                        self.showOnchainOnly = true
                         self.showOffchain = false
                         self.reloadTable()
                     }
@@ -1442,7 +1520,7 @@ class ActiveWalletViewController: UIViewController {
             alert.addAction(UIAlertAction(title: "Show all", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                 
-                self.showOnchain = false
+                self.showOnchainOnly = false
                 self.showOffchain = false
                 self.reloadTable()
             }))
@@ -1610,10 +1688,14 @@ extension ActiveWalletViewController: UITableViewDelegate {
         switch indexPath.section {
         case 0:
             if sectionZeroLoaded {
-                if showOffchainBalance {
+                /*if showOffchain && showOnchain {
                     return offchainOnchainBalancesCell(indexPath)
-                } else {
+                } else */if showOnchain && !showOffchain {
                     return onchainBalancesCell(indexPath)
+                } else if showOffchain && !showOnchain {
+                    return offchainBalancesCell(indexPath)
+                } else {
+                    return offchainOnchainBalancesCell(indexPath)
                 }
             } else {
                 return blankCell()
@@ -1693,7 +1775,7 @@ extension ActiveWalletViewController: UITableViewDelegate {
         switch indexPath.section {
         case 0:
             if sectionZeroLoaded {
-                if showOffchainBalance {
+                if showOffchain && showOnchain {
                     return 100
                 } else {
                     return 80
@@ -1718,9 +1800,9 @@ extension ActiveWalletViewController: UITableViewDataSource {
     
     func numberOfSections(in tableView: UITableView) -> Int {
         if transactionArray.count > 0 {
-            if showOnchain {
+            if showOnchainOnly {
                 return 1 + onchainTxArray.count
-            } else if showOffchain {
+            } else if showOffchain && !showOnchain {
                 return 1 + offchainTxArray.count
             } else {
                 return 1 + transactionArray.count
