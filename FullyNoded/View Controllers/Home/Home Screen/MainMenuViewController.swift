@@ -205,7 +205,7 @@ class MainMenuViewController: UIViewController {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
-                    self.performSegue(withIdentifier: "segueToAddANode", sender: self)
+                    self.performSegue(withIdentifier: "segueToAddNode", sender: self)
                 }
             }))
             
@@ -213,6 +213,7 @@ class MainMenuViewController: UIViewController {
             self.present(alert, animated: true, completion: nil)
         }
     }
+    
         
     @IBAction func lockAction(_ sender: Any) {
         if KeyChain.getData("UnlockPassword") != nil {
@@ -930,12 +931,11 @@ class MainMenuViewController: UIViewController {
                 vc.detailTextDescription = detailTextDescription
             }
             
-        case "segueToAddANode":
+        //case "segueToAddNode":
             
-            if let vc = segue.destination as? NodeDetailViewController {
-                vc.createNew = true
-                vc.isLightning = false
-            }
+//            if let vc = segue.destination as? NodesViewController {
+//                vc.createNew = true
+//            }
             
         case "segueToRemoteControl":
             
@@ -946,13 +946,13 @@ class MainMenuViewController: UIViewController {
                 vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world! This feature works with mainnet only."
             }
             
-        case "segueToPaywall":
-            guard let vc = segue.destination as? QRDisplayerViewController else { fallthrough }
-            
-            vc.isPaying = true
-            vc.headerIcon = UIImage(systemName: "bitcoinsign.circle")
-            vc.headerText = "Donation"
-            vc.descriptionText = "Your support is greatly appreciated! We are checking every 15 seconds in the background to see if a payment is made, as soon as we see one the app will automatically unlock and be fully functional."
+//        case "segueToPaywall":
+//            guard let vc = segue.destination as? QRDisplayerViewController else { fallthrough }
+//            
+//            vc.isPaying = true
+//            vc.headerIcon = UIImage(systemName: "bitcoinsign.circle")
+//            vc.headerText = "Donation"
+//            vc.descriptionText = "Your support is greatly appreciated! We are checking every 15 seconds in the background to see if a payment is made, as soon as we see one the app will automatically unlock and be fully functional."
             
         default:
             break

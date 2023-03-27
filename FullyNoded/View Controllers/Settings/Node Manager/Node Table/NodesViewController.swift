@@ -36,39 +36,48 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     override func viewDidAppear(_ animated: Bool) {
         isNostr = false
+        isLightning = false
+        isJoinMarket = false
+        isBitcoinCore = false
         getNodes()
     }
     
     func getNodes() {
         nodeArray.removeAll()
-        CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
-            if nodes != nil {
-                vc.nodeArray.removeAll()
-                for node in nodes! {
-                    let nodeStr = NodeStruct(dictionary: node)
-                    if nodeStr.id != nil {
-                        vc.nodeArray.append(node)
-                    }
-                }
-                
-                if vc.nodeArray.count == 0 {
-                    showAlert(vc: self, title: "", message: "No nodes added yet, tap the + sign to add one.")
-                }
-                
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.nodeTable.reloadData()
-                }
-                
-            } else {
-                
-               displayAlert(viewController: vc,
-                            isError: true,
-                            message: "error getting nodes from core data")
-                
+        CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
+            guard let self = self else { return }
+            
+            guard let nodes = nodes else {
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "error getting nodes from core data")
+                return
             }
             
+            self.nodeArray.removeAll()
+            
+            for node in nodes {
+                let nodeStr = NodeStruct(dictionary: node)
+                if nodeStr.id != nil {
+                    self.nodeArray.append(node)
+                }
+            }
+            
+            self.reloadNodeTable()
+            
+            if self.nodeArray.count == 0 {
+                self.addNodePrompt()
+                //showAlert(vc: self, title: "", message: "No nodes added yet, tap the + sign to add one.")
+            }
         }
-        
+    }
+    
+    private func reloadNodeTable() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.nodeTable.reloadData()
+        }
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -319,7 +328,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         return "\(first)"
     }
     
-    @IBAction func addNode(_ sender: Any) {
+    private func addNodePrompt() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -374,6 +383,10 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             self.present(alert, animated: true, completion: nil)
         }
+    }
+    
+    @IBAction func addNode(_ sender: Any) {
+        addNodePrompt()
     }
     
     private func segueToAddNodeManually() {
