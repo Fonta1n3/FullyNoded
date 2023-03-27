@@ -893,7 +893,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     private func removeNonJm() {
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             self.addressHeaderOutlet.text = "Address (localhost:28183)"
             self.rpcUserField.removeFromSuperview()
             self.networkControlOutlet.alpha = 0
@@ -909,8 +910,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     private func removeNonLightning() {
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             self.addressHeaderOutlet.text = "Address (localhost:9737)"
+            self.onionAddressField.placeholder = "localhost:9737"
             self.rpcUserField.removeFromSuperview()
             self.networkControlOutlet.alpha = 0
             self.exportNodeOutlet.tintColor = .clear
@@ -923,35 +926,38 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
-        if onionAddressField != nil {
-            onionAddressField.resignFirstResponder()
-        }
-        if nodeLabel != nil {
-            nodeLabel.resignFirstResponder()
-        }
-        if rpcUserField != nil {
-            rpcUserField.resignFirstResponder()
-        }
-        if rpcPassword != nil {
-            rpcPassword.resignFirstResponder()
-        }
-        if certField != nil {
-            certField.resignFirstResponder()
-        }
-        if macaroonField != nil {
-            macaroonField.resignFirstResponder()
-        }
-        if nostrPubkeyField != nil {
-            nostrPubkeyField.resignFirstResponder()
-        }
-        if nostrPrivkeyField != nil {
-            nostrPrivkeyField.resignFirstResponder()
-        }
-        if nostrToSubscribe != nil {
-            nostrToSubscribe.resignFirstResponder()
-        }
-        if nostrEncryptionWordsField != nil {
-            nostrEncryptionWordsField.resignFirstResponder()
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            if self.onionAddressField != nil {
+                self.onionAddressField.resignFirstResponder()
+            }
+            if self.nodeLabel != nil {
+                self.nodeLabel.resignFirstResponder()
+            }
+            if self.rpcUserField != nil {
+                self.rpcUserField.resignFirstResponder()
+            }
+            if self.rpcPassword != nil {
+                self.rpcPassword.resignFirstResponder()
+            }
+            if self.certField != nil {
+                self.certField.resignFirstResponder()
+            }
+            if self.macaroonField != nil {
+                self.macaroonField.resignFirstResponder()
+            }
+            if self.nostrPubkeyField != nil {
+                self.nostrPubkeyField.resignFirstResponder()
+            }
+            if self.nostrPrivkeyField != nil {
+                self.nostrPrivkeyField.resignFirstResponder()
+            }
+            if self.nostrToSubscribe != nil {
+                self.nostrToSubscribe.resignFirstResponder()
+            }
+            if self.nostrEncryptionWordsField != nil {
+                self.nostrEncryptionWordsField.resignFirstResponder()
+            }
         }
     }
     
