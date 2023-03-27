@@ -32,7 +32,7 @@ class ActiveWalletViewController: UIViewController {
     private var wallet:Wallet?
     private var isBolt11 = false
     private var fxRate:Double?
-    private var alertStyle = UIAlertController.Style.actionSheet
+    private var alertStyle = UIAlertController.Style.alert
     private let barSpinner = UIActivityIndicatorView(style: .medium)
     private let ud = UserDefaults.standard
     private let spinner = ConnectingView()

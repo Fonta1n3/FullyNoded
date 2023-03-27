@@ -379,7 +379,7 @@ class MainMenuViewController: UIViewController {
                 } else {
                     removeLoader()
                     connectingView.removeConnectingView()
-                    showAlert(vc: self, title: "No Active Node", message: "Go to \"settings\" > \"node manager\" and toggle on one of your nodes.")
+                    showAlert(vc: self, title: "Node inactive.", message: "Go to settings and node manager to activate a Bitcoin Core node.")
                 }
             }
         }
@@ -915,7 +915,7 @@ class MainMenuViewController: UIViewController {
                             StreamManager.shared.openWebSocket(urlString: urlString)
                         }
                     } else {
-                        showAlert(vc: self, title: "", message: "No active nodes, please toggle one on.")
+                        showAlert(vc: self, title: "", message: "No active Bitcoin Core node, please toggle one on to utlize this view.")
                     }
                 }
             }
@@ -1092,7 +1092,7 @@ extension MainMenuViewController: OnionManagerDelegate {
             }
         } else {
             removeLoader()
-            showAlert(vc: self, title: "", message: "No active node, please toggle on one.")
+            //showAlert(vc: self, title: "", message: "No active node, please toggle on one.")
         }
         
         DispatchQueue.main.async { [weak self] in
