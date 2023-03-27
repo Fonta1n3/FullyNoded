@@ -318,6 +318,9 @@ class MakeRPCCall {
                 
                 task.resume()
             }
+        } else {
+            completion((nil, "No active Bitcoin Core node."))
+            return
         }
     }
 }
