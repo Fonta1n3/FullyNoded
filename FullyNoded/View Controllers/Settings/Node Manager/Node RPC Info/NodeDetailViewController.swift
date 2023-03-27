@@ -449,69 +449,48 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         if createNew || selectedNode == nil {
             newNode["id"] = UUID()
-            newNode["isLightning"] = false
-            newNode["isJoinMarket"] = false
-            newNode["isNostr"] = false
+            newNode["isLightning"] = isLightning
+            newNode["isJoinMarket"] = isJoinMarket
+            newNode["isNostr"] = isNostr
             
-            var isLightning = false
-            var isJoinMarket = false
-            
-            if onionAddressField != nil, let onionAddressText = onionAddressField.text {
-                if onionAddressText.hasSuffix(":8080") || onionAddressText.hasSuffix(":10080") || onionAddressText.hasSuffix(":9737") {
-                    isLightning = true
-                }
-                if onionAddressText.hasSuffix(":28183") {
-                    isJoinMarket = true
-                }
-                newNode["isLightning"] = isLightning
-                newNode["isJoinMarket"] = isJoinMarket
-                
+            if onionAddressField != nil,
+                let onionAddressText = onionAddressField.text {
                guard let encryptedOnionAddress = encryptedValue(onionAddressText.utf8)  else {
                     showAlert(vc: self, title: "", message: "Error encrypting the address.")
                     return }
                 newNode["onionAddress"] = encryptedOnionAddress
             }
             
-            var shouldSubscribe = false
-            if nostrToSubscribe != nil, nostrToSubscribe.text != nil, nostrToSubscribe.text! != "",  nostrToSubscribe.text!.isAlphanumeric, let data = Data(hexString: nostrToSubscribe.text!)  {
+            if nostrToSubscribe != nil,
+                nostrToSubscribe.text != nil,
+                nostrToSubscribe.text! != "",
+                nostrToSubscribe.text!.isAlphanumeric,
+                let data = Data(hexString: nostrToSubscribe.text!)  {
                 newNode["subscribeTo"] = encryptedValue(data)
-                shouldSubscribe = true
-            }
-            
-            if nostrPrivkeyField != nil, nostrPrivkeyField.text != "", nostrPrivkeyField.text!.isAlphanumeric {
-                if let privkey = Data(hexString: nostrPrivkeyField.text!) {
-                    newNode["nostrPrivkey"] = encryptedValue(privkey)
-                    guard let pubkey = Keys.privKeyToPubKey(privkey) else { return }
-                    newNode["nostrPubkey"] = encryptedValue(Data(hexString: pubkey)!)
-                    newNode["isNostr"] = true
-                } else {
-                    showAlert(vc: self, title: "", message: "Invalid nostr private key.")
-                }
-            }
-            
-            if nostrRelayField != nil, nostrRelayField.text != nil {
-                UserDefaults.standard.setValue(nostrRelayField.text!, forKey: "nostrRelay")
             }
             
             if nodeLabel.text != "" {
                 newNode["label"] = nodeLabel.text!
             }
             
-            if rpcUserField != nil {
+            if isBitcoinCore,
+                rpcUserField != nil {
                 if rpcUserField.text != "" {
                     guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
                     newNode["rpcuser"] = enc
                 }
-            }
-            
-            if rpcPassword != nil {
-                if rpcPassword.text != "" {
-                    guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
-                    newNode["rpcpassword"] = enc
+                
+                if rpcPassword != nil {
+                    if rpcPassword.text != "" {
+                        guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
+                        newNode["rpcpassword"] = enc
+                    }
                 }
             }
             
-            if macaroonField != nil, macaroonField.text != "" {
+            if isLightning,
+                macaroonField != nil,
+                macaroonField.text != "" {
                 var macaroonData:Data?
                 if let macaroonDataCheck = try? Data.decodeUrlSafeBase64(macaroonField.text!) {
                     macaroonData = macaroonDataCheck
@@ -526,19 +505,32 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 newNode["macaroon"] = encryptedMacaroonHex
             }
             
-            if certField != nil {
-                if certField.text != "" {
-                    guard let encryptedCert = encryptCert(certField.text!) else {
-                        return
-                    }
-                    newNode["cert"] = encryptedCert
+            if isLightning || isJoinMarket,
+               certField != nil, certField.text != "" {
+                guard let encryptedCert = encryptCert(certField.text!) else {
+                    return
                 }
+                newNode["cert"] = encryptedCert
             }
             
-            if let encryptionWordsField = self.nostrEncryptionWordsField, let encryptionWords = encryptionWordsField.text {
+            if isNostr, let encryptionWordsField = self.nostrEncryptionWordsField, let encryptionWords = encryptionWordsField.text {
                 guard let encryptedWords = Crypto.encrypt(encryptionWords.utf8) else { return }
                 
                 newNode["nostrWords"] = encryptedWords
+                
+                if nostrRelayField != nil, nostrRelayField.text != nil {
+                    UserDefaults.standard.setValue(nostrRelayField.text!, forKey: "nostrRelay")
+                }
+                
+                if nostrPrivkeyField != nil, nostrPrivkeyField.text != "", nostrPrivkeyField.text!.isAlphanumeric {
+                    if let privkey = Data(hexString: nostrPrivkeyField.text!) {
+                        newNode["nostrPrivkey"] = encryptedValue(privkey)
+                        guard let pubkey = Keys.privKeyToPubKey(privkey) else { return }
+                        newNode["nostrPubkey"] = encryptedValue(Data(hexString: pubkey)!)
+                    } else {
+                        showAlert(vc: self, title: "", message: "Invalid nostr private key.")
+                    }
+                }
             }
             
             func save() {
@@ -973,7 +965,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     private func nodeAddedSuccess() {
-        if selectedNode == nil {
+        if selectedNode == nil || createNew {
             selectedNode = newNode
             createNew = false
             showAlert(vc: self, title: "Node saved ✓", message: "")

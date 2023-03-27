@@ -70,7 +70,7 @@ public func activeWallet(completion: @escaping ((Wallet?)) -> Void) {
 public func showAlert(vc: UIViewController?, title: String, message: String) {
     if let vc = vc {
         DispatchQueue.main.async {
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in }))
             alert.popoverPresentationController?.sourceView = vc.view
             vc.present(alert, animated: true, completion: nil)
