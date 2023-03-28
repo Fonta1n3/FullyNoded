@@ -19,6 +19,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var isLightning = false
     var isJoinMarket = false
     var isBitcoinCore = false
+    var isLND = false
+    var isCLN = false
     private var authenticated = false
     @IBOutlet var nodeTable: UITableView!
     
@@ -363,9 +365,22 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 self.segueToAddNodeManually()
             }))
             
-            alert.addAction(UIAlertAction(title: "Lightning", style: .default, handler: { [weak self] action in
+            alert.addAction(UIAlertAction(title: "Core Lightning", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                 
+                self.isCLN = true
+                self.isLND = false
+                self.isLightning = true
+                self.isJoinMarket = false
+                self.isBitcoinCore = false
+                self.segueToAddNodeManually()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "LND", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.isLND = true
+                self.isCLN = false
                 self.isLightning = true
                 self.isJoinMarket = false
                 self.isBitcoinCore = false
@@ -388,7 +403,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @IBAction func addNode(_ sender: Any) {
         addNodePrompt()
     }
-    
+        
     private func segueToAddNodeManually() {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "segueToAddBitcoinCoreNode", sender: vc)
@@ -437,6 +452,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 vc.isJoinMarket = self.isJoinMarket
                 vc.isNostr = self.isNostr
                 vc.isBitcoinCore = self.isBitcoinCore
+                vc.isLND = self.isLND
+                vc.isCLN = self.isCLN
             }
         }
         

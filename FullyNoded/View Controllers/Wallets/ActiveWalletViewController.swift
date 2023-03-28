@@ -677,20 +677,6 @@ class ActiveWalletViewController: UIViewController {
         if isFiat {
             offchainBalanceLabel.text = offchainBalanceFiat
         }
-        //offchainBalanceLabel.alpha = 1
-        //offchainBalanceView.alpha = 1
-        
-//        if isBtc {
-//            offchainBalanceLabel.text = onchainBalanceBtc
-//        }
-//
-//        if isSats {
-//            offchainBalanceLabel.text = onchainBalanceSats
-//        }
-//
-//        if isFiat {
-//            offchainBalanceLabel.text = onchainBalanceFiat
-//        }
                 
         return cell
     }

@@ -25,6 +25,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var isNostr = false
     var isJoinMarket = false
     var isBitcoinCore = false
+    var isLND = false
+    var isCLN = false
     
     @IBOutlet weak var masterStackView: UIStackView!
     @IBOutlet weak var seeEncryptionWordsButton: UIButton!
@@ -64,6 +66,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     override func viewDidLoad() {
         super.viewDidLoad()
         masterStackView.alpha = 0
+        networkControlOutlet.alpha = 0
         navigationController?.delegate = self
         configureTapGesture()
         nodeLabel.delegate = self
@@ -90,9 +93,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         navigationController?.delegate = self
         
         if isLightning {
-            addressHeaderOutlet.text = "Address (localhost:9737)"
-        } else {
-            addressHeaderOutlet.text = "Address (127.0.0.1:8332)"
+            onionAddressField.placeholder = "localhost:9737"
+        } else if isJoinMarket {
+            onionAddressField.placeholder = "localhost:28183"
         }
         
         if isNostr {
@@ -194,7 +197,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 self.nostrToSubscribe.removeFromSuperview()
                 self.nostrPrivkeyField.removeFromSuperview()
                 self.nostrPrivkeyHeader.removeFromSuperview()
-                self.networkControlOutlet.alpha = 0
             }
         }
     }
@@ -224,6 +226,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 self.certHeader.removeFromSuperview()
                 self.onionAddressField.removeFromSuperview()
                 self.scanQROutlet.tintColor = .clear
+                self.networkControlOutlet.alpha = 1
             }
         }
     }
@@ -880,16 +883,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             if self.certHeader != nil {
                 self.certHeader.removeFromSuperview()
             }
-            //self.networkControlOutlet.alpha = 1
         }
     }
     
     private func removeNonJm() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            self.addressHeaderOutlet.text = "Address (localhost:28183)"
             self.rpcUserField.removeFromSuperview()
-            self.networkControlOutlet.alpha = 0
             self.exportNodeOutlet.tintColor = .clear
             self.scanQROutlet.tintColor = .clear
             self.showHostOutlet.tintColor = .clear
@@ -904,16 +904,41 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     private func removeNonLightning() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            self.addressHeaderOutlet.text = "Address (localhost:9737)"
-            self.onionAddressField.placeholder = "localhost:9737"
+            
+            if self.isCLN {
+                self.onionAddressField.placeholder = "localhost:9737"
+                self.rpcPassword.placeholder = "Sparko key"
+                self.passwordHeader.text = "Sparko key"
+                self.usernameHeader.removeFromSuperview()
+                self.certField.removeFromSuperview()
+                self.certHeader.removeFromSuperview()
+                self.macaroonField.removeFromSuperview()
+                self.macaroonHeader.removeFromSuperview()
+            } else if self.isLND {
+                self.onionAddressField.placeholder = "localhost:8080"
+                self.rpcPassword.removeFromSuperview()
+                self.passwordHeader.removeFromSuperview()
+            }
+            self.usernameHeader.removeFromSuperview()
             self.rpcUserField.removeFromSuperview()
-            self.networkControlOutlet.alpha = 0
             self.exportNodeOutlet.tintColor = .clear
             self.scanQROutlet.tintColor = .clear
             self.showHostOutlet.tintColor = .clear
-            self.rpcPassword.placeholder = "Sparko key"
-            self.passwordHeader.text = "Sparko key (CLN)"
+        }
+    }
+    
+    private func removeLND() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             self.usernameHeader.removeFromSuperview()
+            self.macaroonField.removeFromSuperview()
+            self.macaroonHeader.removeFromSuperview()
+            if self.certField != nil {
+                self.certField.removeFromSuperview()
+            }
+            if self.certHeader != nil {
+                self.certHeader.removeFromSuperview()
+            }
         }
     }
     
