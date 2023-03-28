@@ -124,11 +124,11 @@ class UTXOCell: UITableViewCell {
                 isChangeImageView.image = UIImage(systemName: "arrow.2.circlepath")
                 isChangeBackground.backgroundColor = .systemPurple
                 
-                if utxo.isJoinMarket {
-                    donateChange.alpha = 1
-                } else {
-                    donateChange.alpha = 0
-                }
+//                if utxo.isJoinMarket {
+//                    donateChange.alpha = 1
+//                } else {
+//                    donateChange.alpha = 0
+//                }
                 
             } else {
                 isChangeImageView.image = UIImage(systemName: "arrow.down.left")

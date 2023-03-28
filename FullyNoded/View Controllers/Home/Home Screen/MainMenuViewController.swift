@@ -1189,7 +1189,7 @@ extension MainMenuViewController: UITableViewDelegate {
         let textLabel = UILabel()
         textLabel.textAlignment = .left
         textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
-        textLabel.textColor = .gray
+        textLabel.textColor = .white
         textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
         
         if let section = Section(rawValue: section) {

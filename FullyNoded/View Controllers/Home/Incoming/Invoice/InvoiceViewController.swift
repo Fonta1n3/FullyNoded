@@ -493,11 +493,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     func getAddress(_ params: Get_New_Address) {
-        print("getAddress")
         Reducer.sharedInstance.makeCommand(command: .getnewaddress(param: params)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
-            print("response: \(response)")
-            
             guard let address = response as? String else {
                 self.spinner.removeConnectingView()
                 
