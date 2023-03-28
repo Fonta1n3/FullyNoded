@@ -478,20 +478,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     
                 } else if isJmarket {
                     guard let jmWallet = jmWallet else { return }
-                    
-                    let counter = Int.random(in: 5...15)
-                    let sats = Int(Double(amount)! * 100000000.0)
-                    
-                    JMUtils.coinjoin(wallet: jmWallet,
-                                     amount_sats: sats,
-                                     mixdepth: self.mixdepthToSpendFrom,
-                                     counterparties: counter,
-                                     address: addressInput) { [weak self] (response, message) in
-                        
-                        guard let self = self else { return }
-                        
-                        self.handleJMResponse(response, message)
-                    }
+                    promptToCoinjoinWithJM(jmWallet: jmWallet, recipient: addressInput, amount: amount)
                 } else {
                     tryRaw()
                 }
@@ -508,6 +495,97 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
+    private func promptToCoinjoinWithJM(jmWallet: Wallet, recipient: String, amount: String) {
+        let counter = Int.random(in: 5...15)
+        let sats = Int(Double(amount)! * 100000000.0)
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let alert = UIAlertController(title: "Start coinjoin?", message: "You will *not* be prompted with the transaction verifier when using Join Market to create coinjoins!\n\nMake sure you are happy with the following as there is no going back:\n\nsats: \(sats)\naddress: \(recipient)\nfrom mixdepth: \(self.mixdepthToSpendFrom)\ncounterparties: \(counter)", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Start Coinjoin", style: .default, handler: { action in
+                JMUtils.coinjoin(wallet: jmWallet,
+                                 amount_sats: sats,
+                                 mixdepth: self.mixdepthToSpendFrom,
+                                 counterparties: counter,
+                                 address: recipient) { [weak self] (response, message) in
+                    
+                    guard let self = self else { return }
+                    
+                    self.handleJMResponse(response, message)
+                }
+            }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func promptToDirectSendWithJM(jmWallet: Wallet, recipient: String, amount: Int, mixdepth: Int) {
+        //let counter = Int.random(in: 5...15)
+        //let sats = Int(Double(amount)! * 100000000.0)
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let alert = UIAlertController(title: "Direct send with Join Market?", message: "You will *not* be prompted with the transaction verifier when using Join Market to direct send!\n\nMake sure you are happy with the following as there is no going back:\n\nsats: \(amount)\naddress: \(recipient)\nfrom mixdepth: \(mixdepth)", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Direct send", style: .default, handler: { action in
+                JMUtils.directSend(wallet: jmWallet, address: recipient, amount: amount, mixdepth: mixdepth) { [weak self] (jmTx, message) in
+                    guard let self = self else { return }
+                    
+                    self.spinner.removeConnectingView()
+                    
+                    guard let jmTx = jmTx, let txid = jmTx.txid else {
+                        showAlert(vc: self, title: "No transaction info received...", message: "Message: \(message ?? "unknown")")
+                        return
+                    }
+                    
+                    func done() {
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+
+                            let alert = UIAlertController(title: "Sent ✓", message: "joinmarket direct send sent.", preferredStyle: .alert)
+                            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
+                                DispatchQueue.main.async { [weak self] in
+                                    guard let self = self else { return }
+
+                                    self.navigationController?.popToRootViewController(animated: true)
+                                }
+                            }))
+                            alert.popoverPresentationController?.sourceView = self.view
+                            self.present(alert, animated: true, completion: nil)
+                        }
+                    }
+                    
+                    FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
+                        guard let self = self else { return }
+                        
+                        var dict:[String:Any] = ["txid": txid,
+                                                 "id": UUID(),
+                                                 "memo": "JM Direct Send",
+                                                 "date": Date(),
+                                                 "label": "JM Direct Send",
+                                                 "fiatCurrency": self.fiatCurrency]
+                        
+                        self.spinner.removeConnectingView()
+                        
+                        guard let originRate = fxRate else {
+                            CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in
+                                done()
+                            }
+                            
+                            return
+                        }
+                        
+                        dict["originFxRate"] = originRate
+                        
+                        CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in
+                            done()
+                        }
+                    }
+                    
+                }
+            }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
     private func directSend(mixdepth: Int) {
         guard let jmWallet = jmWallet else { print("no jm wallet."); return }
         self.spinner.addConnectingView(vc: self, description: "direct sending with JM...")
@@ -520,68 +598,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             }
         } else {
             guard let amount = convertedAmount() else { print("cant convert amoount"); return }
-            print("amount: \(amount)")
             let dblAmount = amount.doubleValue
             sats = Int(dblAmount * 100000000.0)
         }
         
-        
-        
-        JMUtils.directSend(wallet: jmWallet, address: self.addressInput.text!, amount: sats, mixdepth: mixdepth) { [weak self] (jmTx, message) in
-            guard let self = self else { return }
-            
-            self.spinner.removeConnectingView()
-            
-            guard let jmTx = jmTx, /*let hex = jmTx.hex, */let txid = jmTx.txid else {
-                showAlert(vc: self, title: "No transaction info received...", message: "Message: \(message ?? "unknown")")
-                return
-            }
-            
-            func done() {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-
-                    let alert = UIAlertController(title: "Sent ✓", message: "joinmarket direct send sent.", preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
-                        DispatchQueue.main.async { [weak self] in
-                            guard let self = self else { return }
-
-                            self.navigationController?.popToRootViewController(animated: true)
-                        }
-                    }))
-                    alert.popoverPresentationController?.sourceView = self.view
-                    self.present(alert, animated: true, completion: nil)
-                }
-            }
-            
-            FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
-                guard let self = self else { return }
-                
-                var dict:[String:Any] = ["txid": txid,
-                                         "id": UUID(),
-                                         "memo": "JM Direct Send",
-                                         "date": Date(),
-                                         "label": "JM Direct Send",
-                                         "fiatCurrency": self.fiatCurrency]
-                
-                self.spinner.removeConnectingView()
-                
-                guard let originRate = fxRate else {
-                    CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in
-                        done()
-                    }
-                    
-                    return
-                }
-                
-                dict["originFxRate"] = originRate
-                
-                CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in
-                    done()
-                }
-            }
-            
-        }
+        promptToDirectSendWithJM(jmWallet: jmWallet, recipient: self.addressInput.text!, amount: sats, mixdepth: mixdepth)
     }
     
     private func createBlindNow(amount: Double, recipient: String, strict: Bool) {
