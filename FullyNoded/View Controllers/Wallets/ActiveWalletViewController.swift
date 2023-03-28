@@ -445,7 +445,21 @@ class ActiveWalletViewController: UIViewController {
                             var anyOnchain = false
                             for (i, node) in nodes.enumerated() {
                                 let nodeStr = NodeStruct(dictionary: node)
-                                if !nodeStr.isLightning, !nodeStr.isJoinMarket, !nodeStr.isNostr {
+                                if nodeStr.isNostr && nodeStr.isActive {
+                                    self.showOnchain = true
+                                    self.showOffchain = true
+                                    CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+                                        guard let wallets = wallets, wallets.count > 0 else {
+                                            self.promptToCreateWallet()
+                                            return
+                                        }
+                                        
+                                        self.promptToChooseWallet()
+                                    }
+                                    break
+                                    
+                                }
+                                if !nodeStr.isLightning, !nodeStr.isJoinMarket {
                                     anyOnchain = true
                                 }
                                 if nodeStr.isActive && nodeStr.isLightning {
@@ -682,7 +696,6 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func offchainOnchainBalancesCell(_ indexPath: IndexPath) -> UITableViewCell {
-        print("offchainOnchainBalancesCell")
         let cell = walletTable.dequeueReusableCell(withIdentifier: "OffOnBalancesCell", for: indexPath)
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.layer.borderWidth = 0.5
@@ -1048,7 +1061,7 @@ class ActiveWalletViewController: UIViewController {
             self.showOffchain = false
             for node in nodes ?? [] {
                 let s = NodeStruct(dictionary: node)
-                if s.isLightning && s.isActive {
+                if s.isLightning && s.isActive || s.isNostr && s.isActive {
                     self.showOffchain = true
                 }
             }
