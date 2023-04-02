@@ -52,7 +52,7 @@ class CreatePSBT {
                     }
                     options["changeAddress"] = changeAddress
                     paramDict["options"] = options
-                    let param:Wallet_Create_Funded_Psbt = .init(paramDict)
+                    let param = Wallet_Create_Funded_Psbt(paramDict)
                     wallet_create(param: param)
                 }
                 return
@@ -73,7 +73,7 @@ class CreatePSBT {
                     }
                     options["changeAddress"] = changeAddress
                     paramDict["options"] = options
-                    let param:Wallet_Create_Funded_Psbt = .init(paramDict)
+                    let param = Wallet_Create_Funded_Psbt(paramDict)
                     wallet_create(param: param)
                 }
             }

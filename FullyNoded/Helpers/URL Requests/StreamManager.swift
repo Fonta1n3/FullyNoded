@@ -97,12 +97,12 @@ final class StreamManager: NSObject {
             }
             
             let (responseCheck, errorDescCheck, requestId) = self.processValidReceivedContent(content: ev.content)
-                        
+            
             guard self.lastSentId == requestId else {
                 self.onDoneBlock!((nil, "Ignoring out of order response."))
                 return
             }
-            
+                        
             guard let response = responseCheck else {
                 self.onDoneBlock!((nil, errorDescCheck))
                 return
@@ -252,7 +252,7 @@ final class StreamManager: NSObject {
     
     
     private func updateCounting(seconds: Int) {
-        if seconds == 30 {
+        if seconds == 10 {
             self.timer.invalidate()
             self.onDoneBlock!((nil, "Timed out after \(seconds) seconds, no response from your nostr relay..."))
         }

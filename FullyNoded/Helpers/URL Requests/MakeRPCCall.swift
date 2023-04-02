@@ -58,6 +58,9 @@ class MakeRPCCall {
     
     
     func executeNostrRpc(method: BTC_CLI_COMMAND) {
+        let id = UUID()
+        StreamManager.shared.lastSentId = id.uuidString
+        
         var walletName:String?
         if isWalletRPC(command: method) {
             walletName = UserDefaults.standard.string(forKey: "walletName")
@@ -77,8 +80,7 @@ class MakeRPCCall {
         default:
             break
         }
-        let id = UUID()
-        StreamManager.shared.lastSentId = id.uuidString
+        
         let dict:[String:Any] = [
             "request_id": id.uuidString,
             "port": port,

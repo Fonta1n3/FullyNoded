@@ -271,7 +271,10 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
             self.tableArray.append("\(num_pending_channels)")
             self.tableArray.append("fetching...")
             self.tableArray.append(version)
-            self.url = "\(uris[0])"
+            
+            if uris.count > 0 {
+                self.url = "\(uris[0])"
+            }
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }

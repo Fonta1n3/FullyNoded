@@ -15,7 +15,6 @@ class JoinMarket {
     static var wallet:[String:Any] = [:]
 
     class func descriptors(_ mk: String, _ xfp: String, completion: @escaping (([String]?)) -> Void) {
-        
         guard let xpub0 = xpub(0, mk),
               let xpub1 = xpub(1, mk),
               let xpub2 = xpub(2, mk),

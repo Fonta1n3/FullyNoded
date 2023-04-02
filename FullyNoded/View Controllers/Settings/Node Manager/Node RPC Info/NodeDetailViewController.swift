@@ -226,6 +226,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 self.certHeader.removeFromSuperview()
                 self.onionAddressField.removeFromSuperview()
                 self.scanQROutlet.tintColor = .clear
+                self.exportNodeOutlet.tintColor = .clear
+                self.showHostOutlet.tintColor = .clear
                 self.networkControlOutlet.alpha = 1
             }
         }
@@ -370,7 +372,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBAction func showHostAction(_ sender: Any) {
     #if targetEnvironment(macCatalyst)
         // Code specific to Mac.
-        guard let hostAddress = onionAddressField.text, hostAddress != "" else {
+        guard !isNostr, let _ = selectedNode, onionAddressField != nil, let hostAddress = onionAddressField.text, hostAddress != "" else {
             showAlert(vc: self, title: "", message: "This feature only works once the node has been saved.")
             return
         }
