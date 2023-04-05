@@ -25,18 +25,12 @@ public struct DescriptorInfo: CustomStringConvertible {
     let issolvable: Bool
     let isrange: Bool
     let descriptor: String
+    //let desc_with_h_checksum: String
     
     init(_ dictionary: [String: Any]) {
         hasprivatekeys = dictionary["hasprivatekeys"] as! Bool
         checksum = dictionary["checksum"] as! String
-        
-        if hasprivatekeys {
-            // (this required for versions prior to 22)
-            descriptor = (dictionary["descriptor"] as! String)//+ "#" + checksum
-        } else {
-            descriptor = (dictionary["descriptor"] as! String)
-        }
-        
+        descriptor = dictionary["descriptor"] as! String
         issolvable = dictionary["issolvable"] as! Bool
         isrange = dictionary["isrange"] as! Bool
     }

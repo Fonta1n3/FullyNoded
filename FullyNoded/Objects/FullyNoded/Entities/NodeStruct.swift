@@ -25,6 +25,7 @@ public struct NodeStruct: CustomStringConvertible {
     let nostrPubkey:Data?
     let nostrPrivkey:Data?
     let subscribeTo:Data?
+    let nostrWords:Data?
     
     init(dictionary: [String: Any]) {
         id = dictionary["id"] as? UUID
@@ -42,6 +43,7 @@ public struct NodeStruct: CustomStringConvertible {
         nostrPubkey = dictionary["nostrPubkey"] as? Data
         nostrPrivkey = dictionary["nostrPrivkey"] as? Data
         subscribeTo = dictionary["subscribeTo"] as? Data
+        nostrWords = dictionary["nostrWords"] as? Data
     }
     
     public var description: String {

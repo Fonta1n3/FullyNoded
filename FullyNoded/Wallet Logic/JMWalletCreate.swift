@@ -15,7 +15,6 @@ class JoinMarket {
     static var wallet:[String:Any] = [:]
 
     class func descriptors(_ mk: String, _ xfp: String, completion: @escaping (([String]?)) -> Void) {
-        
         guard let xpub0 = xpub(0, mk),
               let xpub1 = xpub(1, mk),
               let xpub2 = xpub(2, mk),
@@ -47,7 +46,7 @@ class JoinMarket {
         if chain != "main" {
             cointType = "1"
         }
-        return "wpkh([\(xfp)/84'/\(cointType)'/\(mixDepth)']\(xpub)/\(branch)/*)"
+        return "wpkh([\(xfp)/84h/\(cointType)h/\(mixDepth)h]\(xpub)/\(branch)/*)"
     }
     
     static func xpub(_ mixDepth: Int, _ mk: String) -> String? {
@@ -56,6 +55,6 @@ class JoinMarket {
         if chain != "main" {
             cointType = "1"
         }
-        return Keys.xpub(path: "m/84'/\(cointType)'/\(mixDepth)'", masterKey: mk)
+        return Keys.xpub(path: "m/84h/\(cointType)h/\(mixDepth)h", masterKey: mk)
     }
 }

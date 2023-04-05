@@ -44,7 +44,8 @@ class Signer {
             //                completion((nil, hex.description, nil))
             //
             //            } else {
-            Reducer.sharedInstance.makeCommand(command: .finalizepsbt, param: "\"\(psbtToSign.description)\"") { (object, errorDescription) in
+            let param:Finalize_Psbt = .init(["psbt": psbtToSign.description])
+            Reducer.sharedInstance.makeCommand(command: .finalizepsbt(param)) { (object, errorDescription) in
                 if let result = object as? NSDictionary {
                     if let complete = result["complete"] as? Bool {
                         if complete {
@@ -71,7 +72,8 @@ class Signer {
         }
         
         func processWithActiveWallet() {
-            Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt, param: "\"\(psbtToSign.description)\", true, \"ALL\", true") { (object, errorDescription) in
+            let param: Wallet_Process_PSBT = .init(["psbt": psbtToSign.description])
+            Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt(param: param)) { (object, errorDescription) in
                 if let dict = object as? NSDictionary {
                     if let processedPsbt = dict["psbt"] as? String {
                         do {

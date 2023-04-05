@@ -23,6 +23,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     var blockheight:Int64!
     var version:Int = 0
     var dict = [String:Any]()
+    var jmMessage = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -80,7 +81,18 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
         
         self.version = version
-        self.getWords()
+        if jmMessage != "" {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.textView.text = self.jmMessage
+                showAlert(vc: self, title: "", message: "Join Market Wallet created ✓")
+                NotificationCenter.default.post(name: .refreshWallet, object: nil)
+            }
+        } else {
+            getWords()
+        }
+        
     }
     
     @IBAction func savedAction(_ sender: Any) {
@@ -264,13 +276,15 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     private func createSegwitWallet(fingerprint: String, xpub: String, mk: String, completion: @escaping ((success: Bool, message: String?)) -> Void) {
         primDesc = primarySegwitDescriptor(fingerprint, xpub)
         changeDesc = changeSegwitDescriptor(fingerprint, xpub)
-        
         let walletName = "FullyNoded-\(Crypto.sha256hash(primDesc))"
-        var param = "\"\(walletName)\", true, true, \"\", true"
-        
-        if self.version >= 210100 {
-            param += ", true, true"
-        }
+        let param:Create_Wallet_Param = .init([
+            "wallet_name": walletName,
+            "avoid_reuse": true,
+            "descriptors": true,
+            "load_on_startup": true,
+            "disable_private_keys": true,
+            "passphrase": ""
+        ] as [String:Any])
         
         OnchainUtils.createWallet(param: param) { [weak self] (name, message) in
             guard let self = self else { return }
@@ -280,9 +294,9 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 
                 if self.version >= 210100 {
                     self.importDescriptors(name, fingerprint, self.primDesc, self.changeDesc, mk, completion: completion)
-                } else {
-                    self.importKeys(name, fingerprint, xpub, self.primDesc, completion: completion)
-                }
+                }// else {
+//                    self.importKeys(name, fingerprint, xpub, self.primDesc, completion: completion)
+//                }
             } else {
                 if let message = message {
                     self.spinner.removeConnectingView()
@@ -299,17 +313,38 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                                    _ mk: String,
                                    completion: @escaping ((success: Bool, message: String?)) -> Void) {
         self.name = name
+        let param:Get_Descriptor_Info = .init(["descriptor":descPrim])
         
-        OnchainUtils.getDescriptorInfo(descPrim) { (descriptorInfo, message) in
+        OnchainUtils.getDescriptorInfo(param) { (descriptorInfo, message) in
             guard let recDescriptorInfo = descriptorInfo else { completion((false, message)); return }
             
-            OnchainUtils.getDescriptorInfo(descChange) { (changeDescInfo, message) in
+            let change_param:Get_Descriptor_Info = .init(["descriptor":descChange])
+            OnchainUtils.getDescriptorInfo(change_param) { (changeDescInfo, message) in
                 guard let changeDescInfo = changeDescInfo else { completion((false, message)); return }
                 
                 self.changeDesc = changeDescInfo.descriptor
                 self.primDesc = recDescriptorInfo.descriptor
                 
-                let params = "[{\"desc\": \"\(self.primDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": false}, {\"desc\": \"\(self.changeDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": true}]"
+                let params:Import_Descriptors = .init([
+                    "requests": [
+                        [
+                            "desc": self.primDesc,
+                            "active": true,
+                            "range": [0,2500],
+                            "next_index": 0,
+                            "timestamp": "now",
+                            "internal": false
+                        ],
+                        [
+                            "desc": self.changeDesc,
+                            "active": true,
+                            "range": [0,2500],
+                            "next_index": 0,
+                            "timestamp": "now",
+                            "internal": true
+                        ]
+                    ]
+                ] as [String:Any])
                 
                 OnchainUtils.importDescriptors(params) { [weak self] (imported, message) in
                     guard let self = self else { return }
@@ -327,36 +362,37 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
     }
     
-    private func importKeys(_ name: String,
-                            _ fingerprint: String,
-                            _ xpub: String,
-                            _ desc: String,
-                            completion: @escaping ((success: Bool, message: String?)) -> Void) {
-        self.name = name
-        
-        self.importPrimaryKeys(desc: desc) { [weak self] (success, errorMessage) in
-            guard let self = self else { return }
-            
-            if success {
-                self.importChangeKeys(desc: self.changeSegwitDescriptor(fingerprint, xpub)) { (changeImported, errorDesc) in
-                    
-                    if changeImported {
-                        completion((true, nil))
-                    } else {
-                        UserDefaults.standard.removeObject(forKey: "walletName")
-                        self.showError(error: "Error importing change keys: \(errorDesc ?? "unknown error")")
-                    }
-                }
-                
-            } else {
-                UserDefaults.standard.removeObject(forKey: "walletName")
-                self.showError(error: "Error importing primary keys: \(errorMessage ?? "unknown error")")
-            }
-        }
-    }
+//    private func importKeys(_ name: String,
+//                            _ fingerprint: String,
+//                            _ xpub: String,
+//                            _ desc: String,
+//                            completion: @escaping ((success: Bool, message: String?)) -> Void) {
+//        self.name = name
+//
+//        self.importPrimaryKeys(desc: desc) { [weak self] (success, errorMessage) in
+//            guard let self = self else { return }
+//
+//            if success {
+//                self.importChangeKeys(desc: self.changeSegwitDescriptor(fingerprint, xpub)) { (changeImported, errorDesc) in
+//
+//                    if changeImported {
+//                        completion((true, nil))
+//                    } else {
+//                        UserDefaults.standard.removeObject(forKey: "walletName")
+//                        self.showError(error: "Error importing change keys: \(errorDesc ?? "unknown error")")
+//                    }
+//                }
+//
+//            } else {
+//                UserDefaults.standard.removeObject(forKey: "walletName")
+//                self.showError(error: "Error importing primary keys: \(errorMessage ?? "unknown error")")
+//            }
+//        }
+//    }
     
     private func getDescriptorInfo(desc: String, completion: @escaping ((String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .getdescriptorinfo, param: "\"\(desc)\"") { (response, errorMessage) in
+        let param:Get_Descriptor_Info = .init(["descriptor":desc])
+        Reducer.sharedInstance.makeCommand(command: .getdescriptorinfo(param: param)) { (response, errorMessage) in
             guard let dict = response as? NSDictionary,
                 let updatedDescriptor = dict["descriptor"] as? String else {
                 UserDefaults.standard.removeObject(forKey: "walletName")
@@ -366,46 +402,46 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
     }
     
-    private func importPrimaryKeys(desc: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        getDescriptorInfo(desc: desc) { [weak self] descriptor in
-            guard let self = self else { return }
-            
-            if descriptor != nil {
-                self.primDesc = descriptor!
-                let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"Fully Noded\", \"keypool\": true, \"internal\": false }], {\"rescan\": false}"
-                self.importMulti(params: params, completion: completion)
-            } else {
-                UserDefaults.standard.removeObject(forKey: "walletName")
-                self.showError(error: "error getting primary descriptor info")
-            }
-        }
-    }
+//    private func importPrimaryKeys(desc: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+//        getDescriptorInfo(desc: desc) { [weak self] descriptor in
+//            guard let self = self else { return }
+//
+//            if descriptor != nil {
+//                self.primDesc = descriptor!
+//                let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"Fully Noded\", \"keypool\": true, \"internal\": false }], {\"rescan\": false}"
+//                self.importMulti(params: params, completion: completion)
+//            } else {
+//                UserDefaults.standard.removeObject(forKey: "walletName")
+//                self.showError(error: "error getting primary descriptor info")
+//            }
+//        }
+//    }
     
-    private func importChangeKeys(desc: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        getDescriptorInfo(desc: desc) { [weak self] descriptor in
-            guard let self = self else { return }
-            
-            if descriptor != nil {
-                self.changeDesc = descriptor!
-                let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"keypool\": true, \"internal\": true }], {\"rescan\": false}"
-                self.importMulti(params: params, completion: completion)
-            } else {
-                UserDefaults.standard.removeObject(forKey: "walletName")
-                self.showError(error: "error getting change descriptor info")
-            }
-        }
-    }
+//    private func importChangeKeys(desc: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+//        getDescriptorInfo(desc: desc) { [weak self] descriptor in
+//            guard let self = self else { return }
+//
+//            if descriptor != nil {
+//                self.changeDesc = descriptor!
+//                let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"keypool\": true, \"internal\": true }], {\"rescan\": false}"
+//                self.importMulti(params: params, completion: completion)
+//            } else {
+//                UserDefaults.standard.removeObject(forKey: "walletName")
+//                self.showError(error: "error getting change descriptor info")
+//            }
+//        }
+//    }
     
-    private func importMulti(params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        OnchainUtils.importMulti(params) { (imported, message) in
-            if imported {
-                completion((imported, message))
-            } else {
-                UserDefaults.standard.removeObject(forKey: "walletName")
-                completion((false, message ?? "unknown error importing your keys"))
-            }
-        }
-    }
+//    private func importMulti(params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+//        OnchainUtils.importMulti(params) { (imported, message) in
+//            if imported {
+//                completion((imported, message))
+//            } else {
+//                UserDefaults.standard.removeObject(forKey: "walletName")
+//                completion((false, message ?? "unknown error importing your keys"))
+//            }
+//        }
+//    }
     
     private func encryptSeed(words: String, completion: @escaping ((Bool)) -> Void) {
         guard let encryptedWords = Crypto.encrypt(words.dataUsingUTF8StringEncoding) else {

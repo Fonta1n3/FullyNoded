@@ -54,10 +54,12 @@ public func activeWallet(completion: @escaping ((Wallet?)) -> Void) {
         var foundWallet: Wallet?
         
         for walletDictionary in walletDictionaries where foundWallet == nil {
-            let wallet = Wallet(dictionary: walletDictionary)
-            
-            if wallet.name == activeWalletName {
-                foundWallet = wallet
+            if walletDictionary["id"] != nil {
+                let wallet = Wallet(dictionary: walletDictionary)
+                
+                if wallet.name == activeWalletName {
+                    foundWallet = wallet
+                }
             }
         }
         
@@ -70,6 +72,7 @@ public func showAlert(vc: UIViewController?, title: String, message: String) {
         DispatchQueue.main.async {
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = vc.view
             vc.present(alert, animated: true, completion: nil)
         }
     }
@@ -224,20 +227,19 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
     switch command {
     case .listtransactions,
          .getbalance,
-         .getunconfirmedbalance,
          .getnewaddress,
          .getwalletinfo,
          .getrawchangeaddress,
          .importmulti,
          .importprivkey,
          .rescanblockchain,
-         .fundrawtransaction,
+         //.fundrawtransaction,
          .listunspent,
          .walletprocesspsbt,
          .gettransaction,
          .getaddressinfo,
          .bumpfee,
-         .signrawtransactionwithwallet,
+         //.signrawtransactionwithwallet,
          .listaddressgroupings,
          .listlabels,
          .getaddressesbylabel,
@@ -250,8 +252,8 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
          .walletpassphrasechange,
          .walletlock,
          .psbtbumpfee,
-         .importdescriptors,
-         .signmessage:
+         .importdescriptors:
+         //.signmessage:
         boolToReturn = true
         
     default:

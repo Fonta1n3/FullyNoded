@@ -16,10 +16,10 @@ class BlindPsbt {
     static func getInputs(amountBtc: Double,
                           recipient: String?,
                           strict: Bool,
-                          inputsToJoin:[String]?,
+                          inputsToJoin:[[String:Any]]?,
                           completion: @escaping (((psbt: String?, error: String?)) -> Void)) {
         
-        var inputArray = [String]()
+        var inputArray:[[String:Any]] = []
         
         guard amountBtc > 0.0 else {
             completion((nil, "No amount specified."))
@@ -27,13 +27,12 @@ class BlindPsbt {
         }
         
         func getNow(recipient: String) {
-            OnchainUtils.listUnspent(param: "") { (utxos, message) in
-//            Reducer.sharedInstance.makeCommand(command: .listunspent, param: "") { (response, errorMessage) in
+            let param:List_Unspent = .init(["minconf":0])
+            OnchainUtils.listUnspent(param: param) { (utxos, message) in
                 guard let utxos = utxos, utxos.count > 0 else {
                     completion((nil, "No inputs to spend. Utxos need at least 1 confirmation."))
                     return
                 }
-//
                 var totalInputAmount = 0.0
                 var type:ScriptPubKey.ScriptType!
                 
@@ -43,7 +42,7 @@ class BlindPsbt {
                         
                     } else if inputArray.count > 0 {
                         
-                        BlindPsbt.getOutputs(inputArray.processedInputs,
+                        BlindPsbt.getOutputs(inputArray,
                                              amountBtc,
                                              recipient,
                                              type,
@@ -104,11 +103,13 @@ class BlindPsbt {
                                                 
                                                 if inputArray.count > 0 {
                                                     for (x, input) in inputArray.enumerated() {
-                                                        if input.contains(utxo.txid) && strict {
+                                                        if (input["txid"] as! String).contains(utxo.txid) && strict {
                                                             inputExists = true
                                                         }
-                                                        if input == utxo.input {
-                                                            inputExists = true
+                                                        if input["txid"] as! String == utxo.input["txid"] as! String {
+                                                            if input["vout"] as! Int == utxo.input["vout"] as! Int {
+                                                                inputExists = true
+                                                            }
                                                         }
                                                         
                                                         if x + 1 == inputArray.count {
@@ -122,10 +123,16 @@ class BlindPsbt {
                                                 func checkExisitingInputs() {
                                                     if let inputsToJoin = inputsToJoin, inputsToJoin.count > 0 {
                                                         for (y, inputToJoin) in inputsToJoin.enumerated() {
-                                                            if inputToJoin == utxo.input {
-                                                                inputExists = true
-                                                            } else if inputToJoin.contains(utxo.txid) && strict {
-                                                                inputExists = true
+//                                                            if inputToJoin == utxo.input {
+//                                                                inputExists = true
+//                                                            } else if inputToJoin.contains(utxo.txid) && strict {
+//                                                                inputExists = true
+//                                                            }
+                                                            
+                                                            if inputToJoin["txid"] as! String == utxo.input["txid"] as! String {
+                                                                if inputToJoin["vout"] as! Int == utxo.input["vout"] as! Int {
+                                                                    inputExists = true
+                                                                }
                                                             }
                                                             
                                                             if y + 1 == inputsToJoin.count && inputExists == false {
@@ -185,8 +192,8 @@ class BlindPsbt {
                 
                 let startIndex = Int(wallet.index + 4)
                 let descriptor = wallet.changeDescriptor
-                
-                Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: "\"\(descriptor)\", [\(startIndex),\(startIndex)]") { (response, errorMessage) in
+                let param:Derive_Addresses = .init(["descriptor": descriptor, "range": [startIndex, startIndex]])
+                Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { (response, errorMessage) in
                     guard let addresses = response as? [String] else {
                         completion((nil, "addresses not returned: \(errorMessage ?? "unknown error.")"))
                         return
@@ -201,7 +208,7 @@ class BlindPsbt {
     
     // Used when creating a transaction via the send view when blind psbts is on.
     // Takes the user specified output amount and adds two similiarly denominated outputs.
-    static func getOutputs(_ inputs: String,
+    static func getOutputs(_ inputs: [[String:Any]],
                            _ amount: Double,
                            _ recipient: String,
                            _ type: ScriptPubKey.ScriptType,
@@ -220,7 +227,8 @@ class BlindPsbt {
             let descriptor = wallet.changeDescriptor
             var totalOutputAmount = 0.0
             
-            Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: "\"\(descriptor)\", [\(startIndex),\(stopIndex)]") { (response, errorMessage) in
+            let param:Derive_Addresses = .init(["descriptor": descriptor, "range": [startIndex, stopIndex]])
+            Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { (response, errorMessage) in
                 guard let addresses = response as? [String] else {
                     completion((nil, "addresses not returned: \(errorMessage ?? "unknown error.")"))
                     return
@@ -251,7 +259,7 @@ class BlindPsbt {
                         if outputs.count == totalAllowedOutputs {
                             
                             BlindPsbt.create(inputs: inputs,
-                                             outputs: outputs.processedOutputs,
+                                             outputs: outputs,
                                              changeAddress: addresses[1],
                                              outputCount: outputs.count,
                                              strict: strict) { (psbt, errorMessage) in
@@ -280,9 +288,10 @@ class BlindPsbt {
         
         let psbt = decryptedPsbtData.base64EncodedString()
         var amountArray = [Double]()
-        var inputArray = [String]()
+        var inputArray:[[String:Any]] = []
         
-        Reducer.sharedInstance.makeCommand(command: .decodepsbt, param: "\"\(psbt)\"") { (response, errorMessage) in
+        let decode_param:Decode_Psbt = .init(["psbt": psbt])
+        Reducer.sharedInstance.makeCommand(command: .decodepsbt(param: decode_param)) { (response, errorMessage) in
             guard let dict = response as? NSDictionary else {
                 completion((nil, errorMessage))
                 return
@@ -300,7 +309,7 @@ class BlindPsbt {
                 if let inputs = txDict["vin"] as? [[String:Any]] {
                     for input in inputs {
                         if let txid = input["txid"] as? String, let vout = input["vout"] as? Int {
-                            inputArray.append("{\"txid\":\"\(txid)\",\"vout\": \(vout),\"sequence\": 1}")
+                            inputArray.append(["txid": txid, "vout": vout, "sequence": 1])
                         }
                     }
                 }
@@ -323,8 +332,8 @@ class BlindPsbt {
                             completion((nil, "There was an error creating a joined blinded psbt: \(error ?? "unknown error")"))
                             return
                         }
-                        
-                        Reducer.sharedInstance.makeCommand(command: .joinpsbts, param: "[\"\(ourPsbt)\", \"\(decryptedPsbtData.base64EncodedString())\"]") { (response, errorMessage) in
+                        let param:Join_Psbt = .init(["txs": [ourPsbt, decryptedPsbtData.base64EncodedString()]])
+                        Reducer.sharedInstance.makeCommand(command: .joinpsbts(param)) { (response, errorMessage) in
                             guard let response = response as? String else {
                                 completion((nil, "There was an error joining the psbts: \(errorMessage ?? "unknown error")"))
                                 return
@@ -338,35 +347,47 @@ class BlindPsbt {
         }
     }
     
-    class func create(inputs: String,
-                      outputs: String,
+    class func create(inputs: [[String:Any]],
+                      outputs: [[String:Any]],
                       changeAddress: String,
                       outputCount: Int,
                       strict: Bool,
                       completion: @escaping ((psbt: String?, errorMessage: String?)) -> Void) {
         
-        var param = ""
+        //var param = ""
         
         let randomInt = Int.random(in: 0..<outputCount)
         
+        var paramDict:[String:Any] = [:]
+        paramDict["inputs"] = inputs
+        paramDict["outputs"] = outputs
+        var options:[String:Any] = [:]
+        options["includeWatching"] = true
+        options["replaceable"] = true
+        options["subtractFeeFromOutputs"] = [0]
+        
+        if !strict {
+            options["changeAddress"] = changeAddress
+            options["changePosition"] = randomInt
+            options["add_inputs"] = true
+        }
+        
         if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
-            
-            if strict {
-                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0]}"
-            } else {
-                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [\(randomInt)], \"changeAddress\": \"\(changeAddress)\", \"changePosition\": \(randomInt), \"add_inputs\": true}"
-            }            
+            options["fee_rate"] = feeRate
             
         } else if let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int {
+            options["conf_target"] = feeTarget
             
-            if strict {
-                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"subtractFeeFromOutputs\": [0]}"
-            } else {
-                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"subtractFeeFromOutputs\": [\(randomInt)], \"changeAddress\": \"\(changeAddress)\", \"changePosition\": \(randomInt), \"add_inputs\": true}"
-            }
+//            if strict {
+//                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"subtractFeeFromOutputs\": [0]}"
+//            } else {
+//                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"subtractFeeFromOutputs\": [\(randomInt)], \"changeAddress\": \"\(changeAddress)\", \"changePosition\": \(randomInt), \"add_inputs\": true}"
+//            }
         }
+        paramDict["options"] = options
+        let param: Wallet_Create_Funded_Psbt = .init(paramDict)
                 
-        Reducer.sharedInstance.makeCommand(command: .walletcreatefundedpsbt, param: param) { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .walletcreatefundedpsbt(param: param)) { (response, errorMessage) in
             guard let result = response as? NSDictionary, let psbt = result["psbt"] as? String else {
                 var desc = errorMessage ?? "unknown error"
                 if desc.contains("Unexpected key fee_rate") {

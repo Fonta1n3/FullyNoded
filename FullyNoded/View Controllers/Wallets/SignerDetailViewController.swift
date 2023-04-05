@@ -377,31 +377,33 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             var signableWallets = ""
             
             for (w, wallet) in wallets.enumerated() {
-                let walletStruct = Wallet(dictionary: wallet)
-                let descriptor = Descriptor(walletStruct.receiveDescriptor)
-                
-                if descriptor.isMulti {
-                    for (x, xpub) in descriptor.multiSigKeys.enumerated() {
-                        if let derivedXpub = Keys.xpub(path: descriptor.derivationArray[x], masterKey: masterKey) {
-                            if xpub == derivedXpub {
+                if wallet["id"] != nil {
+                    let walletStruct = Wallet(dictionary: wallet)
+                    let descriptor = Descriptor(walletStruct.receiveDescriptor)
+                    
+                    if descriptor.isMulti {
+                        for (x, xpub) in descriptor.multiSigKeys.enumerated() {
+                            if let derivedXpub = Keys.xpub(path: descriptor.derivationArray[x], masterKey: masterKey) {
+                                if xpub == derivedXpub {
+                                    signableWallets += walletStruct.label + "  "
+                                }
+                            }
+                        }
+                    } else {
+                        if let derivedXpub = Keys.xpub(path: descriptor.derivation, masterKey: masterKey) {
+                            if descriptor.accountXpub == derivedXpub {
                                 signableWallets += walletStruct.label + "  "
                             }
                         }
                     }
-                } else {
-                    if let derivedXpub = Keys.xpub(path: descriptor.derivation, masterKey: masterKey) {
-                        if descriptor.accountXpub == derivedXpub {
-                            signableWallets += walletStruct.label + "  "
+                    
+                    if w + 1 == wallets.count {
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.tableDict[5]["text"] = "  " + signableWallets
+                            self.reloadTable()
                         }
-                    }
-                }
-                
-                if w + 1 == wallets.count {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        self.tableDict[5]["text"] = "  " + signableWallets
-                        self.reloadTable()
                     }
                 }
             }
@@ -754,37 +756,50 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private func importAccountMap(_ descriptor: String, _ label: String, _ password: String) {
         spinner.addConnectingView(vc: self, description: "creating wallet...")
         
-        let blockheight = UserDefaults.standard.object(forKey: "blockheight") as? Int ?? 0
-        
-        let accountMap = ["descriptor": descriptor, "blockheight": blockheight, "watching": [], "label": label, "password": password] as [String : Any]
-        
-        ImportWallet.accountMap(accountMap) { (success, errorDescription) in
-            self.spinner.removeConnectingView()
-            
-            guard success else {
-                showAlert(vc: self, title: "There was an issue creating your wallet...", message: errorDescription ?? "Unknown...")
+        OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
+            guard let self = self else { return }
+            guard let blockchainInfo = blockchainInfo else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "", message: message ?? "error getting blockchaininfo")
                 return
             }
             
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
+            var accountMap = ["descriptor": descriptor, "watching": [], "label": label, "password": password] as [String : Any]
+            
+            if blockchainInfo.pruned {
+                accountMap["blockheight"] = blockchainInfo.pruneheight
+            } else {
+                accountMap["blockheight"] = 0
+            }
+            
+            ImportWallet.accountMap(accountMap) { (success, errorDescription) in
+                self.spinner.removeConnectingView()
                 
-                let tit = "Wallet created ✓"
+                guard success else {
+                    showAlert(vc: self, title: "There was an issue creating your wallet...", message: errorDescription ?? "Unknown...")
+                    return
+                }
                 
-                let mess = "A rescan was triggered, you may not see transactions or balances until the rescan completes."
-                
-                let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
-                
-                alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { action in
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        self.tabBarController?.selectedIndex = 1
-                    }
-                }))
-                
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-                self.present(alert, animated: true, completion: nil)
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    let tit = "Wallet created ✓"
+                    
+                    let mess = "A rescan was triggered, you may not see transactions or balances until the rescan completes."
+                    
+                    let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+                    
+                    alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { action in
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.tabBarController?.selectedIndex = 1
+                        }
+                    }))
+                    
+                    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+                    self.present(alert, animated: true, completion: nil)
+                }
             }
         }
     }
@@ -871,44 +886,61 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private func recoverJm(jmDescriptors: [String]) {
         spinner.addConnectingView(vc: self, description: "creating jm wallet...")
         
-        let blockheight = UserDefaults.standard.object(forKey: "blockheight") as? Int ?? 0
-        
-        let accountMap:[String:Any] = [
-            "descriptor":jmDescriptors[0],
-            "blockheight": blockheight,
-            "watching":Array(jmDescriptors[2...jmDescriptors.count - 1]),
-            "label":"Join Market"
-        ]
-        
-        ImportWallet.accountMap(accountMap) { [weak self] (success, errorDescription) in
+        //let blockheight = UserDefaults.standard.object(forKey: "blockheight") as? Int ?? 0
+        OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
             guard let self = self else { return }
-
-            guard success else {
-                showAlert(vc: self, title: "There was an issue creating your wallet...", message: errorDescription ?? "Unknown...")
+            guard let blockchainInfo = blockchainInfo else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "", message: message ?? "error getting blockchaininfo")
                 return
             }
-
-            DispatchQueue.main.async { [weak self] in
+            
+            var accountMap:[String:Any] = [
+                "descriptor":jmDescriptors[0],
+                "watching":Array(jmDescriptors[2...jmDescriptors.count - 1]),
+                "label":"Join Market"
+            ]
+            
+            if blockchainInfo.pruned {
+                accountMap["blockheight"] = blockchainInfo.pruneheight
+            } else {
+                accountMap["blockheight"] = 0
+            }
+            
+            ImportWallet.accountMap(accountMap) { [weak self] (success, errorDescription) in
                 guard let self = self else { return }
 
-                let tit = "JM wallet created ✓"
+                guard success else {
+                    showAlert(vc: self, title: "There was an issue creating your wallet...", message: errorDescription ?? "Unknown...")
+                    return
+                }
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
 
-                let mess = "A rescan was triggered, you may not see transactions or balances until the rescan completes."
+                    let tit = "JM wallet created ✓"
 
-                let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+                    let mess = "A rescan was triggered, you may not see transactions or balances until the rescan completes."
 
-                alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { action in
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
+                    let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
 
-                        self.tabBarController?.selectedIndex = 1
-                    }
-                }))
+                    alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { action in
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
 
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-                self.present(alert, animated: true, completion: nil)
+                            self.tabBarController?.selectedIndex = 1
+                        }
+                    }))
+
+                    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+                    self.present(alert, animated: true, completion: nil)
+                }
             }
         }
+        
+        
+        
+        
     }
     
     private func setPrimDesc(descriptors: [String], descriptorToUseIndex: Int) {

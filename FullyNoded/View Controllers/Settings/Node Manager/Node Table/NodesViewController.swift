@@ -16,6 +16,11 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var addButton = UIBarButtonItem()
     var editButton = UIBarButtonItem()
     var isNostr = false
+    var isLightning = false
+    var isJoinMarket = false
+    var isBitcoinCore = false
+    var isLND = false
+    var isCLN = false
     private var authenticated = false
     @IBOutlet var nodeTable: UITableView!
     
@@ -33,39 +38,48 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     override func viewDidAppear(_ animated: Bool) {
         isNostr = false
+        isLightning = false
+        isJoinMarket = false
+        isBitcoinCore = false
         getNodes()
     }
     
     func getNodes() {
         nodeArray.removeAll()
-        CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
-            if nodes != nil {
-                vc.nodeArray.removeAll()
-                for node in nodes! {
-                    let nodeStr = NodeStruct(dictionary: node)
-                    if nodeStr.id != nil {
-                        vc.nodeArray.append(node)
-                    }
-                }
-                
-                if vc.nodeArray.count == 0 {
-                    showAlert(vc: self, title: "", message: "No nodes added yet, tap the + sign to add one.")
-                }
-                
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.nodeTable.reloadData()
-                }
-                
-            } else {
-                
-               displayAlert(viewController: vc,
-                            isError: true,
-                            message: "error getting nodes from core data")
-                
+        CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
+            guard let self = self else { return }
+            
+            guard let nodes = nodes else {
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "error getting nodes from core data")
+                return
             }
             
+            self.nodeArray.removeAll()
+            
+            for node in nodes {
+                let nodeStr = NodeStruct(dictionary: node)
+                if nodeStr.id != nil {
+                    self.nodeArray.append(node)
+                }
+            }
+            
+            self.reloadNodeTable()
+            
+            if self.nodeArray.count == 0 {
+                self.addNodePrompt()
+                //showAlert(vc: self, title: "", message: "No nodes added yet, tap the + sign to add one.")
+            }
         }
-        
+    }
+    
+    private func reloadNodeTable() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.nodeTable.reloadData()
+        }
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -210,9 +224,9 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     if vc.nodeArray.count == 1 {
                         if nodeStr.isNostr {
                             if !selectedSwitch.isOn {
-                                MakeRPCCall.sharedInstance.disconnect()
+                                //MakeRPCCall.sharedInstance.disconnect()
                             } else {
-                                MakeRPCCall.sharedInstance.connectToRelay { _ in }
+                                MakeRPCCall.sharedInstance.connectToRelay(node: nodeStr)
                             }
                         }
                         vc.reloadTable()
@@ -227,9 +241,9 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 
                 if nodeStr.isNostr {
                     if !selectedSwitch.isOn {
-                        MakeRPCCall.sharedInstance.disconnect()
+                        //MakeRPCCall.sharedInstance.disconnect()
                     } else {
-                        MakeRPCCall.sharedInstance.connectToRelay { _ in }
+                        MakeRPCCall.sharedInstance.connectToRelay(node: nodeStr)
                     }
                 }
                 
@@ -316,7 +330,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         return "\(first)"
     }
     
-    @IBAction func addNode(_ sender: Any) {
+    private func addNodePrompt() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -324,15 +338,52 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             let alert = UIAlertController(title: "Scan QR or add manually?", message: "You can add the node credentials manually or scan a QR code.", preferredStyle: alertStyle)
             
-            alert.addAction(UIAlertAction(title: "Add nostr node", style: .default, handler: { [weak self] action in
+            alert.addAction(UIAlertAction(title: "Nostrnode", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                 self.isNostr = true
+                self.isLightning = false
+                self.isJoinMarket = false
+                self.isBitcoinCore = false
                 self.segueToAddNodeManually()
             }))
             
-            alert.addAction(UIAlertAction(title: "Add manually", style: .default, handler: { [weak self] action in
+            alert.addAction(UIAlertAction(title: "Bitcoin Core", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                 
+                self.isLightning = false
+                self.isJoinMarket = false
+                self.isBitcoinCore = true
+                self.segueToAddNodeManually()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Join Market", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.isLightning = false
+                self.isJoinMarket = true
+                self.isBitcoinCore = false
+                self.segueToAddNodeManually()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Core Lightning", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.isCLN = true
+                self.isLND = false
+                self.isLightning = true
+                self.isJoinMarket = false
+                self.isBitcoinCore = false
+                self.segueToAddNodeManually()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "LND", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.isLND = true
+                self.isCLN = false
+                self.isLightning = true
+                self.isJoinMarket = false
+                self.isBitcoinCore = false
                 self.segueToAddNodeManually()
             }))
             
@@ -349,6 +400,10 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
     }
     
+    @IBAction func addNode(_ sender: Any) {
+        addNodePrompt()
+    }
+        
     private func segueToAddNodeManually() {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "segueToAddBitcoinCoreNode", sender: vc)
@@ -386,33 +441,19 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             if let vc = segue.destination as? NodeDetailViewController {
                 vc.selectedNode = self.nodeArray[selectedIndex]
                 vc.createNew = false
-                vc.isLightning = false
+                //vc.isLightning = false
             }
         }
         
         if segue.identifier == "segueToAddBitcoinCoreNode" {
             if let vc = segue.destination as? NodeDetailViewController {
                 vc.createNew = true
-                vc.isLightning = false
+                vc.isLightning = self.isLightning
+                vc.isJoinMarket = self.isJoinMarket
                 vc.isNostr = self.isNostr
-            }
-        }
-        
-        if segue.identifier == "segueToAddLightningNode" {
-            if let vc = segue.destination as? NodeDetailViewController {
-                vc.isLightning = true
-                vc.createNew = true
-                CoreDataService.retrieveEntity(entityName: .newNodes) { (nodes) in
-                    if nodes != nil {
-                        for node in nodes! {
-                            let str = NodeStruct(dictionary: node)
-                            if str.isLightning {
-                                vc.createNew = false
-                                vc.selectedNode = node
-                            }
-                        }
-                    }
-                }
+                vc.isBitcoinCore = self.isBitcoinCore
+                vc.isLND = self.isLND
+                vc.isCLN = self.isCLN
             }
         }
         

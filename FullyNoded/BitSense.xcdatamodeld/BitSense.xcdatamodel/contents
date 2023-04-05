@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21E258" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21279" systemVersion="22A380" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="AuthKeys" representedClassName="AuthKeys" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="privateKey" optional="YES" attributeType="Binary"/>
@@ -7,7 +7,10 @@
     </entity>
     <entity name="JMWallets" representedClassName="JMWallets" syncable="YES" codeGenerationType="class">
         <attribute name="account" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="bitcoinCoreWallet" optional="YES" attributeType="String"/>
+        <attribute name="descriptors" optional="YES" attributeType="Binary"/>
         <attribute name="fnWallet" optional="YES" attributeType="String"/>
+        <attribute name="fnWalletId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="index" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>
@@ -26,6 +29,7 @@
         <attribute name="macaroon" optional="YES" attributeType="Binary"/>
         <attribute name="nostrPrivkey" optional="YES" attributeType="Binary"/>
         <attribute name="nostrPubkey" optional="YES" attributeType="Binary"/>
+        <attribute name="nostrWords" optional="YES" attributeType="Binary"/>
         <attribute name="onionAddress" optional="YES" attributeType="Binary"/>
         <attribute name="rpcpassword" optional="YES" attributeType="Binary"/>
         <attribute name="rpcuser" optional="YES" attributeType="Binary"/>
@@ -85,32 +89,16 @@
         <attribute name="changeDescriptor" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="index" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="isJm" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="jmWalletId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="jmWalletName" optional="YES" attributeType="String"/>
         <attribute name="label" optional="YES" attributeType="String"/>
         <attribute name="maxIndex" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="mixDepthFourExt" optional="YES" attributeType="Binary"/>
-        <attribute name="mixDepthFourInt" optional="YES" attributeType="Binary"/>
-        <attribute name="mixDepthOneExt" optional="YES" attributeType="Binary"/>
-        <attribute name="mixDepthOneInt" optional="YES" attributeType="Binary"/>
-        <attribute name="mixDepthThreeExt" optional="YES" attributeType="Binary"/>
-        <attribute name="mixDepthThreeInt" optional="YES" attributeType="Binary"/>
-        <attribute name="mixDepthTwoExt" optional="YES" attributeType="Binary"/>
-        <attribute name="mixDepthTwoInt" optional="YES" attributeType="Binary"/>
-        <attribute name="mixDepthZeroExt" optional="YES" attributeType="Binary"/>
-        <attribute name="mixDepthZeroInt" optional="YES" attributeType="Binary"/>
-        <attribute name="mixIndexes" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData"/>
         <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="password" optional="YES" attributeType="Binary"/>
         <attribute name="receiveDescriptor" optional="YES" attributeType="String"/>
+        <attribute name="token" optional="YES" attributeType="Binary"/>
         <attribute name="type" optional="YES" attributeType="String"/>
         <attribute name="watching" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData"/>
     </entity>
-    <elements>
-        <element name="AuthKeys" positionX="-36" positionY="126" width="128" height="88"/>
-        <element name="JMWallets" positionX="-36" positionY="288" width="128" height="149"/>
-        <element name="NewNodes" positionX="-54" positionY="135" width="128" height="254"/>
-        <element name="Peers" positionX="-36" positionY="234" width="128" height="133"/>
-        <element name="Signers" positionX="-27" positionY="189" width="128" height="209"/>
-        <element name="Transactions" positionX="-36" positionY="279" width="128" height="149"/>
-        <element name="Utxos" positionX="-36" positionY="234" width="128" height="238"/>
-        <element name="Wallets" positionX="-36" positionY="180" width="128" height="359"/>
-    </elements>
 </model>

@@ -40,7 +40,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         setDelegates()
         configureView(fieldsBackground)
         configureView(addressBackground)
@@ -62,6 +61,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             denominationControl.selectedSegmentIndex = 1
         }
     }
+    
     
     @IBAction func switchDenominationsAction(_ sender: UISegmentedControl) {
         switch sender.selectedSegmentIndex {
@@ -89,11 +89,13 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         labelField.delegate = self
     }
     
+    
     private func confirgureFields() {
         amountField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
         labelField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
         messageField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
     }
+    
     
     private func configureTap() {
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
@@ -103,6 +105,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         messageField.removeGestureRecognizer(tap)
     }
     
+    
     private func configureView(_ view: UIView) {
         view.clipsToBounds = true
         view.layer.cornerRadius = 8
@@ -110,20 +113,37 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         view.layer.borderWidth = 0.5
     }
     
+    
     @IBAction func getAddressInfoAction(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            self?.performSegue(withIdentifier: "getAddressInfo", sender: self)
+        func getFromRpc() {
+            OnchainUtils.getAddressInfo(address: addressString) { (addressInfo, message) in
+                guard let addressInfo = addressInfo else { return }
+                showAlert(vc: self, title: "", message: addressInfo.hdkeypath + ": " + "solvable: \(addressInfo.solvable)")
+            }
+        }
+        
+        activeWallet { w in
+            guard let w = w else { getFromRpc(); return }
+            
+            if w.isJm {
+                showAlert(vc: self, title: "", message: "Address fetched from joinmarket.")
+            } else {
+                getFromRpc()
+            }
         }
     }
+    
     
     @IBAction func shareAddressAction(_ sender: Any) {
         shareText(addressString)
     }
     
+    
     @IBAction func copyAddressAction(_ sender: Any) {
         UIPasteboard.general.string = addressString
         displayAlert(viewController: self, isError: false, message: "address copied ✓")
     }
+    
     
     @IBAction func shareQrAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
@@ -164,7 +184,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 self.createCLInvoice()
                 return
             }
-            
             self.createLNDInvoice()
         }
     }
@@ -184,7 +203,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                     amount = "\(Int(int))"
                 }
             }
-            
             param["value"] = amount
         }
         
@@ -217,40 +235,40 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func createCLInvoice() {
-        var millisats = "\"any\""
-        
-        var description = labelField.text ?? "Fully Noded c-lightning invoice ⚡️"
+        var param:[String:Any] = ["expiry": 86400]
+        var description = labelField.text ?? "Fully Noded CLN invoice"
         
         if description == "" {
-            description = "Fully Noded c-lightning invoice ⚡️"
+            description = "Fully Noded CLN invoice"
         }
         
-        let label = "Fully Noded c-lightning invoice ⚡️ \(randomString(length: 10))"
+        let label = "Fully Noded CLN invoice \(randomString(length: 10))"
+        param["label"] = label
         
         if amountField.text != "" {
             if isBtc {
                 if let dbl = Double(amountField.text!) {
-                    let int = Int(dbl * 100000000000.0)
-                    millisats = "\(int)"
+                    param["amount_msat"] = Int(dbl * 100000000000.0)
                 }
             } else if isSats {
                 if let int = Double(amountField.text!) {
-                    millisats = "\(Int(int * 1000))"
+                    param["amount_msat"] = Int(int * 1000)
                 }
             }
+        } else {
+            param["amount_msat"] = "any"
         }
         
         if messageField.text != "" {
             description += "\n\nmessage: " + messageField.text!
         }
-        
-        let param = "\(millisats), \"\(label)\", \"\(description)\", \(86400)"
+        param["description"] = description
         let commandId = UUID()
         
-        LightningRPC.command(id: commandId, method: .invoice, param: param) { [weak self] (uuid, response, errorDesc) in
-            guard commandId == uuid, let self = self else { return }
+        LightningRPC.sharedInstance.command(id: commandId, method: .invoice, param: param) { [weak self] (uuid, response, errorDesc) in
+            guard let self = self else { return }
             
-            guard let dict = response as? NSDictionary, let bolt11 = dict["bolt11"] as? String else {
+            guard let dict = response as? [String:Any], let bolt11 = dict["bolt11"] as? String else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error", message: errorDesc ?? "we had an issue getting your lightning invoice")
                 return
@@ -287,17 +305,108 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 self.fetchAddress()
                 return
             }
-            
-            let descriptorStruct = Descriptor(wallet.receiveDescriptor)
-            
-            if wallet.type == WalletType.descriptor.stringValue || wallet.type == "JoinMarket" {
+            if wallet.isJm {
+                self.getReceiveAddressJm(wallet: wallet)
+            } else if wallet.type == WalletType.descriptor.stringValue {
                 self.getReceieveAddressForFullyNodedWallet(wallet)
             } else {
-                if descriptorStruct.isMulti {
-                    self.getReceieveAddressForFullyNodedWallet(wallet)
+                self.fetchAddress()
+            }
+        }
+    }
+    
+    
+    private func getReceiveAddressJm(wallet: Wallet) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
+            
+            let title = "Select a mixdepth to deposit to."
+            
+            let alert = UIAlertController(title: title, message: "", preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Mixdepth 0", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                                                
+                self.getJmAddressFromMixDepth(mixDepth: 0, wallet: wallet)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Mixdepth 1", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                                                
+                self.getJmAddressFromMixDepth(mixDepth: 1, wallet: wallet)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Mixdepth 2", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                                                
+                self.getJmAddressFromMixDepth(mixDepth: 2, wallet: wallet)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Mixdepth 3", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                                                
+                self.getJmAddressFromMixDepth(mixDepth: 3, wallet: wallet)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Mixdepth 4", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.getJmAddressFromMixDepth(mixDepth: 4, wallet: wallet)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func getJmAddressFromMixDepth(mixDepth: Int, wallet: Wallet) {
+        spinner.addConnectingView(vc: self, description: "getting address from jm...")
+        var w = wallet
+        if w.token != nil {
+            JMRPC.sharedInstance.command(method: .getaddress(jmWallet: w, mixdepth: mixDepth), param: nil) { [weak self] (response, errorDesc) in
+                guard let self = self else { return }
+                
+                if errorDesc == "Invalid credentials." {
+                    JMUtils.unlockWallet(wallet: w) { [weak self] (unlockedWallet, message) in
+                        guard let self = self else { return }
+                        guard let unlockedWallet = unlockedWallet else { return }
+                        
+                        guard let encryptedToken = Crypto.encrypt(unlockedWallet.token.utf8) else {
+                            self.spinner.removeConnectingView()
+                            showAlert(vc: self, title: "", message: "Unable to decrypt your jm auth token.")
+                            return
+                        }
+                        
+                        w.token = encryptedToken
+                        self.getJmAddressFromMixDepth(mixDepth: mixDepth, wallet: w)
+                    }
+                    
                 } else {
-                    self.fetchAddress()
+                    guard let response = response as? [String:Any],
+                    let address = response["address"] as? String else {
+                        showAlert(vc: self, title: "", message: errorDesc ?? "unknown error getting jm address.")
+                        return
+                    }
+                    self.spinner.removeConnectingView()
+                    self.showAddress(address: address)
                 }
+            }
+        } else {
+            JMUtils.unlockWallet(wallet: w) { [weak self] (unlockedWallet, message) in
+                guard let self = self else { return }
+                guard let unlockedWallet = unlockedWallet else { return }
+                
+                guard let encryptedToken = Crypto.encrypt(unlockedWallet.token.utf8) else {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "", message: "Unable to decrypt your jm auth token.")
+                    return
+                }
+                
+                w.token = encryptedToken
+                self.getJmAddressFromMixDepth(mixDepth: mixDepth, wallet: w)
             }
         }
     }
@@ -308,9 +417,9 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { success in
             guard success else { return }
             
-            let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
+            let param:Derive_Addresses = .init(["descriptor":wallet.receiveDescriptor, "range":[index,index]])
             
-            Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
+                                                Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
@@ -331,17 +440,19 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     func fetchAddress() {
-        var params = ""
+        var addressType = ""
         
         if self.nativeSegwit {
-            params = "\"\", \"bech32\""
+            addressType = "bech32"
         } else if self.legacy {
-            params = "\"\", \"legacy\""
+            addressType = "legacy"
         } else if self.p2shSegwit {
-            params = "\"\", \"p2sh-segwit\""
+            addressType = "p2sh-segwit"
         }
         
-        self.getAddress(params)
+        let param:Get_New_Address = .init(["address_type":addressType])
+        
+        self.getAddress(param)
     }
     
     func showAddress(address: String) {
@@ -381,10 +492,9 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    func getAddress(_ params: String) {
-        Reducer.sharedInstance.makeCommand(command: .getnewaddress, param: params) { [weak self] (response, errorMessage) in
+    func getAddress(_ params: Get_New_Address) {
+        Reducer.sharedInstance.makeCommand(command: .getnewaddress(param: params)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
-            
             guard let address = response as? String else {
                 self.spinner.removeConnectingView()
                 
@@ -496,11 +606,11 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         view.endEditing(true)
     }
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "getAddressInfo" {
-            guard let vc = segue.destination as? GetInfoViewController else { return }
-            vc.address = addressString
-            vc.getAddressInfo = true
-        }
-    }
+//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+//        if segue.identifier == "getAddressInfo" {
+//            guard let vc = segue.destination as? GetInfoViewController else { return }
+//            vc.address = addressString
+//            vc.getAddressInfo = true
+//        }
+//    }
 }

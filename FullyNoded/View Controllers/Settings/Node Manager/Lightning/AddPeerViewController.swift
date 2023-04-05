@@ -114,9 +114,9 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
     private func getAddress(_ amount: Int, _ id: String, _ ip: String, _ port: String?, _ wallet: Wallet) {
         if wallet.type != WalletType.descriptor.stringValue {
             let index = Int(wallet.index) + 1
-            let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
+            let param:Derive_Addresses = .init(["descriptor": wallet.receiveDescriptor, "range": [index,index]])
             
-            Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { (response, errorMessage) in
                 guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
                     showAlert(vc: self, title: "", message: errorMessage ?? "error getting closing address")
                     return
@@ -124,16 +124,16 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
                 
                 self.promptToUseClosingAddress(amount, id, ip, port, wallet, address)
             }
-        } else {
-            Reducer.sharedInstance.makeCommand(command: .getnewaddress, param: "") { (response, errorMessage) in
-                guard let address = response as? String else {
-                    showAlert(vc: self, title: "", message: errorMessage ?? "error getting closing address")
-                    return
-                }
-                
-                self.promptToUseClosingAddress(amount, id, ip, port, wallet, address)
-            }
-        }
+        }// else {
+//            Reducer.sharedInstance.makeCommand(command: .getnewaddress) { (response, errorMessage) in
+//                guard let address = response as? String else {
+//                    showAlert(vc: self, title: "", message: errorMessage ?? "error getting closing address")
+//                    return
+//                }
+//
+//                self.promptToUseClosingAddress(amount, id, ip, port, wallet, address)
+//            }
+        //}
     }
     
     private func promptToUseClosingAddress(_ amount: Int, _ id: String, _ ip: String, _ port: String?, _ wallet: Wallet, _ address: String?) {

@@ -33,9 +33,15 @@ import Foundation
 public struct AddressInfo: CustomStringConvertible {
     
     let ismine: Bool
+    let hdkeypath: String
+    let solvable: Bool
+    let desc: String
     
     init(_ dictionary: [String: Any]) {
         ismine = dictionary["ismine"] as! Bool
+        hdkeypath = dictionary["hdkeypath"] as? String ?? "derivation path unknown"
+        solvable = dictionary["solvable"] as? Bool ?? false
+        desc = dictionary["desc"] as? String ?? "descriptor unknown"
     }
     
     public var description: String {

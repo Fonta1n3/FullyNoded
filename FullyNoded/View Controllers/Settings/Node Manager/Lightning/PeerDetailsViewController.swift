@@ -110,10 +110,10 @@ class PeerDetailsViewController: UIViewController, UITextFieldDelegate {
     
     private func getPeerCL() {
         let commandId = UUID()
-        LightningRPC.command(id: commandId, method: .listnodes, param: "\"\(id)\"") { [weak self] (uuid, response, errorDesc) in
+        LightningRPC.sharedInstance.command(id: commandId, method: .listnodes, param: ["id":id]) { [weak self] (uuid, response, errorDesc) in
             guard let self = self else { return }
             
-            guard commandId == uuid, let dict = response as? NSDictionary, let nodes = dict["nodes"] as? NSArray, nodes.count > 0, let nodeDict = nodes[0] as? [String:Any] else {
+            guard let dict = response as? NSDictionary, let nodes = dict["nodes"] as? NSArray, nodes.count > 0, let nodeDict = nodes[0] as? [String:Any] else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Ooops", message: errorDesc ?? "unknown error fetching node info")
                 return

@@ -106,28 +106,41 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                 
                 return
             }
-                        
+            
             for (i, wallet) in ws.enumerated() {
-                let walletStruct = Wallet(dictionary: wallet)
-                
-                var isInternal = false
-                
-                for (b, bitcoinCoreWallet) in self.bitcoinCoreWallets.enumerated() {
-                    if bitcoinCoreWallet == walletStruct.name {
-                        isInternal = true
-                        self.wallets.append(wallet)
+                if wallet["id"] != nil {
+                    let walletStruct = Wallet(dictionary: wallet)
+                    var isInternal = false
+                    for (b, bitcoinCoreWallet) in self.bitcoinCoreWallets.enumerated() {
+                        if bitcoinCoreWallet == walletStruct.name && !walletStruct.isJm {
+                            isInternal = true
+                            self.wallets.append(wallet)
+                        } else if bitcoinCoreWallet == walletStruct.name && walletStruct.isJm {
+                            isInternal = true
+                            var walletToAppend = wallet
+                            walletToAppend["label"] = walletStruct.name + ": " + walletStruct.jmWalletName
+                            self.wallets.append(walletToAppend)
+                        }
+
+                        if b + 1 == self.bitcoinCoreWallets.count && !isInternal {
+                            self.externalWallets.append(walletStruct)
+                        }
                     }
-                    
-                    if b + 1 == self.bitcoinCoreWallets.count && !isInternal {
-                        self.externalWallets.append(walletStruct)
+
+                    if i + 1 == ws.count {
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+
+                            self.loadTotalBalance()
+                        }
                     }
-                }
-                
-                if i + 1 == ws.count {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        self.loadTotalBalance()
+                } else {
+                    if i + 1 == ws.count {
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+
+                            self.loadTotalBalance()
+                        }
                     }
                 }
             }
@@ -139,8 +152,8 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         
         FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
             guard let self = self else { return }
-            
-            guard let fxRate = fxRate else { self.spinner.removeConnectingView(); return }
+
+            guard let fxRate = fxRate else { self.spinner.removeConnectingView();  self.getTotals(); return }
             guard self.wallets.count > 0 else { self.spinner.removeConnectingView(); return }
             self.fxRate = fxRate
             self.getTotals()
@@ -153,10 +166,10 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
             let walletStruct = Wallet(dictionary: wallet)
             UserDefaults.standard.set(walletStruct.name, forKey: "walletName")
             
-            OnchainUtils.listUnspent(param: "0") { [weak self] (utxos, message) in
+            OnchainUtils.getBalance { [weak self] (balance, message) in
                 guard let self = self else { return }
                 
-                guard let utxos = utxos else {
+                guard let balance = balance else {
                     self.spinner.removeConnectingView()
                     
                     guard let message = message else {
@@ -173,22 +186,10 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                     return
                 }
                 
-                if utxos.count > 0 {
-                    var walletBalance = 0.0
-                    for (x, utxo) in utxos.enumerated() {
-                        self.totalBtcBalance += utxo.amount!
-                        walletBalance += utxo.amount!
-                        
-                        if x + 1 == utxos.count {
-                            self.wallets[self.index]["balance"] = walletBalance
-                            self.index += 1
-                            self.getTotals()
-                        }
-                    }
-                } else {
-                    self.index += 1
-                    self.getTotals()
-                }
+                self.wallets[self.index]["balance"] = balance
+                self.index += 1
+                self.totalBtcBalance += balance
+                self.getTotals()
             }
         } else {
             DispatchQueue.main.async { [weak self] in

@@ -45,6 +45,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         case addressExplorer
     }
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -58,6 +59,32 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         }
         
         load()
+    }
+    
+    @IBAction func rescanAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let tit = "Rescan blockchain?"
+            
+            let mess = "This is useful to troubleshoot missing utxos."
+            
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Rescan", style: .default, handler: { action in
+                OnchainUtils.rescan() { (started, message) in
+                    guard started else {
+                        showAlert(vc: self, title: "", message: message ?? "error rescanning")
+                        return
+                    }
+                    
+                    showAlert(vc: self, title: "", message: "Rescan started, refresh the active wallet view to see rescan completion status.")
+                }
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            self.present(alert, animated: true, completion: nil)
+        }
     }
     
     
@@ -82,86 +109,31 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func getAddresses() {
-        var desc = wallet.receiveDescriptor
-        
-        if wallet.type == WalletType.single.stringValue {
-            let ud = UserDefaults.standard
-            let nativeSegwit = ud.object(forKey: "nativeSegwit") as? Bool ?? true
-            let p2shSegwit = ud.object(forKey: "p2shSegwit") as? Bool ?? false
-            let legacy = ud.object(forKey: "legacy") as? Bool ?? false
-            
-            if desc.hasPrefix("combo") {
-                
-                if nativeSegwit {
-                    desc = desc.replacingOccurrences(of: "combo", with: "wpkh")
-                } else if legacy {
-                    desc = desc.replacingOccurrences(of: "combo", with: "pkh")
-                } else if p2shSegwit {
-                    desc = desc.replacingOccurrences(of: "combo", with: "sh(wpkh")
-                    desc = desc.replacingOccurrences(of: "#", with: ")#")
-                }
-                
-                let arr = desc.split(separator: "#")
-                let bareDesc = "\(arr[0])"
-                
-                Reducer.sharedInstance.makeCommand(command: .getdescriptorinfo, param: "\"\(bareDesc)\"") { [weak self] (response, errorMessage) in
-                    if let dict = response as? NSDictionary {
-                        if let descriptor = dict["descriptor"] as? String {
-                            guard let self = self else { return }
-                            self.deriveAddresses(descriptor)
-                        }
-                    }
-                }
-                
-            } else if wallet.watching != nil {
-                let descriptors = wallet.watching!
-                var prefix = ""
-                var descriptorToUse = ""
-                if nativeSegwit {
-                    descriptorToUse = wallet.receiveDescriptor
-                    
-                } else if legacy {
-                    prefix = "pkh"
-                    for desc in descriptors {
-                        if desc.hasPrefix(prefix) && desc.contains("/0/*") {
-                            descriptorToUse = desc
-                        }
-                    }
-                    
-                } else if p2shSegwit {
-                    prefix = "sh(wpkh("
-                    for desc in descriptors {
-                        if desc.hasPrefix(prefix) && desc.contains("/0/*") {
-                            descriptorToUse = desc
-                        }
-                    }
-                }
-                deriveAddresses(descriptorToUse)
-            } else {
-                deriveAddresses(desc)
-            }
-        } else {
-            deriveAddresses(wallet.receiveDescriptor)
-        }
+        deriveAddresses(wallet.receiveDescriptor)
     }
     
     private func deriveAddresses(_ descriptor: String) {
-        let param = "\"\(descriptor)\", [0,2500]"
-        Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
-            if let addr = response as? NSArray {
-                for (i, address) in addr.enumerated() {
-                    guard let self = self else { return }
-                    self.addresses += "#\(i): \(address)\n\n"
-                    if i + 1 == addr.count {
-                        DispatchQueue.main.async { [weak self] in
-                            self?.spinner.removeConnectingView()
-                            self?.detailTable.reloadSections(IndexSet(arrayLiteral: Section.addressExplorer.rawValue), with: .none)
+        let p:Get_Descriptor_Info = .init(["descriptor": descriptor])
+        OnchainUtils.getDescriptorInfo(p) { (descriptorInfo, message) in
+            guard let descriptorInfo = descriptorInfo else { return }
+            let desc = descriptorInfo.descriptor
+            let param:Derive_Addresses = .init(["descriptor":desc, "range":[0,100]])
+            OnchainUtils.deriveAddresses(param: param) { [weak self] (response, message) in
+                if let addr = response as? NSArray {
+                    for (i, address) in addr.enumerated() {
+                        guard let self = self else { return }
+                        self.addresses += "#\(i): \(address)\n\n"
+                        if i + 1 == addr.count {
+                            DispatchQueue.main.async { [weak self] in
+                                self?.spinner.removeConnectingView()
+                                self?.detailTable.reloadSections(IndexSet(arrayLiteral: Section.addressExplorer.rawValue), with: .none)
+                            }
                         }
                     }
+                } else {
+                    self?.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "We were unable to derive your addresses", message: "")
                 }
-            } else {
-                self?.spinner.removeConnectingView()
-                showAlert(vc: self, title: "We were unable to derive your addresses", message: "")
             }
         }
     }
@@ -190,33 +162,35 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             guard let self = self, let wallets = wallets, wallets.count > 0 else { return }
             
             for w in wallets {
-                let walletStruct = Wallet(dictionary: w)
-                if walletStruct.id == self.walletId {
-                    self.wallet = walletStruct
-                    
-                    if self.wallet.receiveDescriptor.contains("xpub") || self.wallet.receiveDescriptor.contains("xprv") {
-                        self.coinType = "0"
-                    } else {
-                        self.coinType = "1"
+                if w["id"] != nil {
+                    let walletStruct = Wallet(dictionary: w)
+                    if walletStruct.id == self.walletId {
+                        self.wallet = walletStruct
+                        
+                        if self.wallet.receiveDescriptor.contains("xpub") || self.wallet.receiveDescriptor.contains("xprv") {
+                            self.coinType = "0"
+                        } else {
+                            self.coinType = "1"
+                        }
+                        
+                        self.json = AccountMap.create(wallet: self.wallet) ?? ""
+                        
+                        let generator = QRGenerator()
+                        generator.textInput = self.json
+                        self.backupText = self.json
+                        self.backupQrImage = generator.getQRCode()
+                        
+                        if let urOutput = URHelper.descriptorToUrOutput(Descriptor(self.wallet.receiveDescriptor)) {
+                            generator.textInput = urOutput.uppercased()
+                            self.exportText = urOutput
+                            self.exportWalletImage = generator.getQRCode()
+                        } else {
+                            showAlert(vc: self, title: "", message: "Unable to convert your wallet to crypto-output.")
+                        }
+                        
+                        self.findSigner()
+                        self.getAddresses()
                     }
-                    
-                    self.json = AccountMap.create(wallet: self.wallet) ?? ""
-                    
-                    let generator = QRGenerator()
-                    generator.textInput = self.json
-                    self.backupText = self.json
-                    self.backupQrImage = generator.getQRCode()
-                    
-                    if let urOutput = URHelper.descriptorToUrOutput(Descriptor(self.wallet.receiveDescriptor)) {
-                        generator.textInput = urOutput.uppercased()
-                        self.exportText = urOutput
-                        self.exportWalletImage = generator.getQRCode()
-                    } else {
-                        showAlert(vc: self, title: "", message: "Unable to convert your wallet to crypto-output.")
-                    }                    
-                    
-                    self.findSigner()
-                    self.getAddresses()
                 }
             }
         }
@@ -343,39 +317,18 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func deleteNow() {
-        func delete() {
-            CoreDataService.deleteEntity(id: walletId, entityName: .wallets) { [unowned vc = self] success in
-                if success {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        if vc.wallet.name == UserDefaults.standard.object(forKey: "walletName") as? String {
-                            UserDefaults.standard.removeObject(forKey: "walletName")
-                            NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                        }
-                        vc.walletDeleted()
-                    }
-                } else {
-                    showAlert(vc: vc, title: "Error", message: "We had an error deleting your wallet.")
-                }
-            }
-        }
-        
-        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmwallets in
-            guard let jmwallets = jmwallets, !jmwallets.isEmpty else {
-                delete()
-                return
-            }
-            
-            for jmwallet in jmwallets {
-                let str = JMWallet(jmwallet)
-                if str.fnWallet == self.wallet.name {
-                    CoreDataService.deleteEntity(id: str.id, entityName: .jmWallets) { deleted in
-                        #if DEBUG
-                        print("deleted jmwallet: \(deleted)")
-                        #endif
+        CoreDataService.deleteEntity(id: walletId, entityName: .wallets) { [unowned vc = self] success in
+            if success {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.walletDeleted()
+                    if vc.wallet.name == UserDefaults.standard.object(forKey: "walletName") as? String {
+                        UserDefaults.standard.removeObject(forKey: "walletName")
+                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     }
                 }
+            } else {
+                showAlert(vc: vc, title: "Error", message: "We had an error deleting your wallet.")
             }
-            delete()
         }
     }
     
@@ -429,9 +382,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             guard let self = self, let wallets = wallets, wallets.count > 0 else { return }
             
             for w in wallets {
-                let str = Wallet(dictionary: w)
-                if str.id == self.walletId {
-                    self.wallet = str
+                if w["id"] != nil {
+                    let str = Wallet(dictionary: w)
+                    if str.id == self.walletId {
+                        self.wallet = str
+                    }
                 }
             }
         }
@@ -882,7 +837,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     @objc func increaseGapLimit() {
-        var max = Int(wallet.maxIndex) + 2500
+        var max = Int(wallet.maxIndex) + 100
         if max > 99999 {
             max = 99999
         }
@@ -935,27 +890,29 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func importDescriptors(index: Int, maxRange: Int, descriptorsToImport: [String]) {
-        let descriptorStruct = Descriptor(wallet.receiveDescriptor)
-        var keypool = true
-        
-        if descriptorStruct.isMulti {
-            keypool = false
-        }
-        
         if index < descriptorsToImport.count {
             updateSpinnerText(text: "importing descriptor #\(index + 1), \(maxRange - Int(wallet.maxIndex) + 1) public keys...")
             
             let descriptor = descriptorsToImport[index]
+            var paramDict:[String:Any] = [:]
+            var requests:[[String:Any]] = []
+            var request:[String:Any] = [:]
+            request["desc"] = descriptor
+            request["range"] = [wallet.maxIndex, maxRange]
+            request["timestamp"] = "now"
             
-            var params = "[{ \"desc\": \"\(descriptor)\", \"timestamp\": \"now\", \"range\": [\(wallet.maxIndex),\(maxRange)], \"watchonly\": true, \"label\": \"\(wallet.label)\", \"keypool\": false, \"internal\": false }], {\"rescan\": false}"
-            
-            if descriptor.contains(wallet.receiveDescriptor) {
-                params = "[{ \"desc\": \"\(descriptor)\", \"timestamp\": \"now\", \"range\": [\(wallet.maxIndex),\(maxRange)], \"watchonly\": true, \"label\": \"\(wallet.label)\", \"keypool\": \(keypool), \"internal\": false }], {\"rescan\": false}"
-            } else if descriptor.contains(wallet.changeDescriptor) {
-                params = "[{ \"desc\": \"\(descriptor)\", \"timestamp\": \"now\", \"range\": [\(wallet.maxIndex),\(maxRange)], \"watchonly\": true, \"keypool\": \(keypool), \"internal\": \(keypool) }], {\"rescan\": false}"
+            if descriptor.contains(wallet.changeDescriptor) {
+                request["internal"] = true
+                
+            } else {
+                request["label"] = wallet.label
             }
             
-            importMulti(params: params) { [weak self] success in
+            requests = [request]
+            paramDict["requests"] = requests
+            let param:Import_Descriptors = .init(paramDict)
+            
+            importDesc(param: param) { [weak self] success in
                 if success {
                     self?.importDescriptors(index: index + 1, maxRange: maxRange, descriptorsToImport: descriptorsToImport)
                 } else {
@@ -996,9 +953,9 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         }
     }
     
-    private func importMulti(params: String, completion: @escaping ((Bool)) -> Void) {
-        OnchainUtils.importMulti(params) { (imported, message) in
-            completion((imported))
+    private func importDesc(param: Import_Descriptors, completion: @escaping ((Bool)) -> Void) {
+        OnchainUtils.importDescriptors(param) { (imported, _) in
+            completion(imported)
         }
     }
     

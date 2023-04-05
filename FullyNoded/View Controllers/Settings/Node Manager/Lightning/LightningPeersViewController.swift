@@ -79,10 +79,10 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     
     private func loadCLPeers() {
         let commandId = UUID()
-        LightningRPC.command(id: commandId, method: .listpeers, param: "") { [weak self] (uuid, response, errorDesc) in
+        LightningRPC.sharedInstance.command(id: commandId, method: .listpeers, param: nil) { [weak self] (uuid, response, errorDesc) in
             guard let self = self else { return }
             
-            guard commandId == uuid, let dict = response as? NSDictionary, let peers = dict["peers"] as? NSArray else {
+            guard let dict = response as? NSDictionary, let peers = dict["peers"] as? NSArray else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching peers")
                 return
@@ -327,8 +327,8 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     
     private func disconnectPeerCL(_ peer: [String:Any]) {
         let commandId = UUID()
-        LightningRPC.command(id: commandId, method: .disconnect, param: "\(peer["id"] as! String)") { [weak self] (id, response, errorDesc) in
-            guard let self = self, commandId == id else { return }
+        LightningRPC.sharedInstance.command(id: commandId, method: .disconnect, param: ["id":peer["id"] as! String]) { [weak self] (id, response, errorDesc) in
+            guard let self = self else { return }
             
             self.spinner.removeConnectingView()
             
@@ -418,22 +418,20 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     private func addPeerCL(id: String, ip: String, port: String?) {
-        let param = "\(id)@\(ip):\(port ?? "9735")"
+        let param:[String:Any] = ["host": "\(id)@\(ip)", "port": port ?? 9735]
         let commandId = UUID()
-        LightningRPC.command(id: commandId, method: .connect, param: "\(param)") { [weak self] (uuid, response, errorDesc) in
-            if commandId == uuid {
-                if let dict = response as? NSDictionary {
-                    self?.spinner.removeConnectingView()
-                    if let _ = dict["id"] as? String {
-                        showAlert(vc: self, title: "Peer connected ⚡️", message: "")
-                    } else {
-                        showAlert(vc: self, title: "Something is not quite right", message: "This is the response we got: \(dict)")
-                    }
-                    self?.loadPeers()
+        LightningRPC.sharedInstance.command(id: commandId, method: .connect, param: param) { [weak self] (uuid, response, errorDesc) in
+            if let dict = response as? NSDictionary {
+                self?.spinner.removeConnectingView()
+                if let _ = dict["id"] as? String {
+                    showAlert(vc: self, title: "Peer connected ⚡️", message: "")
                 } else {
-                    self?.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "Error", message: errorDesc ?? "error adding peer")
+                    showAlert(vc: self, title: "Something is not quite right", message: "This is the response we got: \(dict)")
                 }
+                self?.loadPeers()
+            } else {
+                self?.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "error adding peer")
             }
         }
     }

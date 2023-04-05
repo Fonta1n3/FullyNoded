@@ -60,7 +60,7 @@ class NodeLogic {
         
         lnd.command(.channelbalance, nil, nil, nil) { (response, error) in
             guard let dict = response,
-                  let localBalance = dict["local_balance"] as? NSDictionary else {
+                  let localBalance = dict["local_balance"] as? [String:Any] else {
                 dictToReturn["offchainBalance"] = "0.00000000"
                 completion((dictToReturn, error ?? ""))
                 return
@@ -90,17 +90,20 @@ class NodeLogic {
         var offchainBalance = 0.0
         dictToReturn["offchainBalance"] = "0.00000000"
         
-        LightningRPC.command(id: id, method: .listfunds, param: "") { (uuid, responseDict, errorDesc) in
-            guard uuid == id, let dict = responseDict as? NSDictionary, let outputs = dict["outputs"] as? NSArray, let channels = dict["channels"] as? NSArray else {
+        LightningRPC.sharedInstance.command(id: id, method: .listfunds, param: nil) { (uuid, responseDict, errorDesc) in
+            guard let dict = responseDict as? [String:Any],
+                    let outputs = dict["outputs"] as? NSArray,
+                  let channels = dict["channels"] as? NSArray, outputs.count > 0 && channels.count > 0 else {
                 completion((dictToReturn, errorDesc ?? ""))
                 return
             }
+    
             
             func getChannelFunds() {
                 if channels.count > 0 {
                     for (c, channel) in channels.enumerated() {
                         
-                        if let channelDict = channel as? NSDictionary {
+                        if let channelDict = channel as? [String:Any] {
                             
                             if let funding_txid = channelDict["funding_txid"] as? String {
                                 offchainTxids.append(funding_txid)
@@ -128,7 +131,7 @@ class NodeLogic {
             if outputs.count > 0 {
                 for (i, output) in outputs.enumerated() {
                     
-                    if let outputDict = output as? NSDictionary {
+                    if let outputDict = output as? [String:Any] {
                         
                         if let sats = outputDict["value"] as? Int {
                             let btc = Double(sats) / 100000000.0
@@ -152,7 +155,7 @@ class NodeLogic {
     }
     
     class func getPeerInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .getpeerinfo, param: "") { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .getpeerinfo) { (response, errorMessage) in
             if let peerInfo = response as? NSArray {
                 parsePeerInfo(peerInfo: peerInfo, completion: completion)
             } else {
@@ -162,8 +165,8 @@ class NodeLogic {
     }
     
     class func getNetworkInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .getnetworkinfo, param: "") { (response, errorMessage) in
-            if let networkInfo = response as? NSDictionary {
+        Reducer.sharedInstance.makeCommand(command: .getnetworkinfo) { (response, errorMessage) in
+            if let networkInfo = response as? [String:Any] {
                 parseNetworkInfo(networkInfo: networkInfo, completion: completion)
             } else {
                 completion((nil, errorMessage ?? ""))
@@ -172,8 +175,8 @@ class NodeLogic {
     }
     
     class func getMiningInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .getmininginfo, param: "") { (response, errorMessage) in
-            if let miningInfo = response as? NSDictionary {
+        Reducer.sharedInstance.makeCommand(command: .getmininginfo) { (response, errorMessage) in
+            if let miningInfo = response as? [String:Any] {
                 parseMiningInfo(miningInfo: miningInfo, completion: completion)
             } else {
                 completion((nil, errorMessage ?? ""))
@@ -182,7 +185,7 @@ class NodeLogic {
     }
     
     class func getUptime(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .uptime, param: "") { (response, errorMessage) in
+        Reducer.sharedInstance.makeCommand(command: .uptime) { (response, errorMessage) in
             if let uptime = response as? Double {
                 var toReturn = [String:Any]()
                 toReturn["uptime"] = Int(uptime)
@@ -194,8 +197,8 @@ class NodeLogic {
     }
     
     class func getMempoolInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .getmempoolinfo, param: "") { (response, errorMessage) in
-            if let dict = response as? NSDictionary {
+        Reducer.sharedInstance.makeCommand(command: .getmempoolinfo) { (response, errorMessage) in
+            if let dict = response as? [String:Any] {
                 var mempoolInfo = [String:Any]()
                 mempoolInfo["mempoolCount"] = dict["size"] as? Int ?? 0
                 completion((mempoolInfo, nil))
@@ -207,8 +210,9 @@ class NodeLogic {
     
     class func estimateSmartFee(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         let feeRate = UserDefaults.standard.integer(forKey: "feeTarget")
-        Reducer.sharedInstance.makeCommand(command: .estimatesmartfee, param: "\(feeRate)") { (response, errorMessage) in
-            if let result = response as? NSDictionary {
+        let param:Estimate_Smart_Fee_Param = .init(["conf_target":feeRate])
+        Reducer.sharedInstance.makeCommand(command: .estimatesmartfee(param: param)) { (response, errorMessage) in
+            if let result = response as? [String:Any] {
                 if let feeRate = result["feerate"] as? Double {
                     let btcperbyte = feeRate / 1000
                     let satsperbyte = (btcperbyte * 100000000).avoidNotation
@@ -228,7 +232,8 @@ class NodeLogic {
     
     class func loadSectionTwo(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
         if !walletDisabled {
-            Reducer.sharedInstance.makeCommand(command: .listtransactions, param: "\"*\", 100, 0, true") { (response, errorMessage) in
+            let param:List_Transactions = .init(["count": 100])
+            Reducer.sharedInstance.makeCommand(command: .listtransactions(param)) { (response, errorMessage) in
                 if let transactions = response as? NSArray {
                     parseTransactions(transactions: transactions)
                 }
@@ -260,7 +265,7 @@ class NodeLogic {
             }
             
             for (t, transaction) in transactions.enumerated() {
-                guard let txDict = transaction as? NSDictionary, let hash = txDict["tx_hash"] as? String else {
+                guard let txDict = transaction as? [String:Any], let hash = txDict["tx_hash"] as? String else {
                     arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
                     getPaidLND(completion: completion)
                     return
@@ -319,7 +324,7 @@ class NodeLogic {
     class func getPaidLND(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
         let lnd = LndRpc.sharedInstance
         
-        lnd.command(.listinvoices, nil, nil, ["reversed":true, "num_max_invoices": "1000"]) { (response, error) in
+        lnd.command(.listinvoices, nil, nil, ["reversed":true, "num_max_invoices": "100"]) { (response, error) in
             
             guard let paidInvoices = response?["invoices"] as? [[String:Any]], paidInvoices.count > 0 else {
                 arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
@@ -498,9 +503,9 @@ class NodeLogic {
     private class func getCLTransactions(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
         func getPaid() {
             let id = UUID()
-            LightningRPC.command(id: id, method: .listinvoices, param: "") { (uuid, response, errorDesc) in
+            LightningRPC.sharedInstance.command(id: id, method: .listinvoices, param: nil) { (uuid, response, errorDesc) in
                 
-                guard id == uuid, let dict = response as? NSDictionary, let payments = dict["invoices"] as? NSArray, payments.count > 0 else {
+                guard let dict = response as? [String:Any], let payments = dict["invoices"] as? NSArray, payments.count > 0 else {
                     arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
                     completion((arrayToReturn, nil))
                     return
@@ -510,7 +515,7 @@ class NodeLogic {
                     var alreadySaved = false
                     
                     for (i, payment) in payments.enumerated() {
-                        if let paymentDict = payment as? NSDictionary {
+                        if let paymentDict = payment as? [String:Any] {
                             let payment_hash = paymentDict["payment_hash"] as? String ?? ""
                             var amountMsat = paymentDict["msatoshi"] as? Int ?? 0
                             if amountMsat == 0 {
@@ -580,14 +585,14 @@ class NodeLogic {
         
         func getSent() {
             let id = UUID()
-            LightningRPC.command(id: id, method: .listsendpays, param: "") { (uuid, response, errorDesc) in
-                guard uuid == id, let dict = response as? NSDictionary, let payments = dict["payments"] as? NSArray, payments.count > 0 else {
+            LightningRPC.sharedInstance.command(id: id, method: .listsendpays, param: nil) { (uuid, response, errorDesc) in
+                guard let dict = response as? [String:Any], let payments = dict["payments"] as? NSArray, payments.count > 0 else {
                     getPaid()
                     return
                 }
                 
                 for (i, payment) in payments.enumerated() {
-                    if let paymentDict = payment as? NSDictionary {
+                    if let paymentDict = payment as? [String:Any] {
                         let payment_hash = paymentDict["payment_hash"] as? String ?? ""
                         let amountMsat = paymentDict["msatoshi_sent"] as? Int ?? 0
                         let status = paymentDict["status"] as? String ?? ""
@@ -631,14 +636,14 @@ class NodeLogic {
         }
         
         let id = UUID()
-        LightningRPC.command(id: id, method: .listtransactions, param: "") { (uuid, responseDict, errorDesc) in
-            guard uuid == id, let dict = responseDict as? NSDictionary, let transactions = dict["transactions"] as? NSArray, transactions.count > 0 else {
+        LightningRPC.sharedInstance.command(id: id, method: .listtransactions, param: nil) { (uuid, responseDict, errorDesc) in
+            guard let dict = responseDict as? [String:Any], let transactions = dict["transactions"] as? NSArray, transactions.count > 0 else {
                 getSent()
                 return
             }
             
             for (t, transaction) in transactions.enumerated() {
-                guard let txDict = transaction as? NSDictionary, let hash = txDict["hash"] as? String, arrayToReturn.count > 0 else {
+                guard let txDict = transaction as? [String:Any], let hash = txDict["hash"] as? String, arrayToReturn.count > 0 else {
                     getSent()
                     return
                 }
@@ -656,136 +661,9 @@ class NodeLogic {
         }
     }
     
-    private class func saveUtxoLocally(_ utxo: Utxo) {
-        activeWallet { wallet in
-            // Only save utxos for Fully Noded wallets
-            guard let wallet = wallet else { return }
-            
-            CoreDataService.retrieveEntity(entityName: .utxos) { savedUtxos in
-                if let savedUtxos = savedUtxos, savedUtxos.count > 0 {
-                    var alreadySaved = false
-                    var updateLabel = false
-                    
-                    for (i, savedUtxo) in savedUtxos.enumerated() {
-                        let savedUtxoStr = Utxo(savedUtxo)
-                        
-                        if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout {
-                            alreadySaved = true
-                            
-                            if savedUtxoStr.label == "" && utxo.label != "" {
-                                updateLabel = true
-                            }
-                        }
-
-                        if i + 1 == savedUtxos.count {
-                            if !alreadySaved {
-                                saveUtxo(utxo, wallet)
-                            } else if updateLabel {
-                                if savedUtxoStr.label != nil && savedUtxoStr.label != "" {
-                                    updateUtxoLabel(id: savedUtxoStr.id!, newLabel: savedUtxoStr.label ?? "")
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    saveUtxo(utxo, wallet)
-                }
-            }
-        }
-    }
-    
-    class private func updateUtxoLabel(id: UUID, newLabel: String) {
-        CoreDataService.update(id: id, keyToUpdate: "label", newValue: newLabel, entity: .utxos) { success in
-            #if DEBUG
-            print("updated utxo locally: \(success)\nlabel: \(newLabel)")
-            #endif
-        }
-    }
-    
-    class private func saveUtxo(_ utxo: Utxo, _ wallet: Wallet) {
-        var dict = [String:Any]()
-        dict["txid"] = utxo.txid
-        dict["vout"] = utxo.vout
-        dict["label"] = utxo.label
-        dict["id"] = UUID()
-        dict["walletId"] = wallet.id
-        dict["address"] = utxo.address
-        dict["amount"] = utxo.amount
-        dict["desc"] = utxo.desc
-        dict["solvable"] = utxo.solvable
-        dict["confirmations"] = utxo.confs
-        dict["safe"] = utxo.safe
-        dict["spendable"] = utxo.spendable
-        
-        CoreDataService.saveEntity(dict: dict, entityName: .utxos) { success in
-            #if DEBUG
-            print("saved utxo locally: \(success)\nlabel: \(utxo.label ?? "")")
-            #endif
-        }
-    }
-    
-    class func parseUtxos(utxos: [Utxo]) {
-        var amount = 0.0
-        var indexArray = [Int]()
-        
-        for (x, utxo) in utxos.enumerated() {
-            saveUtxoLocally(utxo)
-            
-            amount += utxo.amount!
-            
-            if let desc = utxo.desc {
-                let str = Descriptor(desc)
-                var paths:[String]!
-                
-                if str.isMulti {
-                    paths = str.derivationArray
-                } else {
-                    paths = [str.derivation]
-                }
-                
-                for path in paths {
-                    let arr = path.split(separator: "/")
-                    for (i, comp) in arr.enumerated() {
-                        if i + 1 == arr.count {
-                            if let int = Int(comp) {
-                                indexArray.append(int)
-                            }
-                        }
-                    }
-                }
-            }
-            
-            if x + 1 == utxos.count {
-                activeWallet { wallet in
-                    if let wallet = wallet {
-                        if indexArray.count > 0 {
-                            let maxIndex = indexArray.reduce(Int.min, { max($0, $1) })
-                            if wallet.index < maxIndex {
-                                CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(maxIndex), entity: .wallets) { success in
-                                    if success {
-                                        print("updated index from utxo")
-                                    } else {
-                                        print("failed to update index from utxo")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        if amount == 0.0 {
-            dictToReturn["onchainBalance"] = "0.00000000"
-        } else {
-            dictToReturn["onchainBalance"] = "\((round(100000000*amount)/100000000).avoidNotation)"
-        }
-        
-    }
-    
     // MARK: Section 1 parsers
     
-    class func parseMiningInfo(miningInfo: NSDictionary, completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+    class func parseMiningInfo(miningInfo: [String:Any], completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         var miningInfoToReturn = [String:Any]()
         let hashesPerSecond = miningInfo["networkhashps"] as? Double ?? 0.0
         let exahashesPerSecond = hashesPerSecond / 1000000000000000000
@@ -799,7 +677,7 @@ class NodeLogic {
         var outgoingCount = 0
         
         for peer in peerInfo {
-            let peerDict = peer as! NSDictionary
+            let peerDict = peer as! [String:Any]
             let incoming = peerDict["inbound"] as! Bool
             
             if incoming {
@@ -814,7 +692,7 @@ class NodeLogic {
         completion((peerInfoToReturn, nil))
     }
     
-    class func parseNetworkInfo(networkInfo: NSDictionary, completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+    class func parseNetworkInfo(networkInfo: [String:Any], completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         var networkInfoToReturn = [String:Any]()
         let subversion = (networkInfo["subversion"] as! String).replacingOccurrences(of: "/", with: "")
         let version = subversion.replacingOccurrences(of: "Satoshi:", with: "")
@@ -825,7 +703,7 @@ class NodeLogic {
         let networks = networkInfo["networks"] as! NSArray
         
         for network in networks {
-            let dict = network as! NSDictionary
+            let dict = network as! [String:Any]
             let name = dict["name"] as! String
             
             if name == "onion" {
@@ -841,7 +719,7 @@ class NodeLogic {
         arrayToReturn.removeAll()
                 
         for item in transactions {
-            if let transaction = item as? NSDictionary {
+            if let transaction = item as? [String:Any] {
                 var label = String()
                 var replaced_by_txid = String()
                 let address = transaction["address"] as? String ?? ""
@@ -898,6 +776,9 @@ class NodeLogic {
                 arrayToReturn.append(tx)
                                 
                 func saveLocally() {
+                    #if DEBUG
+                    print("saveLocally")
+                    #endif
                     var labelToSave = "no transaction label"
                     
                     if label != "" {

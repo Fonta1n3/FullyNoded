@@ -44,7 +44,6 @@ class CoreDataService {
     
     class func retrieveEntity(entityName: ENTITY, completion: @escaping (([[String:Any]]?)) -> Void) {
         DispatchQueue.main.async {
-            
             guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
                 completion(nil)
                 return

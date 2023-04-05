@@ -127,28 +127,28 @@ enum Keys {
         guard let mk = Keys.masterKey(words: signer, coinType: cointType, passphrase: ""),
               let xfp = Keys.fingerprint(masterKey: mk),
               let bip84Xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: cointType, account: 0),
-              let bip49Xpub = Keys.xpub(path: "m/49'/\(cointType)'/0'", masterKey: mk),
-              let bip44Xpub = Keys.xpub(path: "m/44'/\(cointType)'/0'", masterKey: mk),
-              let bip86Xprv = Keys.xprv(path: "m/86'/\(cointType)'/0'", masterKey: mk),// Needs to be a hot wallet until libwally updates for taproot
-              let bip48Xpub = Keys.xpub(path: "m/48'/\(cointType)'/0'/2'", masterKey: mk) else {
+              let bip49Xpub = Keys.xpub(path: "m/49h/\(cointType)h/0h", masterKey: mk),
+              let bip44Xpub = Keys.xpub(path: "m/44h/\(cointType)h/0h", masterKey: mk),
+              let bip86Xprv = Keys.xprv(path: "m/86h/\(cointType)h/0h", masterKey: mk),// Needs to be a hot wallet until libwally updates for taproot
+              let bip48Xpub = Keys.xpub(path: "m/48h/\(cointType)h/0h/2h", masterKey: mk) else {
             return (nil, "Error deriving descriptors.")
         }
         
-        let cosigner = "wsh([\(xfp)/48'/\(cointType)'/0'/2']\(bip48Xpub)/0/*)"
-        let bip84 = "wpkh([\(xfp)/84'/\(cointType)'/0']\(bip84Xpub)/0/*)"
-        let bip49 = "sh(wpkh([\(xfp)/49'/\(cointType)'/0']\(bip49Xpub)/0/*))"
-        let bip86 = "tr([\(xfp)/86'/\(cointType)'/0']\(bip86Xprv)/0/*)"
-        let bip44 = "pkh([\(xfp)/44'/\(cointType)'/0']\(bip44Xpub)/0/*)"
+        let cosigner = "wsh([\(xfp)/48h/\(cointType)h/0h/2h]\(bip48Xpub)/0/*)"
+        let bip84 = "wpkh([\(xfp)/84h/\(cointType)h/0h]\(bip84Xpub)/0/*)"
+        let bip49 = "sh(wpkh([\(xfp)/49h/\(cointType)h/0h]\(bip49Xpub)/0/*))"
+        let bip86 = "tr([\(xfp)/86h/\(cointType)h/0h]\(bip86Xprv)/0/*)"
+        let bip44 = "pkh([\(xfp)/44h/\(cointType)h/0h]\(bip44Xpub)/0/*)"
         
         return ([bip84, bip49, bip44, cosigner, bip86], nil)
     }
     
     static func donationAddress() -> String? {
-        let randomInt = Int.random(in: 0..<99999)
+        let randomInt = Int.random(in: 0..<2500)
         
         guard let hdKey = try? HDKey(base58: "xpub6C1DcRZo4RfYHE5F4yiA2m26wMBLr33qP4xpVdzY1EkHyUdaxwHhAvAUpohwT4ajjd1N9nt7npHrjd3CLqzgfbEYPknaRW8crT2C9xmAy3G"),
             let path = try? BIP32Path(string: "0/\(randomInt)"),
-            let address = try? hdKey.derive(using: path).address(type: .payToWitnessPubKeyHash) else { return nil }
+              let address = try? hdKey.derive(using: path).address(type: .payToWitnessPubKeyHash) else { return nil }
         
         return address.description
     }
@@ -198,7 +198,7 @@ enum Keys {
     
     static func bip84AccountXpub(masterKey: String, coinType: String, account: Int16) -> String? {
         guard let hdMasterKey = try? HDKey(base58: masterKey),
-            let path = try? BIP32Path(string: "m/84'/\(coinType)'/\(account)'"),
+            let path = try? BIP32Path(string: "m/84h/\(coinType)h/\(account)h"),
             let accountKey = try? hdMasterKey.derive(using: path) else { return nil }
         
         return accountKey.xpub
@@ -386,70 +386,111 @@ enum Keys {
             var signer:String?
             
             for (i, wallet) in wallets.enumerated() {
-                let walletStruct = Wallet(dictionary: wallet)
-                let desc = walletStruct.receiveDescriptor
-                let descStr = Descriptor(desc)
-                let providedDescStr = Descriptor(descriptor)
-                
-                if let type = addressType(descStr) {
-                    print("we are getting here")
-                    if !providedDescStr.isMulti && path != "no key path" {
-                        guard let fullPath = try? BIP32Path(string: path) else { completion((isOurs, walletLabel, signable, signer)); return }
-                        
-                        addressSignable(address, fullPath) { (isSignable, signerLabel) in
-                            if isSignable {
-                                signable = true
-                            }
+                if wallet["id"] != nil {
+                    let walletStruct = Wallet(dictionary: wallet)
+                    let desc = walletStruct.receiveDescriptor
+                    let descStr = Descriptor(desc)
+                    let providedDescStr = Descriptor(descriptor)
+                    
+                    if let type = addressType(descStr) {
+                        print("we are getting here")
+                        if !providedDescStr.isMulti && path != "no key path" {
+                            guard let fullPath = try? BIP32Path(string: path) else { completion((isOurs, walletLabel, signable, signer)); return }
                             
-                            if signerLabel != nil {
-                                signer = signerLabel
+                            addressSignable(address, fullPath) { (isSignable, signerLabel) in
+                                if isSignable {
+                                    signable = true
+                                }
+                                
+                                if signerLabel != nil {
+                                    signer = signerLabel
+                                }
+                                
+                                if let accountPath = try? fullPath.chop(depth: 3), accountPath.components.count > 0 {
+                                    if let key = try? HDKey(base58: descStr.accountXpub) {
+                                        if let childKey = try? key.derive(using: accountPath) {
+                                            if addressString(childKey, type) == address {
+                                                isOurs = true
+                                                walletLabel = walletStruct.label
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                if i + 1 == wallets.count {
+                                    completion((isOurs, walletLabel, signable, signer))
+                                }
                             }
+                        } else if providedDescStr.isMulti && descriptor != "no descriptor" {
+                            var keys = [PubKey]()
+                            var network:Network!
                             
-                            if let accountPath = try? fullPath.chop(depth: 3), accountPath.components.count > 0 {
-                                if let key = try? HDKey(base58: descStr.accountXpub) {
-                                    if let childKey = try? key.derive(using: accountPath) {
-                                        if addressString(childKey, type) == address {
-                                            isOurs = true
-                                            walletLabel = walletStruct.label
+                            if providedDescStr.derivationArray.count == descStr.multiSigKeys.count {
+                                for (x, xpub) in descStr.multiSigKeys.enumerated() {
+                                    guard let fullPath = try? BIP32Path(string: providedDescStr.derivationArray[x]),
+                                          let accountPath = try? fullPath.chop(depth: 4),
+                                          let key = try? HDKey(base58: xpub) else {
+                                        completion((isOurs, walletLabel, signable, signer))
+                                        return
+                                        
+                                    }
+                                    
+                                    network = key.network
+                                    
+                                    guard let childKey = try? key.derive(using: accountPath) else {
+                                        completion((isOurs, walletLabel, signable, signer))
+                                        return
+                                    }
+                                    
+                                    keys.append(childKey.pubKey)
+                                    
+                                    if x + 1 == descStr.multiSigKeys.count {
+                                        let scriptPubKey = ScriptPubKey(multisig: keys, threshold: UInt(descStr.sigsRequired), isBIP67: descStr.isBIP67)
+                                        
+                                        if let derivedAddress = try? Address(scriptPubKey: scriptPubKey, network: network) {
+                                            if derivedAddress.description == address {
+                                                isOurs = true
+                                                walletLabel = walletStruct.label
+                                            }
                                         }
                                     }
                                 }
                             }
-                            
-                            if i + 1 == wallets.count {
-                                completion((isOurs, walletLabel, signable, signer))
-                            }
                         }
-                    } else if providedDescStr.isMulti && descriptor != "no descriptor" {
-                        var keys = [PubKey]()
-                        var network:Network!
-                        
-                        if providedDescStr.derivationArray.count == descStr.multiSigKeys.count {
-                            for (x, xpub) in descStr.multiSigKeys.enumerated() {
-                                guard let fullPath = try? BIP32Path(string: providedDescStr.derivationArray[x]),
-                                      let accountPath = try? fullPath.chop(depth: 4),
-                                      let key = try? HDKey(base58: xpub) else {
+                    } else if i + 1 == wallets.count {
+                        // Taproot not yet supported in Libwally
+                        completion((isOurs, walletLabel, signable, signer))
+                    }
+                    
+                    if i + 1 == wallets.count && providedDescStr.isMulti {
+                        for (d, derivation) in providedDescStr.derivationArray.enumerated() {
+                            guard let fullPath = try? BIP32Path(string: derivation) else {
+                                completion((isOurs, walletLabel, signable, signer))
+                                return
+                            }
+                            
+                            var pubkeys = [PubKey]()
+                            for (k, key) in providedDescStr.multiSigKeys.enumerated() {
+                                guard let hex = Data(hexString: key),
+                                      let pubkey1 = try? PubKey(hex, network: .mainnet),
+                                      let pubkey2 = try? PubKey(hex, network: .testnet) else {
                                     completion((isOurs, walletLabel, signable, signer))
                                     return
-                                    
                                 }
                                 
-                                network = key.network
+                                pubkeys.append(pubkey1)
+                                pubkeys.append(pubkey2)
                                 
-                                guard let childKey = try? key.derive(using: accountPath) else {
-                                    completion((isOurs, walletLabel, signable, signer))
-                                    return
-                                }
-                                
-                                keys.append(childKey.pubKey)
-                                
-                                if x + 1 == descStr.multiSigKeys.count {
-                                    let scriptPubKey = ScriptPubKey(multisig: keys, threshold: UInt(descStr.sigsRequired), isBIP67: descStr.isBIP67)
+                                if k + 1 == providedDescStr.multiSigKeys.count {
                                     
-                                    if let derivedAddress = try? Address(scriptPubKey: scriptPubKey, network: network) {
-                                        if derivedAddress.description == address {
-                                            isOurs = true
-                                            walletLabel = walletStruct.label
+                                    pubkeySignable(pubkeys, fullPath) { (isSignable, signerLabel) in
+                                        if isSignable {
+                                            signable = true
+                                            signer = signerLabel
+                                        }
+                                        
+                                        if d + 1 == providedDescStr.derivationArray.count {
+                                            completion((isOurs, walletLabel, signable, signer))
                                         }
                                     }
                                 }
@@ -457,44 +498,8 @@ enum Keys {
                         }
                     }
                 } else if i + 1 == wallets.count {
-                    // Taproot not yet supported in Libwally
-                    completion((isOurs, walletLabel, signable, signer))
-                }
-                
-                if i + 1 == wallets.count && providedDescStr.isMulti {
-                    for (d, derivation) in providedDescStr.derivationArray.enumerated() {
-                        guard let fullPath = try? BIP32Path(string: derivation) else {
-                            completion((isOurs, walletLabel, signable, signer))
-                            return
-                        }
-                        
-                        var pubkeys = [PubKey]()
-                        for (k, key) in providedDescStr.multiSigKeys.enumerated() {
-                            guard let hex = Data(hexString: key),
-                                  let pubkey1 = try? PubKey(hex, network: .mainnet),
-                                  let pubkey2 = try? PubKey(hex, network: .testnet) else {
-                                completion((isOurs, walletLabel, signable, signer))
-                                return
-                            }
-                            
-                            pubkeys.append(pubkey1)
-                            pubkeys.append(pubkey2)
-                            
-                            if k + 1 == providedDescStr.multiSigKeys.count {
-                                
-                                pubkeySignable(pubkeys, fullPath) { (isSignable, signerLabel) in
-                                    if isSignable {
-                                        signable = true
-                                        signer = signerLabel
-                                    }
-                                    
-                                    if d + 1 == providedDescStr.derivationArray.count {
-                                        completion((isOurs, walletLabel, signable, signer))
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    // TODO: DELETE GHOST WALLET
+                    print("bad luck...")
                 }
             }
         }

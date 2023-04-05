@@ -148,15 +148,13 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     private func clightningGetInfo() {
         let commandId = UUID()
         
-        LightningRPC.command(id: commandId, method: .getinfo, param: "") { [weak self] (uuid, response, errorDesc) in
+        LightningRPC.sharedInstance.command(id: commandId, method: .getinfo, param: nil) { [weak self] (uuid, response, errorDesc) in
             guard let self = self else { return }
-            
-            guard commandId == uuid, let dict = response as? NSDictionary else {
+            guard let dict = response as? [String:Any] else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error", message: errorDesc ?? "error getting info from lightning node")
                 return
             }
-            
             let alias = dict["alias"] as? String ?? ""
             let num_peers = dict["num_peers"] as? Int ?? 0
             let num_pending_channels = dict["num_pending_channels"] as? Int ?? 0
@@ -199,10 +197,10 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     private func listFundsCL() {
         let commandId = UUID()
         
-        LightningRPC.command(id: commandId, method: .listfunds, param: "") { [weak self] (uuid, response, errorDesc) in
+        LightningRPC.sharedInstance.command(id: commandId, method: .listfunds, param: nil) { [weak self] (uuid, response, errorDesc) in
             guard let self = self else { return }
             
-            guard commandId == uuid, let dict = response as? NSDictionary, let outputs = dict["outputs"] as? [[String:Any]] else {
+            guard let dict = response as? NSDictionary, let outputs = dict["outputs"] as? [[String:Any]] else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error", message: errorDesc ?? "error getting info from lightning node")
                 return
@@ -273,7 +271,10 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
             self.tableArray.append("\(num_pending_channels)")
             self.tableArray.append("fetching...")
             self.tableArray.append(version)
-            self.url = "\(uris[0])"
+            
+            if uris.count > 0 {
+                self.url = "\(uris[0])"
+            }
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }

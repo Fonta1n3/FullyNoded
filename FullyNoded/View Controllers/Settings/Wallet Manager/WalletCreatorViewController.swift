@@ -69,19 +69,15 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate, UINavi
         let nospaces = walletName.replacingOccurrences(of: " ", with: "_")
         connectingView.addConnectingView(vc: self, description: "Creating \(nospaces) Wallet")
         
-        var param = ""
-        
-        if coldSwitchOutlet.isOn {
-            param = "\"\(nospaces)\", true"
-        }
-        
-        if hotSwitchOutlet.isOn {
-            param = "\"\(nospaces)\""
-        }
-        
-        if blankSwitchOutlet.isOn {
-            param = "\"\(nospaces)\", false, true"
-        }
+        let param:Create_Wallet_Param = .init([
+            "wallet_name": nospaces,
+            "avoid_reuse": true,
+            "descriptors": true,
+            "load_on_startup": true,
+            "disable_private_keys": !hotSwitchOutlet.isOn,
+            "passphrase": "",
+            "blank": blankSwitchOutlet.isOn
+        ] as [String:Any])
         
         createWallet(param: param)
     }
@@ -95,7 +91,7 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate, UINavi
         view.endEditing(true)
     }
     
-    func createWallet(param: String) {
+    func createWallet(param: Create_Wallet_Param) {
         OnchainUtils.createWallet(param: param) { [weak self] (name, message) in
             guard let self = self else { return }
             

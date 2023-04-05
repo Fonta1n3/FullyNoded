@@ -69,7 +69,6 @@ class MainMenuViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         UserDefaults.standard.set(UIDevice.modelName, forKey: "modelName")
-        
         UIApplication.shared.isIdleTimerDisabled = true
         
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
@@ -102,10 +101,50 @@ class MainMenuViewController: UIViewController {
         torProgressLabel.layer.zPosition = 1
         progressView.layer.zPosition = 1
         progressView.setNeedsFocusUpdate()
-        
-        MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in
-            DispatchQueue.main.async { [weak self] in
-                self?.refreshNode()
+        migrateJmWallet()
+    }
+    
+    func migrateJmWallet() {
+        func deleteJmWallets() {
+            CoreDataService.deleteAllData(entity: .jmWallets) { _ in }
+        }
+        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmWallets in
+            guard let jmWallets = jmWallets, jmWallets.count > 0 else { return }
+
+            CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+                guard let wallets = wallets, wallets.count > 0 else { return }
+
+                for (i, jmWallet) in jmWallets.enumerated() {
+                    let jmWStrct = JMWallet(jmWallet)
+
+                    for (x, w) in wallets.enumerated() {
+                        if w["id"] != nil {
+                            let wStrct = Wallet(dictionary: w)
+                            if jmWStrct.fnWallet == wStrct.name {
+                                // same wallet we can update here
+                                CoreDataService.update(id: wStrct.id, keyToUpdate: "token", newValue: jmWStrct.token, entity: .wallets) { _ in
+
+                                    CoreDataService.update(id: wStrct.id, keyToUpdate: "password", newValue: jmWStrct.password, entity: .wallets) { _ in
+
+                                        CoreDataService.update(id: wStrct.id, keyToUpdate: "isJm", newValue: true, entity: .wallets) { _ in
+
+                                            CoreDataService.update(id: wStrct.id, keyToUpdate: "jmWalletName", newValue: jmWStrct.name, entity: .wallets) { _ in
+
+                                                if i + 1 == jmWallets.count && x + 1 == jmWallets.count {
+                                                    deleteJmWallets()
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } else if i + 1 == jmWallets.count  && x + 1 == jmWallets.count {
+                                deleteJmWallets()
+                            }
+                        } else if i + 1 == jmWallets.count  && x + 1 == jmWallets.count {
+                            deleteJmWallets()
+                        }
+                    }
+                }
             }
         }
     }
@@ -166,7 +205,7 @@ class MainMenuViewController: UIViewController {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
-                    self.performSegue(withIdentifier: "segueToAddANode", sender: self)
+                    self.performSegue(withIdentifier: "segueToAddNode", sender: self)
                 }
             }))
             
@@ -174,6 +213,7 @@ class MainMenuViewController: UIViewController {
             self.present(alert, animated: true, completion: nil)
         }
     }
+    
         
     @IBAction func lockAction(_ sender: Any) {
         if KeyChain.getData("UnlockPassword") != nil {
@@ -282,7 +322,6 @@ class MainMenuViewController: UIViewController {
     }
     
     @objc func refreshNode() {
-        print("refreshNode")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -297,11 +336,12 @@ class MainMenuViewController: UIViewController {
             guard let node = node else { return }
             self.initialLoad = false
             if node.isNostr {
-                MakeRPCCall.sharedInstance.connected = false
-                MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in
+                StreamManager.shared.node = node
+                let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
+                StreamManager.shared.eoseReceivedBlock = { _ in
                     self.loadNode(node: node)
                 }
-                MakeRPCCall.sharedInstance.connectToRelay { _ in }
+                StreamManager.shared.openWebSocket(urlString: urlString)
             } else {
                 self.loadNode(node: node)
             }
@@ -333,17 +373,13 @@ class MainMenuViewController: UIViewController {
             }
             if i + 1 == nodes.count {
                 if activeNode != nil {
-                    if activeNode!.isNostr {
-//                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-//                            self.loadNode(node: self.activeNode!)
-//                        }
-                    } else {
+                    if !activeNode!.isNostr {
                         loadNode(node: self.activeNode!)
                     }
                 } else {
                     removeLoader()
                     connectingView.removeConnectingView()
-                    showAlert(vc: self, title: "No Active Node", message: "Go to \"settings\" > \"node manager\" and toggle on one of your nodes.")
+                    showAlert(vc: self, title: "Node inactive.", message: "Go to settings and node manager to activate a Bitcoin Core node.")
                 }
             }
         }
@@ -381,9 +417,6 @@ class MainMenuViewController: UIViewController {
     }
     
     @objc func refreshData(_ sender: Any) {
-//        MakeRPCCall.sharedInstance.connectToRelay { connected in
-//            print("connected: \(connected)")
-//        }
         refreshTable()
         refreshDataNow()
     }
@@ -625,7 +658,6 @@ class MainMenuViewController: UIViewController {
                     showAlert(vc: self, title: "Connection issue...", message: message)
                 }
                 
-                print("here?")
                 self.removeLoader()
                 
                 return
@@ -858,30 +890,32 @@ class MainMenuViewController: UIViewController {
             vc.onDoneBlock = { [weak self] in
                 guard let self = self else { return }
                 
-                self.isUnlocked = true
-                
-                
+                self.isUnlocked = true                
                 
                 if self.mgr?.state != .started && self.mgr?.state != .connected  {
                     self.mgr?.start(delegate: self)
                     
                     if let node = self.activeNode {
                         if node.isNostr {
-                            MakeRPCCall.sharedInstance.connectToRelay { connected in
+                            // If not using tor then uncomment this, and remove from tor protocol func
+                            StreamManager.shared.node = node
+                            let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
+                            StreamManager.shared.eoseReceivedBlock = { _ in
                                 DispatchQueue.main.async { [weak self] in
                                     guard let self = self else { return }
                                     self.removeBackView()
-                                    //self.refreshNode()
                                     DispatchQueue.main.async { [weak self] in
                                         self?.torProgressLabel.isHidden = true
                                         self?.progressView.isHidden = true
                                         self?.blurView.isHidden = true
+                                        self?.loadNode(node: node)
                                     }
                                 }
                             }
+                            StreamManager.shared.openWebSocket(urlString: urlString)
                         }
                     } else {
-                        showAlert(vc: self, title: "", message: "No active nodes, please toggle one on.")
+                        showAlert(vc: self, title: "", message: "No active Bitcoin Core node, please toggle one on to utlize this view.")
                     }
                 }
             }
@@ -897,12 +931,11 @@ class MainMenuViewController: UIViewController {
                 vc.detailTextDescription = detailTextDescription
             }
             
-        case "segueToAddANode":
+        //case "segueToAddNode":
             
-            if let vc = segue.destination as? NodeDetailViewController {
-                vc.createNew = true
-                vc.isLightning = false
-            }
+//            if let vc = segue.destination as? NodesViewController {
+//                vc.createNew = true
+//            }
             
         case "segueToRemoteControl":
             
@@ -913,13 +946,13 @@ class MainMenuViewController: UIViewController {
                 vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world! This feature works with mainnet only."
             }
             
-        case "segueToPaywall":
-            guard let vc = segue.destination as? QRDisplayerViewController else { fallthrough }
-            
-            vc.isPaying = true
-            vc.headerIcon = UIImage(systemName: "bitcoinsign.circle")
-            vc.headerText = "Donation"
-            vc.descriptionText = "Your support is greatly appreciated! We are checking every 15 seconds in the background to see if a payment is made, as soon as we see one the app will automatically unlock and be fully functional."
+//        case "segueToPaywall":
+//            guard let vc = segue.destination as? QRDisplayerViewController else { fallthrough }
+//            
+//            vc.isPaying = true
+//            vc.headerIcon = UIImage(systemName: "bitcoinsign.circle")
+//            vc.headerText = "Donation"
+//            vc.descriptionText = "Your support is greatly appreciated! We are checking every 15 seconds in the background to see if a payment is made, as soon as we see one the app will automatically unlock and be fully functional."
             
         default:
             break
@@ -1043,10 +1076,23 @@ extension MainMenuViewController: OnionManagerDelegate {
         if let activeNode = activeNode {
             if !activeNode.isNostr {
                 loadTable()
+            } else {
+//                StreamManager.shared.node = activeNode
+//                let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
+//                StreamManager.shared.eoseReceivedBlock = { _ in
+//                    DispatchQueue.main.async { [weak self] in
+//                        guard let self = self else { return }
+//                        self.removeBackView()
+//                        DispatchQueue.main.async { [weak self] in
+//                            self?.loadNode(node: activeNode)
+//                        }
+//                    }
+//                }
+//                StreamManager.shared.openWebSocket(urlString: urlString)
             }
         } else {
             removeLoader()
-            showAlert(vc: self, title: "", message: "No active node, please toggle on one.")
+            //showAlert(vc: self, title: "", message: "No active node, please toggle on one.")
         }
         
         DispatchQueue.main.async { [weak self] in
@@ -1143,7 +1189,7 @@ extension MainMenuViewController: UITableViewDelegate {
         let textLabel = UILabel()
         textLabel.textAlignment = .left
         textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
-        textLabel.textColor = .gray
+        textLabel.textColor = .white
         textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
         
         if let section = Section(rawValue: section) {

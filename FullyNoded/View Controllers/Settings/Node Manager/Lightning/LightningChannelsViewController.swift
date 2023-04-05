@@ -321,9 +321,8 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     
     private func getAddress(_ wallet: Wallet, _ channel: [String:Any]) {
         let index = Int(wallet.index) + 1
-        let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
-        
-        Reducer.sharedInstance.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
+        let param:Derive_Addresses = .init(["descriptor": wallet.receiveDescriptor, "range":[index,index]])
+        Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
@@ -339,16 +338,14 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     private func closeChannelCL(_ channel: [String:Any], _ address: String?) {
         let commandId = UUID()
         let channelId = channel["channel_id"] as! String
-        var param = ""
-        
+        var param:[String:Any] = [:]
+        param["id"] = channelId
         if let closingAddress = address {
-            param = "\"\(channelId)\", 0, \"\(closingAddress)\""
-        } else {
-            param = "\"\(channelId)\", 0"
+            param["destination"] = closingAddress
         }
         
-        LightningRPC.command(id: commandId, method: .close, param: param) { [weak self] (id, response, errorDesc) in
-            guard let self = self, commandId == id else { return }
+        LightningRPC.sharedInstance.command(id: commandId, method: .close, param: param) { [weak self] (id, response, errorDesc) in
+            guard let self = self else { return }
             
             self.spinner.removeConnectingView()
             
@@ -685,10 +682,10 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     
     private func loadCLPeers() {
         let commandId = UUID()
-        LightningRPC.command(id: commandId, method: .listpeers, param: "") { [weak self] (uuid, response, errorDesc) in
+        LightningRPC.sharedInstance.command(id: commandId, method: .listpeers, param: nil) { [weak self] (uuid, response, errorDesc) in
             guard let self = self else { return }
             
-            guard commandId == uuid, let dict = response as? NSDictionary, let peers = dict["peers"] as? NSArray else {
+            guard let dict = response as? NSDictionary, let peers = dict["peers"] as? NSArray else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error", message: errorDesc ?? "Unknown error fetching channels.")
                 return
@@ -1018,7 +1015,9 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func rebalance(_ source: String, _ destination: String) {
-        LightningRPC.command(id: UUID(), method: .rebalance, param: "\"\(source)\", \"\(destination)\"") { [weak self] (id, response, errorDesc) in
+        //outgoing_scid incoming_scid
+        let p:[String:Any] = ["outgoing_scid": source, "incoming_scid": destination]
+        LightningRPC.sharedInstance.command(id: UUID(), method: .rebalance, param: p) { [weak self] (id, response, errorDesc) in
             self?.refresh()
             if errorDesc != nil {
                showAlert(vc: self, title: "Error", message: errorDesc!)
