@@ -443,6 +443,7 @@ class ActiveWalletViewController: UIViewController {
                             
                             var anyOffchain = false
                             var anyOnchain = false
+                            
                             for (i, node) in nodes.enumerated() {
                                 let nodeStr = NodeStruct(dictionary: node)
                                 if nodeStr.isNostr && nodeStr.isActive {
@@ -1267,11 +1268,29 @@ class ActiveWalletViewController: UIViewController {
         let p:List_Unspent = .init(["minconf":0])
         OnchainUtils.listUnspent(param: p) { [weak self] (utxos, message) in
             guard let self = self else { return }
-            guard let utxos = utxos, utxos.count > 0, let wallet = self.wallet else { self.getOffchainBalanceAndTransactions(); return }
-            for utxo in utxos {
-                guard let utxo_desc = utxo.desc else { self.getOffchainBalanceAndTransactions(); return }
+            
+            guard let utxos = utxos, utxos.count > 0, let wallet = self.wallet else {
+                self.getOffchainBalanceAndTransactions()
+                return
+            }
+            
+            for (i, utxo) in utxos.enumerated() {
+                guard let utxo_desc = utxo.desc else {
+                    if i + 1 == utxos.count {
+                        self.getOffchainBalanceAndTransactions()
+                    }
+                    return
+                }
+                
                 let desc = Descriptor(utxo_desc)
-                guard let index = desc.index else { self.getOffchainBalanceAndTransactions(); return }
+                
+                guard let index = desc.index else {
+                    if i + 1 == utxos.count {
+                        self.getOffchainBalanceAndTransactions()
+                    }
+                    return
+                }
+                
                 if index >= wallet.index {
                     let newIndex = Int64(index + 1)
                     if newIndex >= wallet.maxIndex {
@@ -1282,13 +1301,16 @@ class ActiveWalletViewController: UIViewController {
                         print("incremented index to \(newIndex): \(updated)")
                         #endif
                         guard updated else {
-                            self.getOffchainBalanceAndTransactions()
+                            if i + 1 == utxos.count {
+                                self.getOffchainBalanceAndTransactions()
+                            }
                             showAlert(vc: self, title: "", message: "Unable to update your wallet index.")
                             return
                         }
-                        self.getOffchainBalanceAndTransactions()
                     }
-                } else {
+                }
+                
+                if i + 1 == utxos.count {
                     self.getOffchainBalanceAndTransactions()
                 }
             }
