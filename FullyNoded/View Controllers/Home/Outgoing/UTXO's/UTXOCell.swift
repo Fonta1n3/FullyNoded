@@ -23,10 +23,8 @@ class UTXOCell: UITableViewCell {
     private var isLocked: Bool!
     private unowned var delegate: UTXOCellDelegate!
     
+    @IBOutlet private weak var addressLabel: UILabel!
     @IBOutlet private weak var donateChange: UIButton!
-    //@IBOutlet private weak var lifeHashImageView: UIImageView!
-    //@IBOutlet private weak var fetchOriginOutlet: UIButton!
-    //@IBOutlet private weak var capGainLabel: UILabel!
     @IBOutlet public weak var roundeBackgroundView: UIView!
     @IBOutlet private weak var walletLabel: UILabel!// an address label
     @IBOutlet public weak var checkMarkImageView: UIImageView!
@@ -34,9 +32,6 @@ class UTXOCell: UITableViewCell {
     @IBOutlet private weak var spendableLabel: UILabel!
     @IBOutlet private weak var solvableLabel: UILabel!
     @IBOutlet private weak var amountLabel: UILabel!
-    //@IBOutlet private weak var txidLabel: UILabel!
-    //@IBOutlet private weak var voutLabel: UILabel!
-    //@IBOutlet private weak var addressLabel: UILabel!
     @IBOutlet private weak var isChangeBackground: UIView!
     @IBOutlet private weak var isChangeImageView: UIImageView!
     @IBOutlet private weak var isSolvableBackground: UIView!
@@ -45,10 +40,8 @@ class UTXOCell: UITableViewCell {
     @IBOutlet private weak var isDustImageView: UIImageView!
     @IBOutlet private weak var lockButtonOutlet: UIButton!
     @IBOutlet private weak var labelButtonOutlet: UIButton!
-    //@IBOutlet private weak var fiatLabel: UILabel!
     @IBOutlet private weak var reusedBackground: UIView!
     @IBOutlet private weak var reusedImageView: UIImageView!
-    @IBOutlet private weak var mixButtonOutlet: UIButton!
     @IBOutlet private weak var derivationLabel: UILabel!
     
     override func awakeFromNib() {
@@ -80,7 +73,7 @@ class UTXOCell: UITableViewCell {
         //lifeHashImageView.layer.magnificationFilter = .nearest
         
         selectionStyle = .none
-        mixButtonOutlet.alpha = 0
+        //mixButtonOutlet.alpha = 0
     }
     
     func configure(utxo: Utxo, isLocked: Bool, fxRate: Double?, isSats: Bool, isBtc: Bool, isFiat: Bool, delegate: UTXOCellDelegate) {
@@ -90,6 +83,9 @@ class UTXOCell: UITableViewCell {
         
         //txidLabel.text = utxo.txid
         walletLabel.text = utxo.label ?? "No label"
+        if utxo.label == "" {
+            walletLabel.text = "No label"
+        }
         //addressLabel.text = "address: \(utxo.address ?? "unknown")"
         //txidLabel.text = "txid: \(utxo.txid)"
         //voutLabel.text = "vout #: \(utxo.vout)"
@@ -145,10 +141,12 @@ class UTXOCell: UITableViewCell {
         if let path = utxo.path, let mixdepth = utxo.mixdepth {
             derivationLabel.text = path + " mixdepth: \(mixdepth)"
         }
+        
+        if let address = utxo.address {
+            addressLabel.text = address
+        }
                 
         if let amount = utxo.amount {
-            //let roundedAmount = rounded(number: amount)
-            
             if isFiat {
                 amountLabel.text = utxo.amountFiat ?? "missing fx rate"
             } else if isBtc {
@@ -164,19 +162,6 @@ class UTXOCell: UITableViewCell {
                 isDustImageView.image = UIImage(systemName: "checkmark")
                 isDustBackground.backgroundColor = .darkGray
             }
-            
-//            if let fxRate = fxRate {
-//                fiatLabel.text = (amount * fxRate).fiatString + " \(utxo.capGain ?? "")"
-//                capGainLabel.text = utxo.originValue ?? "missing origin rate"
-//
-//                if capGainLabel.text == "missing origin rate" {
-//                    fetchOriginOutlet.alpha = 1
-//                } else {
-//                    fetchOriginOutlet.alpha = 0
-//                }
-//            } else {
-//                fetchOriginOutlet.alpha = 0
-//            }
             
         }  else {
             isDustImageView.image = UIImage(systemName: "questionmark")
@@ -226,11 +211,11 @@ class UTXOCell: UITableViewCell {
             confirmationsLabel.textColor = .lightGray
         }
         
-        if utxo.isJoinMarket {
-            mixButtonOutlet.alpha = 0
-        } else {
-            mixButtonOutlet.alpha = 1
-        }
+//        if utxo.isJoinMarket {
+//            mixButtonOutlet.alpha = 0
+//        } else {
+//            mixButtonOutlet.alpha = 1
+//        }
     }
     
     func selectedAnimation() {
