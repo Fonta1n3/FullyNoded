@@ -31,7 +31,6 @@
 		0A212D9626CCD65E00BF6FD4 /* IRC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212D9526CCD65E00BF6FD4 /* IRC.swift */; };
 		0A212D9826CCD67C00BF6FD4 /* IRCServerInputParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212D9726CCD67C00BF6FD4 /* IRCServerInputParser.swift */; };
 		0A212DDE26D5DA9100BF6FD4 /* JoinMarketPit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212DDD26D5DA9100BF6FD4 /* JoinMarketPit.swift */; };
-		0A21442C26B4282300123EAC /* PromptForAuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */; };
 		0A2B4D702716ABCB00B607EE /* SparrowWalletImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2B4D6F2716ABCB00B607EE /* SparrowWalletImport.swift */; };
 		0A3013D8266B361E004DA35C /* LndRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3013D7266B361E004DA35C /* LndRpc.swift */; };
 		0A337D012700316E00AD087F /* WalletDir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A337D002700316E00AD087F /* WalletDir.swift */; };
@@ -252,7 +251,6 @@
 		0A212D9526CCD65E00BF6FD4 /* IRC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRC.swift; sourceTree = "<group>"; };
 		0A212D9726CCD67C00BF6FD4 /* IRCServerInputParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCServerInputParser.swift; sourceTree = "<group>"; };
 		0A212DDD26D5DA9100BF6FD4 /* JoinMarketPit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinMarketPit.swift; sourceTree = "<group>"; };
-		0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptForAuthViewController.swift; sourceTree = "<group>"; };
 		0A2B4D6F2716ABCB00B607EE /* SparrowWalletImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparrowWalletImport.swift; sourceTree = "<group>"; };
 		0A3013D7266B361E004DA35C /* LndRpc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LndRpc.swift; sourceTree = "<group>"; };
 		0A337D002700316E00AD087F /* WalletDir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDir.swift; sourceTree = "<group>"; };
@@ -820,7 +818,6 @@
 				D0F3919324C0147400EA8A2A /* QRScannerViewController.swift */,
 				D0DBC7052501CEFE00F6787C /* VerifyTransactionViewController.swift */,
 				D01EB4F225AD685700ADF6E4 /* TransactionLabelMemoViewController.swift */,
-				0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
@@ -1346,7 +1343,6 @@
 				0A643A21274A4CD5007F4F44 /* WalletCreated.swift in Sources */,
 				D08A92B5233C979600409D6E /* FiatConverter.swift in Sources */,
 				0A212D9226CBE17600BF6FD4 /* MixIndexes.swift in Sources */,
-				0A21442C26B4282300123EAC /* PromptForAuthViewController.swift in Sources */,
 				D0F3919624C0379200EA8A2A /* ImportWallet.swift in Sources */,
 				D0855FC622B08EE000DBBFC2 /* TorClient.swift in Sources */,
 				D03F65F124EFB25100901D06 /* KeySendViewController.swift in Sources */,
@@ -1576,7 +1572,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 393;
+				CURRENT_PROJECT_VERSION = 394;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1584,13 +1580,14 @@
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
 				INFOPLIST_FILE = FullyNoded/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Fully Noded";
 				INFOPLIST_PREPROCESS = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.473;
+				MARKETING_VERSION = 1.474;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1613,9 +1610,8 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNodedRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 393;
+				CURRENT_PROJECT_VERSION = 394;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1625,19 +1621,19 @@
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
 				INFOPLIST_FILE = FullyNoded/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Fully Noded";
 				INFOPLIST_PREPROCESS = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.473;
+				MARKETING_VERSION = 1.474;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "FullyNoded/FullyNoded-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
