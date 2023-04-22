@@ -26,6 +26,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     var isSats = false
     var isFiat = false
     
+    @IBOutlet weak var invoiceHeader: UILabel!
     @IBOutlet weak var denominationControl: UISegmentedControl!
     @IBOutlet weak var addressImageView: UIImageView!
     @IBOutlet var amountField: UITextField!
@@ -235,57 +236,30 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func createCLInvoice() {
-        var param:[String:Any] = ["expiry": 86400]
-        var description = labelField.text ?? "Fully Noded CLN invoice"
-        
-        if description == "" {
-            description = "Fully Noded CLN invoice"
-        }
-        
-        let label = "Fully Noded CLN invoice \(randomString(length: 10))"
-        param["label"] = label
-        
-        if amountField.text != "" {
-            if isBtc {
-                if let dbl = Double(amountField.text!) {
-                    param["amount_msat"] = Int(dbl * 100000000000.0)
-                }
-            } else if isSats {
-                if let int = Double(amountField.text!) {
-                    param["amount_msat"] = Int(int * 1000)
-                }
-            }
-        } else {
-            param["amount_msat"] = "any"
-        }
-        
-        if messageField.text != "" {
-            description += "\n\nmessage: " + messageField.text!
-        }
-        param["description"] = description
-        let commandId = UUID()
-        
-        LightningRPC.sharedInstance.command(id: commandId, method: .invoice, param: param) { [weak self] (uuid, response, errorDesc) in
+        DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
-            guard let dict = response as? [String:Any], let bolt11 = dict["bolt11"] as? String else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "we had an issue getting your lightning invoice")
-                return
-            }
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.showLightningInvoice(bolt11)
-            }
-            
-            if let warning = dict["warning_capacity"] as? String {
-                if warning != "" {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                        showAlert(vc: self, title: "Warning", message: warning)
-                    }
+
+            let alert = UIAlertController(title: "Select invoice type.", message: "", preferredStyle: .alert)
+
+            alert.addAction(UIAlertAction(title: "Bolt 11", style: .default, handler: { action in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+
+                    self.createBolt11Invoice()
                 }
-            }
+            }))
+
+            alert.addAction(UIAlertAction(title: "Bolt 12", style: .default, handler: { action in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+
+                    self.createBolt12Invoice()
+                }
+            }))
+
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
         }
     }
     
@@ -311,6 +285,121 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 self.getReceieveAddressForFullyNodedWallet(wallet)
             } else {
                 self.fetchAddress()
+            }
+        }
+    }
+    
+    private func createBolt11Invoice() {
+        var param:[String:Any] = ["expiry": 86400]
+        var description = labelField.text ?? "Fully Noded CLN invoice"
+        
+        if description == "" {
+            description = "Fully Noded CLN bolt11 invoice"
+        }
+        
+        let label = "Fully Noded CLN invoice \(randomString(length: 10))"
+        param["label"] = label
+        
+        if amountField.text != "" {
+            if isBtc {
+                if let dbl = Double(amountField.text!) {
+                    param["amount_msat"] = Int(dbl * 100000000000.0)
+                }
+            } else if isSats {
+                if let int = Double(amountField.text!) {
+                    param["amount_msat"] = Int(int * 1000)
+                }
+            }
+        } else {
+            param["amount_msat"] = "any"
+        }
+        
+        if messageField.text != "" {
+            description += "\n\n" + messageField.text!
+        }
+        param["description"] = description
+        let commandId = UUID()
+        
+        LightningRPC.sharedInstance.command(id: commandId, method: .invoice, param: param) { [weak self] (uuid, response, errorDesc) in
+            guard let self = self else { return }
+            
+            guard let dict = response as? [String:Any] else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "we had an issue getting your lightning invoice")
+                return
+            }
+            
+            var inv = "no invoice received..."
+            
+            if let bolt11 = dict["bolt11"] as? String {
+                inv = bolt11
+            } else if let bolt12 = dict["bolt12"] as? String {
+                inv = bolt12
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.showLightningInvoice(inv)
+            }
+            
+            if let warning = dict["warning_capacity"] as? String {
+                if warning != "" {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        showAlert(vc: self, title: "Warning", message: warning)
+                    }
+                }
+            }
+        }
+    }
+    
+    private func createBolt12Invoice() {
+        // amount description [issuer] [label] [quantity_max] [absolute_expiry] [recurrence] [recurrence_base] [recurrence_paywindow] [recurrence_limit] [single_use]
+        var param:[String:Any] = [:]
+        let defDesc = "Fully Noded CLN bolt12 offer"
+        var description = labelField.text ?? defDesc
+
+        if amountField.text != "" {
+            if isBtc {
+                if let dbl = Double(amountField.text!) {
+                    param["amount"] = Int(dbl * 100000000000.0)
+                }
+            } else if isSats {
+                if let int = Double(amountField.text!) {
+                    param["amount"] = Int(int * 1000)
+                }
+            }
+        } else {
+            param["amount"] = "any"
+        }
+
+        if messageField.text != "" {
+            description += "\n\n" + messageField.text!
+        }
+        param["description"] = description
+        let commandId = UUID()
+
+        LightningRPC.sharedInstance.command(id: commandId, method: .offer, param: param) { [weak self] (uuid, response, errorDesc) in
+            guard let self = self else { return }
+
+            guard let dict = response as? [String:Any], let offer = dict["bolt12"] as? String else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "we had an issue getting your lightning offer")
+                return
+            }
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+
+                self.showLightningInvoice(offer)
+            }
+
+            if let warning = dict["warning_capacity"] as? String {
+                if warning != "" {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        showAlert(vc: self, title: "Warning", message: warning)
+                    }
+                }
             }
         }
     }
@@ -471,8 +560,13 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     private func showLightningInvoice(_ invoice: String) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            if invoice.hasPrefix("lno") {
+                self.addressOutlet.text = "see bolt12 lightning offer below"
+                self.invoiceHeader.text = "Bolt12 Offer"
+            } else {
+                self.addressOutlet.text = "see bolt11 lightning invoice below"
+            }
             
-            self.addressOutlet.text = "see lightning invoice below"
             self.addressString = invoice
             self.qrView.image = self.generateQrCode(key: invoice)
             self.invoiceText.text = invoice
@@ -605,12 +699,4 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     @objc func dismissKeyboard() {
         view.endEditing(true)
     }
-    
-//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-//        if segue.identifier == "getAddressInfo" {
-//            guard let vc = segue.destination as? GetInfoViewController else { return }
-//            vc.address = addressString
-//            vc.getAddressInfo = true
-//        }
-//    }
 }

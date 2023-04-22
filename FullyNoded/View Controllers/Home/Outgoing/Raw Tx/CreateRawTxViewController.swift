@@ -417,7 +417,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBAction func pasteAction(_ sender: Any) {
         guard let item = UIPasteboard.general.string else { return }
         
-        if item.hasPrefix("lntb") || item.hasPrefix("lightning:") || item.hasPrefix("lnbc") || item.hasPrefix("lnbcrt") {
+        if item.hasPrefix("lntb") || item.hasPrefix("lightning:") || item.hasPrefix("lnbc") || item.hasPrefix("lnbcrt") || item.hasPrefix("lno") {
             decodeLighnting(invoice: item.replacingOccurrences(of: "lightning:", with: ""))
         } else if item.hasPrefix("bitcoin:") || item.hasPrefix("BITCOIN:") {
             processBIP21(url: item)
@@ -456,7 +456,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
         let lc = addressInput.lowercased()
         
-        if lc.hasPrefix("lntb") || lc.hasPrefix("lightning:") || lc.hasPrefix("lnbc") || lc.hasPrefix("lnbcrt") {
+        if lc.hasPrefix("lntb") || lc.hasPrefix("lightning:") || lc.hasPrefix("lnbc") || lc.hasPrefix("lnbcrt") || lc.hasPrefix("lno") {
             decodeLighnting(invoice: addressInput.lowercased().replacingOccurrences(of: "lightning:", with: ""))
         } else {
             
@@ -636,7 +636,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             return
         }
         
-        if item.hasPrefix("lntb") || item.hasPrefix("lightning:") || item.hasPrefix("lnbc") || item.hasPrefix("lnbcrt") {
+        if item.hasPrefix("lntb") || item.hasPrefix("lightning:") || item.hasPrefix("lnbc") || item.hasPrefix("lnbcrt") || item.hasPrefix("lno") {
             decodeLighnting(invoice: item.replacingOccurrences(of: "lightning:", with: ""))
         } else {
             promptWithdrawalLightning(item)
@@ -1567,57 +1567,169 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    private func decodeFromCL(_ invoice: String) {
+    private func parseOffer(offer: String, amountMsat: Int?) {
+        var param:[String:Any] = ["offer": offer]
+        // fetchinvoice offer [amount_msat] [quantity] [recurrence_counter] [recurrence_start] [recurrence_label] [timeout] [payer_note]
+        if let amountMsat = amountMsat {
+            param["amount_msat"] = amountMsat
+            self.fetchInvoice(param: param)
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+
+                guard let amountText = self.amountInput.text, amountText != "" else {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "No amount specified.", message: "You need to enter an amount to send for an invoice that does not include one.")
+                    return
+                }
+
+                guard let msats = self.getMsatAmount(amountText: amountText) else {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "", message: "There was an issue converting the amount to msats.")
+                    return
+                }
+
+                param["amount_msat"] = msats
+                self.fetchInvoice(param: param)
+            }
+        }
+    }
+    
+    private func fetchInvoice(param: [String:Any]) {
         let commandId = UUID()
+        var paramToUse:[String:Any] = param
         
-        LightningRPC.sharedInstance.command(id: commandId, method: .decodepay, param: ["bolt11": invoice]) { [weak self] (uuid, response, errorDesc) in
-            guard let self = self, commandId == uuid else { return }
-            
-            self.spinner.removeConnectingView()
-            
-            guard let dict = response as? [String:Any] else {
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error")
+        LightningRPC.sharedInstance.command(id: commandId, method: .fetchinvoice, param: param) { [weak self] (id, response, errorDesc) in
+            guard let self = self else { return }
+
+            guard let response = response as? [String:Any] else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "There was an issue fetching the invoice.", message: errorDesc ?? "Unknown error.")
+                return
+            }
+            guard let invoice = response["invoice"] as? String else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "There was an issue fetching the invoice.", message: "No invoice returned from fetchinvoice.")
                 return
             }
             
-            if let _ = dict["msatoshi"] as? Int {
-                self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: nil)
+            paramToUse["num_msat"] = param["amount_msat"]
+
+            self.promptToSendLightningPayment(invoice: invoice, dict: param, msat: nil)
+        }
+    }
+    
+    private func decodeFromCL(_ invoice: String) {
+        let commandId = UUID()
+        if invoice.hasPrefix("lno") {
+            LightningRPC.sharedInstance.command(id: commandId, method: .decode, param: [invoice]) { [weak self] (id, response, errorDesc) in
+                guard let self = self else { return }
+
+                guard let response = response as? [String:Any],
+                        let type = response["type"] as? String else {
+                    self.spinner.removeConnectingView()
+                    return
+                }
+                switch type {
+                case "bolt12 offer":
+                    // offer_amount_msat is a string
+                    if let msatAmount = response["offer_amount_msat"] as? Int {
+                        self.parseOffer(offer: invoice, amountMsat: msatAmount)
+                    } else if var msatAmount = response["offer_amount_msat"] as? String {
+                        msatAmount = msatAmount.replacingOccurrences(of: "msat", with: "")
+                        guard let msatAmountInt = Int(msatAmount) else {
+                            self.spinner.removeConnectingView()
+                            showAlert(vc: self, title: "", message: "Unable to convert Core Lightning msat string to int.")
+                            return
+                        }
+                        
+                        self.parseOffer(offer: invoice, amountMsat: msatAmountInt)
+                    }
+                    
+                default:
+                    break
+                }
+            }
+        } else {
+            LightningRPC.sharedInstance.command(id: commandId, method: .decodepay, param: ["bolt11": invoice]) { [weak self] (uuid, response, errorDesc) in
+                guard let self = self, commandId == uuid else { return }
                 
-            } else {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
+                self.spinner.removeConnectingView()
+                
+                guard let dict = response as? [String:Any] else {
+                    showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error")
+                    return
+                }
+                
+                if let _ = dict["msatoshi"] as? Int {
+                    self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: nil)
                     
-                    guard let amountText = self.amountInput.text, amountText != "" else {
-                        self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "No amount specified.", message: "You need to enter an amount to send for an invoice that does not include one.")
-                        return
-                    }
-                    
-                    let dblAmount = amountText.doubleValue
-                    
-                    guard dblAmount > 0.0 else {
-                        self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "No amount specified.", message: "You need to enter an amount to send for an invoice that does not include one.")
-                        return
-                    }
-                    
-                    if self.isFiat {
-                        guard let fxRate = self.fxRate else { return }
-                        let btcamount = rounded(number: dblAmount / fxRate)
-                        let msats = Int(btcamount * 100000000000.0)
+                } else {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        guard let amountText = self.amountInput.text, amountText != "" else {
+                            self.spinner.removeConnectingView()
+                            showAlert(vc: self, title: "No amount specified.", message: "You need to enter an amount to send for an invoice that does not include one.")
+                            return
+                        }
+                        
+                        guard let msats = self.getMsatAmount(amountText: amountText) else {
+                            self.spinner.removeConnectingView()
+                            showAlert(vc: self, title: "", message: "There was an issue converting the amount to msats.")
+                            return
+                        }
+                        
                         self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: msats)
                         
-                    } else if self.isSats {
-                        let msats = Int(dblAmount * 1000.0)
-                        self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: msats)
-                        
-                    } else {
-                        let msats = Int(dblAmount * 100000000000.0)
-                        self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: msats)
-                        
+                        let dblAmount = amountText.doubleValue
+
+                        guard dblAmount > 0.0 else {
+                            self.spinner.removeConnectingView()
+                            showAlert(vc: self, title: "No amount specified.", message: "You need to enter an amount to send for an invoice that does not include one.")
+                            return
+                        }
+
+                        if self.isFiat {
+                            guard let fxRate = self.fxRate else { return }
+                            let btcamount = rounded(number: dblAmount / fxRate)
+                            let msats = Int(btcamount * 100000000000.0)
+
+
+                        } else if self.isSats {
+                            let msats = Int(dblAmount * 1000.0)
+                            self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: msats)
+
+                        } else {
+                            let msats = Int(dblAmount * 100000000000.0)
+                            self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: msats)
+
+                        }
                     }
                 }
             }
+       }
+    }
+    
+    private func getMsatAmount(amountText: String) -> Int? {
+        let dblAmount = amountText.doubleValue
+        
+        guard dblAmount > 0.0 else {
+            self.spinner.removeConnectingView()
+            showAlert(vc: self, title: "No amount specified.", message: "You need to enter an amount to send for an invoice that does not include one.")
+            return nil
+        }
+        
+        if self.isFiat {
+            guard let fxRate = self.fxRate else { return nil }
+            let btcamount = rounded(number: dblAmount / fxRate)
+            return Int(btcamount * 100000000000.0)
+            
+        } else if self.isSats {
+            return Int(dblAmount * 1000.0)
+            
+        } else {
+            return Int(dblAmount * 100000000000.0)
         }
     }
     
@@ -1932,7 +2044,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     
                     DispatchQueue.main.async { [unowned thisVc = self] in
                         let potentialLightning = addrss.lowercased()
-                        if potentialLightning.hasPrefix("lntb") || potentialLightning.hasPrefix("lightning:") || potentialLightning.hasPrefix("lnbc") || potentialLightning.hasPrefix("lnbcrt") {
+                        if potentialLightning.hasPrefix("lntb") || potentialLightning.hasPrefix("lightning:") || potentialLightning.hasPrefix("lnbc") || potentialLightning.hasPrefix("lnbcrt"), potentialLightning.hasPrefix("lno") {
                             thisVc.decodeLighnting(invoice: potentialLightning.replacingOccurrences(of: "lightning:", with: ""))
                         } else {
                             thisVc.processBIP21(url: addrss)
