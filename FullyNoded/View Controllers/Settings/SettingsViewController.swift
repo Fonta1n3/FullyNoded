@@ -13,7 +13,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     let ud = UserDefaults.standard
     let spinner = ConnectingView()
-    private var authenticated = false
     @IBOutlet var settingsTable: UITableView!
     
     private let blockchainInfoCurrencies:[[String:String]] = [
@@ -58,24 +57,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         if UserDefaults.standard.object(forKey: "useBlockchainInfo") == nil {
             UserDefaults.standard.set(true, forKey: "useBlockchainInfo")
-        }
-        
-        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
-        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
-        
-        guard authenticated else {
-            self.authenticateWith2FA { [weak self] response in
-                guard let self = self else { return }
-                
-                self.authenticated = response
-                
-                if !response {
-                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access settings unless you successfully authenticate with 2FA.")
-                } else {
-                    self.settingsTable.reloadData()
-                }
-            }
-            return
         }
     }
 
@@ -291,13 +272,11 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        guard authenticated else { return 0 }
         return 4
     }
     
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard authenticated else { return 0 }
         if section == 2 {
             return 2
         } else if section == 3 {

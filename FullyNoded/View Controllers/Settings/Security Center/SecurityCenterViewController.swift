@@ -28,7 +28,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 6
+        return 5
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -177,18 +177,11 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             }
             
         case 1:
-            if KeyChain.getData("userIdentifier") == nil {
-                add2fa()
-            } else {
-                promptToDisable2fa()
-            }
-            //showAlert(vc: self, title: "", message: "This feature is not available for direct download.")
-        case 2:
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.performSegue(withIdentifier: "addPasswordSegue", sender: vc)
             }
             
-        case 3:
+        case 2:
             switch indexPath.row {
             case 0:
                 encryptWallet()
@@ -206,7 +199,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                 break
             }
             
-        case 4:
+        case 3:
             if ud.object(forKey: "bioMetricsDisabled") != nil {
                 ud.removeObject(forKey: "bioMetricsDisabled")
             } else {
@@ -216,7 +209,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                 tableView.reloadSections([4], with: .fade)
             }
             
-        case 5:
+        case 4:
             if ud.object(forKey: "passphrasePrompt") != nil {
                 ud.removeObject(forKey: "passphrasePrompt")
             } else {
@@ -238,96 +231,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     private func hash(_ text: String) -> Data? {
         return Data(hexString: Crypto.sha256hash(text))
     }
-    
-    private func promptToDisable2fa() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let title = "Disable 2fa?"
-            let message = "You need to input the apps unlock password in order to disable 2fa."
-            
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            
-            let disable = UIAlertAction(title: "Disable", style: .default) { [weak self] alertAction in
-                guard let self = self else { return }
-                
-                let text = (alert.textFields![0] as UITextField).text
-                
-                guard let text = text,
-                      let existingPassword = self.exisitingPassword(),
-                      let hash = self.hash(text),
-                      existingPassword == hash else {
-                    showAlert(vc: self, title: "", message: "Incorrect password.")
-                    
-                    return
-                }
-                
-                guard KeyChain.remove(key: "userIdentifier") else {
-                    showAlert(vc: self, title: "", message: "There was an error disabling 2fa.")
-                    
-                    return
-                }
-                
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.securityTable.reloadSections(IndexSet(arrayLiteral: 1), with: .none)
-                }
-                
-                showAlert(vc: self, title: "", message: "2FA disabled.")
-            }
-            
-            alert.addTextField { textField in
-                textField.placeholder = "app password"
-                textField.isSecureTextEntry = true
-                textField.keyboardAppearance = .dark
-            }
-            
-            alert.addAction(disable)
-            
-            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
-            alert.addAction(cancel)
-            
-            self.present(alert, animated:true, completion: nil)
-        }
-    }
-    
-    private func add2fa() {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
         
-        guard let twofaVC = storyboard.instantiateViewController(identifier: "2FA") as? PromptForAuthViewController else {
-            return
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            twofaVC.modalPresentationStyle = .fullScreen
-            self.present(twofaVC, animated: true, completion: nil)
-        }
-        
-        twofaVC.doneBlock = { [weak self] id in
-            guard let self = self else { return }
-            
-            guard let id = id else {
-                showAlert(vc: self, title: "2FA Failed", message: "")
-                return
-            }
-            
-            if KeyChain.set(id, forKey: "userIdentifier") {
-                showAlert(vc: self, title: "", message: "2FA added ✓")
-                
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.securityTable.reloadSections(IndexSet(arrayLiteral: 1), with: .none)
-                }
-            } else {
-                showAlert(vc: self, title: "", message: "2FA registration failed.")
-            }
-        }
-    }
-    
     func executNodeCommand(method: BTC_CLI_COMMAND) {
         let connectingView = ConnectingView()
         connectingView.addConnectingView(vc: self, description: "")

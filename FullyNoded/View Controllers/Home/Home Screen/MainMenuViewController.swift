@@ -226,37 +226,7 @@ class MainMenuViewController: UIViewController {
             }
         }
     }
-    
-    @IBAction func goToTools(_ sender: Any) {
-        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
-        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
         
-        guard authenticated else {
-            self.authenticateWith2FA { [weak self] response in
-                guard let self = self else { return }
-                
-                self.authenticated = response
-                
-                if !response {
-                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access tools unless you successfully authenticate with 2FA.")
-                } else {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        self.performSegue(withIdentifier: "segueToTools", sender: self)
-                    }
-                }
-            }
-            return
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.performSegue(withIdentifier: "segueToTools", sender: self)
-        }
-    }
-    
     @IBAction func showRemoteControl(_ sender: Any) {
         #if targetEnvironment(macCatalyst)
         // Code specific to Mac.
@@ -422,7 +392,6 @@ class MainMenuViewController: UIViewController {
     }
     
     func refreshDataNow() {
-        
         addNavBarSpinner()
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }

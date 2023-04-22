@@ -47,7 +47,6 @@ class ConfirmLightningPaymentViewController: UIViewController {
         close(confirmed: false)
     }
     
-    
     @IBAction func closeAction(_ sender: Any) {
         close(confirmed: false)
     }
