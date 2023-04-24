@@ -889,7 +889,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
     private func editLabel(_ utxo: Utxo) {
         // TODO: update address label via bitcoin core
-        
     }
     
     
