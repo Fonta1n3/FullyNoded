@@ -10,9 +10,6 @@ import UIKit
 
 protocol UTXOCellDelegate: AnyObject {
     func didTapToLock(_ utxo: Utxo)
-    func didTapToEditLabel(_ utxo: Utxo)
-    func didTapToFetchOrigin(_ utxo: Utxo)
-    func didTapDonateChange(_ utxo: Utxo)
 }
 
 class UTXOCell: UITableViewCell {
@@ -23,9 +20,7 @@ class UTXOCell: UITableViewCell {
     private unowned var delegate: UTXOCellDelegate!
     
     @IBOutlet private weak var addressLabel: UILabel!
-    @IBOutlet private weak var donateChange: UIButton!
     @IBOutlet public weak var roundeBackgroundView: UIView!
-    @IBOutlet private weak var walletLabel: UILabel!
     @IBOutlet public weak var checkMarkImageView: UIImageView!
     @IBOutlet private weak var confirmationsLabel: UILabel!
     @IBOutlet private weak var spendableLabel: UILabel!
@@ -38,7 +33,6 @@ class UTXOCell: UITableViewCell {
     @IBOutlet private weak var isDustBackground: UIView!
     @IBOutlet private weak var isDustImageView: UIImageView!
     @IBOutlet private weak var lockButtonOutlet: UIButton!
-    @IBOutlet private weak var labelButtonOutlet: UIButton!
     @IBOutlet private weak var reusedBackground: UIView!
     @IBOutlet private weak var reusedImageView: UIImageView!
     @IBOutlet private weak var derivationLabel: UILabel!
@@ -50,8 +44,6 @@ class UTXOCell: UITableViewCell {
         layer.borderWidth = 0.5
         layer.cornerRadius = 8
         
-        donateChange.alpha = 0
-                
         roundeBackgroundView.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
         isChangeBackground.clipsToBounds = true
@@ -77,19 +69,12 @@ class UTXOCell: UITableViewCell {
         self.isLocked = isLocked
         self.delegate = delegate
         
-        walletLabel.text = utxo.label ?? "No label"
-        if utxo.label == "" {
-            walletLabel.text = "No label"
-        }
-        
         if isLocked {
             lockButtonOutlet.setImage(UIImage(systemName: "lock"), for: .normal)
             lockButtonOutlet.tintColor = .systemPink
-            labelButtonOutlet.alpha = 0
         } else {
             lockButtonOutlet.setImage(UIImage(systemName: "lock.open"), for: .normal)
             lockButtonOutlet.tintColor = .systemTeal
-            labelButtonOutlet.alpha = 1
         }
         
         if utxo.reused != nil {
@@ -234,20 +219,8 @@ class UTXOCell: UITableViewCell {
         }
     }
     
-    @IBAction func labelButtonTapped(_ sender: Any) {
-        delegate.didTapToEditLabel(utxo)
-    }
-    
     @IBAction func lockButtonTapped(_ sender: Any) {
         delegate.didTapToLock(utxo)
-    }
-    
-    @IBAction func fetchOriginTapped(_ sender: Any) {
-        delegate.didTapToFetchOrigin(utxo)
-    }
-    
-    @IBAction func donateChangeTapped(_ sender: Any) {
-        delegate.didTapDonateChange(utxo)
     }
     
 }
