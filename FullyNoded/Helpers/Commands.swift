@@ -337,6 +337,7 @@ public enum BTC_CLI_COMMAND {
 
 
 public enum LIGHTNING_CLI: String {
+    case listconfigs = "listconfigs"
     case getinfo = "getinfo"
     case invoice = "invoice"
     case offer = "offer"

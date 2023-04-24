@@ -236,6 +236,27 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func createCLInvoice() {
+        let commandId = UUID()
+        spinner.addConnectingView(vc: self, description: "fetching cln config...")
+        LightningRPC.sharedInstance.command(id: commandId, method: .listconfigs, param: nil) { (id, response, errorDesc) in
+            guard id == commandId else { return }
+                    
+            guard let response = response as? [String:Any] else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error fetching config.", message: errorDesc ?? "unknown")
+                return
+            }
+            
+            guard let experimentalOffers = response["experimental-offers"] as? Bool, experimentalOffers else {
+                self.createBolt11Invoice()
+                return
+            }
+            
+            self.promptForBolt12Or11()
+        }
+    }
+    
+    private func promptForBolt12Or11() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
 
