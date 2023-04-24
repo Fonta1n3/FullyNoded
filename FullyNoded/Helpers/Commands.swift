@@ -251,6 +251,8 @@ public enum BTC_CLI_COMMAND {
             return p.param
         case .scantxoutset(let p):
             return p.param
+        case .lockunspent(let p):
+            return p.param
         default:
             return [:]
         }

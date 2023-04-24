@@ -887,15 +887,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func editLabel(_ utxo: Utxo) {
-        // TODO: update address label via bitcoin core
-    }
-    
-    
     private func lock(_ utxo: Utxo) {
         spinner.addConnectingView(vc: self, description: "locking...")
         
-        let param:Lock_Unspent = .init(["unlock":false, "transactions": ["txid":utxo.txid,"vout":utxo.vout]])
+        let param = Lock_Unspent(["unlock": false, "transactions": [["txid": utxo.txid,"vout": utxo.vout]]])
         
         Reducer.sharedInstance.makeCommand(command: .lockunspent(param)) { (response, errorMessage) in
             guard let success = response as? Bool else {
@@ -1439,23 +1434,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
 // MARK: UTXOCellDelegate
 
 extension UTXOViewController: UTXOCellDelegate {
-    
     func didTapToLock(_ utxo: Utxo) {
         lock(utxo)
     }
-    
-    func didTapToEditLabel(_ utxo: Utxo) {
-        editLabel(utxo)
-    }
-    
-    func didTapToFetchOrigin(_ utxo: Utxo) {
-        fetchOriginRate(utxo)
-    }
-    
-    func didTapDonateChange(_ utxo: Utxo) {
-        promptToDonateChange(utxo)
-    }
-    
 }
 
 // Mark: UITableViewDataSource
