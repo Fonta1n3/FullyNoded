@@ -143,6 +143,15 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
+    @IBAction func advancedAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self .performSegue(withIdentifier: "goToInvoiceSetting", sender: nil)
+        }
+    }
+    
+    
     @IBAction func switchCurrency(_ sender: UISegmentedControl) {
         switch sender.selectedSegmentIndex {
         case 0:
@@ -343,7 +352,11 @@ class ActiveWalletViewController: UIViewController {
                 CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
                     guard let self = self, let nodes = nodes else { return }
                     
-                    guard nodes.count > 0 else { return }
+                    guard nodes.count > 0 else {
+                        self.finishedLoading()
+                        showAlert(vc: self, title: "", message: "No nodes added.")
+                        return
+                    }
                     
                     var anyOffchain = false
                     
@@ -357,6 +370,9 @@ class ActiveWalletViewController: UIViewController {
                                 self.showOnchain = false
                                 self.showOffchain = true
                                 self.loadLightning()
+                            } else {
+                                self.finishedLoading()
+                                showAlert(vc: self, title: "", message: "No wallet currently toggled on.")
                             }
                         }
                     }
@@ -912,7 +928,6 @@ class ActiveWalletViewController: UIViewController {
     
     private func loadBalances() {
         NodeLogic.walletDisabled = walletDisabled
-        getWalletBalance()
         CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
             guard let self = self else { return }
             self.showOffchain = false
@@ -922,6 +937,7 @@ class ActiveWalletViewController: UIViewController {
                     self.showOffchain = true
                 }
             }
+            self.getWalletBalance()
         }
     }
     
@@ -989,8 +1005,10 @@ class ActiveWalletViewController: UIViewController {
     
     private func getWalletBalance() {
         if let _ = UserDefaults.standard.object(forKey: "walletName") as? String {
-            if wallet!.isJm {
-                JMRPC.sharedInstance.command(method: .listutxos(jmWallet: wallet!), param: nil) { [weak self] (response, errorDesc) in
+            guard let wallet = wallet else { return }
+            
+            if wallet.isJm {
+                JMRPC.sharedInstance.command(method: .listutxos(jmWallet: wallet), param: nil) { [weak self] (response, errorDesc) in
                     guard let self = self else { return }
                     guard let response = response as? [String:Any] else {
                         if errorDesc == "Invalid credentials." {
@@ -1572,9 +1590,7 @@ extension ActiveWalletViewController: UITableViewDelegate {
         switch indexPath.section {
         case 0:
             if sectionZeroLoaded {
-                /*if showOffchain && showOnchain {
-                    return offchainOnchainBalancesCell(indexPath)
-                } else */if showOnchain && !showOffchain {
+                if showOnchain && !showOffchain {
                     return onchainBalancesCell(indexPath)
                 } else if showOffchain && !showOnchain {
                     return offchainBalancesCell(indexPath)
