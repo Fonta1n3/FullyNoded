@@ -188,7 +188,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     } else if chain != "main" && desc.chain != "Mainnet" {
                         walletsToSendTo.append(walletStruct)
                     }
-                    
+                                        
                     if i + 1 == wallets.count {
                         self.selectWalletRecipient(walletsToSendTo)
                     }
@@ -327,14 +327,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
             self.addAddress("\(address)")
             
-            if self.jmWallet != nil {
-                showAlert(vc: self, title: "Address added ✓", message: "This address was fetched from joinmarket.")
-            } else {
-                OnchainUtils.getAddressInfo(address: address) { (addressInfo, message) in
-                    guard let addressInfo = addressInfo else { return }
-                    
-                    showAlert(vc: self, title: "Address added ✓", message: "Derived from \(wallet.label): \(addressInfo.desc), solvable: \(addressInfo.solvable)")
-                }
+            OnchainUtils.getAddressInfo(address: address) { (addressInfo, message) in
+                guard let addressInfo = addressInfo else { return }
+                
+                showAlert(vc: self, title: "Address added ✓", message: "Derived from \(wallet.label): \(addressInfo.desc), solvable: \(addressInfo.solvable)")
             }
         }
     }
