@@ -926,6 +926,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
     private func updateInputs() {
         inputArray.removeAll()
+        amountTotal = 0.0
         
         for utxo in selectedUTXOs {
             amountTotal += utxo.amount ?? 0.0
