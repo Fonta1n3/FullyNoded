@@ -13,12 +13,13 @@ import LibWally
 class AccountMap {
     
     class func create(wallet: Wallet) -> String? {
-        var primDesc = processedDesc(wallet.receiveDescriptor)
+        guard var primDesc = processedDesc(wallet.receiveDescriptor) else { return nil }
         var watching = [String]()
         
         if wallet.watching != nil {
             for desc in wallet.watching! {
-                watching.append(processedDesc(desc))
+                guard let processedWatchingDesc = processedDesc(desc) else { return nil }
+                watching.append(processedWatchingDesc)
             }
         }
         
@@ -47,15 +48,26 @@ class AccountMap {
             }
         }
         
-        let dict = ["descriptor":"\(primDesc)", "blockheight":Int64(wallet.blockheight),"label":wallet.label,"watching":watching] as [String : Any]
+        let dict = [
+            "descriptor":"\(primDesc)",
+            "blockheight":Int64(wallet.blockheight),
+            "label":wallet.label,
+            "watching":watching
+        ] as [String : Any]
         
         return dict.json()
     }
     
-    class func processedDesc(_ desc: String) -> String {
+    class func processedDesc(_ desc: String) -> String? {
+        guard desc != "" else {
+            return nil
+        }
         let processedDesc = desc.replacingOccurrences(of: "'", with: "h")
         let arr = processedDesc.split(separator: "#")
         
+        guard arr.count > 0 else {
+            return nil
+        }
         return "\(arr[0])"
     }
     

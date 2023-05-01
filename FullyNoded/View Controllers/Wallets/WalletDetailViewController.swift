@@ -173,12 +173,22 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                             self.coinType = "1"
                         }
                         
-                        self.json = AccountMap.create(wallet: self.wallet) ?? ""
+                        guard let json = AccountMap.create(wallet: self.wallet) else {
+                            showAlert(vc: self, title: "", message: "Unable to derive account map.")
+                            return
+                        }
+                        
+                        self.json = json
                         
                         let generator = QRGenerator()
                         generator.textInput = self.json
                         self.backupText = self.json
                         self.backupQrImage = generator.getQRCode()
+                        
+                        guard self.wallet.receiveDescriptor != "" else {
+                            showAlert(vc: self, title: "", message: "Unable to get receiev descriptor")
+                            return
+                        }
                         
                         if let urOutput = URHelper.descriptorToUrOutput(Descriptor(self.wallet.receiveDescriptor)) {
                             generator.textInput = urOutput.uppercased()
