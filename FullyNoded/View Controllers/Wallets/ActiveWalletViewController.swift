@@ -344,6 +344,8 @@ class ActiveWalletViewController: UIViewController {
         sectionZeroLoaded = false
         existingWallet = ""
         walletLabel = ""
+        transactionArray.removeAll()
+        walletTable.reloadData()
         
         activeWallet { [weak self] wallet in
             guard let self = self else { return }
@@ -371,8 +373,18 @@ class ActiveWalletViewController: UIViewController {
                                 self.showOffchain = true
                                 self.loadLightning()
                             } else {
-                                self.finishedLoading()
-                                showAlert(vc: self, title: "", message: "No wallet currently toggled on.")
+                                print("we here")
+                                guard let walletName = UserDefaults.standard.string(forKey: "walletName") else {
+                                    self.finishedLoading()
+                                    showAlert(vc: self, title: "", message: "No wallet currently toggled on.")
+                                    return
+                                }
+                                
+                                self.showOnchain = true
+                                self.existingWallet = walletName
+                                self.walletLabel = walletName
+                                self.loadBalances()
+                                
                             }
                         }
                     }
@@ -1005,7 +1017,42 @@ class ActiveWalletViewController: UIViewController {
     
     private func getWalletBalance() {
         if let _ = UserDefaults.standard.object(forKey: "walletName") as? String {
-            guard let wallet = wallet else { return }
+            
+            func getOnchainWalletBalance() {
+                OnchainUtils.getBalance { [weak self] (balance, message) in
+                    guard let self = self else { return }
+                    
+                    guard let balance = balance else {
+                        self.removeSpinner()
+                        if (message ?? "").hasPrefix("loadwallet") {
+                            self.chooseWallet()
+                        } else {
+                            showAlert(vc: self, title: "", message: message ?? "Unknown error getting balance.")
+                        }
+                        
+                        return
+                    }
+                    
+                    DispatchQueue.main.async {
+                        self.onchainBalanceBtc = String(balance)
+                        self.onchainBalanceSats = balance.sats.replacingOccurrences(of: " sats", with: "")
+                        
+                        if let exchangeRate = self.fxRate {
+                            let onchainBalanceFiat = balance * exchangeRate
+                            self.onchainBalanceFiat = round(onchainBalanceFiat).fiatString
+                        }
+                        
+                        self.sectionZeroLoaded = true
+                        self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
+                        self.getWalletInfo()
+                    }
+                }
+            }
+            
+            guard let wallet = wallet else {
+                getOnchainWalletBalance()
+                return
+            }
             
             if wallet.isJm {
                 JMRPC.sharedInstance.command(method: .listutxos(jmWallet: wallet), param: nil) { [weak self] (response, errorDesc) in
@@ -1052,34 +1099,7 @@ class ActiveWalletViewController: UIViewController {
                     }
                 }
             } else {
-                OnchainUtils.getBalance { [weak self] (balance, message) in
-                    guard let self = self else { return }
-                    
-                    guard let balance = balance else {
-                        self.removeSpinner()
-                        if (message ?? "").hasPrefix("loadwallet") {
-                            self.chooseWallet()
-                        } else {
-                            showAlert(vc: self, title: "", message: message ?? "Unknown error getting balance.")
-                        }
-                        
-                        return
-                    }
-                    
-                    DispatchQueue.main.async {
-                        self.onchainBalanceBtc = String(balance)
-                        self.onchainBalanceSats = balance.sats.replacingOccurrences(of: " sats", with: "")
-                        
-                        if let exchangeRate = self.fxRate {
-                            let onchainBalanceFiat = balance * exchangeRate
-                            self.onchainBalanceFiat = round(onchainBalanceFiat).fiatString
-                        }
-                        
-                        self.sectionZeroLoaded = true
-                        self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                        self.getWalletInfo()
-                    }
-                }
+                getOnchainWalletBalance()
             }
         } else {
             chooseWallet()
