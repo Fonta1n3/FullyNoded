@@ -25,7 +25,6 @@ class MainMenuViewController: UIViewController {
     var dataRefresher = UIBarButtonItem()
     var viewHasLoaded = false
     var isUnlocked = false
-    private var authenticated = false
     var nodeLabel = ""
     var detailImage = UIImage()
     var detailImageTint = UIColor()
