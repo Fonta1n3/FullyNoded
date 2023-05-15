@@ -40,7 +40,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 3 {
+        if section == 2 {
             return 4
         } else {
             return 1
@@ -69,17 +69,6 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             background.backgroundColor = .systemGreen
             
         case 1:
-            if KeyChain.getData("userIdentifier") != nil {
-                label.text = "2FA enabled"
-                icon.image = UIImage(systemName: "checkmark.circle")
-                background.backgroundColor = .systemIndigo
-            } else {
-                label.text = "Register 2FA"
-                icon.image = UIImage(systemName: "person.badge.plus")
-                background.backgroundColor = .systemIndigo
-            }
-            
-        case 2:
             if KeyChain.getData("UnlockPassword") != nil {
                 label.text = "Reset"
                 icon.image = UIImage(systemName: "arrow.clockwise")
@@ -90,7 +79,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             
             background.backgroundColor = .systemBlue
             
-        case 3:
+        case 2:
             switch indexPath.row {
             case 0: label.text = "Set Passphrase"; icon.image = UIImage(systemName: "plus"); background.backgroundColor = .systemPink
             case 1: label.text = "Change Passphrase"; icon.image = UIImage(systemName: "arrow.clockwise") ; background.backgroundColor = .systemGreen
@@ -98,7 +87,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             case 3: label.text = "Decrypt"; icon.image = UIImage(systemName: "lock.open"); background.backgroundColor = .systemIndigo
             default: break}
                         
-        case 4:
+        case 3:
             if ud.object(forKey: "bioMetricsDisabled") != nil {
                 label.text = "Disabled"
                 label.textColor = .darkGray
@@ -111,7 +100,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             
             background.backgroundColor = .systemPurple
             
-        case 5:
+        case 4:
             if ud.object(forKey: "passphrasePrompt") != nil {
                 label.text = "On"
                 label.textColor = .lightGray
@@ -146,18 +135,15 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             textLabel.text = "Tor Authentication"
             
         case 1:
-            textLabel.text = "2FA"
-            
-        case 2:
             textLabel.text = "App Password"
             
-        case 3:
+        case 2:
             textLabel.text = "Wallet Encryption"
             
-        case 4:
+        case 3:
             textLabel.text = "Biometrics"
             
-        case 5:
+        case 4:
             textLabel.text = "Passphrase Prompt"
                         
         default:
@@ -206,7 +192,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                 ud.set(true, forKey: "bioMetricsDisabled")
             }
             DispatchQueue.main.async {
-                tableView.reloadSections([4], with: .fade)
+                tableView.reloadSections([3], with: .fade)
             }
             
         case 4:
@@ -216,7 +202,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                 ud.set(true, forKey: "passphrasePrompt")
             }
             DispatchQueue.main.async {
-                tableView.reloadSections([5], with: .fade)
+                tableView.reloadSections([4], with: .fade)
             }
             
         default:
