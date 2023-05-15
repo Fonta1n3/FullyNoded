@@ -131,6 +131,7 @@ public extension String {
         let dbl = Double(self)!
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = NumberFormatter.Style.decimal
+        numberFormatter.locale = Locale(identifier: "en_US")
         return numberFormatter.string(from: NSNumber(value:dbl))!
     }
     
@@ -151,17 +152,17 @@ public extension String {
     
     var doubleValue: Double {
         String.numberFormatter.decimalSeparator = "."
-        
+
         if let result =  String.numberFormatter.number(from: self) {
-            return result.doubleValue            
+            return result.doubleValue
         } else {
             String.numberFormatter.decimalSeparator = ","
-            
+
             if let result = String.numberFormatter.number(from: self) {
                 return result.doubleValue
             }
         }
-        
+
         return 0
     }
     
@@ -288,6 +289,7 @@ public extension Double {
     var withCommas: String {
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = NumberFormatter.Style.decimal
+        numberFormatter.locale = Locale(identifier: "en_US")
         return numberFormatter.string(from: NSNumber(value:self))!
     }
     
@@ -296,6 +298,7 @@ public extension Double {
         let satoshis = "\(arr[1])"
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = .decimal
+        numberFormatter.locale = Locale(identifier: "en_US")
         let arr1 = (numberFormatter.string(from: NSNumber(value:self))!).split(separator: ".")
         let numberWithCommas = "\(arr1[0])"
         return numberWithCommas + "." + satoshis
@@ -305,6 +308,7 @@ public extension Double {
         let numberFormatter = NumberFormatter()
         numberFormatter.maximumFractionDigits = 8
         numberFormatter.numberStyle = .decimal
+        numberFormatter.locale = Locale(identifier: "en_US")
         return numberFormatter.string(for: self) ?? ""
     }
     
@@ -410,6 +414,7 @@ public extension Int {
         let numberFormatter = NumberFormatter()
         numberFormatter.maximumFractionDigits = 8
         numberFormatter.numberStyle = .decimal
+        numberFormatter.locale = Locale(identifier: "en_US")
         return numberFormatter.string(for: self) ?? ""
     }
     
@@ -420,6 +425,7 @@ public extension Int {
     var withCommas: String {
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = NumberFormatter.Style.decimal
+        numberFormatter.locale = Locale(identifier: "en_US")
         return numberFormatter.string(from: NSNumber(value:self))!
     }
     
