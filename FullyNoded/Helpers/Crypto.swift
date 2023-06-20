@@ -27,17 +27,17 @@ enum Crypto {
         return P256.Signing.PrivateKey().rawRepresentation
     }
     
-    static func encryptForBackup(_ key: Data, _ data: Data) -> Data? {
-        return try? ChaChaPoly.seal(data, using: SymmetricKey(data: key)).combined
-    }
-    
-    static func decryptForBackup(_ key: Data, _ data: Data) -> Data? {
-        guard let box = try? ChaChaPoly.SealedBox.init(combined: data) else {
-                return nil
-        }
-        
-        return try? ChaChaPoly.open(box, using: SymmetricKey(data: key))
-    }
+//    static func encryptForBackup(_ key: Data, _ data: Data) -> Data? {
+//        return try? ChaChaPoly.seal(data, using: SymmetricKey(data: key)).combined
+//    }
+//
+//    static func decryptForBackup(_ key: Data, _ data: Data) -> Data? {
+//        guard let box = try? ChaChaPoly.SealedBox.init(combined: data) else {
+//                return nil
+//        }
+//
+//        return try? ChaChaPoly.open(box, using: SymmetricKey(data: key))
+//    }
     
     static func encrypt(_ data: Data) -> Data? {
         guard let key = KeyChain.getData("privateKey") else { return nil }

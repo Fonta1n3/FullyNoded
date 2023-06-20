@@ -39,7 +39,7 @@ class LightningRPC {
         }
     }
     
-    func command(id: UUID, method: LIGHTNING_CLI, param: [String:Any]?, completion: @escaping ((id: UUID, response: Any?, errorDesc: String?)) -> Void) {
+    func command(id: UUID, method: LIGHTNING_CLI, param: Any?, completion: @escaping ((id: UUID, response: Any?, errorDesc: String?)) -> Void) {
         CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
             guard let self = self else { return }
             

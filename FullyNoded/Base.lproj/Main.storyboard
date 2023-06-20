@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="nU0-zz-6p3">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="nU0-zz-6p3">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -15,11 +15,11 @@
             <objects>
                 <viewController hidesBottomBarWhenPushed="YES" id="zVU-YI-484" customClass="InvoiceSettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="dxG-zo-v78">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="623"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="603"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="dgY-D7-U76">
-                                <rect key="frame" x="0.0" y="93" width="375" height="530"/>
+                                <rect key="frame" x="0.0" y="93" width="375" height="510"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -87,7 +87,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="899-Et-cHw"/>
                     <connections>
-                        <outlet property="table" destination="dgY-D7-U76" id="X69-1u-M7s"/>
+                        <outlet property="table" destination="dgY-D7-U76" id="mhI-Nc-qFi"/>
                         <segue destination="Xxg-Pp-vvN" kind="show" identifier="getHDmusigAddress" id="mRa-gP-mZ0"/>
                         <segue destination="hL3-4s-vl7" kind="show" identifier="segueToBitcoinCoreWallets" id="2cS-RS-Ttc"/>
                         <segue destination="AU8-j7-403" kind="show" identifier="segueToImportFromAdvanced" id="nfO-IM-Ce0"/>
@@ -103,7 +103,7 @@
                 <navigationController id="eoA-7K-rj7" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="" image="bitcoinsign.square" catalog="system" id="w6p-mX-zdg"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="d6w-0p-4v0">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                        <rect key="frame" x="0.0" y="20" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="barTintColor" red="0.050706155599999997" green="0.05862525851" blue="0.071102283899999993" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <textAttributes key="titleTextAttributes">
@@ -123,7 +123,7 @@
             <objects>
                 <viewController id="Dwu-lj-4IN" customClass="ActiveWalletViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="vmz-O4-mSm">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="574"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="554"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Active Wallet" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="F1S-br-LjG">
@@ -133,7 +133,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="xuS-Az-tfm">
-                                <rect key="frame" x="0.0" y="107" width="375" height="371"/>
+                                <rect key="frame" x="0.0" y="107" width="375" height="351"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -464,7 +464,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SdT-Ui-L9v">
-                                <rect key="frame" x="8" y="486" width="359" height="80"/>
+                                <rect key="frame" x="8" y="466" width="359" height="80"/>
                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="Chg-OV-obp">
                                     <rect key="frame" x="0.0" y="0.0" width="359" height="80"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -534,7 +534,7 @@
                                                                 <color key="titleColor" systemColor="systemTealColor"/>
                                                             </state>
                                                             <connections>
-                                                                <action selector="invoiceSettings:" destination="Dwu-lj-4IN" eventType="touchUpInside" id="nCN-Kp-1Hg"/>
+                                                                <action selector="advancedAction:" destination="Dwu-lj-4IN" eventType="touchUpInside" id="Zpy-ib-jo9"/>
                                                             </connections>
                                                         </button>
                                                     </subviews>
@@ -690,7 +690,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="f4n-Bc-OMv">
-                                <rect key="frame" x="16" y="64" width="35" height="35"/>
+                                <rect key="frame" x="16" y="84" width="35" height="35"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Grp-op-Okh">
                                         <rect key="frame" x="5" y="5" width="25" height="25"/>
@@ -710,7 +710,7 @@
                                 </constraints>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Active Node" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Vqg-Pg-9UZ">
-                                <rect key="frame" x="65" y="65" width="294" height="33.5"/>
+                                <rect key="frame" x="65" y="85" width="294" height="33.5"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="33.5" id="9UE-wL-CK2"/>
                                 </constraints>
@@ -719,14 +719,14 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="Wwb-2Q-ja4">
-                                <rect key="frame" x="16" y="160" width="343" height="487"/>
+                                <rect key="frame" x="16" y="180" width="343" height="467"/>
                                 <color key="backgroundColor" red="0.1333139837" green="0.13334444170000001" blue="0.1333120763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EBH-pQ-wYC">
-                                <rect key="frame" x="16" y="105" width="343" height="24"/>
+                                <rect key="frame" x="16" y="125" width="343" height="24"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -771,7 +771,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="WFU-Fl-Gfe">
-                                <rect key="frame" x="0.0" y="129" width="375" height="538"/>
+                                <rect key="frame" x="0.0" y="149" width="375" height="518"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -838,20 +838,20 @@
                                 </connections>
                             </tableView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Fully Noded" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nrq-EZ-NHm">
-                                <rect key="frame" x="65" y="65" width="172.5" height="38.5"/>
+                                <rect key="frame" x="65" y="85" width="172.5" height="38.5"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="32"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_grey.png" translatesAutoresizingMaskIntoConstraints="NO" id="pxd-zp-3XW">
-                                <rect key="frame" x="16" y="64" width="41" height="40"/>
+                                <rect key="frame" x="16" y="84" width="41" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="41" id="48V-K5-SlG"/>
                                     <constraint firstAttribute="height" constant="40" id="NAP-2D-T6Y"/>
                                 </constraints>
                             </imageView>
                             <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="C5t-Vg-Ik3">
-                                <rect key="frame" x="16" y="59" width="343" height="44"/>
+                                <rect key="frame" x="16" y="79" width="343" height="44"/>
                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="23Z-c1-XHN">
                                     <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -888,7 +888,7 @@
                                 <blurEffect style="dark"/>
                             </visualEffectView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PnO-jn-Gk8">
-                                <rect key="frame" x="16" y="111" width="0.0" height="14"/>
+                                <rect key="frame" x="16" y="131" width="0.0" height="14"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="14" id="2sq-oN-Gmb"/>
                                 </constraints>
@@ -965,7 +965,7 @@
                 <navigationController extendedLayoutIncludesOpaqueBars="YES" id="2Yw-iO-uuQ" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="" image="signature" catalog="system" id="4VZ-HS-vwd"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="1UV-eZ-dfB">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                        <rect key="frame" x="0.0" y="20" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="barTintColor" red="0.050706155598163605" green="0.058625258505344391" blue="0.071102283895015717" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <textAttributes key="titleTextAttributes">
@@ -986,7 +986,7 @@
                 <navigationController extendedLayoutIncludesOpaqueBars="YES" id="jMw-oa-nuZ" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="" image="desktopcomputer" catalog="system" id="Eul-TR-b6l"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="FRo-C8-mMl">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                        <rect key="frame" x="0.0" y="20" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="barTintColor" red="0.050706155598163605" green="0.058625258505344391" blue="0.071102283895015717" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <textAttributes key="titleTextAttributes">
@@ -1010,7 +1010,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="JOf-3w-unO">
-                                <rect key="frame" x="16" y="112" width="343" height="447"/>
+                                <rect key="frame" x="16" y="132" width="343" height="427"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="inputOutputCell" rowHeight="448" id="1Zh-DT-bup">
@@ -1632,14 +1632,14 @@ xxxxx</string>
                                 </connections>
                             </tableView>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_grey.png" translatesAutoresizingMaskIntoConstraints="NO" id="hJq-tq-7nH">
-                                <rect key="frame" x="16" y="64" width="41" height="40"/>
+                                <rect key="frame" x="16" y="84" width="41" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="41" id="8wa-Tn-efh"/>
                                     <constraint firstAttribute="height" constant="40" id="JB2-VL-FBV"/>
                                 </constraints>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transaction Detail" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6FG-Rv-3x8">
-                                <rect key="frame" x="65" y="67.5" width="228.5" height="33.5"/>
+                                <rect key="frame" x="65" y="87.5" width="228.5" height="33.5"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -2051,87 +2051,6 @@ xxxxx</string>
             </objects>
             <point key="canvasLocation" x="-9623.2000000000007" y="1127.5862068965519"/>
         </scene>
-        <!--Prompt For Auth View Controller-->
-        <scene sceneID="l33-wA-QdN">
-            <objects>
-                <viewController storyboardIdentifier="2FA" useStoryboardIdentifierAsRestorationIdentifier="YES" id="4OV-0K-wFQ" customClass="PromptForAuthViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="bKw-Jx-c9s">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Enable &quot;Sign in with Apple&quot; as a form of two factor authentication?" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fkE-tE-4x2">
-                                <rect key="frame" x="16" y="82.5" width="343" height="55"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="55" id="oAy-Pt-ovq"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="20"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YH3-Ov-cPW">
-                                <rect key="frame" x="16" y="145.5" width="343" height="114"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="114" id="W2o-zr-tq1"/>
-                                </constraints>
-                                <string key="text">This adds an additional layer of security to your app password and allows you to reset the app in case of lost passwords. Your user ID is saved to the app locally so that only you may authenticate.</string>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="close" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IAB-3d-xww">
-                                <rect key="frame" x="319" y="20" width="40" height="40"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="f6G-9E-UbY"/>
-                                    <constraint firstAttribute="width" constant="40" id="kmq-fs-cbY"/>
-                                </constraints>
-                                <connections>
-                                    <action selector="closeAction:" destination="4OV-0K-wFQ" eventType="touchUpInside" id="Lzr-89-6uO"/>
-                                </connections>
-                            </button>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="lock" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="CZr-J3-e7l">
-                                <rect key="frame" x="16" y="20.5" width="41" height="39.5"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="41" id="DSn-iZ-Nnv"/>
-                                    <constraint firstAttribute="width" constant="41" id="Qeo-qC-C6T"/>
-                                </constraints>
-                            </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="TopLeft" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="2FA" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qUS-1A-18r">
-                                <rect key="frame" x="65" y="20.5" width="85" height="40"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="ZZf-wB-w1O"/>
-                                    <constraint firstAttribute="width" constant="85" id="nqK-aP-tzW"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="37"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="wK0-Ep-BKo"/>
-                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <constraints>
-                            <constraint firstItem="wK0-Ep-BKo" firstAttribute="trailing" secondItem="fkE-tE-4x2" secondAttribute="trailing" constant="16" id="1XV-MW-uSh"/>
-                            <constraint firstItem="fkE-tE-4x2" firstAttribute="top" secondItem="qUS-1A-18r" secondAttribute="bottom" constant="22" id="COP-9c-hMv"/>
-                            <constraint firstItem="CZr-J3-e7l" firstAttribute="top" secondItem="wK0-Ep-BKo" secondAttribute="top" constant="20" id="R9p-CW-3f2"/>
-                            <constraint firstItem="YH3-Ov-cPW" firstAttribute="top" secondItem="fkE-tE-4x2" secondAttribute="bottom" constant="8" symbolic="YES" id="RAj-b3-1JU"/>
-                            <constraint firstItem="qUS-1A-18r" firstAttribute="centerY" secondItem="CZr-J3-e7l" secondAttribute="centerY" id="RR1-lm-zkg"/>
-                            <constraint firstItem="YH3-Ov-cPW" firstAttribute="leading" secondItem="wK0-Ep-BKo" secondAttribute="leading" constant="16" id="Upj-OI-cA1"/>
-                            <constraint firstItem="IAB-3d-xww" firstAttribute="top" secondItem="wK0-Ep-BKo" secondAttribute="top" constant="20" id="Y7V-XK-pLg"/>
-                            <constraint firstItem="wK0-Ep-BKo" firstAttribute="trailing" secondItem="IAB-3d-xww" secondAttribute="trailing" constant="16" id="jlU-b4-jcA"/>
-                            <constraint firstItem="fkE-tE-4x2" firstAttribute="leading" secondItem="wK0-Ep-BKo" secondAttribute="leading" constant="16" id="nNo-qd-hik"/>
-                            <constraint firstItem="qUS-1A-18r" firstAttribute="leading" secondItem="CZr-J3-e7l" secondAttribute="trailing" constant="8" symbolic="YES" id="uuH-q0-kPk"/>
-                            <constraint firstItem="CZr-J3-e7l" firstAttribute="leading" secondItem="wK0-Ep-BKo" secondAttribute="leading" constant="16" id="y9y-mp-C28"/>
-                            <constraint firstItem="wK0-Ep-BKo" firstAttribute="trailing" secondItem="YH3-Ov-cPW" secondAttribute="trailing" constant="16" id="yqf-YB-XHD"/>
-                        </constraints>
-                    </view>
-                    <connections>
-                        <outlet property="bottomLabel" destination="YH3-Ov-cPW" id="WrE-8f-rKb"/>
-                        <outlet property="upperLabel" destination="fkE-tE-4x2" id="zr8-Bp-uJT"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="ddZ-VZ-oqM" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-12140" y="2281.7091454272863"/>
-        </scene>
         <!--Signer Detail View Controller-->
         <scene sceneID="r9q-c5-d2Z">
             <objects>
@@ -2141,7 +2060,7 @@ xxxxx</string>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="YbQ-Ro-DcZ">
-                                <rect key="frame" x="0.0" y="134" width="375" height="513"/>
+                                <rect key="frame" x="0.0" y="154" width="375" height="493"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="sectionIndexBackgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -2163,20 +2082,20 @@ xxxxx</string>
                                 </connections>
                             </tableView>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_grey.png" translatesAutoresizingMaskIntoConstraints="NO" id="hZi-yv-tkL">
-                                <rect key="frame" x="16" y="49" width="40" height="40"/>
+                                <rect key="frame" x="16" y="69" width="40" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="5ry-I9-EI0"/>
                                     <constraint firstAttribute="width" constant="40" id="Hsy-sq-yYa"/>
                                 </constraints>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Signer Details" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="j8B-ZJ-LGe">
-                                <rect key="frame" x="64" y="52" width="182.5" height="35"/>
+                                <rect key="frame" x="64" y="72" width="182.5" height="35"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="H3c-ew-Tc0">
-                                <rect key="frame" x="262" y="95" width="97" height="32"/>
+                                <rect key="frame" x="262" y="115" width="97" height="32"/>
                                 <segments>
                                     <segment title="main"/>
                                     <segment title="test"/>
@@ -2237,14 +2156,14 @@ xxxxx</string>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_grey.png" translatesAutoresizingMaskIntoConstraints="NO" id="L5G-vM-lwW">
-                                <rect key="frame" x="16" y="60" width="40" height="40"/>
+                                <rect key="frame" x="16" y="80" width="40" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="40" id="MNj-DJ-o0O"/>
                                     <constraint firstAttribute="height" constant="40" id="kR5-BL-tQS"/>
                                 </constraints>
                             </imageView>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="WVI-Gu-NZf">
-                                <rect key="frame" x="0.0" y="125" width="375" height="542"/>
+                                <rect key="frame" x="0.0" y="145" width="375" height="522"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -2306,7 +2225,7 @@ xxxxx</string>
                                 </connections>
                             </tableView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Signers" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bdK-RB-KcL">
-                                <rect key="frame" x="64" y="63" width="100.5" height="35"/>
+                                <rect key="frame" x="64" y="83" width="100.5" height="35"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -2352,7 +2271,7 @@ xxxxx</string>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" estimatedSectionHeaderHeight="-1" sectionFooterHeight="18" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="Z2d-EH-10T">
-                                <rect key="frame" x="16" y="128.5" width="343" height="518.5"/>
+                                <rect key="frame" x="16" y="148.5" width="343" height="498.5"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="externalWalletCell" id="2ym-7V-rvj">
@@ -2370,19 +2289,19 @@ xxxxx</string>
                                 </connections>
                             </tableView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="External Wallets" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="W5T-r8-p3j">
-                                <rect key="frame" x="16" y="44" width="210.5" height="35"/>
+                                <rect key="frame" x="16" y="64" width="210.5" height="35"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="The Fully Noded wallets which do *NOT* exist on the active node." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CiB-O2-jgz">
-                                <rect key="frame" x="16" y="87" width="343" height="33.5"/>
+                                <rect key="frame" x="16" y="107" width="343" height="33.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="sxS-fh-CfI">
-                                <rect key="frame" x="262" y="46" width="97" height="32"/>
+                                <rect key="frame" x="262" y="66" width="97" height="32"/>
                                 <segments>
                                     <segment title="main"/>
                                     <segment title="test"/>
@@ -2428,20 +2347,20 @@ xxxxx</string>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Fully Noded Wallets" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8nP-0s-PyI">
-                                <rect key="frame" x="65" y="66.5" width="259.5" height="35"/>
+                                <rect key="frame" x="65" y="86.5" width="259.5" height="35"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_grey.png" translatesAutoresizingMaskIntoConstraints="NO" id="mZI-8L-cXq">
-                                <rect key="frame" x="16" y="64" width="41" height="40"/>
+                                <rect key="frame" x="16" y="84" width="41" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="41" id="EUa-eJ-gft"/>
                                     <constraint firstAttribute="height" constant="40" id="PmC-Yk-A7l"/>
                                 </constraints>
                             </imageView>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="e5J-1l-ENr">
-                                <rect key="frame" x="0.0" y="239.5" width="375" height="359.5"/>
+                                <rect key="frame" x="0.0" y="259.5" width="375" height="339.5"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="fnWalletCell" rowHeight="54" id="MUh-Fj-cAe">
@@ -2491,7 +2410,7 @@ xxxxx</string>
                                 </connections>
                             </tableView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="6e5-ZU-x5X">
-                                <rect key="frame" x="16" y="118" width="343" height="113.5"/>
+                                <rect key="frame" x="16" y="138" width="343" height="113.5"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="The Fully Noded wallets which exist on the active node." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jn1-tW-gdG">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="33.5"/>
@@ -2593,7 +2512,7 @@ xxxxx</string>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="3xd-ni-TOq">
-                                <rect key="frame" x="58.5" y="120" width="258" height="34"/>
+                                <rect key="frame" x="58.5" y="140" width="258" height="34"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5Ld-xD-lht">
                                         <rect key="frame" x="0.0" y="0.0" width="24" height="34"/>
@@ -2631,13 +2550,13 @@ xxxxx</string>
                                 </subviews>
                             </stackView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add Signer" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QgJ-fl-5ec">
-                                <rect key="frame" x="16" y="62" width="145.5" height="35"/>
+                                <rect key="frame" x="16" y="82" width="145.5" height="35"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zy5-5j-O77">
-                                <rect key="frame" x="16" y="162" width="343" height="393"/>
+                                <rect key="frame" x="16" y="182" width="343" height="373"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" systemColor="systemGreenColor"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -2691,7 +2610,7 @@ xxxxx</string>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="hgF-Hw-8pz">
-                                <rect key="frame" x="0.0" y="107" width="375" height="560"/>
+                                <rect key="frame" x="0.0" y="127" width="375" height="540"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailLabelCell" rowHeight="50" id="JAd-yf-YW4">
@@ -3065,14 +2984,14 @@ xxxxx</string>
                                 </connections>
                             </tableView>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_grey.png" translatesAutoresizingMaskIntoConstraints="NO" id="zKw-nc-7b0">
-                                <rect key="frame" x="16" y="61" width="41" height="40"/>
+                                <rect key="frame" x="16" y="81" width="41" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="41" id="UJX-TO-Q6L"/>
                                     <constraint firstAttribute="height" constant="40" id="bDe-h1-Dd6"/>
                                 </constraints>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Wallet Details" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gGB-3u-F3p">
-                                <rect key="frame" x="65" y="63.5" width="179" height="35"/>
+                                <rect key="frame" x="65" y="83.5" width="179" height="35"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -3125,7 +3044,7 @@ xxxxx</string>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Create a Fully Noded Wallet" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZTq-Qt-Cb4">
-                                <rect key="frame" x="103" y="54" width="246" height="60"/>
+                                <rect key="frame" x="103" y="74" width="246" height="60"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="60" id="ooP-eN-KUm"/>
                                 </constraints>
@@ -3134,14 +3053,14 @@ xxxxx</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_grey.png" translatesAutoresizingMaskIntoConstraints="NO" id="OAM-QB-2gl">
-                                <rect key="frame" x="16" y="54" width="79" height="60"/>
+                                <rect key="frame" x="16" y="74" width="79" height="60"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="60" id="b5g-jg-tUQ"/>
                                     <constraint firstAttribute="width" constant="79" id="rAF-4K-N1S"/>
                                 </constraints>
                             </imageView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="11" translatesAutoresizingMaskIntoConstraints="NO" id="6zG-h6-wiF">
-                                <rect key="frame" x="16" y="122" width="343" height="330.5"/>
+                                <rect key="frame" x="16" y="142" width="343" height="330.5"/>
                                 <subviews>
                                     <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GO8-o8-fXl">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
@@ -3206,7 +3125,7 @@ xxxxx</string>
                                 </subviews>
                             </stackView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="47C-HD-wcH">
-                                <rect key="frame" x="16" y="487.5" width="343" height="167.5"/>
+                                <rect key="frame" x="16" y="507.5" width="343" height="167.5"/>
                                 <string key="text">Already have a wallet or cosigner? 
 
 Use the buttons in the top right to import whatever you've got.  
@@ -3279,25 +3198,25 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_grey.png" translatesAutoresizingMaskIntoConstraints="NO" id="M58-lH-WUq">
-                                <rect key="frame" x="16" y="61" width="41" height="40"/>
+                                <rect key="frame" x="16" y="81" width="41" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="jvp-Eg-ilI"/>
                                     <constraint firstAttribute="width" constant="41" id="mer-lH-gHB"/>
                                 </constraints>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="xpub/xprv import" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WjC-KR-sms">
-                                <rect key="frame" x="65" y="63.5" width="226" height="35"/>
+                                <rect key="frame" x="65" y="83.5" width="226" height="35"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="optional label" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="0B2-xL-1ut">
-                                <rect key="frame" x="16" y="127" width="343" height="34"/>
+                                <rect key="frame" x="16" y="147" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="xpub / xprv" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="fbb-jX-krx">
-                                <rect key="frame" x="16" y="169" width="343" height="34"/>
+                                <rect key="frame" x="16" y="189" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
@@ -3362,7 +3281,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Seed Words" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="U4A-gK-Vwb">
-                                <rect key="frame" x="16" y="64" width="159" height="35"/>
+                                <rect key="frame" x="16" y="84" width="159" height="35"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="35" id="nmI-AM-gab"/>
                                 </constraints>
@@ -3371,7 +3290,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 <nil key="highlightedColor"/>
                             </label>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="2NQ-HD-jgm">
-                                <rect key="frame" x="16" y="107" width="343" height="211"/>
+                                <rect key="frame" x="16" y="127" width="343" height="211"/>
                                 <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="211" id="13n-Ya-vyb"/>
@@ -3381,7 +3300,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="In order to recover this wallet you will need these seed words! Write them down and store them safely. " textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="8" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qI7-sy-PmB">
-                                <rect key="frame" x="21" y="326" width="333" height="72"/>
+                                <rect key="frame" x="21" y="346" width="333" height="72"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="1Nm-Tz-Pap"/>
                                 </constraints>
@@ -3390,7 +3309,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JEA-Zw-9G9">
-                                <rect key="frame" x="16" y="406" width="343" height="42"/>
+                                <rect key="frame" x="16" y="426" width="343" height="42"/>
                                 <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="42" id="Qqt-MW-TpE"/>
@@ -3438,18 +3357,18 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="pTq-E9-giu">
-                                <rect key="frame" x="16" y="122.5" width="343" height="34"/>
+                                <rect key="frame" x="16" y="142.5" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add your key" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jyF-jg-2cT">
-                                <rect key="frame" x="16" y="67" width="165" height="33.5"/>
+                                <rect key="frame" x="16" y="87" width="165" height="33.5"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Adt-ze-E3l">
-                                <rect key="frame" x="60" y="173" width="255" height="40"/>
+                                <rect key="frame" x="60" y="193" width="255" height="40"/>
                                 <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="255" id="DpR-tS-BaR"/>
@@ -3502,7 +3421,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Invoice" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jcJ-Y0-mDC">
-                                <rect key="frame" x="16" y="64" width="91" height="33.5"/>
+                                <rect key="frame" x="16" y="84" width="91" height="33.5"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -3534,7 +3453,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 </connections>
                             </button>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="3Du-u4-MHg">
-                                <rect key="frame" x="16" y="105" width="343" height="448"/>
+                                <rect key="frame" x="16" y="125" width="343" height="448"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PBP-HA-t9R">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="100"/>
@@ -3764,7 +3683,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 </constraints>
                             </stackView>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="0zs-Jb-ZYp">
-                                <rect key="frame" x="270" y="66" width="89" height="32"/>
+                                <rect key="frame" x="270" y="86" width="89" height="32"/>
                                 <segments>
                                     <segment title="btc"/>
                                     <segment title="sats"/>
@@ -3799,6 +3718,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <outlet property="denominationControl" destination="0zs-Jb-ZYp" id="JUA-dA-yCb"/>
                         <outlet property="fieldsBackground" destination="0BT-sN-BLU" id="ecl-N7-HqF"/>
                         <outlet property="invoiceBackground" destination="It9-Q4-iaP" id="Jkn-Nz-XYJ"/>
+                        <outlet property="invoiceHeader" destination="jcJ-Y0-mDC" id="nMc-IM-lFo"/>
                         <outlet property="invoiceText" destination="u7K-Aq-iOi" id="Bu1-01-7mj"/>
                         <outlet property="labelField" destination="vqa-Nl-Pcv" id="5Oe-5Q-2WN"/>
                         <outlet property="messageField" destination="ykL-jw-dGh" id="E5w-Ys-thb"/>
@@ -3818,7 +3738,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add a label" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="41X-LM-mml">
-                                <rect key="frame" x="16" y="64" width="343" height="73"/>
+                                <rect key="frame" x="16" y="84" width="343" height="73"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="73" id="xtY-Ka-kVA"/>
                                 </constraints>
@@ -3827,13 +3747,13 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 <nil key="highlightedColor"/>
                             </label>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Top-LU-ubL">
-                                <rect key="frame" x="16" y="145" width="343" height="34"/>
+                                <rect key="frame" x="16" y="165" width="343" height="34"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="19"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="I35-cn-vrC">
-                                <rect key="frame" x="88.5" y="187" width="198" height="44"/>
+                                <rect key="frame" x="88.5" y="207" width="198" height="44"/>
                                 <color key="backgroundColor" red="0.12791608967551313" green="0.14715240112100464" blue="0.16878568733857868" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="198" id="2qS-cL-Lin"/>
@@ -3883,13 +3803,13 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="     " lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tft-x5-9Sa">
-                                <rect key="frame" x="16" y="48" width="21.5" height="20.5"/>
+                                <rect key="frame" x="16" y="68" width="21.5" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="jXp-xP-J4h">
-                                <rect key="frame" x="16" y="570" width="343" height="77"/>
+                                <rect key="frame" x="16" y="590" width="343" height="57"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -3919,7 +3839,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 </connections>
                             </tableView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="TQR-MC-WaO">
-                                <rect key="frame" x="16" y="87" width="343" height="390"/>
+                                <rect key="frame" x="16" y="107" width="343" height="390"/>
                                 <subviews>
                                     <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6ok-Q8-SRj">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="141"/>
@@ -4232,7 +4152,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 </subviews>
                             </stackView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FTc-X9-DAY">
-                                <rect key="frame" x="249" y="55" width="110" height="23"/>
+                                <rect key="frame" x="249" y="75" width="110" height="23"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <color key="tintColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <state key="normal" title=" paste invoice" image="doc.on.clipboard" catalog="system">
@@ -4243,7 +4163,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HBB-RM-j15">
-                                <rect key="frame" x="105" y="524" width="165" height="38"/>
+                                <rect key="frame" x="105" y="544" width="165" height="38"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="38" id="3Zm-UY-uaT"/>
@@ -4258,7 +4178,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 </connections>
                             </button>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="Vac-p9-eJN">
-                                <rect key="frame" x="75.5" y="485" width="224" height="32"/>
+                                <rect key="frame" x="75.5" y="505" width="224" height="32"/>
                                 <segments>
                                     <segment title="standard"/>
                                     <segment title="blind"/>
@@ -4333,7 +4253,7 @@ Fully Noded does its best to support as many hardware and software wallet option
             <objects>
                 <viewController id="wvf-1r-iOF" customClass="WalletRecoveryViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="eHN-aR-qbd">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="574"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="554"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Master Wallet Recovery " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aWq-4E-F1y">
@@ -4394,7 +4314,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
             </objects>
             <point key="canvasLocation" x="2718" y="376"/>
         </scene>
-        <!--v0.6.1-->
+        <!--v0.6.7-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -4403,7 +4323,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="hcp-eG-lok">
-                                <rect key="frame" x="0.0" y="130" width="375" height="537"/>
+                                <rect key="frame" x="0.0" y="150" width="375" height="517"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -4608,14 +4528,14 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                 </connections>
                             </tableView>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_grey.png" translatesAutoresizingMaskIntoConstraints="NO" id="T5S-zJ-LLT">
-                                <rect key="frame" x="16" y="64" width="41" height="40"/>
+                                <rect key="frame" x="16" y="84" width="41" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="41" id="9eC-Dr-Xn0"/>
                                     <constraint firstAttribute="height" constant="40" id="WYi-1z-NO8"/>
                                 </constraints>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Settings" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mqH-Cg-6Ih">
-                                <rect key="frame" x="65" y="67" width="107" height="34"/>
+                                <rect key="frame" x="65" y="87" width="107" height="34"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -4635,7 +4555,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.6.1" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.6.7" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -4658,7 +4578,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="RkE-8N-Qp0">
-                                <rect key="frame" x="0.0" y="120.5" width="375" height="546.5"/>
+                                <rect key="frame" x="0.0" y="140.5" width="375" height="526.5"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -4748,7 +4668,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                 </connections>
                             </tableView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Node Manager" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="omk-V0-xkJ">
-                                <rect key="frame" x="16" y="58" width="343" height="33.5"/>
+                                <rect key="frame" x="16" y="78" width="343" height="33.5"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -4788,7 +4708,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="0lx-xC-W8X">
-                                <rect key="frame" x="0.0" y="121" width="375" height="546"/>
+                                <rect key="frame" x="0.0" y="141" width="375" height="526"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -4828,7 +4748,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                 </connections>
                             </tableView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bitcoin Core Wallets" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZZO-FM-7i6">
-                                <rect key="frame" x="16" y="58" width="255" height="33.5"/>
+                                <rect key="frame" x="16" y="78" width="255" height="33.5"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -4846,24 +4766,15 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="9U2-4Q-7li">
-                        <rightBarButtonItems>
-                            <barButtonItem systemItem="add" id="8fs-hn-IEB">
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <connections>
-                                    <action selector="addWallet:" destination="hL3-4s-vl7" id="MDt-Ln-FeB"/>
-                                </connections>
-                            </barButtonItem>
-                            <barButtonItem image="tray.and.arrow.up" catalog="system" id="8DT-la-hes">
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <connections>
-                                    <action selector="unloadAction:" destination="hL3-4s-vl7" id="b4f-ZR-ar2"/>
-                                </connections>
-                            </barButtonItem>
-                        </rightBarButtonItems>
+                        <barButtonItem key="rightBarButtonItem" image="tray.and.arrow.up" catalog="system" id="8DT-la-hes">
+                            <color key="tintColor" systemColor="systemTealColor"/>
+                            <connections>
+                                <action selector="unloadAction:" destination="hL3-4s-vl7" id="b4f-ZR-ar2"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="walletTable" destination="0lx-xC-W8X" id="Klm-jY-xfF"/>
-                        <segue destination="LeO-8H-YRG" kind="show" identifier="addWallet" id="JD3-Gj-368"/>
                         <segue destination="q5n-LM-fBL" kind="show" identifier="segueToUnloadWallets" id="hWM-KU-Jx9"/>
                     </connections>
                 </viewController>
@@ -4880,7 +4791,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="gto-Hh-JcM">
-                                <rect key="frame" x="0.0" y="120.5" width="375" height="546.5"/>
+                                <rect key="frame" x="0.0" y="140.5" width="375" height="526.5"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -4946,7 +4857,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                 </connections>
                             </tableView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Security Center" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xLP-Y3-URj">
-                                <rect key="frame" x="16" y="58" width="198.5" height="33.5"/>
+                                <rect key="frame" x="16" y="78" width="198.5" height="33.5"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -4997,135 +4908,6 @@ You can upload the wallets.fullynoded file that was created when you made the ba
             </objects>
             <point key="canvasLocation" x="-4199" y="-2109"/>
         </scene>
-        <!--Wallet Creator View Controller-->
-        <scene sceneID="Aww-uX-5PY">
-            <objects>
-                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="LeO-8H-YRG" customClass="WalletCreatorViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="XUe-zL-aQ3">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name your wallet" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IZF-qG-0un">
-                                <rect key="frame" x="16" y="51" width="226" height="35"/>
-                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="yr4-Lf-upp">
-                                <rect key="frame" x="16" y="92" width="343" height="34"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
-                            </textField>
-                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mQ4-50-wXU">
-                                <rect key="frame" x="44" y="156.5" width="51" height="31"/>
-                                <color key="onTintColor" systemColor="systemTealColor"/>
-                                <color key="thumbTintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <connections>
-                                    <action selector="hotSwitchAction:" destination="LeO-8H-YRG" eventType="valueChanged" id="4Lc-tr-Px2"/>
-                                </connections>
-                            </switch>
-                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="epA-lk-bVu">
-                                <rect key="frame" x="282" y="156.5" width="51" height="31"/>
-                                <color key="onTintColor" systemColor="systemTealColor"/>
-                                <color key="thumbTintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <connections>
-                                    <action selector="coldSwitchAction:" destination="LeO-8H-YRG" eventType="valueChanged" id="33f-Wa-zjb"/>
-                                </connections>
-                            </switch>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="COLD" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JMR-Sy-gib">
-                                <rect key="frame" x="284.5" y="134.5" width="44" height="14"/>
-                                <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
-                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="HOT" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="f61-yr-Dbh">
-                                <rect key="frame" x="51.5" y="134.5" width="34" height="14"/>
-                                <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
-                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BLANK" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i9p-p8-Hs4">
-                                <rect key="frame" x="161" y="134.5" width="53" height="14"/>
-                                <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
-                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vMx-dK-f85">
-                                <rect key="frame" x="163" y="156.5" width="51" height="31"/>
-                                <color key="onTintColor" systemColor="systemTealColor"/>
-                                <color key="thumbTintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <connections>
-                                    <action selector="blankSwitchAction:" destination="LeO-8H-YRG" eventType="valueChanged" id="TUD-QT-3gt"/>
-                                </connections>
-                            </switch>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="8" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nya-U9-hqq">
-                                <rect key="frame" x="16" y="195.5" width="343" height="134"/>
-                                <string key="text">HOT means the wallet will generate private keys for you.
-
-BLANK means no keys will be generated but you can import private keys.
-
-COLD means no keys will be generated and no private keys can be imported.</string>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <button opaque="NO" clipsSubviews="YES" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Uyl-mh-Ky9">
-                                <rect key="frame" x="16" y="349" width="343" height="53"/>
-                                <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="53" id="3fx-kM-L7O"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <state key="normal" title="Create">
-                                    <color key="titleColor" systemColor="systemTealColor"/>
-                                </state>
-                                <connections>
-                                    <action selector="create:" destination="LeO-8H-YRG" eventType="touchUpInside" id="lAC-5C-SHQ"/>
-                                </connections>
-                            </button>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="g16-v1-3f5"/>
-                        <color key="backgroundColor" red="0.050706155598163605" green="0.058625258505344391" blue="0.071102283895015717" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                        <constraints>
-                            <constraint firstItem="epA-lk-bVu" firstAttribute="top" secondItem="JMR-Sy-gib" secondAttribute="bottom" constant="8" id="4ge-8i-2fJ"/>
-                            <constraint firstItem="yr4-Lf-upp" firstAttribute="leading" secondItem="g16-v1-3f5" secondAttribute="leading" constant="16" id="5zN-No-NDL"/>
-                            <constraint firstItem="g16-v1-3f5" firstAttribute="trailing" secondItem="yr4-Lf-upp" secondAttribute="trailing" constant="16" id="6XY-XV-HaJ"/>
-                            <constraint firstItem="JMR-Sy-gib" firstAttribute="top" secondItem="yr4-Lf-upp" secondAttribute="bottom" constant="8.5" id="7bB-Nu-X4t"/>
-                            <constraint firstItem="Nya-U9-hqq" firstAttribute="top" secondItem="mQ4-50-wXU" secondAttribute="bottom" constant="8" id="9z7-Q6-Ajz"/>
-                            <constraint firstItem="g16-v1-3f5" firstAttribute="trailing" secondItem="IZF-qG-0un" secondAttribute="trailing" constant="133" id="BDq-Dl-Od7"/>
-                            <constraint firstItem="vMx-dK-f85" firstAttribute="centerX" secondItem="XUe-zL-aQ3" secondAttribute="centerX" id="C00-fO-bzh"/>
-                            <constraint firstItem="Nya-U9-hqq" firstAttribute="leading" secondItem="g16-v1-3f5" secondAttribute="leading" constant="16" id="CYU-KM-3m7"/>
-                            <constraint firstItem="epA-lk-bVu" firstAttribute="centerX" secondItem="JMR-Sy-gib" secondAttribute="centerX" id="FD8-sF-xN4"/>
-                            <constraint firstItem="IZF-qG-0un" firstAttribute="top" secondItem="g16-v1-3f5" secondAttribute="top" constant="7" id="Pxm-Ge-RZh"/>
-                            <constraint firstItem="mQ4-50-wXU" firstAttribute="top" secondItem="f61-yr-Dbh" secondAttribute="bottom" constant="8" id="RGi-cu-3pC"/>
-                            <constraint firstItem="f61-yr-Dbh" firstAttribute="top" secondItem="yr4-Lf-upp" secondAttribute="bottom" constant="8.5" id="RW4-Am-eE1"/>
-                            <constraint firstItem="g16-v1-3f5" firstAttribute="trailing" secondItem="epA-lk-bVu" secondAttribute="trailing" constant="44" id="Wak-gR-2OL"/>
-                            <constraint firstItem="Uyl-mh-Ky9" firstAttribute="top" secondItem="Nya-U9-hqq" secondAttribute="bottom" constant="19.5" id="Woi-mU-uxo"/>
-                            <constraint firstItem="g16-v1-3f5" firstAttribute="trailing" secondItem="Uyl-mh-Ky9" secondAttribute="trailing" constant="16" id="Y1k-HS-CcV"/>
-                            <constraint firstItem="i9p-p8-Hs4" firstAttribute="top" secondItem="yr4-Lf-upp" secondAttribute="bottom" constant="8.5" id="ZDq-S8-sfE"/>
-                            <constraint firstItem="g16-v1-3f5" firstAttribute="trailing" secondItem="Nya-U9-hqq" secondAttribute="trailing" constant="16" id="bFS-X7-RIS"/>
-                            <constraint firstItem="IZF-qG-0un" firstAttribute="leading" secondItem="g16-v1-3f5" secondAttribute="leading" constant="16" id="jrw-fR-hoR"/>
-                            <constraint firstItem="Uyl-mh-Ky9" firstAttribute="leading" secondItem="g16-v1-3f5" secondAttribute="leading" constant="16" id="l3F-UE-VR2"/>
-                            <constraint firstItem="yr4-Lf-upp" firstAttribute="top" secondItem="IZF-qG-0un" secondAttribute="bottom" constant="6" id="nYi-bc-6Qh"/>
-                            <constraint firstItem="vMx-dK-f85" firstAttribute="top" secondItem="i9p-p8-Hs4" secondAttribute="bottom" constant="8" id="vsa-4q-HG5"/>
-                            <constraint firstItem="mQ4-50-wXU" firstAttribute="leading" secondItem="g16-v1-3f5" secondAttribute="leading" constant="44" id="x30-0B-7qb"/>
-                            <constraint firstItem="mQ4-50-wXU" firstAttribute="centerX" secondItem="f61-yr-Dbh" secondAttribute="centerX" id="yLn-Ee-8hQ"/>
-                            <constraint firstItem="i9p-p8-Hs4" firstAttribute="centerX" secondItem="XUe-zL-aQ3" secondAttribute="centerX" id="zId-f2-K9w"/>
-                        </constraints>
-                    </view>
-                    <navigationItem key="navigationItem" id="jnM-Vc-M67"/>
-                    <connections>
-                        <outlet property="blankSwitchOutlet" destination="vMx-dK-f85" id="q6z-rD-IXU"/>
-                        <outlet property="coldSwitchOutlet" destination="epA-lk-bVu" id="Afp-8H-2vh"/>
-                        <outlet property="hotSwitchOutlet" destination="mQ4-50-wXU" id="go5-gK-hJm"/>
-                        <outlet property="textField" destination="yr4-Lf-upp" id="ZxM-kK-1IL"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="WGq-yb-hcm" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="4656.8000000000002" y="1188.7556221889056"/>
-        </scene>
         <!--App Password View Controller-->
         <scene sceneID="kuN-Nq-0VK">
             <objects>
@@ -5135,24 +4917,24 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="G5O-Yl-luJ">
-                                <rect key="frame" x="16" y="161" width="343" height="34"/>
+                                <rect key="frame" x="16" y="181" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="next" secureTextEntry="YES" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no" textContentType="new-password"/>
                             </textField>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="App Password" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tL2-J8-k43">
-                                <rect key="frame" x="16" y="64" width="182" height="34"/>
+                                <rect key="frame" x="16" y="84" width="182" height="34"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add unlock password" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="awR-fG-6eE">
-                                <rect key="frame" x="16" y="132" width="163" height="21"/>
+                                <rect key="frame" x="16" y="152" width="163" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hIn-Uo-p04">
-                                <rect key="frame" x="140" y="203" width="95" height="34"/>
+                                <rect key="frame" x="140" y="223" width="95" height="34"/>
                                 <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="34" id="8Yd-Hp-6KQ"/>
@@ -5167,7 +4949,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </connections>
                             </button>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3tH-h3-af5">
-                                <rect key="frame" x="16" y="269" width="343" height="378"/>
+                                <rect key="frame" x="16" y="289" width="343" height="358"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <string key="text">This password is never saved to the device. Only the hash of the password is saved. That way even if your device is hacked the thief would not be able to extract a password from it. It is extremely important you remember this password, for each failed attempt at unlocking the app a timeout period will double, this means 20 attempts will take around 30 days! Making brute forcing your password impossible. Even if you delete the app and reinstall it the timeout period will be remembered.</string>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -5213,30 +4995,30 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tor Authentication" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rpP-21-3Z5">
-                                <rect key="frame" x="16" y="64" width="233.5" height="33.5"/>
+                                <rect key="frame" x="16" y="84" width="233.5" height="33.5"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="yal-Te-OvI">
-                                <rect key="frame" x="16" y="160" width="343" height="34"/>
+                                <rect key="frame" x="16" y="180" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="next" secureTextEntry="YES" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Private Key" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1i0-rS-dgs">
-                                <rect key="frame" x="16" y="131.5" width="85" height="20.5"/>
+                                <rect key="frame" x="16" y="151.5" width="85" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Public Key" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nEN-fJ-IQg">
-                                <rect key="frame" x="16" y="224" width="79" height="20.5"/>
+                                <rect key="frame" x="16" y="244" width="79" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="descriptor:x25519:ckjbckjbckjbwdkcjbwkdjbcwkjdbc" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9uA-U1-aYX">
-                                <rect key="frame" x="16" y="252.5" width="343" height="45"/>
+                                <rect key="frame" x="16" y="272.5" width="343" height="45"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="45" id="HU3-Np-WCE"/>
                                 </constraints>
@@ -5245,7 +5027,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="8gH-bm-rKb">
-                                <rect key="frame" x="340" y="223.5" width="19" height="22"/>
+                                <rect key="frame" x="340" y="243.5" width="19" height="22"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wCH-QJ-4pU">
                                         <rect key="frame" x="0.0" y="0.0" width="19" height="22"/>
@@ -5258,7 +5040,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="4Dm-7E-1gc">
-                                <rect key="frame" x="341" y="131" width="18" height="22"/>
+                                <rect key="frame" x="341" y="151" width="18" height="22"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SpG-OR-6dZ">
                                         <rect key="frame" x="0.0" y="0.0" width="18" height="22"/>
@@ -5271,7 +5053,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </subviews>
                             </stackView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KvQ-lH-ysz">
-                                <rect key="frame" x="16" y="305" width="343" height="67"/>
+                                <rect key="frame" x="16" y="325" width="343" height="67"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="67" id="Vnq-Ms-2dR"/>
                                 </constraints>
@@ -5281,7 +5063,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="U3Q-gy-IV8">
-                                <rect key="frame" x="306" y="223" width="21" height="23"/>
+                                <rect key="frame" x="306" y="243" width="21" height="23"/>
                                 <color key="tintColor" systemColor="systemTealColor"/>
                                 <state key="normal" image="doc.on.doc" catalog="system"/>
                                 <connections>
@@ -5334,13 +5116,13 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Node Credentials" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DTI-AZ-owi">
-                                <rect key="frame" x="16" y="46" width="166" height="25.5"/>
+                                <rect key="frame" x="16" y="66" width="166" height="25.5"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="21"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="d6J-eJ-7Eu">
-                                <rect key="frame" x="104" y="79.5" width="255" height="32"/>
+                                <rect key="frame" x="104" y="99.5" width="255" height="32"/>
                                 <segments>
                                     <segment title="main"/>
                                     <segment title="test"/>
@@ -5352,7 +5134,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </connections>
                             </segmentedControl>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="9" translatesAutoresizingMaskIntoConstraints="NO" id="qBh-RP-hWz">
-                                <rect key="frame" x="16" y="118.5" width="343" height="884.5"/>
+                                <rect key="frame" x="16" y="138.5" width="343" height="884.5"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tcf-UB-YOb">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="20.5"/>
@@ -5653,7 +5435,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="Nr0-IP-E1K">
-                                <rect key="frame" x="0.0" y="146" width="375" height="521"/>
+                                <rect key="frame" x="0.0" y="166" width="375" height="501"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -5715,7 +5497,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </connections>
                             </tableView>
                             <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cW4-kO-AmG">
-                                <rect key="frame" x="16" y="53" width="35" height="35"/>
+                                <rect key="frame" x="16" y="73" width="35" height="35"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bolt.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="tbA-WM-HHW">
                                         <rect key="frame" x="5" y="5.5" width="25" height="24"/>
@@ -5735,19 +5517,19 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </constraints>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Lightning Node" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uhK-ee-N3A">
-                                <rect key="frame" x="59" y="53" width="201" height="35"/>
+                                <rect key="frame" x="59" y="73" width="201" height="35"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Onchain balance confirmed:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QRE-GA-P3f">
-                                <rect key="frame" x="16" y="96" width="181.5" height="17"/>
+                                <rect key="frame" x="16" y="116" width="181.5" height="17"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Onchain balance unconfirmed:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="E74-nJ-llU">
-                                <rect key="frame" x="16" y="121" width="197.5" height="17"/>
+                                <rect key="frame" x="16" y="141" width="197.5" height="17"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -5801,31 +5583,31 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Create a Channel" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bqn-kZ-3bA">
-                                <rect key="frame" x="59" y="63" width="226" height="35"/>
+                                <rect key="frame" x="59" y="83" width="226" height="35"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="t7F-SI-0t5">
-                                <rect key="frame" x="16" y="106" width="343" height="122"/>
+                                <rect key="frame" x="16" y="126" width="343" height="122"/>
                                 <string key="text">When using c-lightning channels are always funded from and closed to the active Fully Noded onchain wallet. For LND users the LND onchain wallet is used for funding, the channel closes to the active Fully Noded wallet.</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="SRg-gq-aWa">
-                                <rect key="frame" x="16" y="280" width="343" height="34"/>
+                                <rect key="frame" x="16" y="300" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="numberPad" keyboardAppearance="alert" returnKeyType="done"/>
                             </textField>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Enter an amount of satoshis to commit to the channel:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dQ2-EQ-aje">
-                                <rect key="frame" x="16" y="257" width="345" height="15"/>
+                                <rect key="frame" x="16" y="277" width="345" height="15"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="highlightedColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </label>
                             <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1Ed-BV-iZs">
-                                <rect key="frame" x="16" y="63" width="35" height="35"/>
+                                <rect key="frame" x="16" y="83" width="35" height="35"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="slider.horizontal.3" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="nGY-Ky-scY">
                                         <rect key="frame" x="5" y="6.5" width="25" height="21.5"/>
@@ -5851,13 +5633,13 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="To create the channel scan or paste a QR code in the format of publickey@ip:port (standard URI format)." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bmf-3G-mD0">
-                                <rect key="frame" x="16" y="322" width="343" height="29"/>
+                                <rect key="frame" x="16" y="342" width="343" height="29"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LVT-jy-ind">
-                                <rect key="frame" x="103" y="366" width="167" height="40"/>
+                                <rect key="frame" x="103" y="386" width="167" height="40"/>
                                 <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="98w-8t-E49"/>
@@ -5872,7 +5654,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vh2-gq-tc4">
-                                <rect key="frame" x="104" y="414" width="167" height="40"/>
+                                <rect key="frame" x="104" y="434" width="167" height="40"/>
                                 <color key="backgroundColor" red="0.1215686351" green="0.1294117719" blue="0.1411764771" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="167" id="c8F-pG-1vo"/>
@@ -5938,13 +5720,13 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Loaded Wallets" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZkU-ZP-78k">
-                                <rect key="frame" x="16" y="58" width="194.5" height="33.5"/>
+                                <rect key="frame" x="16" y="78" width="194.5" height="33.5"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="U8O-yQ-otK">
-                                <rect key="frame" x="16" y="114" width="343" height="553"/>
+                                <rect key="frame" x="16" y="134" width="343" height="533"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="activeWallet" rowHeight="54" id="yHC-bM-Lzg">
@@ -5986,7 +5768,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </connections>
                             </tableView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="tap each wallet to unload it" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tif-ds-sW3">
-                                <rect key="frame" x="16" y="96" width="152.5" height="15"/>
+                                <rect key="frame" x="16" y="116" width="152.5" height="15"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -6022,7 +5804,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                 <navigationController extendedLayoutIncludesOpaqueBars="YES" id="Tb8-sX-niL" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="" image="gear" catalog="system" id="Ng5-vU-qtu"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="MnD-yK-HXB">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                        <rect key="frame" x="0.0" y="20" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <color key="barTintColor" red="0.050706155598163605" green="0.058625258505344391" blue="0.071102283895015717" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -6047,17 +5829,17 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" allowsMultipleSelection="YES" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="CFb-Jk-h9Z">
-                                <rect key="frame" x="0.0" y="145.5" width="375" height="521.5"/>
+                                <rect key="frame" x="0.0" y="165.5" width="375" height="501.5"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </tableView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Unlocked UTXO's" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QBy-lG-bbB">
-                                <rect key="frame" x="16" y="74" width="225" height="33.5"/>
+                                <rect key="frame" x="16" y="94" width="225" height="33.5"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="circle.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="fB4-rR-UXb">
-                                <rect key="frame" x="16" y="116" width="19" height="21"/>
+                                <rect key="frame" x="16" y="136" width="19" height="21"/>
                                 <color key="tintColor" systemColor="systemGreenColor"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="19" id="PZ7-9h-dvJ"/>
@@ -6065,7 +5847,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </constraints>
                             </imageView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jJK-G3-vve">
-                                <rect key="frame" x="161" y="115.5" width="58" height="22"/>
+                                <rect key="frame" x="161" y="135.5" width="58" height="22"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="22" id="bo5-up-Vgd"/>
                                 </constraints>
@@ -6077,7 +5859,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="maker running" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NiX-YA-vVX">
-                                <rect key="frame" x="43" y="116" width="110" height="21"/>
+                                <rect key="frame" x="43" y="136" width="110" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -6286,7 +6068,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="0El-QV-frt">
-                                <rect key="frame" x="0.0" y="122" width="375" height="545"/>
+                                <rect key="frame" x="0.0" y="142" width="375" height="525"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -6300,13 +6082,13 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="n8Y-fr-a6m">
                                                     <rect key="frame" x="16" y="4.5" width="311" height="41"/>
                                                     <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" tag="2" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="vout #0" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bCI-dD-Mi8">
+                                                        <label opaque="NO" userInteractionEnabled="NO" tag="2" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="vout #0" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bCI-dD-Mi8">
                                                             <rect key="frame" x="0.0" y="0.0" width="311" height="20.5"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
-                                                        <label opaque="NO" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="txid" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.30000001192092896" translatesAutoresizingMaskIntoConstraints="NO" id="ira-Ei-jL3">
+                                                        <label opaque="NO" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="txid" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.30000001192092896" translatesAutoresizingMaskIntoConstraints="NO" id="ira-Ei-jL3">
                                                             <rect key="frame" x="0.0" y="20.5" width="311" height="20.5"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -6330,7 +6112,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </connections>
                             </tableView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Locked UTXO's" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JG5-q2-TH3">
-                                <rect key="frame" x="16" y="61" width="204" height="35"/>
+                                <rect key="frame" x="16" y="81" width="204" height="35"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -6381,7 +6163,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ehe-XQ-6Tm">
-                                <rect key="frame" x="16" y="53" width="35" height="35"/>
+                                <rect key="frame" x="16" y="73" width="35" height="35"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="person.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="j2u-TZ-AIU">
                                         <rect key="frame" x="5" y="5.5" width="25" height="24"/>
@@ -6401,13 +6183,13 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </constraints>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Alias" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Asd-aS-Bhb">
-                                <rect key="frame" x="59" y="53" width="64.5" height="35"/>
+                                <rect key="frame" x="59" y="73" width="64.5" height="35"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="FPF-QE-p73">
-                                <rect key="frame" x="16" y="108" width="343" height="229"/>
+                                <rect key="frame" x="16" y="128" width="343" height="229"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name (tap to edit)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kaj-Qp-Bwt">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="20.5"/>
@@ -6486,7 +6268,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="2BG-H0-7TA">
-                                <rect key="frame" x="0.0" y="124" width="375" height="543"/>
+                                <rect key="frame" x="0.0" y="144" width="375" height="523"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="peerCell" rowHeight="96" id="J8e-eb-fea">
@@ -6545,7 +6327,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </connections>
                             </tableView>
                             <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UuX-D9-fxh">
-                                <rect key="frame" x="16" y="64" width="35" height="35"/>
+                                <rect key="frame" x="16" y="84" width="35" height="35"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="person.3" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="LmA-Zg-qqp">
                                         <rect key="frame" x="5" y="6.5" width="25" height="22.5"/>
@@ -6565,7 +6347,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </constraints>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Peers" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9E9-C3-962">
-                                <rect key="frame" x="59" y="64" width="74.5" height="35"/>
+                                <rect key="frame" x="59" y="84" width="74.5" height="35"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -6612,7 +6394,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5gq-Mr-wd8">
-                                <rect key="frame" x="16" y="64" width="35" height="35"/>
+                                <rect key="frame" x="16" y="84" width="35" height="35"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bolt.horizontal" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="pOt-d4-IQb">
                                         <rect key="frame" x="5" y="9" width="25" height="17.5"/>
@@ -6632,24 +6414,24 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </constraints>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Key Send" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Gbf-hv-pE0">
-                                <rect key="frame" x="59" y="64" width="123" height="35"/>
+                                <rect key="frame" x="59" y="84" width="123" height="35"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="amount in satoshis" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="pW9-Tg-G5r">
-                                <rect key="frame" x="16" y="153" width="343" height="34"/>
+                                <rect key="frame" x="16" y="173" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no"/>
                             </textField>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="kcjbwducwiueciuef74" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cZ4-b4-9Q3">
-                                <rect key="frame" x="16" y="124" width="343" height="17"/>
+                                <rect key="frame" x="16" y="144" width="343" height="17"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PIq-1m-na1">
-                                <rect key="frame" x="19" y="240" width="337" height="47"/>
+                                <rect key="frame" x="19" y="260" width="337" height="47"/>
                                 <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="47" id="j0S-Dz-vAg"/>
@@ -6700,7 +6482,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bHd-Kf-94v">
-                                <rect key="frame" x="16" y="64" width="35" height="35"/>
+                                <rect key="frame" x="16" y="84" width="35" height="35"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="slider.horizontal.3" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Syc-8C-tLM">
                                         <rect key="frame" x="5" y="6.5" width="25" height="21.5"/>
@@ -6720,13 +6502,13 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </constraints>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Channels" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aXF-jg-BOC">
-                                <rect key="frame" x="59" y="64" width="124.5" height="35"/>
+                                <rect key="frame" x="59" y="84" width="124.5" height="35"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="OAQ-xE-0Rf">
-                                <rect key="frame" x="0.0" y="181" width="375" height="486"/>
+                                <rect key="frame" x="0.0" y="201" width="375" height="466"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -6819,25 +6601,25 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </connections>
                             </tableView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Total receivable: 2,000,000 sats" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hRB-sI-isu">
-                                <rect key="frame" x="16" y="107" width="207" height="17"/>
+                                <rect key="frame" x="16" y="127" width="207" height="17"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Total spendable: 2,000,000 sats" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BHZ-qw-HDM">
-                                <rect key="frame" x="16" y="132" width="208" height="17"/>
+                                <rect key="frame" x="16" y="152" width="208" height="17"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Our balance" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kR4-4H-OZY">
-                                <rect key="frame" x="40" y="156" width="79" height="17"/>
+                                <rect key="frame" x="40" y="176" width="79" height="17"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IJo-6J-E1F">
-                                <rect key="frame" x="17" y="157" width="15" height="15"/>
+                                <rect key="frame" x="17" y="177" width="15" height="15"/>
                                 <color key="backgroundColor" red="0.34509804840000002" green="0.33725491169999999" blue="0.8392156959" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="15" id="9Dx-aG-9N4"/>
@@ -6848,7 +6630,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dAY-rl-Ess">
-                                <rect key="frame" x="180" y="157" width="15" height="15"/>
+                                <rect key="frame" x="180" y="177" width="15" height="15"/>
                                 <color key="backgroundColor" red="0.34901961679999999" green="0.77647060160000003" blue="0.97254908080000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="15" id="NzS-Lu-ZjG"/>
@@ -6859,13 +6641,13 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Their balance" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="g5z-6c-4Q1">
-                                <rect key="frame" x="203" y="156" width="88" height="17"/>
+                                <rect key="frame" x="203" y="176" width="88" height="17"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eUg-nn-cIM">
-                                <rect key="frame" x="263" y="130.5" width="96" height="20"/>
+                                <rect key="frame" x="263" y="150.5" width="96" height="20"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <color key="tintColor" red="0.34901961679999999" green="0.77647060160000003" blue="0.97254908080000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                 <state key="normal" title=" rebalance" image="arrowtriangle.right.and.line.vertical.and.arrowtriangle.left" catalog="system">
@@ -6956,7 +6738,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HC3-hY-POM">
-                                <rect key="frame" x="16" y="268.5" width="343" height="334.5"/>
+                                <rect key="frame" x="16" y="288.5" width="343" height="314.5"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -6975,7 +6757,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TBc-Ns-zDL">
-                                <rect key="frame" x="16" y="94" width="343" height="26"/>
+                                <rect key="frame" x="16" y="114" width="343" height="26"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="26" id="pnH-k0-K3X"/>
                                 </constraints>
@@ -6989,7 +6771,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Multisig creator" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mvN-rB-kZy">
-                                <rect key="frame" x="16" y="44" width="198" height="42"/>
+                                <rect key="frame" x="16" y="64" width="198" height="42"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="42" id="t1A-d0-DKj"/>
                                 </constraints>
@@ -6998,7 +6780,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oLZ-lP-Dfx">
-                                <rect key="frame" x="16" y="170" width="343" height="25"/>
+                                <rect key="frame" x="16" y="190" width="343" height="25"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="25" id="ZUH-qT-XXW"/>
                                 </constraints>
@@ -7012,13 +6794,13 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </connections>
                             </button>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="or paste xpub here" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="TMy-hY-OLV">
-                                <rect key="frame" x="16" y="128" width="343" height="34"/>
+                                <rect key="frame" x="16" y="148" width="343" height="34"/>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5Ap-ZR-AIW">
-                                <rect key="frame" x="325" y="44" width="33" height="42"/>
+                                <rect key="frame" x="325" y="64" width="33" height="42"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="42" id="tZ6-bz-JUt"/>
                                 </constraints>
@@ -7032,7 +6814,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="xpub origin:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oFS-rG-otI">
-                                <rect key="frame" x="16" y="202.5" width="71.5" height="34"/>
+                                <rect key="frame" x="16" y="222.5" width="71.5" height="34"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="34" id="9sP-of-B46"/>
                                 </constraints>
@@ -7041,21 +6823,21 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <nil key="highlightedColor"/>
                             </label>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="m/48'/0'/0'/2'" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="4KW-9o-xRy">
-                                <rect key="frame" x="95" y="202.5" width="110" height="34"/>
+                                <rect key="frame" x="95" y="222.5" width="110" height="34"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="00000000" borderStyle="roundedRect" placeholder="optional" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="A9w-lr-lpF">
-                                <rect key="frame" x="265" y="202.5" width="93" height="34"/>
+                                <rect key="frame" x="265" y="222.5" width="93" height="34"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Cosigners:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dXX-uE-f2N">
-                                <rect key="frame" x="16" y="244.5" width="65" height="16"/>
+                                <rect key="frame" x="16" y="264.5" width="65" height="16"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -7136,19 +6918,19 @@ COLD means no keys will be generated and no private keys can be imported.</strin
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="ejH-sy-hlm"/>
-        <segue reference="UBf-qr-XYG"/>
+        <segue reference="qed-hl-jG5"/>
         <segue reference="Fvb-gy-rb3"/>
-        <segue reference="4g3-DC-Q5z"/>
-        <segue reference="nTv-zU-127"/>
-        <segue reference="EZr-Ut-goC"/>
-        <segue reference="kq8-dj-bJ2"/>
+        <segue reference="DLx-HT-rGm"/>
+        <segue reference="Wy7-ur-TeS"/>
+        <segue reference="w2g-bl-j8v"/>
+        <segue reference="mRa-gP-mZ0"/>
         <segue reference="Cd3-qW-ujG"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="2DM-Bo-8hK"/>
+        <segue reference="CQp-9r-70w"/>
         <segue reference="if0-NE-c9T"/>
         <segue reference="yAt-Ra-aPH"/>
-        <segue reference="BVG-ie-esh"/>
+        <segue reference="gzO-Lb-E0s"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
     <resources>

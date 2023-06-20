@@ -51,7 +51,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var qrCodeStringToExport = ""
     var blind = false
     var processedPsbt:String?
-    private var authenticated = false
     
     @IBOutlet weak private var verifyTable: UITableView!
     @IBOutlet weak private var exportButtonOutlet: UIButton!
@@ -94,29 +93,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
             self.voutChannelFunding = 1
         }
-        
-        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
-        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
-        
-        guard authenticated else {
-            self.authenticateWith2FA { [weak self] response in
-                guard let self = self else { return }
                 
-                self.authenticated = response
-                
-                if !response {
-                    self.disableSendButton()
-                    self.disableSignButton()
-                    self.disableExportButton()
-                    self.disableBumpButton()
-                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access transactions unless you successfully authenticate with 2FA.")
-                } else {
-                    loadNow()
-                }
-            }
-            return
-        }
-        
         loadNow()
     }
     
@@ -370,22 +347,26 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func processPastedString(_ string: String) {
         let processed = string.condenseWhitespace()
+        reset()
         if Keys.validPsbt(processed) {
-            self.reset()
             enableExportButton()
             processPsbt(processed)
         } else if Keys.validTx(processed) {
-            self.reset()
             enableExportButton()
             signedRawTx = processed
             load()
         } else if processed.lowercased().hasPrefix("ur:bytes") {
-            self.reset()
             self.blind = true
             self.parseBlindPsbt(processed)
+        } else if processed.count == 64 {
+            fetchTxFromId(txid: processed)
         } else {
-            showAlert(vc: self, title: "Invalid", message: "Whatever you pasted was not a valid psbt or raw transaction.")
+            showAlert(vc: self, title: "Invalid", message: "Whatever you pasted was not a valid psbt, raw transaction or txid.")
         }
+    }
+    
+    private func fetchTxFromId(txid: String) {
+        print("fetchTxFromId")
     }
     
     private func presentUploader() {

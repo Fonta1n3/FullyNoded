@@ -36,30 +36,10 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         initialLoad = true
         onchainBalanceConf.alpha = 0
         onchainBalanceUnconfirmed.alpha = 0
-        
-        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
-        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
-        
-        guard authenticated else {
-            self.authenticateWith2FA { [weak self] response in
-                guard let self = self else { return }
-                
-                self.authenticated = response
-                
-                if !response {
-                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access Lightning node management unless you successfully authenticate with 2FA.")
-                } else {
-                    self.loadData()
-                }
-            }
-            return
-        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        if authenticated {
-            loadData()
-        }
+        loadData()
     }
     
     private func loadData() {
@@ -98,12 +78,14 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
             var lightningNode:NodeStruct?
             
             for (i, node) in nodes.enumerated() {
-                let ns = NodeStruct(dictionary: node)                
+                let ns = NodeStruct(dictionary: node)
                 
-                if ns.isLightning && ns.isActive {
-                    lightningNode = ns
-                    self.activeNode = node
-                }
+                if ns.isActive {
+                    if ns.isLightning || ns.isNostr {
+                        lightningNode = ns
+                        self.activeNode = node
+                    }
+                }                
                 
                 if i + 1 == nodes.count {
                     completion(lightningNode)

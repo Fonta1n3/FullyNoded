@@ -143,7 +143,6 @@ public func impact() {
 public func randomString(length: Int) -> String {
     let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     return String((0...length-1).map{ _ in letters.randomElement()! })
-    
 }
 
 public func rounded(number: Double) -> Double {
@@ -153,15 +152,7 @@ public func rounded(number: Double) -> Double {
 
 public func displayAlert(viewController: UIViewController?, isError: Bool, message: String) {
     if viewController != nil {
-        if isError {
-            showAlert(vc: viewController, title: "Error", message: message)
-        } else {
-            DispatchQueue.main.async {
-                let errorView = ErrorView()
-                errorView.isUserInteractionEnabled = true
-                errorView.showErrorView(vc: viewController!, text: message, isError: isError)
-            }
-        }
+        showAlert(vc: viewController, title: "Error", message: message)
     }
 }
 

@@ -21,10 +21,10 @@ public enum ENTITY: String {
     case jmWallets = "JMWallets"
 }
 
-public enum ENTITY_BACKUP: String {
-    case nodes = "Nodes_"
-    case authKeys = "AuthKeys_"
-    case signers = "Signers_"
-    case wallets = "Wallets_"
-    case jmWallets = "JMWallets_"
-}
+//public enum ENTITY_BACKUP: String {
+//    case nodes = "Nodes_"
+//    case authKeys = "AuthKeys_"
+//    case signers = "Signers_"
+//    case wallets = "Wallets_"
+//    case jmWallets = "JMWallets_"
+//}

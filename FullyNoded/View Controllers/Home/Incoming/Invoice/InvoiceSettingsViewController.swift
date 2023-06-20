@@ -1,16 +1,18 @@
 //
 //  InvoiceSettingsViewController.swift
-//  BitSense
+//  FullyNoded
 //
-//  Created by Peter on 15/06/20.
-//  Copyright © 2020 Fontaine. All rights reserved.
+//  Created by Peter Denton on 4/30/23.
+//  Copyright © 2023 Fontaine. All rights reserved.
 //
 
+import Foundation
 import UIKit
 
 class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     @IBOutlet weak var table: UITableView!
+    //@IBOutlet weak var table: UITableView!
     var isSingleKey = Bool()
     var isPrivKey = Bool()
 

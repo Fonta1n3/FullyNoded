@@ -493,6 +493,15 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
+            if isLightning {
+                if rpcPassword != nil {
+                    if rpcPassword.text != "" {
+                        guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
+                        newNode["rpcpassword"] = enc
+                    }
+                }
+            }
+            
             if isLightning,
                 macaroonField != nil,
                 macaroonField.text != "" {

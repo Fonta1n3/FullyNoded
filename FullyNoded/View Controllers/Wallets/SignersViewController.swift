@@ -15,38 +15,13 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     var id:UUID!
     var isCreatingMsig = false
     var signerSelected: ((SignerStruct) -> Void)?
-    private var authenticated = false
-    private var isAuthenticating = false
     
     override func viewDidLoad() {
         super.viewDidLoad()       
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
-        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
-        
-        if !isAuthenticating {
-            guard authenticated else {
-                self.isAuthenticating = true
-                
-                self.authenticateWith2FA { [weak self] response in
-                    guard let self = self else { return }
-                    
-                    self.authenticated = response
-                    self.isAuthenticating = false
-                    
-                    if !response {
-                        showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access signers unless you successfully authenticate with 2FA.")
-                    } else {
-                        self.loadData()
-                    }
-                }
-                return
-            }
-            
-            loadData()
-        }
+        loadData()
     }
     
     @IBAction func addSignerAction(_ sender: Any) {

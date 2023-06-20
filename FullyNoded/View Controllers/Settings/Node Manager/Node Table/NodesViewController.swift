@@ -440,8 +440,12 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         if segue.identifier == "updateNode" {
             if let vc = segue.destination as? NodeDetailViewController {
                 vc.selectedNode = self.nodeArray[selectedIndex]
+                if self.nodeArray[selectedIndex]["rpcpassword"] != nil {
+                    vc.isCLN = true
+                } else {
+                    vc.isLND = true
+                }
                 vc.createNew = false
-                //vc.isLightning = false
             }
         }
         

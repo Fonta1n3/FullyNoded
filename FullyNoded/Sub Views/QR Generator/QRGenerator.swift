@@ -15,7 +15,7 @@ class QRGenerator: UIView {
     
     func getQRCode() -> UIImage {
         
-        let imageToReturn = UIImage(named: "clear.png")!
+        let imageToReturn = UIImage(systemName: "exclamationmark.triangle")!
         
         let data = textInput.data(using: .ascii)
         

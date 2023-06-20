@@ -28,7 +28,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 6
+        return 5
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -40,7 +40,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 3 {
+        if section == 2 {
             return 4
         } else {
             return 1
@@ -69,17 +69,6 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             background.backgroundColor = .systemGreen
             
         case 1:
-            if KeyChain.getData("userIdentifier") != nil {
-                label.text = "2FA enabled"
-                icon.image = UIImage(systemName: "checkmark.circle")
-                background.backgroundColor = .systemIndigo
-            } else {
-                label.text = "Register 2FA"
-                icon.image = UIImage(systemName: "person.badge.plus")
-                background.backgroundColor = .systemIndigo
-            }
-            
-        case 2:
             if KeyChain.getData("UnlockPassword") != nil {
                 label.text = "Reset"
                 icon.image = UIImage(systemName: "arrow.clockwise")
@@ -90,7 +79,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             
             background.backgroundColor = .systemBlue
             
-        case 3:
+        case 2:
             switch indexPath.row {
             case 0: label.text = "Set Passphrase"; icon.image = UIImage(systemName: "plus"); background.backgroundColor = .systemPink
             case 1: label.text = "Change Passphrase"; icon.image = UIImage(systemName: "arrow.clockwise") ; background.backgroundColor = .systemGreen
@@ -98,7 +87,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             case 3: label.text = "Decrypt"; icon.image = UIImage(systemName: "lock.open"); background.backgroundColor = .systemIndigo
             default: break}
                         
-        case 4:
+        case 3:
             if ud.object(forKey: "bioMetricsDisabled") != nil {
                 label.text = "Disabled"
                 label.textColor = .darkGray
@@ -111,7 +100,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             
             background.backgroundColor = .systemPurple
             
-        case 5:
+        case 4:
             if ud.object(forKey: "passphrasePrompt") != nil {
                 label.text = "On"
                 label.textColor = .lightGray
@@ -146,18 +135,15 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             textLabel.text = "Tor Authentication"
             
         case 1:
-            textLabel.text = "2FA"
-            
-        case 2:
             textLabel.text = "App Password"
             
-        case 3:
+        case 2:
             textLabel.text = "Wallet Encryption"
             
-        case 4:
+        case 3:
             textLabel.text = "Biometrics"
             
-        case 5:
+        case 4:
             textLabel.text = "Passphrase Prompt"
                         
         default:
@@ -177,18 +163,11 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             }
             
         case 1:
-            if KeyChain.getData("userIdentifier") == nil {
-                add2fa()
-            } else {
-                promptToDisable2fa()
-            }
-            //showAlert(vc: self, title: "", message: "This feature is not available for direct download.")
-        case 2:
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.performSegue(withIdentifier: "addPasswordSegue", sender: vc)
             }
             
-        case 3:
+        case 2:
             switch indexPath.row {
             case 0:
                 encryptWallet()
@@ -206,24 +185,24 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                 break
             }
             
-        case 4:
+        case 3:
             if ud.object(forKey: "bioMetricsDisabled") != nil {
                 ud.removeObject(forKey: "bioMetricsDisabled")
             } else {
                 ud.set(true, forKey: "bioMetricsDisabled")
             }
             DispatchQueue.main.async {
-                tableView.reloadSections([4], with: .fade)
+                tableView.reloadSections([3], with: .fade)
             }
             
-        case 5:
+        case 4:
             if ud.object(forKey: "passphrasePrompt") != nil {
                 ud.removeObject(forKey: "passphrasePrompt")
             } else {
                 ud.set(true, forKey: "passphrasePrompt")
             }
             DispatchQueue.main.async {
-                tableView.reloadSections([5], with: .fade)
+                tableView.reloadSections([4], with: .fade)
             }
             
         default:
@@ -238,96 +217,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     private func hash(_ text: String) -> Data? {
         return Data(hexString: Crypto.sha256hash(text))
     }
-    
-    private func promptToDisable2fa() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let title = "Disable 2fa?"
-            let message = "You need to input the apps unlock password in order to disable 2fa."
-            
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            
-            let disable = UIAlertAction(title: "Disable", style: .default) { [weak self] alertAction in
-                guard let self = self else { return }
-                
-                let text = (alert.textFields![0] as UITextField).text
-                
-                guard let text = text,
-                      let existingPassword = self.exisitingPassword(),
-                      let hash = self.hash(text),
-                      existingPassword == hash else {
-                    showAlert(vc: self, title: "", message: "Incorrect password.")
-                    
-                    return
-                }
-                
-                guard KeyChain.remove(key: "userIdentifier") else {
-                    showAlert(vc: self, title: "", message: "There was an error disabling 2fa.")
-                    
-                    return
-                }
-                
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.securityTable.reloadSections(IndexSet(arrayLiteral: 1), with: .none)
-                }
-                
-                showAlert(vc: self, title: "", message: "2FA disabled.")
-            }
-            
-            alert.addTextField { textField in
-                textField.placeholder = "app password"
-                textField.isSecureTextEntry = true
-                textField.keyboardAppearance = .dark
-            }
-            
-            alert.addAction(disable)
-            
-            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
-            alert.addAction(cancel)
-            
-            self.present(alert, animated:true, completion: nil)
-        }
-    }
-    
-    private func add2fa() {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
         
-        guard let twofaVC = storyboard.instantiateViewController(identifier: "2FA") as? PromptForAuthViewController else {
-            return
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            twofaVC.modalPresentationStyle = .fullScreen
-            self.present(twofaVC, animated: true, completion: nil)
-        }
-        
-        twofaVC.doneBlock = { [weak self] id in
-            guard let self = self else { return }
-            
-            guard let id = id else {
-                showAlert(vc: self, title: "2FA Failed", message: "")
-                return
-            }
-            
-            if KeyChain.set(id, forKey: "userIdentifier") {
-                showAlert(vc: self, title: "", message: "2FA added ✓")
-                
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.securityTable.reloadSections(IndexSet(arrayLiteral: 1), with: .none)
-                }
-            } else {
-                showAlert(vc: self, title: "", message: "2FA registration failed.")
-            }
-        }
-    }
-    
     func executNodeCommand(method: BTC_CLI_COMMAND) {
         let connectingView = ConnectingView()
         connectingView.addConnectingView(vc: self, description: "")

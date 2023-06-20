@@ -48,8 +48,6 @@ class ActiveWalletViewController: UIViewController {
     private var isFiat = false
     private var isBtc = true
     private var isSats = false
-    private var authenticated = false
-    private var isAuthenticating = false
     private var initialLoad = true
     private var isRecovering = false
     var fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
@@ -76,61 +74,15 @@ class ActiveWalletViewController: UIViewController {
         setNotifications()
         sectionZeroLoaded = false
         addNavBarSpinner()
-        
-        let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
-        authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
-                
-        guard authenticated else {
-            isAuthenticating = true
-            
-            self.authenticateWith2FA { [weak self] response in
-                guard let self = self else { return }
-                
-                self.isAuthenticating = false
-                self.authenticated = response
-                
-                if response {
-                    self.initialLoad = false
-                    self.loadTable()
-                    self.getFxRate()
-                } else {
-                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
-                    self.removeSpinner()
-                }
-            }
-            return
-        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
         fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
         currencyControl.setTitle(fiatCurrency.lowercased(), forSegmentAt: 2)
-        
-        if initialLoad && authenticated {
+        if initialLoad {
             initialLoad = false
             loadTable()
             getFxRate()
-        } else if !initialLoad {
-            let lastAuthenticated = (UserDefaults.standard.object(forKey: "LastAuthenticated") as? Date ?? Date()).secondsSince
-            authenticated = (KeyChain.getData("userIdentifier") == nil || !(lastAuthenticated > authTimeout) && !(lastAuthenticated == 0))
-            
-            if !initialLoad && !authenticated && !isAuthenticating && !isRecovering {
-                self.isAuthenticating = true
-                
-                self.authenticateWith2FA { [weak self] response in
-                    guard let self = self else { return }
-                    
-                    self.authenticated = response
-                    self.isAuthenticating = false
-                    
-                    if !response {
-                        self.hideData()
-                        showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
-                    } else {
-                        self.initialLoad = false
-                    }
-                }
-            }
         }
     }
     
@@ -191,6 +143,15 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
+    @IBAction func advancedAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self .performSegue(withIdentifier: "goToInvoiceSetting", sender: nil)
+        }
+    }
+    
+    
     @IBAction func switchCurrency(_ sender: UISegmentedControl) {
         switch sender.selectedSegmentIndex {
         case 0:
@@ -217,44 +178,38 @@ class ActiveWalletViewController: UIViewController {
     
     
     @objc func signPsbt(_ notification: NSNotification) {
-        if authenticated {
-            guard let psbtDict = notification.userInfo as? [String:Any], let psbtCheck = psbtDict["psbt"] as? String else {
-                showAlert(vc: self, title: "Uh oh", message: "That does not appear to be a psbt...")
-                return
-            }
+        guard let psbtDict = notification.userInfo as? [String:Any], let psbtCheck = psbtDict["psbt"] as? String else {
+            showAlert(vc: self, title: "Uh oh", message: "That does not appear to be a psbt...")
+            return
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.psbt = psbtCheck
-                self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
-            }
+            self.psbt = psbtCheck
+            self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
         }
     }
     
     @objc func broadcast(_ notification: NSNotification) {
-        if authenticated {
-            guard let txnDict = notification.userInfo as? [String:Any], let txn = txnDict["txn"] as? String else {
-                showAlert(vc: self, title: "Uh oh", message: "That does not appear to be a signed raw transaction...")
-                return
-            }
+        guard let txnDict = notification.userInfo as? [String:Any], let txn = txnDict["txn"] as? String else {
+            showAlert(vc: self, title: "Uh oh", message: "That does not appear to be a signed raw transaction...")
+            return
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.rawTx = txn
-                self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
-            }
+            self.rawTx = txn
+            self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
         }
     }
     
     @IBAction func signPsbtAction(_ sender: Any) {
-        if authenticated {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
-            }
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
         }
     }
     
@@ -296,80 +251,42 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @IBAction func getDetails(_ sender: Any) {
-        if authenticated {
-            guard let wallet = wallet else {
-                showAlert(vc: self, title: "", message: "That button only works for \"Fully Noded Wallets\" which can be created by tapping the plus button, you can see your Fully Noded Wallets by tapping the squares button. Fully Noded allows you to access, use and create wallets with ultimate flexibility using your node but it comes with some limitations. In order to get a better user experience we recommend creating a Fully Noded Wallet.")
-                return
-            }
-            
-            walletLabel = wallet.label
-            goToDetail()
+        guard let wallet = wallet else {
+            showAlert(vc: self, title: "", message: "That button only works for \"Fully Noded Wallets\" which can be created by tapping the plus button, you can see your Fully Noded Wallets by tapping the squares button. Fully Noded allows you to access, use and create wallets with ultimate flexibility using your node but it comes with some limitations. In order to get a better user experience we recommend creating a Fully Noded Wallet.")
+            return
         }
+        
+        walletLabel = wallet.label
+        goToDetail()
     }
     
     @IBAction func goToFullyNodedWallets(_ sender: Any) {
-        if authenticated {
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.performSegue(withIdentifier: "segueToWallets", sender: vc)
-            }
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToWallets", sender: vc)
         }
     }
     
     @IBAction func createWallet(_ sender: Any) {
-        if authenticated {
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.performSegue(withIdentifier: "createFullyNodedWallet", sender: vc)
-            }
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "createFullyNodedWallet", sender: vc)
         }
     }
     
     @IBAction func sendAction(_ sender: Any) {
-        if authenticated {
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.performSegue(withIdentifier: "spendFromWallet", sender: vc)
-            }
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "spendFromWallet", sender: vc)
         }
     }
     
     @IBAction func invoiceAction(_ sender: Any) {
-        if authenticated {
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.performSegue(withIdentifier: "segueToInvoice", sender: vc)
-            }
-        }
-    }
-    
-    @IBAction func invoiceSettings(_ sender: Any) {
-        if authenticated {
-            CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
-                guard let nodes = nodes, nodes.count > 0 else { return }
-                
-                var uncleJim = false
-                for node in nodes {
-                    let nodeStruct = NodeStruct(dictionary: node)
-                    if nodeStruct.isActive {
-                        if let uj = node["uncleJim"] as? Bool {
-                            uncleJim = uj
-                        }
-                    }
-                }
-                
-                if !uncleJim {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        vc.performSegue(withIdentifier: "goToInvoiceSetting", sender: vc)
-                    }
-                } else {
-                    showAlert(vc: self, title: "Restricted access!", message: "That area is for the node owner only.")
-                }
-            }
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToInvoice", sender: vc)
         }
     }
     
     @IBAction func goToUtxos(_ sender: Any) {
-        if authenticated {
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.performSegue(withIdentifier: "segueToUtxos", sender: vc)
-            }
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToUtxos", sender: vc)
         }
     }
     
@@ -424,101 +341,69 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func loadTable() {
-        if authenticated {
-            sectionZeroLoaded = false
-            existingWallet = ""
-            walletLabel = ""
+        sectionZeroLoaded = false
+        existingWallet = ""
+        walletLabel = ""
+        transactionArray.removeAll()
+        walletTable.reloadData()
+        
+        activeWallet { [weak self] wallet in
+            guard let self = self else { return }
             
-            activeWallet { [weak self] wallet in
-                guard let self = self else { return }
-                
-                guard let wallet = wallet else {
-                    self.wallet = nil
-                    self.walletLabel = UserDefaults.standard.object(forKey: "walletName") as? String ?? ""
-                    if self.walletLabel == "" {
-                        CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
-                            guard let self = self, let nodes = nodes else { return }
-                            
-                            guard nodes.count > 0 else { return }
-                            
-                            var anyOffchain = false
-                            var anyOnchain = false
-                            for (i, node) in nodes.enumerated() {
-                                let nodeStr = NodeStruct(dictionary: node)
-                                if nodeStr.isNostr && nodeStr.isActive {
-                                    self.showOnchain = true
-                                    self.showOffchain = true
-                                    CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
-                                        guard let wallets = wallets, wallets.count > 0 else {
-                                            self.promptToCreateWallet()
-                                            return
-                                        }
-                                        
-                                        self.promptToChooseWallet()
-                                    }
-                                    break
-                                    
-                                }
-                                if !nodeStr.isLightning, !nodeStr.isJoinMarket {
-                                    anyOnchain = true
-                                }
-                                if nodeStr.isActive && nodeStr.isLightning {
-                                    anyOffchain = true
+            guard let wallet = wallet else {
+                CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
+                    guard let self = self, let nodes = nodes else { return }
+                    
+                    guard nodes.count > 0 else {
+                        self.finishedLoading()
+                        showAlert(vc: self, title: "", message: "No nodes added.")
+                        return
+                    }
+                    
+                    var anyOffchain = false
+                    
+                    for (i, node) in nodes.enumerated() {
+                        let nodeStr = NodeStruct(dictionary: node)
+                        if nodeStr.isActive && nodeStr.isLightning {
+                            anyOffchain = true
+                        }
+                        if i + 1 == nodes.count {
+                            if anyOffchain {
+                                self.showOnchain = false
+                                self.showOffchain = true
+                                self.loadLightning()
+                            } else {
+                                print("we here")
+                                guard let walletName = UserDefaults.standard.string(forKey: "walletName") else {
+                                    self.finishedLoading()
+                                    showAlert(vc: self, title: "", message: "No wallet currently toggled on.")
+                                    return
                                 }
                                 
-                                if i + 1 == nodes.count {
-                                    if anyOnchain {
-                                        self.showOnchain = true
-                                        self.promptToChooseWallet()
-                                    } else if anyOffchain {
-                                        self.showOnchain = false
-                                        self.showOffchain = true
-                                        self.loadLightning()
-                                    }
-                                }
+                                self.showOnchain = true
+                                self.existingWallet = walletName
+                                self.walletLabel = walletName
+                                self.loadBalances()
+                                
                             }
                         }
-                        
-                        
-                    } else {
-                        self.loadBalances()
                     }
-                    return
                 }
-                
-                self.showOnchain = true
-                self.wallet = wallet
-                self.existingWallet = wallet.name
-                self.walletLabel = wallet.label
-                
-                DispatchQueue.main.async {
-                    self.transactionArray.removeAll()
-                    self.walletTable.reloadData()
-                }
-                
-                self.loadBalances()
+                return
             }
             
+            self.showOnchain = true
+            self.wallet = wallet
+            self.existingWallet = wallet.name
+            self.walletLabel = wallet.label
             
-        } else if !isAuthenticating {
-            removeSpinner()
-            hideData()
-            isAuthenticating = true
-            
-            self.authenticateWith2FA { [weak self] result in
-                guard let self = self else { return }
-                
-                self.authenticated = result
-                self.isAuthenticating = false
-                
-                if !result {
-                    showAlert(vc: self, title: "⚠️ Authentication failed...", message: "You can not access wallets unless you successfully authenticate with 2FA.")
-                } else {
-                    self.addNavBarSpinner()
-                    self.loadTable()
-                }
+            DispatchQueue.main.async {
+                self.transactionArray.removeAll()
+                self.walletTable.reloadData()
             }
-        }        
+            
+            self.loadBalances()
+        }
     }
     
     private func promptToChooseJmWallet(jmWallets: [String]) {
@@ -1055,7 +940,6 @@ class ActiveWalletViewController: UIViewController {
     
     private func loadBalances() {
         NodeLogic.walletDisabled = walletDisabled
-        getWalletBalance()
         CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
             guard let self = self else { return }
             self.showOffchain = false
@@ -1065,11 +949,11 @@ class ActiveWalletViewController: UIViewController {
                     self.showOffchain = true
                 }
             }
+            self.getWalletBalance()
         }
     }
     
     private func chooseWallet() {
-        isRecovering = true//to avoid 2FA when view reappears
         OnchainUtils.listWalletDir { (coreWallets, message) in
             guard let coreWallets = coreWallets, !coreWallets.wallets.isEmpty else { self.promptToCreateWallet(); return }
             
@@ -1133,8 +1017,45 @@ class ActiveWalletViewController: UIViewController {
     
     private func getWalletBalance() {
         if let _ = UserDefaults.standard.object(forKey: "walletName") as? String {
-            if wallet!.isJm {
-                JMRPC.sharedInstance.command(method: .listutxos(jmWallet: wallet!), param: nil) { [weak self] (response, errorDesc) in
+            
+            func getOnchainWalletBalance() {
+                OnchainUtils.getBalance { [weak self] (balance, message) in
+                    guard let self = self else { return }
+                    
+                    guard let balance = balance else {
+                        self.removeSpinner()
+                        if (message ?? "").hasPrefix("loadwallet") {
+                            self.chooseWallet()
+                        } else {
+                            showAlert(vc: self, title: "", message: message ?? "Unknown error getting balance.")
+                        }
+                        
+                        return
+                    }
+                    
+                    DispatchQueue.main.async {
+                        self.onchainBalanceBtc = String(balance)
+                        self.onchainBalanceSats = balance.sats.replacingOccurrences(of: " sats", with: "")
+                        
+                        if let exchangeRate = self.fxRate {
+                            let onchainBalanceFiat = balance * exchangeRate
+                            self.onchainBalanceFiat = round(onchainBalanceFiat).fiatString
+                        }
+                        
+                        self.sectionZeroLoaded = true
+                        self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
+                        self.getWalletInfo()
+                    }
+                }
+            }
+            
+            guard let wallet = wallet else {
+                getOnchainWalletBalance()
+                return
+            }
+            
+            if wallet.isJm {
+                JMRPC.sharedInstance.command(method: .listutxos(jmWallet: wallet), param: nil) { [weak self] (response, errorDesc) in
                     guard let self = self else { return }
                     guard let response = response as? [String:Any] else {
                         if errorDesc == "Invalid credentials." {
@@ -1178,34 +1099,7 @@ class ActiveWalletViewController: UIViewController {
                     }
                 }
             } else {
-                OnchainUtils.getBalance { [weak self] (balance, message) in
-                    guard let self = self else { return }
-                    
-                    guard let balance = balance else {
-                        self.removeSpinner()
-                        if (message ?? "").hasPrefix("loadwallet") {
-                            self.chooseWallet()
-                        } else {
-                            showAlert(vc: self, title: "", message: message ?? "Unknown error getting balance.")
-                        }
-                        
-                        return
-                    }
-                    
-                    DispatchQueue.main.async {
-                        self.onchainBalanceBtc = String(balance)
-                        self.onchainBalanceSats = balance.sats.replacingOccurrences(of: " sats", with: "")
-                        
-                        if let exchangeRate = self.fxRate {
-                            let onchainBalanceFiat = balance * exchangeRate
-                            self.onchainBalanceFiat = round(onchainBalanceFiat).fiatString
-                        }
-                        
-                        self.sectionZeroLoaded = true
-                        self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                        self.getWalletInfo()
-                    }
-                }
+                getOnchainWalletBalance()
             }
         } else {
             chooseWallet()
@@ -1267,11 +1161,29 @@ class ActiveWalletViewController: UIViewController {
         let p:List_Unspent = .init(["minconf":0])
         OnchainUtils.listUnspent(param: p) { [weak self] (utxos, message) in
             guard let self = self else { return }
-            guard let utxos = utxos, utxos.count > 0, let wallet = self.wallet else { self.getOffchainBalanceAndTransactions(); return }
-            for utxo in utxos {
-                guard let utxo_desc = utxo.desc else { self.getOffchainBalanceAndTransactions(); return }
+            
+            guard let utxos = utxos, utxos.count > 0, let wallet = self.wallet else {
+                self.getOffchainBalanceAndTransactions()
+                return
+            }
+            
+            for (i, utxo) in utxos.enumerated() {
+                guard let utxo_desc = utxo.desc else {
+                    if i + 1 == utxos.count {
+                        self.getOffchainBalanceAndTransactions()
+                    }
+                    return
+                }
+                
                 let desc = Descriptor(utxo_desc)
-                guard let index = desc.index else { self.getOffchainBalanceAndTransactions(); return }
+                
+                guard let index = desc.index else {
+                    if i + 1 == utxos.count {
+                        self.getOffchainBalanceAndTransactions()
+                    }
+                    return
+                }
+                
                 if index >= wallet.index {
                     let newIndex = Int64(index + 1)
                     if newIndex >= wallet.maxIndex {
@@ -1282,13 +1194,16 @@ class ActiveWalletViewController: UIViewController {
                         print("incremented index to \(newIndex): \(updated)")
                         #endif
                         guard updated else {
-                            self.getOffchainBalanceAndTransactions()
+                            if i + 1 == utxos.count {
+                                self.getOffchainBalanceAndTransactions()
+                            }
                             showAlert(vc: self, title: "", message: "Unable to update your wallet index.")
                             return
                         }
-                        self.getOffchainBalanceAndTransactions()
                     }
-                } else {
+                }
+                
+                if i + 1 == utxos.count {
                     self.getOffchainBalanceAndTransactions()
                 }
             }
@@ -1340,32 +1255,40 @@ class ActiveWalletViewController: UIViewController {
                 }
             }))
             
-            alert.addAction(UIAlertAction(title: "Activate a Join Market wallet", style: .default, handler: { action in
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    JMUtils.wallets { (response, message) in
-                        guard let jmwallets = response else {
-                            self.finishedLoading()
-                            showAlert(vc: self, title: "", message: message ?? "Unknown issue getting your JM wallets.")
-                            return
+            CoreDataService.retrieveEntity(entityName: .wallets) { potentialJmWallets in
+                guard let potentialJmWallets = potentialJmWallets else { return }
+                
+                var showJMOption = false
+                
+                for (i, potentialJmWallet) in potentialJmWallets.enumerated() {
+                    if potentialJmWallet["id"] != nil {
+                        let wStr = Wallet(dictionary: potentialJmWallet)
+                        if wStr.isJm {
+                            showJMOption = true
                         }
                         
-                        if jmwallets.count > 0 {
-                            self.promptToChooseJmWallet(jmWallets: jmwallets)
+                        if i + 1 == potentialJmWallets.count && showJMOption {
+                            alert.addAction(UIAlertAction(title: "Activate a Join Market wallet", style: .default, handler: { action in
+                                DispatchQueue.main.async { [weak self] in
+                                    guard let self = self else { return }
+                                    
+                                    JMUtils.wallets { (response, message) in
+                                        guard let jmwallets = response else {
+                                            self.finishedLoading()
+                                            showAlert(vc: self, title: "", message: message ?? "Unknown issue getting your JM wallets.")
+                                            return
+                                        }
+                                        
+                                        if jmwallets.count > 0 {
+                                            self.promptToChooseJmWallet(jmWallets: jmwallets)
+                                        }
+                                    }
+                                }
+                            }))
                         }
                     }
                 }
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Create a new wallet", style: .default, handler: { action in
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.tabBarController?.selectedIndex = 1
-                    self.performSegue(withIdentifier: "createFullyNodedWallet", sender: self)
-                }
-            }))
+            }
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = self.view
@@ -1687,9 +1610,7 @@ extension ActiveWalletViewController: UITableViewDelegate {
         switch indexPath.section {
         case 0:
             if sectionZeroLoaded {
-                /*if showOffchain && showOnchain {
-                    return offchainOnchainBalancesCell(indexPath)
-                } else */if showOnchain && !showOffchain {
+                if showOnchain && !showOffchain {
                     return onchainBalancesCell(indexPath)
                 } else if showOffchain && !showOnchain {
                     return offchainBalancesCell(indexPath)

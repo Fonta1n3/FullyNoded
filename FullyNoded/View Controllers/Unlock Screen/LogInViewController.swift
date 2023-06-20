@@ -8,9 +8,8 @@
 
 import UIKit
 import LocalAuthentication
-import AuthenticationServices
 
-class LogInViewController: UIViewController, UITextFieldDelegate, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
+class LogInViewController: UIViewController, UITextFieldDelegate {
 
     var onDoneBlock: (() -> Void)?
     let passwordInput = UITextField()
@@ -119,7 +118,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate, ASAuthorizatio
         resetButton.removeFromSuperview()
         resetButton.showsTouchWhenHighlighted = true
         resetButton.setTitle("reset app", for: .normal)
-        resetButton.addTarget(self, action: #selector(present2fa), for: .touchUpInside)
+        resetButton.addTarget(self, action: #selector(promptToReset), for: .touchUpInside)
         resetButton.setTitleColor(.systemRed, for: .normal)
         view.addSubview(resetButton)
     }
@@ -133,7 +132,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate, ASAuthorizatio
         resetButton.frame = CGRect(x: self.view.center.x - 50, y: self.nextButton.frame.maxY + 100, width: 100, height: 60)
     }
     
-    @objc func promptToReset(id: Data) {
+    @objc func promptToReset() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -153,12 +152,9 @@ class LogInViewController: UIViewController, UITextFieldDelegate, ASAuthorizatio
                             self.timeToDisable = 0.0
                             self.timer?.invalidate()
                             self.secondsRemaining = 0
-                            
-                            if KeyChain.set(id, forKey: "userIdentifier") {
-                                self.dismiss(animated: true) {
-                                    showAlert(vc: self, title: "", message: "The app has been wiped.")
-                                    self.onDoneBlock!()
-                                }
+                            self.dismiss(animated: true) {
+                                showAlert(vc: self, title: "", message: "The app has been wiped.")
+                                self.onDoneBlock!()
                             }
                         }
                     } else {
@@ -197,37 +193,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate, ASAuthorizatio
     }
     
     @objc func present2fa() {
-        if let _ = KeyChain.getData("userIdentifier") {
-            guard let _ = self.view.window else { return }
-            
-            let request = ASAuthorizationAppleIDProvider().createRequest()
-            let controller = ASAuthorizationController(authorizationRequests: [request])
-            controller.delegate = self
-            controller.presentationContextProvider = self
-            controller.performRequests()
-        } else {
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            
-            guard let twofaVC = storyboard.instantiateViewController(identifier: "2FA") as? PromptForAuthViewController else {
-                    return
-            }
-            
-            DispatchQueue.main.async {
-                twofaVC.modalPresentationStyle = .fullScreen
-                self.present(twofaVC, animated: true, completion: nil)
-            }
-            
-            twofaVC.doneBlock = { [weak self] id in
-                guard let self = self else { return }
-                
-                guard let id = id else {
-                    showAlert(vc: self, title: "2FA Failed", message: "In order to reset the app you must authenticate.")
-                    return
-                }
-                
-                self.promptToReset(id: id)
-            }
-        }
+        self.promptToReset()
     }
 
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
@@ -462,11 +428,9 @@ class LogInViewController: UIViewController, UITextFieldDelegate, ASAuthorizatio
     }
 
     func evaluateAuthenticationPolicyMessageForLA(errorCode: Int) -> String {
-
         var message = ""
 
         switch errorCode {
-
         case LAError.authenticationFailed.rawValue:
             message = "The user failed to provide valid credentials"
 
@@ -497,40 +461,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate, ASAuthorizatio
 
         return message
     }
-    
-    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-        switch authorization.credential {
-        case let appleIDCredential as ASAuthorizationAppleIDCredential:
-            let authorizationProvider = ASAuthorizationAppleIDProvider()
-            if let usernameData = KeyChain.getData("userIdentifier") {
-                if let username = String(data: usernameData, encoding: .utf8) {
-                    if username == appleIDCredential.user {
-                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
-                            guard let self = self else { return }
-                            
-                            switch state {
-                            case .authorized:
-                                self.promptToReset(id: usernameData)
-                            case .revoked:
-                                fallthrough
-                            case .notFound:
-                                fallthrough
-                            default:
-                                break
-                            }
-                        }
-                    }
-                }
-            }
-        default:
-            break
-        }
-    }
-    
-    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return self.view.window!
-    }
-
 }
 
 extension UIViewController {

@@ -251,6 +251,8 @@ public enum BTC_CLI_COMMAND {
             return p.param
         case .scantxoutset(let p):
             return p.param
+        case .lockunspent(let p):
+            return p.param
         default:
             return [:]
         }
@@ -337,14 +339,18 @@ public enum BTC_CLI_COMMAND {
 
 
 public enum LIGHTNING_CLI: String {
+    case listconfigs = "listconfigs"
     case getinfo = "getinfo"
     case invoice = "invoice"
+    case offer = "offer"
+    case fetchinvoice = "fetchinvoice"
     case newaddr = "newaddr"
     case listfunds = "listfunds"
     case listtransactions = "listtransactions"
     case txprepare = "txprepare"
     case txsend = "txsend"
     case pay = "pay"
+    case decode = "decode"
     case decodepay = "decodepay"
     case connect = "connect"
     case fundchannel_start = "fundchannel_start"

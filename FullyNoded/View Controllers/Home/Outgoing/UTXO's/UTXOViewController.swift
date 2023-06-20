@@ -887,14 +887,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func editLabel(_ utxo: Utxo) {
-    }
-    
-    
     private func lock(_ utxo: Utxo) {
         spinner.addConnectingView(vc: self, description: "locking...")
         
-        let param:Lock_Unspent = .init(["unlock":false, "transactions": ["txid":utxo.txid,"vout":utxo.vout]])
+        let param = Lock_Unspent(["unlock": false, "transactions": [["txid": utxo.txid,"vout": utxo.vout]]])
         
         Reducer.sharedInstance.makeCommand(command: .lockunspent(param)) { (response, errorMessage) in
             guard let success = response as? Bool else {
@@ -930,6 +926,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
     private func updateInputs() {
         inputArray.removeAll()
+        amountTotal = 0.0
         
         for utxo in selectedUTXOs {
             amountTotal += utxo.amount ?? 0.0
@@ -1438,100 +1435,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
 // MARK: UTXOCellDelegate
 
 extension UTXOViewController: UTXOCellDelegate {
-    
     func didTapToLock(_ utxo: Utxo) {
         lock(utxo)
     }
-    
-    func didTapToEditLabel(_ utxo: Utxo) {
-        editLabel(utxo)
-    }
-    
-    func didTapToFetchOrigin(_ utxo: Utxo) {
-        fetchOriginRate(utxo)
-    }
-    
-    func didTapToMix(_ utxo: Utxo) {
-        //spinner.addConnectingView(vc: self, description: "checking nodes, wallet and utxo...")
-
-//        CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
-//            guard let self = self else { return }
-//
-//            guard let nodes = nodes, !nodes.isEmpty else {
-//                self.spinner.removeConnectingView()
-//                showAlert(vc: self, title: "No nodes", message: "")
-//                return
-//            }
-//
-//            var jmNodeActive = false
-//            var isAny = false
-//
-//            for node in nodes {
-//                let str = NodeStruct(dictionary: node)
-//                if str.isJoinMarket {
-//                    isAny = true
-//                    if str.isActive {
-//                        jmNodeActive = true
-//                    }
-//                }
-//            }
-//
-//            guard isAny else {
-//                self.spinner.removeConnectingView()
-//                showAlert(vc: self, title: "Add a Join Market node first.", message: "")
-//                return
-//            }
-//
-//            guard jmNodeActive else {
-//                self.spinner.removeConnectingView()
-//                showAlert(vc: self, title: "Activate your Join Market node first.", message: "")
-//                return
-//            }
-//
-//            CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
-//                guard let wallets = wallets, !wallets.isEmpty else {
-//                    //self.promptToCreateJmWallet(utxo)
-//                    showAlert(vc: self, title: "", message: "No wallets...")
-//                    return
-//                }
-//
-//                JMUtils.wallets { (serverWallets, message) in
-//                    guard let serverWallets = serverWallets else {
-//                        self.spinner.removeConnectingView()
-//                        showAlert(vc: self, title: "There was an issue connecting to your Join Market server.", message: message ?? "Unknown issue.")
-//                        return
-//                    }
-//
-//                    var existsOnServer = false
-//                    for serverWallet in serverWallets {
-//                        for wallet in wallets {
-//                            if wallet["id"] != nil {
-//                                let w = Wallet(dictionary: wallet)
-//                                if serverWallet == w.jmWalletName && w.isJm {
-//                                    existsOnServer = true
-//                                }
-//                            }
-//                        }
-//                    }
-//
-//                    if !serverWallets.isEmpty {
-//                        if !existsOnServer {
-//                            self.promptToCreateJmWallet(utxo)
-//                        } else {
-//                            self.promptToDepositToWallet(utxo, serverWallets)
-//                        }
-//                    } else {
-//                        self.promptToCreateJmWallet(utxo)
-//                    }
-//                }
-//            }
-//        }
-    }
-    
-    func didTapDonateChange(_ utxo: Utxo) {
-        promptToDonateChange(utxo)
-    }
-    
 }
 
 // Mark: UITableViewDataSource

@@ -10,10 +10,6 @@ import UIKit
 
 protocol UTXOCellDelegate: AnyObject {
     func didTapToLock(_ utxo: Utxo)
-    func didTapToEditLabel(_ utxo: Utxo)
-    func didTapToFetchOrigin(_ utxo: Utxo)
-    func didTapToMix(_ utxo: Utxo)
-    func didTapDonateChange(_ utxo: Utxo)
 }
 
 class UTXOCell: UITableViewCell {
@@ -23,20 +19,13 @@ class UTXOCell: UITableViewCell {
     private var isLocked: Bool!
     private unowned var delegate: UTXOCellDelegate!
     
-    @IBOutlet private weak var donateChange: UIButton!
-    //@IBOutlet private weak var lifeHashImageView: UIImageView!
-    //@IBOutlet private weak var fetchOriginOutlet: UIButton!
-    //@IBOutlet private weak var capGainLabel: UILabel!
+    @IBOutlet private weak var addressLabel: UILabel!
     @IBOutlet public weak var roundeBackgroundView: UIView!
-    @IBOutlet private weak var walletLabel: UILabel!// an address label
     @IBOutlet public weak var checkMarkImageView: UIImageView!
     @IBOutlet private weak var confirmationsLabel: UILabel!
     @IBOutlet private weak var spendableLabel: UILabel!
     @IBOutlet private weak var solvableLabel: UILabel!
     @IBOutlet private weak var amountLabel: UILabel!
-    //@IBOutlet private weak var txidLabel: UILabel!
-    //@IBOutlet private weak var voutLabel: UILabel!
-    //@IBOutlet private weak var addressLabel: UILabel!
     @IBOutlet private weak var isChangeBackground: UIView!
     @IBOutlet private weak var isChangeImageView: UIImageView!
     @IBOutlet private weak var isSolvableBackground: UIView!
@@ -44,11 +33,8 @@ class UTXOCell: UITableViewCell {
     @IBOutlet private weak var isDustBackground: UIView!
     @IBOutlet private weak var isDustImageView: UIImageView!
     @IBOutlet private weak var lockButtonOutlet: UIButton!
-    @IBOutlet private weak var labelButtonOutlet: UIButton!
-    //@IBOutlet private weak var fiatLabel: UILabel!
     @IBOutlet private weak var reusedBackground: UIView!
     @IBOutlet private weak var reusedImageView: UIImageView!
-    @IBOutlet private weak var mixButtonOutlet: UIButton!
     @IBOutlet private weak var derivationLabel: UILabel!
     
     override func awakeFromNib() {
@@ -58,8 +44,6 @@ class UTXOCell: UITableViewCell {
         layer.borderWidth = 0.5
         layer.cornerRadius = 8
         
-        donateChange.alpha = 0
-                
         roundeBackgroundView.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
         isChangeBackground.clipsToBounds = true
@@ -77,10 +61,7 @@ class UTXOCell: UITableViewCell {
         isDustImageView.tintColor = .white
         reusedImageView.tintColor = .white
         
-        //lifeHashImageView.layer.magnificationFilter = .nearest
-        
         selectionStyle = .none
-        mixButtonOutlet.alpha = 0
     }
     
     func configure(utxo: Utxo, isLocked: Bool, fxRate: Double?, isSats: Bool, isBtc: Bool, isFiat: Bool, delegate: UTXOCellDelegate) {
@@ -88,20 +69,12 @@ class UTXOCell: UITableViewCell {
         self.isLocked = isLocked
         self.delegate = delegate
         
-        //txidLabel.text = utxo.txid
-        walletLabel.text = utxo.label ?? "No label"
-        //addressLabel.text = "address: \(utxo.address ?? "unknown")"
-        //txidLabel.text = "txid: \(utxo.txid)"
-        //voutLabel.text = "vout #: \(utxo.vout)"
-        
         if isLocked {
             lockButtonOutlet.setImage(UIImage(systemName: "lock"), for: .normal)
             lockButtonOutlet.tintColor = .systemPink
-            labelButtonOutlet.alpha = 0
         } else {
             lockButtonOutlet.setImage(UIImage(systemName: "lock.open"), for: .normal)
             lockButtonOutlet.tintColor = .systemTeal
-            labelButtonOutlet.alpha = 1
         }
         
         if utxo.reused != nil {
@@ -124,12 +97,6 @@ class UTXOCell: UITableViewCell {
                 isChangeImageView.image = UIImage(systemName: "arrow.2.circlepath")
                 isChangeBackground.backgroundColor = .systemPurple
                 
-//                if utxo.isJoinMarket {
-//                    donateChange.alpha = 1
-//                } else {
-//                    donateChange.alpha = 0
-//                }
-                
             } else {
                 isChangeImageView.image = UIImage(systemName: "arrow.down.left")
                 isChangeBackground.backgroundColor = .systemBlue
@@ -145,10 +112,12 @@ class UTXOCell: UITableViewCell {
         if let path = utxo.path, let mixdepth = utxo.mixdepth {
             derivationLabel.text = path + " mixdepth: \(mixdepth)"
         }
+        
+        if let address = utxo.address {
+            addressLabel.text = address
+        }
                 
         if let amount = utxo.amount {
-            //let roundedAmount = rounded(number: amount)
-            
             if isFiat {
                 amountLabel.text = utxo.amountFiat ?? "missing fx rate"
             } else if isBtc {
@@ -164,19 +133,6 @@ class UTXOCell: UITableViewCell {
                 isDustImageView.image = UIImage(systemName: "checkmark")
                 isDustBackground.backgroundColor = .darkGray
             }
-            
-//            if let fxRate = fxRate {
-//                fiatLabel.text = (amount * fxRate).fiatString + " \(utxo.capGain ?? "")"
-//                capGainLabel.text = utxo.originValue ?? "missing origin rate"
-//
-//                if capGainLabel.text == "missing origin rate" {
-//                    fetchOriginOutlet.alpha = 1
-//                } else {
-//                    fetchOriginOutlet.alpha = 0
-//                }
-//            } else {
-//                fetchOriginOutlet.alpha = 0
-//            }
             
         }  else {
             isDustImageView.image = UIImage(systemName: "questionmark")
@@ -225,12 +181,6 @@ class UTXOCell: UITableViewCell {
             confirmationsLabel.text = "?"
             confirmationsLabel.textColor = .lightGray
         }
-        
-        if utxo.isJoinMarket {
-            mixButtonOutlet.alpha = 0
-        } else {
-            mixButtonOutlet.alpha = 1
-        }
     }
     
     func selectedAnimation() {
@@ -269,24 +219,8 @@ class UTXOCell: UITableViewCell {
         }
     }
     
-    @IBAction func labelButtonTapped(_ sender: Any) {
-        delegate.didTapToEditLabel(utxo)
-    }
-    
     @IBAction func lockButtonTapped(_ sender: Any) {
         delegate.didTapToLock(utxo)
-    }
-    
-    @IBAction func fetchOriginTapped(_ sender: Any) {
-        delegate.didTapToFetchOrigin(utxo)
-    }
-    
-    @IBAction func mixButtonTapped(_ sender: Any) {
-        delegate.didTapToMix(utxo)
-    }
-    
-    @IBAction func donateChangeTapped(_ sender: Any) {
-        delegate.didTapDonateChange(utxo)
     }
     
 }
