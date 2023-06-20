@@ -1,0 +1,50 @@
+{
+  "pins" : [
+    {
+      "identity" : "bc-lifehash",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/BlockchainCommons/bc-lifehash",
+      "state" : {
+        "revision" : "518f4398982a327fd14d745d192e28b23f44463f",
+        "version" : "0.4.0"
+      }
+    },
+    {
+      "identity" : "lifehash",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/BlockchainCommons/LifeHash",
+      "state" : {
+        "revision" : "37578f87440d1efd37f0e4cf11af3463303b6b46",
+        "version" : "6.3.1"
+      }
+    },
+    {
+      "identity" : "rncryptor",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/RNCryptor/RNCryptor.git",
+      "state" : {
+        "revision" : "5e3bbf44f08bf90049537cb8902d8f4fa911a79a",
+        "version" : "5.1.0"
+      }
+    },
+    {
+      "identity" : "secp256k1.swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jb55/secp256k1.swift.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "40b4b38b3b1c83f7088c76189a742870e0ca06a9"
+      }
+    },
+    {
+      "identity" : "urkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Fonta1n3/URKit",
+      "state" : {
+        "branch" : "master",
+        "revision" : "1d74d3e758130ac7e20f9b66221866928c81ef96"
+      }
+    }
+  ],
+  "version" : 2
+}

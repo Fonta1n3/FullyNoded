@@ -547,20 +547,15 @@ func validate_event(ev: NostrEvent) -> ValidationResult {
     let raw_id = sha256(calculate_event_commitment(ev: ev))
     let id = hex_encode(raw_id)
     
-    print("provided id: \(ev.id)")
-    print("what we expect: \(id)")
     if id != ev.id {
-        print("id not equal")
         return .bad_id
     }
 
     guard var sig64 = hex_decode(ev.sig)?.bytes else {
-        print("bad sig")
         return .bad_sig
     }
     
     guard var ev_pubkey = hex_decode(ev.pubkey)?.bytes else {
-        print("bad pubkey")
         return .bad_sig
     }
 
@@ -568,7 +563,6 @@ func validate_event(ev: NostrEvent) -> ValidationResult {
     var xonly_pubkey = secp256k1_xonly_pubkey.init()
     var ok = secp256k1_xonly_pubkey_parse(ctx, &xonly_pubkey, &ev_pubkey) != 0
     if !ok {
-        print("bad sig here is not ok")
         return .bad_sig
     }
     var raw_id_bytes = raw_id.bytes
