@@ -59,9 +59,10 @@
 		0A77138426AD9C5E005CC23D /* BlindPsbt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A77138326AD9C5E005CC23D /* BlindPsbt.swift */; };
 		0A77138626AE5E85005CC23D /* WalletInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A77138526AE5E85005CC23D /* WalletInfo.swift */; };
 		0A8850FE2A41FB040078A603 /* secp256k1 in Frameworks */ = {isa = PBXBuildFile; productRef = 0A8850FD2A41FB040078A603 /* secp256k1 */; };
+		0A8850FF2A4201C10078A603 /* LibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AD438842A41F7F90004F923 /* LibWally.xcframework */; };
+		0A8851002A4201C10078A603 /* LibWally.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0AD438842A41F7F90004F923 /* LibWally.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		0A9FDC9126A84CE30050C4AE /* WalletTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9FDC9026A84CE30050C4AE /* WalletTypes.swift */; };
 		0AB0B694290C374F00A1C201 /* URKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0AB0B693290C374F00A1C201 /* URKit */; };
-		0AD438852A41F7F90004F923 /* LibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AD438842A41F7F90004F923 /* LibWally.xcframework */; };
 		0AD8AD5029FF45B200F1ADD8 /* InvoiceSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD8AD4F29FF45B200F1ADD8 /* InvoiceSettingsViewController.swift */; };
 		0AD9490A273C051B00AF83F5 /* ExternalFNWalletsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD94909273C051B00AF83F5 /* ExternalFNWalletsViewController.swift */; };
 		0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */; };
@@ -199,6 +200,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				0A8851002A4201C10078A603 /* LibWally.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -401,7 +403,7 @@
 				D06D788C25B817B500769157 /* LifeHash in Frameworks */,
 				0AF73248291AF7D9009F6296 /* RNCryptor in Frameworks */,
 				B9A76B896D66DD8DB5C270C4 /* Pods_FullyNoded.framework in Frameworks */,
-				0AD438852A41F7F90004F923 /* LibWally.xcframework in Frameworks */,
+				0A8850FF2A4201C10078A603 /* LibWally.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1518,7 +1520,7 @@
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNoded.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 399;
+				CURRENT_PROJECT_VERSION = 400;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1533,7 +1535,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.479;
+				MARKETING_VERSION = 1.480;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1560,7 +1562,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 399;
+				CURRENT_PROJECT_VERSION = 400;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1577,7 +1579,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.479;
+				MARKETING_VERSION = 1.480;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
