@@ -235,7 +235,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             "label": jmWallet,
             "type": "Single-Sig",
             "isJm": true,
-            "maxIndex": 100,
+            "maxIndex": 999,
             "index": Int64(0),
             "blockheight": 0
         ]

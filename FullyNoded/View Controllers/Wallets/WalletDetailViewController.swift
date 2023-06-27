@@ -117,7 +117,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         OnchainUtils.getDescriptorInfo(p) { (descriptorInfo, message) in
             guard let descriptorInfo = descriptorInfo else { return }
             let desc = descriptorInfo.descriptor
-            let param:Derive_Addresses = .init(["descriptor":desc, "range":[0,100]])
+            let param:Derive_Addresses = .init(["descriptor":desc, "range":[0,999]])
             OnchainUtils.deriveAddresses(param: param) { [weak self] (response, message) in
                 if let addr = response as? NSArray {
                     for (i, address) in addr.enumerated() {
@@ -847,7 +847,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     @objc func increaseGapLimit() {
-        var max = Int(wallet.maxIndex) + 100
+        var max = Int(wallet.maxIndex) + 999
         if max > 99999 {
             max = 99999
         }
@@ -908,8 +908,9 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             var requests:[[String:Any]] = []
             var request:[String:Any] = [:]
             request["desc"] = descriptor
-            request["range"] = [wallet.maxIndex, maxRange]
+            request["range"] = [0, maxRange]
             request["timestamp"] = "now"
+            request["next_index"] = Int(wallet.maxIndex) + 1
             
             if descriptor.contains(wallet.changeDescriptor) {
                 request["internal"] = true

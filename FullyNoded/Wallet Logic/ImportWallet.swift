@@ -31,7 +31,7 @@ class ImportWallet {
         wallet["label"] = label
         wallet["id"] = UUID()
         wallet["blockheight"] = Int64(blockheight)
-        wallet["maxIndex"] = 2500
+        wallet["maxIndex"] = 999
         wallet["index"] = 0
         
         var descStruct = Descriptor(primDescriptor)
@@ -160,7 +160,7 @@ class ImportWallet {
                                     let param_dict = [
                                         "desc": watchingDesc,
                                         "active": false,
-                                        "range": [0,100],
+                                        "range": [0,999],
                                         "next_index": 0,
                                         "timestamp": "now",
                                         "internal": ischange
@@ -250,7 +250,7 @@ class ImportWallet {
         wallet["label"] = "Coldcard"
         wallet["id"] = UUID()
         wallet["blockheight"] = 0
-        wallet["maxIndex"] = 100
+        wallet["maxIndex"] = 999
         wallet["index"] = 0
         
         let fingerprint = dict["xfp"] as! String
@@ -324,7 +324,7 @@ class ImportWallet {
                 [
                     ["desc": recDesc,
                      "active": recDescIsActive,
-                     "range": [0,100],
+                     "range": [0,999],
                      "next_index": 0,
                      "timestamp": "now",
                      "internal": false
@@ -332,7 +332,7 @@ class ImportWallet {
                     [
                         "desc": changeDesc,
                         "active": changeDescIsActive,
-                        "range": [0,100],
+                        "range": [0,999],
                         "next_index": 0,
                         "timestamp": "now",
                         "internal": true
