@@ -213,8 +213,6 @@ class TorClient: NSObject, URLSessionDelegate {
         } catch {
             print("Directory previously created.")
         }
-        addTorrc()
-        createHiddenServiceDirectory()
     }
     
     private func torPath() -> String {
@@ -225,41 +223,7 @@ class TorClient: NSObject, URLSessionDelegate {
             return "\(NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? "")/tor"
         #endif
     }
-    
-    private func addTorrc() {
-        #if targetEnvironment(macCatalyst)
-            // Code specific to Mac.
-            let torrcUrl = URL(fileURLWithPath: "/Users/\(NSUserName())/Library/Containers/com.fontaine.fullynodedmacos/Data/.torrc")
-            let torrc = Torrc.torrc.dataUsingUTF8StringEncoding
-            do {
-                try torrc.write(to: torrcUrl)
-            } catch {
-                print("an error happened while creating the file")
-            }
-        #elseif targetEnvironment(simulator)
-        #else
-//            let sourceURL = Bundle.main.bundleURL.appendingPathComponent(".torrc")
-//            let torrc = try? String(contentsOf: sourceURL, encoding: .utf8)
-//            print("sourceURL: \(sourceURL)")
-//            print("torrc: \(torrc)")
         
-        #endif
-    }
-    
-    private func createHiddenServiceDirectory() {
-        do {
-            try FileManager.default.createDirectory(atPath: "\(torPath())/host",
-                                                    withIntermediateDirectories: true,
-                                                    attributes: [FileAttributeKey.posixPermissions: 0o700])
-        } catch {
-            print("Directory previously created.")
-        }
-    }
-    
-    func hostname() -> String? {
-        let path = URL(fileURLWithPath: "/Users/\(NSUserName())/Library/Containers/com.fontaine.fullynodedmacos/Data/Library/Caches/tor/host/hostname")
-        return try? String(contentsOf: path, encoding: .utf8)
-    }
     
     private func createAuthDirectory() -> String {
         // Create tor v3 auth directory if it does not yet exist

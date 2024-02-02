@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -104,7 +104,6 @@
 		D03968B1246F6CBA0010D821 /* Crypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = D03968B0246F6CBA0010D821 /* Crypto.swift */; };
 		D039D3C823322F1300D1ED18 /* NodeStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D039D3C723322F1300D1ED18 /* NodeStruct.swift */; };
 		D03F65F124EFB25100901D06 /* KeySendViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D03F65F024EFB25100901D06 /* KeySendViewController.swift */; };
-		D042FABC250C9F0600E99D9B /* Torrc.swift in Sources */ = {isa = PBXBuildFile; fileRef = D042FABB250C9F0600E99D9B /* Torrc.swift */; };
 		D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0452ADA2247417F0013E225 /* ImportPrivKeyViewController.swift */; };
 		D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0452ADC224743C50013E225 /* LogInViewController.swift */; };
 		D049CB3924C7EFDF0039711B /* iTunesArtwork@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D049CB3824C7EFDF0039711B /* iTunesArtwork@2x.png */; };
@@ -313,7 +312,6 @@
 		D039D3C723322F1300D1ED18 /* NodeStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeStruct.swift; sourceTree = "<group>"; };
 		D03F65F024EFB25100901D06 /* KeySendViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeySendViewController.swift; sourceTree = "<group>"; };
 		D0410615224ED188004AC0D0 /* FullyNoded-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FullyNoded-Bridging-Header.h"; sourceTree = "<group>"; };
-		D042FABB250C9F0600E99D9B /* Torrc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Torrc.swift; sourceTree = "<group>"; };
 		D0452ADA2247417F0013E225 /* ImportPrivKeyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportPrivKeyViewController.swift; sourceTree = "<group>"; };
 		D0452ADC224743C50013E225 /* LogInViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogInViewController.swift; sourceTree = "<group>"; };
 		D049CB3824C7EFDF0039711B /* iTunesArtwork@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iTunesArtwork@2x.png"; sourceTree = "<group>"; };
@@ -880,7 +878,6 @@
 			isa = PBXGroup;
 			children = (
 				D0855FC522B08EE000DBBFC2 /* TorClient.swift */,
-				D042FABB250C9F0600E99D9B /* Torrc.swift */,
 			);
 			path = Tor;
 			sourceTree = "<group>";
@@ -1302,7 +1299,6 @@
 				D0E51E5B226592C9005D1909 /* NodeDetailViewController.swift in Sources */,
 				D0233F222361E68F0041FFBA /* KeyGen.swift in Sources */,
 				0A1F10D526A1A52600BE2707 /* ChildIndexSpec.swift in Sources */,
-				D042FABC250C9F0600E99D9B /* Torrc.swift in Sources */,
 				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,
 				D00B27BC255A27F300269B51 /* WalletURL.swift in Sources */,
 				D07E0DE622F9168F00A81FA8 /* WalletManagerViewController.swift in Sources */,
@@ -1520,7 +1516,7 @@
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNoded.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 401;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1536,7 +1532,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.481;
+				MARKETING_VERSION = 1.483;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1564,7 +1560,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "3rd Party Mac Developer Application";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 401;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 8JHDU5M9KD;
@@ -1584,7 +1580,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.481;
+				MARKETING_VERSION = 1.483;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;

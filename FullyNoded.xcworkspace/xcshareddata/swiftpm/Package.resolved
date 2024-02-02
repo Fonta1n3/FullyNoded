@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/BlockchainCommons/bc-lifehash",
       "state" : {
-        "revision" : "518f4398982a327fd14d745d192e28b23f44463f",
-        "version" : "0.4.0"
+        "revision" : "9f1d125749b763b932619e682588bb7f26933d29",
+        "version" : "0.4.1"
       }
     },
     {
@@ -14,8 +14,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/BlockchainCommons/LifeHash",
       "state" : {
-        "revision" : "37578f87440d1efd37f0e4cf11af3463303b6b46",
-        "version" : "6.3.1"
+        "revision" : "fb842d1378b960be6750267e98ae6ce8f287054d",
+        "version" : "6.3.2"
       }
     },
     {

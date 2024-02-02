@@ -226,52 +226,6 @@ class MainMenuViewController: UIViewController {
         }
     }
         
-    @IBAction func showRemoteControl(_ sender: Any) {
-        #if targetEnvironment(macCatalyst)
-        // Code specific to Mac.
-        guard let activeNode = activeNode else {
-            showAlert(vc: self, title: "", message: "Please activate a node first.")
-            return
-        }
-        
-        var prefix = "btcrpc"
-        if activeNode.isLightning {
-            prefix = "clightning-rpc"
-        }
-        
-        let address = decryptedValue(activeNode.onionAddress!)
-        let rpcusername = decryptedValue(activeNode.rpcuser!)
-        let rpcpassword = decryptedValue(activeNode.rpcpassword!)
-        let macName = UIDevice.current.name
-        
-        if address.contains("127.0.0.1") || address.contains("localhost") || address.contains(macName) {
-            
-            guard var hostname = mgr?.hostname() else {
-                showAlert(vc: self, title: "", message: "There was an error getting your hostname for remote connection... Please make sure you are connected to the internet and that Tor successfully bootstrapped.")
-                return
-            }
-            
-            hostname = hostname.replacingOccurrences(of: "\n", with: "")
-            
-            DispatchQueue.main.async { [weak self] in
-                let label = activeNode.label.replacingOccurrences(of: " ", with: "%20")
-                self?.host = "\(prefix)://\(rpcusername):\(rpcpassword)@\(hostname):11221/?label=\(label)"
-                self?.performSegue(withIdentifier: "segueToRemoteControl", sender: self)
-            }
-            
-        } else {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                showAlert(vc: self, title: "", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.")
-            }
-        }
-        
-        #else
-        // Code to exclude from Mac.
-        showAlert(vc: self, title: "", message: "This is a macOS feature only, when you use Fully Noded - Desktop, it has the ability to display a QR code you can scan with your iPhone or iPad to connect to your node remotely.")
-        #endif
-        
-    }
     
     @IBAction func showLightningNode(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
@@ -911,7 +865,7 @@ class MainMenuViewController: UIViewController {
                 vc.text = host
                 vc.headerIcon = UIImage(systemName: "antenna.radiowaves.left.and.right")
                 vc.headerText = "Remote Control - Quick Connect"
-                vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world! This feature works with mainnet only."
+                vc.descriptionText = "Fully Noded hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
             }
             
 //        case "segueToPaywall":

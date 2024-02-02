@@ -44,11 +44,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneWillEnterForeground(_ scene: UIScene) {
         self.blacked.removeFromSuperview()
         guard !isBooting else { isBooting = !isBooting; return }
-                
+        
         guard KeyChain.getData("UnlockPassword") != nil else {
             DispatchQueue.background(delay: 0.2, completion:  {
-//                MakeRPCCall.sharedInstance.connectToRelay(node: <#NodeStruct#>)
-//                MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in }
+                //                MakeRPCCall.sharedInstance.connectToRelay(node: <#NodeStruct#>)
+                //                MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in }
             })
             if !isBooting && mgr?.state != .started && mgr?.state != .connected  {
                 mgr?.start(delegate: nil)
@@ -58,41 +58,44 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             return
         }
         
-        #if !os(macOS) && !targetEnvironment(macCatalyst)
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        
-        guard let loginVC = storyboard.instantiateViewController(identifier: "LogIn") as? LogInViewController,
-            let topVC = self.window?.rootViewController?.topViewController(),
-            topVC.restorationIdentifier != "LogIn" else {
-                return
-        }
-        
-        DispatchQueue.main.async {
-            loginVC.modalPresentationStyle = .fullScreen
-            topVC.present(loginVC, animated: true, completion: nil)
-        }
-        
-        loginVC.onDoneBlock = { [weak self] in
-            guard let self = self else { return }
-            
-//            DispatchQueue.background(delay: 0.2, completion:  {
-//                //MakeRPCCall.sharedInstance.connectToRelay(node: )
-////                MakeRPCCall.sharedInstance.eoseReceivedBlock = { subscribed in
-////                    if subscribed {
-////                        DispatchQueue.main.async {
-////                            NotificationCenter.default.post(name: .refreshNode, object: nil)
-////                        }
-////                    }
-////                }
-//            })
-            
-            if !self.isBooting && self.mgr?.state != .started && self.mgr?.state != .connected  {
-                self.mgr?.start(delegate: nil)
-            } else {
-                self.isBooting = false
+        if #available(iOS 14.0, *) {
+            if !ProcessInfo.processInfo.isiOSAppOnMac {
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                
+                guard let loginVC = storyboard.instantiateViewController(identifier: "LogIn") as? LogInViewController,
+                      let topVC = self.window?.rootViewController?.topViewController(),
+                      topVC.restorationIdentifier != "LogIn" else {
+                    return
+                }
+                
+                DispatchQueue.main.async {
+                    loginVC.modalPresentationStyle = .fullScreen
+                    topVC.present(loginVC, animated: true, completion: nil)
+                }
+                
+                loginVC.onDoneBlock = { [weak self] in
+                    guard let self = self else { return }
+                    
+                    //            DispatchQueue.background(delay: 0.2, completion:  {
+                    //                //MakeRPCCall.sharedInstance.connectToRelay(node: )
+                    ////                MakeRPCCall.sharedInstance.eoseReceivedBlock = { subscribed in
+                    ////                    if subscribed {
+                    ////                        DispatchQueue.main.async {
+                    ////                            NotificationCenter.default.post(name: .refreshNode, object: nil)
+                    ////                        }
+                    ////                    }
+                    ////                }
+                    //            })
+                    
+                    if !self.isBooting && self.mgr?.state != .started && self.mgr?.state != .connected  {
+                        self.mgr?.start(delegate: nil)
+                    } else {
+                        self.isBooting = false
+                    }
+                }
             }
+            
         }
-        #endif
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
@@ -102,10 +105,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         MakeRPCCall.sharedInstance.connected = false
         
         if mgr?.state != .stopped && mgr?.state != TorClient.TorState.none  {
-            #if !targetEnvironment(macCatalyst)
-            mgr?.state = .refreshing
-            mgr?.resign()
-            #endif
+            if #available(iOS 14.0, *) {
+                if !ProcessInfo.processInfo.isiOSAppOnMac {
+                    mgr?.state = .refreshing
+                    mgr?.resign()
+                } else {
+                    print("running on mac, not quitting tor.")
+                }
+            }
         }
         
         if let window = self.window {

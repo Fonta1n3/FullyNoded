@@ -62,7 +62,7 @@ class LightningRPC {
                 }
             }
             
-            let dict:[String:Any] = ["jsonrpc":"2.0","id":id.uuidString,"method":method.rawValue,"params":param ?? [:]]
+            let dict:[String:Any] = ["jsonrpc":"2.0","id":id.uuidString,"method":method.rawValue,"params":param ?? nil]
             
             if self.isNostr {
                 self.viaNostr(http_body: dict, completion: completion)
@@ -146,6 +146,7 @@ class LightningRPC {
                     }
                     
                     #if DEBUG
+                    print("urlContent: \(urlContent)")
                     print("jsonResult: \(jsonResult)")
                     #endif
                     
