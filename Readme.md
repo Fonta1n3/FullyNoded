@@ -138,6 +138,8 @@ in the sources themselves:
 The following dependencies are bundled with the Fully Noded®, but are under
 terms of a separate license:
 
+* [secp256k1.swift](https://github.com/GigaBitcoin/secp256k1.swift)
+* [RNCryptor](https://github.com/RNCryptor/RNCryptor)
 * [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
 * [Libwally-Swift](https://github.com/Fonta1n3/libwally-swift) which relies on [Libwally-Core v0.7.7](https://github.com/Fonta1n3/libwally-swift/tree/master/CLibWally/libwally-core) for converting cryptographically secure entropy to BIP39 words, deriving HD keys and most importantly signing psbt's.
 * [DescriptorParser.swift](https://github.com/BlockchainCommons/GordianWallet-iOS/blob/master/XCode/GordianWallet/Helpers/DescriptorParser.swift) from [Blockchain Commons](https://github.com/BlockchainCommons) which is under the [spdx:BSD-2-Clause Plus Patent License](https://spdx.org/licenses/BSD-2-Clause-Patent.html).
