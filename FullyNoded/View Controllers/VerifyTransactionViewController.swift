@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import LibWally
 
 class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate {
     
@@ -132,56 +133,87 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func processPsbt(_ psbt: String) {
         spinner.addConnectingView(vc: self, description: "processing psbt...")
-        let param:Wallet_Process_PSBT = .init(["psbt": psbt])
+        
+        let network = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+        var chain: Network
+        if network == "main" {
+            chain = .mainnet
+        } else {
+            chain = .testnet
+        }
+        
+        let importedPsbt = try! PSBT(psbt: psbt, network: chain)
+        let inputs = importedPsbt.inputs
+        var signed = false
+        for input in inputs {
+            signed = false
+            if let sigs = input.signatures, let origins = input.origins {
+                if sigs.count == origins.count {
+                    signed = true
+                }
+            }
+        }
+    
+        let param: Wallet_Process_PSBT = .init(["psbt": psbt, "sign": false])
         Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt(param: param)) { [weak self] (object, errorDescription) in
             guard let self = self else { return }
             
             guard let dict = object as? NSDictionary, let processedPsbt = dict["psbt"] as? String else {
                 showAlert(vc: self, title: "", message: "There was an issue processing your psbt with the active wallet: \(errorDescription ?? "unknown error")")
+                
                 return
             }
+            
             self.processedPsbt = processedPsbt
-            self.finalizePsbt(processedPsbt)
+            
+            if signed {
+                self.finalizePsbt(processedPsbt)
+            } else {
+                self.unsignedPsbt = processedPsbt
+                self.enableSignButton()
+                self.load()
+            }
         }
     }
     
     private func finalizePsbt(_ psbt: String) {
-        let param:Finalize_Psbt = .init(["psbt": psbt])
-        Reducer.sharedInstance.makeCommand(command: .finalizepsbt(param)) { [weak self] (object, errorDescription) in
-            guard let self = self else { return }
-
-            guard let result = object as? NSDictionary, let complete = result["complete"] as? Bool else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "", message: "There was an issue finalizing your psbt: \(errorDescription ?? "unknown error")")
-                return
-            }
-
-            self.enableExportButton()
-
-            guard complete, let hex = result["hex"] as? String else {
-                guard let psbt = result["psbt"] as? String else {
+        guard let hex = Keys.finalize(psbt) else {
+            // Libwally used to fail for multisig psbt's so falling back to core finalization.
+            let param:Finalize_Psbt = .init(["psbt": psbt])
+            Reducer.sharedInstance.makeCommand(command: .finalizepsbt(param)) { [weak self] (object, errorDescription) in
+                guard let self = self else { return }
+                
+                guard let result = object as? NSDictionary, let complete = result["complete"] as? Bool else {
                     self.spinner.removeConnectingView()
                     showAlert(vc: self, title: "", message: "There was an issue finalizing your psbt: \(errorDescription ?? "unknown error")")
                     return
                 }
-
-                self.unsignedPsbt = psbt
-                self.enableSignButton()
+                
+                self.enableExportButton()
+                
+                guard complete, let hex = result["hex"] as? String else {
+                    guard let psbt = result["psbt"] as? String else {
+                        self.spinner.removeConnectingView()
+                        showAlert(vc: self, title: "", message: "There was an issue finalizing your psbt: \(errorDescription ?? "unknown error")")
+                        return
+                    }
+                    
+                    self.unsignedPsbt = psbt
+                    self.enableSignButton()
+                    self.load()
+                    
+                    return
+                }
+                
+                self.signedRawTx = hex
                 self.load()
-
-                return
             }
-
-            self.signedRawTx = hex
-            self.load()
+            
+            return
         }
-        
-        // Finalizes locally - here for testing purposes
-//        guard let hex = Keys.finalize(psbt) else {
-//            return
-//        }
-//
-//        print("hex: \(hex)")
+
+        self.signedRawTx = hex
+        self.load()
     }
     
     private func enableExportButton() {
