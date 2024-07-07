@@ -16,7 +16,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     var m = Int()
     var n = Int()
     var keysString = ""
-    var isDone = Bool()
+    var isDone = false
     var cosigner: Descriptor?
     var keys = [[String:String]]()
     var alertStyle = UIAlertController.Style.alert
@@ -154,12 +154,22 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     }
     
     @IBAction func createButton(_ sender: Any) {
-        if keys.count > 1 {
-            promptToCreate()
+        if !isDone {
+            if keys.count > 1 {
+                promptToCreate()
+            } else {
+                showAlert(vc: self, title: "Add more cosigners first.", message: "Creating a multi-sig wallet with one cosigner is pointless...")
+            }
         } else {
-            showAlert(vc: self, title: "Add more cosigners first.", message: "Creating a multi-sig wallet with one cosigner is pointless...")
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                if self.navigationController != nil {
+                    self.navigationController?.popToRootViewController(animated: true)
+                } else {
+                    self.dismiss(animated: true, completion: nil)
+                }
+            }
         }
-        
     }
     
     var cointType: String {
@@ -267,6 +277,12 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     
     private func exportWallet(mofn: String) {
         isDone = true
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.createOutlet.setTitle("Done", for: .normal)
+        }
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
