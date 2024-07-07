@@ -189,6 +189,26 @@ public struct Import_Descriptors: CustomStringConvertible {
     }
 }
 
+public struct Analyze_PSBT: CustomStringConvertible {
+    public var description: String {
+        return ""
+    }
+    
+    let param:[String: Any]
+    /*
+     Arguments:
+     1. psbt           (string, required) The transaction base64 string
+     */
+    
+    init(_ dict: [String: Any]) {
+        let psbt = dict["psbt"] as? String ?? ""
+        
+        param = [
+            "psbt": psbt
+        ]
+    }
+}
+
 public struct Wallet_Process_PSBT: CustomStringConvertible {
     public var description: String {
         return ""

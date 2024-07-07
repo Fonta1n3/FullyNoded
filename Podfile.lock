@@ -1,20 +1,20 @@
 PODS:
-  - Tor (408.10.1):
-    - Tor/CTor (= 408.10.1)
-  - Tor/Core (408.10.1)
-  - Tor/CTor (408.10.1):
+  - Tor (408.11.2):
+    - Tor/CTor (= 408.11.2)
+  - Tor/Core (408.11.2)
+  - Tor/CTor (408.11.2):
     - Tor/Core
 
 DEPENDENCIES:
-  - Tor
+  - Tor (~> 408.11.2)
 
 SPEC REPOS:
   trunk:
     - Tor
 
 SPEC CHECKSUMS:
-  Tor: 4aa4aee031f892efa43d1afb01c90565990c6312
+  Tor: c699393e1f48264cd293fa314bfbcdca5086574c
 
-PODFILE CHECKSUM: 841cd203a3ac111797d77ed48c298e2ad18b5398
+PODFILE CHECKSUM: 808e32cef78f3e0711ca24e6b499ebcbbe875000
 
-COCOAPODS: 1.14.3
+COCOAPODS: 1.15.2

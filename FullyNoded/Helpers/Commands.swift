@@ -21,7 +21,7 @@ public enum BTC_CLI_COMMAND {
     case listaddressgroupings
     case converttopsbt
     case getaddressinfo(param: Get_Address_Info)
-    case analyzepsbt
+    case analyzepsbt(param: Analyze_PSBT)
     case createpsbt(_ param: Create_Psbt)
     case joinpsbts(_ param: Join_Psbt)
     case getmempoolinfo
@@ -195,6 +195,8 @@ public enum BTC_CLI_COMMAND {
     
     var paramDict:[String:Any] {
         switch self {
+        case .analyzepsbt(param: let analyzePsbt):
+            return analyzePsbt.param
         case .getbalance(param: let getBalance):
             return getBalance.param
         case .createwallet(param: let createWallet):
@@ -273,7 +275,7 @@ public enum BTC_CLI_COMMAND {
         listaddressgroupings,
         converttopsbt,
         getaddressinfo(param: .init([:])),
-        analyzepsbt,
+        analyzepsbt(param: .init([:])),
         createpsbt(.init([:])),
         joinpsbts(.init([:])),
         getmempoolinfo,

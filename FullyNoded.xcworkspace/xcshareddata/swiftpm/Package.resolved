@@ -1,4 +1,5 @@
 {
+  "originHash" : "80d738e01d019027b7e2198930ba90237b181310c1fceceb2bbaca0d1aae4117",
   "pins" : [
     {
       "identity" : "bc-lifehash",
@@ -46,5 +47,5 @@
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }
