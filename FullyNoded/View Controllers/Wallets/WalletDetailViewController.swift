@@ -8,6 +8,7 @@
 
 import UIKit
 
+
 class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UINavigationControllerDelegate {
     
     @IBOutlet weak var detailTable: UITableView!
@@ -20,6 +21,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     var originalLabel = ""
     var backupQrImage: UIImage!
     var exportWalletImage: UIImage!
+    var bbQr: UIImage!
     var backupText = ""
     var exportText = ""
     var textToShow = ""
@@ -788,6 +790,52 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             return 180
         default:
             return 0
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let footer = UIView()
+        footer.backgroundColor = UIColor.clear
+        footer.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 100)
+        
+        let textLabel = UILabel()
+        textLabel.textAlignment = .left
+        textLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        textLabel.textColor = .lightGray
+        textLabel.numberOfLines = 0
+        textLabel.lineBreakMode = .byWordWrapping
+        textLabel.sizeToFit()
+        textLabel.frame = CGRect(x: 0, y: 0, width: footer.frame.width, height: 100)
+        
+        if let section = Section(rawValue: section) {
+            switch section {
+            case .walletExport:
+                textLabel.text = "This QR is for exporting your wallet to other Hardware Wallets and Software wallets. Compatible with Sparrow, Blue Wallet, Passport and more."
+                
+            case .backupQr:
+                textLabel.text = "This QR is best for restoring to Fully Noded, either QR works but this one includes the wallet label and blockheight your wallet was created at."
+                
+            default:
+                break
+            }
+        }
+        
+        
+        footer.addSubview(textLabel)
+        
+        return footer
+    }
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        if let section = Section(rawValue: section) {
+            switch section {
+            case .walletExport, .backupQr:
+                return 100
+            default:
+                return 10
+            }
+        } else {
+            return 10
         }
     }
     

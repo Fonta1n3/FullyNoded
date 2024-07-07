@@ -17,9 +17,11 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     var n = Int()
     var keysString = ""
     var isDone = Bool()
-    var cosigner:Descriptor?
+    var cosigner: Descriptor?
     var keys = [[String:String]]()
     var alertStyle = UIAlertController.Style.alert
+    var multiSigAccountDesc = ""
+    var qrToExport = ""
     
     @IBOutlet weak var derivationField: UITextField!
     @IBOutlet weak var fingerprintField: UITextField!
@@ -44,7 +46,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         xpubField.delegate = self
         
         fingerprintField.text = ""
-        
+                
         if let cosigner = cosigner {
             derivationField.text = cosigner.derivation
             addKeyStore(cosigner.fingerprint, cosigner.accountXpub == "" ? cosigner.accountXprv : cosigner.accountXpub)
@@ -126,13 +128,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     private func keystring(prefix: String, xpub: String) -> String {
         return "#\(self.keys.count):\n\n" + "Origin: [\(prefix)]\n\n" + "Key: " + xpub + "\n\n"
     }
-    
-//    func setKeyUi(_ xfp: String, _ xpub: String, _ prefix: String) {
-//        DispatchQueue.main.async { [weak self] in
-//            guard let self = self else { return }
-//
-//        }
-//    }
     
     @IBAction func addAction(_ sender: Any) {
         guard let xpub = xpubField.text, xpub != "" else {
@@ -252,13 +247,15 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                     rawPrimDesc = "sh(wsh(sortedmulti(\(m),\(descriptorKeys))))"
                 }
                 
-                let accountMap = ["descriptor":rawPrimDesc,"label":"\(m) of \(keys.count)", "blockheight": blockheight] as [String:Any]
+                multiSigAccountDesc = rawPrimDesc
+                
+                let accountMap = ["descriptor": rawPrimDesc,"label": "\(m) of \(keys.count)", "blockheight": blockheight] as [String:Any]
                 
                 ImportWallet.accountMap(accountMap) { [weak self] (success, errorDescription) in
                     guard let self = self else { return }
                     
                     if success {
-                        self.walletSuccessfullyCreated(mofn: "\(m) of \(self.keys.count)")
+                        self.exportWallet(mofn: "\(m) of \(self.keys.count)")
                     } else {
                         self.spinner.removeConnectingView()
                         showAlert(vc: self, title: "There was an error!", message: "Something went wrong during the wallet creation process: \(errorDescription ?? "unknown error")")
@@ -268,7 +265,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         }
     }
     
-    private func walletSuccessfullyCreated(mofn: String) {
+    private func exportWallet(mofn: String) {
         isDone = true
         
         DispatchQueue.main.async { [weak self] in
@@ -278,7 +275,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             var text = ""
             
             if self.cosigner != nil {
-                message = "It is important you export this text to your Coldcard as a .txt file otherwise your Coldcard will not be able to sign for this wallet. Tap \"export\" to save the file that can be uploaded to your Coldcard via the SD card."
+                message = "Export the wallet as a text file (compatible with Coldcard) or QR code (compatible with Passport, Sparrow, Blue Wallet and more)."
                 
                 text = """
                 Name: Fully Noded
@@ -293,37 +290,45 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             }
             
             self.spinner.removeConnectingView()
-                    
+            
             var alertStyle = UIAlertController.Style.actionSheet
             
             if (UIDevice.current.userInterfaceIdiom == .pad) {
-              alertStyle = UIAlertController.Style.alert
+                alertStyle = UIAlertController.Style.alert
             }
             
             let alert = UIAlertController(title: "\(mofn) successfully created ✓", message: message, preferredStyle: alertStyle)
             
-            if self.cosigner != nil {
-                alert.addAction(UIAlertAction(title: "Export", style: .default, handler: { action in
-                    self.export(text: text)
-                }))
-            } else {
-                alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { action in
-                    DispatchQueue.main.async {
-                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                        if self.navigationController != nil {
-                            self.navigationController?.popToRootViewController(animated: true)
-                        } else {
-                            self.dismiss(animated: true, completion: nil)
-                        }
-                    }
-                }))
-            }
+            alert.addAction(UIAlertAction(title: "Export Text File (Coldcard)", style: .default, handler: { action in
+                self.export(text: text)
+            }))
             
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+            alert.addAction(UIAlertAction(title: "Export QR Code (Passport, Sparrow, Blue)", style: .default, handler: { action in
+                guard let ur = URHelper.dataToUrBytes(text.utf8) else {
+                    showAlert(vc: self, title: "Error", message: "Unable to convert the text into a UR.")
+                    return
+                }
+                
+                self.qrToExport = ur.qrString
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.performSegue(withIdentifier: "segueToExportMsig", sender: self)
                 }
             }))
+            
+            alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { action in
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                    if self.navigationController != nil {
+                        self.navigationController?.popToRootViewController(animated: true)
+                    } else {
+                        self.dismiss(animated: true, completion: nil)
+                    }
+                }
+            }))
+            
             alert.popoverPresentationController?.sourceView = self.view
             self.present(alert, animated: true, completion: nil)
         }
@@ -463,17 +468,27 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         } else if item.lowercased().hasPrefix("ur:bytes") {
             let (text, err) = URHelper.parseBlueWalletCoordinationSetup(item.lowercased())
             if let textFile = text {
-                 if let dict = try? JSONSerialization.jsonObject(with: textFile.utf8, options: []) as? [String:Any] {
+                if let dict = try? JSONSerialization.jsonObject(with: textFile.utf8, options: []) as? [String:Any] {
                     let importStruct = WalletImport(dict)
-                    
+                     
                     if let bip48 = importStruct.bip48 {
                         parseDescriptor(Descriptor(bip48))
                     }
                     
-                 } else if let accountMap = TextFileImport.parse(textFile).accountMap {
+                } else if let accountMap = TextFileImport.parse(textFile).accountMap {
                     let desc = accountMap["descriptor"] as? String ?? ""
-                    parseDescriptor(Descriptor(desc))
-                        
+                    let descriptorStr = Descriptor(desc)
+                    
+                    if descriptorStr.keysWithPath.count > 1 {
+                        // add multiple keys at once
+                        for msigKey in descriptorStr.keysWithPath {
+                            let hack = "wsh(\(msigKey)"
+                            let descHack = Descriptor(hack)
+                            parseDescriptor(descHack)
+                        }
+                    } else {
+                        parseDescriptor(Descriptor(desc))
+                    }
                 } else {
                     showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the text file into a descriptor.")
                 }
@@ -486,7 +501,10 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                     let xfp = json["xfp"] as? String,
                     let xpub = json["xpub"] as? String,
                     let path = json["path"] as? String else {
-                    showError(); return
+                    
+                    showError()
+                    
+                    return
                 }
                 
                 DispatchQueue.main.async { [weak self] in
@@ -508,8 +526,11 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             key = xprv
         }
         let fingerprint = descriptor.fingerprint
-                
-        guard key != "", fingerprint != "" else { showError(); return }
+        
+        guard key != "", fingerprint != "" else {
+            showError()
+            return
+        }
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -554,10 +575,11 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         case "segueToScanXpubMsigCreator":
             if #available(macCatalyst 14.0, *) {
                 guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
+                vc.isImporting = true
                 
                 vc.onDoneBlock = { [weak self] xpub in
                     guard let self = self, let xpub = xpub else { return }
-                    
+                                        
                     self.parseImportedString(xpub)
                 }
             } else {
@@ -581,6 +603,16 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 
                 self.convertWords(words.utf8String ?? "", passphrase.utf8String ?? "")
             }
+            
+        
+        case "segueToExportMsig":
+            guard let vc = segue.destination as? QRDisplayerViewController else { return }
+            
+            vc.psbt = self.qrToExport
+            vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+            vc.headerText = "Multisig Wallet Export"
+            vc.descriptionText = "Scan this with Passport, Blue Wallet, Sparrow or other wallets which support UR QR to import the multisig wallet."
+         
         default:
             break
         }

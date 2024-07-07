@@ -139,6 +139,7 @@ class URHelper {
             let text = Data(bytes).utf8String else {
                 return (nil, "Unable to decode the QR code into a text file.")
         }
+        
         return (text, nil)
     }
     

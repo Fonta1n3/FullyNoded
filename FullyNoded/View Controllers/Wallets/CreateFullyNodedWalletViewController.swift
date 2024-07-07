@@ -739,6 +739,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             self.ccXfp = desc.fingerprint
             self.xpub = desc.accountXpub
             self.deriv = desc.derivation
+            self.cosigner = desc
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
@@ -811,7 +812,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         
                      } else if let accountMap = TextFileImport.parse(textFile).accountMap {
                         self.importAccountMap(accountMap)
-                            
+                                                     
                     } else {
                         showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the text file into a descriptor.")
                     }
