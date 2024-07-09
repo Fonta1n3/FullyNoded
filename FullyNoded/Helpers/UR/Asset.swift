@@ -15,12 +15,12 @@ enum Asset: UInt32, Identifiable, CaseIterable {
 //    case bch = 0x91
     
     var cbor: CBOR {
-        CBOR.unsignedInt(UInt64(rawValue))
+        CBOR.unsigned(UInt64(rawValue))
     }
     
     init(cbor: CBOR) throws {
         guard
-            case let CBOR.unsignedInt(r) = cbor,
+            case let CBOR.unsigned(r) = cbor,
             let a = Asset(rawValue: UInt32(r)) else {
             throw GeneralError("Invalid Asset.")
         }

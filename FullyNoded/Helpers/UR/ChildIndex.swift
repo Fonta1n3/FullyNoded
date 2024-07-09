@@ -31,11 +31,11 @@ struct ChildIndex: ExpressibleByIntegerLiteral {
     }
     
     var cbor: CBOR {
-        CBOR.unsignedInt(UInt64(value))
+        CBOR.unsigned(UInt64(value))
     }
     
     init?(cbor: CBOR) throws {
-        guard case let CBOR.unsignedInt(value) = cbor else {
+        guard case let CBOR.unsigned(value) = cbor else {
             return nil
         }
         guard value < 0x80000000 else {

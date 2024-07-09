@@ -50,17 +50,19 @@ struct UseInfo {
     }
 
     var cbor: CBOR {
-        var a: [OrderedMapEntry] = []
+        var a: Map = [:]
         
         if asset != .btc {
-            a.append(.init(key: 1, value: asset.cbor))
+            //a.append(.init(key: 1, value: asset.cbor))
+            a.insert(CBOR.unsigned(1), asset.cbor)
         }
         
         if network != .mainnet {
-            a.append(.init(key: 2, value: network.cbor))
+            //a.append(.init(key: 2, value: network.cbor))
+            a.insert(CBOR.unsigned(2), network.cbor)
         }
         
-        return CBOR.orderedMap(a)
+        return CBOR.map(a)
     }
     
     var taggedCBOR: CBOR {
@@ -73,14 +75,14 @@ struct UseInfo {
         }
         
         let asset: Asset
-        if let rawAsset = pairs[1] {
+        if let rawAsset = pairs.get(1) {
             asset = try Asset(cbor: rawAsset)
         } else {
             asset = .btc
         }
         
         let network: Network_
-        if let rawNetwork = pairs[2] {
+        if let rawNetwork = pairs.get(2) {
             network = try Network_(cbor: rawNetwork)
         } else {
             network = .mainnet

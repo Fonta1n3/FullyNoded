@@ -302,41 +302,50 @@ extension HDKey_: Equatable {
 
 extension HDKey_ {
     var cbor: CBOR {
-        var a: [OrderedMapEntry] = []
+        var a: Map = [:]
         
         if isMaster {
-            a.append(.init(key: 1, value: true))
+            //a.append(.init(key: 1, value: true))
+            a.insert(CBOR.unsigned(1), CBOR(booleanLiteral: true))
         }
         
         if keyType == .private {
-            a.append(.init(key: 2, value: true))
+            //a.append(.init(key: 2, value: true))
+            a.insert(CBOR.unsigned(2), CBOR(booleanLiteral: true))
         }
         
-        a.append(.init(key: 3, value: CBOR.byteString(keyData.bytes)))
+        //a.append(.init(key: 3, value: CBOR.byteString(keyData.bytes)))
+        a.insert(CBOR.unsigned(3), CBOR.bytes(keyData.cborData))
         
         if let chainCode = chainCode {
-            a.append(.init(key: 4, value: CBOR.byteString(chainCode.bytes)))
+            //a.append(.init(key: 4, value: CBOR.byteString(chainCode.bytes)))
+            a.insert(CBOR.unsigned(4), CBOR.bytes(chainCode.cborData))
         }
         
         if let useinfo = useInfo {
             if !useinfo.isDefault {
-                a.append(.init(key: 5, value: useinfo.taggedCBOR))
+                //a.append(.init(key: 5, value: useinfo.taggedCBOR))
+                a.insert(CBOR.unsigned(5), useinfo.taggedCBOR)
             }
         }
         
         if let origin = origin {
-            a.append(.init(key: 6, value: origin.taggedCBOR))
+            //a.append(.init(key: 6, value: origin.taggedCBOR))
+            a.insert(CBOR.unsigned(6), origin.taggedCBOR)
         }
         
         if let children = children {
-            a.append(.init(key: 7, value: children.taggedCBOR))
+            //a.append(.init(key: 7, value: children.taggedCBOR))
+            a.insert(CBOR.unsigned(7), children.taggedCBOR)
         }
         
         if let parentFingerprint = parentFingerprint {
-            a.append(.init(key: 8, value: CBOR.unsignedInt(UInt64(parentFingerprint))))
+            //a.append(.init(key: 8, value: CBOR.unsignedInt(UInt64(parentFingerprint))))
+            a.insert(CBOR.unsigned(8), CBOR.unsigned(UInt64(parentFingerprint)))
         }
         
-        return CBOR.orderedMap(a)
+        //return CBOR.orderedMap(a)
+        return CBOR.map(a)
     }
     
     var taggedCBOR: CBOR {
@@ -357,22 +366,32 @@ extension HDKey_ {
             throw GeneralError("HDKey: Doesn't contain a map.")
         }
         
-        guard case let CBOR.boolean(isMaster) = pairs[1] ?? CBOR.boolean(false) else {
+        guard let isMaster = try? BooleanLiteralType(cbor: pairs[1] ?? CBOR(booleanLiteral: false)) else {
             print("HDKey: Invalid `isMaster` field.")
             throw GeneralError("HDKey: Invalid `isMaster` field.")
         }
         
-        guard case let CBOR.boolean(isPrivate) = pairs[2] ?? CBOR.boolean(isMaster) else {
+//        guard case let CBOR.boolean(isMaster) = pairs[1] ?? CBOR.boolean(false) else {
+//            print("HDKey: Invalid `isMaster` field.")
+//            throw GeneralError("HDKey: Invalid `isMaster` field.")
+//        }
+        
+        guard let isPrivate = try? BooleanLiteralType(cbor: pairs[2] ?? CBOR(booleanLiteral: isMaster)) else {
             print("HDKey: Invalid `isPrivate` field.")
             throw GeneralError("HDKey: Invalid `isPrivate` field.")
         }
+        
+//        guard case let CBOR.boolean(isPrivate) = pairs[2] ?? CBOR.boolean(isMaster) else {
+//            print("HDKey: Invalid `isPrivate` field.")
+//            throw GeneralError("HDKey: Invalid `isPrivate` field.")
+//        }
         
         if isMaster && !isPrivate {
             print("HDKey: Master key cannot be public.")
             throw GeneralError("HDKey: Master key cannot be public.")
         }
         
-        guard case let CBOR.byteString(keyDataValue) = pairs[3] ?? CBOR.null,
+        guard case let CBOR.bytes(keyDataValue) = pairs[3] ?? CBOR.null,
             keyDataValue.count == 33 else {
             print("HDKey: Invalid key data.")
             throw GeneralError("HDKey: Invalid key data.")
@@ -381,8 +400,8 @@ extension HDKey_ {
         let keyData = Data(keyDataValue)
         
         let chainCode: Data?
-        if let chainCodeItem = pairs[4] {
-            guard case let CBOR.byteString(chainCodeValue) = chainCodeItem,
+        if let chainCodeItem = pairs.get(4) {
+            guard case let CBOR.bytes(chainCodeValue) = chainCodeItem,
                 chainCodeValue.count == 32 else {
                 print("HDKey: Invalid key chain code.")
                 throw GeneralError("HDKey: Invalid key chain code.")
@@ -404,23 +423,23 @@ extension HDKey_ {
         
         
         let origin: DerivationPath?
-        if let originItem = pairs[6] {
+        if let originItem = pairs.get(6) {
             origin = try DerivationPath(taggedCBOR: originItem)
         } else {
             origin = nil
         }
                         
         let children: DerivationPath?
-        if let childrenItem = pairs[7] {
+        if let childrenItem = pairs.get(7) {
             children = try DerivationPath(taggedCBOR: childrenItem)
         } else {
             children = nil
         }
                 
         let parentFingerprint: UInt32?
-        if let parentFingerprintItem = pairs[8] {
+        if let parentFingerprintItem = pairs.get(8) {
             guard
-                case let CBOR.unsignedInt(parentFingerprintValue) = parentFingerprintItem,
+                case let CBOR.unsigned(parentFingerprintValue) = parentFingerprintItem,
                 parentFingerprintValue > 0,
                 parentFingerprintValue <= UInt32.max
             else {
@@ -439,10 +458,17 @@ extension HDKey_ {
     
     convenience init(taggedCBOR: CBOR) throws {
         print("convenience init(taggedCBOR: CBOR)")
+        
+//        guard case let CBOR.tagged(.hdKeyV1, cbor) = taggedCBOR else {
+//            print("HDKeyV1 tag (303) not found.")
+//            throw GeneralError("HDKeyV1 tag (303) not found.")
+//        }
+        
         guard case let CBOR.tagged(.hdKey, cbor) = taggedCBOR else {
             print("HDKey tag (303) not found.")
             throw GeneralError("HDKey tag (303) not found.")
         }
+        
         try self.init(cbor: cbor)
     }
 }
@@ -451,20 +477,20 @@ extension HDKey_: Fingerprintable {
     var fingerprintData: Data {
         var result: [CBOR] = []
 
-        result.append(CBOR.byteString(keyData.bytes))
+        result.append(CBOR.bytes(keyData.cborData))
 
         if let chainCode = chainCode {
-            result.append(CBOR.byteString(chainCode.bytes))
+            result.append(CBOR.bytes(chainCode.cborData))
         } else {
             result.append(CBOR.null)
         }
         
         if let useinfo = useInfo {
-            result.append(CBOR.unsignedInt(UInt64(useinfo.asset.rawValue)))
-            result.append(CBOR.unsignedInt(UInt64(useinfo.network.rawValue)))
+            result.append(CBOR.unsigned(UInt64(useinfo.asset.rawValue)))
+            result.append(CBOR.unsigned(UInt64(useinfo.network.rawValue)))
         }
         
-        return Data(result.encode())
+        return result.cborData
     }
 }
 

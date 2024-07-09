@@ -22,8 +22,8 @@ struct ChildIndexRange {
     
     var cbor: CBOR {
         CBOR.array([
-            CBOR.unsignedInt(UInt64(low.value)),
-            CBOR.unsignedInt(UInt64(high.value))
+            CBOR.unsigned(UInt64(low.value)),
+            CBOR.unsigned(UInt64(high.value))
         ])
     }
     
@@ -35,8 +35,8 @@ struct ChildIndexRange {
             return nil
         }
         guard
-            case let CBOR.unsignedInt(low) = array[0],
-            case let CBOR.unsignedInt(high) = array[1]
+            case let CBOR.unsigned(low) = array[0],
+            case let CBOR.unsigned(high) = array[1]
         else {
             return nil
         }

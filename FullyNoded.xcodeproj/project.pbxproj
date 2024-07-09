@@ -55,6 +55,8 @@
 		0A6B365B27B1AA0C00CD4F3A /* AddressInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6B365A27B1AA0B00CD4F3A /* AddressInfo.swift */; };
 		0A6B365D27B2020F00CD4F3A /* JMUtxo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6B365C27B2020F00CD4F3A /* JMUtxo.swift */; };
 		0A6B365F27BD94CB00CD4F3A /* JMTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6B365E27BD94CA00CD4F3A /* JMTx.swift */; };
+		0A6E59832C3C6AB4007750F2 /* URKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0A6E59822C3C6AB4007750F2 /* URKit */; };
+		0A6E59862C3CFE00007750F2 /* Bbqr in Frameworks */ = {isa = PBXBuildFile; productRef = 0A6E59852C3CFE00007750F2 /* Bbqr */; };
 		0A6EF69B294E30F300D30E93 /* StreamManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6EF69A294E30F300D30E93 /* StreamManager.swift */; };
 		0A77138426AD9C5E005CC23D /* BlindPsbt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A77138326AD9C5E005CC23D /* BlindPsbt.swift */; };
 		0A77138626AE5E85005CC23D /* WalletInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A77138526AE5E85005CC23D /* WalletInfo.swift */; };
@@ -62,7 +64,6 @@
 		0A8850FF2A4201C10078A603 /* LibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AD438842A41F7F90004F923 /* LibWally.xcframework */; };
 		0A8851002A4201C10078A603 /* LibWally.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0AD438842A41F7F90004F923 /* LibWally.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		0A9FDC9126A84CE30050C4AE /* WalletTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9FDC9026A84CE30050C4AE /* WalletTypes.swift */; };
-		0AB0B694290C374F00A1C201 /* URKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0AB0B693290C374F00A1C201 /* URKit */; };
 		0AD8AD5029FF45B200F1ADD8 /* InvoiceSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD8AD4F29FF45B200F1ADD8 /* InvoiceSettingsViewController.swift */; };
 		0AD9490A273C051B00AF83F5 /* ExternalFNWalletsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD94909273C051B00AF83F5 /* ExternalFNWalletsViewController.swift */; };
 		0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */; };
@@ -396,8 +397,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0AB0B694290C374F00A1C201 /* URKit in Frameworks */,
+				0A6E59832C3C6AB4007750F2 /* URKit in Frameworks */,
 				0A8850FE2A41FB040078A603 /* secp256k1 in Frameworks */,
+				0A6E59862C3CFE00007750F2 /* Bbqr in Frameworks */,
 				D06D788C25B817B500769157 /* LifeHash in Frameworks */,
 				0AF73248291AF7D9009F6296 /* RNCryptor in Frameworks */,
 				0A8850FF2A4201C10078A603 /* LibWally.xcframework in Frameworks */,
@@ -1017,9 +1019,10 @@
 			name = FullyNoded;
 			packageProductDependencies = (
 				D06D788B25B817B500769157 /* LifeHash */,
-				0AB0B693290C374F00A1C201 /* URKit */,
 				0AF73247291AF7D9009F6296 /* RNCryptor */,
 				0A8850FD2A41FB040078A603 /* secp256k1 */,
+				0A6E59822C3C6AB4007750F2 /* URKit */,
+				0A6E59852C3CFE00007750F2 /* Bbqr */,
 			);
 			productName = BitSense;
 			productReference = D00B9A242111427200E8B95A /* FullyNoded.app */;
@@ -1093,9 +1096,10 @@
 			mainGroup = D00B9A1B2111427200E8B95A;
 			packageReferences = (
 				D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */,
-				0AB0B692290C374F00A1C201 /* XCRemoteSwiftPackageReference "URKit" */,
 				0AF73246291AF7D9009F6296 /* XCRemoteSwiftPackageReference "RNCryptor" */,
 				0A8850FC2A41FB030078A603 /* XCRemoteSwiftPackageReference "secp256k1.swift" */,
+				0A6E59812C3C6AB4007750F2 /* XCRemoteSwiftPackageReference "URKit" */,
+				0A6E59842C3CFE00007750F2 /* XCRemoteSwiftPackageReference "bbqr-swift" */,
 			);
 			productRefGroup = D00B9A252111427200E8B95A /* Products */;
 			projectDirPath = "";
@@ -1534,7 +1538,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Fully Noded";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_PREPROCESS = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1581,7 +1585,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Fully Noded";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_PREPROCESS = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1684,19 +1688,27 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		0A6E59812C3C6AB4007750F2 /* XCRemoteSwiftPackageReference "URKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/BlockchainCommons/URKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 14.0.2;
+			};
+		};
+		0A6E59842C3CFE00007750F2 /* XCRemoteSwiftPackageReference "bbqr-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/bitcoinppl/bbqr-swift.git";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 0.3.1;
+			};
+		};
 		0A8850FC2A41FB030078A603 /* XCRemoteSwiftPackageReference "secp256k1.swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/jb55/secp256k1.swift.git";
 			requirement = {
 				branch = main;
-				kind = branch;
-			};
-		};
-		0AB0B692290C374F00A1C201 /* XCRemoteSwiftPackageReference "URKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Fonta1n3/URKit";
-			requirement = {
-				branch = master;
 				kind = branch;
 			};
 		};
@@ -1719,15 +1731,20 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		0A6E59822C3C6AB4007750F2 /* URKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0A6E59812C3C6AB4007750F2 /* XCRemoteSwiftPackageReference "URKit" */;
+			productName = URKit;
+		};
+		0A6E59852C3CFE00007750F2 /* Bbqr */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0A6E59842C3CFE00007750F2 /* XCRemoteSwiftPackageReference "bbqr-swift" */;
+			productName = Bbqr;
+		};
 		0A8850FD2A41FB040078A603 /* secp256k1 */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 0A8850FC2A41FB030078A603 /* XCRemoteSwiftPackageReference "secp256k1.swift" */;
 			productName = secp256k1;
-		};
-		0AB0B693290C374F00A1C201 /* URKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 0AB0B692290C374F00A1C201 /* XCRemoteSwiftPackageReference "URKit" */;
-			productName = URKit;
 		};
 		0AF73247291AF7D9009F6296 /* RNCryptor */ = {
 			isa = XCSwiftPackageProductDependency;

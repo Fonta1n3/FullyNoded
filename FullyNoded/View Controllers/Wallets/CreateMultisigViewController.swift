@@ -290,7 +290,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             var message = "The wallet has been activated and the wallet view is refreshing, tap done to go back"
             var text = ""
             
-            if self.cosigner != nil {
                 message = "Export the wallet as a text file (compatible with Coldcard) or QR code (compatible with Passport, Sparrow, Blue Wallet and more)."
                 
                 text = """
@@ -303,7 +302,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 """
                 
                 self.textView.text = text
-            }
             
             self.spinner.removeConnectingView()
             
@@ -625,6 +623,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             guard let vc = segue.destination as? QRDisplayerViewController else { return }
             
             vc.psbt = self.qrToExport
+            print("qrToExport: \(qrToExport)")
             vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
             vc.headerText = "Multisig Wallet Export"
             vc.descriptionText = "Scan this with Passport, Blue Wallet, Sparrow or other wallets which support UR QR to import the multisig wallet."

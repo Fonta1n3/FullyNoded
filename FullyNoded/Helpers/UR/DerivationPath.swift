@@ -37,19 +37,22 @@ struct DerivationPath: ExpressibleByArrayLiteral {
     }
     
     var cbor: CBOR {
-        var a: [OrderedMapEntry] = [
-            .init(key: 1, value: CBOR.array(steps.flatMap { $0.array } ))
+        var a: Map = [
+            CBOR.unsigned(1): CBOR.array(steps.flatMap { $0.array })//.init(key: 1, value: CBOR.array(steps.flatMap { $0.array } ))
+            
         ]
         
         if let sourceFingerprint = sourceFingerprint {
-            a.append(.init(key: 2, value: CBOR.unsignedInt(UInt64(sourceFingerprint))))
+            //a.append(.init(key: 2, value: CBOR.unsignedInt(UInt64(sourceFingerprint))))
+            a.insert(CBOR.unsigned(2), CBOR.unsigned(UInt64(sourceFingerprint)))
         }
         
         if let depth = depth {
-            a.append(.init(key: 3, value: CBOR.unsignedInt(UInt64(depth))))
+            //a.append(.init(key: 3, value: CBOR.unsignedInt(UInt64(depth))))
+            a.insert(CBOR.unsigned(3), CBOR.unsigned(UInt64(depth)))
         }
         
-        return CBOR.orderedMap(a)
+        return CBOR.map(a)
     }
     
     var taggedCBOR: CBOR {
@@ -73,16 +76,22 @@ struct DerivationPath: ExpressibleByArrayLiteral {
         
         let steps: [DerivationStep] = try stride(from: 0, to: componentsItem.count, by: 2).map { i in
             let childIndexSpec = try ChildIndexSpec.decode(cbor: componentsItem[i])
-            guard case let CBOR.boolean(isHardened) = componentsItem[i + 1] else {
+            guard let isHardened = try? BooleanLiteralType(cbor: componentsItem[i + 1]) else {
                 print("Invalid path component.")
                 throw GeneralError("Invalid path component.")
             }
             return DerivationStep(childIndexSpec, isHardened: isHardened)
+//            guard case let CBOR.booleanLiteral(isHardened) = componentsItem[i + 1] else {
+//                print("Invalid path component.")
+//                throw GeneralError("Invalid path component.")
+//            }
+//            return DerivationStep(childIndexSpec, isHardened: isHardened)
         }
         
         let sourceFingerprint: UInt32?
-        if let sourceFingerprintItem = pairs[2] {
-            if case let CBOR.unsignedInt(sourceFingerprintValue) = sourceFingerprintItem, sourceFingerprintValue != 0, sourceFingerprintValue <= UInt32.max {
+        
+        if let sourceFingerprintItem = pairs.get(2) {
+            if case let CBOR.unsigned(sourceFingerprintValue) = sourceFingerprintItem, sourceFingerprintValue != 0, sourceFingerprintValue <= UInt32.max {
                 sourceFingerprint = UInt32(sourceFingerprintValue)
             } else {
                 sourceFingerprint = nil
@@ -93,9 +102,10 @@ struct DerivationPath: ExpressibleByArrayLiteral {
         }
         
         let depth: UInt8?
-        if let depthItem = pairs[3] {
+        
+        if let depthItem = pairs.get(3) {
             guard
-                case let CBOR.unsignedInt(depthValue) = depthItem,
+                case let CBOR.unsigned(depthValue) = depthItem,
                 depthValue <= UInt8.max
             else {
                 print("Invalid depth.")

@@ -9,6 +9,7 @@
 import URKit
 import AVFoundation
 import UIKit
+import Bbqr
 
 @available(macCatalyst 14.0, *)
 class QRScannerViewController: UIViewController {
@@ -28,6 +29,7 @@ class QRScannerViewController: UIViewController {
     var onDoneBlock : ((String?) -> Void)?
     var fromSignAndVerify = Bool()
     var decoder:URDecoder!
+    var bbqrParts: [String] = []
     private let spinner = ConnectingView()
     private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     private var blurArray = [UIVisualEffectView]()
@@ -63,6 +65,28 @@ class QRScannerViewController: UIViewController {
             self.removeScanner()
             self.dismiss(animated: true, completion: nil)
         }
+    }
+    
+    func continousJoiner(parts: [String]) throws -> String {
+        let continousJoiner = ContinuousJoiner()
+
+        for part in parts {
+            switch try continousJoiner.addPart(part: part) {
+            case .notStarted:
+                print("not started")
+            case .inProgress(let partsLeft):
+                print("added item, \(partsLeft) parts left")
+            case .complete(let joined):
+                let s = String(decoding: joined.data(), as: UTF8.self)
+                if s.hasPrefix("psbt") {
+                    return joined.data().base64EncodedString()
+                } else {
+                    return s
+                }
+            }
+        }
+
+        return ""
     }
     
     
@@ -143,23 +167,23 @@ class QRScannerViewController: UIViewController {
         }
     }
     
-    private func processUrPsbt(text: String) {
-        if text.uppercased().hasPrefix("UR:BYTES") {
+    private func processUrQr(text: String) {
+        if text.uppercased().hasPrefix("UR:PSBT")  {
             guard decoder.result == nil else {
-                guard let result = try? decoder.result?.get() else { return }
+                guard let result = try? decoder.result?.get(), let psbt = URHelper.psbtUrToBase64Text(result) else { return }
                 hasScanned = true
-                stopScanning(result.qrString)
+                stopScanning(psbt)
                 return
             }
 
             decoder.receivePart(text.lowercased())
             
-            let expectedParts = decoder.expectedPartCount ?? 0
+            let expectedParts = decoder.expectedFragmentCount ?? 0//.expectedPartCount ?? 0
             
             guard expectedParts != 0 else {
-                guard let result = try? decoder.result?.get() else { return }
+                guard let result = try? decoder.result?.get(), let psbt = URHelper.psbtUrToBase64Text(result) else { return }
                 hasScanned = true
-                stopScanning(result.qrString)
+                stopScanning(psbt)
                 return
             }
             
@@ -167,20 +191,20 @@ class QRScannerViewController: UIViewController {
             updateProgress(percentageCompletion, self.decoder.estimatedPercentComplete)
         } else {
             guard decoder.result == nil else {
-                guard let result = try? decoder.result?.get(), let psbt = URHelper.psbtUrToBase64Text(result) else { return }
+                guard let result = try? decoder.result?.get() else { return }
                 hasScanned = true
-                stopScanning(psbt)
+                stopScanning(result.qrString)
                 return
             }
 
             decoder.receivePart(text.lowercased())
             
-            let expectedParts = decoder.expectedPartCount ?? 0
+            let expectedParts = decoder.expectedFragmentCount ?? 0//.expectedPartCount ?? 0
             
             guard expectedParts != 0 else {
-                guard let result = try? decoder.result?.get(), let psbt = URHelper.psbtUrToBase64Text(result) else { return }
+                guard let result = try? decoder.result?.get() else { return }
                 hasScanned = true
-                stopScanning(psbt)
+                stopScanning(result.qrString)
                 return
             }
             
@@ -188,7 +212,6 @@ class QRScannerViewController: UIViewController {
             updateProgress(percentageCompletion, self.decoder.estimatedPercentComplete)
         }
         // Stop if we're already done with the decode.
-        
     }
     
     private func updateProgress(_ progressText: String, _ progressDoub: Double) {
@@ -288,10 +311,26 @@ class QRScannerViewController: UIViewController {
     private func process(text: String) {
         let lowercased = text.lowercased()
         
-        if fromSignAndVerify {
+        print("text: \(text)")
+        
+        if text.hasPrefix("B$") {
+            hasScanned = false
+            bbqrParts.append(text)
+            guard let result = try? continousJoiner(parts: bbqrParts) else { return }
+            print("result: \(result)")
+            if result.hasPrefix("psbt") {
+               // guard let psbt = try? result.bytes else { return }
+                
+                
+            }
+            
+        } else if fromSignAndVerify {
             hasScanned = false
             
-            if Keys.validTx(text) {
+            if lowercased.hasPrefix("ur:crypto-psbt") || lowercased.hasPrefix("ur:bytes") {
+                processUrQr(text: text)
+                
+            } else if Keys.validTx(text) {
                 // its a raw transaction
                 hasScanned = true
                 stopScanning(text)
@@ -302,22 +341,14 @@ class QRScannerViewController: UIViewController {
             } else if text.hasPrefix("p") {
                 // could be a specter animated psbt
                 parseSpecterAnimatedQr(text)
-            } else if lowercased.hasPrefix("ur:crypto-psbt") || lowercased.hasPrefix("ur:bytes") {
-                processUrPsbt(text: text)
             } else {
                 spinner.removeConnectingView()
                 showAlert(vc: self, title: "Unrecognized format", message: "That is an unrecognized transaction format, please reach out to us so we can add compatibility.")
             }
             
         } else if isImporting {
-            if lowercased.hasPrefix("ur:bytes") {
-                hasScanned = false
-                processUrPsbt(text: lowercased)
-                
-            } else {
-                hasScanned = true
-                stopScanning(text)
-            }
+            hasScanned = false
+            processUrQr(text: lowercased)
                         
         } else if isQuickConnect {
             spinner.removeConnectingView()
