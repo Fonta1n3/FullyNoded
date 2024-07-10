@@ -845,9 +845,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         let headerLabel = cell.viewWithTag(4) as! UILabel
         let subheaderLabel = cell.viewWithTag(5) as! UILabel
         let chooseFormatButton = cell.viewWithTag(3) as! UIButton
+        let enlargeButton = cell.viewWithTag(6) as! UIButton
         headerLabel.alpha = 0
         subheaderLabel.alpha = 0
         chooseFormatButton.alpha = 0
+        enlargeButton.alpha = 0
         
         return cell
     }

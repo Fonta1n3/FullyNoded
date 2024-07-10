@@ -289,7 +289,6 @@ class QRScannerViewController: UIViewController {
     func continousJoiner(parts: [String]) throws -> ((psbt: String?, descriptor: String?)) {
         let continousJoiner = ContinuousJoiner()
         
-        
         for part in parts {
             switch try continousJoiner.addPart(part: part) {
             case .notStarted:
@@ -301,13 +300,15 @@ class QRScannerViewController: UIViewController {
                 #if DEBUG
                 print("added item, \(partsLeft) parts left")
                 #endif
+                hasScanned = false
                 
             case .complete(let joined):
+                hasScanned = true
                 let s = String(decoding: joined.data(), as: UTF8.self)
                 if s.hasPrefix("psbt") {
-                    return ((joined.data().base64EncodedString(), nil))
+                    stopScanning(joined.data().base64EncodedString())
                 } else {
-                    return ((nil, s))
+                    stopScanning(s)
                 }
             }
         }
@@ -316,29 +317,23 @@ class QRScannerViewController: UIViewController {
     }
     
     private func processBBQr(text: String) {
-        hasScanned = false
         bbqrParts.append(text)
         
         guard let result = try? continousJoiner(parts: bbqrParts) else { return }
-        print("BBQr result: \(result)")
         
-        if let psbt = result.psbt {
-            hasScanned = true
-            stopScanning(psbt)
-        } else if let descriptor = result.descriptor {
-            hasScanned = true
-            stopScanning(descriptor)
-        }
+        #if DEBUG
+        print("BBQr result: \(result)")
+        #endif
     }
     
     private func process(text: String) {
         let lowercased = text.lowercased()
         
+        #if DEBUG
         print("text: \(text)")
+        #endif
         
         if fromSignAndVerify {
-            hasScanned = false
-            
             if lowercased.hasPrefix("ur:crypto-psbt") || lowercased.hasPrefix("ur:bytes") {
                 processUrQr(text: text)
                 
@@ -366,7 +361,6 @@ class QRScannerViewController: UIViewController {
         } else if isImporting {
             if text.hasPrefix("B$") {
                 processBBQr(text: text)
-                hasScanned = false
                 
             } else if lowercased.hasPrefix("ur:") {
                 processUrQr(text: lowercased)
@@ -410,20 +404,17 @@ class QRScannerViewController: UIViewController {
     
     private func configureCloseButton() {
         closeButton.frame = CGRect(x: view.frame.midX - 15, y: view.frame.maxY - 150, width: 30, height: 30)
-        //closeButton.showsTouchWhenHighlighted = true
         closeButton.setImage(UIImage(named: "Image-10"), for: .normal)
     }
     
     private func configureTorchButton() {
         torchButton.frame = CGRect(x: 17.5, y: 17.5, width: 35, height: 35)
         torchButton.setImage(UIImage(named: "strobe.png"), for: .normal)
-        //torchButton.showsTouchWhenHighlighted = true
         addShadow(view: torchButton)
     }
     
     private func configureUploadButton() {
         uploadButton.frame = CGRect(x: 17.5, y: 17.5, width: 35, height: 35)
-        //uploadButton.showsTouchWhenHighlighted = true
         uploadButton.setImage(UIImage(named: "images.png"), for: .normal)
         addShadow(view: uploadButton)
     }
@@ -550,14 +541,13 @@ extension QRScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 self.stopScanner()
-                //self.avCaptureSession.stopRunning()
                 let impact = UIImpactFeedbackGenerator()
                 impact.impactOccurred()
                 AudioServicesPlaySystemSound(1103)
             }
             
             hasScanned = true
-            
+                        
             process(text: stringURL)
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
