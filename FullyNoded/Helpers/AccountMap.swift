@@ -27,24 +27,24 @@ class AccountMap {
         let ds = Descriptor(primDesc)
         
         if ds.isHot && !ds.isMulti {
-            if let key = try? HDKey(base58: ds.accountXprv) {
-                primDesc = primDesc.replacingOccurrences(of: ds.accountXprv, with: key.xpub)
-                
-                for (i, _) in watching.enumerated() {
-                    watching[i] = watching[i].replacingOccurrences(of: ds.accountXprv, with: key.xpub)
-                }
-            }
+//            if let key = try? HDKey(base58: ds.accountXprv) {
+//                primDesc = primDesc.replacingOccurrences(of: ds.accountXprv, with: key.xpub)
+//                
+//                for (i, _) in watching.enumerated() {
+//                    watching[i] = watching[i].replacingOccurrences(of: ds.accountXprv, with: key.xpub)
+//                }
+//            }
         } else if ds.isHot {
             for key in ds.multiSigKeys {
-                if key.hasPrefix("xprv") || key.hasPrefix("tprv") {
-                    if let hdkey = try? HDKey(base58: key) {
-                        primDesc = primDesc.replacingOccurrences(of: key, with: hdkey.xpub)
-                        
-                        for (i, _) in watching.enumerated() {
-                            watching[i] = watching[i].replacingOccurrences(of: key, with: hdkey.xpub)
-                        }
-                    }
-                }
+//                if key.hasPrefix("xprv") || key.hasPrefix("tprv") {
+//                    if let hdkey = try? HDKey(base58: key) {
+//                        primDesc = primDesc.replacingOccurrences(of: key, with: hdkey.xpub)
+//                        
+//                        for (i, _) in watching.enumerated() {
+//                            watching[i] = watching[i].replacingOccurrences(of: key, with: hdkey.xpub)
+//                        }
+//                    }
+//                }
             }
         }
         

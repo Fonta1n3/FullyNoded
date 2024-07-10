@@ -5,6 +5,7 @@
 //  Created by Peter on 15/02/20.
 //  Copyright © 2020 Blockchain Commons, LLC. All rights reserved.
 //
+import LibWally
 
 public struct Descriptor: CustomStringConvertible {
     
@@ -245,6 +246,7 @@ public struct Descriptor: CustomStringConvertible {
         } else {
             
             dictionary["isMulti"] = false
+            dictionary["mOfNType"] = "Single Sig"
             
             if descriptor.contains("[") && descriptor.contains("]") {
                 let arr1 = descriptor.split(separator: "[")
@@ -263,6 +265,9 @@ public struct Descriptor: CustomStringConvertible {
                     dictionary["accountXpub"] = "\(extendedKey.replacingOccurrences(of: ")", with: ""))"
                 } else if extendedKey.contains("tprv") || extendedKey.contains("xprv") {
                     dictionary["accountXprv"] = "\(extendedKey.replacingOccurrences(of: ")", with: ""))"
+                    if let hdkey = try? HDKey(base58: String(extendedKey)) {
+                        dictionary["accountXpub"] = hdkey.xpub
+                    }
                 } else {
                     let subarray = extendedKey.split(separator: "#")
                     if subarray.count == 2 {
