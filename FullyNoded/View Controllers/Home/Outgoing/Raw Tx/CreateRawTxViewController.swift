@@ -32,7 +32,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var invoiceString = ""
     let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     var isFidelity = false
+    var balance = ""
     
+    
+    @IBOutlet weak private var balanceLabel: UILabel!
     @IBOutlet weak private var batchOutlet: UIButton!
     @IBOutlet weak private var lightningWithdrawOutlet: UIButton!
     @IBOutlet weak private var miningTargetLabel: UILabel!
@@ -77,6 +80,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         outputsTable.alpha = 0
         addressImageView.alpha = 0
         slider.isContinuous = false
+        balanceLabel.text = "Available: \(balance)"
         addTapGesture()
         
         sliderViewBackground.layer.cornerRadius = 8
@@ -1972,8 +1976,35 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     func getRawTx() {
+        
+        func createNow() {
+            CreatePSBT.create(inputs: self.inputs, outputs: self.outputs) { [weak self] (psbt, rawTx, errorMessage) in
+                guard let self = self else { return }
+                
+                self.spinner.removeConnectingView()
+                
+                if rawTx != nil {
+                    self.rawTxSigned = rawTx!
+                    self.showRaw(raw: rawTx!)
+                
+                } else if psbt != nil {
+                    self.rawTxUnsigned = psbt!
+                    self.showRaw(raw: psbt!)
+                                    
+                } else {
+                    self.outputs.removeAll()
+                    DispatchQueue.main.async {
+                        self.outputsTable.reloadData()
+                    }
+                    
+                    showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error creating transaction")
+                }
+            }
+        }
+        
         activeWallet { wallet in
             guard let wallet = wallet else {
+                createNow()
                 return
             }
             
@@ -1981,31 +2012,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 self.jmWallet = wallet
                 self.chooseMixdepthToSpendFrom()
             } else {
-                CreatePSBT.create(inputs: self.inputs, outputs: self.outputs) { [weak self] (psbt, rawTx, errorMessage) in
-                    guard let self = self else { return }
-                    
-                    self.spinner.removeConnectingView()
-                    
-                    if rawTx != nil {
-                        self.rawTxSigned = rawTx!
-                        self.showRaw(raw: rawTx!)
-                    
-                    } else if psbt != nil {
-                        self.rawTxUnsigned = psbt!
-                        self.showRaw(raw: psbt!)
-                                        
-                    } else {
-                        self.outputs.removeAll()
-                        DispatchQueue.main.async {
-                            self.outputsTable.reloadData()
-                        }
-                        
-                        showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error creating transaction")
-                    }
-                }
+                createNow()
             }
         }
-        
     }
         
     func textFieldDidBeginEditing(_ textField: UITextField) {
