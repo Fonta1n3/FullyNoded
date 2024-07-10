@@ -50,10 +50,10 @@ class TorClient: NSObject, URLSessionDelegate {
         state = .started
         
         var proxyPort = 19050
-        var dnsPort = 12345
+        //var dnsPort = 12345
         #if targetEnvironment(simulator)
         proxyPort = 19052
-        dnsPort = 12347
+        //dnsPort = 12347
         #endif
         
         sessionConfiguration.connectionProxyDictionary = [kCFProxyTypeKey: kCFProxyTypeSOCKS,
@@ -81,7 +81,7 @@ class TorClient: NSObject, URLSessionDelegate {
                 self.thread = nil
                 
                 self.config.options = [
-                    "DNSPort": "\(dnsPort)",
+                    //"DNSPort": "\(dnsPort)",
                     "AutomapHostsOnResolve": "1",
                     "SocksPort": "\(proxyPort)",//OnionTrafficOnly
                     "AvoidDiskWrites": "1",
