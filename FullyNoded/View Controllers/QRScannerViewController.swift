@@ -67,28 +67,6 @@ class QRScannerViewController: UIViewController {
         }
     }
     
-    func continousJoiner(parts: [String]) throws -> String {
-        let continousJoiner = ContinuousJoiner()
-
-        for part in parts {
-            switch try continousJoiner.addPart(part: part) {
-            case .notStarted:
-                print("not started")
-            case .inProgress(let partsLeft):
-                print("added item, \(partsLeft) parts left")
-            case .complete(let joined):
-                let s = String(decoding: joined.data(), as: UTF8.self)
-                if s.hasPrefix("psbt") {
-                    return joined.data().base64EncodedString()
-                } else {
-                    return s
-                }
-            }
-        }
-
-        return ""
-    }
-    
     
     private func scanNow() {
         DispatchQueue.main.async { [weak self] in
@@ -308,27 +286,64 @@ class QRScannerViewController: UIViewController {
         }
     }
     
+    func continousJoiner(parts: [String]) throws -> ((psbt: String?, descriptor: String?)) {
+        let continousJoiner = ContinuousJoiner()
+        
+        
+        for part in parts {
+            switch try continousJoiner.addPart(part: part) {
+            case .notStarted:
+                #if DEBUG
+                print("not started")
+                #endif
+                
+            case .inProgress(let partsLeft):
+                #if DEBUG
+                print("added item, \(partsLeft) parts left")
+                #endif
+                
+            case .complete(let joined):
+                let s = String(decoding: joined.data(), as: UTF8.self)
+                if s.hasPrefix("psbt") {
+                    return ((joined.data().base64EncodedString(), nil))
+                } else {
+                    return ((nil, s))
+                }
+            }
+        }
+
+        return ((nil, nil))
+    }
+    
+    private func processBBQr(text: String) {
+        hasScanned = false
+        bbqrParts.append(text)
+        
+        guard let result = try? continousJoiner(parts: bbqrParts) else { return }
+        print("BBQr result: \(result)")
+        
+        if let psbt = result.psbt {
+            hasScanned = true
+            stopScanning(psbt)
+        } else if let descriptor = result.descriptor {
+            hasScanned = true
+            stopScanning(descriptor)
+        }
+    }
+    
     private func process(text: String) {
         let lowercased = text.lowercased()
         
         print("text: \(text)")
         
-        if text.hasPrefix("B$") {
-            hasScanned = false
-            bbqrParts.append(text)
-            guard let result = try? continousJoiner(parts: bbqrParts) else { return }
-            print("result: \(result)")
-            if result.hasPrefix("psbt") {
-               // guard let psbt = try? result.bytes else { return }
-                
-                
-            }
-            
-        } else if fromSignAndVerify {
+        if fromSignAndVerify {
             hasScanned = false
             
             if lowercased.hasPrefix("ur:crypto-psbt") || lowercased.hasPrefix("ur:bytes") {
                 processUrQr(text: text)
+                
+            } else if text.hasPrefix("B$") {
+                processBBQr(text: text)
                 
             } else if Keys.validTx(text) {
                 // its a raw transaction
@@ -343,12 +358,26 @@ class QRScannerViewController: UIViewController {
                 parseSpecterAnimatedQr(text)
             } else {
                 spinner.removeConnectingView()
-                showAlert(vc: self, title: "Unrecognized format", message: "That is an unrecognized transaction format, please reach out to us so we can add compatibility.")
+                showAlert(vc: self, 
+                          title: "Unrecognized format",
+                          message: "That is an unrecognized transaction format, please reach out to us so we can add compatibility.")
             }
             
         } else if isImporting {
-            hasScanned = false
-            processUrQr(text: lowercased)
+            if text.hasPrefix("B$") {
+                processBBQr(text: text)
+                hasScanned = false
+                
+            } else if lowercased.hasPrefix("ur:") {
+                processUrQr(text: lowercased)
+            } else {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.dismiss(animated: true) {
+                        vc.stopScanner()
+                        vc.onDoneBlock!(text)
+                    }
+                }
+            }
                         
         } else if isQuickConnect {
             spinner.removeConnectingView()
@@ -381,20 +410,20 @@ class QRScannerViewController: UIViewController {
     
     private func configureCloseButton() {
         closeButton.frame = CGRect(x: view.frame.midX - 15, y: view.frame.maxY - 150, width: 30, height: 30)
-        closeButton.showsTouchWhenHighlighted = true
+        //closeButton.showsTouchWhenHighlighted = true
         closeButton.setImage(UIImage(named: "Image-10"), for: .normal)
     }
     
     private func configureTorchButton() {
         torchButton.frame = CGRect(x: 17.5, y: 17.5, width: 35, height: 35)
         torchButton.setImage(UIImage(named: "strobe.png"), for: .normal)
-        torchButton.showsTouchWhenHighlighted = true
+        //torchButton.showsTouchWhenHighlighted = true
         addShadow(view: torchButton)
     }
     
     private func configureUploadButton() {
         uploadButton.frame = CGRect(x: 17.5, y: 17.5, width: 35, height: 35)
-        uploadButton.showsTouchWhenHighlighted = true
+        //uploadButton.showsTouchWhenHighlighted = true
         uploadButton.setImage(UIImage(named: "images.png"), for: .normal)
         addShadow(view: uploadButton)
     }

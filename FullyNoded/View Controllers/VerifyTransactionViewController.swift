@@ -52,6 +52,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var qrCodeStringToExport = ""
     var blind = false
     var processedPsbt:String?
+    var isBBQr = false
     
     @IBOutlet weak private var verifyTable: UITableView!
     @IBOutlet weak private var exportButtonOutlet: UIButton!
@@ -480,7 +481,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             self.exportPsbt(blindedpsbt: ur.qrString, plainText: nil)
         }))
         
-        alert.addAction(UIAlertAction(title: "Plain text", style: .default, handler: { [weak self] action in
+        alert.addAction(UIAlertAction(title: "Unencrypted", style: .default, handler: { [weak self] action in
             guard let self = self else { return }
             
             self.exportPsbt(blindedpsbt: nil, plainText: self.unsignedPsbt)
@@ -2478,7 +2479,13 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 self.shareText(itemToExport)
             }))
             
-            alert.addAction(UIAlertAction(title: "QR", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "UR QR", style: .default, handler: { action in
+                self.qrCodeStringToExport = itemToExport
+                self.exportAsQR()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "BBQr QR", style: .default, handler: { action in
+                self.isBBQr = true
                 self.qrCodeStringToExport = itemToExport
                 self.exportAsQR()
             }))
@@ -2681,6 +2688,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         if segue.identifier == "segueToExportPsbtAsQr" {
             if let vc = segue.destination as? QRDisplayerViewController {
+                vc.isBbqr = self.isBBQr
                 
                 if self.qrCodeStringToExport != "" {
                     vc.psbt = self.qrCodeStringToExport
@@ -2690,7 +2698,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         vc.headerText = "Encrypted PSBT"
                         vc.descriptionText = "Pass this psbt to your signer or to others to create a collaborative batch transaction."
                     } else {
-                        vc.headerText = "PSBT"
+                        if isBBQr {
+                            vc.headerText = "BBQr PSBT"
+                        } else {
+                            vc.headerText = "PSBT"
+                        }
                         vc.descriptionText = "This psbt still needs more signatures to be complete, you can share it with another signer."
                     }
                 } else if signedRawTx != "" {
@@ -2842,7 +2854,6 @@ extension VerifyTransactionViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-                
         let header = UIView()
         header.backgroundColor = UIColor.clear
         header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
@@ -2882,7 +2893,6 @@ extension VerifyTransactionViewController: UITableViewDelegate {
                 copyButton.addTarget(self, action: #selector(copyTxid), for: .touchUpInside)
                 copyButton.frame = CGRect(x: header.frame.maxX - 70, y: 0, width: 50, height: 50)
                 copyButton.center.y = textLabel.center.y
-                copyButton.showsTouchWhenHighlighted = true
                 header.addSubview(copyButton)
                                 
             case 4:
