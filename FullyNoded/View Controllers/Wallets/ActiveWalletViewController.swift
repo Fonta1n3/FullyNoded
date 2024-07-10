@@ -536,7 +536,7 @@ class ActiveWalletViewController: UIViewController {
         
         
         if onchainBalanceBtc == "" || onchainBalanceBtc == "0.0" {
-            onchainBalanceBtc = "0.00000000"
+            onchainBalanceBtc = "0.00 000 000"
         }
                 
         if isBtc {
@@ -565,7 +565,7 @@ class ActiveWalletViewController: UIViewController {
         iconImageView.image = .init(systemName: "bolt")
         
         if offchainBalanceBtc == "" {
-            offchainBalanceBtc = "0.00000000"
+            offchainBalanceBtc = "0.00 000 000"
         }
         if isBtc {
             offchainBalanceLabel.text = offchainBalanceBtc
@@ -590,7 +590,7 @@ class ActiveWalletViewController: UIViewController {
         let onchainBalanceLabel = cell.viewWithTag(1) as! UILabel
         
         if offchainBalanceBtc == "" {
-            offchainBalanceBtc = "0.00000000"
+            offchainBalanceBtc = "0.00 000 000"
         }
         if isBtc {
             offchainBalanceLabel.text = offchainBalanceBtc
@@ -605,7 +605,7 @@ class ActiveWalletViewController: UIViewController {
         offchainBalanceView.alpha = 1
         
         if onchainBalanceBtc == "" || onchainBalanceBtc == "0.0" {
-            onchainBalanceBtc = "0.00000000"
+            onchainBalanceBtc = "0.00 000 000"
         }
                 
         if isBtc {
@@ -765,7 +765,7 @@ class ActiveWalletViewController: UIViewController {
             var amountText = ""
             
             if isBtc {
-                amountText = amountBtc.btc
+                amountText = amountBtc
             } else if isSats {
                 amountText = amountSats.sats
             } else if isFiat {
@@ -783,7 +783,7 @@ class ActiveWalletViewController: UIViewController {
             var amountText = ""
             
             if isBtc {
-                amountText = "+" + amountBtc.btc
+                amountText = "+" + amountBtc
             } else if isSats {
                 amountText = "+" + amountSats.sats
             } else if isFiat {
@@ -1034,7 +1034,7 @@ class ActiveWalletViewController: UIViewController {
                     }
                     
                     DispatchQueue.main.async {
-                        self.onchainBalanceBtc = String(balance)
+                        self.onchainBalanceBtc = balance.btcBalanceWithSpaces
                         self.onchainBalanceSats = balance.sats.replacingOccurrences(of: " sats", with: "")
                         
                         if let exchangeRate = self.fxRate {
@@ -1091,7 +1091,7 @@ class ActiveWalletViewController: UIViewController {
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
                         totalBalance = Double(round(100000000 * totalBalance) / 100000000)
-                        self.onchainBalanceBtc = String(totalBalance)
+                        self.onchainBalanceBtc = totalBalance.btcBalanceWithSpaces
                         self.onchainBalanceSats = totalBalance.sats.replacingOccurrences(of: " sats", with: "")
                         self.sectionZeroLoaded = true
                         self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
@@ -1510,6 +1510,21 @@ class ActiveWalletViewController: UIViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
+            
+        case "spendFromWallet":
+            guard let vc = segue.destination as? CreateRawTxViewController else { fallthrough }
+            
+            if isBtc {
+                vc.balance = onchainBalanceBtc
+            }
+            
+            if isSats {
+                vc.balance = onchainBalanceSats
+            }
+            
+            if isFiat {
+                vc.balance = onchainBalanceFiat
+            }
         
         case "segueToInvoice":
             guard let vc = segue.destination as? InvoiceViewController else { fallthrough }

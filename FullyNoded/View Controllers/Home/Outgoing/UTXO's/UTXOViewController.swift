@@ -1447,7 +1447,17 @@ extension UTXOViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
         let utxo = unlockedUtxos[indexPath.section]
-        cell.configure(utxo: utxo, isLocked: false, fxRate: fxRate, isSats: isSats, isBtc: isBtc, isFiat: isFiat, delegate: self)
+        
+        cell.configure(
+            utxo: utxo,
+            isLocked: false,
+            fxRate: fxRate,
+            isSats: isSats,
+            isBtc: isBtc,
+            isFiat: isFiat,
+            delegate: self
+        )
+        
         return cell
     }
     
