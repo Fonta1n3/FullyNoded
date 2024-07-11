@@ -142,7 +142,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func copyAddressAction(_ sender: Any) {
         UIPasteboard.general.string = addressString
-        displayAlert(viewController: self, isError: false, message: "address copied ✓")
+        showAlert(vc: self, title: "", message: "Address text copied ✓")
     }
     
     
@@ -159,7 +159,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func copyQrAction(_ sender: Any) {
         UIPasteboard.general.image = self.qrView.image
-        displayAlert(viewController: self, isError: false, message: "qr copied ✓")
+        showAlert(vc: self, title: "", message: "QR copied ✓")
     }
     
     @IBAction func shareInvoiceTextAction(_ sender: Any) {
@@ -168,7 +168,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func copyInvoiceTextAction(_ sender: Any) {
         UIPasteboard.general.string = invoiceText.text
-        displayAlert(viewController: self, isError: false, message: "invoice text copied ✓")
+        showAlert(vc: self, title: "", message: "Invoice text copied ✓")
     }
     
     @IBAction func generateLightningAction(_ sender: Any) {

@@ -287,7 +287,7 @@ class NodeLogic {
                 dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
                 let dateString = dateFormatter.string(from: date)
                 
-                let amountBtc = amountSat.doubleValue.satsToBtc
+                let amountBtc = amountSat.doubleValue.btcBalanceWithSpaces
                 let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
                 let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
                 
@@ -349,7 +349,7 @@ class NodeLogic {
                         dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
                         let dateString = dateFormatter.string(from: date)
                         
-                        let amountBtc = amt_paid_sat.satsToBtc.avoidNotation
+                        let amountBtc = amt_paid_sat.satsToBtc.btcBalanceWithSpaces
                         let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
                         let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
                         
@@ -444,7 +444,7 @@ class NodeLogic {
                     
                     if status == "SUCCEEDED" {
                         
-                        let amountBtc = amount.satsToBtc.avoidNotation
+                        let amountBtc = amount.satsToBtc.btcBalanceWithSpaces
                         let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
                         let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
                         
@@ -533,7 +533,7 @@ class NodeLogic {
                             if status == "paid" {
                                 
                                 let amountSats = Double(amountMsat) / 1000.0
-                                let amountBtc = "\(amountSats)".satsToBtc.avoidNotation
+                                let amountBtc = "\(amountSats)".satsToBtc.btcBalanceWithSpaces
                                 let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
                                 let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
                                 
@@ -605,7 +605,7 @@ class NodeLogic {
                         if status != "failed" {
                             
                             let amountSats = Double(amountMsat) / 1000.0
-                            let amountBtc = "\(amountSats)".satsToBtc.avoidNotation
+                            let amountBtc = "\(amountSats)".satsToBtc.btcBalanceWithSpaces
                             let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
                             let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
                             
@@ -751,7 +751,7 @@ class NodeLogic {
                 let dateString = dateFormatter.string(from: date)
                 
                 let amountSats = amountString.btcToSats
-                let amountBtc = amountString.doubleValue.avoidNotation
+                let amountBtc = amountString.doubleValue.btcBalanceWithSpaces
                 let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
                 let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
                 

@@ -8,12 +8,14 @@
 
 import UIKit
 
-class ImportXpubViewController: UIViewController, UITextFieldDelegate {
+class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
     
     @IBOutlet weak var importOutlet: UIButton!
     @IBOutlet weak var labelField: UITextField!
     @IBOutlet weak var descriptorField: UILabel!
+    @IBOutlet var addressTableView: UITableView!
     
+    var addresses: [String] = []
     var spinner = ConnectingView()
     var onDoneBlock:(((Bool)) -> Void)?
     var descriptor = ""
@@ -21,6 +23,8 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        addressTableView.delegate = self
+        addressTableView.dataSource = self
         importOutlet.clipsToBounds = true
         importOutlet.layer.cornerRadius = 8
         labelField.delegate = self
@@ -30,7 +34,11 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
         view.addGestureRecognizer(tapGesture)
         labelField.removeGestureRecognizer(tapGesture)
         
+        descriptorField.numberOfLines = 10
+        descriptorField.lineBreakMode = .byTruncatingMiddle
+        
         addDescriptorToLabel(descriptor)
+        loadAddresses()
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
@@ -44,6 +52,25 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     @IBAction func scanQrAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             self?.performSegue(withIdentifier: "segueToScanDescriptor", sender: self)
+        }
+    }
+    
+    private func loadAddresses() {
+        let p = Derive_Addresses(["descriptor": descriptor, "range": [0,4]])
+        OnchainUtils.deriveAddresses(param: p) { [weak self] (addresses, message) in
+            guard let self = self else { return }
+            
+            guard let addresses = addresses else { return }
+            
+            for address in addresses {
+                self.addresses.append(address)
+            }
+            
+            DispatchQueue.main.async {
+                self.addressTableView.reloadData()
+                self.addressTableView.translatesAutoresizingMaskIntoConstraints = true
+                self.addressTableView.sizeToFit()
+            }
         }
     }
         
@@ -107,6 +134,37 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
             self.present(alert, animated: true) {}
         }
     }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return addresses.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "addressCell", for: indexPath)
+        let label = cell.viewWithTag(1) as! UILabel
+        label.text = "#\(indexPath.row) " + addresses[indexPath.row]
+        label.numberOfLines = 0
+        label.sizeToFit()
+        label.translatesAutoresizingMaskIntoConstraints = true
+        
+        cell.sizeToFit()
+        cell.translatesAutoresizingMaskIntoConstraints = true
+        
+        return cell
+        
+    }
+    
+    private func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+        return UITableView.automaticDimension
+    }
+    
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        return UITableView.automaticDimension
+    }
+    
+//    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+//        return 40
+//    }
     
     // MARK: - Navigation
 

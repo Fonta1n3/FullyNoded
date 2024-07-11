@@ -16,12 +16,13 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     var m = Int()
     var n = Int()
     var keysString = ""
-    var isDone = Bool()
+    var isDone = false
     var cosigner: Descriptor?
     var keys = [[String:String]]()
     var alertStyle = UIAlertController.Style.alert
     var multiSigAccountDesc = ""
     var qrToExport = ""
+    var isBbqr = false
     
     @IBOutlet weak var derivationField: UITextField!
     @IBOutlet weak var fingerprintField: UITextField!
@@ -154,12 +155,22 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     }
     
     @IBAction func createButton(_ sender: Any) {
-        if keys.count > 1 {
-            promptToCreate()
+        if !isDone {
+            if keys.count > 1 {
+                promptToCreate()
+            } else {
+                showAlert(vc: self, title: "Add more cosigners first.", message: "Creating a multi-sig wallet with one cosigner is pointless...")
+            }
         } else {
-            showAlert(vc: self, title: "Add more cosigners first.", message: "Creating a multi-sig wallet with one cosigner is pointless...")
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                if self.navigationController != nil {
+                    self.navigationController?.popToRootViewController(animated: true)
+                } else {
+                    self.dismiss(animated: true, completion: nil)
+                }
+            }
         }
-        
     }
     
     var cointType: String {
@@ -271,10 +282,15 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
+            self.createOutlet.setTitle("Done", for: .normal)
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
             var message = "The wallet has been activated and the wallet view is refreshing, tap done to go back"
             var text = ""
             
-            if self.cosigner != nil {
                 message = "Export the wallet as a text file (compatible with Coldcard) or QR code (compatible with Passport, Sparrow, Blue Wallet and more)."
                 
                 text = """
@@ -287,7 +303,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 """
                 
                 self.textView.text = text
-            }
             
             self.spinner.removeConnectingView()
             
@@ -303,13 +318,24 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 self.export(text: text)
             }))
             
-            alert.addAction(UIAlertAction(title: "Export QR Code (Passport, Sparrow, Blue)", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "Export UR QR Code", style: .default, handler: { action in
                 guard let ur = URHelper.dataToUrBytes(text.utf8) else {
                     showAlert(vc: self, title: "Error", message: "Unable to convert the text into a UR.")
                     return
                 }
                 
                 self.qrToExport = ur.qrString
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.performSegue(withIdentifier: "segueToExportMsig", sender: self)
+                }
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Export BBQr", style: .default, handler: { action in
+                self.qrToExport = text
+                self.isBbqr = true
                 
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
@@ -608,10 +634,15 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         case "segueToExportMsig":
             guard let vc = segue.destination as? QRDisplayerViewController else { return }
             
-            vc.psbt = self.qrToExport
+            vc.text = self.qrToExport
+            vc.isBbqr = self.isBbqr
             vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-            vc.headerText = "Multisig Wallet Export"
-            vc.descriptionText = "Scan this with Passport, Blue Wallet, Sparrow or other wallets which support UR QR to import the multisig wallet."
+            
+            if isBbqr {
+                vc.headerText = "Multisig Wallet BBQr"
+            } else {
+                vc.headerText = "Multisig Wallet UR Bytes"
+            }
          
         default:
             break

@@ -1907,7 +1907,7 @@ xxxxx</string>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
-                                <rect key="frame" x="16" y="422" width="343" height="112"/>
+                                <rect key="frame" x="16" y="465" width="343" height="69"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
@@ -1934,13 +1934,23 @@ xxxxx</string>
                                 <color key="textColor" systemColor="systemTealColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6bf-8y-uca">
+                                <rect key="frame" x="144.5" y="422" width="86.5" height="35"/>
+                                <color key="tintColor" systemColor="systemTealColor"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Animate"/>
+                                <connections>
+                                    <action selector="animateAction:" destination="GlR-4A-eAx" eventType="touchUpInside" id="nYA-Y8-COB"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="V2W-B3-jFj"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="6bf-8y-uca" firstAttribute="top" secondItem="kT3-vW-HgJ" secondAttribute="bottom" constant="8" symbolic="YES" id="1dx-RW-1N1"/>
                             <constraint firstItem="V2W-B3-jFj" firstAttribute="trailing" secondItem="Kj5-uB-hmc" secondAttribute="trailing" constant="16" id="BKp-nX-JEq"/>
-                            <constraint firstItem="Kj5-uB-hmc" firstAttribute="top" secondItem="kT3-vW-HgJ" secondAttribute="bottom" constant="8" id="Fxi-cU-AT4"/>
                             <constraint firstItem="cLD-vU-YX6" firstAttribute="leading" secondItem="dfM-Fg-VDq" secondAttribute="trailing" constant="8" id="QQa-zY-1by"/>
+                            <constraint firstItem="6bf-8y-uca" firstAttribute="centerX" secondItem="1Ax-bN-O8E" secondAttribute="centerX" id="TLX-nP-D9T"/>
                             <constraint firstItem="V2W-B3-jFj" firstAttribute="trailing" secondItem="kT3-vW-HgJ" secondAttribute="trailing" constant="16" id="UuP-QH-CTq"/>
                             <constraint firstItem="dfM-Fg-VDq" firstAttribute="leading" secondItem="V2W-B3-jFj" secondAttribute="leading" constant="16" id="Xii-iY-6d4"/>
                             <constraint firstItem="cLD-vU-YX6" firstAttribute="centerY" secondItem="dfM-Fg-VDq" secondAttribute="centerY" id="d6u-qr-IxG"/>
@@ -1948,11 +1958,13 @@ xxxxx</string>
                             <constraint firstItem="dfM-Fg-VDq" firstAttribute="top" secondItem="V2W-B3-jFj" secondAttribute="top" constant="15" id="qwr-5e-g8F"/>
                             <constraint firstItem="kT3-vW-HgJ" firstAttribute="top" secondItem="V2W-B3-jFj" secondAttribute="top" constant="71" id="rbT-RD-kQQ"/>
                             <constraint firstItem="Kj5-uB-hmc" firstAttribute="leading" secondItem="V2W-B3-jFj" secondAttribute="leading" constant="16" id="wdF-UY-AT3"/>
+                            <constraint firstItem="Kj5-uB-hmc" firstAttribute="top" secondItem="6bf-8y-uca" secondAttribute="bottom" constant="8" symbolic="YES" id="yWL-Ic-2pW"/>
                             <constraint firstItem="V2W-B3-jFj" firstAttribute="bottom" secondItem="Kj5-uB-hmc" secondAttribute="bottom" constant="20" id="yzk-tn-uY1"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="VsN-eD-EWM"/>
                     <connections>
+                        <outlet property="animateOutlet" destination="6bf-8y-uca" id="2XD-TS-5oY"/>
                         <outlet property="headerImage" destination="dfM-Fg-VDq" id="jgB-pJ-eEV"/>
                         <outlet property="headerLabel" destination="cLD-vU-YX6" id="rAY-Zc-KcM"/>
                         <outlet property="imageView" destination="kT3-vW-HgJ" id="L4j-xg-uHU"/>
@@ -2607,43 +2619,131 @@ xxxxx</string>
                                 <rect key="frame" x="0.0" y="127" width="375" height="540"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailLabelCell" rowHeight="50" id="JAd-yf-YW4">
-                                        <rect key="frame" x="16" y="55.5" width="343" height="50"/>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletExportQrCell" rowHeight="290" id="HTu-ae-caa">
+                                        <rect key="frame" x="16" y="55.5" width="343" height="290"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="HTu-ae-caa" id="NC0-oF-NZ9">
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="290"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="abO-4I-6y6">
+                                                    <rect key="frame" x="300" y="11" width="27" height="23.5"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" constant="27" id="hZv-NP-XhX"/>
+                                                    </constraints>
+                                                    <color key="tintColor" systemColor="systemTealColor"/>
+                                                    <state key="normal" image="square.and.arrow.up" catalog="system"/>
+                                                </button>
+                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="OOW-9z-O6w">
+                                                    <rect key="frame" x="97" y="70.5" width="149" height="149"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" constant="149" id="7g9-WP-SG7"/>
+                                                        <constraint firstAttribute="height" constant="149" id="c8n-CK-GfE"/>
+                                                    </constraints>
+                                                </imageView>
+                                                <button opaque="NO" tag="3" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="y6q-8l-Fmn">
+                                                    <rect key="frame" x="120.5" y="257" width="102" height="30"/>
+                                                    <color key="tintColor" systemColor="systemTealColor"/>
+                                                    <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                    <state key="normal" title="Choose format"/>
+                                                </button>
+                                                <label opaque="NO" userInteractionEnabled="NO" tag="4" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="UR Output Descriptor" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rin-hP-2DN">
+                                                    <rect key="frame" x="89.5" y="13" width="164.5" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" tag="5" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sparrow, Blue, Passport" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ccf-E6-I0J">
+                                                    <rect key="frame" x="104" y="42" width="135" height="15"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                    <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <button opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iJE-Y5-mbt">
+                                                    <rect key="frame" x="275" y="257" width="52" height="30"/>
+                                                    <color key="tintColor" systemColor="systemTealColor"/>
+                                                    <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                    <state key="normal" title="Enlarge"/>
+                                                </button>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="Ccf-E6-I0J" firstAttribute="centerX" secondItem="NC0-oF-NZ9" secondAttribute="centerX" id="0so-9W-7ow"/>
+                                                <constraint firstAttribute="bottomMargin" secondItem="iJE-Y5-mbt" secondAttribute="bottom" constant="-8" id="CgD-tc-aGJ"/>
+                                                <constraint firstItem="iJE-Y5-mbt" firstAttribute="trailing" secondItem="NC0-oF-NZ9" secondAttribute="trailingMargin" id="EJS-DL-UeA"/>
+                                                <constraint firstItem="y6q-8l-Fmn" firstAttribute="bottom" secondItem="NC0-oF-NZ9" secondAttribute="bottomMargin" constant="8" id="Naa-3C-0Kb"/>
+                                                <constraint firstItem="abO-4I-6y6" firstAttribute="top" secondItem="NC0-oF-NZ9" secondAttribute="topMargin" id="WNh-Qc-hEc"/>
+                                                <constraint firstItem="Ccf-E6-I0J" firstAttribute="top" secondItem="rin-hP-2DN" secondAttribute="bottom" constant="8" symbolic="YES" id="ZCU-EX-nSt"/>
+                                                <constraint firstItem="OOW-9z-O6w" firstAttribute="centerX" secondItem="NC0-oF-NZ9" secondAttribute="centerX" id="i69-n0-uUs"/>
+                                                <constraint firstItem="y6q-8l-Fmn" firstAttribute="centerX" secondItem="NC0-oF-NZ9" secondAttribute="centerX" id="m6J-Lv-3QS"/>
+                                                <constraint firstItem="abO-4I-6y6" firstAttribute="trailing" secondItem="NC0-oF-NZ9" secondAttribute="trailingMargin" id="nnk-7I-MO8"/>
+                                                <constraint firstItem="rin-hP-2DN" firstAttribute="centerX" secondItem="NC0-oF-NZ9" secondAttribute="centerX" id="rDF-fR-Ihd"/>
+                                                <constraint firstItem="rin-hP-2DN" firstAttribute="top" secondItem="NC0-oF-NZ9" secondAttribute="topMargin" constant="2" id="uAG-Dl-C8e"/>
+                                                <constraint firstItem="OOW-9z-O6w" firstAttribute="centerY" secondItem="NC0-oF-NZ9" secondAttribute="centerY" id="yBd-Zx-u6C"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="backupTextCell" rowHeight="136" id="JAd-yf-YW4">
+                                        <rect key="frame" x="16" y="345.5" width="343" height="136"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="JAd-yf-YW4" id="ZVK-6O-VK1">
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="136"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="0Rq-B8-Yyk">
+                                                    <rect key="frame" x="16" y="8" width="311" height="120"/>
+                                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                    <color key="textColor" systemColor="labelColor"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                    <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                                </textView>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="0Rq-B8-Yyk" firstAttribute="leading" secondItem="ZVK-6O-VK1" secondAttribute="leading" constant="16" id="dA7-pc-Tog"/>
+                                                <constraint firstAttribute="bottom" secondItem="0Rq-B8-Yyk" secondAttribute="bottom" constant="8" id="isQ-5g-rcm"/>
+                                                <constraint firstItem="0Rq-B8-Yyk" firstAttribute="top" secondItem="ZVK-6O-VK1" secondAttribute="top" constant="8" id="m9Y-Se-4o8"/>
+                                                <constraint firstAttribute="trailing" secondItem="0Rq-B8-Yyk" secondAttribute="trailing" constant="16" id="uh7-gi-zgu"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailLabelCell" rowHeight="50" id="IhG-fk-RA5">
+                                        <rect key="frame" x="16" y="481.5" width="343" height="50"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="IhG-fk-RA5" id="6HV-oO-Ej6">
                                             <rect key="frame" x="0.0" y="0.0" width="343" height="50"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textField opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="wallet label" placeholder="wallet label" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="zVw-bn-GsD">
+                                                <textField opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="wallet label" placeholder="wallet label" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="0Wp-FE-dVc">
                                                     <rect key="frame" x="8" y="14" width="272" height="22"/>
                                                     <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                    <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits"/>
                                                 </textField>
-                                                <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7HC-Ia-PMy">
+                                                <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8lx-cG-7HQ">
                                                     <rect key="frame" x="288" y="12.5" width="39" height="25"/>
                                                     <constraints>
-                                                        <constraint firstAttribute="width" constant="39" id="Rth-uh-1mR"/>
-                                                        <constraint firstAttribute="height" constant="25" id="q0Q-dg-iLT"/>
+                                                        <constraint firstAttribute="width" constant="39" id="D2E-Uj-d45"/>
+                                                        <constraint firstAttribute="height" constant="25" id="acT-3H-ALj"/>
                                                     </constraints>
-                                                    <state key="normal" title="edit">
+                                                    <state key="normal" title="Edit">
                                                         <color key="titleColor" systemColor="systemTealColor"/>
                                                     </state>
                                                 </button>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstItem="7HC-Ia-PMy" firstAttribute="leading" secondItem="zVw-bn-GsD" secondAttribute="trailing" constant="8" id="FFf-pB-JUW"/>
-                                                <constraint firstItem="zVw-bn-GsD" firstAttribute="leading" secondItem="ZVK-6O-VK1" secondAttribute="leading" constant="8" id="VvA-zf-5nj"/>
-                                                <constraint firstItem="zVw-bn-GsD" firstAttribute="centerY" secondItem="ZVK-6O-VK1" secondAttribute="centerY" id="XIh-2U-Ug1"/>
-                                                <constraint firstItem="7HC-Ia-PMy" firstAttribute="centerY" secondItem="ZVK-6O-VK1" secondAttribute="centerY" id="axu-XK-lae"/>
-                                                <constraint firstItem="7HC-Ia-PMy" firstAttribute="trailing" secondItem="ZVK-6O-VK1" secondAttribute="trailingMargin" id="bgk-Q1-Aeh"/>
+                                                <constraint firstItem="8lx-cG-7HQ" firstAttribute="centerY" secondItem="6HV-oO-Ej6" secondAttribute="centerY" id="HcH-aN-s1i"/>
+                                                <constraint firstItem="0Wp-FE-dVc" firstAttribute="leading" secondItem="6HV-oO-Ej6" secondAttribute="leading" constant="8" id="MxR-V6-iiR"/>
+                                                <constraint firstItem="0Wp-FE-dVc" firstAttribute="centerY" secondItem="6HV-oO-Ej6" secondAttribute="centerY" id="X7C-YB-KIb"/>
+                                                <constraint firstItem="8lx-cG-7HQ" firstAttribute="trailing" secondItem="6HV-oO-Ej6" secondAttribute="trailingMargin" id="pjO-xh-D69"/>
+                                                <constraint firstItem="8lx-cG-7HQ" firstAttribute="leading" secondItem="0Wp-FE-dVc" secondAttribute="trailing" constant="8" id="sPS-l1-DaT"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailFilenameCell" rowHeight="44" id="dla-sS-luL">
-                                        <rect key="frame" x="16" y="105.5" width="343" height="44"/>
+                                        <rect key="frame" x="16" y="531.5" width="343" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="dla-sS-luL" id="9KX-pX-CXG">
                                             <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
@@ -2679,7 +2779,7 @@ xxxxx</string>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailReceiveDescCell" rowHeight="120" id="00u-Qc-7uT">
-                                        <rect key="frame" x="16" y="149.5" width="343" height="120"/>
+                                        <rect key="frame" x="16" y="575.5" width="343" height="120"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="00u-Qc-7uT" id="MhM-0a-U4a">
                                             <rect key="frame" x="0.0" y="0.0" width="343" height="120"/>
@@ -2713,20 +2813,20 @@ xxxxx</string>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletExportFileCell" rowHeight="120" id="50u-mR-2fV">
-                                        <rect key="frame" x="16" y="269.5" width="343" height="120"/>
+                                        <rect key="frame" x="16" y="695.5" width="343" height="120"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="50u-mR-2fV" id="wPA-zE-Zif">
                                             <rect key="frame" x="0.0" y="0.0" width="343" height="120"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" editable="NO" text="file export" translatesAutoresizingMaskIntoConstraints="NO" id="afU-6S-xBS">
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" ambiguous="YES" editable="NO" text="file export" translatesAutoresizingMaskIntoConstraints="NO" id="afU-6S-xBS">
                                                     <rect key="frame" x="8" y="8" width="284" height="104"/>
                                                     <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
-                                                <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GnZ-4y-DIl">
+                                                <button opaque="NO" tag="2" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GnZ-4y-DIl">
                                                     <rect key="frame" x="300" y="11" width="27" height="22"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="GB5-3z-q6r"/>
@@ -2747,20 +2847,20 @@ xxxxx</string>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailChangeDescCell" rowHeight="120" id="7xW-St-WOz">
-                                        <rect key="frame" x="16" y="389.5" width="343" height="120"/>
+                                        <rect key="frame" x="16" y="815.5" width="343" height="120"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="7xW-St-WOz" id="wUg-Ag-1E5">
                                             <rect key="frame" x="0.0" y="0.0" width="343" height="120"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" editable="NO" text="change descriptor keypool" translatesAutoresizingMaskIntoConstraints="NO" id="ciz-jb-Q9k">
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" ambiguous="YES" editable="NO" text="change descriptor keypool" translatesAutoresizingMaskIntoConstraints="NO" id="ciz-jb-Q9k">
                                                     <rect key="frame" x="8" y="8" width="284" height="104"/>
                                                     <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
-                                                <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tLH-RH-kL4">
+                                                <button opaque="NO" tag="2" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tLH-RH-kL4">
                                                     <rect key="frame" x="300" y="11" width="27" height="23.5"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="wM7-mS-yUI"/>
@@ -2781,13 +2881,13 @@ xxxxx</string>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailCurrentIndexCell" rowHeight="44" id="VQR-gf-H97">
-                                        <rect key="frame" x="16" y="509.5" width="343" height="44"/>
+                                        <rect key="frame" x="16" y="935.5" width="343" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="VQR-gf-H97" id="p5x-CL-1Ov">
                                             <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textField opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="current index" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="eID-Ss-UxU">
+                                                <textField opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="current index" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="eID-Ss-UxU">
                                                     <rect key="frame" x="8" y="11" width="327" height="22"/>
                                                     <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -2804,20 +2904,20 @@ xxxxx</string>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailMaxIndexCell" rowHeight="44" id="8SB-Au-WZJ">
-                                        <rect key="frame" x="16" y="553.5" width="343" height="44"/>
+                                        <rect key="frame" x="16" y="979.5" width="343" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="8SB-Au-WZJ" id="NyW-EF-q11">
                                             <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textField opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="max index" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Fyo-az-58s">
+                                                <textField opaque="NO" tag="1" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="max index" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Fyo-az-58s">
                                                     <rect key="frame" x="8" y="11" width="285" height="22"/>
                                                     <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
                                                 </textField>
-                                                <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ppe-Tt-82b">
+                                                <button opaque="NO" tag="2" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ppe-Tt-82b">
                                                     <rect key="frame" x="301" y="11" width="27" height="22"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="dPa-Fk-obf"/>
@@ -2837,7 +2937,7 @@ xxxxx</string>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailSignerCell" rowHeight="44" id="6tR-qs-qKi">
-                                        <rect key="frame" x="16" y="597.5" width="343" height="44"/>
+                                        <rect key="frame" x="16" y="1023.5" width="343" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="6tR-qs-qKi" id="vp9-5f-7hl">
                                             <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
@@ -2863,7 +2963,7 @@ xxxxx</string>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailWatchingCell" rowHeight="120" id="yEm-Jl-P6r">
-                                        <rect key="frame" x="16" y="641.5" width="343" height="120"/>
+                                        <rect key="frame" x="16" y="1067.5" width="343" height="120"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="yEm-Jl-P6r" id="hGf-5h-g8L">
                                             <rect key="frame" x="0.0" y="0.0" width="343" height="120"/>
@@ -2877,7 +2977,7 @@ xxxxx</string>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
                                                 <button opaque="NO" tag="2" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KIX-z8-cn5">
-                                                    <rect key="frame" x="300" y="11" width="27" height="22"/>
+                                                    <rect key="frame" x="300" y="11" width="27" height="23.5"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="36L-5J-Tm6"/>
                                                     </constraints>
@@ -2897,7 +2997,7 @@ xxxxx</string>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailAdressesCell" rowHeight="192" id="ID5-e7-adL">
-                                        <rect key="frame" x="16" y="761.5" width="343" height="192"/>
+                                        <rect key="frame" x="16" y="1187.5" width="343" height="192"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="ID5-e7-adL" id="gjG-jc-dnU">
                                             <rect key="frame" x="0.0" y="0.0" width="343" height="192"/>
@@ -2911,7 +3011,7 @@ xxxxx</string>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
                                                 <button opaque="NO" tag="2" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rVY-pv-74N">
-                                                    <rect key="frame" x="300" y="11" width="27" height="22"/>
+                                                    <rect key="frame" x="300" y="11" width="27" height="23.5"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="2wC-aK-NEt"/>
                                                     </constraints>
@@ -2935,38 +3035,6 @@ xxxxx</string>
                                                 <constraint firstAttribute="bottom" secondItem="f5e-Sk-Vgh" secondAttribute="bottom" constant="8" id="pRE-oo-LPn"/>
                                                 <constraint firstItem="hhK-2T-DGa" firstAttribute="leading" secondItem="gjG-jc-dnU" secondAttribute="leading" constant="16" id="vA1-L5-cSb"/>
                                                 <constraint firstItem="f5e-Sk-Vgh" firstAttribute="top" secondItem="hhK-2T-DGa" secondAttribute="bottom" constant="8" id="zzw-0E-F24"/>
-                                            </constraints>
-                                        </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletExportQrCell" rowHeight="192" id="HTu-ae-caa">
-                                        <rect key="frame" x="16" y="953.5" width="343" height="192"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="HTu-ae-caa" id="NC0-oF-NZ9">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="192"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <subviews>
-                                                <button opaque="NO" tag="2" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="abO-4I-6y6">
-                                                    <rect key="frame" x="300" y="11" width="27" height="22"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" constant="27" id="hZv-NP-XhX"/>
-                                                    </constraints>
-                                                    <color key="tintColor" systemColor="systemTealColor"/>
-                                                    <state key="normal" image="square.and.arrow.up" catalog="system"/>
-                                                </button>
-                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="OOW-9z-O6w">
-                                                    <rect key="frame" x="97" y="21.5" width="149" height="149"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" constant="149" id="7g9-WP-SG7"/>
-                                                        <constraint firstAttribute="height" constant="149" id="c8n-CK-GfE"/>
-                                                    </constraints>
-                                                </imageView>
-                                            </subviews>
-                                            <constraints>
-                                                <constraint firstItem="abO-4I-6y6" firstAttribute="top" secondItem="NC0-oF-NZ9" secondAttribute="topMargin" id="WNh-Qc-hEc"/>
-                                                <constraint firstItem="OOW-9z-O6w" firstAttribute="centerX" secondItem="NC0-oF-NZ9" secondAttribute="centerX" id="i69-n0-uUs"/>
-                                                <constraint firstItem="abO-4I-6y6" firstAttribute="trailing" secondItem="NC0-oF-NZ9" secondAttribute="trailingMargin" id="nnk-7I-MO8"/>
-                                                <constraint firstItem="OOW-9z-O6w" firstAttribute="centerY" secondItem="NC0-oF-NZ9" secondAttribute="centerY" id="yBd-Zx-u6C"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -3190,8 +3258,8 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="jDD-Cq-X82">
-                                <rect key="frame" x="16" y="78" width="280" height="254.5"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="jDD-Cq-X82">
+                                <rect key="frame" x="16" y="78" width="343" height="387"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="aPB-RS-h4F">
                                         <rect key="frame" x="0.0" y="0.0" width="280" height="40"/>
@@ -3211,44 +3279,79 @@ Fully Noded does its best to support as many hardware and software wallet option
                                             </label>
                                         </subviews>
                                     </stackView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="  " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mc7-t0-Njq">
-                                        <rect key="frame" x="0.0" y="48" width="280" height="20.5"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <nil key="textColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bi0-Um-wb7">
-                                        <rect key="frame" x="0.0" y="76.5" width="280" height="14.5"/>
+                                        <rect key="frame" x="0.0" y="48" width="31" height="14.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                         <color key="textColor" systemColor="secondaryLabelColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="optional label" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="0B2-xL-1ut">
-                                        <rect key="frame" x="0.0" y="99" width="280" height="34"/>
+                                        <rect key="frame" x="0.0" y="70.5" width="343" height="34"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="34" id="eRh-uQ-Hr4"/>
+                                        </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                     </textField>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Descriptor" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vq3-zN-oNC">
-                                        <rect key="frame" x="0.0" y="141" width="280" height="14.5"/>
+                                        <rect key="frame" x="0.0" y="112.5" width="59.5" height="14.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                         <color key="textColor" systemColor="secondaryLabelColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="  " textAlignment="natural" lineBreakMode="characterWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="79T-ee-gg5">
-                                        <rect key="frame" x="0.0" y="163.5" width="280" height="40"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="40" id="4hr-Md-2mg"/>
-                                        </constraints>
+                                        <rect key="frame" x="0.0" y="135" width="343" height="20.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address Confirmation" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="azy-IC-cbE">
+                                        <rect key="frame" x="0.0" y="163.5" width="123" height="14.5"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="LIV-xG-rU1">
+                                        <rect key="frame" x="0.0" y="186" width="343" height="150"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="150" id="FxB-nL-ALD"/>
+                                        </constraints>
+                                        <color key="sectionIndexBackgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <prototypes>
+                                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="addressCell" id="FUQ-Te-2Ah">
+                                                <rect key="frame" x="0.0" y="50" width="343" height="43"/>
+                                                <autoresizingMask key="autoresizingMask"/>
+                                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="FUQ-Te-2Ah" id="Hq6-GJ-wUb">
+                                                    <rect key="frame" x="0.0" y="0.0" width="343" height="43"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <subviews>
+                                                        <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="h3d-nK-F5A">
+                                                            <rect key="frame" x="16" y="11" width="311" height="21"/>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                            <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                    </subviews>
+                                                    <constraints>
+                                                        <constraint firstAttribute="trailingMargin" secondItem="h3d-nK-F5A" secondAttribute="trailing" id="RHO-qu-wfa"/>
+                                                        <constraint firstItem="h3d-nK-F5A" firstAttribute="leading" secondItem="Hq6-GJ-wUb" secondAttribute="leadingMargin" id="afS-dV-eOb"/>
+                                                        <constraint firstItem="h3d-nK-F5A" firstAttribute="top" secondItem="Hq6-GJ-wUb" secondAttribute="topMargin" id="fu3-9X-Rxk"/>
+                                                        <constraint firstAttribute="bottomMargin" secondItem="h3d-nK-F5A" secondAttribute="bottom" id="iFV-pT-qAz"/>
+                                                    </constraints>
+                                                </tableViewCellContentView>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            </tableViewCell>
+                                        </prototypes>
+                                        <connections>
+                                            <outlet property="dataSource" destination="fG5-85-vAV" id="KqT-71-JHc"/>
+                                            <outlet property="delegate" destination="fG5-85-vAV" id="FmT-ia-Ga7"/>
+                                        </connections>
+                                    </tableView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sLK-5X-3x7">
-                                        <rect key="frame" x="0.0" y="211.5" width="280" height="43"/>
+                                        <rect key="frame" x="0.0" y="344" width="343" height="43"/>
                                         <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="43" id="Wbp-hA-5nJ"/>
-                                            <constraint firstAttribute="width" constant="191" id="adN-zn-WJE"/>
                                         </constraints>
                                         <state key="normal" title="Import">
                                             <color key="titleColor" systemColor="systemTealColor"/>
@@ -3258,6 +3361,17 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </connections>
                                     </button>
                                 </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="LIV-xG-rU1" secondAttribute="trailing" id="AId-fH-eNq"/>
+                                    <constraint firstItem="LIV-xG-rU1" firstAttribute="leading" secondItem="jDD-Cq-X82" secondAttribute="leading" id="GKC-2Y-vBF"/>
+                                    <constraint firstItem="sLK-5X-3x7" firstAttribute="leading" secondItem="jDD-Cq-X82" secondAttribute="leading" id="OOv-Pu-3Dm"/>
+                                    <constraint firstItem="0B2-xL-1ut" firstAttribute="leading" secondItem="jDD-Cq-X82" secondAttribute="leading" id="SlO-Dp-dJI"/>
+                                    <constraint firstItem="sLK-5X-3x7" firstAttribute="top" secondItem="LIV-xG-rU1" secondAttribute="bottom" constant="8" symbolic="YES" id="W8K-rR-hgy"/>
+                                    <constraint firstAttribute="trailing" secondItem="79T-ee-gg5" secondAttribute="trailing" id="bAo-ry-BUB"/>
+                                    <constraint firstAttribute="trailing" secondItem="sLK-5X-3x7" secondAttribute="trailing" id="fKZ-Om-bHa"/>
+                                    <constraint firstAttribute="trailing" secondItem="0B2-xL-1ut" secondAttribute="trailing" id="knN-Md-Vq5"/>
+                                    <constraint firstItem="79T-ee-gg5" firstAttribute="leading" secondItem="jDD-Cq-X82" secondAttribute="leading" id="qZK-u6-Bwf"/>
+                                </constraints>
                             </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="c3d-xP-e7q"/>
@@ -3277,6 +3391,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="addressTableView" destination="LIV-xG-rU1" id="BNa-q8-i8x"/>
                         <outlet property="descriptorField" destination="79T-ee-gg5" id="GkV-xP-zNZ"/>
                         <outlet property="importOutlet" destination="sLK-5X-3x7" id="gab-wr-6bb"/>
                         <outlet property="labelField" destination="0B2-xL-1ut" id="wTB-Kn-Z4g"/>
@@ -4203,6 +4318,12 @@ Fully Noded does its best to support as many hardware and software wallet option
                                     <action selector="switchCoinSelectionAction:" destination="pUo-bf-sNm" eventType="valueChanged" id="dnf-UB-0u1"/>
                                 </connections>
                             </segmentedControl>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="    " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eF5-14-zcH">
+                                <rect key="frame" x="16" y="82" width="15.5" height="17"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" systemColor="systemGreenColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="C0H-pw-RSl"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -4211,9 +4332,11 @@ Fully Noded does its best to support as many hardware and software wallet option
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="FTc-X9-DAY" secondAttribute="trailing" constant="16" id="64o-U3-9oX"/>
                             <constraint firstItem="TQR-MC-WaO" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="7Uo-47-t91"/>
                             <constraint firstItem="HBB-RM-j15" firstAttribute="top" secondItem="Vac-p9-eJN" secondAttribute="bottom" constant="8" id="BFd-1H-EkE"/>
+                            <constraint firstItem="TQR-MC-WaO" firstAttribute="top" secondItem="eF5-14-zcH" secondAttribute="bottom" constant="8" id="DbL-1v-wn2"/>
                             <constraint firstItem="jXp-xP-J4h" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="Ddi-Bk-0f2"/>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="jXp-xP-J4h" secondAttribute="trailing" constant="16" id="Umd-7A-1YL"/>
                             <constraint firstItem="Tft-x5-9Sa" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="Wwd-20-mZS"/>
+                            <constraint firstItem="eF5-14-zcH" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="Z29-gd-iLK"/>
                             <constraint firstItem="Vac-p9-eJN" firstAttribute="top" secondItem="TQR-MC-WaO" secondAttribute="bottom" constant="8" symbolic="YES" id="b2P-wI-WJR"/>
                             <constraint firstItem="FTc-X9-DAY" firstAttribute="top" secondItem="C0H-pw-RSl" secondAttribute="top" constant="11" id="cKE-CJ-VJ7"/>
                             <constraint firstItem="Tft-x5-9Sa" firstAttribute="top" secondItem="C0H-pw-RSl" secondAttribute="top" constant="4" id="dbb-DH-3iG"/>
@@ -4239,6 +4362,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <outlet property="amountBackground" destination="6ok-Q8-SRj" id="k8E-mF-PS4"/>
                         <outlet property="amountIcon" destination="AXR-UZ-1lO" id="kwa-lq-pfa"/>
                         <outlet property="amountInput" destination="WBT-v4-ipz" id="4zO-8O-Q8c"/>
+                        <outlet property="balanceLabel" destination="eF5-14-zcH" id="dhG-qG-6v7"/>
                         <outlet property="batchOutlet" destination="rOq-3M-0CP" id="TtL-GS-wFd"/>
                         <outlet property="coinSelectionControl" destination="Vac-p9-eJN" id="WYP-k8-8ch"/>
                         <outlet property="denominationImage" destination="cDK-QG-hoD" id="gXI-bz-daC"/>
@@ -4329,7 +4453,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
             </objects>
             <point key="canvasLocation" x="2718" y="376"/>
         </scene>
-        <!--v1.1.0-->
+        <!--v1.1.2-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -4570,7 +4694,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v1.1.0" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v1.1.2" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -6942,8 +7066,8 @@ You can upload the wallets.fullynoded file that was created when you made the ba
         <segue reference="mRa-gP-mZ0"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="lxJ-aO-sxw"/>
-        <segue reference="gw3-j5-ppY"/>
+        <segue reference="9TT-9o-7xG"/>
+        <segue reference="zi9-mK-A5a"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="gzO-Lb-E0s"/>
     </inferredMetricsTieBreakers>

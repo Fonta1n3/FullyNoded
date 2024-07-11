@@ -121,7 +121,7 @@ class UTXOCell: UITableViewCell {
             if isFiat {
                 amountLabel.text = utxo.amountFiat ?? "missing fx rate"
             } else if isBtc {
-                amountLabel.text = amount.btc
+                amountLabel.text = amount.btcBalanceWithSpaces
             } else if isSats {
                 amountLabel.text = amount.sats
             }

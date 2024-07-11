@@ -9,16 +9,15 @@
 import Foundation
 import URKit
 
-extension CBOR.Tag {
-    static let seed = CBOR.Tag(rawValue: 300)
-    static let hdKey = CBOR.Tag(rawValue: 303)
-    static let derivationPath = CBOR.Tag(rawValue: 304)
-    static let useInfo = CBOR.Tag(rawValue: 305)
-    static let sskrShare = CBOR.Tag(rawValue: 309)
-    static let transactionRequest = CBOR.Tag(rawValue: 312)
-    static let transactionResponse = CBOR.Tag(rawValue: 313)
-    
-    static let seedRequestBody = CBOR.Tag(rawValue: 500)
-    static let keyRequestBody = CBOR.Tag(rawValue: 501)
-    static let psbtSignatureRequestBody = CBOR.Tag(rawValue: 502)
+extension Tag {
+    static let seed = Tag(300)
+    static let hdKey = Tag(303)
+    static let derivationPath = Tag(304)
+    static let useInfo = Tag(305)
+    static let sskrShare = Tag(309)
+    static let transactionRequest = Tag(312)
+    static let transactionResponse = Tag(313)
+    static let seedRequestBody = Tag(500)
+    static let keyRequestBody = Tag(501)
+    static let psbtSignatureRequestBody = Tag(502)
 }

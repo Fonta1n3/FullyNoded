@@ -8,7 +8,6 @@
 
 import UIKit
 
-
 class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UINavigationControllerDelegate {
     
     @IBOutlet weak var detailTable: UITableView!
@@ -20,13 +19,21 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     var addresses = ""
     var originalLabel = ""
     var backupQrImage: UIImage!
-    var exportWalletImage: UIImage!
-    var bbQr: UIImage!
+    var exportWalletImageCryptoOutput: UIImage!
+    var exportWalletImageURBytes: UIImage!
+    var exportWalletImageBBQr: UIImage!
     var backupText = ""
+    var backupFileText = ""
     var exportText = ""
     var textToShow = ""
     var json = ""
     var showReceive = 0
+    var outputDescUr = ""
+    var urBytes = ""
+    var bbqrText = ""
+    var outputDescFormat = true
+    var urBytesFormat = false
+    var bbqrFormat = false
     var alertStyle = UIAlertController.Style.actionSheet
     private var labelField: UITextField!
     private var labelButton: UIButton!
@@ -34,6 +41,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private enum Section: Int {
         case label
+        case backupText
         case walletExport
         case backupQr
         case exportFile
@@ -59,8 +67,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         if (UIDevice.current.userInterfaceIdiom == .pad) {
           alertStyle = UIAlertController.Style.alert
         }
+        spinner.addConnectingView(vc: self, description: "loading")
         
-        load()
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            self?.load()
+        }
     }
     
     @IBAction func rescanAction(_ sender: Any) {
@@ -194,18 +205,72 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         
                         if let urOutput = URHelper.descriptorToUrOutput(Descriptor(self.wallet.receiveDescriptor)) {
                             generator.textInput = urOutput.uppercased()
-                            self.exportText = urOutput
-                            self.exportWalletImage = generator.getQRCode()
+                            self.outputDescUr = urOutput.uppercased()
+                            self.exportWalletImageCryptoOutput = generator.getQRCode()
                         } else {
                             showAlert(vc: self, title: "", message: "Unable to convert your wallet to crypto-output.")
                         }
+                                                
+                        let receiveDescriptor = Descriptor(walletStruct.receiveDescriptor)
+                        var keysText = ""
+                        var deriv = ""
+                        
+                        if receiveDescriptor.isMulti {
+                            let xfpArray = xfpArray(xfpString: receiveDescriptor.fingerprint)
+                            
+                            for (i, key) in receiveDescriptor.multiSigKeys.enumerated() {
+                                keysText += "\(xfpArray[i]) : \(key)\n\n"
+                            }
+                            
+                            let multisigDervArr = receiveDescriptor.derivationArray
+                            let allItemsEqual = multisigDervArr.dropLast().allSatisfy { $0 == multisigDervArr.last }
+                            
+                            if allItemsEqual {
+                                deriv = multisigDervArr[0]
+                            } else {
+                                deriv = "Multiple derivations!"
+                            }
+                        } else {
+                            keysText = receiveDescriptor.fingerprint + " : " + receiveDescriptor.accountXpub
+                            deriv = receiveDescriptor.derivation
+                        }
+                        
+                        backupFileText = """
+                        Name: \(wallet.label)
+                        Policy: \(receiveDescriptor.mOfNType)
+                        Derivation: \(deriv)
+                        Format: \(receiveDescriptor.format)
+                        
+                        \(keysText)
+                        """
+                        
+                        guard let urBytesCheck = URHelper.dataToUrBytes(backupFileText.utf8) else {
+                            showAlert(vc: self, title: "Error", message: "Unable to convert the text into a UR.")
+                            return
+                        }
+                        
+                        urBytes = urBytesCheck.qrString
+                        generator.textInput = urBytes
+                        self.exportWalletImageURBytes = generator.getQRCode()
+                        
+                        bbqrText = wallet.receiveDescriptor
+                        generator.textInput = bbqrText
+                        exportWalletImageBBQr = generator.getQRCode()
                         
                         self.findSigner()
                         self.getAddresses()
+                        spinner.removeConnectingView()
                     }
                 }
             }
         }
+    }
+    
+    private func xfpArray(xfpString: String) -> [String] {
+        var fingerprintsString = xfpString
+        fingerprintsString = fingerprintsString.replacingOccurrences(of: "[", with: "")
+        fingerprintsString = fingerprintsString.replacingOccurrences(of: "]", with: "")
+        return fingerprintsString.components(separatedBy: ",")
     }
     
     private func findSigner() {
@@ -447,6 +512,50 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         }
     }
     
+    @objc func chooseExportFormatButtonAction(_ sender: UIButton) {
+        guard let sectionString = sender.restorationIdentifier, let section = Int(sectionString) else { return }
+        
+        switch Section(rawValue: section) {
+        case .walletExport:
+            if outputDescFormat {
+                outputDescFormat = false
+                bbqrFormat = false
+                urBytesFormat = true
+            } else if urBytesFormat {
+                urBytesFormat = false
+                bbqrFormat = true
+                outputDescFormat = false
+            } else {
+                outputDescFormat = true
+                bbqrFormat = false
+                urBytesFormat = false
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                detailTable.reloadSections(IndexSet(integer: Section.walletExport.rawValue), with: .fade)
+            }
+            
+        default:
+            break
+        }
+    }
+    
+    @objc func enlargeButtonAction(_ sender: UIButton) {
+        guard let sectionString = sender.restorationIdentifier, let section = Int(sectionString) else { return }
+        
+        switch Section(rawValue: section) {
+        case .walletExport:
+            textToShow = exportText
+            showQr()
+            
+        default:
+            break
+        }
+    }
+    
+    
     @objc func exportButtonAction(_ sender: UIButton) {
         guard let sectionString = sender.restorationIdentifier, let section = Int(sectionString) else { return }
         
@@ -455,7 +564,17 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             exportItem(wallet.name)
             
         case .walletExport:
-            exportItem(exportWalletImage as Any)
+            if outputDescFormat {
+                exportItem(exportWalletImageCryptoOutput as Any)
+            }
+            
+            if urBytesFormat {
+                exportItem(exportWalletImageURBytes as Any)
+            }
+            
+            if bbqrFormat {
+                exportItem(exportWalletImageBBQr as Any)
+            }
             
         case .backupQr:
             exportItem(backupQrImage as Any)
@@ -500,9 +619,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch Section(rawValue: indexPath.section) {
-        case .walletExport:
-            textToShow = exportText
-            showQr()
         case .backupQr:
             textToShow = backupText
             showQr()
@@ -541,7 +657,16 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         
         labelButton = (cell.viewWithTag(2) as! UIButton)
         labelButton.addTarget(self, action: #selector(startEditingLabel), for: .touchUpInside)
-        labelButton.showsTouchWhenHighlighted = true
+        
+        return cell
+    }
+    
+    private func backupTextCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let cell = detailTable.dequeueReusableCell(withIdentifier: "backupTextCell", for: indexPath)
+        configureCell(cell)
+        
+        let textView = cell.viewWithTag(1) as! UITextView
+        textView.text = backupFileText
         
         return cell
     }
@@ -606,7 +731,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         field.layer.borderColor = UIColor.clear.cgColor
         
         let increaseButton = cell.viewWithTag(2) as! UIButton
-        increaseButton.showsTouchWhenHighlighted = true
+        //increaseButton.showsTouchWhenHighlighted = true
         increaseButton.addTarget(self, action: #selector(increaseGapLimit), for: .touchUpInside)
         
         return cell
@@ -670,11 +795,38 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         configureCell(cell)
         
         let imageView = cell.viewWithTag(1) as! UIImageView
-        
-        imageView.image = exportWalletImage
-        
         let exportButton = cell.viewWithTag(2) as! UIButton
         configureExportButton(exportButton, indexPath: indexPath)
+        
+        let chooseFormatButton = cell.viewWithTag(3) as! UIButton
+        configureChooseExportFormatButton(chooseFormatButton, indexPath: indexPath)
+        
+        let headerLabel = cell.viewWithTag(4) as! UILabel
+        let subheaderLabel = cell.viewWithTag(5) as! UILabel
+        
+        let enlargeButton = cell.viewWithTag(6) as! UIButton
+        configureEnlargeButton(enlargeButton, indexPath: indexPath)
+        
+        if urBytesFormat {
+            headerLabel.text = "UR Bytes"
+            subheaderLabel.text = "Passport, Keystone, Blue"
+            imageView.image = exportWalletImageURBytes
+            exportText = urBytes
+        }
+        
+        if bbqrFormat {
+            headerLabel.text = "BBQr"
+            subheaderLabel.text = "Coldcard"
+            imageView.image = exportWalletImageBBQr
+            exportText = bbqrText
+        }
+        
+        if outputDescFormat {
+            headerLabel.text = "UR Output Descriptor"
+            subheaderLabel.text = "Sparrow, Blue"
+            imageView.image = exportWalletImageCryptoOutput
+            exportText = outputDescUr
+        }
         
         return cell
     }
@@ -689,6 +841,15 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         
         let exportButton = cell.viewWithTag(2) as! UIButton
         configureExportButton(exportButton, indexPath: indexPath)
+        
+        let headerLabel = cell.viewWithTag(4) as! UILabel
+        let subheaderLabel = cell.viewWithTag(5) as! UILabel
+        let chooseFormatButton = cell.viewWithTag(3) as! UIButton
+        let enlargeButton = cell.viewWithTag(6) as! UIButton
+        headerLabel.alpha = 0
+        subheaderLabel.alpha = 0
+        chooseFormatButton.alpha = 0
+        enlargeButton.alpha = 0
         
         return cell
     }
@@ -707,7 +868,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 13
+        return 14
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -716,8 +877,17 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private func configureExportButton(_ button: UIButton, indexPath: IndexPath) {
         button.restorationIdentifier = "\(indexPath.section)"
-        button.showsTouchWhenHighlighted = true
         button.addTarget(self, action: #selector(exportButtonAction(_:)), for: .touchUpInside)
+    }
+    
+    private func configureChooseExportFormatButton(_ button: UIButton, indexPath: IndexPath) {
+        button.restorationIdentifier = "\(indexPath.section)"
+        button.addTarget(self, action: #selector(chooseExportFormatButtonAction(_:)), for: .touchUpInside)
+    }
+    
+    private func configureEnlargeButton(_ button: UIButton, indexPath: IndexPath) {
+        button.restorationIdentifier = "\(indexPath.section)"
+        button.addTarget(self, action: #selector(enlargeButtonAction(_:)), for: .touchUpInside)
     }
     
     private func configureCell(_ cell: UITableViewCell) {
@@ -735,6 +905,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         originalLabel = wallet.label
         
         switch Section(rawValue: indexPath.section) {
+        case .backupText:
+            return backupTextCell(indexPath)
         case .label:
             return labelCell(indexPath)
         case .walletExport:
@@ -766,10 +938,14 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch Section(rawValue: indexPath.section) {
+        case .backupText:
+            return 180
         case .label:
             return 50
-        case .backupQr, .walletExport:
+        case .backupQr:
             return 192
+        case .walletExport:
+            return 270
         case .exportFile:
             return 120
         case .filename:
@@ -810,7 +986,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         if let section = Section(rawValue: section) {
             switch section {
             case .walletExport:
-                textLabel.text = "This QR is for exporting your wallet to other Hardware Wallets and Software wallets. Compatible with Sparrow, Blue Wallet, Passport and more."
+                textLabel.text = "This QR is for exporting your wallet to other Hardware Wallets and Software wallets. Compatible with Sparrow, Blue Wallet, Passport, Coldcard and more."
                 
             case .backupQr:
                 textLabel.text = "This QR is best for restoring to Fully Noded, either QR works but this one includes the wallet label and blockheight your wallet was created at."
@@ -1060,9 +1236,24 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                 vc.headerIcon = UIImage(systemName: "rectangle.and.paperclip")
                 vc.descriptionText = "Save this QR in lots of places so you can always easily recreate this wallet as watch-only. This QR code is best used with Fully Noded only."
             } else {
-                vc.headerText = "Wallet Export QR"
-                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                vc.descriptionText = "This QR code is best for exporting this wallet to other software and hardware wallets."
+                if bbqrFormat {
+                    vc.headerText = "Wallet Export BBQr"
+                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                    vc.descriptionText = "This QR code is best for exporting this wallet to Coldcard."
+                    vc.isBbqr = true
+                }
+                
+                if outputDescFormat {
+                    vc.headerText = "Wallet Export Descriptor"
+                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                    vc.descriptionText = "This QR code is best for exporting this wallet to Sparrow, Passport, Blue Wallet and others..."
+                }
+                
+                if urBytesFormat {
+                    vc.headerText = "Wallet Export UR Bytes"
+                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                    vc.descriptionText = "This QR code is best for exporting this wallet to Passport, Blue Wallet and others..."
+                }
             }
         }
         default:
@@ -1076,6 +1267,8 @@ extension WalletDetailViewController {
     
     private func headerName(for section: Section) -> (text: String, icon: UIImage, color: UIColor) {
         switch section {
+        case .backupText:
+            return ("Wallet Info", UIImage(systemName: "info.circle")!, .systemGray)
         case .label:
             return ("Label", UIImage(systemName: "rectangle.and.paperclip")!, .systemBlue)
         case .walletExport:

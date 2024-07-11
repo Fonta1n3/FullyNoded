@@ -23,7 +23,7 @@ struct DerivationStep {
     }
     
     var array: [CBOR] {
-        [childIndexSpec.cbor, CBOR.boolean(isHardened)]
+        [childIndexSpec.cbor, CBOR(booleanLiteral: isHardened)]
     }
     
     func childNum() throws -> UInt32 {

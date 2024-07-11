@@ -8,11 +8,13 @@
 
 import UIKit
 import URKit
+import Bbqr
 
 class QRDisplayerViewController: UIViewController {
     
     var text = ""
     var psbt = ""
+    var txn = ""
     var tapQRGesture = UITapGestureRecognizer()
     var tapTextViewGesture = UITapGestureRecognizer()
     var headerText = ""
@@ -21,6 +23,7 @@ class QRDisplayerViewController: UIViewController {
     var spinner = ConnectingView()
     let qrGenerator = QRGenerator()
     var isPaying = false
+    var isBbqr = false
     
     private var encoder:UREncoder!
     private var timer: Timer?
@@ -28,6 +31,7 @@ class QRDisplayerViewController: UIViewController {
     private var ur: UR!
     private var partIndex = 0
     
+    @IBOutlet weak var animateOutlet: UIButton!
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var textView: UITextView!
     @IBOutlet weak var headerLabel: UILabel!
@@ -42,8 +46,28 @@ class QRDisplayerViewController: UIViewController {
         textView.text = descriptionText
         tapQRGesture = UITapGestureRecognizer(target: self, action: #selector(shareQRCode(_:)))
         imageView.addGestureRecognizer(tapQRGesture)
+        animateOutlet.alpha = 0
         
-        if psbt != "" {
+        if isBbqr {
+            var parts: [String]? = []
+            
+            if psbt != "" {
+                parts = try? split(string: psbt)
+            }
+            
+            if txn != "" {
+                parts = try? split(string: txn)
+            }
+            
+            if text != "" {
+                parts = try? split(string: text)
+            }
+            
+            if let parts = parts {
+                showBbqrParts(bbQrparts: parts)
+            }
+        } else if psbt != "" {
+            animateOutlet.alpha = 0
             spinner.addConnectingView(vc: self, description: "loading QR parts...")
             imageView.isUserInteractionEnabled = false
             
@@ -53,116 +77,39 @@ class QRDisplayerViewController: UIViewController {
                 convertPsbtToUrParts()
             }
             
-        } else if !isPaying {
-            imageView.image = qR()
-        }
-        
-        if isPaying {
-            getPaymentAddress()
-        }
-    }
-    
-    private func getPaymentAddress() {
-        guard let data = KeyChain.getData("paymentAddress") else {
-            
-            guard let paymentAddress = Keys.donationAddress() else { return }
-            
-            guard KeyChain.set(paymentAddress.dataUsingUTF8StringEncoding, forKey: "paymentAddress") else {
-                return
+        } else {
+            if text.lowercased().hasPrefix("ur:") {
+                animateOutlet.alpha = 1
             }
             
-            getPaid(paymentAddress)
-            
-            return
-        }
-        
-        let paymentAddress = data.utf8String ?? ""
-        getPaid(paymentAddress)
-    }
-    
-    private func getPaid(_ address: String) {
-        FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
-            guard let self = self, let fxRate = fxRate else { return }
-            
-            let btcAmount = 1.0 / (fxRate / 20.0)
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                                
-                self.text = "bitcoin:\(address)?amount=\(btcAmount.avoidNotation)&label=FullyNoded-Payment"
-                
-                self.imageView.image = self.qR()
-                
-                self.spinner.removeConnectingView()
-                
-                showAlert(vc: self, title: "Thank you for supporting Fully Noded", message: "In order to use Fully Noded via direct download a donation of $20 in btc is suggested. You can scan this QR with any wallet to automatically pay the suggested amount, this address is unique to you and will not change, that way you can pay whenever you want.\n\nThe app has taken years of hard work, your support will help make Fully Noded even better ensuring its long term survival and evolution to be the best it can possibly be.\n\nOnce the payment is made you will have full lifetime access to the app.")
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
-                guard let self = self else { return }
-                
-                self.checkIfPaymentReceived(address)
-            }
+            if txn != "" {
+                imageView.image = qR(text: txn)
+            } else if text != "" {
+                imageView.image = qR(text: text)
+            }            
         }
     }
     
-    private func checkIfPaymentReceived(_ address: String) {
-        let blockstreamUrl = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/api/address/" + address
+    func split(string: String) throws -> [String] {
+        let large = Data(string.utf8)
+
+        // EXAMPLE DEFAULT OPTIONS
+        // let options = defaultSplitOptions()
+        let options = SplitOptions(encoding: Encoding.zlib, minVersion: Version.v01, maxVersion: Version.v40)
+        var fileType: FileType = .unicodeText
         
-        guard let url = URL(string: blockstreamUrl) else { return }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-        
-        let task = TorClient.sharedInstance.session.dataTask(with: request as URLRequest) { (data, response, error) in
-            
-            guard let urlContent = data else {
-                showAlert(vc: self, title: "Ooops", message: "There was an issue checking on payment status")
-                return
-            }
-            
-            guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as? NSDictionary else {
-                showAlert(vc: self, title: "Ooops", message: "There was an issue decoding the response when fetching payment status")
-                return
-            }
-            
-            var txCount = 0
-            
-            if let chain_stats = json["chain_stats"] as? NSDictionary {
-                guard let count = chain_stats["tx_count"] as? Int else { return }
-                
-                txCount += count
-            }
-            
-            if let mempool_stats = json["mempool_stats"] as? NSDictionary {
-                guard let count = mempool_stats["tx_count"] as? Int else { return }
-                
-                txCount += count
-            }
-            
-            if txCount == 0 {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 15.0) { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.checkIfPaymentReceived(address)
-                }
-                
-            } else {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    let _ = KeyChain.set("hasPaid".dataUsingUTF8StringEncoding, forKey: "hasPaid")
-                    
-                    self.dismiss(animated: true) {
-                        
-                        showAlert(vc: self, title: "Thank you!", message: "Your support is greatly appreciated and will directly help making Fully Noded even better 💪")
-                    }
-                }
-            }
+        if psbt != "" {
+            fileType = .psbt
         }
         
-        task.resume()
+        if txn != "" {
+            fileType = .transaction
+        }
+
+        //let options = SplitOptions(encoding: Encoding.hex, minVersion: Version.v01, maxVersion: Version.v02)
+        let split = try Split.tryFromData(bytes: large, fileType: fileType, options: options)
+
+        return split.parts()
     }
     
     @IBAction func closeAction(_ sender: Any) {
@@ -171,7 +118,15 @@ class QRDisplayerViewController: UIViewController {
         }
     }
     
-    private func qR() -> UIImage {
+    @IBAction func animateAction(_ sender: Any) {
+        if text.lowercased().hasPrefix("ur:") {
+            guard let ur = URHelper.ur(text) else { return }
+            
+            animateUr(ur: ur)
+        }
+    }
+    
+    private func qR(text: String) -> UIImage {
         qrGenerator.textInput = text
         return qrGenerator.getQRCode()
     }
@@ -201,8 +156,7 @@ class QRDisplayerViewController: UIViewController {
         imageView.image = qrGenerator.getQRCode()
     }
     
-    private func convertPsbtToUrParts() {
-        guard let b64 = Data(base64Encoded: psbt), let ur = URHelper.psbtUr(b64) else { return }
+    private func animateUr(ur: UR) {
         let encoder = UREncoder(ur, maxFragmentLen: 250)
         weak var timer: Timer?
         
@@ -218,6 +172,25 @@ class QRDisplayerViewController: UIViewController {
                 self.spinner.removeConnectingView()
                 timer?.invalidate()
                 timer = Timer.scheduledTimer(timeInterval: 0.4, target: self, selector: #selector(self.animate), userInfo: nil, repeats: true)
+            }
+        }
+    }
+    
+    private func convertPsbtToUrParts() {
+        guard let b64 = Data(base64Encoded: psbt), let ur = URHelper.psbtUr(b64) else { return }
+        
+        animateUr(ur: ur)
+    }
+    
+    private func showBbqrParts(bbQrparts: [String]) {
+        let _ = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            
+            if partIndex < bbQrparts.count {
+                showQR(bbQrparts[partIndex])
+                partIndex += 1
+            } else {
+                partIndex = 0
             }
         }
     }
@@ -225,25 +198,7 @@ class QRDisplayerViewController: UIViewController {
     private func convertBlindedPsbtToUrParts() {
         guard let ur = try? UR(urString: psbt) else { return }
         
-        let encoder = UREncoder(ur, maxFragmentLen: 250)
-        weak var timer: Timer?
-        
-        timer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
-            
-            let part = encoder.nextPart()
-            let index = encoder.seqNum
-            
-            if index <= encoder.seqLen {
-                self.parts.append(part.uppercased())
-            } else {
-                self.spinner.removeConnectingView()
-                timer?.invalidate()
-                timer = Timer.scheduledTimer(timeInterval: 0.4, target: self, selector: #selector(self.animate), userInfo: nil, repeats: true)
-            }
-        }
+        animateUr(ur: ur)
     }
-    
-    
 
 }

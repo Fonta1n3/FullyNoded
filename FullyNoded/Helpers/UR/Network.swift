@@ -14,12 +14,12 @@ enum Network_: UInt32, Identifiable, CaseIterable {
     case testnet = 1
     
     var cbor: CBOR {
-        CBOR.unsignedInt(UInt64(rawValue))
+        CBOR.unsigned(UInt64(rawValue))
     }
     
     init(cbor: CBOR) throws {
         guard
-            case let CBOR.unsignedInt(r) = cbor,
+            case let CBOR.unsigned(r) = cbor,
             let a = Network_(rawValue: UInt32(r)) else {
             throw GeneralError("Invalid Network.")
         }

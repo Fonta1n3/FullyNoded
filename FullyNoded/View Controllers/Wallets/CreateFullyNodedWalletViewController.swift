@@ -910,7 +910,10 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         return
                     }
                     
-                    // needs to check AM too
+                    #if(DEBUG)
+                    print("item: \(item)")
+                    #endif
+                    
                     self.processImportedString(item)
                 }
             }

@@ -1,6 +1,15 @@
 {
-  "originHash" : "80d738e01d019027b7e2198930ba90237b181310c1fceceb2bbaca0d1aae4117",
+  "originHash" : "dbc57cb905ea6d2c86cdcb51ff9b9cf19432f8eab192b534539f6a1f065226c0",
   "pins" : [
+    {
+      "identity" : "bbqr-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/bitcoinppl/bbqr-swift.git",
+      "state" : {
+        "revision" : "83b828077ecc4f5d2cf8889da5543a61b4a60a3c",
+        "version" : "0.3.1"
+      }
+    },
     {
       "identity" : "bc-lifehash",
       "kind" : "remoteSourceControl",
@@ -8,6 +17,33 @@
       "state" : {
         "revision" : "9f1d125749b763b932619e682588bb7f26933d29",
         "version" : "0.4.1"
+      }
+    },
+    {
+      "identity" : "bcswiftdcbor",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/BlockchainCommons/BCSwiftDCBOR",
+      "state" : {
+        "revision" : "922746297fe733019b42b9083275eb2837296a7d",
+        "version" : "1.0.5"
+      }
+    },
+    {
+      "identity" : "bcswiftfloat16",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/blockchaincommons/BCSwiftFloat16",
+      "state" : {
+        "revision" : "71f380285d88a876f9cdf4e34e2e9e77d7ca4aef",
+        "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "bcswifttags",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/BlockchainCommons/BCSwiftTags",
+      "state" : {
+        "revision" : "edb94b337d03e01c871db895c65d8fd3b6d43c9c",
+        "version" : "0.1.2"
       }
     },
     {
@@ -38,12 +74,30 @@
       }
     },
     {
+      "identity" : "swift-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/wolfmcnally/swift-collections",
+      "state" : {
+        "revision" : "53a8adc54374f620002a3b6401d39e0feb3c57ae",
+        "version" : "1.1.0"
+      }
+    },
+    {
+      "identity" : "swift-numberkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/wolfmcnally/swift-numberkit.git",
+      "state" : {
+        "revision" : "34a26297c200489779929b7fd7d4d30b63e87e69",
+        "version" : "2.4.3"
+      }
+    },
+    {
       "identity" : "urkit",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Fonta1n3/URKit",
+      "location" : "https://github.com/BlockchainCommons/URKit.git",
       "state" : {
-        "branch" : "master",
-        "revision" : "1d74d3e758130ac7e20f9b66221866928c81ef96"
+        "revision" : "c98261c7b2db42ccfbbba0853379826b86aaffc4",
+        "version" : "14.0.2"
       }
     }
   ],

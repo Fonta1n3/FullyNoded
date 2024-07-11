@@ -282,7 +282,7 @@ public extension Data {
 
 public extension Double {
     func rounded(toPlaces places:Int) -> Double {
-        let divisor = pow(10.0, Double(places))
+        let divisor = Darwin.pow(10.0, Double(places))
         return (self * divisor).rounded() / divisor
     }
     
@@ -405,6 +405,45 @@ public extension Double {
     
     var satsToBtcDouble: Double {
         return self / 100000000.0
+    }
+    
+    var btcBalanceWithSpaces: String {
+        var btcBalance = Swift.abs(self.rounded(toPlaces: 8)).avoidNotation
+        if !btcBalance.contains(".") {
+            btcBalance += ".0"
+        }
+        
+        if self == 0.0 {
+            btcBalance = "0.00 000 000"
+        } else {
+            var decimalLocation = 0
+            var btcBalanceArray:[String] = []
+            var digitsPastDecimal = 0
+                        
+            for (i, c) in btcBalance.enumerated() {
+                btcBalanceArray.append("\(c)")
+                if c == "." {
+                    decimalLocation = i
+                }
+                if i > decimalLocation {
+                    digitsPastDecimal += 1
+                }
+            }
+            
+            if digitsPastDecimal <= 7 {
+                let numberOfTrailingZerosNeeded = 7 - digitsPastDecimal
+
+                for _ in 0...numberOfTrailingZerosNeeded {
+                    btcBalanceArray.append("0")
+                }
+            }
+            
+            btcBalanceArray.insert(" ", at: decimalLocation + 3)
+            btcBalanceArray.insert(" ", at: decimalLocation + 7)
+            btcBalance = btcBalanceArray.joined()
+        }
+        
+        return btcBalance
     }
 }
 
