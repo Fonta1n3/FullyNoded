@@ -2686,7 +2686,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
         }
         
-        if segue.identifier == "segueToExportPsbtAsQr" {
+        if segue.identifier == "segueToExportPsbtAsQr" {            
             if let vc = segue.destination as? QRDisplayerViewController {
                 vc.isBbqr = self.isBBQr
                 
@@ -2706,7 +2706,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         vc.descriptionText = "This psbt still needs more signatures to be complete, you can share it with another signer."
                     }
                 } else if signedRawTx != "" {
-                    vc.text = signedRawTx
+                    vc.txn = signedRawTx
                     vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
                     vc.headerText = "Signed Transaction"
                     vc.descriptionText = "You can save this signed transaction and broadcast it later or share it with someone else."

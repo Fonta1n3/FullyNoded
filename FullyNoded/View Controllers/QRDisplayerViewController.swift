@@ -14,6 +14,7 @@ class QRDisplayerViewController: UIViewController {
     
     var text = ""
     var psbt = ""
+    var txn = ""
     var tapQRGesture = UITapGestureRecognizer()
     var tapTextViewGesture = UITapGestureRecognizer()
     var headerText = ""
@@ -48,12 +49,23 @@ class QRDisplayerViewController: UIViewController {
         animateOutlet.alpha = 0
         
         if isBbqr {
-            guard let parts = try? split(string: text == "" ? psbt : text) else {
-                return
+            var parts: [String]? = []
+            
+            if psbt != "" {
+                parts = try? split(string: psbt)
             }
             
-            showBbqrParts(bbQrparts: parts)
+            if txn != "" {
+                parts = try? split(string: txn)
+            }
             
+            if text != "" {
+                parts = try? split(string: text)
+            }
+            
+            if let parts = parts {
+                showBbqrParts(bbQrparts: parts)
+            }
         } else if psbt != "" {
             animateOutlet.alpha = 0
             spinner.addConnectingView(vc: self, description: "loading QR parts...")
@@ -70,7 +82,11 @@ class QRDisplayerViewController: UIViewController {
                 animateOutlet.alpha = 1
             }
             
-            imageView.image = qR()
+            if txn != "" {
+                imageView.image = qR(text: txn)
+            } else if text != "" {
+                imageView.image = qR(text: text)
+            }            
         }
     }
     
@@ -79,10 +95,19 @@ class QRDisplayerViewController: UIViewController {
 
         // EXAMPLE DEFAULT OPTIONS
         // let options = defaultSplitOptions()
-        // let options = SplitOptions(encoding: Encoding.zlib, minVersion: Version.v01, maxVersion: Version.v40)
+        let options = SplitOptions(encoding: Encoding.zlib, minVersion: Version.v01, maxVersion: Version.v40)
+        var fileType: FileType = .unicodeText
+        
+        if psbt != "" {
+            fileType = .psbt
+        }
+        
+        if txn != "" {
+            fileType = .transaction
+        }
 
-        let options = SplitOptions(encoding: Encoding.hex, minVersion: Version.v01, maxVersion: Version.v02)
-        let split = try Split.tryFromData(bytes: large, fileType: FileType.unicodeText, options: options)
+        //let options = SplitOptions(encoding: Encoding.hex, minVersion: Version.v01, maxVersion: Version.v02)
+        let split = try Split.tryFromData(bytes: large, fileType: fileType, options: options)
 
         return split.parts()
     }
@@ -101,7 +126,7 @@ class QRDisplayerViewController: UIViewController {
         }
     }
     
-    private func qR() -> UIImage {
+    private func qR(text: String) -> UIImage {
         qrGenerator.textInput = text
         return qrGenerator.getQRCode()
     }
@@ -158,7 +183,7 @@ class QRDisplayerViewController: UIViewController {
     }
     
     private func showBbqrParts(bbQrparts: [String]) {
-        let timer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
+        let _ = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             
             if partIndex < bbQrparts.count {

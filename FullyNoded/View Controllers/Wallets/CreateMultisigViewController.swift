@@ -22,6 +22,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     var alertStyle = UIAlertController.Style.alert
     var multiSigAccountDesc = ""
     var qrToExport = ""
+    var isBbqr = false
     
     @IBOutlet weak var derivationField: UITextField!
     @IBOutlet weak var fingerprintField: UITextField!
@@ -317,13 +318,24 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 self.export(text: text)
             }))
             
-            alert.addAction(UIAlertAction(title: "Export QR Code (Passport, Sparrow, Blue)", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "Export UR QR Code", style: .default, handler: { action in
                 guard let ur = URHelper.dataToUrBytes(text.utf8) else {
                     showAlert(vc: self, title: "Error", message: "Unable to convert the text into a UR.")
                     return
                 }
                 
                 self.qrToExport = ur.qrString
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.performSegue(withIdentifier: "segueToExportMsig", sender: self)
+                }
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Export BBQr", style: .default, handler: { action in
+                self.qrToExport = text
+                self.isBbqr = true
                 
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
@@ -622,11 +634,15 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         case "segueToExportMsig":
             guard let vc = segue.destination as? QRDisplayerViewController else { return }
             
-            vc.psbt = self.qrToExport
-            print("qrToExport: \(qrToExport)")
+            vc.text = self.qrToExport
+            vc.isBbqr = self.isBbqr
             vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-            vc.headerText = "Multisig Wallet Export"
-            vc.descriptionText = "Scan this with Passport, Blue Wallet, Sparrow or other wallets which support UR QR to import the multisig wallet."
+            
+            if isBbqr {
+                vc.headerText = "Multisig Wallet BBQr"
+            } else {
+                vc.headerText = "Multisig Wallet UR Bytes"
+            }
          
         default:
             break
