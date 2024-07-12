@@ -31,7 +31,6 @@ class QRDisplayerViewController: UIViewController {
     private var ur: UR!
     private var partIndex = 0
     
-    @IBOutlet weak var animateOutlet: UIButton!
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var textView: UITextView!
     @IBOutlet weak var headerLabel: UILabel!
@@ -46,9 +45,11 @@ class QRDisplayerViewController: UIViewController {
         textView.text = descriptionText
         tapQRGesture = UITapGestureRecognizer(target: self, action: #selector(shareQRCode(_:)))
         imageView.addGestureRecognizer(tapQRGesture)
-        animateOutlet.alpha = 0
+        
         
         if isBbqr {
+            spinner.addConnectingView(vc: self, description: "loading...")
+            
             var parts: [String]? = []
             
             if psbt != "" {
@@ -66,36 +67,36 @@ class QRDisplayerViewController: UIViewController {
             if let parts = parts {
                 showBbqrParts(bbQrparts: parts)
             }
-        } else if psbt != "" {
-            animateOutlet.alpha = 0
-            spinner.addConnectingView(vc: self, description: "loading QR parts...")
-            imageView.isUserInteractionEnabled = false
             
-            if psbt.hasPrefix("UR:BYTES") {
-                convertBlindedPsbtToUrParts()
-            } else {
-                convertPsbtToUrParts()
-            }
+        } else if psbt.lowercased().hasPrefix("ur:") || text.lowercased().hasPrefix("ur:") {
+            spinner.addConnectingView(vc: self, description: "loading...")
             
-        } else {
-            if text.lowercased().hasPrefix("ur:") {
-                animateOutlet.alpha = 1
-            }
+            guard let ur = URHelper.ur(text == "" ? psbt : text) else { return }
+                
+            animateUr(ur: ur)
+            spinner.removeConnectingView()
             
-            if txn != "" {
-                imageView.image = qR(text: txn)
-            } else if text != "" {
-                imageView.image = qR(text: text)
-            }            
+        } else if txn != "" {
+            imageView.image = qR(text: txn)
+            
+        } else if text != "" {
+            imageView.image = qR(text: text)
         }
     }
     
+    
     func split(string: String) throws -> [String] {
         let large = Data(string.utf8)
-
-        // EXAMPLE DEFAULT OPTIONS
-        // let options = defaultSplitOptions()
-        let options = SplitOptions(encoding: Encoding.zlib, minVersion: Version.v01, maxVersion: Version.v40)
+        var minSplitNumber: UInt16 = 1
+        minSplitNumber = UInt16((Double(string.count) / 250.0))
+        
+        let options = SplitOptions(
+            encoding: Encoding.zlib,
+            minSplitNumber: minSplitNumber,
+            minVersion: Version.v01,
+            maxVersion: Version.v40
+        )
+        
         var fileType: FileType = .unicodeText
         
         if psbt != "" {
@@ -106,8 +107,8 @@ class QRDisplayerViewController: UIViewController {
             fileType = .transaction
         }
 
-        //let options = SplitOptions(encoding: Encoding.hex, minVersion: Version.v01, maxVersion: Version.v02)
         let split = try Split.tryFromData(bytes: large, fileType: fileType, options: options)
+        spinner.removeConnectingView()
 
         return split.parts()
     }
@@ -115,14 +116,6 @@ class QRDisplayerViewController: UIViewController {
     @IBAction func closeAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             self?.dismiss(animated: true, completion: nil)
-        }
-    }
-    
-    @IBAction func animateAction(_ sender: Any) {
-        if text.lowercased().hasPrefix("ur:") {
-            guard let ur = URHelper.ur(text) else { return }
-            
-            animateUr(ur: ur)
         }
     }
     
@@ -176,12 +169,6 @@ class QRDisplayerViewController: UIViewController {
         }
     }
     
-    private func convertPsbtToUrParts() {
-        guard let b64 = Data(base64Encoded: psbt), let ur = URHelper.psbtUr(b64) else { return }
-        
-        animateUr(ur: ur)
-    }
-    
     private func showBbqrParts(bbQrparts: [String]) {
         let _ = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
             guard let self = self else { return }
@@ -193,12 +180,6 @@ class QRDisplayerViewController: UIViewController {
                 partIndex = 0
             }
         }
-    }
-    
-    private func convertBlindedPsbtToUrParts() {
-        guard let ur = try? UR(urString: psbt) else { return }
-        
-        animateUr(ur: ur)
     }
 
 }

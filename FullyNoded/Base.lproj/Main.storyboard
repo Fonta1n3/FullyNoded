@@ -1906,13 +1906,6 @@ xxxxx</string>
                         <rect key="frame" x="0.0" y="0.0" width="375" height="554"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
-                                <rect key="frame" x="16" y="465" width="343" height="69"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
-                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                            </textView>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="kT3-vW-HgJ">
                                 <rect key="frame" x="16" y="71" width="343" height="343"/>
                                 <constraints>
@@ -1934,23 +1927,20 @@ xxxxx</string>
                                 <color key="textColor" systemColor="systemTealColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6bf-8y-uca">
-                                <rect key="frame" x="144.5" y="422" width="86.5" height="35"/>
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Animate"/>
-                                <connections>
-                                    <action selector="animateAction:" destination="GlR-4A-eAx" eventType="touchUpInside" id="nYA-Y8-COB"/>
-                                </connections>
-                            </button>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
+                                <rect key="frame" x="16" y="422" width="343" height="112"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="V2W-B3-jFj"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="6bf-8y-uca" firstAttribute="top" secondItem="kT3-vW-HgJ" secondAttribute="bottom" constant="8" symbolic="YES" id="1dx-RW-1N1"/>
+                            <constraint firstItem="Kj5-uB-hmc" firstAttribute="top" secondItem="kT3-vW-HgJ" secondAttribute="bottom" constant="8" symbolic="YES" id="2Fg-F5-1kz"/>
                             <constraint firstItem="V2W-B3-jFj" firstAttribute="trailing" secondItem="Kj5-uB-hmc" secondAttribute="trailing" constant="16" id="BKp-nX-JEq"/>
                             <constraint firstItem="cLD-vU-YX6" firstAttribute="leading" secondItem="dfM-Fg-VDq" secondAttribute="trailing" constant="8" id="QQa-zY-1by"/>
-                            <constraint firstItem="6bf-8y-uca" firstAttribute="centerX" secondItem="1Ax-bN-O8E" secondAttribute="centerX" id="TLX-nP-D9T"/>
                             <constraint firstItem="V2W-B3-jFj" firstAttribute="trailing" secondItem="kT3-vW-HgJ" secondAttribute="trailing" constant="16" id="UuP-QH-CTq"/>
                             <constraint firstItem="dfM-Fg-VDq" firstAttribute="leading" secondItem="V2W-B3-jFj" secondAttribute="leading" constant="16" id="Xii-iY-6d4"/>
                             <constraint firstItem="cLD-vU-YX6" firstAttribute="centerY" secondItem="dfM-Fg-VDq" secondAttribute="centerY" id="d6u-qr-IxG"/>
@@ -1958,13 +1948,11 @@ xxxxx</string>
                             <constraint firstItem="dfM-Fg-VDq" firstAttribute="top" secondItem="V2W-B3-jFj" secondAttribute="top" constant="15" id="qwr-5e-g8F"/>
                             <constraint firstItem="kT3-vW-HgJ" firstAttribute="top" secondItem="V2W-B3-jFj" secondAttribute="top" constant="71" id="rbT-RD-kQQ"/>
                             <constraint firstItem="Kj5-uB-hmc" firstAttribute="leading" secondItem="V2W-B3-jFj" secondAttribute="leading" constant="16" id="wdF-UY-AT3"/>
-                            <constraint firstItem="Kj5-uB-hmc" firstAttribute="top" secondItem="6bf-8y-uca" secondAttribute="bottom" constant="8" symbolic="YES" id="yWL-Ic-2pW"/>
                             <constraint firstItem="V2W-B3-jFj" firstAttribute="bottom" secondItem="Kj5-uB-hmc" secondAttribute="bottom" constant="20" id="yzk-tn-uY1"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="VsN-eD-EWM"/>
                     <connections>
-                        <outlet property="animateOutlet" destination="6bf-8y-uca" id="2XD-TS-5oY"/>
                         <outlet property="headerImage" destination="dfM-Fg-VDq" id="jgB-pJ-eEV"/>
                         <outlet property="headerLabel" destination="cLD-vU-YX6" id="rAY-Zc-KcM"/>
                         <outlet property="imageView" destination="kT3-vW-HgJ" id="L4j-xg-uHU"/>

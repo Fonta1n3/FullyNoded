@@ -143,7 +143,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             chain = .testnet
         }
         
-        let importedPsbt = try! PSBT(psbt: psbt, network: chain)
+        guard let importedPsbt = try? PSBT(psbt: psbt, network: chain) else {
+            showAlert(vc: self, title: "", message: "Invalid psbt.")
+            return
+        }
+        
         let inputs = importedPsbt.inputs
         var signed = false
         for input in inputs {
@@ -2739,7 +2743,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 vc.fromSignAndVerify = true
                 
                 vc.onDoneBlock = { [weak self] tx in
-                    guard let self = self, let tx = tx else { return }
+                    guard let self = self, let tx = tx else {
+                        return }
                     
                     self.reset()
                     
@@ -2748,9 +2753,41 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     } else if Keys.validTx(tx) {
                         self.signedRawTx = tx
                         self.load()
-                    } else if tx.hasPrefix("UR:BYTES") {
-                        self.blind = true
-                        self.parseBlindPsbt(tx)
+                    } else if tx.uppercased().hasPrefix("UR:BYTES") {
+                        guard let ur = URHelper.ur(tx) else {
+                            print("failing here")
+                            return
+                        }
+                        
+                        guard let psbt = URHelper.bytesToData(ur) else {
+                            self.blind = true
+                            self.parseBlindPsbt(tx)
+                            
+                            return
+                        }
+                        
+                        //print("psbt: \(psbt.base64EncodedString())")
+                        
+                        self.processPsbt(psbt.base64EncodedString())
+                        
+                    } else if tx.uppercased().hasPrefix("UR:CRYPTO-PSBT") {
+                        print("tx: \(tx)")
+                        
+                        guard let ur = URHelper.ur(tx) else {
+                            print("failing here")
+                            return
+                        }
+                        
+                        //print("ur: \(ur.cbor.cborData.)")
+                        
+                        guard let psbt = URHelper.psbtUrToBase64Text(ur) else {
+                            print("hrrrr")
+                            return
+                        }
+                        
+                        print("psbt: \(psbt)")
+                        
+                        self.processPsbt(psbt)
                     }
                 }
             }

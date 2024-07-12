@@ -33,7 +33,7 @@ class URHelper {
 //        }
 //        
 //        return Data(bytes)
-        return ur.cbor.cborData.bytes.data
+        return ur.cbor.cborData
     }
     
     static func ur(_ string: String) -> UR? {
@@ -56,8 +56,9 @@ class URHelper {
 //            case let CBOR.byteString(bytes) = decodedCbor else {
 //                return nil
 //        }
+        guard let decodedCbor = try? CBOR.
         
-        return ur.cbor.cborData.base64EncodedString()
+        return ur.cbor.cborData.bytes.data.base64EncodedString()
         
         //return Data(bytes).base64EncodedString()
     }
