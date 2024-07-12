@@ -2766,28 +2766,20 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                             return
                         }
                         
-                        //print("psbt: \(psbt.base64EncodedString())")
-                        
                         self.processPsbt(psbt.base64EncodedString())
                         
                     } else if tx.uppercased().hasPrefix("UR:CRYPTO-PSBT") {
-                        print("tx: \(tx)")
-                        
                         guard let ur = URHelper.ur(tx) else {
                             print("failing here")
                             return
                         }
                         
-                        //print("ur: \(ur.cbor.cborData.)")
-                        
                         guard let psbt = URHelper.psbtUrToBase64Text(ur) else {
-                            print("hrrrr")
+                            showAlert(vc: self, title: "", message: "Unable to convert ur to psbt.")
                             return
                         }
                         
-                        print("psbt: \(psbt)")
-                        
-                        self.processPsbt(psbt)
+                       self.processPsbt(psbt)
                     }
                 }
             }

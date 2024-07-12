@@ -26,17 +26,13 @@ class URHelper {
     }
     
     static func bytesToData(_ ur: UR) -> Data? {
-        //ur.cbor.cborData
-//        guard let decodedCbor = try? ur.cbor.cborData.bytes.data,
-//            case let CBOR.bytes(bytes) = decodedCbor else {
-//                return nil
-//        }
-//        
-//        return Data(bytes)
-        return ur.cbor.cborData
+        guard case let CBOR.bytes(bytes) = ur.cbor else { return nil }
+        
+        return Data(bytes)
     }
     
     static func ur(_ string: String) -> UR? {
+        
         return try? UR(urString: string)
     }
     
@@ -46,21 +42,14 @@ class URHelper {
     }
     
     static func psbtUr(_ data: Data) -> UR? {
-        //let cbor = CBOR.encodeByteString(data.bytes).data
         
         return try? UR(type: "crypto-psbt", cbor: data.cbor)
     }
     
     static func psbtUrToBase64Text(_ ur: UR) -> String? {
-//        guard let decodedCbor = try? CBOR.decode(ur.cbor.bytes),
-//            case let CBOR.byteString(bytes) = decodedCbor else {
-//                return nil
-//        }
-        guard let decodedCbor = try? CBOR.
+        guard case let CBOR.bytes(bytes) = ur.cbor else { return nil }
         
-        return ur.cbor.cborData.bytes.data.base64EncodedString()
-        
-        //return Data(bytes).base64EncodedString()
+        return Data(bytes).base64EncodedString()
     }
     
     static func parseUr(urString: String) -> (descriptors: [String]?, error: String?) {
@@ -154,13 +143,9 @@ class URHelper {
     static func parseBlueWalletCoordinationSetup(_ urString: String) -> (text: String?, error: String?) {
         guard let ur = try? UR(urString: urString) else { return ((nil, "Unable to convert string to UR."))}
         
-        guard let text = ur.cbor.cborData.utf8String else { return ((nil, "Unable to convert ur to text."))}
+        guard case let CBOR.bytes(bytes) = ur.cbor else { return ((nil, "Unable to convert UR to bytes.")) }
         
-//        guard let decodedCbor = try? CBOR.decode(ur.cbor.bytes),
-//            case let CBOR.byteString(bytes) = decodedCbor,
-//            let text = Data(bytes).utf8String else {
-//                return (nil, "Unable to decode the QR code into a text file.")
-//        }
+        guard let text = bytes.utf8String else { return ((nil, "Unable to convert ur to text."))}
         
         return (text, nil)
     }

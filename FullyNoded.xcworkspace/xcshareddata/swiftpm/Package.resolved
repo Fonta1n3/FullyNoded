@@ -1,0 +1,105 @@
+{
+  "originHash" : "dbc57cb905ea6d2c86cdcb51ff9b9cf19432f8eab192b534539f6a1f065226c0",
+  "pins" : [
+    {
+      "identity" : "bbqr-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/bitcoinppl/bbqr-swift.git",
+      "state" : {
+        "revision" : "83b828077ecc4f5d2cf8889da5543a61b4a60a3c",
+        "version" : "0.3.1"
+      }
+    },
+    {
+      "identity" : "bc-lifehash",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/BlockchainCommons/bc-lifehash",
+      "state" : {
+        "revision" : "9f1d125749b763b932619e682588bb7f26933d29",
+        "version" : "0.4.1"
+      }
+    },
+    {
+      "identity" : "bcswiftdcbor",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/BlockchainCommons/BCSwiftDCBOR",
+      "state" : {
+        "revision" : "922746297fe733019b42b9083275eb2837296a7d",
+        "version" : "1.0.5"
+      }
+    },
+    {
+      "identity" : "bcswiftfloat16",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/blockchaincommons/BCSwiftFloat16",
+      "state" : {
+        "revision" : "71f380285d88a876f9cdf4e34e2e9e77d7ca4aef",
+        "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "bcswifttags",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/BlockchainCommons/BCSwiftTags",
+      "state" : {
+        "revision" : "edb94b337d03e01c871db895c65d8fd3b6d43c9c",
+        "version" : "0.1.2"
+      }
+    },
+    {
+      "identity" : "lifehash",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/BlockchainCommons/LifeHash",
+      "state" : {
+        "revision" : "fb842d1378b960be6750267e98ae6ce8f287054d",
+        "version" : "6.3.2"
+      }
+    },
+    {
+      "identity" : "rncryptor",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/RNCryptor/RNCryptor.git",
+      "state" : {
+        "revision" : "5e3bbf44f08bf90049537cb8902d8f4fa911a79a",
+        "version" : "5.1.0"
+      }
+    },
+    {
+      "identity" : "secp256k1.swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jb55/secp256k1.swift.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "40b4b38b3b1c83f7088c76189a742870e0ca06a9"
+      }
+    },
+    {
+      "identity" : "swift-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/wolfmcnally/swift-collections",
+      "state" : {
+        "revision" : "53a8adc54374f620002a3b6401d39e0feb3c57ae",
+        "version" : "1.1.0"
+      }
+    },
+    {
+      "identity" : "swift-numberkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/wolfmcnally/swift-numberkit.git",
+      "state" : {
+        "revision" : "34a26297c200489779929b7fd7d4d30b63e87e69",
+        "version" : "2.4.3"
+      }
+    },
+    {
+      "identity" : "urkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/BlockchainCommons/URKit.git",
+      "state" : {
+        "revision" : "c98261c7b2db42ccfbbba0853379826b86aaffc4",
+        "version" : "14.0.2"
+      }
+    }
+  ],
+  "version" : 3
+}
