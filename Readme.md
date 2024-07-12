@@ -1,13 +1,19 @@
 
 # Fully Noded®
 
-<img src="./Images/fn_logo.png" alt="" width="100"/> <br/> [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586) <br/> [<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](https://apps.apple.com/us/app/fully-noded-desktop/id1530816100?mt=12) <br/>
+<img src="./Images/fn_logo.png" alt="" width="100"/> <br/> [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586) <br/>
 
 <img src="./Images/home.png" alt="home" width="400"/> <img src="./Images/wallet.png" alt="home" width="400"/> <br/>
 
-Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own [Bitcoin Core](https://github.com/bitcoin/bitcoin) node as a backend. Providing an easy to use interface to interact with your nodes non wallet capabilities. Fully Noded® wallets are powered by PSBT's and descriptors. Fully Noded® acts as an offline signer using your node as a watch-only wallet as well as giving you full unfettered access to every wallet.dat in your nodes `.bitcoin` directory. [C-Lightning](https://github.com/ElementsProject/lightning) and [LND](https://github.com/lightningnetwork/lnd) compatible for instant, unfairly cheap payments.
+Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own [Bitcoin Core](https://github.com/bitcoin/bitcoin) node as a backend. Providing an easy to use interface to interact with your nodes non wallet capabilities. Fully Noded® wallets are powered by PSBT's and descriptors. Fully Noded® acts as an offline signer using your node as a watch-only wallet as well as giving you full unfettered access to every wallet.dat in your nodes `.bitcoin` directory. [C-Lightning](https://github.com/ElementsProject/lightning) and [LND](https://github.com/lightningnetwork/lnd) compatible for instant, unfairly cheap payments. Works with the [Join Market](https://github.com/JoinMarket-Org/joinmarket-clientserver) API for decetralized coinjoins.
+
+## App Store
+
+[Fully Noded App Store](https://apps.apple.com/us/app/fully-noded/id1436425586) 
+
 
 ## Build from source
+
 <br/><img src="./Images/build_from_source.png" alt="" width="400"/><br/>
 * Download Xcode
 * `git clone https://github.com/Fonta1n3/FullyNoded.git`
@@ -15,32 +21,19 @@ Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own 
 * Double click `FullyNoded.xcodeproj`
 * Click the play button in the top left bar of Xcode to run the app
 
-## Reproducible builds
+## Releases
+
 * Go to [releases](https://github.com/Fonta1n3/FullyNoded/releases)
 * Download the `SHA256SUMS` file and open it with a text editor
-* `FullyNoded.app.zip` and `source.zip` are reproducible
-* In a terminal run `shasum -a 256 FullyNoded.app.zip` (or whichever file you would like) the output should match what you see in the `SHA256SUMS` text file for the respective file
-* All files are signed with my pgp key `1C72 2776 3647 A221 6E02 E539 025E 9AD2 D3AC 0FCA` fontainedenton@googlemail.com
-* To run the app you can double click the `FullyNoded.app.zip` file (Xcode not required)
-* to run via source code just unzip `source.zip`, double click the folder, and double click `FullyNoded.xcodeproj` which will launch the source code via Xcode
+* `FullyNoded.xxx.tar` and `source.zip` are signed with my pgp key `1C72 2776 3647 A221 6E02 E539 025E 9AD2 D3AC 0FCA`
+* In a terminal run `shasum -a 256 FullyNoded.xxx.tar` (or whichever file you would like) the output should match what you see in the `SHA256SUMS` text file for the respective file.
 
 ## Getting started
 
-- On your mac
-  - Download Fully Noded® macOS<br/>
-  [<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](https://apps.apple.com/us/app/fully-noded-desktop/id1530816100?mt=12)<br/>
-  - Download Bitcoin Core [https://bitcoincore.org/en/download/](https://bitcoincore.org/en/download/)
-    - Or for best security and ease of use download [GordianServer](https://github.com/BlockchainCommons/GordianServer-macOS/releases/download/v1.0.1/gordian-server-1.0.1.dmg) which will harden your mac for best security practices and install Bitcoin Core, Tor and C-Lightning with one click.
-  - Start Bitcoin Core by double clicking it.
-  - Start Fully Noded by double clicking it.
-  - Fully Noded® will prompt you to add a node. Get your `rpc` credentials from your `bitcoin.conf` file which can be found at `/Users/<username>/Library/Application Support/Bitcoin/bitcoin.conf ` and add them to FN when adding your node. By default FN will add the correct address for your node, this can be customized for remote connections for advanced users.
-  - Once your node is added and the home screen has loaded, tap the "antenna" button on the home screen:<br/>
-  <br/><img src="./Images/antenna.gif" alt="antenna" width="500"/><br/><br/>
-- On your mobile device
-  - Download Fully Noded® iOS<br/>
-  [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586)<br/>
-  - Open it, when prompted to add a node tap the QR scanner button, and scan the QR that the macOS app is showing you:
-    <br/><img src="./Images/scan.gif" alt="scan" width="250"/><br/><br/>
+- Requires you to be running Bitcoin Core.
+- If configuring manually you can run [Tor-Connect](https://apps.apple.com/us/app/tor-connect/id6476699109?mt=12) to easily create a Tor hidden service to connect to your node, export the hidden service address, save it in node credentials in the address field. Optionally click and hold on the Tor-Connect icon in the dock. Choose Options and check or uncheck the Open at Login option to automatically launch Tor-Connect when your machine boots.
+- Fully Noded will automatically create a "secure" rpc password for you, you can always edit it, copy the rpc auth text from and add that to your bitcoin.conf, save it and restart Bitcoin Core.
+- Thats it, you should be connected.
 
 ## Cost
 
@@ -56,10 +49,7 @@ Downloading the Fully Noded® iOS app is **100% free** because it is important t
 However, developing and supporting this project is hard work and costs real money. Please help support the development of this project!
 
 * [GitHub Sponsors](https://github.com/sponsors/fonta1n3)
-* ⚡️ [Tor lightning donation](http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donation) (Tor browser required)
-* 🔗 [Bitcoin](bitcoin:bc1q6xw40gsm86yk78dlfun70nt7meh2nq9j7sc7ym?message=FullyNoded%20Donations) `bc1q6xw40gsm86yk78dlfun70nt7meh2nq9j7sc7ym`
-* The preferred method of donation is via the app itself, simply tap the ♥️ button when creating a transaction and it will automatically load a donation address which is derived from a hard coded xpub within the app:<br/><br/>
-<img src="./Images/donation.jpg" alt="download fully noded on the app store" width="250"/><br/>
+* Bolt12 and Silent Payment address for donations coming soon.
 
 ## Why Fully Noded®?
 
@@ -105,8 +95,7 @@ However, developing and supporting this project is hard work and costs real mone
 
 ## PGP
 
-* Peter Denton (new): 1C72 2776 3647 A221 6E02  E539 025E 9AD2 D3AC 0FCA
-* Peter Denton (old): 3B37 97FA 0AE8 4BE5 B440  6591 8564 01D7 121C 32FC
+* 1C72 2776 3647 A221 6E02  E539 025E 9AD2 D3AC 0FCA
 
 ## Contributing
 

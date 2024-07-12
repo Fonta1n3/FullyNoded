@@ -28,6 +28,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var isLND = false
     var isCLN = false
     
+    
+    @IBOutlet weak var rpcAuthCopyButton: UIButton!
+    @IBOutlet weak var rpcAuthLabel: UILabel!
+    @IBOutlet weak var rpcAuthHeader: UILabel!
     @IBOutlet weak var masterStackView: UIStackView!
     @IBOutlet weak var seeEncryptionWordsButton: UIButton!
     @IBOutlet weak var nostrEncryptionWordsField: UITextField!
@@ -60,7 +64,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBOutlet weak var nostrPrivkeyField: UITextField!
     @IBOutlet weak var nostrToSubscribe: UITextField!
     @IBOutlet weak var networkControlOutlet: UISegmentedControl!
-    @IBOutlet weak var showHostOutlet: UIBarButtonItem!
     @IBOutlet weak var exportNodeOutlet: UIBarButtonItem!
     
     override func viewDidLoad() {
@@ -91,6 +94,12 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         refreshNostrPrivkeyOutlet.setTitle("", for: .normal)
         header.text = "Node Credentials"
         navigationController?.delegate = self
+        rpcPassword.addTarget(self, action: #selector(self.textFieldDidChange(_:)), for: .editingChanged)
+        rpcUserField.addTarget(self, action: #selector(self.textFieldDidChange(_:)), for: .editingChanged)
+        
+        rpcAuthLabel.numberOfLines = 0
+        rpcAuthLabel.sizeToFit()
+        rpcAuthLabel.translatesAutoresizingMaskIntoConstraints = false
         
         if isLightning {
             onionAddressField.placeholder = "localhost:9737"
@@ -122,6 +131,18 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         if scanNow {
             segueToScanNow()
+        }
+    }
+    
+    @objc func textFieldDidChange(_ textField: UITextField) {
+        if rpcUserField.text != "" && rpcPassword.text != "" {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                guard let auth = RPCAuth().generateCreds(username: rpcUserField.text!, password: rpcPassword.text!) else { return }
+                
+                rpcAuthLabel.text = auth.rpcAuth
+            }
         }
     }
     
@@ -214,7 +235,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                self.certField != nil,
                self.certHeader != nil,
                self.addressHeader != nil,
-               self.onionAddressField != nil {
+               self.onionAddressField != nil,
+               self.rpcAuthLabel != nil,
+               self.rpcAuthHeader != nil,
+               self.rpcAuthCopyButton != nil {
+                self.rpcAuthCopyButton.removeFromSuperview()
+                self.rpcAuthHeader.removeFromSuperview()
+                self.rpcAuthLabel.removeFromSuperview()
                 self.addressHeader.removeFromSuperview()
                 self.rpcUserField.removeFromSuperview()
                 self.rpcPassword.removeFromSuperview()
@@ -227,7 +254,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 self.onionAddressField.removeFromSuperview()
                 self.scanQROutlet.tintColor = .clear
                 self.exportNodeOutlet.tintColor = .clear
-                self.showHostOutlet.tintColor = .clear
                 self.networkControlOutlet.alpha = 1
             }
         }
@@ -262,98 +288,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
-//    @IBAction func recoverAction(_ sender: Any) {
-//        confirmiCloudRecovery()
-//    }
-    
-//    private func confirmiCloudRecovery() {
-//        DispatchQueue.main.async { [weak self] in
-//            guard let self = self else { return }
-//
-//            let title = "Recover iCloud backup?"
-//            let message = "You need to input the same encryption password that was used when you created the backup. If the incorrect password is entered your data will not be decrypted."
-//
-//            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-//
-//            let recover = UIAlertAction(title: "Recover", style: .default) { [weak self] alertAction in
-//                guard let self = self else { return }
-//
-//                let text = (alert.textFields![0] as UITextField).text
-//                let confirm = (alert.textFields![0] as UITextField).text
-//
-//                guard let text = text,
-//                      let confirm = confirm,
-//                      text == confirm,
-//                      let hash = self.hash(text) else {
-//                    showAlert(vc: self, title: "", message: "Passwords don't match!")
-//
-//                    return
-//                }
-//
-//                self.spinner.addConnectingView(vc: self, description: "recovering...")
-//
-//                BackupiCloud.recover(passwordHash: hash) { [weak self] (recovered, errorMess) in
-//                    guard let self = self else { return }
-//
-//                    let message = errorMess ?? ""
-//
-//                    if message.contains("No data exists in iCloud") {
-//                        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-//                            BackupiCloud.recover(passwordHash: hash) { [weak self] (recovered, errorMess) in
-//                                guard let self = self else { return }
-//
-//                                self.spinner.removeConnectingView()
-//
-//                                if recovered {
-//                                    DispatchQueue.main.async { [weak self] in
-//                                        guard let self = self else { return }
-//
-//                                        self.navigationController?.popViewController(animated: true)
-//                                        NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
-//                                    }
-//                                } else {
-//                                    showAlert(vc: self, title: "", message: "Recovery failed... \(errorMess ?? "")")
-//                                }
-//                            }
-//                        }
-//                    } else {
-//                        self.spinner.removeConnectingView()
-//
-//                        if recovered {
-//                            DispatchQueue.main.async { [weak self] in
-//                                guard let self = self else { return }
-//
-//                                self.navigationController?.popViewController(animated: true)
-//                                NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
-//                            }
-//                        } else {
-//                            showAlert(vc: self, title: "", message: "Recovery failed... \(errorMess ?? "")")
-//                        }
-//                    }
-//                }
-//            }
-//
-//            alert.addTextField { textField in
-//                textField.placeholder = "encryption password"
-//                textField.isSecureTextEntry = true
-//                textField.keyboardAppearance = .dark
-//            }
-//
-//            alert.addTextField { textField in
-//                textField.placeholder = "confirm password"
-//                textField.isSecureTextEntry = true
-//                textField.keyboardAppearance = .dark
-//            }
-//
-//            alert.addAction(recover)
-//
-//            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
-//            alert.addAction(cancel)
-//
-//            self.present(alert, animated:true, completion: nil)
-//        }
-//    }
-    
     private func hash(_ text: String) -> Data? {
         return Data(hexString: Crypto.sha256hash(text))
     }
@@ -369,33 +303,42 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     
-    @IBAction func showHostAction(_ sender: Any) {
-    #if targetEnvironment(macCatalyst)
-        // Code specific to Mac.
-        guard !isNostr, let _ = selectedNode, onionAddressField != nil, let hostAddress = onionAddressField.text, hostAddress != "" else {
-            showAlert(vc: self, title: "", message: "This feature only works once the node has been saved.")
-            return
-        }
-        let macName = UIDevice.current.name
-        if hostAddress.contains("127.0.0.1") || hostAddress.contains("localhost") || hostAddress.contains(macName) {
-            hostname = TorClient.sharedInstance.hostname()
-            if hostname != nil {
-                hostname = hostname?.replacingOccurrences(of: "\n", with: "")
-                isHost = true
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.performSegue(withIdentifier: "segueToExportNode", sender: vc)
-                }
-            } else {
-                showAlert(vc: self, title: "", message: "There was an error getting your hostname for remote connection... Please make sure you are connected to the internet and that Tor successfully bootstrapped.")
-            }
-        } else {
-            showAlert(vc: self, title: "", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.")
-        }
-    #else
-        // Code to exclude from Mac.
-        showAlert(vc: self, title: "", message: "This is a macOS feature only, when you use Fully Noded - Desktop, it has the ability to display a QR code you can scan with your iPhone or iPad to connect to your node remotely.")
-    #endif
+    @IBAction func copyRpcAuthAction(_ sender: Any) {
+        guard let auth = rpcAuthLabel.text else { return }
+        
+        UIPasteboard.general.string = auth
+        
+        showAlert(vc: self, title: "", message: "Rpc auth copied ✓")
     }
+    
+    
+//    @IBAction func showHostAction(_ sender: Any) {
+//    #if targetEnvironment(macCatalyst)
+//        // Code specific to Mac.
+//        guard !isNostr, let _ = selectedNode, onionAddressField != nil, let hostAddress = onionAddressField.text, hostAddress != "" else {
+//            showAlert(vc: self, title: "", message: "This feature only works once the node has been saved.")
+//            return
+//        }
+//        let macName = UIDevice.current.name
+//        if hostAddress.contains("127.0.0.1") || hostAddress.contains("localhost") || hostAddress.contains(macName) {
+//            hostname = TorClient.sharedInstance.hostname()
+//            if hostname != nil {
+//                hostname = hostname?.replacingOccurrences(of: "\n", with: "")
+//                isHost = true
+//                DispatchQueue.main.async { [unowned vc = self] in
+//                    vc.performSegue(withIdentifier: "segueToExportNode", sender: vc)
+//                }
+//            } else {
+//                showAlert(vc: self, title: "", message: "There was an error getting your hostname for remote connection... Please make sure you are connected to the internet and that Tor successfully bootstrapped.")
+//            }
+//        } else {
+//            showAlert(vc: self, title: "", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.")
+//        }
+//    #else
+//        // Code to exclude from Mac.
+//        showAlert(vc: self, title: "", message: "This is a macOS feature only, when you use Fully Noded - Desktop, it has the ability to display a QR code you can scan with your iPhone or iPad to connect to your node remotely.")
+//    #endif
+//    }
     
     
     @IBAction func scanQuickConnect(_ sender: Any) {
@@ -645,9 +588,19 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             if rpcPassword != nil, rpcPassword.text != "" {
                 guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
-                CoreDataService.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { success in
+                CoreDataService.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { [weak self] success in
+                    guard let self = self else { return }
+                    
                     if !success {
                         displayAlert(viewController: self, isError: true, message: "error updating rpc password")
+                    } else {
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            guard let auth = RPCAuth().generateCreds(username: rpcUserField.text!, password: rpcPassword.text!) else { return }
+                            
+                            rpcAuthLabel.text = auth.rpcAuth
+                        }
                     }
                 }
             }
@@ -806,13 +759,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     nodeLabel.text = node.label
                 }
                 
-                if node.rpcuser != nil {
-                    rpcUserField.text = decryptedValue(node.rpcuser!)
-                }
-                
-                if node.rpcpassword != nil {
+                if let user = node.rpcuser, let password = node.rpcpassword {
+                    rpcUserField.text = decryptedValue(user)
                     rpcPassword.text = decryptedValue(node.rpcpassword!)
                     
+                    if let auth = RPCAuth().generateCreds(username: rpcUserField.text!, password: rpcPassword.text!) {
+                        rpcAuthLabel.text = auth.rpcAuth
+                    }
                 }
                                 
                 if let enc = node.onionAddress {
@@ -829,6 +782,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         usernameHeader != nil,
                         macaroonField != nil,
                         macaroonHeader != nil {
+                        rpcAuthLabel.removeFromSuperview()
+                        rpcAuthHeader.removeFromSuperview()
+                        rpcAuthCopyButton.removeFromSuperview()
                         rpcUserField.removeFromSuperview()
                         rpcPassword.removeFromSuperview()
                         passwordHeader.removeFromSuperview()
@@ -837,7 +793,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         macaroonHeader.removeFromSuperview()
                         exportNodeOutlet.tintColor = .clear
                         scanQROutlet.tintColor = .clear
-                        showHostOutlet.tintColor = .clear
                         networkControlOutlet.alpha = 0
                     }
                 }
@@ -867,6 +822,15 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             if isBitcoinCore {
                 removeNonBitcoinCoreStuff()
+                
+                rpcUserField.text = "FullyNoded"
+                rpcPassword.text = Crypto.privateKey().hex
+                
+                if let auth = RPCAuth().generateCreds(username: rpcUserField.text!, password: rpcPassword.text!) {
+                    rpcAuthLabel.text = auth.rpcAuth
+                }
+                
+                showAlert(vc: self, title: "RPC credentials created ✓", message: "Fully Noded creates an rpc password for you by default, export the rpc auth text to your bitcoin.conf, save it and restart your node to connect.")
             }
             
             if isJoinMarket {
@@ -900,10 +864,12 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     private func removeNonJm() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            self.rpcAuthLabel.removeFromSuperview()
+            self.rpcAuthHeader.removeFromSuperview()
+            self.rpcAuthCopyButton.removeFromSuperview()
             self.rpcUserField.removeFromSuperview()
             self.exportNodeOutlet.tintColor = .clear
             self.scanQROutlet.tintColor = .clear
-            self.showHostOutlet.tintColor = .clear
             self.rpcPassword.removeFromSuperview()
             self.passwordHeader.removeFromSuperview()
             self.usernameHeader.removeFromSuperview()
@@ -915,6 +881,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     private func removeNonLightning() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            
+            rpcAuthLabel.removeFromSuperview()
+            rpcAuthHeader.removeFromSuperview()
+            rpcAuthCopyButton.removeFromSuperview()
             
             if self.isCLN {
                 self.onionAddressField.placeholder = "localhost:9737"
@@ -934,7 +904,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             self.rpcUserField.removeFromSuperview()
             self.exportNodeOutlet.tintColor = .clear
             self.scanQROutlet.tintColor = .clear
-            self.showHostOutlet.tintColor = .clear
         }
     }
     
@@ -994,6 +963,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             nostrEncryptionWordsField.isSecureTextEntry = true
         }
     }
+    
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.view.endEditing(true)
