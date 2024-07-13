@@ -173,7 +173,8 @@ class ImportWallet {
                                         self.importDescriptors(param) { (success, errorMessage) in
                                             if success {
                                                 wallet["watching"] = watchingArray
-                                                rescan(wallet: wallet, completion: completion)
+                                                //rescan(wallet: wallet, completion: completion)
+                                                saveLocally(wallet: wallet, completion: completion)
                                             } else {
                                                 UserDefaults.standard.removeObject(forKey: "walletName")
                                                 completion((false, "Error importing watching descriptors: \(errorMessage ?? "unknown")"))
@@ -183,7 +184,8 @@ class ImportWallet {
                                 }
                             }
                         } else {
-                            rescan(wallet: wallet, completion: completion)
+                            //rescan(wallet: wallet, completion: completion)
+                            saveLocally(wallet: wallet, completion: completion)
                         }
                     }
                 } else {
@@ -430,11 +432,20 @@ class ImportWallet {
     
     class func rescan(wallet: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
         let walletStr = Wallet(dictionary: wallet)
-        OnchainUtils.rescanNow(from: walletStr.blockheight) { (started, message) in
-            if started {
+        OnchainUtils.getBlockchainInfo { (blockchainInfo, message) in
+            guard let blockchainInfo = blockchainInfo else {
                 saveLocally(wallet: wallet, completion: completion)
+                return
+            }
+            
+            if blockchainInfo.pruned {
+                OnchainUtils.rescanNow(from: blockchainInfo.pruneheight) { (started, message) in
+                    saveLocally(wallet: wallet, completion: completion)
+                }
             } else {
-                completion((false, message ?? "error rescanning"))
+                OnchainUtils.rescanNow(from: walletStr.blockheight) { (started, message) in
+                    saveLocally(wallet: wallet, completion: completion)
+                }
             }
         }
     }
