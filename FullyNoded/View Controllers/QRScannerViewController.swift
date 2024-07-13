@@ -296,7 +296,7 @@ class QRScannerViewController: UIViewController {
     
     private func processBBQr(text: String) {
         let numberOfQrsBase36 = "\(text[4..<6])"
-        let qrNumberBase36 = "\(text[6..<8])"
+        //let qrNumberBase36 = "\(text[6..<8])"
         let numberOfQrs = strtoul(numberOfQrsBase36, nil, 36)
         //let qrNumber = strtoul(qrNumberBase36, nil, 36)
         
@@ -514,26 +514,11 @@ extension QRScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
                 return
             }
             
-//            DispatchQueue.main.async { [weak self] in
-//                guard let self = self else { return }
-//                //self.stopScanner()
-//                let impact = UIImpactFeedbackGenerator()
-//                impact.impactOccurred()
-//                //AudioServicesPlaySystemSound(1103)
-//            }
-            
             hasScanned = true
                         
             process(text: stringURL)
-            
-//            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
-//                guard let self = self else { return }
-//                
-//                self.startScanner()
-//            }
         }
     }
-    
 }
 
 @available(macCatalyst 14.0, *)

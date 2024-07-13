@@ -42,6 +42,7 @@ class URHelper {
     }
     
     static func psbtUr(_ data: Data) -> UR? {
+        //guard case let CBOR.bytes(bytes) = ur.cbor else { return nil }
         
         return try? UR(type: "crypto-psbt", cbor: data.cbor)
     }

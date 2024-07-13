@@ -22,12 +22,12 @@ class QRDisplayerViewController: UIViewController {
     var headerIcon: UIImage!
     var spinner = ConnectingView()
     let qrGenerator = QRGenerator()
-    var isPaying = false
     var isBbqr = false
+    var isUR = false
     
     private var encoder:UREncoder!
     private var timer: Timer?
-    private var parts = [String]()
+    private var parts: [String] = []
     private var ur: UR!
     private var partIndex = 0
     
@@ -68,13 +68,37 @@ class QRDisplayerViewController: UIViewController {
                 showBbqrParts(bbQrparts: parts)
             }
             
+        } else if isUR {
+            spinner.addConnectingView(vc: self, description: "loading...")
+            
+            if psbt != "" {
+                guard let data = Data(base64Encoded: psbt) else {
+                    spinner.removeConnectingView()
+                    showAlert(vc: self, title: "", message: "Unable to convert base64 text to data.")
+                    return
+                }
+                
+                guard let psbtUr = URHelper.psbtUr(data) else {
+                    spinner.removeConnectingView()
+                    showAlert(vc: self, title: "", message: "Unable to convert to ur:crypto-psbt QR.")
+                    return
+                }
+                
+                animateUr(ur: psbtUr)
+                                                   
+            } else {
+                if text.lowercased().hasPrefix("ur:") {
+                    guard let ur = URHelper.ur(text) else { return }
+                    
+                    animateUr(ur: ur)
+                }
+            }
         } else if psbt.lowercased().hasPrefix("ur:") || text.lowercased().hasPrefix("ur:") {
             spinner.addConnectingView(vc: self, description: "loading...")
             
             guard let ur = URHelper.ur(text == "" ? psbt : text) else { return }
                 
             animateUr(ur: ur)
-            spinner.removeConnectingView()
             
         } else if txn != "" {
             imageView.image = qR(text: txn)
@@ -82,6 +106,19 @@ class QRDisplayerViewController: UIViewController {
         } else if text != "" {
             imageView.image = qR(text: text)
         }
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        text = ""
+        psbt = ""
+        txn = ""
+        isBbqr = false
+        isUR = false
+        partIndex = 0
+        parts.removeAll()
+        headerText = ""
+        descriptionText = ""
+        timer?.invalidate()
     }
     
     
@@ -151,26 +188,30 @@ class QRDisplayerViewController: UIViewController {
     
     private func animateUr(ur: UR) {
         let encoder = UREncoder(ur, maxFragmentLen: 250)
-        weak var timer: Timer?
-        
-        timer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
-            
-            let part = encoder.nextPart()
-            let index = encoder.seqNum
-            
-            if index <= encoder.seqLen {
-                self.parts.append(part.uppercased())
-            } else {
-                self.spinner.removeConnectingView()
-                timer?.invalidate()
-                timer = Timer.scheduledTimer(timeInterval: 0.4, target: self, selector: #selector(self.animate), userInfo: nil, repeats: true)
+        if encoder.isSinglePart {
+            spinner.removeConnectingView()
+            showQR(ur.qrString)
+        } else {
+            timer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
+                guard let self = self else { return }
+                
+                let part = encoder.nextPart()
+                let index = encoder.seqNum
+                
+                if index <= encoder.seqLen {
+                    self.parts.append(part.uppercased())
+                } else {
+                    self.spinner.removeConnectingView()
+                    self.animate()
+                    timer?.invalidate()
+                    timer = Timer.scheduledTimer(timeInterval: 0.3, target: self, selector: #selector(self.animate), userInfo: nil, repeats: true)
+                }
             }
-        }
+        }        
     }
     
     private func showBbqrParts(bbQrparts: [String]) {
-        let _ = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             
             if partIndex < bbQrparts.count {
