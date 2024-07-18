@@ -909,7 +909,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             }
             
         } else if let coldcardMultisigExport = try? jsonDecoder.decode(ColdcardMultiSigExport.self, from: item.utf8) {
-            print("ColdcardMultiSigExport")
             guard let deriv = coldcardMultisigExport.p2wsh_deriv else { return }
             guard let xfp = coldcardMultisigExport.xfp else { return }
             guard let p2wsh = coldcardMultisigExport.p2wsh else { return}

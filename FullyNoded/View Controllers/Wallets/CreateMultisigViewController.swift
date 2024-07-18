@@ -23,6 +23,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     var multiSigAccountDesc = ""
     var qrToExport = ""
     var isBbqr = false
+    let jsonDecoder = JSONDecoder()
     
     @IBOutlet weak var derivationField: UITextField!
     @IBOutlet weak var fingerprintField: UITextField!
@@ -496,7 +497,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             if let textFile = text {
                 if let dict = try? JSONSerialization.jsonObject(with: textFile.utf8, options: []) as? [String:Any] {
                     let importStruct = WalletImport(dict)
-                     
+                    
                     if let bip48 = importStruct.bip48 {
                         parseDescriptor(Descriptor(bip48))
                     }
@@ -520,6 +521,19 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 }
             } else {
                 showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the QR code.")
+            }
+            
+        } else if let coldcardMultisigExport = try? jsonDecoder.decode(ColdcardMultiSigExport.self, from: item.utf8) {
+            guard let deriv = coldcardMultisigExport.p2wsh_deriv else { return }
+            guard let xfp = coldcardMultisigExport.xfp else { return }
+            guard let p2wsh = coldcardMultisigExport.p2wsh else { return}
+            guard let xpub = XpubConverter.convert(extendedKey: p2wsh) else { return }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.derivationField.text = deriv
+                self.addKeyStore(xfp, xpub)
             }
             
         } else if let data = item.data(using: .utf8) {
