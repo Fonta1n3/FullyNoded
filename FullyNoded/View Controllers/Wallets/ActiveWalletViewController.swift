@@ -83,7 +83,6 @@ class ActiveWalletViewController: UIViewController {
         currencyControl.setTitle(fiatCurrency.lowercased(), forSegmentAt: 2)
         if initialLoad {
             initialLoad = false
-            loadTable()
             getFxRate()
         }
     }
@@ -995,6 +994,7 @@ class ActiveWalletViewController: UIViewController {
                     
                     self.fxRateLabel.text = "no fx rate data"
                 }
+                loadTable()
                 return
             }
             
@@ -1006,6 +1006,7 @@ class ActiveWalletViewController: UIViewController {
                 
                 self.fxRateLabel.text = rate.exchangeRate
                 self.onchainBalanceFiat = (self.onchainBalanceBtc.doubleValue * Double(rate)).fiatString
+                loadTable()
             }
         }
     }
@@ -1412,14 +1413,14 @@ class ActiveWalletViewController: UIViewController {
                 guard let self = self else { return }
                 
                 self.transactionArray = response
+                if let scanning = walletInfo?.scanning {
+                    if !scanning && transactionArray.count == 0 {
+                        promptToRescan()
+                    }
+                }
+                
                 self.updateTransactionArray()
                 self.isRecovering = false
-            }
-            
-            if let scanning = walletInfo?.scanning {
-                if !scanning && transactionArray.count == 0 {
-                    promptToRescan()
-                }
             }
         }
     }
@@ -1469,8 +1470,8 @@ class ActiveWalletViewController: UIViewController {
         }
         
         addNavBarSpinner()
-        loadTable()
         getFxRate()
+        //loadTable()
     }
     
     @objc func refreshData(_ sender: Any) {
@@ -1680,7 +1681,7 @@ class ActiveWalletViewController: UIViewController {
         case "segueToAccountMap":
             guard let vc = segue.destination as? QRDisplayerViewController else { fallthrough }
             
-            if let json = AccountMap.create(wallet: wallet!) {
+            if let json = CreateAccountMap.create(wallet: wallet!) {
                 vc.text = json
             }
             

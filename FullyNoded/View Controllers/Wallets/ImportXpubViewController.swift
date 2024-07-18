@@ -18,7 +18,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
     var addresses: [String] = []
     var spinner = ConnectingView()
     var onDoneBlock:(((Bool)) -> Void)?
-    var descriptor = ""
+    var descriptor: Descriptor?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,6 +28,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
         importOutlet.clipsToBounds = true
         importOutlet.layer.cornerRadius = 8
         labelField.delegate = self
+        labelField.spellCheckingType = .no
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
         tapGesture.numberOfTapsRequired = 1
@@ -37,8 +38,10 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
         descriptorField.numberOfLines = 10
         descriptorField.lineBreakMode = .byTruncatingMiddle
         
-        addDescriptorToLabel(descriptor)
-        loadAddresses()
+        if let desc = descriptor {
+            addDescriptorToLabel(desc)
+            loadAddresses(desc)
+        }
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
@@ -46,7 +49,9 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
     }
     
     @IBAction func importAction(_ sender: Any) {
-        importDescriptor()
+        guard let desc = self.descriptor else { return }
+        
+        importDescriptor(desc.string)
     }
     
     @IBAction func scanQrAction(_ sender: Any) {
@@ -55,13 +60,13 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
         }
     }
     
-    private func loadAddresses() {
-        let p = Derive_Addresses(["descriptor": descriptor, "range": [0,4]])
+    private func loadAddresses(_ desc: Descriptor) {
+        let p = Derive_Addresses(["descriptor": desc.string, "range": [0,4]])
         OnchainUtils.deriveAddresses(param: p) { [weak self] (addresses, message) in
             guard let self = self else { return }
             
             guard let addresses = addresses else { return }
-            
+                        
             for address in addresses {
                 self.addresses.append(address)
             }
@@ -74,12 +79,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
         }
     }
         
-    private func importDescriptor() {
-        guard descriptor != "" else {
-            showAlert(vc: self, title: "", message: "Scan a descriptor first.")
-            return
-        }
-        
+    private func importDescriptor(_ desc: String) {
         spinner.addConnectingView(vc: self, description: "importing descriptor wallet, this can take a minute...")
         
         let defaultLabel = "Descriptor import"
@@ -90,7 +90,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
             label = defaultLabel
         }
         
-        let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [] as [String], "label": label] as [String : Any]
+        let accountMap = ["descriptor": desc, "blockheight": 0, "watching": [] as [String], "label": label] as [String : Any]
         
         ImportWallet.accountMap(accountMap) { [weak self] (success, errorDescription) in
             guard let self = self else { return }
@@ -104,11 +104,11 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
         }
     }
     
-    private func addDescriptorToLabel(_ descriptor: String) {
+    private func addDescriptorToLabel(_ descriptor: Descriptor) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            descriptorField.text = descriptor
+            descriptorField.text = descriptor.string
             descriptorField.translatesAutoresizingMaskIntoConstraints = true
             descriptorField.sizeToFit()
         }
@@ -178,7 +178,8 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
                     
                     guard let desc = descriptor else { return }
                     
-                    addDescriptorToLabel(desc)
+                    self.descriptor = Descriptor(desc)
+                    addDescriptorToLabel(self.descriptor!)
                 }
             }
         }

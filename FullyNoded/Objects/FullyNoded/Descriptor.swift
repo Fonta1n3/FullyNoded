@@ -41,8 +41,11 @@ public struct Descriptor: CustomStringConvertible {
     let pubkey:String
     let isTaproot:Bool
     let index: Int?
+    let string: String
     
     init(_ descriptor: String) {
+        string = descriptor
+        
         var dictionary = [String:Any]()
         
         if descriptor.contains("&") {
@@ -59,6 +62,7 @@ public struct Descriptor: CustomStringConvertible {
         if descriptor.contains("multi") {
             dictionary["isMulti"] = true
             dictionary["isBIP67"] = descriptor.contains("sortedmulti")
+            
             
             let arr = descriptor.split(separator: "(")
             for (i, item) in arr.enumerated() {

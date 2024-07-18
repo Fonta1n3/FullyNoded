@@ -62,6 +62,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         navigationController?.delegate = self
         detailTable.delegate = self
         detailTable.dataSource = self
+        labelField.spellCheckingType = .no
         addTapGesture()
         
         if (UIDevice.current.userInterfaceIdiom == .pad) {
@@ -186,7 +187,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                             self.coinType = "1"
                         }
                         
-                        guard let json = AccountMap.create(wallet: self.wallet) else {
+                        guard let json = CreateAccountMap.create(wallet: self.wallet) else {
                             showAlert(vc: self, title: "", message: "Unable to derive account map.")
                             return
                         }
@@ -219,7 +220,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                             let xfpArray = xfpArray(xfpString: receiveDescriptor.fingerprint)
                             
                             for (i, key) in receiveDescriptor.multiSigKeys.enumerated() {
-                                keysText += "\(xfpArray[i]) : \(key)\n\n"
+                                keysText += "\(xfpArray[i].condenseWhitespace()):\(key)\n\n"
                             }
                             
                             let multisigDervArr = receiveDescriptor.derivationArray
@@ -231,7 +232,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                                 deriv = "Multiple derivations!"
                             }
                         } else {
-                            keysText = receiveDescriptor.fingerprint + " : " + receiveDescriptor.accountXpub
+                            keysText = receiveDescriptor.fingerprint + ":" + receiveDescriptor.accountXpub
                             deriv = receiveDescriptor.derivation
                         }
                         

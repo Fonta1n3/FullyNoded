@@ -19,10 +19,11 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     var ccXfp = ""
     var xpub = ""
     var deriv = ""
-    var descriptor = ""
+    var descriptor: Descriptor?
     var jmMessage = ""
     var isSegwit = false
     var isTaproot = false
+    let jsonDecoder = JSONDecoder()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -735,6 +736,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         accountMap["descriptor"] = primDesc
         
         let desc = Descriptor("\(primDesc)")
+        
         if desc.isCosigner {
             self.ccXfp = desc.fingerprint
             self.xpub = desc.accountXpub
@@ -746,7 +748,13 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 self.performSegue(withIdentifier: "segueToCreateMultiSig", sender: self)
             }
         } else {
-            self.importAccountMap(accountMap)
+            //self.importAccountMap(accountMap)
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.descriptor = desc
+                self.performSegue(withIdentifier: "segueToImportDescriptor", sender: self)
+            }
         }
     }
     
@@ -782,7 +790,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
-                self.descriptor = item
+                self.descriptor = Descriptor(item)
                 self.performSegue(withIdentifier: "segueToImportDescriptor", sender: self)
             }
             
@@ -873,9 +881,39 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 self.prompToChoosePrimaryDesc(descriptors: descriptors)
             }
             
-        } else if let accountMap = try? JSONSerialization.jsonObject(with: item.utf8, options: []) as? [String:Any] {
-            self.importAccountMap(accountMap)
+        } else if let coldCardSparrowExport = try? jsonDecoder.decode(ColdCardSparrowExport.self, from: item.utf8) {
+            // Need to edit the desc slightly to work with Descriptor.swift
+            // Sparrow is using the following format for cosigner
+            //"wsh(sortedmulti(M,[0f056943/48h/1h/0h/2h]tpubDF2rnouQaaYrXF4noGTv6rQYmx87cQ4GrUdhpvXkhtChwQPbdGTi8GA88NUaSrwZBwNsTkC9bFkkC8vDyGBVVAQTZ2AS6gs68RQXtXcCvkP/0/*,...))"
             
+            if let _ = coldCardSparrowExport.chain {
+                var descriptors:[String] = []
+                 
+                if let bip44 = coldCardSparrowExport.bip44, let desc = bip44.standardDesc {
+                    descriptors.append(desc)
+                }
+                
+                if let bip49 = coldCardSparrowExport.bip49, let desc = bip49.standardDesc {
+                    descriptors.append(desc)
+                }
+                
+                if let bip84 = coldCardSparrowExport.bip84, let desc = bip84.standardDesc {
+                    descriptors.append(desc)
+                }
+                
+                if let bip482 = coldCardSparrowExport.bip48_2, var desc = bip482.standardDesc {
+                    descriptors.append(desc)
+                }
+                
+                self.prompToChoosePrimaryDesc(descriptors: descriptors)
+            }
+            
+            
+        } else if let dict = try? JSONSerialization.jsonObject(with: item.utf8, options: []) as? [String:Any] {
+            if let _ = dict["desc"] as? String {
+                self.importAccountMap(dict)
+            }
+
         } else if let accountMap = TextFileImport.parse(item).accountMap {
             self.importAccountMap(accountMap)
             

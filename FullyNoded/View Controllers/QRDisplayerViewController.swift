@@ -46,6 +46,12 @@ class QRDisplayerViewController: UIViewController {
         tapQRGesture = UITapGestureRecognizer(target: self, action: #selector(shareQRCode(_:)))
         imageView.addGestureRecognizer(tapQRGesture)
         
+        #if DEBUG
+        print("psbt: \(psbt)")
+        print("text: \(text)")
+        print("txn: \(txn)")
+        #endif
+        
         
         if isBbqr {
             spinner.addConnectingView(vc: self, description: "loading...")
@@ -123,7 +129,24 @@ class QRDisplayerViewController: UIViewController {
     
     
     func split(string: String) throws -> [String] {
-        let large = Data(string.utf8)
+        var data: Data? = nil
+        var fileType: FileType = .unicodeText
+        
+        if psbt != "" {
+            data = Data(base64Encoded: string)!
+            fileType = .psbt
+        }
+        
+        if txn != "" {
+            guard let hexData = hex_decode(string) else { return []}
+            data = Data(hexData)
+            fileType = .transaction
+        }
+        
+        if text != "" {
+            data = Data(string.utf8)
+        }
+        
         var minSplitNumber: UInt16 = 1
         minSplitNumber = UInt16((Double(string.count) / 250.0))
         
@@ -134,17 +157,9 @@ class QRDisplayerViewController: UIViewController {
             maxVersion: Version.v40
         )
         
-        var fileType: FileType = .unicodeText
-        
-        if psbt != "" {
-            fileType = .psbt
-        }
-        
-        if txn != "" {
-            fileType = .transaction
-        }
+        guard let data = data else { return [] }
 
-        let split = try Split.tryFromData(bytes: large, fileType: fileType, options: options)
+        let split = try Split.tryFromData(bytes: data, fileType: fileType, options: options)
         spinner.removeConnectingView()
 
         return split.parts()
@@ -211,6 +226,10 @@ class QRDisplayerViewController: UIViewController {
     }
     
     private func showBbqrParts(bbQrparts: [String]) {
+        #if DEBUG
+        print("showBbqrParts: \(bbQrparts)")
+        #endif
+        
         timer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             
