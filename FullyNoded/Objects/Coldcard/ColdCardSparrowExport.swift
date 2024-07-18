@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct ColdCardSparrowExport : Codable {
+struct ColdcardSparrowExport : Codable {
     let chain : String?
     let xfp : String?
     let account : Int?

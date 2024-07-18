@@ -881,32 +881,42 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 self.prompToChoosePrimaryDesc(descriptors: descriptors)
             }
             
-        } else if let coldCardSparrowExport = try? jsonDecoder.decode(ColdCardSparrowExport.self, from: item.utf8) {
+        } else if let coldcardSparrowExport = try? jsonDecoder.decode(ColdcardSparrowExport.self, from: item.utf8) {
             // Need to edit the desc slightly to work with Descriptor.swift
             // Sparrow is using the following format for cosigner
             //"wsh(sortedmulti(M,[0f056943/48h/1h/0h/2h]tpubDF2rnouQaaYrXF4noGTv6rQYmx87cQ4GrUdhpvXkhtChwQPbdGTi8GA88NUaSrwZBwNsTkC9bFkkC8vDyGBVVAQTZ2AS6gs68RQXtXcCvkP/0/*,...))"
             
-            if let _ = coldCardSparrowExport.chain {
+            if let _ = coldcardSparrowExport.chain {
                 var descriptors:[String] = []
-                 
-                if let bip44 = coldCardSparrowExport.bip44, let desc = bip44.standardDesc {
+                
+                if let bip44 = coldcardSparrowExport.bip44, let desc = bip44.standardDesc {
                     descriptors.append(desc)
                 }
                 
-                if let bip49 = coldCardSparrowExport.bip49, let desc = bip49.standardDesc {
+                if let bip49 = coldcardSparrowExport.bip49, let desc = bip49.standardDesc {
                     descriptors.append(desc)
                 }
                 
-                if let bip84 = coldCardSparrowExport.bip84, let desc = bip84.standardDesc {
+                if let bip84 = coldcardSparrowExport.bip84, let desc = bip84.standardDesc {
                     descriptors.append(desc)
                 }
                 
-                if let bip482 = coldCardSparrowExport.bip48_2, var desc = bip482.standardDesc {
+                if let bip482 = coldcardSparrowExport.bip48_2, var desc = bip482.standardDesc {
                     descriptors.append(desc)
                 }
                 
                 self.prompToChoosePrimaryDesc(descriptors: descriptors)
             }
+            
+        } else if let coldcardMultisigExport = try? jsonDecoder.decode(ColdcardMultiSigExport.self, from: item.utf8) {
+            print("ColdcardMultiSigExport")
+            guard let deriv = coldcardMultisigExport.p2wsh_deriv else { return }
+            guard let xfp = coldcardMultisigExport.xfp else { return }
+            guard let p2wsh = coldcardMultisigExport.p2wsh else { return}
+            guard let xpub = XpubConverter.convert(extendedKey: p2wsh) else { return }
+            let origin = deriv.replacingOccurrences(of: "m", with: xfp)
+            let descriptor = "wsh([\(origin)]\(xpub)/0/*)"
+            promptToImportColdcardMsig(Descriptor(descriptor))
             
             
         } else if let dict = try? JSONSerialization.jsonObject(with: item.utf8, options: []) as? [String:Any] {

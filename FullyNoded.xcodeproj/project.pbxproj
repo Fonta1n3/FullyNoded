@@ -63,6 +63,7 @@
 		0A77138626AE5E85005CC23D /* WalletInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A77138526AE5E85005CC23D /* WalletInfo.swift */; };
 		0A83EB3C2C4837C600502806 /* AccountMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A83EB3B2C4837C600502806 /* AccountMap.swift */; };
 		0A83EB3E2C4838BB00502806 /* ColdCardSparrowExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A83EB3D2C4838BB00502806 /* ColdCardSparrowExport.swift */; };
+		0A83EB402C4943C700502806 /* ColdcardMultiSigExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A83EB3F2C4943C700502806 /* ColdcardMultiSigExport.swift */; };
 		0A8850FE2A41FB040078A603 /* secp256k1 in Frameworks */ = {isa = PBXBuildFile; productRef = 0A8850FD2A41FB040078A603 /* secp256k1 */; };
 		0A8850FF2A4201C10078A603 /* LibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AD438842A41F7F90004F923 /* LibWally.xcframework */; };
 		0A8851002A4201C10078A603 /* LibWally.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0AD438842A41F7F90004F923 /* LibWally.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -267,6 +268,7 @@
 		0A77138526AE5E85005CC23D /* WalletInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletInfo.swift; sourceTree = "<group>"; };
 		0A83EB3B2C4837C600502806 /* AccountMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountMap.swift; sourceTree = "<group>"; };
 		0A83EB3D2C4838BB00502806 /* ColdCardSparrowExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColdCardSparrowExport.swift; sourceTree = "<group>"; };
+		0A83EB3F2C4943C700502806 /* ColdcardMultiSigExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColdcardMultiSigExport.swift; sourceTree = "<group>"; };
 		0A9834C526BC2E6700BAB74E /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		0A9FDC9026A84CE30050C4AE /* WalletTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletTypes.swift; sourceTree = "<group>"; };
 		0AD438842A41F7F90004F923 /* LibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LibWally.xcframework; sourceTree = "<group>"; };
@@ -478,7 +480,6 @@
 				D0C20EDF24A6EF3800C62AA4 /* Balances.swift */,
 				0A2B4D6F2716ABCB00B607EE /* WalletImport.swift */,
 				0A83EB3B2C4837C600502806 /* AccountMap.swift */,
-				0A83EB3D2C4838BB00502806 /* ColdCardSparrowExport.swift */,
 			);
 			path = FullyNoded;
 			sourceTree = "<group>";
@@ -551,6 +552,15 @@
 				0A64634D28FDC2990079C5DB /* NostrKind.swift */,
 			);
 			path = Nostr;
+			sourceTree = "<group>";
+		};
+		0A83EB412C4943E100502806 /* Coldcard */ = {
+			isa = PBXGroup;
+			children = (
+				0A83EB3D2C4838BB00502806 /* ColdCardSparrowExport.swift */,
+				0A83EB3F2C4943C700502806 /* ColdcardMultiSigExport.swift */,
+			);
+			path = Coldcard;
 			sourceTree = "<group>";
 		};
 		0A9FDC8F26A83EC10050C4AE /* Lightning */ = {
@@ -832,6 +842,7 @@
 		D039D3C623322EC800D1ED18 /* Objects */ = {
 			isa = PBXGroup;
 			children = (
+				0A83EB412C4943E100502806 /* Coldcard */,
 				0A643A1C274A4B8F007F4F44 /* FullyNoded */,
 				0A643A1D274A4BDD007F4F44 /* BitcoinCore */,
 				0A643A1F274A4CB1007F4F44 /* Lightning */,
@@ -1272,6 +1283,7 @@
 				D0C20ED224A6DB9D00C62AA4 /* BlockchainInfo.swift in Sources */,
 				D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */,
 				0A1F110826A2783000BE2707 /* Network.swift in Sources */,
+				0A83EB402C4943C700502806 /* ColdcardMultiSigExport.swift in Sources */,
 				D02152DC23666CB400AD9007 /* QuickConnect.swift in Sources */,
 				0A212DDE26D5DA9100BF6FD4 /* JoinMarketPit.swift in Sources */,
 				0A77138626AE5E85005CC23D /* WalletInfo.swift in Sources */,

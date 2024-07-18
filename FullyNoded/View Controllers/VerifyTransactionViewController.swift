@@ -168,7 +168,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
         }
     
-        let param: Wallet_Process_PSBT = .init(["psbt": psbt, "sign": false])
+        let param: Wallet_Process_PSBT = .init(["psbt": psbt, "sign": false, "sighashtype": "ALL"])
         Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt(param: param)) { [weak self] (object, errorDescription) in
             guard let self = self else { return }
             
