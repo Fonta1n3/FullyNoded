@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 import LibWally
 
-class AccountMap {
+class CreateAccountMap {
     
     class func create(wallet: Wallet) -> String? {
         guard var primDesc = processedDesc(wallet.receiveDescriptor) else { return nil }

@@ -146,50 +146,28 @@ class QRScannerViewController: UIViewController {
     }
     
     private func processUrQr(text: String) {
-        if text.uppercased().hasPrefix("UR:PSBT")  {
-            guard decoder.result == nil else {
-                guard let result = try? decoder.result?.get(), let psbt = URHelper.psbtUrToBase64Text(result) else { return }
-                hasScanned = true
-                stopScanning(psbt)
-                return
-            }
-
-            decoder.receivePart(text.lowercased())
+        guard decoder.result == nil else {
+            guard let result = try? decoder.result?.get() else { return }
             
-            let expectedParts = decoder.expectedFragmentCount ?? 0//.expectedPartCount ?? 0
-            
-            guard expectedParts != 0 else {
-                guard let result = try? decoder.result?.get(), let psbt = URHelper.psbtUrToBase64Text(result) else { return }
-                hasScanned = true
-                stopScanning(psbt)
-                return
-            }
-            
-            let percentageCompletion = "\(Int(decoder.estimatedPercentComplete * 100))% complete"
-            updateProgress(percentageCompletion, self.decoder.estimatedPercentComplete)
-        } else {
-            guard decoder.result == nil else {
-                guard let result = try? decoder.result?.get() else { return }
-                hasScanned = true
-                stopScanning(result.qrString)
-                return
-            }
-
-            decoder.receivePart(text.lowercased())
-            
-            let expectedParts = decoder.expectedFragmentCount ?? 0//.expectedPartCount ?? 0
-            
-            guard expectedParts != 0 else {
-                guard let result = try? decoder.result?.get() else { return }
-                hasScanned = true
-                stopScanning(result.qrString)
-                return
-            }
-            
-            let percentageCompletion = "\(Int(decoder.estimatedPercentComplete * 100))% complete"
-            updateProgress(percentageCompletion, self.decoder.estimatedPercentComplete)
+            hasScanned = true
+            stopScanning(result.string)
+            return
         }
-        // Stop if we're already done with the decode.
+
+        decoder.receivePart(text.lowercased())
+        
+        let expectedParts = decoder.expectedFragmentCount ?? 0
+        
+        guard expectedParts != 0 else {
+            guard let result = try? decoder.result?.get() else { return }
+            hasScanned = true
+            stopScanning(result.string)
+            return
+        }
+        
+        let percentageCompletion = "\(Int(decoder.estimatedPercentComplete * 100))% complete"
+        updateProgress(percentageCompletion, self.decoder.estimatedPercentComplete)
+        hasScanned = false
     }
     
     private func updateProgress(_ progressText: String, _ progressDoub: Double) {
@@ -317,7 +295,23 @@ class QRScannerViewController: UIViewController {
     }
     
     private func processBBQr(text: String) {
-        bbqrParts.append(text)
+        let numberOfQrsBase36 = "\(text[4..<6])"
+        //let qrNumberBase36 = "\(text[6..<8])"
+        let numberOfQrs = strtoul(numberOfQrsBase36, nil, 36)
+        //let qrNumber = strtoul(qrNumberBase36, nil, 36)
+        
+        if !bbqrParts.contains(text) {
+            bbqrParts.append(text)
+            
+            DispatchQueue.main.async {
+                let impact = UIImpactFeedbackGenerator(style: .light)
+                impact.impactOccurred()
+            }
+            
+            let number = Double(bbqrParts.count) / Double(numberOfQrs)
+            let percentageComplete = "\(Int(number * 100))% complete"
+            updateProgress(percentageComplete, number)
+        }
         
         guard let result = try? continousJoiner(parts: bbqrParts) else { return }
         
@@ -333,12 +327,12 @@ class QRScannerViewController: UIViewController {
         print("text: \(text)")
         #endif
         
-        if fromSignAndVerify {
+        if text.hasPrefix("B$") {
+            processBBQr(text: text)
+            
+        } else if fromSignAndVerify {
             if lowercased.hasPrefix("ur:crypto-psbt") || lowercased.hasPrefix("ur:bytes") {
                 processUrQr(text: text)
-                
-            } else if text.hasPrefix("B$") {
-                processBBQr(text: text)
                 
             } else if Keys.validTx(text) {
                 // its a raw transaction
@@ -359,10 +353,7 @@ class QRScannerViewController: UIViewController {
             }
             
         } else if isImporting {
-            if text.hasPrefix("B$") {
-                processBBQr(text: text)
-                
-            } else if lowercased.hasPrefix("ur:") {
+            if lowercased.hasPrefix("ur:") {
                 processUrQr(text: lowercased)
             } else {
                 DispatchQueue.main.async { [unowned vc = self] in
@@ -373,21 +364,6 @@ class QRScannerViewController: UIViewController {
                 }
             }
                         
-        } else if isQuickConnect {
-            spinner.removeConnectingView()
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.dismiss(animated: true) {
-                    vc.stopScanner()
-                    vc.onDoneBlock!(text)
-                }
-            }
-        } else if isScanningAddress {
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.dismiss(animated: true) {
-                    vc.stopScanner()
-                    vc.onDoneBlock!(text)
-                }
-            }
         } else {
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.dismiss(animated: true) {
@@ -538,26 +514,11 @@ extension QRScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
                 return
             }
             
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.stopScanner()
-                let impact = UIImpactFeedbackGenerator()
-                impact.impactOccurred()
-                AudioServicesPlaySystemSound(1103)
-            }
-            
             hasScanned = true
                         
             process(text: stringURL)
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
-                guard let self = self else { return }
-                
-                self.startScanner()
-            }
         }
     }
-    
 }
 
 @available(macCatalyst 14.0, *)
@@ -613,6 +574,33 @@ extension DispatchQueue {
                     completion()
             }
         }
+    }
+}
+
+extension String {
+
+    var length: Int {
+        return count
+    }
+
+    subscript (i: Int) -> String {
+        return self[i ..< i + 1]
+    }
+
+    func substring(fromIndex: Int) -> String {
+        return self[min(fromIndex, length) ..< length]
+    }
+
+    func substring(toIndex: Int) -> String {
+        return self[0 ..< max(0, toIndex)]
+    }
+
+    subscript (r: Range<Int>) -> String {
+        let range = Range(uncheckedBounds: (lower: max(0, min(length, r.lowerBound)),
+                                            upper: min(length, max(0, r.upperBound))))
+        let start = index(startIndex, offsetBy: range.lowerBound)
+        let end = index(start, offsetBy: range.upperBound - range.lowerBound)
+        return String(self[start ..< end])
     }
 }
 

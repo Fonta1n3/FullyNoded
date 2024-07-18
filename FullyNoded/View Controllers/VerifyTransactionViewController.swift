@@ -53,6 +53,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var blind = false
     var processedPsbt:String?
     var isBBQr = false
+    var isUR = false
+    var isPlainText = false
     
     @IBOutlet weak private var verifyTable: UITableView!
     @IBOutlet weak private var exportButtonOutlet: UIButton!
@@ -99,6 +101,13 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         loadNow()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        isBBQr = false
+        isUR = false
+        isPlainText = false
+        qrCodeStringToExport = ""
+    }
+    
     private func reset() {
         self.unsignedPsbt = ""
         self.signedRawTx = ""
@@ -143,7 +152,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             chain = .testnet
         }
         
-        let importedPsbt = try! PSBT(psbt: psbt, network: chain)
+        guard let importedPsbt = try? PSBT(psbt: psbt, network: chain) else {
+            showAlert(vc: self, title: "", message: "Invalid psbt.")
+            return
+        }
+        
         let inputs = importedPsbt.inputs
         var signed = false
         for input in inputs {
@@ -155,7 +168,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
         }
     
-        let param: Wallet_Process_PSBT = .init(["psbt": psbt, "sign": false])
+        let param: Wallet_Process_PSBT = .init(["psbt": psbt, "sign": false, "sighashtype": "ALL"])
         Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt(param: param)) { [weak self] (object, errorDescription) in
             guard let self = self else { return }
             
@@ -166,6 +179,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
             
             self.processedPsbt = processedPsbt
+            enableExportButton()
             
             if signed {
                 self.finalizePsbt(processedPsbt)
@@ -1530,7 +1544,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     
                     let param_get_tx:Get_Tx = .init(["txid":txid, "verbose": true])
                     Reducer.sharedInstance.makeCommand(command: .gettransaction(param_get_tx)) { (response, errorMessage) in
-                        print("are we here")
                         guard let dict = response as? NSDictionary, let hexToParse = dict["hex"] as? String else {
 //                            guard let useEsplora = UserDefaults.standard.object(forKey: "useEsplora") as? Bool, useEsplora else {
 //                                if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraAlert") == nil {
@@ -2481,11 +2494,24 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             alert.addAction(UIAlertAction(title: "UR QR", style: .default, handler: { action in
                 self.qrCodeStringToExport = itemToExport
+                self.isBBQr = false
+                self.isUR = true
+                self.isPlainText = false
                 self.exportAsQR()
             }))
             
             alert.addAction(UIAlertAction(title: "BBQr QR", style: .default, handler: { action in
                 self.isBBQr = true
+                self.isUR = true
+                self.isPlainText = false
+                self.qrCodeStringToExport = itemToExport
+                self.exportAsQR()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Plain Text QR", style: .default, handler: { action in
+                self.isBBQr = false
+                self.isUR = false
+                self.isPlainText = true
                 self.qrCodeStringToExport = itemToExport
                 self.exportAsQR()
             }))
@@ -2689,6 +2715,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         if segue.identifier == "segueToExportPsbtAsQr" {            
             if let vc = segue.destination as? QRDisplayerViewController {
                 vc.isBbqr = self.isBBQr
+                vc.isUR = self.isUR
                 
                 if self.qrCodeStringToExport != "" {
                     vc.psbt = self.qrCodeStringToExport
@@ -2699,9 +2726,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         vc.descriptionText = "Pass this psbt to your signer or to others to create a collaborative batch transaction."
                     } else {
                         if isBBQr {
-                            vc.headerText = "BBQr PSBT"
-                        } else {
-                            vc.headerText = "PSBT"
+                            vc.headerText = "PSBT BBQr"
+                        } else if isUR {
+                            vc.headerText = "PSBT UR QR"
+                        } else if isPlainText {
+                            vc.headerText = "PSBT Plain Text"
                         }
                         vc.descriptionText = "This psbt still needs more signatures to be complete, you can share it with another signer."
                     }
@@ -2739,7 +2768,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 vc.fromSignAndVerify = true
                 
                 vc.onDoneBlock = { [weak self] tx in
-                    guard let self = self, let tx = tx else { return }
+                    guard let self = self, let tx = tx else {
+                        return }
                     
                     self.reset()
                     
@@ -2748,9 +2778,34 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     } else if Keys.validTx(tx) {
                         self.signedRawTx = tx
                         self.load()
-                    } else if tx.hasPrefix("UR:BYTES") {
-                        self.blind = true
-                        self.parseBlindPsbt(tx)
+                    } else if tx.uppercased().hasPrefix("UR:BYTES") {
+                        guard let ur = URHelper.ur(tx) else {
+                            showAlert(vc: self, title: "", message: "Unable to convert ur string to ur.")
+                            return
+                        }
+                        
+                        guard let psbt = URHelper.bytesToData(ur) else {
+                            self.blind = true
+                            self.parseBlindPsbt(tx)
+                            
+                            return
+                        }
+                        
+                        
+                        self.processPsbt(psbt.base64EncodedString())
+                        
+                    } else if tx.uppercased().hasPrefix("UR:CRYPTO-PSBT") {
+                        guard let ur = URHelper.ur(tx) else {
+                            showAlert(vc: self, title: "", message: "Unable to convert ur string to ur.")
+                            return
+                        }
+                        
+                        guard let psbt = URHelper.psbtUrToBase64Text(ur) else {
+                            showAlert(vc: self, title: "", message: "Unable to convert ur to psbt.")
+                            return
+                        }
+                        
+                       self.processPsbt(psbt)
                     }
                 }
             }

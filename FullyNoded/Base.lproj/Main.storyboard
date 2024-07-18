@@ -1906,13 +1906,6 @@ xxxxx</string>
                         <rect key="frame" x="0.0" y="0.0" width="375" height="554"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
-                                <rect key="frame" x="16" y="465" width="343" height="69"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
-                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                            </textView>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="kT3-vW-HgJ">
                                 <rect key="frame" x="16" y="71" width="343" height="343"/>
                                 <constraints>
@@ -1934,23 +1927,20 @@ xxxxx</string>
                                 <color key="textColor" systemColor="systemTealColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6bf-8y-uca">
-                                <rect key="frame" x="144.5" y="422" width="86.5" height="35"/>
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Animate"/>
-                                <connections>
-                                    <action selector="animateAction:" destination="GlR-4A-eAx" eventType="touchUpInside" id="nYA-Y8-COB"/>
-                                </connections>
-                            </button>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
+                                <rect key="frame" x="16" y="422" width="343" height="112"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="V2W-B3-jFj"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="6bf-8y-uca" firstAttribute="top" secondItem="kT3-vW-HgJ" secondAttribute="bottom" constant="8" symbolic="YES" id="1dx-RW-1N1"/>
+                            <constraint firstItem="Kj5-uB-hmc" firstAttribute="top" secondItem="kT3-vW-HgJ" secondAttribute="bottom" constant="8" symbolic="YES" id="2Fg-F5-1kz"/>
                             <constraint firstItem="V2W-B3-jFj" firstAttribute="trailing" secondItem="Kj5-uB-hmc" secondAttribute="trailing" constant="16" id="BKp-nX-JEq"/>
                             <constraint firstItem="cLD-vU-YX6" firstAttribute="leading" secondItem="dfM-Fg-VDq" secondAttribute="trailing" constant="8" id="QQa-zY-1by"/>
-                            <constraint firstItem="6bf-8y-uca" firstAttribute="centerX" secondItem="1Ax-bN-O8E" secondAttribute="centerX" id="TLX-nP-D9T"/>
                             <constraint firstItem="V2W-B3-jFj" firstAttribute="trailing" secondItem="kT3-vW-HgJ" secondAttribute="trailing" constant="16" id="UuP-QH-CTq"/>
                             <constraint firstItem="dfM-Fg-VDq" firstAttribute="leading" secondItem="V2W-B3-jFj" secondAttribute="leading" constant="16" id="Xii-iY-6d4"/>
                             <constraint firstItem="cLD-vU-YX6" firstAttribute="centerY" secondItem="dfM-Fg-VDq" secondAttribute="centerY" id="d6u-qr-IxG"/>
@@ -1958,13 +1948,11 @@ xxxxx</string>
                             <constraint firstItem="dfM-Fg-VDq" firstAttribute="top" secondItem="V2W-B3-jFj" secondAttribute="top" constant="15" id="qwr-5e-g8F"/>
                             <constraint firstItem="kT3-vW-HgJ" firstAttribute="top" secondItem="V2W-B3-jFj" secondAttribute="top" constant="71" id="rbT-RD-kQQ"/>
                             <constraint firstItem="Kj5-uB-hmc" firstAttribute="leading" secondItem="V2W-B3-jFj" secondAttribute="leading" constant="16" id="wdF-UY-AT3"/>
-                            <constraint firstItem="Kj5-uB-hmc" firstAttribute="top" secondItem="6bf-8y-uca" secondAttribute="bottom" constant="8" symbolic="YES" id="yWL-Ic-2pW"/>
                             <constraint firstItem="V2W-B3-jFj" firstAttribute="bottom" secondItem="Kj5-uB-hmc" secondAttribute="bottom" constant="20" id="yzk-tn-uY1"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="VsN-eD-EWM"/>
                     <connections>
-                        <outlet property="animateOutlet" destination="6bf-8y-uca" id="2XD-TS-5oY"/>
                         <outlet property="headerImage" destination="dfM-Fg-VDq" id="jgB-pJ-eEV"/>
                         <outlet property="headerLabel" destination="cLD-vU-YX6" id="rAY-Zc-KcM"/>
                         <outlet property="imageView" destination="kT3-vW-HgJ" id="L4j-xg-uHU"/>
@@ -4453,7 +4441,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
             </objects>
             <point key="canvasLocation" x="2718" y="376"/>
         </scene>
-        <!--v1.1.2-->
+        <!--v1.2.0-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -4694,7 +4682,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v1.1.2" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v1.2.0" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -5273,7 +5261,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                 </connections>
                             </segmentedControl>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="9" translatesAutoresizingMaskIntoConstraints="NO" id="qBh-RP-hWz">
-                                <rect key="frame" x="16" y="138.5" width="343" height="884.5"/>
+                                <rect key="frame" x="16" y="138.5" width="343" height="946"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tcf-UB-YOb">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="20.5"/>
@@ -5323,32 +5311,63 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
+                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="icR-ir-DLj">
+                                        <rect key="frame" x="0.0" y="290" width="343" height="23"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC auth" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="o4E-E3-l5r">
+                                                <rect key="frame" x="0.0" y="0.0" width="71" height="23"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="trailing" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nBU-8h-I0k">
+                                                <rect key="frame" x="71" y="0.0" width="272" height="23"/>
+                                                <color key="tintColor" systemColor="systemTealColor"/>
+                                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                <state key="normal" image="doc.on.doc" catalog="system"/>
+                                                <connections>
+                                                    <action selector="copyRpcAuthAction:" destination="B99-yZ-naR" eventType="touchUpInside" id="B1A-t4-iCj"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lEU-fH-GY5">
+                                        <rect key="frame" x="0.0" y="322" width="343" height="20.5"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="  " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="j18-1b-WXU">
+                                                <rect key="frame" x="0.0" y="0.0" width="343" height="20.5"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Macaroon" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vSy-Vj-wcK">
-                                        <rect key="frame" x="0.0" y="290" width="343" height="20.5"/>
+                                        <rect key="frame" x="0.0" y="351.5" width="343" height="20.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="base64 text" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="cPw-T1-Xd9">
-                                        <rect key="frame" x="0.0" y="319.5" width="343" height="34"/>
+                                        <rect key="frame" x="0.0" y="381" width="343" height="34"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="SSL Cert" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WBC-Zb-OwL">
-                                        <rect key="frame" x="0.0" y="362.5" width="343" height="20.5"/>
+                                        <rect key="frame" x="0.0" y="424" width="343" height="20.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="base64 text" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="b2n-IJ-p4P">
-                                        <rect key="frame" x="0.0" y="392" width="343" height="34"/>
+                                        <rect key="frame" x="0.0" y="453.5" width="343" height="34"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
                                     <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yfq-FH-nN4">
-                                        <rect key="frame" x="0.0" y="435" width="343" height="34"/>
+                                        <rect key="frame" x="0.0" y="496.5" width="343" height="34"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Nostr pubkey" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1KZ-SV-tEB">
                                                 <rect key="frame" x="0.0" y="0.0" width="108" height="34"/>
@@ -5371,13 +5390,13 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                         </subviews>
                                     </stackView>
                                     <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="hex nostr public key" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="d3S-5p-8Gb">
-                                        <rect key="frame" x="0.0" y="478" width="343" height="34"/>
+                                        <rect key="frame" x="0.0" y="539.5" width="343" height="34"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
                                     <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="anl-6F-ipI">
-                                        <rect key="frame" x="0.0" y="521" width="343" height="34"/>
+                                        <rect key="frame" x="0.0" y="582.5" width="343" height="34"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Nostr privkey" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zaa-Xx-grG">
                                                 <rect key="frame" x="0.0" y="0.0" width="101.5" height="34"/>
@@ -5400,13 +5419,13 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                         </subviews>
                                     </stackView>
                                     <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="hex nostr private key" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="aZB-cK-8l0">
-                                        <rect key="frame" x="0.0" y="564" width="343" height="34"/>
+                                        <rect key="frame" x="0.0" y="625.5" width="343" height="34"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
                                     <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Xwp-Q7-Erq">
-                                        <rect key="frame" x="0.0" y="607" width="343" height="34"/>
+                                        <rect key="frame" x="0.0" y="668.5" width="343" height="34"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Nostr subscription" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i8H-SC-Ulr">
                                                 <rect key="frame" x="0.0" y="0.0" width="140.5" height="34"/>
@@ -5429,25 +5448,25 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                         </subviews>
                                     </stackView>
                                     <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="pubkey to subscribe to (your mac or phone)" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="OYo-lC-rer">
-                                        <rect key="frame" x="0.0" y="650" width="343" height="34"/>
+                                        <rect key="frame" x="0.0" y="711.5" width="343" height="34"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Nostr relay" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9qb-S5-tsO">
-                                        <rect key="frame" x="0.0" y="693" width="343" height="20.5"/>
+                                        <rect key="frame" x="0.0" y="754.5" width="343" height="20.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="nostr relay url" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Y2N-WI-gs3">
-                                        <rect key="frame" x="0.0" y="722.5" width="343" height="34"/>
+                                        <rect key="frame" x="0.0" y="784" width="343" height="34"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
                                     <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0nC-j7-uAk">
-                                        <rect key="frame" x="0.0" y="765.5" width="343" height="34"/>
+                                        <rect key="frame" x="0.0" y="827" width="343" height="34"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Encryption words" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="F0q-UT-3X6">
                                                 <rect key="frame" x="0.0" y="0.0" width="132.5" height="34"/>
@@ -5470,13 +5489,13 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                         </subviews>
                                     </stackView>
                                     <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="five words used as an encryption key" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="PI1-qm-Nv4">
-                                        <rect key="frame" x="0.0" y="808.5" width="343" height="34"/>
+                                        <rect key="frame" x="0.0" y="870" width="343" height="34"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
                                     <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="p2J-sn-A5I">
-                                        <rect key="frame" x="0.0" y="851.5" width="343" height="33"/>
+                                        <rect key="frame" x="0.0" y="913" width="343" height="33"/>
                                         <color key="backgroundColor" red="0.10627468621666161" green="0.12334513322948933" blue="0.15055580547360392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <state key="normal" title="Save">
@@ -5507,12 +5526,6 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                 <color key="tintColor" systemColor="systemTealColor"/>
                                 <connections>
                                     <action selector="exportNode:" destination="B99-yZ-naR" id="c4z-NG-lTv"/>
-                                </connections>
-                            </barButtonItem>
-                            <barButtonItem image="antenna.radiowaves.left.and.right" catalog="system" id="dnk-QA-bMo">
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <connections>
-                                    <action selector="showHostAction:" destination="B99-yZ-naR" id="CPP-h4-wm3"/>
                                 </connections>
                             </barButtonItem>
                             <barButtonItem image="qrcode.viewfinder" catalog="system" id="awp-qu-L3a">
@@ -5548,13 +5561,15 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         <outlet property="onionAddressField" destination="o4M-Vw-QWb" id="hON-oG-n3p"/>
                         <outlet property="passwordHeader" destination="ojR-cB-7rc" id="0oQ-TO-zvv"/>
                         <outlet property="refreshNostrPrivkeyOutlet" destination="9Vg-ri-ta1" id="ecG-5y-dpe"/>
+                        <outlet property="rpcAuthCopyButton" destination="nBU-8h-I0k" id="uk6-0e-xrt"/>
+                        <outlet property="rpcAuthHeader" destination="o4E-E3-l5r" id="dqL-K8-vb4"/>
+                        <outlet property="rpcAuthLabel" destination="j18-1b-WXU" id="fGt-rB-8u6"/>
                         <outlet property="rpcPassword" destination="4YC-xq-wqu" id="KIS-dN-d6I"/>
                         <outlet property="rpcUserField" destination="uRk-PX-ulA" id="pCP-J4-Y3p"/>
                         <outlet property="saveButton" destination="p2J-sn-A5I" id="ZWz-y2-s1b"/>
                         <outlet property="scanNostrPubkeyQr" destination="h9x-Ys-5JF" id="y6G-qY-bUg"/>
                         <outlet property="scanQROutlet" destination="awp-qu-L3a" id="pQ4-ao-MZ5"/>
                         <outlet property="seeEncryptionWordsButton" destination="kwB-do-h4l" id="ggz-6Q-8Mp"/>
-                        <outlet property="showHostOutlet" destination="dnk-QA-bMo" id="Sz6-Jm-1kg"/>
                         <outlet property="showNostrPubkeyQr" destination="reH-db-j8C" id="a3Y-ta-aJF"/>
                         <outlet property="usernameHeader" destination="Shd-1m-99a" id="WmB-Kw-SMe"/>
                         <segue destination="GlR-4A-eAx" kind="show" identifier="segueToExportNode" id="8MS-xS-DMP"/>
@@ -7066,8 +7081,8 @@ You can upload the wallets.fullynoded file that was created when you made the ba
         <segue reference="mRa-gP-mZ0"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="9TT-9o-7xG"/>
-        <segue reference="zi9-mK-A5a"/>
+        <segue reference="07E-4w-Zh7"/>
+        <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="gzO-Lb-E0s"/>
     </inferredMetricsTieBreakers>

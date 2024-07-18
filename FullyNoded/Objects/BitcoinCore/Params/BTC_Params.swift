@@ -234,7 +234,7 @@ public struct Wallet_Process_PSBT: CustomStringConvertible {
     init(_ dict: [String:Any]) {
         let psbt = dict["psbt"] as? String ?? ""
         let sign = dict["sign"] as? Bool ?? true
-        //let sighashtype = dict["sighashtype"] as? String ?? ""
+        let sighashtype = dict["sighashtype"] as? String ?? "ALL"
         let bip32derivs = dict["bip32derivs"] as? Bool ?? true
         let finalize = dict["finalize"] as? Bool ?? true
         
@@ -242,6 +242,7 @@ public struct Wallet_Process_PSBT: CustomStringConvertible {
             "psbt": psbt,
             "sign": sign,
             "bip32derivs": bip32derivs,
+            "sighashtype": sighashtype,
             "finalize": finalize
         ]
     }

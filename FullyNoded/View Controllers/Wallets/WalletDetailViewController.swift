@@ -62,6 +62,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         navigationController?.delegate = self
         detailTable.delegate = self
         detailTable.dataSource = self
+        labelField.spellCheckingType = .no
         addTapGesture()
         
         if (UIDevice.current.userInterfaceIdiom == .pad) {
@@ -186,7 +187,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                             self.coinType = "1"
                         }
                         
-                        guard let json = AccountMap.create(wallet: self.wallet) else {
+                        guard let json = CreateAccountMap.create(wallet: self.wallet) else {
                             showAlert(vc: self, title: "", message: "Unable to derive account map.")
                             return
                         }
@@ -219,7 +220,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                             let xfpArray = xfpArray(xfpString: receiveDescriptor.fingerprint)
                             
                             for (i, key) in receiveDescriptor.multiSigKeys.enumerated() {
-                                keysText += "\(xfpArray[i]) : \(key)\n\n"
+                                keysText += "\(xfpArray[i].condenseWhitespace()):\(key)\n\n"
                             }
                             
                             let multisigDervArr = receiveDescriptor.derivationArray
@@ -231,7 +232,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                                 deriv = "Multiple derivations!"
                             }
                         } else {
-                            keysText = receiveDescriptor.fingerprint + " : " + receiveDescriptor.accountXpub
+                            keysText = receiveDescriptor.fingerprint + ":" + receiveDescriptor.accountXpub
                             deriv = receiveDescriptor.derivation
                         }
                         
@@ -1084,7 +1085,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
-                let alert = UIAlertController(title: "Increase the gap limit to \(max)?", message: "Selecting yes will trigger a series of calls to your node to import \(max - (Int(self.wallet.maxIndex) + 1)) additional keys for each descriptor your wallet holds. This can take a bit of time so please be patient and wait for the spinner to dismiss.", preferredStyle: self.alertStyle)
+                let alert = UIAlertController(title: "Increase the range limit to \(max)?", message: "Selecting yes will trigger a series of calls to your node to import \(max - (Int(self.wallet.maxIndex) + 1)) additional keys for each descriptor your wallet holds. This can take a bit of time so please be patient and wait for the spinner to dismiss.", preferredStyle: self.alertStyle)
                 
                 alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
                     self.importUpdatedIndex(maxRange: max)
@@ -1164,7 +1165,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Rescan now?", message: "You have increased the gap limit but you will need to rescan the blockchain to see updated balances and transaction history.", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "Rescan now?", message: "You have increased the range limit but you will need to rescan the blockchain to see updated balances and transaction history.", preferredStyle: self.alertStyle)
             
             alert.addAction(UIAlertAction(title: "Rescan", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
@@ -1241,18 +1242,23 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                     vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
                     vc.descriptionText = "This QR code is best for exporting this wallet to Coldcard."
                     vc.isBbqr = true
+                    vc.isUR = false
                 }
                 
                 if outputDescFormat {
                     vc.headerText = "Wallet Export Descriptor"
                     vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
                     vc.descriptionText = "This QR code is best for exporting this wallet to Sparrow, Passport, Blue Wallet and others..."
+                    vc.isBbqr = false
+                    vc.isUR = true
                 }
                 
                 if urBytesFormat {
                     vc.headerText = "Wallet Export UR Bytes"
                     vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
                     vc.descriptionText = "This QR code is best for exporting this wallet to Passport, Blue Wallet and others..."
+                    vc.isUR = true
+                    vc.isBbqr = false
                 }
             }
         }
@@ -1286,7 +1292,7 @@ extension WalletDetailViewController {
         case .currentIndex:
             return ("Current address index", UIImage(systemName: "number")!, .systemGreen)
         case .maxIndex:
-            return ("Gap limit", UIImage(systemName: "exclamationmark.triangle")!, .systemRed)
+            return ("Range limit", UIImage(systemName: "exclamationmark.triangle")!, .systemRed)
         case .signer:
             return ("Signers", UIImage(systemName: "pencil.and.ellipsis.rectangle")!, .darkGray)
         case .watching:

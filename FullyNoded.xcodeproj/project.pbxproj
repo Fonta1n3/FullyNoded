@@ -57,9 +57,13 @@
 		0A6B365F27BD94CB00CD4F3A /* JMTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6B365E27BD94CA00CD4F3A /* JMTx.swift */; };
 		0A6E59832C3C6AB4007750F2 /* URKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0A6E59822C3C6AB4007750F2 /* URKit */; };
 		0A6E59862C3CFE00007750F2 /* Bbqr in Frameworks */ = {isa = PBXBuildFile; productRef = 0A6E59852C3CFE00007750F2 /* Bbqr */; };
+		0A6E59882C400728007750F2 /* RPCAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6E59872C400728007750F2 /* RPCAuth.swift */; };
 		0A6EF69B294E30F300D30E93 /* StreamManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6EF69A294E30F300D30E93 /* StreamManager.swift */; };
 		0A77138426AD9C5E005CC23D /* BlindPsbt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A77138326AD9C5E005CC23D /* BlindPsbt.swift */; };
 		0A77138626AE5E85005CC23D /* WalletInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A77138526AE5E85005CC23D /* WalletInfo.swift */; };
+		0A83EB3C2C4837C600502806 /* AccountMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A83EB3B2C4837C600502806 /* AccountMap.swift */; };
+		0A83EB3E2C4838BB00502806 /* ColdCardSparrowExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A83EB3D2C4838BB00502806 /* ColdCardSparrowExport.swift */; };
+		0A83EB402C4943C700502806 /* ColdcardMultiSigExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A83EB3F2C4943C700502806 /* ColdcardMultiSigExport.swift */; };
 		0A8850FE2A41FB040078A603 /* secp256k1 in Frameworks */ = {isa = PBXBuildFile; productRef = 0A8850FD2A41FB040078A603 /* secp256k1 */; };
 		0A8850FF2A4201C10078A603 /* LibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AD438842A41F7F90004F923 /* LibWally.xcframework */; };
 		0A8851002A4201C10078A603 /* LibWally.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0AD438842A41F7F90004F923 /* LibWally.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -175,7 +179,7 @@
 		D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B63B211A94C600B416E7 /* Utilities.swift */; };
 		D0EA04EF25592B910032C63F /* logo_grey.png in Resources */ = {isa = PBXBuildFile; fileRef = D0EA04EE25592B910032C63F /* logo_grey.png */; };
 		D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EF29C0216B82B400EB776A /* SettingsViewController.swift */; };
-		D0F3919024BFE48600EA8A2A /* AccountMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F3918F24BFE48600EA8A2A /* AccountMap.swift */; };
+		D0F3919024BFE48600EA8A2A /* CreateAccountMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F3918F24BFE48600EA8A2A /* CreateAccountMap.swift */; };
 		D0F3919224BFEBBB00EA8A2A /* QRDisplayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F3919124BFEBBB00EA8A2A /* QRDisplayerViewController.swift */; };
 		D0F3919424C0147400EA8A2A /* QRScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F3919324C0147400EA8A2A /* QRScannerViewController.swift */; };
 		D0F3919624C0379200EA8A2A /* ImportWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F3919524C0379200EA8A2A /* ImportWallet.swift */; };
@@ -258,9 +262,13 @@
 		0A6B365A27B1AA0B00CD4F3A /* AddressInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressInfo.swift; sourceTree = "<group>"; };
 		0A6B365C27B2020F00CD4F3A /* JMUtxo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMUtxo.swift; sourceTree = "<group>"; };
 		0A6B365E27BD94CA00CD4F3A /* JMTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMTx.swift; sourceTree = "<group>"; };
+		0A6E59872C400728007750F2 /* RPCAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RPCAuth.swift; sourceTree = "<group>"; };
 		0A6EF69A294E30F300D30E93 /* StreamManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamManager.swift; sourceTree = "<group>"; };
 		0A77138326AD9C5E005CC23D /* BlindPsbt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlindPsbt.swift; sourceTree = "<group>"; };
 		0A77138526AE5E85005CC23D /* WalletInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletInfo.swift; sourceTree = "<group>"; };
+		0A83EB3B2C4837C600502806 /* AccountMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountMap.swift; sourceTree = "<group>"; };
+		0A83EB3D2C4838BB00502806 /* ColdCardSparrowExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColdCardSparrowExport.swift; sourceTree = "<group>"; };
+		0A83EB3F2C4943C700502806 /* ColdcardMultiSigExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColdcardMultiSigExport.swift; sourceTree = "<group>"; };
 		0A9834C526BC2E6700BAB74E /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		0A9FDC9026A84CE30050C4AE /* WalletTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletTypes.swift; sourceTree = "<group>"; };
 		0AD438842A41F7F90004F923 /* LibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LibWally.xcframework; sourceTree = "<group>"; };
@@ -384,7 +392,7 @@
 		D0E9B63B211A94C600B416E7 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		D0EA04EE25592B910032C63F /* logo_grey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo_grey.png; sourceTree = "<group>"; };
 		D0EF29C0216B82B400EB776A /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
-		D0F3918F24BFE48600EA8A2A /* AccountMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountMap.swift; sourceTree = "<group>"; };
+		D0F3918F24BFE48600EA8A2A /* CreateAccountMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAccountMap.swift; sourceTree = "<group>"; };
 		D0F3919124BFEBBB00EA8A2A /* QRDisplayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRDisplayerViewController.swift; sourceTree = "<group>"; };
 		D0F3919324C0147400EA8A2A /* QRScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerViewController.swift; sourceTree = "<group>"; };
 		D0F3919524C0379200EA8A2A /* ImportWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWallet.swift; sourceTree = "<group>"; };
@@ -471,6 +479,7 @@
 				D09A331224AC4C93009FA0B2 /* Descriptor.swift */,
 				D0C20EDF24A6EF3800C62AA4 /* Balances.swift */,
 				0A2B4D6F2716ABCB00B607EE /* WalletImport.swift */,
+				0A83EB3B2C4837C600502806 /* AccountMap.swift */,
 			);
 			path = FullyNoded;
 			sourceTree = "<group>";
@@ -543,6 +552,15 @@
 				0A64634D28FDC2990079C5DB /* NostrKind.swift */,
 			);
 			path = Nostr;
+			sourceTree = "<group>";
+		};
+		0A83EB412C4943E100502806 /* Coldcard */ = {
+			isa = PBXGroup;
+			children = (
+				0A83EB3D2C4838BB00502806 /* ColdCardSparrowExport.swift */,
+				0A83EB3F2C4943C700502806 /* ColdcardMultiSigExport.swift */,
+			);
+			path = Coldcard;
 			sourceTree = "<group>";
 		};
 		0A9FDC8F26A83EC10050C4AE /* Lightning */ = {
@@ -767,12 +785,13 @@
 				D0390325246B960B00D32C43 /* KeyChain.swift */,
 				D03968B0246F6CBA0010D821 /* Crypto.swift */,
 				D09A330C24A9B10E009FA0B2 /* BIP39WordList.swift */,
-				D0F3918F24BFE48600EA8A2A /* AccountMap.swift */,
+				D0F3918F24BFE48600EA8A2A /* CreateAccountMap.swift */,
 				0A1F10CB26A1A25600BE2707 /* UR */,
 				D00B27BB255A27F300269B51 /* WalletURL.swift */,
 				D06D788E25B817E100769157 /* Lifehash.swift */,
 				0A212D8A26C66A9600BF6FD4 /* OnchainUtils.swift */,
 				0A00D6A3271BE51600ECAB22 /* TextFileImport.swift */,
+				0A6E59872C400728007750F2 /* RPCAuth.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -823,6 +842,7 @@
 		D039D3C623322EC800D1ED18 /* Objects */ = {
 			isa = PBXGroup;
 			children = (
+				0A83EB412C4943E100502806 /* Coldcard */,
 				0A643A1C274A4B8F007F4F44 /* FullyNoded */,
 				0A643A1D274A4BDD007F4F44 /* BitcoinCore */,
 				0A643A1F274A4CB1007F4F44 /* Lightning */,
@@ -1208,6 +1228,7 @@
 			files = (
 				D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */,
 				D0C20ED424A6DFE600C62AA4 /* PeerInfo.swift in Sources */,
+				0A83EB3E2C4838BB00502806 /* ColdCardSparrowExport.swift in Sources */,
 				D09F9E5024B1BAC3006B588C /* SignerDetailViewController.swift in Sources */,
 				0A64634628FDC06B0079C5DB /* NostrRequest.swift in Sources */,
 				0A1F10DE26A1A5F200BE2707 /* ChildIndexRange.swift in Sources */,
@@ -1262,6 +1283,7 @@
 				D0C20ED224A6DB9D00C62AA4 /* BlockchainInfo.swift in Sources */,
 				D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */,
 				0A1F110826A2783000BE2707 /* Network.swift in Sources */,
+				0A83EB402C4943C700502806 /* ColdcardMultiSigExport.swift in Sources */,
 				D02152DC23666CB400AD9007 /* QuickConnect.swift in Sources */,
 				0A212DDE26D5DA9100BF6FD4 /* JoinMarketPit.swift in Sources */,
 				0A77138626AE5E85005CC23D /* WalletInfo.swift in Sources */,
@@ -1308,6 +1330,7 @@
 				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,
 				D00B27BC255A27F300269B51 /* WalletURL.swift in Sources */,
 				D07E0DE622F9168F00A81FA8 /* WalletManagerViewController.swift in Sources */,
+				0A83EB3C2C4837C600502806 /* AccountMap.swift in Sources */,
 				0A337D012700316E00AD087F /* WalletDir.swift in Sources */,
 				D0384E34246AC53B002FEE94 /* base58.c in Sources */,
 				D011702824EBA3CE00ACC44B /* ChannelDetailViewController.swift in Sources */,
@@ -1316,7 +1339,7 @@
 				D0C20ED624A6E19600C62AA4 /* NetworkInfo.swift in Sources */,
 				0A1F10CF26A1A47F00BE2707 /* DerivationPath.swift in Sources */,
 				D09F9E4E24B06A63006B588C /* SignerStruct.swift in Sources */,
-				D0F3919024BFE48600EA8A2A /* AccountMap.swift in Sources */,
+				D0F3919024BFE48600EA8A2A /* CreateAccountMap.swift in Sources */,
 				0AF73250291DDFC4009F6296 /* BTC_Params.swift in Sources */,
 				D0C20EDC24A6E51D00C62AA4 /* MempoolInfo.swift in Sources */,
 				D08A92A62334F66900409D6E /* Reducer.swift in Sources */,
@@ -1350,6 +1373,7 @@
 				0A1F10E526A1A6C200BE2707 /* CBORExtensions.swift in Sources */,
 				D069051F24EA6C1F007F939D /* LightningPeersViewController.swift in Sources */,
 				0A1F111026A2791B00BE2707 /* ModelObjectType.swift in Sources */,
+				0A6E59882C400728007750F2 /* RPCAuth.swift in Sources */,
 				0A212D8D26C66B1800BF6FD4 /* DescriptorInfo.swift in Sources */,
 				0A3450F02902F0440074A545 /* JMWalletCreate.swift in Sources */,
 				D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */,
@@ -1543,7 +1567,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.487;
+				MARKETING_VERSION = 1.495;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
@@ -1590,7 +1614,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.487;
+				MARKETING_VERSION = 1.495;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
@@ -1692,7 +1716,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/BlockchainCommons/URKit.git";
 			requirement = {
-				kind = upToNextMajorVersion;
+				kind = upToNextMinorVersion;
 				minimumVersion = 14.0.2;
 			};
 		};
