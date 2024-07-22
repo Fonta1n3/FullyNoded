@@ -1666,7 +1666,7 @@ class ActiveWalletViewController: UIViewController {
                 showAlert(vc: self, title: "", message: "Fully Noded can only show wallet details for wallets created with Fully Noded.")
                 return
             }
-            
+                        
             vc.walletId = idDetail
             
         case "chooseAWallet":

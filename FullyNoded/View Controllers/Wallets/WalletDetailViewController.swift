@@ -62,17 +62,14 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         navigationController?.delegate = self
         detailTable.delegate = self
         detailTable.dataSource = self
-        labelField.spellCheckingType = .no
         addTapGesture()
-        
+                
         if (UIDevice.current.userInterfaceIdiom == .pad) {
           alertStyle = UIAlertController.Style.alert
         }
-        spinner.addConnectingView(vc: self, description: "loading")
         
-        DispatchQueue.global(qos: .background).async { [weak self] in
-            self?.load()
-        }
+        spinner.addConnectingView(vc: self, description: "loading")
+        load()
     }
     
     @IBAction func rescanAction(_ sender: Any) {

@@ -231,5 +231,7 @@
 			</dict>
 		</dict>
 	</array>
+	<key>NFCReaderUsageDescription</key>
+	<string>NFC tag to scan it</string>
 </dict>
 </plist>
