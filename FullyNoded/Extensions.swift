@@ -409,6 +409,8 @@ public extension Double {
     
     var btcBalanceWithSpaces: String {
         var btcBalance = Swift.abs(self.rounded(toPlaces: 8)).avoidNotation
+        btcBalance = btcBalance.replacingOccurrences(of: ",", with: "")
+        
         if !btcBalance.contains(".") {
             btcBalance += ".0"
         }

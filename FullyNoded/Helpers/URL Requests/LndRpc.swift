@@ -55,7 +55,7 @@ class LndRpc {
                     return
                 }
                 
-                self.torClient.cert = decryptedCert.base64EncodedData()
+                self.torClient.cert = decryptedCert
             }
             
             guard let encAddress = node.onionAddress else {
@@ -101,7 +101,8 @@ class LndRpc {
                  .openchannel,
                  .fundingstep,
                  .fwdinghistory,
-                 .keysend:
+                 .keysend,
+                 .getnewaddress:
                 
                 request.httpMethod = "POST"
                 
@@ -125,8 +126,8 @@ class LndRpc {
                 request.httpMethod = "DELETE"
                 request.timeoutInterval = 90
                 
-            case .getnewaddress:
-                request.httpMethod = "POST"
+//            case .getnewaddress:
+//                request.httpMethod = "POST"
                 
             default:
                 request.httpMethod = "GET"
@@ -136,11 +137,7 @@ class LndRpc {
                 #endif
             }
             
-            var sesh = URLSession(configuration: .default)
-            
-            if onionAddress.contains("onion") {
-                sesh = self.torClient.session
-            }
+            let sesh = self.torClient.session
             
             let task = sesh.dataTask(with: request as URLRequest) { (data, response, error) -> Void in
                 guard let urlContent = data,

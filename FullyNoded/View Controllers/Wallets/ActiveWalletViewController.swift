@@ -1141,7 +1141,7 @@ class ActiveWalletViewController: UIViewController {
             }
             
             let balances = Balances(dictionary: response)
-            self.offchainBalanceBtc = balances.offchainBalance
+            self.offchainBalanceBtc = balances.offchainBalance.doubleValue.btcBalanceWithSpaces
             self.offchainBalanceSats = balances.offchainBalance.btcToSats
             
             if let exchangeRate = self.fxRate {

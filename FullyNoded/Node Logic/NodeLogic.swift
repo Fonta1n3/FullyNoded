@@ -287,14 +287,14 @@ class NodeLogic {
                 dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
                 let dateString = dateFormatter.string(from: date)
                 
-                let amountBtc = amountSat.doubleValue.btcBalanceWithSpaces
+                let amountBtc = amountSat.doubleValue.satsToBtcDouble
                 let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
-                let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
+                let amountFiat = (amountBtc * fxRate).balanceText
                 
                 arrayToReturn.append(["address": addresses,
                                       "amountSats": "\(amountSat)",
                                       "amountFiat": amountFiat,
-                                      "amountBtc": amountBtc,
+                                      "amountBtc": amountBtc.btcBalanceWithSpaces,
                                       "confirmations": "\(confs)",
                                       "label": label,
                                       "date": dateString,

@@ -376,10 +376,12 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     private func encryptCert(_ certText: String) -> Data? {
-         guard let certData = Data(base64Encoded: certText.condenseWhitespace(), options: [.ignoreUnknownCharacters]) else {
-             showAlert(vc: self, title: "Error", message: "Unable to convert the cert text to base64 data.")
-             return nil
-         }
+        print("cerText: \(certText)")
+//         guard let certData = Data(base64Encoded: certText.condenseWhitespace(), options: []) else {
+//             showAlert(vc: self, title: "Error", message: "Unable to convert the cert text to base64 data.")
+//             return nil
+//         }
+        let certData = Data(certText.utf8)
          
          guard let encryptedCert = Crypto.encrypt(certData) else {
              showAlert(vc: self, title: "Error", message: "Unable to encrypt your cert data.")
@@ -799,7 +801,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 
                 if node.cert != nil, certField != nil {
                     if let decryptedCert = Crypto.decrypt(node.cert!) {
-                        certField.text = decryptedCert.urlSafeB64String
+                        certField.text = decryptedCert.utf8String ?? ""
                     }
                 }
                 
