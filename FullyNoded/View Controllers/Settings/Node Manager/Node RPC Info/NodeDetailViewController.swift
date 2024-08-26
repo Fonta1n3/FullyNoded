@@ -626,7 +626,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
                 
                 let arr = addressText.split(separator: ":")
-                guard arr.count == 2 else { return }
+                guard arr.count == 2 else {
+                    showAlert(vc: self, title: "Not updated, port missing...", message: "Please make sure you add the port at the end of your onion hostname, such as xjshdu.onion:8332.\n\n8332 for mainnet, 8080 for LND or 28183 for Join Market.")
+                    return
+                }
                 
                 guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
                 
@@ -884,9 +887,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            rpcAuthLabel.removeFromSuperview()
-            rpcAuthHeader.removeFromSuperview()
-            rpcAuthCopyButton.removeFromSuperview()
+            if rpcAuthLabel != nil, rpcAuthHeader != nil, rpcAuthCopyButton != nil {
+                rpcAuthLabel.removeFromSuperview()
+                rpcAuthHeader.removeFromSuperview()
+                rpcAuthCopyButton.removeFromSuperview()
+            }
             
             if self.isCLN {
                 self.onionAddressField.placeholder = "localhost:9737"

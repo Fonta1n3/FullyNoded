@@ -21,6 +21,9 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var isBitcoinCore = false
     var isLND = false
     var isCLN = false
+    private var now: Date = .now
+    private var firstTap: Date?
+    private var lastTap: Date?
     private var authenticated = false
     @IBOutlet var nodeTable: UITableView!
     
@@ -153,11 +156,22 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     @objc func editNode(_ sender: UIButton) {
-        guard let id = sender.restorationIdentifier, let section = Int(id) else { return }
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            self.selectedIndex = section
-            self.performSegue(withIdentifier: "updateNode", sender: self)
+        func editNow() {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.firstTap = .now
+                guard let id = sender.restorationIdentifier, let section = Int(id) else { return }
+                self.selectedIndex = section
+                self.performSegue(withIdentifier: "updateNode", sender: self)
+            }
+        }
+        
+        if let firstTap = firstTap {
+            if firstTap.timeIntervalSinceNow < -2.0 {
+                editNow()
+            }
+        } else {
+            editNow()
         }
     }
     
@@ -478,3 +492,5 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
     }
 }
+
+

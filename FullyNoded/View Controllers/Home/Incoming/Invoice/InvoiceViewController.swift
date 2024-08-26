@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import secp256k1
 
 class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
@@ -720,4 +721,26 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     @objc func dismissKeyboard() {
         view.endEditing(true)
     }
+    
+//    func silentPayment() {
+//        let privateSign1 = try! secp256k1.Signing.PrivateKey()
+//        let privateSign2 = try! secp256k1.Signing.PrivateKey()
+//        
+//        let privateKey1 = try! secp256k1.KeyAgreement.PrivateKey(rawRepresentation: privateSign1.rawRepresentation)
+//        let privateKey2 = try! secp256k1.KeyAgreement.PrivateKey(rawRepresentation: privateSign2.rawRepresentation)
+//        
+//        let sharedSecret1 = try! privateKey1.sharedSecretFromKeyAgreement(with: privateKey2.publicKey)
+//        let sharedSecret2 = try! privateKey2.sharedSecretFromKeyAgreement(with: privateKey1.publicKey)
+//        
+//        let sharedSecretSign1 = try! secp256k1.Signing.PrivateKey(rawRepresentation: sharedSecret1.bytes)
+//        let sharedSecretSign2 = try! secp256k1.Signing.PrivateKey(rawRepresentation: sharedSecret2.bytes)
+//        
+//        // Payable Silent Payment public key
+//        let xonlyTweak2 = try! sharedSecretSign2.publicKey.xonly.add(privateSign1.publicKey.xonly.bytes)
+//        
+//        // Spendable Silent Payment private key
+//        let privateTweak1 = try! sharedSecretSign1.add(xonly: privateSign1.publicKey.xonly.bytes)
+//         
+//    }
+    
 }
