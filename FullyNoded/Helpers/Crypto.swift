@@ -8,6 +8,7 @@
 
 import CryptoKit
 import RNCryptor
+import Foundation
 
 enum Crypto {
     

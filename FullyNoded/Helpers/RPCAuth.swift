@@ -7,6 +7,7 @@
 //
 
 import CryptoKit
+import Foundation
 
 class RPCAuth {
  
