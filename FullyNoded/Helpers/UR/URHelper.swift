@@ -635,13 +635,14 @@ class URHelper {
     }
     
     static func extractExtendedKey(_ key: String) -> (chaincode: Data?, keyData: Data?, parentFingerprint: Data?, depth: Data?) {
-        let b58 = Base58.decode(key)
-        let b58Data = Data(b58)
-        let depth = b58Data.subdata(in: Range(4...4))
-        let parentFingerprint = b58Data.subdata(in: Range(5...8))
-        let chaincode = b58Data.subdata(in: Range(13...44))
-        let keydata = b58Data.subdata(in: Range(45...77))
-        return (chaincode, keydata, parentFingerprint, depth)
+//        let b58 = Base58.decode(key)
+//        let b58Data = Data(b58)
+//        let depth = b58Data.subdata(in: Range(4...4))
+//        let parentFingerprint = b58Data.subdata(in: Range(5...8))
+//        let chaincode = b58Data.subdata(in: Range(13...44))
+//        let keydata = b58Data.subdata(in: Range(45...77))
+//        return (chaincode, keydata, parentFingerprint, depth)
+        return (nil, nil, nil, nil)
     }
     
     static func descriptorToHdKeyCbor(_ descriptor: Descriptor) -> CBOR? {
