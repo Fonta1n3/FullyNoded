@@ -295,10 +295,6 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                                             NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
                                         }
                                     }
-                                    
-//                                    if !nodeStr.isJoinMarket {
-//                                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-//                                    }
                                 }
                             }
                         }
@@ -352,41 +348,12 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             let alert = UIAlertController(title: "Scan QR or add manually?", message: "You can add the node credentials manually or scan a QR code.", preferredStyle: alertStyle)
             
-            alert.addAction(UIAlertAction(title: "Nostrnode", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                self.isNostr = true
-                self.isLightning = false
-                self.isJoinMarket = false
-                self.isBitcoinCore = false
-                self.segueToAddNodeManually()
-            }))
-            
             alert.addAction(UIAlertAction(title: "Bitcoin Core", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                 
                 self.isLightning = false
                 self.isJoinMarket = false
                 self.isBitcoinCore = true
-                self.segueToAddNodeManually()
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Join Market", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                self.isLightning = false
-                self.isJoinMarket = true
-                self.isBitcoinCore = false
-                self.segueToAddNodeManually()
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Core Lightning", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                self.isCLN = true
-                self.isLND = false
-                self.isLightning = true
-                self.isJoinMarket = false
-                self.isBitcoinCore = false
                 self.segueToAddNodeManually()
             }))
             
@@ -454,11 +421,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         if segue.identifier == "updateNode" {
             if let vc = segue.destination as? NodeDetailViewController {
                 vc.selectedNode = self.nodeArray[selectedIndex]
-                if self.nodeArray[selectedIndex]["rpcpassword"] != nil {
-                    vc.isCLN = true
-                } else {
-                    vc.isLND = true
-                }
+                vc.isLND = true
                 vc.createNew = false
             }
         }
@@ -471,7 +434,6 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 vc.isNostr = self.isNostr
                 vc.isBitcoinCore = self.isBitcoinCore
                 vc.isLND = self.isLND
-                vc.isCLN = self.isCLN
             }
         }
         
