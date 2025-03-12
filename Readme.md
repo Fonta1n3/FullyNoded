@@ -5,7 +5,7 @@
 
 <img src="./Images/home.png" alt="home" width="400"/> <img src="./Images/wallet.png" alt="home" width="400"/> <br/>
 
-Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own [Bitcoin Core](https://github.com/bitcoin/bitcoin) node as a backend. Providing an easy to use interface to interact with your nodes non wallet capabilities. Fully Noded® wallets are powered by PSBT's and descriptors. Fully Noded® acts as an offline signer using your node as a watch-only wallet as well as giving you full unfettered access to every wallet.dat in your nodes `.bitcoin` directory. [C-Lightning](https://github.com/ElementsProject/lightning) and [LND](https://github.com/lightningnetwork/lnd) compatible for instant, unfairly cheap payments. Works with the [Join Market](https://github.com/JoinMarket-Org/joinmarket-clientserver) API for decetralized coinjoins.
+Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own [Bitcoin Core](https://github.com/bitcoin/bitcoin) node as a backend. Providing an easy to use interface to interact with your nodes non wallet capabilities. Fully Noded® wallets are powered by PSBT's and descriptors. Fully Noded® acts as an offline signer using your node as a watch-only wallet as well as giving you full unfettered access to every wallet.dat in your nodes `.bitcoin` directory. [C-Lightning](https://github.com/ElementsProject/lightning) and [LND](https://github.com/lightningnetwork/lnd) compatible for instant, unfairly cheap payments.
 
 ## App Store
 
@@ -49,7 +49,7 @@ Downloading the Fully Noded® iOS app is **100% free** because it is important t
 However, developing and supporting this project is hard work and costs real money. Please help support the development of this project!
 
 * [GitHub Sponsors](https://github.com/sponsors/fonta1n3)
-* Bolt12 and Silent Payment address for donations coming soon.
+
 
 ## Why Fully Noded®?
 

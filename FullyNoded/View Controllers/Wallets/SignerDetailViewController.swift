@@ -240,13 +240,21 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let xpub = decryptedbip84xpub.utf8String {
                     let descriptor = "wpkh([\(xfp)/84h/0h/0h]\(xpub)/0/*)"
                     
-                    guard let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) else {
-                        showAlert(vc: self, title: "UR error.", message: "Unable to convert your descriptor to crypto-account.")
-                        return
+                    if let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) {
+                        self.tableDict[7]["text"] = descriptor
+                        self.tableDict[7]["ur"] = singleSigCryptoAccount
+                    } else {
+                        self.tableDict[7]["text"] = descriptor
+                        self.tableDict[7]["ur"] = descriptor
                     }
                     
-                    self.tableDict[7]["text"] = descriptor
-                    self.tableDict[7]["ur"] = singleSigCryptoAccount
+//                    guard let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) else {
+//                        //showAlert(vc: self, title: "UR error.", message: "Unable to convert your descriptor to crypto-account.")
+//                        
+//                        return
+//                    }
+                    
+                    
                 }
                 
                 if let encryptedbip48xpub = signer.bip48xpub,
@@ -255,7 +263,9 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let cosigner = "wsh([\(xfp)/48h/0h/0h/2h]\(xpub)/0/*)"
                     
                     guard let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) else {
-                        showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-account.")
+                        //showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-account.")
+                        self.tableDict[6]["text"] = cosigner
+                        self.tableDict[6]["ur"] = cosigner
                         return
                     }
                     
@@ -267,7 +277,9 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                        let xpub = decryptedRootXpub.utf8String {
                         
                         guard let rootHdkey = URHelper.rootXpubToUrHdkey(xpub) else {
-                            showAlert(vc: self, title: "UR error.", message: "Unable to convert your root xpub to crypto-hdkey.")
+                            //showAlert(vc: self, title: "UR error.", message: "Unable to convert your root xpub to crypto-hdkey.")
+                            self.tableDict[8]["text"] = xpub
+                            self.tableDict[8]["ur"] = xpub
                             return
                         }
                         
@@ -283,7 +295,9 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let descriptor = "wpkh([\(xfp)/84h/1h/0h]\(tpub)/0/*)"
                     
                     guard let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) else {
-                        showAlert(vc: self, title: "UR error.", message: "Unable to convert your descriptor to crypto-account.")
+                        //showAlert(vc: self, title: "UR error.", message: "Unable to convert your descriptor to crypto-account.")
+                        self.tableDict[7]["text"] = descriptor
+                        self.tableDict[7]["ur"] = descriptor
                         return
                     }
                     
@@ -297,7 +311,9 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let cosigner = "wsh([\(xfp)/48h/1h/0h/2h]\(tpub)/0/*)"
                     
                     guard let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) else {
-                        showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-account.")
+                        //showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-account.")
+                        self.tableDict[6]["text"] = cosigner
+                        self.tableDict[6]["ur"] = cosigner
                         return
                     }
                     
@@ -309,7 +325,9 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                        let tpub = decryptedRootTpub.utf8String {
                         
                         guard let rootHdkey = URHelper.rootXpubToUrHdkey(tpub) else {
-                            showAlert(vc: self, title: "UR error.", message: "Unable to convert your root tpub to crypto-hdkey.")
+                            //showAlert(vc: self, title: "UR error.", message: "Unable to convert your root tpub to crypto-hdkey.")
+                            self.tableDict[8]["text"] = tpub
+                            self.tableDict[8]["ur"] = tpub
                             return
                         }
                         
@@ -320,6 +338,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             }
             
             if let encryptedWords = signer.words {
+                print("words exist: \(signer.words?.count)")
                 guard let decrypted = Crypto.decrypt(encryptedWords),
                         let words = decrypted.utf8String else { return }
                 
