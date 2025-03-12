@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/BlockchainCommons/BCSwiftTags",
       "state" : {
-        "revision" : "edb94b337d03e01c871db895c65d8fd3b6d43c9c",
-        "version" : "0.1.2"
+        "revision" : "ced8d92c7cc53375cdf9806c59251fe0161f02ec",
+        "version" : "0.2.3"
       }
     },
     {
@@ -78,8 +78,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/wolfmcnally/swift-collections",
       "state" : {
-        "revision" : "53a8adc54374f620002a3b6401d39e0feb3c57ae",
-        "version" : "1.1.0"
+        "revision" : "11433b688df0e0b8c3deee56c30294ed63d929eb",
+        "version" : "1.1.4"
       }
     },
     {

@@ -52,9 +52,9 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             ["text": "", "footerText": "Tap the passphrase to edit it. ⚠️ This has MAJOR implications, for experts only!"],// passphrase 3
             ["text": "", "footerText": ""],// dateAdded 4
             ["text": "", "footerText": "The wallets which this signer can sign for. Tap the + button to create a wallet with this signer."],// wallets 5
-            ["text": "", "ur": "", "selectedSegmentIndex": 1, "footerText": "UR for exporting the segwit mutli-sig cosigner to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text."],// cosigner 6
-            ["text": "", "ur": "", "selectedSegmentIndex": 1, "footerText": "UR for exporting the segwit single-sig watch-only wallet to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text."],// singlesig 7
-            ["text": "", "ur": "", "selectedSegmentIndex": 1, "footerText": "Export your root xpub UR to Casa App by selecting the Keystone option when adding a HWW key to Casa App. Also compatible with Gordian Wallet and Gordian Cosigner. Tap to copy the text."]// casa hdkey 8
+            ["text": "", "ur": "", "selectedSegmentIndex": 0, "footerText": "UR for exporting the segwit mutli-sig cosigner to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text."],// cosigner 6
+            ["text": "", "ur": "", "selectedSegmentIndex": 0, "footerText": "UR for exporting the segwit single-sig watch-only wallet to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text."],// singlesig 7
+            ["text": "", "ur": "", "selectedSegmentIndex": 0, "footerText": "Export your root xpub UR to Casa App by selecting the Keystone option when adding a HWW key to Casa App. Also compatible with Gordian Wallet and Gordian Cosigner. Tap to copy the text."]// casa hdkey 8
         ]
         
         let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
@@ -225,13 +225,9 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 self.tableDict[3]["text"] = "  ** no passphrase **"
             }
             
-            guard let encryptedXfp = signer.xfp,
-                let decryptedXfp = Crypto.decrypt(encryptedXfp),
-                let xfp = decryptedXfp.utf8String else {
-                    showAlert(vc: self, title: "", message: "Error getting your xfp.")
-                return
-            }
-            
+            let encryptedXfp = signer.xfp ?? "".utf8
+            let decryptedXfp = Crypto.decrypt(encryptedXfp) ?? "".utf8
+            let xfp = decryptedXfp.utf8String ?? ""
             self.tableDict[2]["text"] = "  " + xfp
             
             if self.network == 0 {
@@ -245,16 +241,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                         self.tableDict[7]["ur"] = singleSigCryptoAccount
                     } else {
                         self.tableDict[7]["text"] = descriptor
-                        self.tableDict[7]["ur"] = descriptor
+                        self.tableDict[7]["ur"] = ""
                     }
-                    
-//                    guard let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) else {
-//                        //showAlert(vc: self, title: "UR error.", message: "Unable to convert your descriptor to crypto-account.")
-//                        
-//                        return
-//                    }
-                    
-                    
                 }
                 
                 if let encryptedbip48xpub = signer.bip48xpub,
@@ -262,29 +250,25 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let xpub = decryptedbip48xpub.utf8String {
                     let cosigner = "wsh([\(xfp)/48h/0h/0h/2h]\(xpub)/0/*)"
                     
-                    guard let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) else {
-                        //showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-account.")
+                    if let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) {
                         self.tableDict[6]["text"] = cosigner
-                        self.tableDict[6]["ur"] = cosigner
-                        return
+                        self.tableDict[6]["ur"] = cosignerAccount
+                    } else {
+                        self.tableDict[6]["text"] = cosigner
+                        self.tableDict[6]["ur"] = ""
                     }
-                    
-                    self.tableDict[6]["text"] = cosigner
-                    self.tableDict[6]["ur"] = cosignerAccount
-                    
+
                     if let encryptedRootXpub = signer.rootXpub,
                        let decryptedRootXpub = Crypto.decrypt(encryptedRootXpub),
                        let xpub = decryptedRootXpub.utf8String {
                         
-                        guard let rootHdkey = URHelper.rootXpubToUrHdkey(xpub) else {
-                            //showAlert(vc: self, title: "UR error.", message: "Unable to convert your root xpub to crypto-hdkey.")
+                        if let rootHdkey = URHelper.rootXpubToUrHdkey(xpub) {
                             self.tableDict[8]["text"] = xpub
-                            self.tableDict[8]["ur"] = xpub
-                            return
+                            self.tableDict[8]["ur"] = rootHdkey
+                        } else {
+                            self.tableDict[8]["text"] = xpub
+                            self.tableDict[8]["ur"] = ""
                         }
-                        
-                        self.tableDict[8]["text"] = xpub
-                        self.tableDict[8]["ur"] = rootHdkey
                     }
                 }
                 
@@ -295,9 +279,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let descriptor = "wpkh([\(xfp)/84h/1h/0h]\(tpub)/0/*)"
                     
                     guard let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) else {
-                        //showAlert(vc: self, title: "UR error.", message: "Unable to convert your descriptor to crypto-account.")
                         self.tableDict[7]["text"] = descriptor
-                        self.tableDict[7]["ur"] = descriptor
+                        self.tableDict[7]["ur"] = ""
                         return
                     }
                     
@@ -311,9 +294,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let cosigner = "wsh([\(xfp)/48h/1h/0h/2h]\(tpub)/0/*)"
                     
                     guard let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) else {
-                        //showAlert(vc: self, title: "UR error.", message: "Unable to convert your cosigner to crypto-account.")
                         self.tableDict[6]["text"] = cosigner
-                        self.tableDict[6]["ur"] = cosigner
+                        self.tableDict[6]["ur"] = ""
                         return
                     }
                     
@@ -324,23 +306,23 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                        let decryptedRootTpub = Crypto.decrypt(encryptedRootTpub),
                        let tpub = decryptedRootTpub.utf8String {
                         
+                        
+                        
                         guard let rootHdkey = URHelper.rootXpubToUrHdkey(tpub) else {
-                            //showAlert(vc: self, title: "UR error.", message: "Unable to convert your root tpub to crypto-hdkey.")
                             self.tableDict[8]["text"] = tpub
-                            self.tableDict[8]["ur"] = tpub
+                            self.tableDict[8]["ur"] = ""
                             return
                         }
                         
                         self.tableDict[8]["text"] = tpub
-                        self.tableDict[8]["ur"] = rootHdkey
+                        self.tableDict[8]["ur"] = ""
                     }
                 }
             }
             
             if let encryptedWords = signer.words {
-                print("words exist: \(signer.words?.count)")
                 guard let decrypted = Crypto.decrypt(encryptedWords),
-                        let words = decrypted.utf8String else { return }
+                      let words = decrypted.utf8String else { return }
                 
                 guard let masterKey = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase) else {
                     showAlert(vc: self, title: "", message: "Unable to derive your master key.")
@@ -348,7 +330,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 }
                 
                 self.masterKey = masterKey
-                                            
+                
                 var arr = words.split(separator: " ")
                 
                 for (i, _) in arr.enumerated() {
@@ -356,28 +338,30 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                         arr[i] = "******"
                     }
                 }
-                                        
-                guard let urSeed = URHelper.mnemonicToCryptoSeed(words) else { return }
                 
-                var firstHalf = ""
-                var secondHalf = ""
-                
-                for (i, c) in urSeed.enumerated() {
-                    if i < 20 {
-                        firstHalf += "\(c)"
+                self.tableDict[1]["censoredText"] = arr.joined(separator: " ")
+                                
+                if let urSeed = URHelper.mnemonicToCryptoSeed(words) {
+                    self.tableDict[1]["ur"] = urSeed
+                    
+                    var firstHalf = ""
+                    var secondHalf = ""
+                    
+                    for (i, c) in urSeed.enumerated() {
+                        if i < 20 {
+                            firstHalf += "\(c)"
+                        }
+                        
+                        if i > urSeed.count - 5 {
+                            secondHalf += "\(c)"
+                        }
                     }
                     
-                    if i > urSeed.count - 5 {
-                        secondHalf += "\(c)"
-                    }
+                    let displaySeed = "\(firstHalf + "*****" + secondHalf)"
+                    self.tableDict[1]["censoredUr"] = displaySeed
                 }
                 
-                let displaySeed = "\(firstHalf + "*****" + secondHalf)"
-                
                 self.tableDict[1]["text"] = words
-                self.tableDict[1]["ur"] = urSeed
-                self.tableDict[1]["censoredText"] = arr.joined(separator: " ")
-                self.tableDict[1]["censoredUr"] = displaySeed
                 self.setWallets(masterKey)
             } else {
                 self.reloadTable()
