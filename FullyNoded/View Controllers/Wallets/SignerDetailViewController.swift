@@ -278,14 +278,13 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let tpub = decryptedbip84tpub.utf8String {
                     let descriptor = "wpkh([\(xfp)/84h/1h/0h]\(tpub)/0/*)"
                     
-                    guard let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) else {
+                    if let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) {
+                        self.tableDict[7]["text"] = descriptor
+                        self.tableDict[7]["ur"] = singleSigCryptoAccount
+                    } else {
                         self.tableDict[7]["text"] = descriptor
                         self.tableDict[7]["ur"] = ""
-                        return
                     }
-                    
-                    self.tableDict[7]["text"] = descriptor
-                    self.tableDict[7]["ur"] = singleSigCryptoAccount
                 }
                 
                 if let encryptedbip48tpub = signer.bip48tpub,
@@ -293,29 +292,25 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                    let tpub = decryptedbip48tpub.utf8String {
                     let cosigner = "wsh([\(xfp)/48h/1h/0h/2h]\(tpub)/0/*)"
                     
-                    guard let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) else {
+                    if let cosignerAccount = URHelper.descriptorToUrAccount(Descriptor(cosigner)) {
+                        self.tableDict[6]["text"] = cosigner
+                        self.tableDict[6]["ur"] = cosignerAccount
+                    } else {
                         self.tableDict[6]["text"] = cosigner
                         self.tableDict[6]["ur"] = ""
-                        return
                     }
-                    
-                    self.tableDict[6]["text"] = cosigner
-                    self.tableDict[6]["ur"] = cosignerAccount
                     
                     if let encryptedRootTpub = signer.rootTpub,
                        let decryptedRootTpub = Crypto.decrypt(encryptedRootTpub),
                        let tpub = decryptedRootTpub.utf8String {
                         
-                        
-                        
-                        guard let rootHdkey = URHelper.rootXpubToUrHdkey(tpub) else {
+                        if let rootHdkey = URHelper.rootXpubToUrHdkey(tpub) {
+                            self.tableDict[8]["text"] = tpub
+                            self.tableDict[8]["ur"] = rootHdkey
+                        } else {
                             self.tableDict[8]["text"] = tpub
                             self.tableDict[8]["ur"] = ""
-                            return
                         }
-                        
-                        self.tableDict[8]["text"] = tpub
-                        self.tableDict[8]["ur"] = ""
                     }
                 }
             }
@@ -628,7 +623,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         qrButton.setImage(.init(systemName: "qrcode"), for: .normal)
         qrButton.imageView?.tintColor = .systemTeal
         qrButton.frame = CGRect(x: x, y: 5, width: 40, height: 40)
-        qrButton.showsTouchWhenHighlighted = true
         qrButton.addTarget(self, action: #selector(exportQr(_:)), for: .touchUpInside)
         return qrButton
     }
@@ -638,7 +632,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         createWalletButton.setImage(.init(systemName: "plus"), for: .normal)
         createWalletButton.imageView?.tintColor = .systemTeal
         createWalletButton.frame = CGRect(x: x, y: 5, width: 40, height: 40)
-        createWalletButton.showsTouchWhenHighlighted = true
         createWalletButton.addTarget(self, action: #selector(createWallet), for: .touchUpInside)
         return createWalletButton
     }
@@ -648,7 +641,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         deleteButton.setImage(.init(systemName: "trash"), for: .normal)
         deleteButton.imageView?.tintColor = .systemRed
         deleteButton.frame = CGRect(x: x, y: 5, width: 40, height: 40)
-        deleteButton.showsTouchWhenHighlighted = true
         return deleteButton
     }
     
@@ -808,6 +800,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     }
     
     @objc func createWallet() {
+        print("createWallet")
         if signer.words != nil {
             creatWalletLive()
         } else {
@@ -860,7 +853,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         }
     }
     
-    private func prompToChoosePrimaryDesc(descriptors: [String], jmDescriptors: [String]) {
+    private func prompToChoosePrimaryDesc(descriptors: [String]) {
         DispatchQueue.main.async { [unowned vc = self] in
             let alert = UIAlertController(title: "Choose a wallet format.", message: "", preferredStyle: .alert)
             
@@ -874,76 +867,10 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 }))
             }
             
-            alert.addAction(UIAlertAction(title: "Join Market", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                self.recoverJm(jmDescriptors: jmDescriptors)
-            }))
-            
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = vc.view
             vc.present(alert, animated: true, completion: nil)
         }
-    }
-    
-    private func recoverJm(jmDescriptors: [String]) {
-        spinner.addConnectingView(vc: self, description: "creating jm wallet...")
-        
-        //let blockheight = UserDefaults.standard.object(forKey: "blockheight") as? Int ?? 0
-        OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
-            guard let self = self else { return }
-            guard let blockchainInfo = blockchainInfo else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "", message: message ?? "error getting blockchaininfo")
-                return
-            }
-            
-            var accountMap:[String:Any] = [
-                "descriptor":jmDescriptors[0],
-                "watching":Array(jmDescriptors[2...jmDescriptors.count - 1]),
-                "label":"Join Market"
-            ]
-            
-            if blockchainInfo.pruned {
-                accountMap["blockheight"] = blockchainInfo.pruneheight
-            } else {
-                accountMap["blockheight"] = 0
-            }
-            
-            ImportWallet.accountMap(accountMap) { [weak self] (success, errorDescription) in
-                guard let self = self else { return }
-
-                guard success else {
-                    showAlert(vc: self, title: "There was an issue creating your wallet...", message: errorDescription ?? "Unknown...")
-                    return
-                }
-                
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-
-                    let tit = "JM wallet created ✓"
-
-                    let mess = "A rescan was triggered, you may not see transactions or balances until the rescan completes."
-
-                    let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
-
-                    alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { action in
-                        DispatchQueue.main.async { [weak self] in
-                            guard let self = self else { return }
-
-                            self.tabBarController?.selectedIndex = 1
-                        }
-                    }))
-
-                    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-                    self.present(alert, animated: true, completion: nil)
-                }
-            }
-        }
-        
-        
-        
-        
     }
     
     private func setPrimDesc(descriptors: [String], descriptorToUseIndex: Int) {
@@ -1030,21 +957,12 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         }
         
         guard let mk = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase),
-              let xfp = Keys.fingerprint(masterKey: mk) else {
-                  showAlert(vc: self, title: "There was an issue deriving your master key", message: message ?? "Unknown")
-                  return
-              }
-        
-        JoinMarket.descriptors(mk, xfp) { [weak self] jmDescriptors in
-            guard let self = self else { return }
-            
-            guard let jmDescriptors = jmDescriptors else {
-                showAlert(vc: self, title: "There was an issue deriving your jm descriptors...", message: message ?? "Unknown")
-                return
-            }
-            
-            self.prompToChoosePrimaryDesc(descriptors: descriptors, jmDescriptors: jmDescriptors)
+              let _ = Keys.fingerprint(masterKey: mk) else {
+            showAlert(vc: self, title: "There was an issue deriving your master key", message: message ?? "Unknown")
+            return
         }
+
+        prompToChoosePrimaryDesc(descriptors: descriptors)
     }
     
     @objc func exportQr(_ sender: UIButton) {

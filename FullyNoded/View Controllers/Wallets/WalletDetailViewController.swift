@@ -197,7 +197,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         self.backupQrImage = generator.getQRCode()
                         
                         guard self.wallet.receiveDescriptor != "" else {
-                            showAlert(vc: self, title: "", message: "Unable to get receiev descriptor")
+                            showAlert(vc: self, title: "", message: "Unable to get receive descriptor.")
                             return
                         }
                         
