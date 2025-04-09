@@ -95,7 +95,7 @@ However, developing and supporting this project is hard work and costs real mone
 
 ## PGP
 
-* 1C72 2776 3647 A221 6E02  E539 025E 9AD2 D3AC 0FCA
+* 297D 3AA6 F231 4CD0 E023  CD9B 7C85 7452 1475 38F5
 
 ## Contributing
 
