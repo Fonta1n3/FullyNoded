@@ -1141,7 +1141,7 @@ class ActiveWalletViewController: UIViewController {
             }
             
             let balances = Balances(dictionary: response)
-            self.offchainBalanceBtc = balances.offchainBalance
+            self.offchainBalanceBtc = balances.offchainBalance.doubleValue.btcBalanceWithSpaces
             self.offchainBalanceSats = balances.offchainBalance.btcToSats
             
             if let exchangeRate = self.fxRate {
@@ -1666,7 +1666,7 @@ class ActiveWalletViewController: UIViewController {
                 showAlert(vc: self, title: "", message: "Fully Noded can only show wallet details for wallets created with Fully Noded.")
                 return
             }
-            
+                        
             vc.walletId = idDetail
             
         case "chooseAWallet":

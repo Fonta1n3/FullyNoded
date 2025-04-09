@@ -878,8 +878,17 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func getLndAddress() {
-        LndRpc.sharedInstance.command(.getnewaddress, nil, nil, nil) { (response, error) in
+        LndRpc.sharedInstance.command(.getnewaddress, nil, nil, nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
             guard let dict = response, let address = dict["addr"] as? String else {
+                spinner.removeConnectingView()
+                if let error = error {
+                    showAlert(vc: self, title: "", message: error)
+                } else {
+                    showAlert(vc: self, title: "", message: "No address returned.")
+                }
+                
                 return
             }
             

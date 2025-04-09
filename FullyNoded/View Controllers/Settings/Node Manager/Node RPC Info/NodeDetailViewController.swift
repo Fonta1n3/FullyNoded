@@ -26,10 +26,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var isJoinMarket = false
     var isBitcoinCore = false
     var isLND = false
-    var isCLN = false
-    
     
     @IBOutlet weak var rpcAuthCopyButton: UIButton!
+    @IBOutlet weak var createPasswordButton: UIButton!
+    @IBOutlet weak var rpcAuthExportButton: UIButton!
     @IBOutlet weak var rpcAuthLabel: UILabel!
     @IBOutlet weak var rpcAuthHeader: UILabel!
     @IBOutlet weak var masterStackView: UIStackView!
@@ -64,7 +64,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBOutlet weak var nostrPrivkeyField: UITextField!
     @IBOutlet weak var nostrToSubscribe: UITextField!
     @IBOutlet weak var networkControlOutlet: UISegmentedControl!
-    @IBOutlet weak var exportNodeOutlet: UIBarButtonItem!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -133,6 +132,37 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             segueToScanNow()
         }
     }
+    
+    @IBAction func createRpcPass(_ sender: Any) {
+        guard let data = Crypto.secret() else { return }
+        rpcPassword.text = data.hex
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            guard let auth = RPCAuth().generateCreds(username: rpcUserField.text ?? "FullyNoded-OG", password: data.hex) else { return }
+            
+            rpcAuthLabel.text = auth.rpcAuth
+        }
+    }
+    
+    
+    @IBAction func exportRpcAuth(_ sender: Any) {
+        guard let rpcAuthText = rpcAuthLabel.text, rpcAuthText != "" else { return }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let activityViewController = UIActivityViewController(activityItems: [rpcAuthText], applicationActivities: nil)
+            
+            if UIDevice.current.userInterfaceIdiom == .pad {
+                activityViewController.popoverPresentationController?.sourceView = self.view
+                activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+            }
+            
+            self.present(activityViewController, animated: true) {}
+        }
+    }
+    
     
     @objc func textFieldDidChange(_ textField: UITextField) {
         if rpcUserField.text != "" && rpcPassword.text != "" {
@@ -238,7 +268,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                self.onionAddressField != nil,
                self.rpcAuthLabel != nil,
                self.rpcAuthHeader != nil,
-               self.rpcAuthCopyButton != nil {
+               self.rpcAuthExportButton != nil,
+               self.rpcAuthCopyButton != nil,
+               self.createPasswordButton != nil {
+                self.createPasswordButton.removeFromSuperview()
+                self.rpcAuthExportButton.removeFromSuperview()
                 self.rpcAuthCopyButton.removeFromSuperview()
                 self.rpcAuthHeader.removeFromSuperview()
                 self.rpcAuthLabel.removeFromSuperview()
@@ -253,7 +287,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 self.certHeader.removeFromSuperview()
                 self.onionAddressField.removeFromSuperview()
                 self.scanQROutlet.tintColor = .clear
-                self.exportNodeOutlet.tintColor = .clear
                 self.networkControlOutlet.alpha = 1
             }
         }
@@ -361,25 +394,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
-    @IBAction func exportNode(_ sender: Any) {
-        if !isNostr {
-            segueToExport()
-        } else {
-            showAlert(vc: self, title: "", message: "To export a nostr node just tap the QR on the public key.")
-        }
-    }
-    
-    private func segueToExport() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToExportNode", sender: vc)
-        }
-    }
-    
     private func encryptCert(_ certText: String) -> Data? {
-         guard let certData = Data(base64Encoded: certText.condenseWhitespace(), options: [.ignoreUnknownCharacters]) else {
-             showAlert(vc: self, title: "Error", message: "Unable to convert the cert text to base64 data.")
-             return nil
-         }
+        let certData = Data(certText.utf8)
          
          guard let encryptedCert = Crypto.encrypt(certData) else {
              showAlert(vc: self, title: "Error", message: "Unable to encrypt your cert data.")
@@ -624,7 +640,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
                 
                 let arr = addressText.split(separator: ":")
-                guard arr.count == 2 else { return }
+                guard arr.count == 2 else {
+                    showAlert(vc: self, title: "Not updated, port missing...", message: "Please make sure you add the port at the end of your onion hostname, such as xjshdu.onion:8332.\n\n8332 for mainnet, 8080 for LND or 28183 for Join Market.")
+                    return
+                }
                 
                 guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
                 
@@ -781,7 +800,12 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         usernameHeader != nil,
                         usernameHeader != nil,
                         macaroonField != nil,
-                        macaroonHeader != nil {
+                        macaroonHeader != nil,
+                    rpcAuthCopyButton != nil,
+                    rpcAuthExportButton != nil,
+                    createPasswordButton != nil {
+                        createPasswordButton.removeFromSuperview()
+                        rpcAuthExportButton.removeFromSuperview()
                         rpcAuthLabel.removeFromSuperview()
                         rpcAuthHeader.removeFromSuperview()
                         rpcAuthCopyButton.removeFromSuperview()
@@ -791,7 +815,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         usernameHeader.removeFromSuperview()
                         macaroonField.removeFromSuperview()
                         macaroonHeader.removeFromSuperview()
-                        exportNodeOutlet.tintColor = .clear
                         scanQROutlet.tintColor = .clear
                         networkControlOutlet.alpha = 0
                     }
@@ -799,7 +822,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 
                 if node.cert != nil, certField != nil {
                     if let decryptedCert = Crypto.decrypt(node.cert!) {
-                        certField.text = decryptedCert.urlSafeB64String
+                        certField.text = decryptedCert.utf8String ?? ""
                     }
                 }
                 
@@ -864,11 +887,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     private func removeNonJm() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            
+            self.createPasswordButton.removeFromSuperview()
             self.rpcAuthLabel.removeFromSuperview()
             self.rpcAuthHeader.removeFromSuperview()
+            self.rpcAuthExportButton.removeFromSuperview()
             self.rpcAuthCopyButton.removeFromSuperview()
             self.rpcUserField.removeFromSuperview()
-            self.exportNodeOutlet.tintColor = .clear
             self.scanQROutlet.tintColor = .clear
             self.rpcPassword.removeFromSuperview()
             self.passwordHeader.removeFromSuperview()
@@ -882,27 +907,29 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            rpcAuthLabel.removeFromSuperview()
-            rpcAuthHeader.removeFromSuperview()
-            rpcAuthCopyButton.removeFromSuperview()
+            if self.rpcAuthLabel != nil {
+                self.rpcAuthLabel.removeFromSuperview()
+            }
+            if self.rpcAuthCopyButton != nil {
+                self.rpcAuthCopyButton.removeFromSuperview()
+            }
+            if self.rpcAuthExportButton != nil {
+                self.rpcAuthExportButton.removeFromSuperview()
+            }
+            if createPasswordButton != nil {
+                self.createPasswordButton.removeFromSuperview()
+            }
+            if self.rpcAuthHeader != nil {
+                self.rpcAuthHeader.removeFromSuperview()
+            }
             
-            if self.isCLN {
-                self.onionAddressField.placeholder = "localhost:9737"
-                self.rpcPassword.placeholder = "Sparko key"
-                self.passwordHeader.text = "Sparko key"
-                self.usernameHeader.removeFromSuperview()
-                self.certField.removeFromSuperview()
-                self.certHeader.removeFromSuperview()
-                self.macaroonField.removeFromSuperview()
-                self.macaroonHeader.removeFromSuperview()
-            } else if self.isLND {
+            if self.isLND {
                 self.onionAddressField.placeholder = "localhost:8080"
                 self.rpcPassword.removeFromSuperview()
                 self.passwordHeader.removeFromSuperview()
             }
             self.usernameHeader.removeFromSuperview()
             self.rpcUserField.removeFromSuperview()
-            self.exportNodeOutlet.tintColor = .clear
             self.scanQROutlet.tintColor = .clear
         }
     }
@@ -925,6 +952,18 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            if self.rpcAuthLabel != nil {
+                self.rpcAuthLabel.removeFromSuperview()
+            }
+            if self.rpcAuthCopyButton != nil {
+                self.rpcAuthCopyButton.removeFromSuperview()
+            }
+            if self.rpcAuthExportButton != nil {
+                self.rpcAuthExportButton.removeFromSuperview()
+            }
+            if createPasswordButton != nil {
+                self.createPasswordButton.removeFromSuperview()
+            }
             if self.onionAddressField != nil {
                 self.onionAddressField.resignFirstResponder()
             }

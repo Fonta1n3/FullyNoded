@@ -21,6 +21,9 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var isBitcoinCore = false
     var isLND = false
     var isCLN = false
+    private var now: Date = .now
+    private var firstTap: Date?
+    private var lastTap: Date?
     private var authenticated = false
     @IBOutlet var nodeTable: UITableView!
     
@@ -153,11 +156,22 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     @objc func editNode(_ sender: UIButton) {
-        guard let id = sender.restorationIdentifier, let section = Int(id) else { return }
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            self.selectedIndex = section
-            self.performSegue(withIdentifier: "updateNode", sender: self)
+        func editNow() {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.firstTap = .now
+                guard let id = sender.restorationIdentifier, let section = Int(id) else { return }
+                self.selectedIndex = section
+                self.performSegue(withIdentifier: "updateNode", sender: self)
+            }
+        }
+        
+        if let firstTap = firstTap {
+            if firstTap.timeIntervalSinceNow < -2.0 {
+                editNow()
+            }
+        } else {
+            editNow()
         }
     }
     
@@ -281,10 +295,6 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                                             NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
                                         }
                                     }
-                                    
-//                                    if !nodeStr.isJoinMarket {
-//                                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-//                                    }
                                 }
                             }
                         }
@@ -338,41 +348,12 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             let alert = UIAlertController(title: "Scan QR or add manually?", message: "You can add the node credentials manually or scan a QR code.", preferredStyle: alertStyle)
             
-            alert.addAction(UIAlertAction(title: "Nostrnode", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                self.isNostr = true
-                self.isLightning = false
-                self.isJoinMarket = false
-                self.isBitcoinCore = false
-                self.segueToAddNodeManually()
-            }))
-            
             alert.addAction(UIAlertAction(title: "Bitcoin Core", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                 
                 self.isLightning = false
                 self.isJoinMarket = false
                 self.isBitcoinCore = true
-                self.segueToAddNodeManually()
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Join Market", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                self.isLightning = false
-                self.isJoinMarket = true
-                self.isBitcoinCore = false
-                self.segueToAddNodeManually()
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Core Lightning", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                self.isCLN = true
-                self.isLND = false
-                self.isLightning = true
-                self.isJoinMarket = false
-                self.isBitcoinCore = false
                 self.segueToAddNodeManually()
             }))
             
@@ -440,11 +421,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         if segue.identifier == "updateNode" {
             if let vc = segue.destination as? NodeDetailViewController {
                 vc.selectedNode = self.nodeArray[selectedIndex]
-                if self.nodeArray[selectedIndex]["rpcpassword"] != nil {
-                    vc.isCLN = true
-                } else {
-                    vc.isLND = true
-                }
+                vc.isLND = true
                 vc.createNew = false
             }
         }
@@ -457,7 +434,6 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 vc.isNostr = self.isNostr
                 vc.isBitcoinCore = self.isBitcoinCore
                 vc.isLND = self.isLND
-                vc.isCLN = self.isCLN
             }
         }
         
@@ -478,3 +454,5 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
     }
 }
+
+

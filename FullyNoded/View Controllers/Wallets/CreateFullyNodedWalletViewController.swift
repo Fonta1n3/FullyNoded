@@ -8,6 +8,7 @@
 
 import UIKit
 
+
 class CreateFullyNodedWalletViewController: UIViewController, UINavigationControllerDelegate, UIDocumentPickerDelegate {
     
     @IBOutlet weak var multiSigOutlet: UIButton!
@@ -30,7 +31,31 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         navigationController?.delegate = self
         singleSigOutlet.layer.cornerRadius = 8
         multiSigOutlet.layer.cornerRadius = 8
+        
+       
+        
+//        if #available(iOS 17.0, *) {
+//            let reader = NFCReader()
+//            print("reader: \(reader.canBeginSession)")
+//            //let session = read
+//            do {
+//                try await reader.beginSession()
+//                var tag
+//                print("\(try await reader.readTag(<#T##tag: any NFCNDEFTag##any NFCNDEFTag#>))")
+//            } catch {
+//                print("begin session error: \(error.localizedDescription)")
+//            }
+//             
+//        } else {
+//            // Fallback on earlier versions
+//        }
     }
+    
+//    override func viewDidAppear(_ animated: Bool) {
+//        readNfc()
+//    }
+    
+    
     
     @IBAction func pasteAction(_ sender: Any) {
         if let data = UIPasteboard.general.data(forPasteboardType: "com.apple.traditional-mac-plain-text") {

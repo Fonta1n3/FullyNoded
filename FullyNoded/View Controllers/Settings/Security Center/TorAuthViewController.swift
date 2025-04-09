@@ -73,7 +73,7 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
                 let dict = ["privateKey":encryptedKey, "publicKey":"user added public key", "id":UUID()] as [String : Any]
                 CoreDataService.saveEntity(dict: dict, entityName: .authKeys) { [unowned vc = self] success in
                     if success {
-                        displayAlert(viewController: vc, isError: false, message: "Auth keys added")
+                        showAlert(vc: vc, title: "", message: "Auth keys added.")
                     }
                 }
                 
@@ -85,7 +85,8 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
                 if success {
                     CoreDataService.update(id: authKeysStr.id, keyToUpdate: "publicKey", newValue: "user supplied keys", entity: .authKeys) { [unowned vc = self] success in
                         if success {
-                            displayAlert(viewController: vc, isError: false, message: "Updated auth keys")
+                            //displayAlert(viewController: vc, isError: false, message: "Updated auth keys")
+                            showAlert(vc: vc, title: "", message: "Updated autyh keys.")
                         } else {
                             showAlert(vc: vc, title: "Error", message: "Error saving user added public key")
                         }
@@ -119,19 +120,19 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
                                 if success {
                                     CoreDataService.update(id: authKeysStruct.id, keyToUpdate: "publicKey", newValue: pubKey, entity: .authKeys) { [unowned vc = self] success in
                                         if success {
-                                            displayAlert(viewController: vc, isError: false, message: "auth keys updated!")
+                                            showAlert(vc: vc, title: "", message: "Auth kets updated.")
                                         } else {
-                                            showAlert(vc: vc, title: "Error", message: "Error saving your public key")
+                                            showAlert(vc: vc, title: "Error", message: "Error saving your public key.")
                                         }
                                     }
                                 } else {
-                                    showAlert(vc: vc, title: "Error", message: "Error saving your encrypted private key")
+                                    showAlert(vc: vc, title: "Error", message: "Error saving your encrypted private key.")
                                 }
                             }
                         } else {
                             CoreDataService.saveEntity(dict: dict, entityName: .authKeys) { success in
                                 if success {
-                                    displayAlert(viewController: vc, isError: false, message: "Auth keys saved!")
+                                    showAlert(vc: vc, title: "", message: "Auth keys saved.")
                                 }
                             }
                         }

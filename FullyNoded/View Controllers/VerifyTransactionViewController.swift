@@ -8,8 +8,9 @@
 
 import UIKit
 import LibWally
+//import CoreNFC
 
-class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate {
+class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate/*, NFCNDEFReaderSessionDelegate*/ {
     
     var isChannelFunding = false
     var voutChannelFunding:Int?
@@ -43,7 +44,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var confs = 0
     var labelText = "no label added"
     var memoText = "no memo added"
-    var id:UUID!
+    var id: UUID!
     var hasSigned = false
     var isSigning = false
     var wallet:Wallet?
@@ -55,6 +56,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var isBBQr = false
     var isUR = false
     var isPlainText = false
+    //var ndefMessage: NFCNDEFMessage?
+    //var readerSession: NFCNDEFReaderSession?
+    var exporting = false
     
     @IBOutlet weak private var verifyTable: UITableView!
     @IBOutlet weak private var exportButtonOutlet: UIButton!
@@ -106,6 +110,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         isUR = false
         isPlainText = false
         qrCodeStringToExport = ""
+        exporting = false
     }
     
     private func reset() {
@@ -348,6 +353,13 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             let alert = UIAlertController(title: "Add Transaction",
                                           message: "You can add a transaction in a number of ways.",
                                           preferredStyle: .alert)
+            
+//            alert.addAction(UIAlertAction(title: "NFC", style: .default, handler: { [weak self] action in
+//                guard let self = self else { return }
+//                
+//                self.readerSession = NFCNDEFReaderSession(delegate: self, queue: DispatchQueue.main, invalidateAfterFirstRead: false)
+//                self.readerSession?.begin()
+//            }))
             
             alert.addAction(UIAlertAction(title: "Upload File", style: .default, handler: { action in
                 self.presentUploader()
@@ -2071,7 +2083,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let label = labelCell.viewWithTag(1) as! UILabel
         let button = labelCell.viewWithTag(2) as! UIButton
         button.addTarget(self, action: #selector(updateLabelMemoAction), for: .touchUpInside)
-        button.showsTouchWhenHighlighted = true
+        //button.showsTouchWhenHighlighted = true
         label.text = labelText
         return labelCell
     }
@@ -2082,7 +2094,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let label = labelCell.viewWithTag(1) as! UILabel
         let button = labelCell.viewWithTag(2) as! UIButton
         button.addTarget(self, action: #selector(updateLabelMemoAction), for: .touchUpInside)
-        button.showsTouchWhenHighlighted = true
+        //button.showsTouchWhenHighlighted = true
         label.text = memoText
         return labelCell
     }
@@ -2467,6 +2479,21 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
     }
     
+//    func readerSession(_ session: NFCNDEFReaderSession, didInvalidateWithError error: any Error) {
+//        print("readerSession error")
+//        print(error.localizedDescription)
+//    }
+//    
+//    func readerSession(_ session: NFCNDEFReaderSession, didDetectNDEFs messages: [NFCNDEFMessage]) {
+//        for message in messages {
+//            for record in message.records {
+//                if let string = String(data: record.payload, encoding: .ascii) {
+//                    print(string)
+//                }
+//            }
+//        }
+//    }
+    
     //Need to export either as blinded or plain text.
     private func exportPsbt(blindedpsbt: String?, plainText: String?) {
         DispatchQueue.main.async { [weak self] in
@@ -2482,7 +2509,28 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 itemToExport = plain
             }
             
-            let alert = UIAlertController(title: tit, message: "Share as a file, text or QR?", preferredStyle: .alert)
+            let alert = UIAlertController(title: tit, message: "Share?", preferredStyle: .alert)
+            
+//            alert.addAction(UIAlertAction(title: "NFC", style: .default, handler: { [weak self] action in
+//                guard let self = self else { return }
+//                
+//                exporting = true
+//                guard NFCNDEFReaderSession.readingAvailable else {
+//                    let alertController = UIAlertController(
+//                        title: "Scanning Not Supported",
+//                        message: "This device doesn't support tag scanning.",
+//                        preferredStyle: .alert
+//                    )
+//                    alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+//                    self.present(alertController, animated: true, completion: nil)
+//                    return
+//                }
+//                
+//                
+//                readerSession = NFCNDEFReaderSession(delegate: self, queue: nil, invalidateAfterFirstRead: false)
+//                readerSession?.alertMessage = "Hold your iPhone near a writable NFC tag to update."
+//                readerSession?.begin()
+//            }))
             
             alert.addAction(UIAlertAction(title: "File", style: .default, handler: { action in
                 self.convertPSBTtoData(string: itemToExport)
@@ -2500,7 +2548,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 self.exportAsQR()
             }))
             
-            alert.addAction(UIAlertAction(title: "BBQr QR", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "BBQr", style: .default, handler: { action in
                 self.isBBQr = true
                 self.isUR = true
                 self.isPlainText = false
@@ -2521,6 +2569,121 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             self.present(alert, animated: true) {}
         }
     }
+    
+//    // MARK: - NFCNDEFReaderSessionDelegate
+//    func readerSessionDidBecomeActive(_ session: NFCNDEFReaderSession) {
+////        let textPayload = NFCNDEFPayload.wellKnownTypeTextPayload(
+////            string: "Partly signed PSBT",
+////            locale: Locale(identifier: "En")
+////        )
+//        
+//        //NFCNDEFPayload(format: <#T##NFCTypeNameFormat#>, type: <#T##Data#>, identifier: <#T##Data#>, payload: <#T##Data#>)
+//        
+//        guard let data = Data(base64Encoded: unsignedPsbt) else { return }
+//        
+//        let payload = NFCNDEFPayload(format: .nfcWellKnown, type: "psbt".utf8, identifier: "bitcoin.org:psbt".utf8, payload: data, chunkSize: data.count)
+////        let textPayload = NFCNDEFPayload.wellKnownTypeTextPayload(
+////            string: unsignedPsbt,
+////            locale: Locale(identifier: "En")
+////        )
+////        let textPayload = NFCNDEFPayload.wellKnownTypeTextPayload(
+////            string: unsignedPsbt,
+////            locale: Locale(identifier: "En")
+////        )
+//    
+//        
+//        //let dataPayload = NFCNDEFPayload.
+//        if exporting {
+//            //let urlPayload = self.createURLPayload()
+//            
+//            ndefMessage = NFCNDEFMessage(records: [payload])
+//            //session.wr
+//            //print("urlPayload: \(urlPayload.debugDescription)")
+//            os_log("MessageSize=%d", ndefMessage!.length)
+//        }
+//    }
+//    
+//    func createURLPayload() -> NFCNDEFPayload? {
+//        guard let data = Data(base64Encoded: unsignedPsbt) else {
+//            print("data is nil")
+//            return nil
+//        }
+//        
+//        let fileManager = FileManager.default
+//        let fileURL = fileManager.temporaryDirectory.appendingPathComponent("fullynoded.psbt")
+//        try? data.write(to: fileURL)
+//        os_log("url: %@", (fileURL.absoluteString))
+//        
+//        return NFCNDEFPayload.wellKnownTypeURIPayload(url: fileURL)
+//    }
+//    
+//    func tagRemovalDetect(_ tag: NFCNDEFTag) {
+//        // In the tag removal procedure, you connect to the tag and query for
+//        // its availability. You restart RF polling when the tag becomes
+//        // unavailable; otherwise, wait for certain period of time and repeat
+//        // availability checking.
+//        self.readerSession?.connect(to: tag) { (error: Error?) in
+//            if error != nil || !tag.isAvailable {
+//                
+//                os_log("Restart polling")
+//                
+//                self.readerSession?.restartPolling()
+//                return
+//            }
+//            DispatchQueue.global().asyncAfter(deadline: DispatchTime.now() + .milliseconds(500), execute: {
+//                self.tagRemovalDetect(tag)
+//            })
+//        }
+//    }
+//    
+//    func readerSession(_ session: NFCNDEFReaderSession, didDetect tags: [NFCNDEFTag]) {
+//        print("didDetect")
+//        
+//        if tags.count > 1 {
+//            session.alertMessage = "More than 1 tags found. Please present only 1 tag."
+//            self.tagRemovalDetect(tags.first!)
+//            return
+//        }
+//        
+//        // You connect to the desired tag.
+//        let tag = tags.first!
+//        session.connect(to: tag) { (error: Error?) in
+//            if error != nil {
+//                session.restartPolling()
+//                return
+//            }
+//            
+//            // You then query the NDEF status of tag.
+//            tag.queryNDEFStatus() { (status: NFCNDEFStatus, capacity: Int, error: Error?) in
+//                if error != nil {
+//                    session.invalidate(errorMessage: "Fail to determine NDEF status.  Please try again.")
+//                    return
+//                }
+//                
+//                if status == .readOnly {
+//                    session.invalidate(errorMessage: "Tag is not writable.")
+//                } else if status == .readWrite {
+//                    if self.ndefMessage!.length > capacity {
+//                        session.invalidate(errorMessage: "Tag capacity is too small.  Minimum size requirement is \(self.ndefMessage!.length) bytes.")
+//                        return
+//                    }
+//                    
+//                    // When a tag is read-writable and has sufficient capacity,
+//                    // write an NDEF message to it.
+//                    tag.writeNDEF(self.ndefMessage!) { (error: Error?) in
+//                        if error != nil {
+//                            session.invalidate(errorMessage: "Update tag failed. Please try again.")
+//                        } else {
+//                            session.alertMessage = "Update success!"
+//                            session.invalidate()
+//                        }
+//                    }
+//                } else {
+//                    session.invalidate(errorMessage: "Tag is not NDEF formatted.")
+//                }
+//            }
+//        }
+//    }
     
     private func exportAsQR() {
         DispatchQueue.main.async { [weak self] in

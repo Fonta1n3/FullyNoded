@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="nU0-zz-6p3">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="nU0-zz-6p3">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22685"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -44,7 +44,7 @@
                                                     </constraints>
                                                 </imageView>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="3" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chevron.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="E1C-qA-C4O">
-                                                    <rect key="frame" x="313" y="21.5" width="15" height="11.5"/>
+                                                    <rect key="frame" x="313" y="21" width="15" height="11.5"/>
                                                     <color key="tintColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="15" id="WRH-vp-Lsb"/>
@@ -588,7 +588,7 @@
                                 <blurEffect style="systemChromeMaterialDark"/>
                             </visualEffectView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oLf-4U-6TA">
-                                <rect key="frame" x="263" y="75" width="96" height="23"/>
+                                <rect key="frame" x="263" y="75.5" width="96" height="22.5"/>
                                 <color key="tintColor" red="0.35294118520000001" green="0.77647060160000003" blue="0.97647058959999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                 <state key="normal" title=" import tx" image="square.and.arrow.down" catalog="system">
                                     <color key="titleColor" systemColor="systemTealColor"/>
@@ -783,7 +783,7 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="4" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chevron.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="LY5-z0-p5c">
-                                                    <rect key="frame" x="312" y="21.5" width="15" height="11.5"/>
+                                                    <rect key="frame" x="312" y="21" width="15" height="11.5"/>
                                                     <color key="tintColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="15" id="M5O-yb-UbL"/>
@@ -2194,7 +2194,7 @@ xxxxx</string>
                                                     </constraints>
                                                 </view>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chevron.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Bu6-2i-MzN">
-                                                    <rect key="frame" x="305" y="18.5" width="22" height="18"/>
+                                                    <rect key="frame" x="305" y="18" width="22" height="18"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="21.5" id="36K-4Q-ls9"/>
                                                         <constraint firstAttribute="width" constant="22" id="pJT-nb-8Pu"/>
@@ -2615,7 +2615,7 @@ xxxxx</string>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="abO-4I-6y6">
-                                                    <rect key="frame" x="300" y="11" width="27" height="23.5"/>
+                                                    <rect key="frame" x="300" y="11" width="27" height="23"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="hZv-NP-XhX"/>
                                                     </constraints>
@@ -2748,7 +2748,7 @@ xxxxx</string>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="RaQ-2b-3Mi">
-                                                    <rect key="frame" x="300" y="11" width="27" height="23.5"/>
+                                                    <rect key="frame" x="300" y="11" width="27" height="23"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="Bh5-gY-364"/>
                                                     </constraints>
@@ -2781,7 +2781,7 @@ xxxxx</string>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
                                                 <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yFv-CF-yvd">
-                                                    <rect key="frame" x="300" y="11" width="27" height="23.5"/>
+                                                    <rect key="frame" x="300" y="11" width="27" height="23"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="M7O-tP-ypC"/>
                                                     </constraints>
@@ -4441,7 +4441,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
             </objects>
             <point key="canvasLocation" x="2718" y="376"/>
         </scene>
-        <!--v1.2.0-->
+        <!--v1.3.2-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -4468,7 +4468,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chevron.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="2nC-tp-gvu">
-                                                    <rect key="frame" x="312" y="21.5" width="15" height="11.5"/>
+                                                    <rect key="frame" x="312" y="21" width="15" height="11.5"/>
                                                     <color key="tintColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="15" id="eaA-7O-AGW"/>
@@ -4682,7 +4682,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v1.2.0" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v1.3.2" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -4930,7 +4930,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chevron.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="uY1-pH-h8U">
-                                                    <rect key="frame" x="312" y="21.5" width="15" height="11.5"/>
+                                                    <rect key="frame" x="312" y="21" width="15" height="11.5"/>
                                                     <color key="tintColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="15" id="Shu-16-N7N"/>
@@ -5154,10 +5154,10 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="8gH-bm-rKb">
-                                <rect key="frame" x="340" y="242.5" width="19" height="23.5"/>
+                                <rect key="frame" x="340" y="243" width="19" height="23"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wCH-QJ-4pU">
-                                        <rect key="frame" x="0.0" y="0.0" width="19" height="23.5"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="19" height="23"/>
                                         <color key="tintColor" systemColor="systemTealColor"/>
                                         <state key="normal" image="square.and.arrow.up" catalog="system"/>
                                         <connections>
@@ -5299,34 +5299,63 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC password" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ojR-cB-7rc">
+                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8Gq-6b-0VU">
                                         <rect key="frame" x="0.0" y="217.5" width="343" height="20.5"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC password" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ojR-cB-7rc">
+                                                <rect key="frame" x="0.0" y="0.0" width="110.5" height="20.5"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="trailing" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jfM-gd-6gx">
+                                                <rect key="frame" x="110.5" y="0.0" width="232.5" height="20.5"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                                                <color key="tintColor" systemColor="systemTealColor"/>
+                                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                <state key="normal" title=" create" image="arrow.clockwise" catalog="system">
+                                                    <color key="titleColor" systemColor="systemTealColor"/>
+                                                </state>
+                                                <connections>
+                                                    <action selector="createRpcPass:" destination="B99-yZ-naR" eventType="touchUpInside" id="ZaI-Or-77R"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
                                     <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="rpcpassword" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="4YC-xq-wqu">
                                         <rect key="frame" x="0.0" y="247" width="343" height="34"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
-                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="icR-ir-DLj">
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="icR-ir-DLj">
                                         <rect key="frame" x="0.0" y="290" width="343" height="23"/>
                                         <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC auth" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="o4E-E3-l5r">
-                                                <rect key="frame" x="0.0" y="0.0" width="71" height="23"/>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC authentication" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="o4E-E3-l5r">
+                                                <rect key="frame" x="0.0" y="0.0" width="146" height="23"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="trailing" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nBU-8h-I0k">
-                                                <rect key="frame" x="71" y="0.0" width="272" height="23"/>
+                                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="trailing" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nBU-8h-I0k">
+                                                <rect key="frame" x="154" y="0.0" width="160" height="23"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                                                <color key="tintColor" systemColor="systemTealColor"/>
+                                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                <state key="normal" title=" export" image="square.and.arrow.up" catalog="system">
+                                                    <color key="titleColor" systemColor="systemTealColor"/>
+                                                </state>
+                                                <connections>
+                                                    <action selector="exportRpcAuth:" destination="B99-yZ-naR" eventType="touchUpInside" id="RB6-Xt-ypi"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="trailing" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kkS-bt-Mxf">
+                                                <rect key="frame" x="322" y="0.0" width="21" height="23"/>
                                                 <color key="tintColor" systemColor="systemTealColor"/>
                                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                                 <state key="normal" image="doc.on.doc" catalog="system"/>
                                                 <connections>
-                                                    <action selector="copyRpcAuthAction:" destination="B99-yZ-naR" eventType="touchUpInside" id="B1A-t4-iCj"/>
+                                                    <action selector="copyRpcAuthAction:" destination="B99-yZ-naR" eventType="touchUpInside" id="grf-ay-KOa"/>
                                                 </connections>
                                             </button>
                                         </subviews>
@@ -5337,7 +5366,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="  " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="j18-1b-WXU">
                                                 <rect key="frame" x="0.0" y="0.0" width="343" height="20.5"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                <nil key="textColor"/>
+                                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                         </subviews>
@@ -5521,27 +5550,19 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="J9p-j8-H8t">
-                        <rightBarButtonItems>
-                            <barButtonItem image="square.and.arrow.up" catalog="system" id="gwp-vI-ePE">
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <connections>
-                                    <action selector="exportNode:" destination="B99-yZ-naR" id="c4z-NG-lTv"/>
-                                </connections>
-                            </barButtonItem>
-                            <barButtonItem image="qrcode.viewfinder" catalog="system" id="awp-qu-L3a">
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <connections>
-                                    <action selector="scanQuickConnect:" destination="B99-yZ-naR" id="TMH-9e-2OO"/>
-                                </connections>
-                            </barButtonItem>
-                        </rightBarButtonItems>
+                        <barButtonItem key="rightBarButtonItem" image="qrcode.viewfinder" catalog="system" id="awp-qu-L3a">
+                            <color key="tintColor" systemColor="systemTealColor"/>
+                            <connections>
+                                <action selector="scanQuickConnect:" destination="B99-yZ-naR" id="TMH-9e-2OO"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="addressHeader" destination="1oS-WI-SUN" id="HzV-ar-yfP"/>
                         <outlet property="addressHeaderOutlet" destination="1oS-WI-SUN" id="Oiu-pO-bzi"/>
                         <outlet property="certField" destination="b2n-IJ-p4P" id="2Oa-RW-RkX"/>
                         <outlet property="certHeader" destination="WBC-Zb-OwL" id="SCu-mB-h5r"/>
-                        <outlet property="exportNodeOutlet" destination="gwp-vI-ePE" id="9uW-yf-7jK"/>
+                        <outlet property="createPasswordButton" destination="jfM-gd-6gx" id="IJP-BR-TsK"/>
                         <outlet property="header" destination="DTI-AZ-owi" id="puY-tw-wga"/>
                         <outlet property="macaroonField" destination="cPw-T1-Xd9" id="k5s-S4-m2c"/>
                         <outlet property="macaroonHeader" destination="vSy-Vj-wcK" id="9Ue-6n-u0E"/>
@@ -5561,7 +5582,8 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         <outlet property="onionAddressField" destination="o4M-Vw-QWb" id="hON-oG-n3p"/>
                         <outlet property="passwordHeader" destination="ojR-cB-7rc" id="0oQ-TO-zvv"/>
                         <outlet property="refreshNostrPrivkeyOutlet" destination="9Vg-ri-ta1" id="ecG-5y-dpe"/>
-                        <outlet property="rpcAuthCopyButton" destination="nBU-8h-I0k" id="uk6-0e-xrt"/>
+                        <outlet property="rpcAuthCopyButton" destination="kkS-bt-Mxf" id="CEk-zM-UGI"/>
+                        <outlet property="rpcAuthExportButton" destination="nBU-8h-I0k" id="DJb-3Q-hVb"/>
                         <outlet property="rpcAuthHeader" destination="o4E-E3-l5r" id="dqL-K8-vb4"/>
                         <outlet property="rpcAuthLabel" destination="j18-1b-WXU" id="fGt-rB-8u6"/>
                         <outlet property="rpcPassword" destination="4YC-xq-wqu" id="KIS-dN-d6I"/>
@@ -5626,7 +5648,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="4" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chevron.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="rAq-pw-ZNy">
-                                                    <rect key="frame" x="315.5" y="11.5" width="12.5" height="31.5"/>
+                                                    <rect key="frame" x="315.5" y="11" width="12.5" height="31.5"/>
                                                     <color key="tintColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="35" id="Ug7-0J-F2w"/>
@@ -5897,7 +5919,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="tray.and.arrow.up" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="07b-mP-AGb">
-                                                    <rect key="frame" x="263" y="8" width="32" height="35"/>
+                                                    <rect key="frame" x="263" y="9" width="32" height="34"/>
                                                     <color key="tintColor" systemColor="systemTealColor"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="32" id="44M-yd-YLx"/>
@@ -7073,7 +7095,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="ejH-sy-hlm"/>
-        <segue reference="qed-hl-jG5"/>
+        <segue reference="ckQ-WD-ole"/>
         <segue reference="Fvb-gy-rb3"/>
         <segue reference="4g3-DC-Q5z"/>
         <segue reference="Wy7-ur-TeS"/>
@@ -7091,9 +7113,9 @@ You can upload the wallets.fullynoded file that was created when you made the ba
         <image name="Home" width="30" height="30"/>
         <image name="Settings" width="30" height="30"/>
         <image name="antenna.radiowaves.left.and.right" catalog="system" width="128" height="111"/>
-        <image name="arrow.clockwise" catalog="system" width="113" height="128"/>
+        <image name="arrow.clockwise" catalog="system" width="110" height="128"/>
         <image name="arrow.down.left" catalog="system" width="128" height="112"/>
-        <image name="arrow.triangle.2.circlepath" catalog="system" width="128" height="104"/>
+        <image name="arrow.triangle.2.circlepath" catalog="system" width="128" height="117"/>
         <image name="arrow.up.right" catalog="system" width="128" height="112"/>
         <image name="arrowtriangle.right.and.line.vertical.and.arrowtriangle.left" catalog="system" width="128" height="93"/>
         <image name="bitcoinsign.circle" catalog="system" width="128" height="123"/>
@@ -7103,7 +7125,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
         <image name="bolt.horizontal" catalog="system" width="128" height="59"/>
         <image name="chevron.right" catalog="system" width="97" height="128"/>
         <image name="circle.fill" catalog="system" width="128" height="123"/>
-        <image name="clock.arrow.circlepath" catalog="system" width="128" height="112"/>
+        <image name="clock.arrow.circlepath" catalog="system" width="128" height="119"/>
         <image name="desktopcomputer" catalog="system" width="128" height="101"/>
         <image name="doc.on.clipboard" catalog="system" width="116" height="128"/>
         <image name="doc.on.doc" catalog="system" width="116" height="128"/>
@@ -7113,7 +7135,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
         <image name="gear" catalog="system" width="128" height="122"/>
         <image name="info.circle" catalog="system" width="128" height="123"/>
         <image name="link" catalog="system" width="128" height="124"/>
-        <image name="lock" catalog="system" width="125" height="128"/>
+        <image name="lock" catalog="system" width="111" height="128"/>
         <image name="logo_grey.png" width="512.25" height="512.25"/>
         <image name="minus.rectangle" catalog="system" width="128" height="93"/>
         <image name="person.3" catalog="system" width="128" height="66"/>
@@ -7125,12 +7147,12 @@ You can upload the wallets.fullynoded file that was created when you made the ba
         <image name="qrcode.viewfinder" catalog="system" width="128" height="115"/>
         <image name="signature" catalog="system" width="128" height="89"/>
         <image name="slider.horizontal.3" catalog="system" width="128" height="99"/>
-        <image name="square.and.arrow.down" catalog="system" width="112" height="128"/>
-        <image name="square.and.arrow.up" catalog="system" width="108" height="128"/>
+        <image name="square.and.arrow.down" catalog="system" width="114" height="128"/>
+        <image name="square.and.arrow.up" catalog="system" width="110" height="128"/>
         <image name="square.stack.3d.down.right" catalog="system" width="105" height="128"/>
         <image name="timer" catalog="system" width="128" height="123"/>
         <image name="trash.circle" catalog="system" width="128" height="123"/>
-        <image name="tray.and.arrow.up" catalog="system" width="128" height="122"/>
+        <image name="tray.and.arrow.up" catalog="system" width="128" height="117"/>
         <image name="whiteCheck.png" width="2048" height="2048"/>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
