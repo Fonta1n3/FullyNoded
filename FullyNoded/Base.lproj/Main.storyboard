@@ -6,6 +6,7 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -3920,44 +3921,41 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="     " lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tft-x5-9Sa">
-                                <rect key="frame" x="16" y="68" width="21.5" height="20.5"/>
-                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="jXp-xP-J4h">
-                                <rect key="frame" x="16" y="590" width="343" height="57"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="cell" textLabel="C0I-2Z-mCW" rowHeight="85" style="IBUITableViewCellStyleDefault" id="9QV-RF-yNq">
-                                        <rect key="frame" x="0.0" y="50" width="343" height="85"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="9QV-RF-yNq" id="MtB-sd-ycj">
-                                            <rect key="frame" x="0.0" y="0.0" width="343" height="85"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <subviews>
-                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Title" lineBreakMode="tailTruncation" numberOfLines="8" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="C0I-2Z-mCW">
-                                                    <rect key="frame" x="16" y="0.0" width="311" height="85"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
-                                                    <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="11"/>
-                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                            </subviews>
-                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    </tableViewCell>
-                                </prototypes>
-                                <connections>
-                                    <outlet property="dataSource" destination="pUo-bf-sNm" id="zbi-Vh-HcE"/>
-                                    <outlet property="delegate" destination="pUo-bf-sNm" id="m2o-tp-c0x"/>
-                                </connections>
-                            </tableView>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="TQR-MC-WaO">
-                                <rect key="frame" x="16" y="107" width="343" height="390"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" alignment="bottom" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="j51-al-1TS">
+                                <rect key="frame" x="16" y="75" width="343" height="37.5"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="i4S-3F-zd4">
+                                        <rect key="frame" x="0.0" y="0.0" width="21.5" height="37.5"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="     " lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tft-x5-9Sa">
+                                                <rect key="frame" x="0.0" y="0.0" width="21.5" height="20.5"/>
+                                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
+                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="    " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eF5-14-zcH">
+                                                <rect key="frame" x="0.0" y="20.5" width="21.5" height="17"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <color key="textColor" systemColor="systemGreenColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FTc-X9-DAY">
+                                        <rect key="frame" x="233" y="14.5" width="110" height="23"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <color key="tintColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <state key="normal" title=" paste invoice" image="doc.on.clipboard" catalog="system">
+                                            <color key="titleColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="pasteAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="iR7-Wj-DOO"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="TQR-MC-WaO">
+                                <rect key="frame" x="16" y="122.5" width="343" height="386"/>
                                 <subviews>
                                     <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6ok-Q8-SRj">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="141"/>
@@ -4044,7 +4042,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </constraints>
                                     </view>
                                     <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yzj-3l-LdC">
-                                        <rect key="frame" x="0.0" y="151" width="343" height="110"/>
+                                        <rect key="frame" x="0.0" y="149" width="343" height="110"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PFC-7A-3Gn">
                                                 <rect key="frame" x="8" y="8" width="69.5" height="18"/>
@@ -4167,7 +4165,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </constraints>
                                     </view>
                                     <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rmu-y9-w5v">
-                                        <rect key="frame" x="0.0" y="271" width="343" height="119"/>
+                                        <rect key="frame" x="0.0" y="267" width="343" height="119"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Fee:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ynD-gu-Xre">
                                                 <rect key="frame" x="8" y="8" width="33.5" height="18"/>
@@ -4269,19 +4267,38 @@ Fully Noded does its best to support as many hardware and software wallet option
                                     </view>
                                 </subviews>
                             </stackView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FTc-X9-DAY">
-                                <rect key="frame" x="249" y="75" width="110" height="23"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <color key="tintColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <state key="normal" title=" paste invoice" image="doc.on.clipboard" catalog="system">
-                                    <color key="titleColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                </state>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="jXp-xP-J4h">
+                                <rect key="frame" x="16" y="601.5" width="343" height="45.5"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <prototypes>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="cell" textLabel="C0I-2Z-mCW" rowHeight="85" style="IBUITableViewCellStyleDefault" id="9QV-RF-yNq">
+                                        <rect key="frame" x="0.0" y="50" width="343" height="85"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="9QV-RF-yNq" id="MtB-sd-ycj">
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="85"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Title" lineBreakMode="tailTruncation" numberOfLines="8" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="C0I-2Z-mCW">
+                                                    <rect key="frame" x="16" y="0.0" width="311" height="85"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="11"/>
+                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </tableViewCellContentView>
+                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </tableViewCell>
+                                </prototypes>
                                 <connections>
-                                    <action selector="pasteAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="iR7-Wj-DOO"/>
+                                    <outlet property="dataSource" destination="pUo-bf-sNm" id="zbi-Vh-HcE"/>
+                                    <outlet property="delegate" destination="pUo-bf-sNm" id="m2o-tp-c0x"/>
                                 </connections>
-                            </button>
+                            </tableView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HBB-RM-j15">
-                                <rect key="frame" x="105" y="544" width="165" height="38"/>
+                                <rect key="frame" x="105" y="555.5" width="165" height="38"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="38" id="3Zm-UY-uaT"/>
@@ -4296,7 +4313,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 </connections>
                             </button>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="Vac-p9-eJN">
-                                <rect key="frame" x="75.5" y="505" width="224" height="32"/>
+                                <rect key="frame" x="75.5" y="516.5" width="224" height="32"/>
                                 <segments>
                                     <segment title="standard"/>
                                     <segment title="blind"/>
@@ -4306,30 +4323,21 @@ Fully Noded does its best to support as many hardware and software wallet option
                                     <action selector="switchCoinSelectionAction:" destination="pUo-bf-sNm" eventType="valueChanged" id="dnf-UB-0u1"/>
                                 </connections>
                             </segmentedControl>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="    " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eF5-14-zcH">
-                                <rect key="frame" x="16" y="82" width="15.5" height="17"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <color key="textColor" systemColor="systemGreenColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="C0H-pw-RSl"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="Vac-p9-eJN" firstAttribute="centerX" secondItem="DIN-Fg-EH6" secondAttribute="centerX" id="2z6-nv-kxw"/>
-                            <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="FTc-X9-DAY" secondAttribute="trailing" constant="16" id="64o-U3-9oX"/>
                             <constraint firstItem="TQR-MC-WaO" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="7Uo-47-t91"/>
                             <constraint firstItem="HBB-RM-j15" firstAttribute="top" secondItem="Vac-p9-eJN" secondAttribute="bottom" constant="8" id="BFd-1H-EkE"/>
-                            <constraint firstItem="TQR-MC-WaO" firstAttribute="top" secondItem="eF5-14-zcH" secondAttribute="bottom" constant="8" id="DbL-1v-wn2"/>
                             <constraint firstItem="jXp-xP-J4h" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="Ddi-Bk-0f2"/>
+                            <constraint firstItem="j51-al-1TS" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="DhR-KA-Ttb"/>
+                            <constraint firstItem="TQR-MC-WaO" firstAttribute="top" secondItem="j51-al-1TS" secondAttribute="bottom" constant="10" id="Eaj-au-Eza"/>
+                            <constraint firstItem="j51-al-1TS" firstAttribute="top" secondItem="C0H-pw-RSl" secondAttribute="top" constant="11" id="N8Q-zs-IHz"/>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="jXp-xP-J4h" secondAttribute="trailing" constant="16" id="Umd-7A-1YL"/>
-                            <constraint firstItem="Tft-x5-9Sa" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="Wwd-20-mZS"/>
-                            <constraint firstItem="eF5-14-zcH" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="Z29-gd-iLK"/>
                             <constraint firstItem="Vac-p9-eJN" firstAttribute="top" secondItem="TQR-MC-WaO" secondAttribute="bottom" constant="8" symbolic="YES" id="b2P-wI-WJR"/>
-                            <constraint firstItem="FTc-X9-DAY" firstAttribute="top" secondItem="C0H-pw-RSl" secondAttribute="top" constant="11" id="cKE-CJ-VJ7"/>
-                            <constraint firstItem="Tft-x5-9Sa" firstAttribute="top" secondItem="C0H-pw-RSl" secondAttribute="top" constant="4" id="dbb-DH-3iG"/>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="TQR-MC-WaO" secondAttribute="trailing" constant="16" id="eDW-hC-Wtl"/>
-                            <constraint firstItem="TQR-MC-WaO" firstAttribute="top" secondItem="Tft-x5-9Sa" secondAttribute="bottom" constant="18.5" id="o7o-Ze-YFT"/>
+                            <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="j51-al-1TS" secondAttribute="trailing" constant="16" id="icN-qi-Taq"/>
                             <constraint firstItem="jXp-xP-J4h" firstAttribute="top" secondItem="HBB-RM-j15" secondAttribute="bottom" constant="8" id="sYn-RO-mAB"/>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="bottom" secondItem="jXp-xP-J4h" secondAttribute="bottom" constant="20" id="xoD-Dk-cS5"/>
                             <constraint firstItem="HBB-RM-j15" firstAttribute="centerX" secondItem="DIN-Fg-EH6" secondAttribute="centerX" id="yim-pM-p2i"/>
@@ -7103,10 +7111,10 @@ You can upload the wallets.fullynoded file that was created when you made the ba
         <segue reference="mRa-gP-mZ0"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="07E-4w-Zh7"/>
+        <segue reference="CQp-9r-70w"/>
         <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
-        <segue reference="gzO-Lb-E0s"/>
+        <segue reference="7PS-EL-3d2"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
     <resources>

@@ -129,12 +129,14 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 isBtc = true
                 isFiat = false
                 isSats = false
+                fxRateLabel.isHidden = true
                 btcEnabled()
             case "sats":
                 index = 1
                 isSats = true
                 isFiat = false
                 isBtc = false
+                fxRateLabel.isHidden = true
                 satsSelected()
             case "fiat":
                 index = 2
@@ -981,6 +983,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 
                 self.fxRate = fxrate
                 self.fxRateLabel.text = fxrate.exchangeRate
+                self.fxRateLabel.isHidden = false
                 switch self.fiatCurrency {
                 case "USD":
                     self.denominationImage.image = UIImage(systemName: "dollarsign.circle")
