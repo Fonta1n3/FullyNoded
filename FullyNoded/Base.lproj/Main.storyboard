@@ -3111,7 +3111,7 @@ xxxxx</string>
                                 </constraints>
                             </imageView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="11" translatesAutoresizingMaskIntoConstraints="NO" id="6zG-h6-wiF">
-                                <rect key="frame" x="16" y="142" width="343" height="330.5"/>
+                                <rect key="frame" x="16" y="142" width="343" height="207"/>
                                 <subviews>
                                     <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GO8-o8-fXl">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
@@ -3153,30 +3153,10 @@ xxxxx</string>
                                         <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TBW-3q-dPm">
-                                        <rect key="frame" x="0.0" y="218" width="343" height="44"/>
-                                        <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="44" id="w9W-9L-HS8"/>
-                                        </constraints>
-                                        <state key="normal" title="Join Market">
-                                            <color key="titleColor" systemColor="systemTealColor"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="createJmWalletAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="5gc-aZ-r9H"/>
-                                        </connections>
-                                    </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CRM-3k-n6A">
-                                        <rect key="frame" x="0.0" y="273" width="343" height="57.5"/>
-                                        <string key="text">Creates a Join Market wallet if none exist on your Join Market server. If a JM wallet already exists you will be prompted to add the passphrase required to decrypt the wallet.</string>
-                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                        <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
                                 </subviews>
                             </stackView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="47C-HD-wcH">
-                                <rect key="frame" x="16" y="507.5" width="343" height="167.5"/>
+                                <rect key="frame" x="16" y="384" width="343" height="167.5"/>
                                 <string key="text">Already have a wallet or cosigner? 
 
 Use the buttons in the top right to import whatever you've got.  
@@ -7111,7 +7091,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
         <segue reference="mRa-gP-mZ0"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="CQp-9r-70w"/>
+        <segue reference="1fQ-PG-chF"/>
         <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="7PS-EL-3d2"/>
