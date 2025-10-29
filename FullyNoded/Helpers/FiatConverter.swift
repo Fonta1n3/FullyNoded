@@ -16,11 +16,13 @@ class FiatConverter {
         let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
         let torClient = TorClient.sharedInstance
         let useBlockchainInfo = UserDefaults.standard.object(forKey: "useBlockchainInfo") as? Bool ?? true
+        var task: URLSessionDataTask? = nil
+        var url: NSURL? = nil
+        
         if useBlockchainInfo {
-            let url = NSURL(string: "https://blockchain.info/ticker")
-            let task = torClient.session.dataTask(with: url! as URL) { (data, response, error) -> Void in
-                guard let urlContent = data,
-                      let json = try? JSONSerialization.jsonObject(with: urlContent, options: [.mutableContainers]) as? [String : Any],
+            url = NSURL(string: "https://blockchain.info/ticker")
+            task = torClient.session.dataTask(with: url! as URL) { (data, response, error) -> Void in
+                guard let json = self.fetchJson(data: data),
                       let data = json["\(currency)"] as? NSDictionary,
                       let rateCheck = data["15m"] as? Double else {
                     completion(nil)
@@ -28,22 +30,28 @@ class FiatConverter {
                 }
                 completion(rateCheck)
             }
-            task.resume()
+            task?.resume()
         } else {
-            let url = NSURL(string: "https://api.coindesk.com/v1/bpi/currentprice.json")
-            let task = torClient.session.dataTask(with: url! as URL) { (data, response, error) -> Void in
-                guard let urlContent = data,
-                    let json = try? JSONSerialization.jsonObject(with: urlContent, options: [.mutableContainers]) as? [String : Any],
-                    let dict = json["bpi"] as? NSDictionary,
-                    let usd = dict["\(currency)"] as? NSDictionary,
-                    let price = usd["rate_float"] as? Double else {
-                        completion(nil)
-                        return
+            url = NSURL(string: "https://api.coindesk.com/v1/bpi/currentprice.json")
+            task = torClient.session.dataTask(with: url! as URL) { (data, response, error) -> Void in
+                guard let json = self.fetchJson(data: data),
+                      let dict = json["bpi"] as? NSDictionary,
+                      let usd = dict["\(currency)"] as? NSDictionary,
+                      let price = usd["rate_float"] as? Double else {
+                    completion(nil)
+                    return
                 }
                 completion(price.rounded())
             }
-            task.resume()
+            task?.resume()
         }
+    }
+    
+    private func fetchJson(data: Data?) -> [String: Any]? {
+        guard let urlContent = data, let json = try? JSONSerialization.jsonObject(with: urlContent, options: [.mutableContainers]) as? [String : Any] else {
+            return nil
+        }
+        return json
     }
     
     func getOriginRate(date: String, completion: @escaping ((Double?)) -> Void) {

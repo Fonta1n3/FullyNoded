@@ -897,10 +897,18 @@
                                 <color key="textColor" systemColor="systemGrayColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <label opaque="NO" userInteractionEnabled="NO" alpha="0.0" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tor disconnected" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5gB-08-fCi">
+                                <rect key="frame" x="260.5" y="72" width="98.5" height="14.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="ioR-4d-qfe"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="ioR-4d-qfe" firstAttribute="trailing" secondItem="5gB-08-fCi" secondAttribute="trailing" constant="16" id="1IO-Ji-Q41"/>
+                            <constraint firstItem="5gB-08-fCi" firstAttribute="top" secondItem="ioR-4d-qfe" secondAttribute="top" constant="8" id="5TW-Wz-JM2"/>
                             <constraint firstItem="PnO-jn-Gk8" firstAttribute="top" secondItem="pxd-zp-3XW" secondAttribute="bottom" constant="7" id="8v0-kw-5iH"/>
                             <constraint firstItem="WFU-Fl-Gfe" firstAttribute="top" secondItem="PnO-jn-Gk8" secondAttribute="bottom" constant="4" id="EJd-MO-ayS"/>
                             <constraint firstItem="nrq-EZ-NHm" firstAttribute="centerY" secondItem="pxd-zp-3XW" secondAttribute="centerY" id="Job-FC-ZDp"/>
@@ -941,6 +949,7 @@
                         <outlet property="mainMenu" destination="WFU-Fl-Gfe" id="lGR-uB-jyD"/>
                         <outlet property="progressView" destination="wCS-gO-C3d" id="Yo5-kq-6j2"/>
                         <outlet property="torProgressLabel" destination="2nt-hF-coL" id="Jrh-ei-tN4"/>
+                        <outlet property="torStatusLabel" destination="5gB-08-fCi" id="hqP-Wn-LdO"/>
                         <segue destination="bKH-sI-MiM" kind="presentation" identifier="lockScreen" modalPresentationStyle="fullScreen" id="UBf-qr-XYG"/>
                         <segue destination="6nj-bF-aCc" kind="show" identifier="showDetailSegue" id="d35-nk-fhY"/>
                         <segue destination="u3j-cd-FEG" kind="show" identifier="segueToLightningNode" id="DF5-fx-Xqy"/>
@@ -7083,16 +7092,16 @@ You can upload the wallets.fullynoded file that was created when you made the ba
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="ejH-sy-hlm"/>
-        <segue reference="ckQ-WD-ole"/>
+        <segue reference="UBf-qr-XYG"/>
         <segue reference="Fvb-gy-rb3"/>
         <segue reference="4g3-DC-Q5z"/>
-        <segue reference="Wy7-ur-TeS"/>
+        <segue reference="nTv-zU-127"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="mRa-gP-mZ0"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
         <segue reference="1fQ-PG-chF"/>
-        <segue reference="8MS-xS-DMP"/>
+        <segue reference="aV5-mq-s3Q"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="7PS-EL-3d2"/>
     </inferredMetricsTieBreakers>
