@@ -12,39 +12,44 @@ class FiatConverter {
     static let sharedInstance = FiatConverter()
     private init() {}
     
+    let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+    let torClient = TorClient.sharedInstance
+    var task: URLSessionDataTask? = nil
+    
     func getFxRate(completion: @escaping ((Double?)) -> Void) {
-        let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
-        let torClient = TorClient.sharedInstance
         let useBlockchainInfo = UserDefaults.standard.object(forKey: "useBlockchainInfo") as? Bool ?? true
-        var task: URLSessionDataTask? = nil
-        var url: NSURL? = nil
+        let urlString = useBlockchainInfo ? "https://blockchain.info/ticker" : "https://api.coindesk.com/v1/bpi/currentprice.json"
+        let url: NSURL? = NSURL(string: urlString)
         
-        if useBlockchainInfo {
-            url = NSURL(string: "https://blockchain.info/ticker")
-            task = torClient.session.dataTask(with: url! as URL) { (data, response, error) -> Void in
-                guard let json = self.fetchJson(data: data),
-                      let data = json["\(currency)"] as? NSDictionary,
-                      let rateCheck = data["15m"] as? Double else {
-                    completion(nil)
-                    return
-                }
-                completion(rateCheck)
+        task = torClient.session.dataTask(with: url! as URL) { (data, response, error) -> Void in
+            guard let json = self.fetchJson(data: data) else { completion(nil); return }
+            
+            if useBlockchainInfo {
+                self.parseBlockChainInfoJson(currency: self.currency, json: json, completion: completion)
+            } else {
+                self.parseCoindeskJson(currency: self.currency, json: json, completion: completion)
             }
-            task?.resume()
-        } else {
-            url = NSURL(string: "https://api.coindesk.com/v1/bpi/currentprice.json")
-            task = torClient.session.dataTask(with: url! as URL) { (data, response, error) -> Void in
-                guard let json = self.fetchJson(data: data),
-                      let dict = json["bpi"] as? NSDictionary,
-                      let usd = dict["\(currency)"] as? NSDictionary,
-                      let price = usd["rate_float"] as? Double else {
-                    completion(nil)
-                    return
-                }
-                completion(price.rounded())
-            }
-            task?.resume()
         }
+        task?.resume()
+    }
+    
+    private func parseCoindeskJson(currency: String, json: [String: Any], completion: @escaping ((Double?)) -> Void) {
+        guard let dict = json["bpi"] as? NSDictionary,
+              let usd = dict["\(currency)"] as? NSDictionary,
+              let price = usd["rate_float"] as? Double else {
+            completion(nil)
+            return
+        }
+        completion(price.rounded())
+    }
+    
+    private func parseBlockChainInfoJson(currency: String, json: [String: Any], completion: @escaping ((Double?)) -> Void) {
+        guard let data = json["\(currency)"] as? NSDictionary,
+              let rateCheck = data["15m"] as? Double else {
+            completion(nil)
+            return
+        }
+        completion(rateCheck)
     }
     
     private func fetchJson(data: Data?) -> [String: Any]? {
@@ -55,18 +60,16 @@ class FiatConverter {
     }
     
     func getOriginRate(date: String, completion: @escaping ((Double?)) -> Void) {
-        let torClient = TorClient.sharedInstance
         let url = NSURL(string: "https://api.coindesk.com/v1/bpi/historical/close.json?start=\(date)&end=\(date)")
-        let task = torClient.session.dataTask(with: url! as URL) { (data, response, error) -> Void in
-            guard let urlContent = data,
-                let json = try? JSONSerialization.jsonObject(with: urlContent, options: [.mutableContainers]) as? [String : Any],
-                let dict = json["bpi"] as? NSDictionary,
+        task = torClient.session.dataTask(with: url! as URL) { (data, response, error) -> Void in
+            guard let json = self.fetchJson(data: data) else { completion(nil); return }
+            guard let dict = json["bpi"] as? NSDictionary,
                 let price = dict["\(date)"] as? Double else {
                     completion(nil)
                     return
             }
             completion(price)
         }
-        task.resume()
+        task?.resume()
     }
 }
