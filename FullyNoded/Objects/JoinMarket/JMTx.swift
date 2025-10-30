@@ -6,7 +6,7 @@
 //  Copyright © 2022 Fontaine. All rights reserved.
 //
 
-import Foundation
+//import Foundation
 
 /*
  ["txinfo": {
@@ -37,23 +37,23 @@ import Foundation
  }]
  */
 
-struct JMTx: CustomStringConvertible {
-    
-    let hex: String?
-    let txid: String?
-    
-    init(_ dict: [String:Any]) {
-        if let txinfo = dict["txinfo"] as? [String:Any] {
-            hex = txinfo["hex"] as? String
-            txid = txinfo["txid"] as? String
-        } else {
-            hex = nil
-            txid = nil
-        }
-        
-    }
-    
-    public var description: String {
-        return ""
-    }
-}
+//struct JMTx: CustomStringConvertible {
+//    
+//    let hex: String?
+//    let txid: String?
+//    
+//    init(_ dict: [String:Any]) {
+//        if let txinfo = dict["txinfo"] as? [String:Any] {
+//            hex = txinfo["hex"] as? String
+//            txid = txinfo["txid"] as? String
+//        } else {
+//            hex = nil
+//            txid = nil
+//        }
+//        
+//    }
+//    
+//    public var description: String {
+//        return ""
+//    }
+//}

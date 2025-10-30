@@ -109,8 +109,7 @@ Thank you for your interest in contributing to Fully Noded®! To avoid potential
 
 ## License
 
-MIT
-"Commons Clause" License Condition v1.0
+GNU General Public License v3.0
 
 If you would like to relicense this code to distribute it on the App Store,
 please contact me at [dentondevelopment@protonmail.com](mailto:dentondevelopment@protonmail.com).

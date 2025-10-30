@@ -8,13 +8,13 @@
 
 import Foundation
 
-struct NostrSubscribe {
-    let filters: [NostrFilter]
-    let sub_id: String
-}
-
-enum NostrRequest {
-    case subscribe(NostrSubscribe)
-    case unsubscribe(String)
-    case event(NostrEvent)
-}
+//struct NostrSubscribe {
+//    let filters: [NostrFilter]
+//    let sub_id: String
+//}
+//
+//enum NostrRequest {
+//    case subscribe(NostrSubscribe)
+//    case unsubscribe(String)
+//    case event(NostrEvent)
+//}

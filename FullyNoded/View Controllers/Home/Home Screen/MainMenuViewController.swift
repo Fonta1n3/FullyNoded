@@ -101,53 +101,53 @@ class MainMenuViewController: UIViewController {
         torProgressLabel.layer.zPosition = 1
         progressView.layer.zPosition = 1
         progressView.setNeedsFocusUpdate()
-        migrateJmWallet()
+        //migrateJmWallet()
     }
     
-    func migrateJmWallet() {
-        func deleteJmWallets() {
-            CoreDataService.deleteAllData(entity: .jmWallets) { _ in }
-        }
-        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmWallets in
-            guard let jmWallets = jmWallets, jmWallets.count > 0 else { return }
-
-            CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
-                guard let wallets = wallets, wallets.count > 0 else { return }
-
-                for (i, jmWallet) in jmWallets.enumerated() {
-                    let jmWStrct = JMWallet(jmWallet)
-
-                    for (x, w) in wallets.enumerated() {
-                        if w["id"] != nil {
-                            let wStrct = Wallet(dictionary: w)
-                            if jmWStrct.fnWallet == wStrct.name {
-                                // same wallet we can update here
-                                CoreDataService.update(id: wStrct.id, keyToUpdate: "token", newValue: jmWStrct.token, entity: .wallets) { _ in
-
-                                    CoreDataService.update(id: wStrct.id, keyToUpdate: "password", newValue: jmWStrct.password, entity: .wallets) { _ in
-
-                                        CoreDataService.update(id: wStrct.id, keyToUpdate: "isJm", newValue: true, entity: .wallets) { _ in
-
-                                            CoreDataService.update(id: wStrct.id, keyToUpdate: "jmWalletName", newValue: jmWStrct.name, entity: .wallets) { _ in
-
-                                                if i + 1 == jmWallets.count && x + 1 == jmWallets.count {
-                                                    deleteJmWallets()
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            } else if i + 1 == jmWallets.count  && x + 1 == jmWallets.count {
-                                deleteJmWallets()
-                            }
-                        } else if i + 1 == jmWallets.count  && x + 1 == jmWallets.count {
-                            deleteJmWallets()
-                        }
-                    }
-                }
-            }
-        }
-    }
+//    func migrateJmWallet() {
+//        func deleteJmWallets() {
+//            CoreDataService.deleteAllData(entity: .jmWallets) { _ in }
+//        }
+//        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmWallets in
+//            guard let jmWallets = jmWallets, jmWallets.count > 0 else { return }
+//
+//            CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+//                guard let wallets = wallets, wallets.count > 0 else { return }
+//
+//                for (i, jmWallet) in jmWallets.enumerated() {
+//                    let jmWStrct = JMWallet(jmWallet)
+//
+//                    for (x, w) in wallets.enumerated() {
+//                        if w["id"] != nil {
+//                            let wStrct = Wallet(dictionary: w)
+//                            if jmWStrct.fnWallet == wStrct.name {
+//                                // same wallet we can update here
+//                                CoreDataService.update(id: wStrct.id, keyToUpdate: "token", newValue: jmWStrct.token, entity: .wallets) { _ in
+//
+//                                    CoreDataService.update(id: wStrct.id, keyToUpdate: "password", newValue: jmWStrct.password, entity: .wallets) { _ in
+//
+//                                        CoreDataService.update(id: wStrct.id, keyToUpdate: "isJm", newValue: true, entity: .wallets) { _ in
+//
+//                                            CoreDataService.update(id: wStrct.id, keyToUpdate: "jmWalletName", newValue: jmWStrct.name, entity: .wallets) { _ in
+//
+//                                                if i + 1 == jmWallets.count && x + 1 == jmWallets.count {
+//                                                    deleteJmWallets()
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            } else if i + 1 == jmWallets.count  && x + 1 == jmWallets.count {
+//                                deleteJmWallets()
+//                            }
+//                        } else if i + 1 == jmWallets.count  && x + 1 == jmWallets.count {
+//                            deleteJmWallets()
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
     
     override func viewDidAppear(_ animated: Bool) {
         if initialLoad {
@@ -256,16 +256,16 @@ class MainMenuViewController: UIViewController {
             guard let self = self else { return }
             guard let node = node else { return }
             self.initialLoad = false
-            if node.isNostr {
-                StreamManager.shared.node = node
-                let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
-                StreamManager.shared.eoseReceivedBlock = { _ in
-                    self.loadNode(node: node)
-                }
-                StreamManager.shared.openWebSocket(urlString: urlString)
-            } else {
+//            if node.isNostr {
+//                StreamManager.shared.node = node
+//                let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
+//                StreamManager.shared.eoseReceivedBlock = { _ in
+//                    self.loadNode(node: node)
+//                }
+//                StreamManager.shared.openWebSocket(urlString: urlString)
+//            } else {
                 self.loadNode(node: node)
-            }
+            //}
         }
     }
     
@@ -848,7 +848,7 @@ class MainMenuViewController: UIViewController {
                     self.mgr?.start(delegate: self)
                     
                     if let node = self.activeNode {
-                        if node.isNostr {
+                        /*if node.isNostr {
                             // If not using tor then uncomment this, and remove from tor protocol func
                             StreamManager.shared.node = node
                             let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
@@ -862,7 +862,7 @@ class MainMenuViewController: UIViewController {
                             }
                             StreamManager.shared.openWebSocket(urlString: urlString)
                             
-                        } else if isLocalHost() {
+                        } else */if isLocalHost() {
                             removeBackView()
                             removeTorStatus()
                             loadNode(node: node)

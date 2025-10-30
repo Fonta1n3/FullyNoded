@@ -3404,7 +3404,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                     <constraint firstAttribute="height" constant="211" id="13n-Ya-vyb"/>
                                 </constraints>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="In order to recover this wallet you will need these seed words! Write them down and store them safely. " textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="8" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qI7-sy-PmB">
@@ -6002,7 +6002,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" allowsMultipleSelection="YES" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="CFb-Jk-h9Z">
-                                <rect key="frame" x="0.0" y="165.5" width="375" height="501.5"/>
+                                <rect key="frame" x="0.0" y="135.5" width="375" height="531.5"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </tableView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Unlocked UTXO's" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QBy-lG-bbB">
@@ -6011,48 +6011,16 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="circle.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="fB4-rR-UXb">
-                                <rect key="frame" x="16" y="136" width="19" height="21"/>
-                                <color key="tintColor" systemColor="systemGreenColor"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="19" id="PZ7-9h-dvJ"/>
-                                    <constraint firstAttribute="height" constant="22" id="nft-3a-cB5"/>
-                                </constraints>
-                            </imageView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jJK-G3-vve">
-                                <rect key="frame" x="161" y="135.5" width="58" height="22"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="22" id="bo5-up-Vgd"/>
-                                </constraints>
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="stop"/>
-                                <connections>
-                                    <action selector="jmActionTapped:" destination="1tX-je-wOH" eventType="touchUpInside" id="ruw-fc-xCm"/>
-                                </connections>
-                            </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="maker running" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NiX-YA-vVX">
-                                <rect key="frame" x="43" y="136" width="110" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Qb7-Z6-hPP"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="QBy-lG-bbB" firstAttribute="top" secondItem="Qb7-Z6-hPP" secondAttribute="top" constant="30" id="10q-aN-88s"/>
                             <constraint firstItem="CFb-Jk-h9Z" firstAttribute="trailing" secondItem="Qb7-Z6-hPP" secondAttribute="trailing" id="9GN-sW-P0U"/>
-                            <constraint firstItem="NiX-YA-vVX" firstAttribute="leading" secondItem="fB4-rR-UXb" secondAttribute="trailing" constant="8" symbolic="YES" id="A9i-mA-FQY"/>
-                            <constraint firstItem="fB4-rR-UXb" firstAttribute="top" secondItem="QBy-lG-bbB" secondAttribute="bottom" constant="8" id="Pxb-e5-4ry"/>
+                            <constraint firstItem="CFb-Jk-h9Z" firstAttribute="top" secondItem="QBy-lG-bbB" secondAttribute="bottom" constant="8" id="OvD-wQ-or3"/>
                             <constraint firstItem="CFb-Jk-h9Z" firstAttribute="bottom" secondItem="Qb7-Z6-hPP" secondAttribute="bottom" id="RP6-te-ZSq"/>
-                            <constraint firstItem="fB4-rR-UXb" firstAttribute="leading" secondItem="Qb7-Z6-hPP" secondAttribute="leading" constant="16" id="S2e-Lk-raj"/>
-                            <constraint firstItem="jJK-G3-vve" firstAttribute="leading" secondItem="NiX-YA-vVX" secondAttribute="trailing" constant="8" symbolic="YES" id="Svv-f9-piy"/>
                             <constraint firstItem="CFb-Jk-h9Z" firstAttribute="leading" secondItem="Qb7-Z6-hPP" secondAttribute="leading" id="dRz-Hg-Ysz"/>
-                            <constraint firstItem="NiX-YA-vVX" firstAttribute="centerY" secondItem="fB4-rR-UXb" secondAttribute="centerY" id="jT0-Cm-yYP"/>
-                            <constraint firstItem="jJK-G3-vve" firstAttribute="centerY" secondItem="NiX-YA-vVX" secondAttribute="centerY" id="lLQ-gt-1RJ"/>
                             <constraint firstItem="QBy-lG-bbB" firstAttribute="leading" secondItem="Qb7-Z6-hPP" secondAttribute="leading" constant="16" id="uX0-Bl-fXJ"/>
-                            <constraint firstItem="CFb-Jk-h9Z" firstAttribute="top" secondItem="fB4-rR-UXb" secondAttribute="bottom" constant="8" id="vYg-az-JXn"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="71V-ha-2e7">
@@ -6069,26 +6037,9 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                     <action selector="lockAction:" destination="1tX-je-wOH" id="1li-Ht-ieG"/>
                                 </connections>
                             </barButtonItem>
-                            <barButtonItem image="arrow.triangle.2.circlepath" catalog="system" id="oQM-6X-MzJ">
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <connections>
-                                    <action selector="mixAction:" destination="1tX-je-wOH" id="qr3-2c-5zo"/>
-                                </connections>
-                            </barButtonItem>
-                            <barButtonItem image="bitcoinsign.circle" catalog="system" id="Bcf-CD-VBe">
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <connections>
-                                    <action selector="createFidelityBondAction:" destination="1tX-je-wOH" id="Io3-cD-LBx"/>
-                                </connections>
-                            </barButtonItem>
                         </rightBarButtonItems>
                     </navigationItem>
                     <connections>
-                        <outlet property="jmActionOutlet" destination="jJK-G3-vve" id="Qrc-lX-CbH"/>
-                        <outlet property="jmEarnOutlet" destination="Bcf-CD-VBe" id="1xY-AQ-Ryl"/>
-                        <outlet property="jmMixOutlet" destination="oQM-6X-MzJ" id="3TL-ob-3Mc"/>
-                        <outlet property="jmStatusImageOutlet" destination="fB4-rR-UXb" id="YGq-2h-y07"/>
-                        <outlet property="jmStatusLabelOutlet" destination="NiX-YA-vVX" id="vfR-6k-JLD"/>
                         <outlet property="tableView" destination="CFb-Jk-h9Z" id="2QQ-Qg-zs6"/>
                         <segue destination="03r-hX-hYT" kind="show" identifier="goToLocked" id="p49-Xm-Jgn"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToGetAddressFromUtxos" id="2DM-Bo-8hK"/>
@@ -6098,7 +6049,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Kf1-ld-TGL" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-2390" y="-505"/>
+            <point key="canvasLocation" x="-2391.1999999999998" y="-505.09745127436287"/>
         </scene>
         <!--Confirm Lightning Payment View Controller-->
         <scene sceneID="fKs-py-e7s">
@@ -7096,14 +7047,14 @@ You can upload the wallets.fullynoded file that was created when you made the ba
         <segue reference="Fvb-gy-rb3"/>
         <segue reference="4g3-DC-Q5z"/>
         <segue reference="nTv-zU-127"/>
-        <segue reference="w2g-bl-j8v"/>
+        <segue reference="EZr-Ut-goC"/>
         <segue reference="mRa-gP-mZ0"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="1fQ-PG-chF"/>
+        <segue reference="2DM-Bo-8hK"/>
         <segue reference="aV5-mq-s3Q"/>
         <segue reference="yAt-Ra-aPH"/>
-        <segue reference="7PS-EL-3d2"/>
+        <segue reference="BVG-ie-esh"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
     <resources>
@@ -7121,7 +7072,6 @@ You can upload the wallets.fullynoded file that was created when you made the ba
         <image name="bolt.circle" catalog="system" width="128" height="123"/>
         <image name="bolt.horizontal" catalog="system" width="128" height="59"/>
         <image name="chevron.right" catalog="system" width="97" height="128"/>
-        <image name="circle.fill" catalog="system" width="128" height="123"/>
         <image name="clock.arrow.circlepath" catalog="system" width="128" height="119"/>
         <image name="desktopcomputer" catalog="system" width="128" height="101"/>
         <image name="doc.on.clipboard" catalog="system" width="116" height="128"/>

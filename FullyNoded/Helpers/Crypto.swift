@@ -7,7 +7,7 @@
 //
 
 import CryptoKit
-import RNCryptor
+//import RNCryptor
 import Foundation
 
 enum Crypto {
@@ -79,13 +79,13 @@ enum Crypto {
         return try? ChaChaPoly.open(box, using: SymmetricKey(data: key))
     }
     
-    static func encryptNostr(_ content: Data, _ password: String) -> Data? {
-        return RNCryptor.encrypt(data: content, withPassword: password.replacingOccurrences(of: " ", with: ""))
-    }
+//    static func encryptNostr(_ content: Data, _ password: String) -> Data? {
+//        return RNCryptor.encrypt(data: content, withPassword: password.replacingOccurrences(of: " ", with: ""))
+//    }
     
-    static func decryptNostr(_ content: Data, _ password: String) -> Data? {
-        return try? RNCryptor.decrypt(data: content, withPassword: password.replacingOccurrences(of: " ", with: ""))
-    }
+//    static func decryptNostr(_ content: Data, _ password: String) -> Data? {
+//        return try? RNCryptor.decrypt(data: content, withPassword: password.replacingOccurrences(of: " ", with: ""))
+//    }
     
     static func decrypt(_ data: Data) -> Data? {
         guard let key = KeyChain.getData("privateKey"),

@@ -1,5 +1,5 @@
 {
-  "originHash" : "dbc57cb905ea6d2c86cdcb51ff9b9cf19432f8eab192b534539f6a1f065226c0",
+  "originHash" : "34885d4311103fd471ee95e9ed607469c915554d9c79e294bdd6657a428ad45f",
   "pins" : [
     {
       "identity" : "bbqr-swift",
@@ -53,15 +53,6 @@
       "state" : {
         "revision" : "fb842d1378b960be6750267e98ae6ce8f287054d",
         "version" : "6.3.2"
-      }
-    },
-    {
-      "identity" : "rncryptor",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/RNCryptor/RNCryptor.git",
-      "state" : {
-        "revision" : "5e3bbf44f08bf90049537cb8902d8f4fa911a79a",
-        "version" : "5.1.0"
       }
     },
     {

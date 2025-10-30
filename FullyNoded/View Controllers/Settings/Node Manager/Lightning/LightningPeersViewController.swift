@@ -48,10 +48,10 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
             
             self.lndNode = isLnd
             
-            guard isLnd else {
-                self.loadCLPeers()
-                return
-            }
+//            guard isLnd else {
+//                self.loadCLPeers()
+//                return
+//            }
             
             self.loadLNDPeers()
         }
@@ -77,26 +77,26 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
         }
     }
     
-    private func loadCLPeers() {
-        let commandId = UUID()
-        LightningRPC.sharedInstance.command(id: commandId, method: .listpeers, param: nil) { [weak self] (uuid, response, errorDesc) in
-            guard let self = self else { return }
-            
-            guard let dict = response as? NSDictionary, let peers = dict["peers"] as? NSArray else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching peers")
-                return
-            }
-            
-            guard peers.count > 0 else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "No peers yet", message: "Tap the + button to connect to a peer and start a channel")
-                return
-            }
-            
-            self.parsePeers(peers: peers)
-        }
-    }
+//    private func loadCLPeers() {
+//        let commandId = UUID()
+//        LightningRPC.sharedInstance.command(id: commandId, method: .listpeers, param: nil) { [weak self] (uuid, response, errorDesc) in
+//            guard let self = self else { return }
+//            
+//            guard let dict = response as? NSDictionary, let peers = dict["peers"] as? NSArray else {
+//                self.spinner.removeConnectingView()
+//                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching peers")
+//                return
+//            }
+//            
+//            guard peers.count > 0 else {
+//                self.spinner.removeConnectingView()
+//                showAlert(vc: self, title: "No peers yet", message: "Tap the + button to connect to a peer and start a channel")
+//                return
+//            }
+//            
+//            self.parsePeers(peers: peers)
+//        }
+//    }
     
     private func getLNDChannels() {
         LndRpc.sharedInstance.command(.listchannels, nil, nil, nil) { [weak self] (response, error) in
@@ -311,11 +311,11 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
                     
                     self.spinner.addConnectingView(vc: self, description: "disconnecting peer...")
                      
-                    if isLnd {
+                    //if isLnd {
                         self.disconnectlLnd(peer)
-                    } else {
-                        self.disconnectPeerCL(peer)
-                    }
+//                    } else {
+//                        self.disconnectPeerCL(peer)
+//                    }
                  }))
                  
                  alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
@@ -325,33 +325,33 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
          }
      }
     
-    private func disconnectPeerCL(_ peer: [String:Any]) {
-        let commandId = UUID()
-        LightningRPC.sharedInstance.command(id: commandId, method: .disconnect, param: ["id":peer["id"] as! String]) { [weak self] (id, response, errorDesc) in
-            guard let self = self else { return }
-            
-            self.spinner.removeConnectingView()
-            
-            guard errorDesc == nil else {
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "error disconnecting peer")
-                return
-            }
-            
-            guard let response = response as? [String:Any] else {
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "error disconnecting peer")
-                return
-            }
-            
-            if let message = response["message"] as? String {
-                showAlert(vc: self, title: "Error disconnecting peer.", message: message)
-            } else {
-                showAlert(vc: self, title: "Peer disconnected ⚡️", message: "")
-                self.loadPeers()
-                return
-            }
-            
-        }
-    }
+//    private func disconnectPeerCL(_ peer: [String:Any]) {
+//        let commandId = UUID()
+//        LightningRPC.sharedInstance.command(id: commandId, method: .disconnect, param: ["id":peer["id"] as! String]) { [weak self] (id, response, errorDesc) in
+//            guard let self = self else { return }
+//            
+//            self.spinner.removeConnectingView()
+//            
+//            guard errorDesc == nil else {
+//                showAlert(vc: self, title: "Error", message: errorDesc ?? "error disconnecting peer")
+//                return
+//            }
+//            
+//            guard let response = response as? [String:Any] else {
+//                showAlert(vc: self, title: "Error", message: errorDesc ?? "error disconnecting peer")
+//                return
+//            }
+//            
+//            if let message = response["message"] as? String {
+//                showAlert(vc: self, title: "Error disconnecting peer.", message: message)
+//            } else {
+//                showAlert(vc: self, title: "Peer disconnected ⚡️", message: "")
+//                self.loadPeers()
+//                return
+//            }
+//            
+//        }
+//    }
      
      private func disconnectlLnd(_ peer: [String:Any]) {         
          guard let pubkey = peer["pub_key"] as? String else {
@@ -386,10 +386,10 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
         isLndNode { [weak self] isLnd in
             guard let self = self else { return }
             
-            guard isLnd else {
-                self.addPeerCL(id: id, ip: ip, port: port)
-                return
-            }
+//            guard isLnd else {
+//                self.addPeerCL(id: id, ip: ip, port: port)
+//                return
+//            }
             
             self.addPeerLND(id: id, ip: ip, port: port)
         }
@@ -417,24 +417,24 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
         }
     }
     
-    private func addPeerCL(id: String, ip: String, port: String?) {
-        let param:[String:Any] = ["host": "\(id)@\(ip)", "port": port ?? 9735]
-        let commandId = UUID()
-        LightningRPC.sharedInstance.command(id: commandId, method: .connect, param: param) { [weak self] (uuid, response, errorDesc) in
-            if let dict = response as? NSDictionary {
-                self?.spinner.removeConnectingView()
-                if let _ = dict["id"] as? String {
-                    showAlert(vc: self, title: "Peer connected ⚡️", message: "")
-                } else {
-                    showAlert(vc: self, title: "Something is not quite right", message: "This is the response we got: \(dict)")
-                }
-                self?.loadPeers()
-            } else {
-                self?.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "error adding peer")
-            }
-        }
-    }
+//    private func addPeerCL(id: String, ip: String, port: String?) {
+//        let param:[String:Any] = ["host": "\(id)@\(ip)", "port": port ?? 9735]
+//        let commandId = UUID()
+//        LightningRPC.sharedInstance.command(id: commandId, method: .connect, param: param) { [weak self] (uuid, response, errorDesc) in
+//            if let dict = response as? NSDictionary {
+//                self?.spinner.removeConnectingView()
+//                if let _ = dict["id"] as? String {
+//                    showAlert(vc: self, title: "Peer connected ⚡️", message: "")
+//                } else {
+//                    showAlert(vc: self, title: "Something is not quite right", message: "This is the response we got: \(dict)")
+//                }
+//                self?.loadPeers()
+//            } else {
+//                self?.spinner.removeConnectingView()
+//                showAlert(vc: self, title: "Error", message: errorDesc ?? "error adding peer")
+//            }
+//        }
+//    }
     
     private func fetchLocalPeers(completion: @escaping ((Bool)) -> Void) {
         CoreDataService.retrieveEntity(entityName: .peers) { [weak self] peers in

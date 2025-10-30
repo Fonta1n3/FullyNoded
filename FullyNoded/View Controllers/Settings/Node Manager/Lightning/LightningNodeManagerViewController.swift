@@ -120,97 +120,97 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         
         tableArray.removeAll()
         
-        if node.macaroon == nil {
-            clightningGetInfo()
-        } else {
+//        if node.macaroon == nil {
+//            clightningGetInfo()
+//        } else {
             lndGetInfo()
-        }
+        //}
     }
     
-    private func clightningGetInfo() {
-        let commandId = UUID()
-        
-        LightningRPC.sharedInstance.command(id: commandId, method: .getinfo, param: nil) { [weak self] (uuid, response, errorDesc) in
-            guard let self = self else { return }
-            guard let dict = response as? [String:Any] else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "error getting info from lightning node")
-                return
-            }
-            let alias = dict["alias"] as? String ?? ""
-            let num_peers = dict["num_peers"] as? Int ?? 0
-            let num_pending_channels = dict["num_pending_channels"] as? Int ?? 0
-            let num_active_channels = dict["num_active_channels"] as? Int ?? 0
-            let num_inactive_channels = dict["num_inactive_channels"] as? Int ?? 0
-            let addresses = dict["address"] as? NSArray ?? []
-            var ip = ""
-            var port = 9735
-            
-            if addresses.count > 0 {
-                ip = (addresses[0] as! NSDictionary)["address"] as? String ?? ""
-                port = (addresses[0] as! NSDictionary)["port"] as? Int ?? 9735
-            }
-            
-            let id = dict["id"] as? String ?? ""
-            let feesCollected = dict["fees_collected_msat"] as? String ?? "0msat"
-            let version = dict["version"] as? String ?? ""
-            
-            self.color = dict["color"] as? String ?? "03c304"
-            self.myId = id
-            self.tableArray.append(alias)
-            self.tableArray.append("\(num_peers)")
-            self.tableArray.append("\(num_active_channels)")
-            self.tableArray.append("\(num_inactive_channels)")
-            self.tableArray.append("\(num_pending_channels)")
-            self.tableArray.append(feesCollected)
-            self.tableArray.append(version)
-            self.url = "\(id)@\(ip):\(port)"
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.nodeTable.reloadData()
-                self.spinner.removeConnectingView()
-                self.listFundsCL()
-            }
-        }
-    }
+//    private func clightningGetInfo() {
+//        let commandId = UUID()
+//        
+//        LightningRPC.sharedInstance.command(id: commandId, method: .getinfo, param: nil) { [weak self] (uuid, response, errorDesc) in
+//            guard let self = self else { return }
+//            guard let dict = response as? [String:Any] else {
+//                self.spinner.removeConnectingView()
+//                showAlert(vc: self, title: "Error", message: errorDesc ?? "error getting info from lightning node")
+//                return
+//            }
+//            let alias = dict["alias"] as? String ?? ""
+//            let num_peers = dict["num_peers"] as? Int ?? 0
+//            let num_pending_channels = dict["num_pending_channels"] as? Int ?? 0
+//            let num_active_channels = dict["num_active_channels"] as? Int ?? 0
+//            let num_inactive_channels = dict["num_inactive_channels"] as? Int ?? 0
+//            let addresses = dict["address"] as? NSArray ?? []
+//            var ip = ""
+//            var port = 9735
+//            
+//            if addresses.count > 0 {
+//                ip = (addresses[0] as! NSDictionary)["address"] as? String ?? ""
+//                port = (addresses[0] as! NSDictionary)["port"] as? Int ?? 9735
+//            }
+//            
+//            let id = dict["id"] as? String ?? ""
+//            let feesCollected = dict["fees_collected_msat"] as? String ?? "0msat"
+//            let version = dict["version"] as? String ?? ""
+//            
+//            self.color = dict["color"] as? String ?? "03c304"
+//            self.myId = id
+//            self.tableArray.append(alias)
+//            self.tableArray.append("\(num_peers)")
+//            self.tableArray.append("\(num_active_channels)")
+//            self.tableArray.append("\(num_inactive_channels)")
+//            self.tableArray.append("\(num_pending_channels)")
+//            self.tableArray.append(feesCollected)
+//            self.tableArray.append(version)
+//            self.url = "\(id)@\(ip):\(port)"
+//            
+//            DispatchQueue.main.async { [weak self] in
+//                guard let self = self else { return }
+//                
+//                self.nodeTable.reloadData()
+//                self.spinner.removeConnectingView()
+//                self.listFundsCL()
+//            }
+//        }
+//    }
     
-    private func listFundsCL() {
-        let commandId = UUID()
-        
-        LightningRPC.sharedInstance.command(id: commandId, method: .listfunds, param: nil) { [weak self] (uuid, response, errorDesc) in
-            guard let self = self else { return }
-            
-            guard let dict = response as? NSDictionary, let outputs = dict["outputs"] as? [[String:Any]] else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "error getting info from lightning node")
-                return
-            }
-            
-            guard outputs.count > 0 else {
-                self.setOnchainAmounts("0", "0")
-                return
-            }
-            
-            var onchainConfirmed = 0
-            var onchainUnconfirmed = 0
-            
-            for (i, output) in outputs.enumerated() {
-                if let value = output["value"] as? Int, let status = output["status"] as? String {
-                    if status == "confirmed" {
-                        onchainConfirmed += value
-                    } else if status == "unconfirmed" {
-                        onchainUnconfirmed += value
-                    }
-                }
-                
-                if i + 1 == outputs.count {
-                    self.setOnchainAmounts(onchainConfirmed.withCommas, onchainUnconfirmed.withCommas)
-                }
-            }
-        }
-    }
+//    private func listFundsCL() {
+//        let commandId = UUID()
+//        
+//        LightningRPC.sharedInstance.command(id: commandId, method: .listfunds, param: nil) { [weak self] (uuid, response, errorDesc) in
+//            guard let self = self else { return }
+//            
+//            guard let dict = response as? NSDictionary, let outputs = dict["outputs"] as? [[String:Any]] else {
+//                self.spinner.removeConnectingView()
+//                showAlert(vc: self, title: "Error", message: errorDesc ?? "error getting info from lightning node")
+//                return
+//            }
+//            
+//            guard outputs.count > 0 else {
+//                self.setOnchainAmounts("0", "0")
+//                return
+//            }
+//            
+//            var onchainConfirmed = 0
+//            var onchainUnconfirmed = 0
+//            
+//            for (i, output) in outputs.enumerated() {
+//                if let value = output["value"] as? Int, let status = output["status"] as? String {
+//                    if status == "confirmed" {
+//                        onchainConfirmed += value
+//                    } else if status == "unconfirmed" {
+//                        onchainUnconfirmed += value
+//                    }
+//                }
+//                
+//                if i + 1 == outputs.count {
+//                    self.setOnchainAmounts(onchainConfirmed.withCommas, onchainUnconfirmed.withCommas)
+//                }
+//            }
+//        }
+//    }
     
     private func setOnchainAmounts(_ confirmed: String, _ unconfirmed: String) {
         DispatchQueue.main.async { [weak self] in

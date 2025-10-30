@@ -66,7 +66,6 @@
 		0AD8AD5029FF45B200F1ADD8 /* InvoiceSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD8AD4F29FF45B200F1ADD8 /* InvoiceSettingsViewController.swift */; };
 		0AD9490A273C051B00AF83F5 /* ExternalFNWalletsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD94909273C051B00AF83F5 /* ExternalFNWalletsViewController.swift */; };
 		0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */; };
-		0AF73248291AF7D9009F6296 /* RNCryptor in Frameworks */ = {isa = PBXBuildFile; productRef = 0AF73247291AF7D9009F6296 /* RNCryptor */; };
 		0AF73250291DDFC4009F6296 /* BTC_Params.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF7324F291DDFC4009F6296 /* BTC_Params.swift */; };
 		0AFD7CF32C7E5FB100C46E36 /* Bbqr in Frameworks */ = {isa = PBXBuildFile; productRef = 0AFD7CF22C7E5FB100C46E36 /* Bbqr */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
@@ -399,7 +398,6 @@
 				0A8850FE2A41FB040078A603 /* secp256k1 in Frameworks */,
 				D06D788C25B817B500769157 /* LifeHash in Frameworks */,
 				0AA6EFFC2C7E65F900503A39 /* URKit in Frameworks */,
-				0AF73248291AF7D9009F6296 /* RNCryptor in Frameworks */,
 				0AFD7CF32C7E5FB100C46E36 /* Bbqr in Frameworks */,
 				0A8850FF2A4201C10078A603 /* LibWally.xcframework in Frameworks */,
 				F4505B6A72D68BD208B4904B /* Pods_FullyNoded.framework in Frameworks */,
@@ -1017,7 +1015,6 @@
 			name = FullyNoded;
 			packageProductDependencies = (
 				D06D788B25B817B500769157 /* LifeHash */,
-				0AF73247291AF7D9009F6296 /* RNCryptor */,
 				0A8850FD2A41FB040078A603 /* secp256k1 */,
 				0AFD7CF22C7E5FB100C46E36 /* Bbqr */,
 				0AA6EFFB2C7E65F900503A39 /* URKit */,
@@ -1094,7 +1091,6 @@
 			mainGroup = D00B9A1B2111427200E8B95A;
 			packageReferences = (
 				D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */,
-				0AF73246291AF7D9009F6296 /* XCRemoteSwiftPackageReference "RNCryptor" */,
 				0A8850FC2A41FB030078A603 /* XCRemoteSwiftPackageReference "secp256k1.swift" */,
 				0AFD7CF12C7E5FB100C46E36 /* XCRemoteSwiftPackageReference "bbqr-swift" */,
 				0AA6EFFA2C7E65F900503A39 /* XCRemoteSwiftPackageReference "URKit" */,
@@ -1710,14 +1706,6 @@
 				minimumVersion = 14.0.2;
 			};
 		};
-		0AF73246291AF7D9009F6296 /* XCRemoteSwiftPackageReference "RNCryptor" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RNCryptor/RNCryptor.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.0.0;
-			};
-		};
 		0AFD7CF12C7E5FB100C46E36 /* XCRemoteSwiftPackageReference "bbqr-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/bitcoinppl/bbqr-swift.git";
@@ -1746,11 +1734,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0AA6EFFA2C7E65F900503A39 /* XCRemoteSwiftPackageReference "URKit" */;
 			productName = URKit;
-		};
-		0AF73247291AF7D9009F6296 /* RNCryptor */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 0AF73246291AF7D9009F6296 /* XCRemoteSwiftPackageReference "RNCryptor" */;
-			productName = RNCryptor;
 		};
 		0AFD7CF22C7E5FB100C46E36 /* Bbqr */ = {
 			isa = XCSwiftPackageProductDependency;

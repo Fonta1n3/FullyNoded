@@ -133,10 +133,18 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 self.getPassword(seed)
             }
             
+            var wordsToShow = ""
+            let wordArray = seed.components(separatedBy: " ")
+            
+            for (i, word) in wordArray.enumerated() {
+                wordsToShow += "\(i + 1). \(word)  "
+            }
+            
+            
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
-                self.textView.text = seed
+                self.textView.text = wordsToShow
             }
         }
     }

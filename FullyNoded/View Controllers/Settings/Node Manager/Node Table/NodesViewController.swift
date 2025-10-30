@@ -236,13 +236,13 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     }
                     
                     if vc.nodeArray.count == 1 {
-                        if nodeStr.isNostr {
-                            if !selectedSwitch.isOn {
-                                //MakeRPCCall.sharedInstance.disconnect()
-                            } else {
-                                MakeRPCCall.sharedInstance.connectToRelay(node: nodeStr)
-                            }
-                        }
+//                        if nodeStr.isNostr {
+//                            if !selectedSwitch.isOn {
+//                                //MakeRPCCall.sharedInstance.disconnect()
+//                            } else {
+//                                MakeRPCCall.sharedInstance.connectToRelay(node: nodeStr)
+//                            }
+//                        }
                         vc.reloadTable()
                     }
                                         
@@ -253,13 +253,13 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             if nodeArray.count > 1 {
                 
-                if nodeStr.isNostr {
-                    if !selectedSwitch.isOn {
-                        //MakeRPCCall.sharedInstance.disconnect()
-                    } else {
-                        MakeRPCCall.sharedInstance.connectToRelay(node: nodeStr)
-                    }
-                }
+//                if nodeStr.isNostr {
+//                    if !selectedSwitch.isOn {
+//                        //MakeRPCCall.sharedInstance.disconnect()
+//                    } else {
+//                        MakeRPCCall.sharedInstance.connectToRelay(node: nodeStr)
+//                    }
+//                }
                 
                 for (i, node) in nodeArray.enumerated() {
                     

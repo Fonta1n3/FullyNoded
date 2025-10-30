@@ -93,10 +93,10 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
         isLndNode { [weak self] isLnd in
             guard let self = self else { return }
             
-            guard isLnd else {
-                self.openChannelCL(amount: amount, id: id, ip: ip, port: port)
-                return
-            }
+//            guard isLnd else {
+//                self.openChannelCL(amount: amount, id: id, ip: ip, port: port)
+//                return
+//            }
             
             activeWallet { [weak self] wallet in
                 guard let self = self else { return }
@@ -214,40 +214,40 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    private func openChannelCL(amount: Int, id: String, ip: String?, port: String?) {
-        Lightning.connect(amount: amount, id: id, ip: ip, port: port) { [weak self] (result, errorMessage) in
-            guard let self = self else { return }
-            
-            self.spinner.removeConnectingView()
-            
-            guard let result = result else {
-                showAlert(vc: self, title: "There was an issue.", message: errorMessage ?? "Unknown error connecting and funding that peer/channel.")
-                return
-            }
-            
-            if let success = result["success"] as? Bool {
-                if success {
-                    showAlert(vc: self, title: "Channel created ⚡️", message: "Channel commitment secured!")
-                } else {
-                    showAlert(vc: self, title: "There was an issue...", message: errorMessage ?? "Unknown error.")
-                }
-            } else if let psbt = result["psbt"] as? String {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.psbt = psbt
-                    self.promptToExportPsbt(psbt)
-                }
-                
-            } else if let rawTx = result["rawTx"] as? String {
-                DispatchQueue.main.async {
-                    UIPasteboard.general.string = rawTx
-                }
-                
-                showAlert(vc: self, title: "Channel funding had an issue...", message: "The raw transaction has been copied to your clipboard. Error: \(errorMessage ?? "Unknown error. Try broadcasting the transaction manually. Go to active wallet and tap the send / broadcast button then tap paste.")")
-            }
-        }
-    }
+//    private func openChannelCL(amount: Int, id: String, ip: String?, port: String?) {
+//        Lightning.connect(amount: amount, id: id, ip: ip, port: port) { [weak self] (result, errorMessage) in
+//            guard let self = self else { return }
+//            
+//            self.spinner.removeConnectingView()
+//            
+//            guard let result = result else {
+//                showAlert(vc: self, title: "There was an issue.", message: errorMessage ?? "Unknown error connecting and funding that peer/channel.")
+//                return
+//            }
+//            
+//            if let success = result["success"] as? Bool {
+//                if success {
+//                    showAlert(vc: self, title: "Channel created ⚡️", message: "Channel commitment secured!")
+//                } else {
+//                    showAlert(vc: self, title: "There was an issue...", message: errorMessage ?? "Unknown error.")
+//                }
+//            } else if let psbt = result["psbt"] as? String {
+//                DispatchQueue.main.async { [weak self] in
+//                    guard let self = self else { return }
+//                    
+//                    self.psbt = psbt
+//                    self.promptToExportPsbt(psbt)
+//                }
+//                
+//            } else if let rawTx = result["rawTx"] as? String {
+//                DispatchQueue.main.async {
+//                    UIPasteboard.general.string = rawTx
+//                }
+//                
+//                showAlert(vc: self, title: "Channel funding had an issue...", message: "The raw transaction has been copied to your clipboard. Error: \(errorMessage ?? "Unknown error. Try broadcasting the transaction manually. Go to active wallet and tap the send / broadcast button then tap paste.")")
+//            }
+//        }
+//    }
     
     private func promptToExportPsbt(_ psbt: String) {
         DispatchQueue.main.async { [weak self] in

@@ -83,7 +83,8 @@ class ActiveWalletViewController: UIViewController {
         currencyControl.setTitle(fiatCurrency.lowercased(), forSegmentAt: 2)
         if initialLoad {
             initialLoad = false
-            getFxRate()
+            //getFxRate()
+            loadTable()
         }
     }
     
@@ -356,7 +357,8 @@ class ActiveWalletViewController: UIViewController {
                     guard let self = self, let nodes = nodes else { return }
                     
                     guard nodes.count > 0 else {
-                        self.finishedLoading()
+                        //self.finishedLoading()
+                        self.getFxRate()
                         showAlert(vc: self, title: "", message: "No nodes added.")
                         return
                     }
@@ -375,7 +377,8 @@ class ActiveWalletViewController: UIViewController {
                                 self.loadLightning()
                             } else {
                                 guard let walletName = UserDefaults.standard.string(forKey: "walletName") else {
-                                    self.finishedLoading()
+                                    //self.finishedLoading()
+                                    self.getFxRate()
                                     showAlert(vc: self, title: "", message: "No wallet currently toggled on.")
                                     return
                                 }
@@ -456,6 +459,7 @@ class ActiveWalletViewController: UIViewController {
             
             self.walletTable.reloadData()
             self.removeSpinner()
+            //self.getFxRate()
         }
     }
     
@@ -464,7 +468,8 @@ class ActiveWalletViewController: UIViewController {
             guard let self = self else { return }
             
             guard let transactions = transactions, transactions.count > 0, self.transactionArray.count > 0 else {
-                self.finishedLoading()
+                //self.finishedLoading()
+                self.getFxRate()
                 return
             }
             
@@ -486,7 +491,8 @@ class ActiveWalletViewController: UIViewController {
                     }
 
                     if i + 1 == transactions.count && t + 1 == self.transactionArray.count {
-                        self.finishedLoading()
+                        //self.finishedLoading()
+                        self.getFxRate()
                     }
                 }
             }
@@ -823,29 +829,29 @@ class ActiveWalletViewController: UIViewController {
         
         spinner.addConnectingView(vc: self, description: "decoding invoice...")
         
-        isLndNode { isLnd in
-            if isLnd {
+        //isLndNode { isLnd in
+            //if isLnd {
                 self.decodeInvoiceLND(invoice: invoice, section: int)
-            } else {
-                self.decodeInvoiceCL(invoice: invoice, section: int)
-            }
-        }
+//            } else {
+//                self.decodeInvoiceCL(invoice: invoice, section: int)
+//            }
+        //}
     }
     
-    private func decodeInvoiceCL(invoice: String, section: Int) {
-        let commandId = UUID()
-        //bolt11 [description]
-        LightningRPC.sharedInstance.command(id: commandId, method: .decodepay, param: ["bolt11": invoice]) { [weak self] (uuid, response, errorDesc) in
-            guard let self = self else { return }
-                        
-            guard let dict = response as? [String:Any], let txid = dict["payment_hash"] as? String, let description = dict["description"] as? String else {
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error")
-                return
-            }
-            
-            self.updateMemo(txid: txid, memo: description)
-        }
-    }
+//    private func decodeInvoiceCL(invoice: String, section: Int) {
+//        let commandId = UUID()
+//        //bolt11 [description]
+//        LightningRPC.sharedInstance.command(id: commandId, method: .decodepay, param: ["bolt11": invoice]) { [weak self] (uuid, response, errorDesc) in
+//            guard let self = self else { return }
+//                        
+//            guard let dict = response as? [String:Any], let txid = dict["payment_hash"] as? String, let description = dict["description"] as? String else {
+//                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error")
+//                return
+//            }
+//            
+//            self.updateMemo(txid: txid, memo: description)
+//        }
+//    }
     
     private func decodeInvoiceLND(invoice: String, section: Int) {
         LndRpc.sharedInstance.command(.decodepayreq, nil, invoice, nil) { [weak self] (response, error) in
@@ -994,7 +1000,8 @@ class ActiveWalletViewController: UIViewController {
                     
                     self.fxRateLabel.text = "no fx rate data"
                 }
-                loadTable()
+                //reloadTable()
+                finishedLoading()
                 return
             }
             
@@ -1006,7 +1013,8 @@ class ActiveWalletViewController: UIViewController {
                 
                 self.fxRateLabel.text = rate.exchangeRate
                 self.onchainBalanceFiat = (self.onchainBalanceBtc.doubleValue * Double(rate)).fiatString
-                loadTable()
+                finishedLoading()
+                //reloadTable()
             }
         }
     }
@@ -1046,6 +1054,7 @@ class ActiveWalletViewController: UIViewController {
                         self.sectionZeroLoaded = true
                         self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
                         self.getWalletInfo()
+                        //self.getFxRate()
                     }
                 }
             }
@@ -1055,53 +1064,53 @@ class ActiveWalletViewController: UIViewController {
                 return
             }
             
-            if wallet.isJm {
-                JMRPC.sharedInstance.command(method: .listutxos(jmWallet: wallet), param: nil) { [weak self] (response, errorDesc) in
-                    guard let self = self else { return }
-                    guard let response = response as? [String:Any] else {
-                        if errorDesc == "Invalid credentials." {
-                            JMUtils.unlockWallet(wallet: self.wallet!) { (unlockedWallet, unlock_message) in
-                                guard let _ = unlockedWallet else {
-                                    showAlert(vc: self, title: "", message: unlock_message ?? "Unknown error unlocking wallet.")
-                                    return
-                                }
-                                CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
-                                    for w in wallets! {
-                                        if w["id"] != nil {
-                                            let s = Wallet(dictionary: w)
-                                            if s.jmWalletName == self.wallet!.jmWalletName {
-                                                self.wallet = s
-                                                self.getWalletBalance()
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            showAlert(vc: self, title: "", message: errorDesc ?? "Unknown issue getting jm utxos.")
-                        }
-                        
-                        return
-                    }
-                    guard let utxos = response["utxos"] as? [[String:Any]] else { return }
-                    var totalBalance = 0.0
-                    for utxo in utxos {
-                        let value = utxo["value"] as! Int
-                        totalBalance += value.satsToBtcDouble
-                    }
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        totalBalance = Double(round(100000000 * totalBalance) / 100000000)
-                        self.onchainBalanceBtc = totalBalance.btcBalanceWithSpaces
-                        self.onchainBalanceSats = totalBalance.sats.replacingOccurrences(of: " sats", with: "")
-                        self.sectionZeroLoaded = true
-                        self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                        self.getWalletInfo()
-                    }
-                }
-            } else {
+//            if wallet.isJm {
+//                JMRPC.sharedInstance.command(method: .listutxos(jmWallet: wallet), param: nil) { [weak self] (response, errorDesc) in
+//                    guard let self = self else { return }
+//                    guard let response = response as? [String:Any] else {
+//                        if errorDesc == "Invalid credentials." {
+//                            JMUtils.unlockWallet(wallet: self.wallet!) { (unlockedWallet, unlock_message) in
+//                                guard let _ = unlockedWallet else {
+//                                    showAlert(vc: self, title: "", message: unlock_message ?? "Unknown error unlocking wallet.")
+//                                    return
+//                                }
+//                                CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+//                                    for w in wallets! {
+//                                        if w["id"] != nil {
+//                                            let s = Wallet(dictionary: w)
+//                                            if s.jmWalletName == self.wallet!.jmWalletName {
+//                                                self.wallet = s
+//                                                self.getWalletBalance()
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        } else {
+//                            showAlert(vc: self, title: "", message: errorDesc ?? "Unknown issue getting jm utxos.")
+//                        }
+//                        
+//                        return
+//                    }
+//                    guard let utxos = response["utxos"] as? [[String:Any]] else { return }
+//                    var totalBalance = 0.0
+//                    for utxo in utxos {
+//                        let value = utxo["value"] as! Int
+//                        totalBalance += value.satsToBtcDouble
+//                    }
+//                    DispatchQueue.main.async { [weak self] in
+//                        guard let self = self else { return }
+//                        totalBalance = Double(round(100000000 * totalBalance) / 100000000)
+//                        self.onchainBalanceBtc = totalBalance.btcBalanceWithSpaces
+//                        self.onchainBalanceSats = totalBalance.sats.replacingOccurrences(of: " sats", with: "")
+//                        self.sectionZeroLoaded = true
+//                        self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
+//                        self.getWalletInfo()
+//                    }
+//                }
+//            } else {
                 getOnchainWalletBalance()
-            }
+            //}
         } else {
             chooseWallet()
         }
@@ -1121,6 +1130,7 @@ class ActiveWalletViewController: UIViewController {
             
             self.walletInfo = walletInfo
             self.syncIndexes()
+            
             
             guard let progress = walletInfo.progress else {
                 return
@@ -1338,40 +1348,40 @@ class ActiveWalletViewController: UIViewController {
                 }
             }))
             
-            CoreDataService.retrieveEntity(entityName: .wallets) { potentialJmWallets in
-                guard let potentialJmWallets = potentialJmWallets else { return }
-                
-                var showJMOption = false
-                
-                for (i, potentialJmWallet) in potentialJmWallets.enumerated() {
-                    if potentialJmWallet["id"] != nil {
-                        let wStr = Wallet(dictionary: potentialJmWallet)
-                        if wStr.isJm {
-                            showJMOption = true
-                        }
-                        
-                        if i + 1 == potentialJmWallets.count && showJMOption {
-                            alert.addAction(UIAlertAction(title: "Activate a Join Market wallet", style: .default, handler: { action in
-                                DispatchQueue.main.async { [weak self] in
-                                    guard let self = self else { return }
-                                    
-                                    JMUtils.wallets { (response, message) in
-                                        guard let jmwallets = response else {
-                                            self.finishedLoading()
-                                            showAlert(vc: self, title: "", message: message ?? "Unknown issue getting your JM wallets.")
-                                            return
-                                        }
-                                        
-                                        if jmwallets.count > 0 {
-                                            self.promptToChooseJmWallet(jmWallets: jmwallets)
-                                        }
-                                    }
-                                }
-                            }))
-                        }
-                    }
-                }
-            }
+//            CoreDataService.retrieveEntity(entityName: .wallets) { potentialJmWallets in
+//                guard let potentialJmWallets = potentialJmWallets else { return }
+//                
+//                var showJMOption = false
+//                
+//                for (i, potentialJmWallet) in potentialJmWallets.enumerated() {
+//                    if potentialJmWallet["id"] != nil {
+//                        let wStr = Wallet(dictionary: potentialJmWallet)
+//                        if wStr.isJm {
+//                            showJMOption = true
+//                        }
+//                        
+//                        if i + 1 == potentialJmWallets.count && showJMOption {
+//                            alert.addAction(UIAlertAction(title: "Activate a Join Market wallet", style: .default, handler: { action in
+//                                DispatchQueue.main.async { [weak self] in
+//                                    guard let self = self else { return }
+//                                    
+//                                    JMUtils.wallets { (response, message) in
+//                                        guard let jmwallets = response else {
+//                                            self.finishedLoading()
+//                                            showAlert(vc: self, title: "", message: message ?? "Unknown issue getting your JM wallets.")
+//                                            return
+//                                        }
+//                                        
+//                                        if jmwallets.count > 0 {
+//                                            self.promptToChooseJmWallet(jmWallets: jmwallets)
+//                                        }
+//                                    }
+//                                }
+//                            }))
+//                        }
+//                    }
+//                }
+//            }
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = self.view
@@ -1470,8 +1480,8 @@ class ActiveWalletViewController: UIViewController {
         }
         
         addNavBarSpinner()
-        getFxRate()
-        //loadTable()
+        //getFxRate()
+        loadTable()
     }
     
     @objc func refreshData(_ sender: Any) {
