@@ -227,10 +227,10 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             return
         }
         
-        if showActive && !lndNode {
+        /*if showActive && !lndNode {
             selectedChannel = channels[indexPath.section]
             promptToRebalanceCL()
-        } else if lndNode && showActive {
+        } else */if lndNode && showActive {
             if outgoingChannel == nil {
                 outgoingChannel = channels[indexPath.section]
                 userSelectedOutgoing()
@@ -254,31 +254,31 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             alert.addAction(UIAlertAction(title: "Close", style: .destructive, handler: { [weak self] action in
                 guard let self = self else { return }
                 
-                if self.lndNode {
+               // if self.lndNode {
                     self.spinner.addConnectingView(vc: self, description: "closing...")
                     self.closeChannelLnd(channel: channel)
-                } else {
-                    activeWallet { [weak self] wallet in
-                        guard let self = self else { return }
-                        
-                        guard let wallet = wallet else {
-                            self.spinner.addConnectingView(vc: self, description: "closing...")
-                            self.closeChannelCL(channel, nil)
-                            return
-                        }
-                        
-                        if let close_to_addr = channel["close_to_addr"] as? String {
-                            if close_to_addr != "" {
-                                self.spinner.addConnectingView(vc: self, description: "closing...")
-                                self.closeChannelCL(channel, nil)
-                            } else {
-                                self.getAddress(wallet, channel)
-                            }
-                        } else {
-                            self.getAddress(wallet, channel)
-                        }
-                    }
-                }
+//                } else {
+//                    activeWallet { [weak self] wallet in
+//                        guard let self = self else { return }
+//                        
+//                        guard let wallet = wallet else {
+//                            self.spinner.addConnectingView(vc: self, description: "closing...")
+//                            //self.closeChannelCL(channel, nil)
+//                            return
+//                        }
+//                        
+//                        if let close_to_addr = channel["close_to_addr"] as? String {
+//                            if close_to_addr != "" {
+//                                self.spinner.addConnectingView(vc: self, description: "closing...")
+//                                self.closeChannelCL(channel, nil)
+//                            } else {
+//                                self.getAddress(wallet, channel)
+//                            }
+//                        } else {
+//                            self.getAddress(wallet, channel)
+//                        }
+//                    }
+//                }
             }))
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
@@ -287,87 +287,87 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         }
     }
     
-    private func promptToUseClosingAddress(_ wallet: Wallet, _ address: String, _ channel: [String:Any]) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let alertStyle = UIAlertController.Style.alert
-            let tit = "Automatically send your channel funds to \(wallet.label)?"
-            let mess = "This means funds will automatically be sent to \(wallet.label) when the channel closes. This is NOT reversible!\n\nAddress: \(address)"
-            
-            let alert = UIAlertController(title: tit, message: mess, preferredStyle: alertStyle)
-            
-            alert.addAction(UIAlertAction(title: "Send to \(wallet.label)", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                self.spinner.addConnectingView(vc: self, description: "closing...")
-                
-                CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(Int(wallet.index) + 1), entity: .wallets) { _ in }
-                
-                self.closeChannelCL(channel, address)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Use Lightning wallet", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                self.spinner.addConnectingView(vc: self, description: "closing...")
-                
-                self.closeChannelCL(channel, nil)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true, completion: nil)
-        }
-    }
+//    private func promptToUseClosingAddress(_ wallet: Wallet, _ address: String, _ channel: [String:Any]) {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//            
+//            let alertStyle = UIAlertController.Style.alert
+//            let tit = "Automatically send your channel funds to \(wallet.label)?"
+//            let mess = "This means funds will automatically be sent to \(wallet.label) when the channel closes. This is NOT reversible!\n\nAddress: \(address)"
+//            
+//            let alert = UIAlertController(title: tit, message: mess, preferredStyle: alertStyle)
+//            
+//            alert.addAction(UIAlertAction(title: "Send to \(wallet.label)", style: .default, handler: { [weak self] action in
+//                guard let self = self else { return }
+//                self.spinner.addConnectingView(vc: self, description: "closing...")
+//                
+//                CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(Int(wallet.index) + 1), entity: .wallets) { _ in }
+//                
+//                self.closeChannelCL(channel, address)
+//            }))
+//            
+//            alert.addAction(UIAlertAction(title: "Use Lightning wallet", style: .default, handler: { [weak self] action in
+//                guard let self = self else { return }
+//                self.spinner.addConnectingView(vc: self, description: "closing...")
+//                
+//                self.closeChannelCL(channel, nil)
+//            }))
+//            
+//            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+//            alert.popoverPresentationController?.sourceView = self.view
+//            self.present(alert, animated: true, completion: nil)
+//        }
+//    }
     
-    private func getAddress(_ wallet: Wallet, _ channel: [String:Any]) {
-        let index = Int(wallet.index) + 1
-        let param:Derive_Addresses = .init(["descriptor": wallet.receiveDescriptor, "range":[index,index]])
-        Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { [weak self] (response, errorMessage) in
-            guard let self = self else { return }
-            
-            guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "", message: errorMessage ?? "error getting closing address")
-                return
-            }
-            
-            self.promptToUseClosingAddress(wallet, address, channel)
-        }
-    }
+//    private func getAddress(_ wallet: Wallet, _ channel: [String:Any]) {
+//        let index = Int(wallet.index) + 1
+//        let param:Derive_Addresses = .init(["descriptor": wallet.receiveDescriptor, "range":[index,index]])
+//        Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { [weak self] (response, errorMessage) in
+//            guard let self = self else { return }
+//            
+//            guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
+//                self.spinner.removeConnectingView()
+//                showAlert(vc: self, title: "", message: errorMessage ?? "error getting closing address")
+//                return
+//            }
+//            
+//            self.promptToUseClosingAddress(wallet, address, channel)
+//        }
+//    }
     
-    private func closeChannelCL(_ channel: [String:Any], _ address: String?) {
-        let commandId = UUID()
-        let channelId = channel["channel_id"] as! String
-        var param:[String:Any] = [:]
-        param["id"] = channelId
-        if let closingAddress = address {
-            param["destination"] = closingAddress
-        }
-        
-        LightningRPC.sharedInstance.command(id: commandId, method: .close, param: param) { [weak self] (id, response, errorDesc) in
-            guard let self = self else { return }
-            
-            self.spinner.removeConnectingView()
-            
-            guard errorDesc == nil else {
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "error disconnecting peer")
-                return
-            }
-            
-            guard let response = response as? [String:Any] else {
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "error disconnecting peer")
-                return
-            }
-            
-            if let message = response["message"] as? String {
-                showAlert(vc: self, title: "Error disconnecting peer.", message: message)
-            } else {
-                showAlert(vc: self, title: "Channel disconnected ⚡️", message: "")
-                self.loadChannels()
-                return
-            }
-        }
-    }
+//    private func closeChannelCL(_ channel: [String:Any], _ address: String?) {
+//        let commandId = UUID()
+//        let channelId = channel["channel_id"] as! String
+//        var param:[String:Any] = [:]
+//        param["id"] = channelId
+//        if let closingAddress = address {
+//            param["destination"] = closingAddress
+//        }
+//        
+//        LightningRPC.sharedInstance.command(id: commandId, method: .close, param: param) { [weak self] (id, response, errorDesc) in
+//            guard let self = self else { return }
+//            
+//            self.spinner.removeConnectingView()
+//            
+//            guard errorDesc == nil else {
+//                showAlert(vc: self, title: "Error", message: errorDesc ?? "error disconnecting peer")
+//                return
+//            }
+//            
+//            guard let response = response as? [String:Any] else {
+//                showAlert(vc: self, title: "Error", message: errorDesc ?? "error disconnecting peer")
+//                return
+//            }
+//            
+//            if let message = response["message"] as? String {
+//                showAlert(vc: self, title: "Error disconnecting peer.", message: message)
+//            } else {
+//                showAlert(vc: self, title: "Channel disconnected ⚡️", message: "")
+//                self.loadChannels()
+//                return
+//            }
+//        }
+//    }
     
     private func closeChannelLnd(channel: [String:Any]) {
         guard let channelPoint = channel["channel_point"] as? String else { return }
@@ -596,10 +596,10 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             
             self.lndNode = isLnd
             
-            guard isLnd else {
-                self.loadCLPeers()
-                return
-            }
+//            guard isLnd else {
+//                self.loadCLPeers()
+//                return
+//            }
             
             self.loadLndChannels()
         }
@@ -680,26 +680,26 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         }
     }
     
-    private func loadCLPeers() {
-        let commandId = UUID()
-        LightningRPC.sharedInstance.command(id: commandId, method: .listpeers, param: nil) { [weak self] (uuid, response, errorDesc) in
-            guard let self = self else { return }
-            
-            guard let dict = response as? NSDictionary, let peers = dict["peers"] as? NSArray else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "Unknown error fetching channels.")
-                return
-            }
-            
-            guard peers.count > 0 else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "No channels yet.", message: "Tap the + button to connect to a peer and start a channel.")
-                return
-            }
-            
-            self.parseCLPeers(peers)
-        }
-    }
+//    private func loadCLPeers() {
+//        let commandId = UUID()
+//        LightningRPC.sharedInstance.command(id: commandId, method: .listpeers, param: nil) { [weak self] (uuid, response, errorDesc) in
+//            guard let self = self else { return }
+//            
+//            guard let dict = response as? NSDictionary, let peers = dict["peers"] as? NSArray else {
+//                self.spinner.removeConnectingView()
+//                showAlert(vc: self, title: "Error", message: errorDesc ?? "Unknown error fetching channels.")
+//                return
+//            }
+//            
+//            guard peers.count > 0 else {
+//                self.spinner.removeConnectingView()
+//                showAlert(vc: self, title: "No channels yet.", message: "Tap the + button to connect to a peer and start a channel.")
+//                return
+//            }
+//            
+//            self.parseCLPeers(peers)
+//        }
+//    }
     
     private func parseLNDChannels(_ channels: NSArray) {
         var totalSpendable = 0
@@ -778,62 +778,62 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         }
     }
     
-    private func parseCLPeers(_ peers: NSArray) {
-        var totalSpendable = 0.0
-        var totalReceivable = 0.0
-        
-        for (i, peer) in peers.enumerated() {
-            if let peerDict = peer as? [String:Any] {
-                if let channls = peerDict["channels"] as? NSArray {
-                    if channls.count > 0 {
-                        for ch in channls {
-                            if let dict = ch as? [String:Any] {
-                                
-                                if let spendable = dict["spendable_msatoshi"] as? Double {
-                                    totalSpendable += spendable / 1000.0
-                                }
-                                
-                                if let receivable = dict["receivable_msatoshi"] as? Double {
-                                    totalReceivable += receivable / 1000.0
-                                }
-                                
-                                if let state = dict["state"] as? String {
-                                    if showActive {
-                                        if state == "CHANNELD_NORMAL" {
-                                            channels.append(dict)
-                                            channels[channels.count - 1]["peerId"] = peerDict["id"] as! String
-                                        }
-                                    } else if showPending {
-                                        if state == "CHANNELD_AWAITING_LOCKIN" {
-                                            channels.append(dict)
-                                            channels[channels.count - 1]["peerId"] = peerDict["id"] as! String
-                                        }
-                                    } else {
-                                        if state != "CHANNELD_NORMAL" && state != "CHANNELD_AWAITING_LOCKIN" {
-                                            channels.append(dict)
-                                            channels[channels.count - 1]["peerId"] = peerDict["id"] as! String
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if i + 1 == peers.count {
-                         DispatchQueue.main.async { [weak self] in
-                             guard let self = self else { return }
-                             
-                             self.totalSpendableLabel.text = "Total spendable: \(totalSpendable.withCommas) sats"
-                             self.totalReceivableLabel.text = "Total receivable: \(totalReceivable.withCommas) sats"
-                         }
-                         
-                        fetchLocalPeers { [weak self] _ in
-                            self?.load()
-                        }
-                    }
-                }
-            }
-        }
-    }
+//    private func parseCLPeers(_ peers: NSArray) {
+//        var totalSpendable = 0.0
+//        var totalReceivable = 0.0
+//        
+//        for (i, peer) in peers.enumerated() {
+//            if let peerDict = peer as? [String:Any] {
+//                if let channls = peerDict["channels"] as? NSArray {
+//                    if channls.count > 0 {
+//                        for ch in channls {
+//                            if let dict = ch as? [String:Any] {
+//                                
+//                                if let spendable = dict["spendable_msatoshi"] as? Double {
+//                                    totalSpendable += spendable / 1000.0
+//                                }
+//                                
+//                                if let receivable = dict["receivable_msatoshi"] as? Double {
+//                                    totalReceivable += receivable / 1000.0
+//                                }
+//                                
+//                                if let state = dict["state"] as? String {
+//                                    if showActive {
+//                                        if state == "CHANNELD_NORMAL" {
+//                                            channels.append(dict)
+//                                            channels[channels.count - 1]["peerId"] = peerDict["id"] as! String
+//                                        }
+//                                    } else if showPending {
+//                                        if state == "CHANNELD_AWAITING_LOCKIN" {
+//                                            channels.append(dict)
+//                                            channels[channels.count - 1]["peerId"] = peerDict["id"] as! String
+//                                        }
+//                                    } else {
+//                                        if state != "CHANNELD_NORMAL" && state != "CHANNELD_AWAITING_LOCKIN" {
+//                                            channels.append(dict)
+//                                            channels[channels.count - 1]["peerId"] = peerDict["id"] as! String
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                    if i + 1 == peers.count {
+//                         DispatchQueue.main.async { [weak self] in
+//                             guard let self = self else { return }
+//                             
+//                             self.totalSpendableLabel.text = "Total spendable: \(totalSpendable.withCommas) sats"
+//                             self.totalReceivableLabel.text = "Total receivable: \(totalReceivable.withCommas) sats"
+//                         }
+//                         
+//                        fetchLocalPeers { [weak self] _ in
+//                            self?.load()
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
     
     private func fetchLocalPeers(completion: @escaping ((Bool)) -> Void) {
         CoreDataService.retrieveEntity(entityName: .peers) { [weak self] peers in
@@ -939,96 +939,96 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         }
     }
     
-    private func promptToRebalanceCL() {
-        DispatchQueue.main.async { [weak self] in
-            var alertStyle = UIAlertController.Style.actionSheet
-            if (UIDevice.current.userInterfaceIdiom == .pad) {
-              alertStyle = UIAlertController.Style.alert
-            }
-            let alert = UIAlertController(title: "Send circular payment to rebalance?", message: "This action depends upon the rebalance.py plugin, if you are not using the plugin then this will not work and the spinner will never go away. It can take up to 60 seconds for this command to complete.", preferredStyle: alertStyle)
-            alert.addAction(UIAlertAction(title: "Rebalance", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                self.spinner.addConnectingView(vc: self, description: "rebalancing, this can take up to 60 seconds...")
-                self.parseChannelsForRebalancing()
-            }))
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self?.view
-            self?.present(alert, animated: true, completion: nil)
-        }
-    }
+//    private func promptToRebalanceCL() {
+//        DispatchQueue.main.async { [weak self] in
+//            var alertStyle = UIAlertController.Style.actionSheet
+//            if (UIDevice.current.userInterfaceIdiom == .pad) {
+//              alertStyle = UIAlertController.Style.alert
+//            }
+//            let alert = UIAlertController(title: "Send circular payment to rebalance?", message: "This action depends upon the rebalance.py plugin, if you are not using the plugin then this will not work and the spinner will never go away. It can take up to 60 seconds for this command to complete.", preferredStyle: alertStyle)
+//            alert.addAction(UIAlertAction(title: "Rebalance", style: .default, handler: { [weak self] action in
+//                guard let self = self else { return }
+//                self.spinner.addConnectingView(vc: self, description: "rebalancing, this can take up to 60 seconds...")
+//                self.parseChannelsForRebalancing()
+//            }))
+//            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+//            alert.popoverPresentationController?.sourceView = self?.view
+//            self?.present(alert, animated: true, completion: nil)
+//        }
+//    }
     
-    private func parseChannelsForRebalancing() {
-        ours.removeAll()
-        theirs.removeAll()
-        
-        for (i, ch) in channels.enumerated() {
-            let ourAmount = ch["to_us_msat"] as? String ?? ""
-            let totalAmount = ch["total_msat"] as? String ?? ""
-            let ourAmountInt = Int(ourAmount.replacingOccurrences(of: "msat", with: "")) ?? 0
-            let totalAmountInt = Int(totalAmount.replacingOccurrences(of: "msat", with: "")) ?? 0
-            let ratio = Double(ourAmountInt) / Double(totalAmountInt)
-            if ratio > 0.6 {
-                ours.append(ch)
-            } else if ratio < 0.4 {
-                theirs.append(ch)
-            }
-            if i + 1 == channels.count {
-                selectCounterpart()
-            }
-        }
-    }
+//    private func parseChannelsForRebalancing() {
+//        ours.removeAll()
+//        theirs.removeAll()
+//        
+//        for (i, ch) in channels.enumerated() {
+//            let ourAmount = ch["to_us_msat"] as? String ?? ""
+//            let totalAmount = ch["total_msat"] as? String ?? ""
+//            let ourAmountInt = Int(ourAmount.replacingOccurrences(of: "msat", with: "")) ?? 0
+//            let totalAmountInt = Int(totalAmount.replacingOccurrences(of: "msat", with: "")) ?? 0
+//            let ratio = Double(ourAmountInt) / Double(totalAmountInt)
+//            if ratio > 0.6 {
+//                ours.append(ch)
+//            } else if ratio < 0.4 {
+//                theirs.append(ch)
+//            }
+//            if i + 1 == channels.count {
+//                selectCounterpart()
+//            }
+//        }
+//    }
     
-    private func selectCounterpart() {
-        if selectedChannel != nil && ours.count > 0 && theirs.count > 0 {
-            for ch in ours {
-                if ch["short_channel_id"] as! String == selectedChannel!["short_channel_id"] as! String {
-                    chooseTheirsCounterpart()
-                }
-            }
-            for ch in theirs {
-                if ch["short_channel_id"] as! String == selectedChannel!["short_channel_id"] as! String {
-                    chooseOursCounterpart()
-                }
-            }
-        } else {
-            spinner.removeConnectingView()
-            showAlert(vc: self, title: "Rebalancing issue...", message: "It does not look like you have enough suitable channels to rebalance with. This can usually happen if all your channels are 100% spendable or receivable.")
-        }
-    }
+//    private func selectCounterpart() {
+//        if selectedChannel != nil && ours.count > 0 && theirs.count > 0 {
+//            for ch in ours {
+//                if ch["short_channel_id"] as! String == selectedChannel!["short_channel_id"] as! String {
+//                    chooseTheirsCounterpart()
+//                }
+//            }
+//            for ch in theirs {
+//                if ch["short_channel_id"] as! String == selectedChannel!["short_channel_id"] as! String {
+//                    chooseOursCounterpart()
+//                }
+//            }
+//        } else {
+//            spinner.removeConnectingView()
+//            showAlert(vc: self, title: "Rebalancing issue...", message: "It does not look like you have enough suitable channels to rebalance with. This can usually happen if all your channels are 100% spendable or receivable.")
+//        }
+//    }
     
-    private func chooseTheirsCounterpart()  {
-        if theirs.count > 0 {
-            let sortedArray = theirs.sorted { $0["receivable_msatoshi"] as? Int ?? .zero < $1["receivable_msatoshi"] as? Int ?? .zero }
-            let sourceShortId = selectedChannel!["short_channel_id"] as! String
-            let destinationShortId = sortedArray[sortedArray.count - 1]["short_channel_id"] as! String
-            rebalance(sourceShortId, destinationShortId)
-        }
-    }
+//    private func chooseTheirsCounterpart()  {
+//        if theirs.count > 0 {
+//            let sortedArray = theirs.sorted { $0["receivable_msatoshi"] as? Int ?? .zero < $1["receivable_msatoshi"] as? Int ?? .zero }
+//            let sourceShortId = selectedChannel!["short_channel_id"] as! String
+//            let destinationShortId = sortedArray[sortedArray.count - 1]["short_channel_id"] as! String
+//            rebalance(sourceShortId, destinationShortId)
+//        }
+//    }
     
-    private func chooseOursCounterpart() {
-        if ours.count > 0 {
-            let sortedArray = ours.sorted { $0["spendable_msatoshi"] as? Int ?? .zero < $1["spendable_msatoshi"] as? Int ?? .zero }
-            let sourceShortId = sortedArray[ours.count - 1]["short_channel_id"] as! String
-            let destinationShortId = selectedChannel!["short_channel_id"] as! String
-            rebalance(sourceShortId, destinationShortId)
-        }
-    }
+//    private func chooseOursCounterpart() {
+//        if ours.count > 0 {
+//            let sortedArray = ours.sorted { $0["spendable_msatoshi"] as? Int ?? .zero < $1["spendable_msatoshi"] as? Int ?? .zero }
+//            let sourceShortId = sortedArray[ours.count - 1]["short_channel_id"] as! String
+//            let destinationShortId = selectedChannel!["short_channel_id"] as! String
+//            rebalance(sourceShortId, destinationShortId)
+//        }
+//    }
     
-    private func rebalance(_ source: String, _ destination: String) {
-        //outgoing_scid incoming_scid
-        let p:[String:Any] = ["outgoing_scid": source, "incoming_scid": destination]
-        LightningRPC.sharedInstance.command(id: UUID(), method: .rebalance, param: p) { [weak self] (id, response, errorDesc) in
-            self?.refresh()
-            if errorDesc != nil {
-               showAlert(vc: self, title: "Error", message: errorDesc!)
-            } else if let message = response as? String {
-                showAlert(vc: self, title: "⚡️ Success ⚡️", message: message)
-            } else {
-                
-                showAlert(vc: self, title: "", message: "\(String(describing: response))")
-            }
-        }
-    }
+//    private func rebalance(_ source: String, _ destination: String) {
+//        //outgoing_scid incoming_scid
+//        let p:[String:Any] = ["outgoing_scid": source, "incoming_scid": destination]
+//        LightningRPC.sharedInstance.command(id: UUID(), method: .rebalance, param: p) { [weak self] (id, response, errorDesc) in
+//            self?.refresh()
+//            if errorDesc != nil {
+//               showAlert(vc: self, title: "Error", message: errorDesc!)
+//            } else if let message = response as? String {
+//                showAlert(vc: self, title: "⚡️ Success ⚡️", message: message)
+//            } else {
+//                
+//                showAlert(vc: self, title: "", message: "\(String(describing: response))")
+//            }
+//        }
+//    }
     
     private func refresh() {
         channels.removeAll()

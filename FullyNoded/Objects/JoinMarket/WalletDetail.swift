@@ -6,7 +6,7 @@
 //  Copyright © 2021 Fontaine. All rights reserved.
 //
 
-import Foundation
+//import Foundation
 /*
  {
      walletinfo =     {
@@ -289,44 +289,44 @@ import Foundation
  }
  */
 
-public struct WalletDetail: CustomStringConvertible {
-    let walletinfo: [String:Any]
-    var accounts:[Account] = []
-    let walletname: String
-    
-    init(_ dictionary: [String: Any]) {
-        walletinfo = dictionary["walletinfo"] as! [String:Any]
-        walletname = dictionary["walletname"] as! String
-        let accountArray = walletinfo["accounts"] as! [[String:Any]]
-        for account_ in accountArray {
-            accounts.append(Account(account_))
-        }
-    }
-    
-    public var description: String {
-        return ""
-    }
-}
+//public struct WalletDetail: CustomStringConvertible {
+//    let walletinfo: [String:Any]
+//    var accounts:[Account] = []
+//    let walletname: String
+//    
+//    init(_ dictionary: [String: Any]) {
+//        walletinfo = dictionary["walletinfo"] as! [String:Any]
+//        walletname = dictionary["walletname"] as! String
+//        let accountArray = walletinfo["accounts"] as! [[String:Any]]
+//        for account_ in accountArray {
+//            accounts.append(Account(account_))
+//        }
+//    }
+//    
+//    public var description: String {
+//        return ""
+//    }
+//}
 
-public struct Account: CustomStringConvertible {
-    let accountNumber: Int
-    let account_balance: Double
-    var branches: [Branch] = []
-    
-    init(_ dictionary: [String: Any]) {
-        accountNumber = Int(dictionary["account"] as! String)!
-        account_balance = Double(dictionary["account_balance"] as! String)!
-        let branches_ = dictionary["branches"] as! [[String:Any]]
-        for branch in branches_ {
-            branches.append(Branch(branch))
-        }
-        
-    }
-    
-    public var description: String {
-        return ""
-    }
-}
+//public struct Account: CustomStringConvertible {
+//    let accountNumber: Int
+//    let account_balance: Double
+//    var branches: [Branch] = []
+//    
+//    init(_ dictionary: [String: Any]) {
+//        accountNumber = Int(dictionary["account"] as! String)!
+//        account_balance = Double(dictionary["account_balance"] as! String)!
+//        let branches_ = dictionary["branches"] as! [[String:Any]]
+//        for branch in branches_ {
+//            branches.append(Branch(branch))
+//        }
+//        
+//    }
+//    
+//    public var description: String {
+//        return ""
+//    }
+//}
 
 /*
  {
@@ -373,24 +373,24 @@ labels = "";
 }
  */
 
-public struct Branch: CustomStringConvertible {
-    let balance: Double
-    let branch: String
-    var entries: [Entry] = []
-    
-    init(_ dictionary: [String: Any]) {
-        balance = Double(dictionary["balance"] as! String)!
-        branch = dictionary["branch"] as! String
-        let entries_ = dictionary["entries"] as! [[String:Any]]
-        for entry in entries_ {
-            entries.append(Entry(entry))
-        }
-    }
-    
-    public var description: String {
-        return ""
-    }
-}
+//public struct Branch: CustomStringConvertible {
+//    let balance: Double
+//    let branch: String
+//    var entries: [Entry] = []
+//    
+//    init(_ dictionary: [String: Any]) {
+//        balance = Double(dictionary["balance"] as! String)!
+//        branch = dictionary["branch"] as! String
+//        let entries_ = dictionary["entries"] as! [[String:Any]]
+//        for entry in entries_ {
+//            entries.append(Entry(entry))
+//        }
+//    }
+//    
+//    public var description: String {
+//        return ""
+//    }
+//}
 
 /*
  {
@@ -401,20 +401,20 @@ labels = "";
 }
  */
 
-public struct Entry: CustomStringConvertible {
-    let address: String
-    let amount: Double
-    let hd_path: String
-    let label: String
-    
-    init(_ dictionary: [String: Any]) {
-        address = dictionary["address"] as! String
-        amount = Double(dictionary["amount"] as! String)!
-        hd_path = dictionary["hd_path"] as! String
-        label = dictionary["label"] as! String
-    }
-    
-    public var description: String {
-        return ""
-    }
-}
+//public struct Entry: CustomStringConvertible {
+//    let address: String
+//    let amount: Double
+//    let hd_path: String
+//    let label: String
+//    
+//    init(_ dictionary: [String: Any]) {
+//        address = dictionary["address"] as! String
+//        amount = Double(dictionary["amount"] as! String)!
+//        hd_path = dictionary["hd_path"] as! String
+//        label = dictionary["label"] as! String
+//    }
+//    
+//    public var description: String {
+//        return ""
+//    }
+//}

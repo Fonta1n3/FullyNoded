@@ -6,7 +6,7 @@
 //  Copyright © 2022 Fontaine. All rights reserved.
 //
 
-import Foundation
+//import Foundation
 /*
  utxos =     (
              {
@@ -25,36 +25,36 @@ import Foundation
  )
  */
 
-struct JMUtxo: CustomStringConvertible {
-    
-    let utxoString: String
-    let frozen: Bool
-    let locktime: Date?
-//    let address: String
-//    let label: String
-//    let mixdepth: Int
-//    let path: String
-//    let tries: Int
-//    let tries_remaining: Int
-//    let utxo: String
-//    let value: Int
-    
-    init(_ dict: [String:Any]) {
-        utxoString = dict["utxo"] as! String
-        frozen = dict["frozen"] as! Bool
-        let rawLocktime = dict["locktime"] as? String
-        
-        let dateFormatterGet = DateFormatter()
-        dateFormatterGet.dateFormat = "yyyy-MM-dd HH:mm:ss"
-
-        if let rawLocktime = rawLocktime, let date = dateFormatterGet.date(from: rawLocktime) {
-            locktime = date
-        } else {
-            locktime = nil
-        }
-    }
-    
-    public var description: String {
-        return ""
-    }
-}
+//struct JMUtxo: CustomStringConvertible {
+//    
+//    let utxoString: String
+//    let frozen: Bool
+//    let locktime: Date?
+////    let address: String
+////    let label: String
+////    let mixdepth: Int
+////    let path: String
+////    let tries: Int
+////    let tries_remaining: Int
+////    let utxo: String
+////    let value: Int
+//    
+//    init(_ dict: [String:Any]) {
+//        utxoString = dict["utxo"] as! String
+//        frozen = dict["frozen"] as! Bool
+//        let rawLocktime = dict["locktime"] as? String
+//        
+//        let dateFormatterGet = DateFormatter()
+//        dateFormatterGet.dateFormat = "yyyy-MM-dd HH:mm:ss"
+//
+//        if let rawLocktime = rawLocktime, let date = dateFormatterGet.date(from: rawLocktime) {
+//            locktime = date
+//        } else {
+//            locktime = nil
+//        }
+//    }
+//    
+//    public var description: String {
+//        return ""
+//    }
+//}

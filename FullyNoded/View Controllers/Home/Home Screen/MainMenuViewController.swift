@@ -43,6 +43,7 @@ class MainMenuViewController: UIViewController {
     var uptimeInfo:Uptime!
     var feeInfo:FeeInfo!
             
+    @IBOutlet weak var torStatusLabel: UILabel!
     @IBOutlet weak var headerLabel: UILabel!
     @IBOutlet weak var torProgressLabel: UILabel!
     @IBOutlet weak var progressView: UIProgressView!
@@ -100,53 +101,53 @@ class MainMenuViewController: UIViewController {
         torProgressLabel.layer.zPosition = 1
         progressView.layer.zPosition = 1
         progressView.setNeedsFocusUpdate()
-        migrateJmWallet()
+        //migrateJmWallet()
     }
     
-    func migrateJmWallet() {
-        func deleteJmWallets() {
-            CoreDataService.deleteAllData(entity: .jmWallets) { _ in }
-        }
-        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmWallets in
-            guard let jmWallets = jmWallets, jmWallets.count > 0 else { return }
-
-            CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
-                guard let wallets = wallets, wallets.count > 0 else { return }
-
-                for (i, jmWallet) in jmWallets.enumerated() {
-                    let jmWStrct = JMWallet(jmWallet)
-
-                    for (x, w) in wallets.enumerated() {
-                        if w["id"] != nil {
-                            let wStrct = Wallet(dictionary: w)
-                            if jmWStrct.fnWallet == wStrct.name {
-                                // same wallet we can update here
-                                CoreDataService.update(id: wStrct.id, keyToUpdate: "token", newValue: jmWStrct.token, entity: .wallets) { _ in
-
-                                    CoreDataService.update(id: wStrct.id, keyToUpdate: "password", newValue: jmWStrct.password, entity: .wallets) { _ in
-
-                                        CoreDataService.update(id: wStrct.id, keyToUpdate: "isJm", newValue: true, entity: .wallets) { _ in
-
-                                            CoreDataService.update(id: wStrct.id, keyToUpdate: "jmWalletName", newValue: jmWStrct.name, entity: .wallets) { _ in
-
-                                                if i + 1 == jmWallets.count && x + 1 == jmWallets.count {
-                                                    deleteJmWallets()
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            } else if i + 1 == jmWallets.count  && x + 1 == jmWallets.count {
-                                deleteJmWallets()
-                            }
-                        } else if i + 1 == jmWallets.count  && x + 1 == jmWallets.count {
-                            deleteJmWallets()
-                        }
-                    }
-                }
-            }
-        }
-    }
+//    func migrateJmWallet() {
+//        func deleteJmWallets() {
+//            CoreDataService.deleteAllData(entity: .jmWallets) { _ in }
+//        }
+//        CoreDataService.retrieveEntity(entityName: .jmWallets) { jmWallets in
+//            guard let jmWallets = jmWallets, jmWallets.count > 0 else { return }
+//
+//            CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+//                guard let wallets = wallets, wallets.count > 0 else { return }
+//
+//                for (i, jmWallet) in jmWallets.enumerated() {
+//                    let jmWStrct = JMWallet(jmWallet)
+//
+//                    for (x, w) in wallets.enumerated() {
+//                        if w["id"] != nil {
+//                            let wStrct = Wallet(dictionary: w)
+//                            if jmWStrct.fnWallet == wStrct.name {
+//                                // same wallet we can update here
+//                                CoreDataService.update(id: wStrct.id, keyToUpdate: "token", newValue: jmWStrct.token, entity: .wallets) { _ in
+//
+//                                    CoreDataService.update(id: wStrct.id, keyToUpdate: "password", newValue: jmWStrct.password, entity: .wallets) { _ in
+//
+//                                        CoreDataService.update(id: wStrct.id, keyToUpdate: "isJm", newValue: true, entity: .wallets) { _ in
+//
+//                                            CoreDataService.update(id: wStrct.id, keyToUpdate: "jmWalletName", newValue: jmWStrct.name, entity: .wallets) { _ in
+//
+//                                                if i + 1 == jmWallets.count && x + 1 == jmWallets.count {
+//                                                    deleteJmWallets()
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            } else if i + 1 == jmWallets.count  && x + 1 == jmWallets.count {
+//                                deleteJmWallets()
+//                            }
+//                        } else if i + 1 == jmWallets.count  && x + 1 == jmWallets.count {
+//                            deleteJmWallets()
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
     
     override func viewDidAppear(_ animated: Bool) {
         if initialLoad {
@@ -154,17 +155,15 @@ class MainMenuViewController: UIViewController {
                 displayAlert(viewController: self, isError: true, message: "There was a critical error setting your devices encryption key, please delete and reinstall the app")
             } else {
                 if mgr?.state != .started && mgr?.state != .connected  {
+                    
                     if KeyChain.getData("UnlockPassword") != nil {
                         if isUnlocked {
                             mgr?.start(delegate: self)
+                            
                             if self.activeNode != nil, self.activeNode!.isNostr {
                                 removeBackView()
                                 loadTable()
-                                DispatchQueue.main.async { [weak self] in
-                                    self?.torProgressLabel.isHidden = true
-                                    self?.progressView.isHidden = true
-                                    self?.blurView.isHidden = true
-                                }
+                                removeTorStatus()
                             }
                         }
                     } else {
@@ -172,11 +171,7 @@ class MainMenuViewController: UIViewController {
                         self.refreshNode()
                         self.removeBackView()
                         self.loadTable()
-                        DispatchQueue.main.async { [weak self] in
-                            self?.torProgressLabel.isHidden = true
-                            self?.progressView.isHidden = true
-                            self?.blurView.isHidden = true
-                        }
+                        removeTorStatus()
                     }
                 }
             }
@@ -188,6 +183,8 @@ class MainMenuViewController: UIViewController {
                 self.activeNode = node
             }
         }
+        
+        updateTorStatus()
     }
     
     private func alertToAddNode() {
@@ -245,6 +242,7 @@ class MainMenuViewController: UIViewController {
     }
     
     @objc func refreshNode() {
+        updateTorStatus()
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -258,16 +256,16 @@ class MainMenuViewController: UIViewController {
             guard let self = self else { return }
             guard let node = node else { return }
             self.initialLoad = false
-            if node.isNostr {
-                StreamManager.shared.node = node
-                let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
-                StreamManager.shared.eoseReceivedBlock = { _ in
-                    self.loadNode(node: node)
-                }
-                StreamManager.shared.openWebSocket(urlString: urlString)
-            } else {
+//            if node.isNostr {
+//                StreamManager.shared.node = node
+//                let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
+//                StreamManager.shared.eoseReceivedBlock = { _ in
+//                    self.loadNode(node: node)
+//                }
+//                StreamManager.shared.openWebSocket(urlString: urlString)
+//            } else {
                 self.loadNode(node: node)
-            }
+            //}
         }
     }
     
@@ -802,6 +800,38 @@ class MainMenuViewController: UIViewController {
         }
     }
     
+    private func isLocalHost() -> Bool {
+        guard let encAddress = self.activeNode?.onionAddress, let decryptedAddress = Crypto.decrypt(encAddress), let addressText = decryptedAddress.utf8String, addressText.hasPrefix("127.0.0.1:") || addressText.hasPrefix("localhost:") else {
+            return false
+        }
+        return true
+    }
+    
+    private func updateTorStatus() {
+        DispatchQueue.main.async { [weak self] in
+            self?.torStatusLabel.alpha = 1.0
+            if self?.mgr?.state == .connected {
+                self?.torStatusLabel.text = "Tor connected ✓"
+                self?.torStatusLabel.textColor = .green
+            } else if self?.mgr?.state == .started {
+                self?.torStatusLabel.text = "Tor connecting..."
+                self?.torStatusLabel.textColor = .lightGray
+            } else {
+                self?.torStatusLabel.text = "Tor disconnected ⚠️"
+                self?.torStatusLabel.textColor = .red
+            }
+        }
+    }
+    
+    private func removeTorStatus() {
+        DispatchQueue.main.async { [weak self] in
+            self?.torProgressLabel.isHidden = true
+            self?.progressView.isHidden = true
+            self?.blurView.isHidden = true
+            self?.updateTorStatus()
+        }
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         switch segue.identifier {
@@ -818,7 +848,7 @@ class MainMenuViewController: UIViewController {
                     self.mgr?.start(delegate: self)
                     
                     if let node = self.activeNode {
-                        if node.isNostr {
+                        /*if node.isNostr {
                             // If not using tor then uncomment this, and remove from tor protocol func
                             StreamManager.shared.node = node
                             let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
@@ -826,15 +856,16 @@ class MainMenuViewController: UIViewController {
                                 DispatchQueue.main.async { [weak self] in
                                     guard let self = self else { return }
                                     self.removeBackView()
-                                    DispatchQueue.main.async { [weak self] in
-                                        self?.torProgressLabel.isHidden = true
-                                        self?.progressView.isHidden = true
-                                        self?.blurView.isHidden = true
-                                        self?.loadNode(node: node)
-                                    }
+                                    self.removeTorStatus()
+                                    self.loadNode(node: node)
                                 }
                             }
                             StreamManager.shared.openWebSocket(urlString: urlString)
+                            
+                        } else */if isLocalHost() {
+                            removeBackView()
+                            removeTorStatus()
+                            loadNode(node: node)
                         }
                     } else {
                         showAlert(vc: self, title: "", message: "No active Bitcoin Core node, please toggle one on to utlize this view.")
@@ -1017,23 +1048,18 @@ extension MainMenuViewController: OnionManagerDelegate {
             //showAlert(vc: self, title: "", message: "No active node, please toggle on one.")
         }
         
-        DispatchQueue.main.async { [weak self] in
-            self?.torProgressLabel.isHidden = true
-            self?.progressView.isHidden = true
-            self?.blurView.isHidden = true
-        }
+        removeTorStatus()
+        updateTorStatus()
         
         timeStamp()
     }
     
     func torConnDifficulties() {
         displayAlert(viewController: self, isError: true, message: "We are having issues connecting tor.")
+        removeTorStatus()
+        updateTorStatus()
         DispatchQueue.main.async { [weak self] in
-            self?.torProgressLabel.isHidden = true
-            self?.progressView.isHidden = true
-            self?.blurView.isHidden = true
             self?.removeBackView()
-            //self?.loadTable()
             if let activeNode = self?.activeNode {
                 if !activeNode.isNostr {
                     self?.loadTable()

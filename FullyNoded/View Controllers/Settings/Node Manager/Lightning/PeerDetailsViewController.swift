@@ -80,18 +80,18 @@ class PeerDetailsViewController: UIViewController, UITextFieldDelegate {
             }
         }
         
-        isLndNode { [weak self] isLnd in
-            guard let self = self else { return }
+//        isLndNode { [weak self] isLnd in
+//            guard let self = self else { return }
+//            
+//            self.isLnd = isLnd
             
-            self.isLnd = isLnd
-            
-            guard isLnd else {
-                self.getPeerCL()
-                return
-            }
+//            guard isLnd else {
+//                self.getPeerCL()
+//                return
+//            }
             
             self.getPeerLND()
-        }
+        //}
     }
     
     private func getPeerLND() {
@@ -108,20 +108,20 @@ class PeerDetailsViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    private func getPeerCL() {
-        let commandId = UUID()
-        LightningRPC.sharedInstance.command(id: commandId, method: .listnodes, param: ["id":id]) { [weak self] (uuid, response, errorDesc) in
-            guard let self = self else { return }
-            
-            guard let dict = response as? NSDictionary, let nodes = dict["nodes"] as? NSArray, nodes.count > 0, let nodeDict = nodes[0] as? [String:Any] else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Ooops", message: errorDesc ?? "unknown error fetching node info")
-                return
-            }
-            
-            self.processNodeCL(nodeDict: nodeDict)
-        }
-    }
+//    private func getPeerCL() {
+//        let commandId = UUID()
+//        LightningRPC.sharedInstance.command(id: commandId, method: .listnodes, param: ["id":id]) { [weak self] (uuid, response, errorDesc) in
+//            guard let self = self else { return }
+//            
+//            guard let dict = response as? NSDictionary, let nodes = dict["nodes"] as? NSArray, nodes.count > 0, let nodeDict = nodes[0] as? [String:Any] else {
+//                self.spinner.removeConnectingView()
+//                showAlert(vc: self, title: "Ooops", message: errorDesc ?? "unknown error fetching node info")
+//                return
+//            }
+//            
+//            self.processNodeCL(nodeDict: nodeDict)
+//        }
+//    }
     
     private func processNodeLND(nodeDict: [String:Any]) {
         let nodeId = nodeDict["pub_key"] as? String ?? ""

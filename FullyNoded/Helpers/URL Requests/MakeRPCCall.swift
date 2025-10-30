@@ -22,11 +22,11 @@ class MakeRPCCall {
     private init() {}
 
     
-    func connectToRelay(node: NodeStruct) {
-        StreamManager.shared.node = node
-        let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
-        StreamManager.shared.openWebSocket(urlString: urlString)
-    }
+//    func connectToRelay(node: NodeStruct) {
+//        StreamManager.shared.node = node
+//        let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
+//        StreamManager.shared.openWebSocket(urlString: urlString)
+//    }
     
     func getActiveNode(completion: @escaping ((NodeStruct?) -> Void)) {
         CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
@@ -57,127 +57,127 @@ class MakeRPCCall {
     }
     
     
-    func executeNostrRpc(method: BTC_CLI_COMMAND) {
-        let id = UUID()
-        StreamManager.shared.lastSentId = id.uuidString
-        
-        var walletName:String?
-        if isWalletRPC(command: method) {
-            walletName = UserDefaults.standard.string(forKey: "walletName")
-        }
-        let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
-        #if DEBUG
-        print("chain: \(chain)")
-        #endif
-        var port = 8332
-        switch chain {
-        case "test":
-            port = 18332
-        case "regtest":
-            port = 18443
-        case "signet":
-            port = 38332
-        default:
-            break
-        }
-        
-        let dict:[String:Any] = [
-            "request_id": id.uuidString,
-            "port": port,
-            "command":method.stringValue,
-            "param":method.paramDict,
-            "wallet":walletName ?? "",
-            "http_method": "POST"
-        ]
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
-            #if DEBUG
-            print("converting to jsonData failing...")
-            #endif
-            return
-        }
-        guard let node = activeNode,
-              let encryptedWords = node.nostrWords,
-            let decryptedWords = Crypto.decrypt(encryptedWords),
-              let words = decryptedWords.utf8String else { onDoneBlock!((nil, "Error encrypting content...")); return }
-        
-        let encryptedContent = Crypto.encryptNostr(jsonData, words)!.base64EncodedString()
-        StreamManager.shared.writeEvent(content: encryptedContent)
-    }
+//    func executeNostrRpc(method: BTC_CLI_COMMAND) {
+//        let id = UUID()
+//        StreamManager.shared.lastSentId = id.uuidString
+//        
+//        var walletName:String?
+//        if isWalletRPC(command: method) {
+//            walletName = UserDefaults.standard.string(forKey: "walletName")
+//        }
+//        let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+//        #if DEBUG
+//        print("chain: \(chain)")
+//        #endif
+//        var port = 8332
+//        switch chain {
+//        case "test":
+//            port = 18332
+//        case "regtest":
+//            port = 18443
+//        case "signet":
+//            port = 38332
+//        default:
+//            break
+//        }
+//        
+//        let dict:[String:Any] = [
+//            "request_id": id.uuidString,
+//            "port": port,
+//            "command":method.stringValue,
+//            "param":method.paramDict,
+//            "wallet":walletName ?? "",
+//            "http_method": "POST"
+//        ]
+//        guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
+//            #if DEBUG
+//            print("converting to jsonData failing...")
+//            #endif
+//            return
+//        }
+//        guard let node = activeNode,
+//              let encryptedWords = node.nostrWords,
+//            let decryptedWords = Crypto.decrypt(encryptedWords),
+//              let words = decryptedWords.utf8String else { onDoneBlock!((nil, "Error encrypting content...")); return }
+//        
+//        let encryptedContent = Crypto.encryptNostr(jsonData, words)!.base64EncodedString()
+//        StreamManager.shared.writeEvent(content: encryptedContent)
+//    }
     
     
-    func executeNostrJmRpc(method: JM_REST, httpMethod: String, token: String?, httpBody: [String:Any]?) {
-        let id = UUID()
-        StreamManager.shared.lastSentId = id.uuidString
-        
-        var dict:[String:Any] = [
-            "port": 28183,
-            "http_method": httpMethod,
-            "url_path": method.stringValue,
-            "request_id": id.uuidString
-        ]
-        if let httpBody = httpBody {
-            dict["http_body"] = httpBody
-        }
-        if let token = token {
-            dict["token"] = token
-        }
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
-            #if DEBUG
-            print("converting to jsonData failing...")
-            #endif
-            return
-        }
-        guard let node = activeNode,
-              let encryptedWords = node.nostrWords,
-            let decryptedWords = Crypto.decrypt(encryptedWords),
-              let words = decryptedWords.utf8String else { onDoneBlock!((nil, "Error encrypting content...")); return }
-        
-        let encryptedContent = Crypto.encryptNostr(jsonData, words)!.base64EncodedString()
-        StreamManager.shared.writeEvent(content: encryptedContent)
-    }
+//    func executeNostrJmRpc(method: JM_REST, httpMethod: String, token: String?, httpBody: [String:Any]?) {
+//        let id = UUID()
+//        StreamManager.shared.lastSentId = id.uuidString
+//        
+//        var dict:[String:Any] = [
+//            "port": 28183,
+//            "http_method": httpMethod,
+//            "url_path": method.stringValue,
+//            "request_id": id.uuidString
+//        ]
+//        if let httpBody = httpBody {
+//            dict["http_body"] = httpBody
+//        }
+//        if let token = token {
+//            dict["token"] = token
+//        }
+//        guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
+//            #if DEBUG
+//            print("converting to jsonData failing...")
+//            #endif
+//            return
+//        }
+//        guard let node = activeNode,
+//              let encryptedWords = node.nostrWords,
+//            let decryptedWords = Crypto.decrypt(encryptedWords),
+//              let words = decryptedWords.utf8String else { onDoneBlock!((nil, "Error encrypting content...")); return }
+//        
+//        let encryptedContent = Crypto.encryptNostr(jsonData, words)!.base64EncodedString()
+//        StreamManager.shared.writeEvent(content: encryptedContent)
+//    }
     
     
-    func executeClnNostrRpc(http_body: [String:Any]) {
-        let id = UUID()
-        StreamManager.shared.lastSentId = id.uuidString
-        let dict:[String:Any] = [
-            "request_id": id.uuidString,
-            "port": 9737,
-            "http_body":http_body
-        ]
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
-            #if DEBUG
-            print("converting to jsonData failing...")
-            #endif
-            return
-        }
-        guard let node = activeNode,
-              let encryptedWords = node.nostrWords,
-            let decryptedWords = Crypto.decrypt(encryptedWords),
-              let words = decryptedWords.utf8String else { onDoneBlock!((nil, "Error encrypting content...")); return }
-        
-        let encryptedContent = Crypto.encryptNostr(jsonData, words)!.base64EncodedString()
-        StreamManager.shared.writeEvent(content: encryptedContent)
-    }
+//    func executeClnNostrRpc(http_body: [String:Any]) {
+//        let id = UUID()
+//        StreamManager.shared.lastSentId = id.uuidString
+//        let dict:[String:Any] = [
+//            "request_id": id.uuidString,
+//            "port": 9737,
+//            "http_body":http_body
+//        ]
+//        guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
+//            #if DEBUG
+//            print("converting to jsonData failing...")
+//            #endif
+//            return
+//        }
+//        guard let node = activeNode,
+//              let encryptedWords = node.nostrWords,
+//            let decryptedWords = Crypto.decrypt(encryptedWords),
+//              let words = decryptedWords.utf8String else { onDoneBlock!((nil, "Error encrypting content...")); return }
+//        
+//        let encryptedContent = Crypto.encryptNostr(jsonData, words)!.base64EncodedString()
+//        StreamManager.shared.writeEvent(content: encryptedContent)
+//    }
     
     
     func executeRPCCommand(method: BTC_CLI_COMMAND, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
         attempts += 1
         if let node = self.activeNode {
-            if node.isNostr {
-                if StreamManager.shared.connected {
-                    self.executeNostrRpc(method: method)
-                } else {
-                    StreamManager.shared.eoseReceivedBlock = { subscribed in
-                        if subscribed {
-                            self.executeNostrRpc(method: method)
-                        } else {
-                            completion((nil, "Not subscribed to relay after attempting to auto reconnect."))
-                        }
-                    }
-                    self.connectToRelay(node: node)
-                }
-            } else {
+//            if node.isNostr {
+//                if StreamManager.shared.connected {
+//                    self.executeNostrRpc(method: method)
+//                } else {
+//                    StreamManager.shared.eoseReceivedBlock = { subscribed in
+//                        if subscribed {
+//                            self.executeNostrRpc(method: method)
+//                        } else {
+//                            completion((nil, "Not subscribed to relay after attempting to auto reconnect."))
+//                        }
+//                    }
+//                    self.connectToRelay(node: node)
+//                }
+//            } else {
                 guard let encAddress = node.onionAddress,
                         let encUser = node.rpcuser,
                         let encPassword = node.rpcpassword else {
@@ -319,7 +319,7 @@ class MakeRPCCall {
                 }
                 
                 task.resume()
-            }
+            //}
         } else {
             completion((nil, "No active Bitcoin Core node."))
             return

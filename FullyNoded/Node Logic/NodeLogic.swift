@@ -38,13 +38,13 @@ class NodeLogic {
                 if nodeStr.isLightning && nodeStr.isActive {
                     activeLightningNode = true
                     
-                    if nodeStr.macaroon == nil {
-                        getOffChainBalanceCL(completion: completion)
-                        break
-                    } else {
+//                    if nodeStr.macaroon == nil {
+//                        getOffChainBalanceCL(completion: completion)
+//                        break
+//                    } else {
                         getOffChainBalanceLND(completion: completion)
                         break
-                    }
+                    //}
                 }
                 
                 if i + 1 == nodes.count && !activeLightningNode {
@@ -85,74 +85,74 @@ class NodeLogic {
         }
     }
     
-    class func getOffChainBalanceCL(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        let id = UUID()
-        var offchainBalance = 0.0
-        dictToReturn["offchainBalance"] = "0.00000000"
-        
-        LightningRPC.sharedInstance.command(id: id, method: .listfunds, param: nil) { (uuid, responseDict, errorDesc) in
-            guard let dict = responseDict as? [String:Any],
-                    let outputs = dict["outputs"] as? NSArray,
-                  let channels = dict["channels"] as? NSArray, outputs.count > 0 && channels.count > 0 else {
-                completion((dictToReturn, errorDesc ?? ""))
-                return
-            }
-    
-            
-            func getChannelFunds() {
-                if channels.count > 0 {
-                    for (c, channel) in channels.enumerated() {
-                        
-                        if let channelDict = channel as? [String:Any] {
-                            
-                            if let funding_txid = channelDict["funding_txid"] as? String {
-                                offchainTxids.append(funding_txid)
-                            }
-                            
-                            if let our_amount_msat = channelDict["our_amount_msat"] as? String {
-                                
-                                if let our_msats = Int(our_amount_msat.replacingOccurrences(of: "msat", with: "")) {
-                                    let btc = Double(our_msats) / 100000000000.0
-                                    offchainBalance += btc
-                                }
-                            }
-                        }
-                        
-                        if c + 1 == channels.count {
-                            dictToReturn["offchainBalance"] = "\(rounded(number: offchainBalance).avoidNotation)"
-                            completion((dictToReturn, nil))
-                        }
-                    }
-                } else {
-                    completion((dictToReturn, nil))
-                }
-            }
-            
-            if outputs.count > 0 {
-                for (i, output) in outputs.enumerated() {
-                    
-                    if let outputDict = output as? [String:Any] {
-                        
-                        if let sats = outputDict["value"] as? Int {
-                            let btc = Double(sats) / 100000000.0
-                            offchainBalance += btc
-                            dictToReturn["offchainBalance"] = "\(rounded(number: offchainBalance).avoidNotation)"
-                        }
-                        
-                        if let txid = outputDict["txid"] as? String {
-                            offchainTxids.append(txid)
-                        }
-                    }
-                    
-                    if i + 1 == outputs.count {
-                        getChannelFunds()
-                    }
-                }
-            } else {
-                getChannelFunds()
-            }
-        }
-    }
+//    class func getOffChainBalanceCL(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+//        let id = UUID()
+//        var offchainBalance = 0.0
+//        dictToReturn["offchainBalance"] = "0.00000000"
+//        
+//        LightningRPC.sharedInstance.command(id: id, method: .listfunds, param: nil) { (uuid, responseDict, errorDesc) in
+//            guard let dict = responseDict as? [String:Any],
+//                    let outputs = dict["outputs"] as? NSArray,
+//                  let channels = dict["channels"] as? NSArray, outputs.count > 0 && channels.count > 0 else {
+//                completion((dictToReturn, errorDesc ?? ""))
+//                return
+//            }
+//    
+//            
+//            func getChannelFunds() {
+//                if channels.count > 0 {
+//                    for (c, channel) in channels.enumerated() {
+//                        
+//                        if let channelDict = channel as? [String:Any] {
+//                            
+//                            if let funding_txid = channelDict["funding_txid"] as? String {
+//                                offchainTxids.append(funding_txid)
+//                            }
+//                            
+//                            if let our_amount_msat = channelDict["our_amount_msat"] as? String {
+//                                
+//                                if let our_msats = Int(our_amount_msat.replacingOccurrences(of: "msat", with: "")) {
+//                                    let btc = Double(our_msats) / 100000000000.0
+//                                    offchainBalance += btc
+//                                }
+//                            }
+//                        }
+//                        
+//                        if c + 1 == channels.count {
+//                            dictToReturn["offchainBalance"] = "\(rounded(number: offchainBalance).avoidNotation)"
+//                            completion((dictToReturn, nil))
+//                        }
+//                    }
+//                } else {
+//                    completion((dictToReturn, nil))
+//                }
+//            }
+//            
+//            if outputs.count > 0 {
+//                for (i, output) in outputs.enumerated() {
+//                    
+//                    if let outputDict = output as? [String:Any] {
+//                        
+//                        if let sats = outputDict["value"] as? Int {
+//                            let btc = Double(sats) / 100000000.0
+//                            offchainBalance += btc
+//                            dictToReturn["offchainBalance"] = "\(rounded(number: offchainBalance).avoidNotation)"
+//                        }
+//                        
+//                        if let txid = outputDict["txid"] as? String {
+//                            offchainTxids.append(txid)
+//                        }
+//                    }
+//                    
+//                    if i + 1 == outputs.count {
+//                        getChannelFunds()
+//                    }
+//                }
+//            } else {
+//                getChannelFunds()
+//            }
+//        }
+//    }
     
     class func getPeerInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         Reducer.sharedInstance.makeCommand(command: .getpeerinfo) { (response, errorMessage) in
@@ -237,7 +237,8 @@ class NodeLogic {
                 if let transactions = response as? NSArray {
                     parseTransactions(transactions: transactions)
                 }
-                getOffchainTransactions(completion: completion)
+                //getOffchainTransactions(completion: completion)
+                getLNDTransactions(completion: completion)
             }
         } else {
             arrayToReturn = []
@@ -245,15 +246,15 @@ class NodeLogic {
         }
     }
     
-    class func getOffchainTransactions(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
-        isLndNode { isLnd in
-            if isLnd {
-                getLNDTransactions(completion: completion)
-            } else {
-                getCLTransactions(completion: completion)
-            }
-        }
-    }
+//    class func getOffchainTransactions(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
+//        isLndNode { isLnd in
+//            //if isLnd {
+//                getLNDTransactions(completion: completion)
+//            //} else {
+//                //getCLTransactions(completion: completion)
+//            //}
+//        }
+//    }
     
     private class func getLNDTransactions(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
         
@@ -500,166 +501,166 @@ class NodeLogic {
         }
     }
     
-    private class func getCLTransactions(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
-        func getPaid() {
-            let id = UUID()
-            LightningRPC.sharedInstance.command(id: id, method: .listinvoices, param: nil) { (uuid, response, errorDesc) in
-                
-                guard let dict = response as? [String:Any], let payments = dict["invoices"] as? NSArray, payments.count > 0 else {
-                    arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
-                    completion((arrayToReturn, nil))
-                    return
-                }
-                
-                CoreDataService.retrieveEntity(entityName: .transactions) { savedTxs in
-                    var alreadySaved = false
-                    
-                    for (i, payment) in payments.enumerated() {
-                        if let paymentDict = payment as? [String:Any] {
-                            let payment_hash = paymentDict["payment_hash"] as? String ?? ""
-                            var amountMsat = paymentDict["msatoshi"] as? Int ?? 0
-                            if amountMsat == 0 {
-                                amountMsat = paymentDict["msatoshi_received"] as? Int ?? 0
-                            }
-                            let status = paymentDict["status"] as? String ?? ""
-                            let bolt11 = paymentDict["bolt11"] as? String ?? ""
-                            let label = paymentDict["label"] as? String ?? ""
-                            let paid_at = paymentDict["paid_at"] as? Int ?? 0
-                            
-                            let date = Date(timeIntervalSince1970: Double(paid_at))
-                            dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
-                            let dateString = dateFormatter.string(from: date)
-                            
-                            if status == "paid" {
-                                
-                                let amountSats = Double(amountMsat) / 1000.0
-                                let amountBtc = "\(amountSats)".satsToBtc.btcBalanceWithSpaces
-                                let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
-                                let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
-                                
-                                arrayToReturn.append([
-                                                        "address": bolt11,
-                                                        "amountSats": "\(amountSats)",
-                                                        "amountBtc": amountBtc,
-                                                        "amountFiat": amountFiat,
-                                                        "confirmations": status,
-                                                        "label": label,
-                                                        "date": dateString,
-                                                        "rbf": false,
-                                                        "txID": payment_hash,
-                                                        "replacedBy": "",
-                                                        "selfTransfer":false,
-                                                        "remove":false,
-                                                        "onchain":false,
-                                                        "isLightning":true,
-                                                        "sortDate":date])
-                                
-                                if let savedTxs = savedTxs, savedTxs.count > 0 {
-                                    for (s, savedTx) in savedTxs.enumerated() {
-                                        let savedTxStruct = TransactionStruct(dictionary: savedTx)
-                                        
-                                        if savedTxStruct.txid == payment_hash {
-                                            alreadySaved = true
-                                        }
-                                        
-                                        if s + 1 == savedTxs.count {
-                                            if !alreadySaved {
-                                                saveLocally(txid: payment_hash, date: date)
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    saveLocally(txid: payment_hash, date: date)
-                                }
-                            }
-                            
-                            if i + 1 == payments.count {
-                                arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
-                                completion((arrayToReturn, nil))
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        func getSent() {
-            let id = UUID()
-            LightningRPC.sharedInstance.command(id: id, method: .listsendpays, param: nil) { (uuid, response, errorDesc) in
-                guard let dict = response as? [String:Any], let payments = dict["payments"] as? NSArray, payments.count > 0 else {
-                    getPaid()
-                    return
-                }
-                
-                for (i, payment) in payments.enumerated() {
-                    if let paymentDict = payment as? [String:Any] {
-                        let payment_hash = paymentDict["payment_hash"] as? String ?? ""
-                        let amountMsat = paymentDict["msatoshi_sent"] as? Int ?? 0
-                        let status = paymentDict["status"] as? String ?? ""
-                        let created = paymentDict["created_at"] as? Int ?? 0
-                        let bolt11 = paymentDict["bolt11"] as? String ?? ""
-                        let date = Date(timeIntervalSince1970: Double(created))
-                        dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
-                        let dateString = dateFormatter.string(from: date)
-                        
-                        if status != "failed" {
-                            
-                            let amountSats = Double(amountMsat) / 1000.0
-                            let amountBtc = "\(amountSats)".satsToBtc.btcBalanceWithSpaces
-                            let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
-                            let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
-                            
-                            arrayToReturn.append([
-                                                    "address": bolt11,
-                                                    "amountSats": "-\(amountSats)",
-                                                    "amountBtc": amountBtc,
-                                                    "amountFiat": amountFiat,
-                                                    "confirmations": status,
-                                                    "label": "",
-                                                    "date": dateString,
-                                                    "rbf": false,
-                                                    "txID": payment_hash,
-                                                    "replacedBy": "",
-                                                    "selfTransfer":false,
-                                                    "remove":false,
-                                                    "onchain":false,
-                                                    "isLightning":true,
-                                                    "sortDate":date])
-                        }
-                        
-                        if i + 1 == payments.count {
-                            getPaid()
-                        }
-                    }
-                }
-            }
-        }
-        
-        let id = UUID()
-        LightningRPC.sharedInstance.command(id: id, method: .listtransactions, param: nil) { (uuid, responseDict, errorDesc) in
-            guard let dict = responseDict as? [String:Any], let transactions = dict["transactions"] as? NSArray, transactions.count > 0 else {
-                getSent()
-                return
-            }
-            
-            for (t, transaction) in transactions.enumerated() {
-                guard let txDict = transaction as? [String:Any], let hash = txDict["hash"] as? String, arrayToReturn.count > 0 else {
-                    getSent()
-                    return
-                }
-                
-                for (o, onchainTx) in arrayToReturn.enumerated() {
-                    if onchainTx["txID"] as! String == hash {
-                        arrayToReturn[o]["isLightning"] = true
-                    }
-                    
-                    if t + 1 == transactions.count && o + 1 == arrayToReturn.count {
-                        getSent()
-                    }
-                }
-            }
-        }
-    }
+//    private class func getCLTransactions(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
+//        func getPaid() {
+//            let id = UUID()
+//            LightningRPC.sharedInstance.command(id: id, method: .listinvoices, param: nil) { (uuid, response, errorDesc) in
+//                
+//                guard let dict = response as? [String:Any], let payments = dict["invoices"] as? NSArray, payments.count > 0 else {
+//                    arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
+//                    completion((arrayToReturn, nil))
+//                    return
+//                }
+//                
+//                CoreDataService.retrieveEntity(entityName: .transactions) { savedTxs in
+//                    var alreadySaved = false
+//                    
+//                    for (i, payment) in payments.enumerated() {
+//                        if let paymentDict = payment as? [String:Any] {
+//                            let payment_hash = paymentDict["payment_hash"] as? String ?? ""
+//                            var amountMsat = paymentDict["msatoshi"] as? Int ?? 0
+//                            if amountMsat == 0 {
+//                                amountMsat = paymentDict["msatoshi_received"] as? Int ?? 0
+//                            }
+//                            let status = paymentDict["status"] as? String ?? ""
+//                            let bolt11 = paymentDict["bolt11"] as? String ?? ""
+//                            let label = paymentDict["label"] as? String ?? ""
+//                            let paid_at = paymentDict["paid_at"] as? Int ?? 0
+//                            
+//                            let date = Date(timeIntervalSince1970: Double(paid_at))
+//                            dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
+//                            let dateString = dateFormatter.string(from: date)
+//                            
+//                            if status == "paid" {
+//                                
+//                                let amountSats = Double(amountMsat) / 1000.0
+//                                let amountBtc = "\(amountSats)".satsToBtc.btcBalanceWithSpaces
+//                                let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
+//                                let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
+//                                
+//                                arrayToReturn.append([
+//                                                        "address": bolt11,
+//                                                        "amountSats": "\(amountSats)",
+//                                                        "amountBtc": amountBtc,
+//                                                        "amountFiat": amountFiat,
+//                                                        "confirmations": status,
+//                                                        "label": label,
+//                                                        "date": dateString,
+//                                                        "rbf": false,
+//                                                        "txID": payment_hash,
+//                                                        "replacedBy": "",
+//                                                        "selfTransfer":false,
+//                                                        "remove":false,
+//                                                        "onchain":false,
+//                                                        "isLightning":true,
+//                                                        "sortDate":date])
+//                                
+//                                if let savedTxs = savedTxs, savedTxs.count > 0 {
+//                                    for (s, savedTx) in savedTxs.enumerated() {
+//                                        let savedTxStruct = TransactionStruct(dictionary: savedTx)
+//                                        
+//                                        if savedTxStruct.txid == payment_hash {
+//                                            alreadySaved = true
+//                                        }
+//                                        
+//                                        if s + 1 == savedTxs.count {
+//                                            if !alreadySaved {
+//                                                saveLocally(txid: payment_hash, date: date)
+//                                            }
+//                                        }
+//                                    }
+//                                } else {
+//                                    saveLocally(txid: payment_hash, date: date)
+//                                }
+//                            }
+//                            
+//                            if i + 1 == payments.count {
+//                                arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
+//                                completion((arrayToReturn, nil))
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        
+//        func getSent() {
+//            let id = UUID()
+//            LightningRPC.sharedInstance.command(id: id, method: .listsendpays, param: nil) { (uuid, response, errorDesc) in
+//                guard let dict = response as? [String:Any], let payments = dict["payments"] as? NSArray, payments.count > 0 else {
+//                    getPaid()
+//                    return
+//                }
+//                
+//                for (i, payment) in payments.enumerated() {
+//                    if let paymentDict = payment as? [String:Any] {
+//                        let payment_hash = paymentDict["payment_hash"] as? String ?? ""
+//                        let amountMsat = paymentDict["msatoshi_sent"] as? Int ?? 0
+//                        let status = paymentDict["status"] as? String ?? ""
+//                        let created = paymentDict["created_at"] as? Int ?? 0
+//                        let bolt11 = paymentDict["bolt11"] as? String ?? ""
+//                        let date = Date(timeIntervalSince1970: Double(created))
+//                        dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
+//                        let dateString = dateFormatter.string(from: date)
+//                        
+//                        if status != "failed" {
+//                            
+//                            let amountSats = Double(amountMsat) / 1000.0
+//                            let amountBtc = "\(amountSats)".satsToBtc.btcBalanceWithSpaces
+//                            let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
+//                            let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
+//                            
+//                            arrayToReturn.append([
+//                                                    "address": bolt11,
+//                                                    "amountSats": "-\(amountSats)",
+//                                                    "amountBtc": amountBtc,
+//                                                    "amountFiat": amountFiat,
+//                                                    "confirmations": status,
+//                                                    "label": "",
+//                                                    "date": dateString,
+//                                                    "rbf": false,
+//                                                    "txID": payment_hash,
+//                                                    "replacedBy": "",
+//                                                    "selfTransfer":false,
+//                                                    "remove":false,
+//                                                    "onchain":false,
+//                                                    "isLightning":true,
+//                                                    "sortDate":date])
+//                        }
+//                        
+//                        if i + 1 == payments.count {
+//                            getPaid()
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        
+//        let id = UUID()
+//        LightningRPC.sharedInstance.command(id: id, method: .listtransactions, param: nil) { (uuid, responseDict, errorDesc) in
+//            guard let dict = responseDict as? [String:Any], let transactions = dict["transactions"] as? NSArray, transactions.count > 0 else {
+//                getSent()
+//                return
+//            }
+//            
+//            for (t, transaction) in transactions.enumerated() {
+//                guard let txDict = transaction as? [String:Any], let hash = txDict["hash"] as? String, arrayToReturn.count > 0 else {
+//                    getSent()
+//                    return
+//                }
+//                
+//                for (o, onchainTx) in arrayToReturn.enumerated() {
+//                    if onchainTx["txID"] as! String == hash {
+//                        arrayToReturn[o]["isLightning"] = true
+//                    }
+//                    
+//                    if t + 1 == transactions.count && o + 1 == arrayToReturn.count {
+//                        getSent()
+//                    }
+//                }
+//            }
+//        }
+//    }
     
     // MARK: Section 1 parsers
     
