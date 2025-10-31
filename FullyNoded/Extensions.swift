@@ -408,6 +408,9 @@ public extension Double {
     }
     
     var btcBalanceWithSpaces: String {
+        if self > 10 {
+            return Swift.abs(self.rounded(toPlaces: 2)).avoidNotation.replacingOccurrences(of: ",", with: "")
+        }
         var btcBalance = Swift.abs(self.rounded(toPlaces: 8)).avoidNotation
         btcBalance = btcBalance.replacingOccurrences(of: ",", with: "")
         
