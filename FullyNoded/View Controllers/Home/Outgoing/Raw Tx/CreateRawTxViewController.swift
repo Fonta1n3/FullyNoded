@@ -1016,8 +1016,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             guard let self = self else { return }
             
             self.addressInput.text = address
-            self.addressImageView.image = LifeHash.image(address)
-            self.addressImageView.alpha = 1
+            //self.addressImageView.image = LifeHash.image(address)
+            //self.addressImageView.alpha = 1
         }
     }
     

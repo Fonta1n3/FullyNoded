@@ -10,10 +10,10 @@ import UIKit
 import LibWally
 //import CoreNFC
 
-class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate/*, NFCNDEFReaderSessionDelegate*/ {
+class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate {
     
-    var isChannelFunding = false
-    var voutChannelFunding:Int?
+    //var isChannelFunding = false
+    //var voutChannelFunding:Int?
     var smartFee = Double()
     var txSize = Int()
     var rejectionMessage = ""
@@ -99,7 +99,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             } else {
                 promptToAddTx()
             }
-            self.voutChannelFunding = 1
         }
                 
         loadNow()
@@ -544,13 +543,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         isSigning = false
         
         if self.signedRawTx != "" {
-            if !isChannelFunding {
-                broadcast()
-            } else {
-                showAlert(vc: self, title: "", message: "Lightning channel funding wip.")
-                //promptToCompleteChannelFunding()
-            }
-            
+            broadcast()
         } else {
             showAlert(vc: self, title: "", message: "Transaction not fully signed, you can export it to another signer or sign it if the sign button is enabled.")
         }
@@ -1157,7 +1150,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         "isOursBitcoind": false,// Hardcode at this stage and update before displaying
                         "isOursFullyNoded": false,
                         "walletLabel": "",
-                        "lifehash": LifeHash.image(addressString) ?? UIImage(),
+                        //"lifehash": LifeHash.image(addressString) ?? UIImage(),
                         "signable": false,
                         "signerLabel": "",
                         "isDust": amount < 0.00020000
@@ -1203,7 +1196,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                                 
                                 self.inputTableArray[index]["amount"] = amountString
                                 self.inputTableArray[index]["address"] = addressString
-                                self.inputTableArray[index]["lifehash"] = LifeHash.image(addressString) ?? UIImage()
+                                //self.inputTableArray[index]["lifehash"] = LifeHash.image(addressString) ?? UIImage()
                                 self.inputTableArray[index]["isDust"] = amount < 0.00020000
                             }
                         }
@@ -1720,7 +1713,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let inputTypeLabel = inputCell.viewWithTag(6) as! UILabel
         let utxoLabel = inputCell.viewWithTag(7) as! UILabel
         let isChangeImageView = inputCell.viewWithTag(8) as! UIImageView
-        let lifehashImageView = inputCell.viewWithTag(9) as! UIImageView
         let isDustImageView = inputCell.viewWithTag(10) as! UIImageView
         let backgroundView1 = inputCell.viewWithTag(11)!
         let backgroundView2 = inputCell.viewWithTag(12)!
@@ -1745,7 +1737,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         descTextView.layer.cornerRadius = 8
         descTextView.layer.borderWidth = 0.5
         descTextView.layer.borderColor = UIColor.darkGray.cgColor
-        lifehashImageView.layer.magnificationFilter = .nearest
         
         if indexPath.row < inputTableArray.count {
             let input = inputTableArray[indexPath.row]
@@ -1762,7 +1753,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             utxoLabel.text = label
             descTextView.text = desc
-            lifehashImageView.image = lifehash
             sigsImageView.image = UIImage(systemName: "signature")
             
             inputIndexLabel.text = "Input #\(input["index"] as! Int)"
@@ -1843,7 +1833,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let outputAmountLabel = outputCell.viewWithTag(2) as! UILabel
         let outputAddressLabel = outputCell.viewWithTag(3) as! UILabel
         let outputIsOursImage = outputCell.viewWithTag(4) as! UIImageView
-        let lifehashImageView = outputCell.viewWithTag(5) as! UIImageView
         let verifiedByFnImageView = outputCell.viewWithTag(6) as! UIImageView
         let labelLabel = outputCell.viewWithTag(7) as! UILabel
         let isChangeImageView = outputCell.viewWithTag(8) as! UIImageView
@@ -1872,7 +1861,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         descTextView.layer.cornerRadius = 8
         descTextView.layer.borderWidth = 0.5
         descTextView.layer.borderColor = UIColor.darkGray.cgColor
-        lifehashImageView.layer.magnificationFilter = .nearest
         
         signableImageView.tintColor = .white
         isDustImageView.tintColor = .white
@@ -1893,12 +1881,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             let label = output["label"] as? String ?? "no label"
             let isDust = output["isDust"] as? Bool ?? false
             let desc = output["desc"] as? String ?? "no descriptor"
-            let lifehash = output["lifehash"] as? UIImage ?? UIImage()
             
             labelLabel.text = label
             descTextView.text = desc
-            lifehashImageView.layer.magnificationFilter = .nearest
-            lifehashImageView.image = lifehash
             
             outputIndexLabel.text = "Output #\(output["index"] as! Int)"
             outputAmountLabel.text = "\((output["amount"] as! String))"

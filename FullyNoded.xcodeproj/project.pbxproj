@@ -58,7 +58,6 @@
 		0A83EB3C2C4837C600502806 /* AccountMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A83EB3B2C4837C600502806 /* AccountMap.swift */; };
 		0A83EB3E2C4838BB00502806 /* ColdCardSparrowExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A83EB3D2C4838BB00502806 /* ColdCardSparrowExport.swift */; };
 		0A83EB402C4943C700502806 /* ColdcardMultiSigExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A83EB3F2C4943C700502806 /* ColdcardMultiSigExport.swift */; };
-		0A8850FE2A41FB040078A603 /* secp256k1 in Frameworks */ = {isa = PBXBuildFile; productRef = 0A8850FD2A41FB040078A603 /* secp256k1 */; };
 		0A8850FF2A4201C10078A603 /* LibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AD438842A41F7F90004F923 /* LibWally.xcframework */; };
 		0A8851002A4201C10078A603 /* LibWally.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0AD438842A41F7F90004F923 /* LibWally.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		0A9FDC9126A84CE30050C4AE /* WalletTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9FDC9026A84CE30050C4AE /* WalletTypes.swift */; };
@@ -114,7 +113,6 @@
 		D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05D973322647CE60035F1DE /* QRGenerator.swift */; };
 		D069051F24EA6C1F007F939D /* LightningPeersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D069051E24EA6C1F007F939D /* LightningPeersViewController.swift */; };
 		D069052124EA8E95007F939D /* LightningChannelsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D069052024EA8E95007F939D /* LightningChannelsViewController.swift */; };
-		D06D788C25B817B500769157 /* LifeHash in Frameworks */ = {isa = PBXBuildFile; productRef = D06D788B25B817B500769157 /* LifeHash */; };
 		D06D788F25B817E100769157 /* Lifehash.swift in Sources */ = {isa = PBXBuildFile; fileRef = D06D788E25B817E100769157 /* Lifehash.swift */; };
 		D06FD7D2250640F800481185 /* logo_grey_.png in Resources */ = {isa = PBXBuildFile; fileRef = D06FD7D1250640F800481185 /* logo_grey_.png */; };
 		D07399D9245EEA5F00860B7E /* Broadcaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07399D8245EEA5F00860B7E /* Broadcaster.swift */; };
@@ -395,8 +393,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0A8850FE2A41FB040078A603 /* secp256k1 in Frameworks */,
-				D06D788C25B817B500769157 /* LifeHash in Frameworks */,
 				0AA6EFFC2C7E65F900503A39 /* URKit in Frameworks */,
 				0AFD7CF32C7E5FB100C46E36 /* Bbqr in Frameworks */,
 				0A8850FF2A4201C10078A603 /* LibWally.xcframework in Frameworks */,
@@ -1014,8 +1010,6 @@
 			);
 			name = FullyNoded;
 			packageProductDependencies = (
-				D06D788B25B817B500769157 /* LifeHash */,
-				0A8850FD2A41FB040078A603 /* secp256k1 */,
 				0AFD7CF22C7E5FB100C46E36 /* Bbqr */,
 				0AA6EFFB2C7E65F900503A39 /* URKit */,
 			);
@@ -1090,8 +1084,6 @@
 			);
 			mainGroup = D00B9A1B2111427200E8B95A;
 			packageReferences = (
-				D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */,
-				0A8850FC2A41FB030078A603 /* XCRemoteSwiftPackageReference "secp256k1.swift" */,
 				0AFD7CF12C7E5FB100C46E36 /* XCRemoteSwiftPackageReference "bbqr-swift" */,
 				0AA6EFFA2C7E65F900503A39 /* XCRemoteSwiftPackageReference "URKit" */,
 			);
@@ -1690,14 +1682,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		0A8850FC2A41FB030078A603 /* XCRemoteSwiftPackageReference "secp256k1.swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/jb55/secp256k1.swift.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
 		0AA6EFFA2C7E65F900503A39 /* XCRemoteSwiftPackageReference "URKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/BlockchainCommons/URKit.git";
@@ -1714,22 +1698,9 @@
 				minimumVersion = 0.3.1;
 			};
 		};
-		D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/BlockchainCommons/LifeHash";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 6.0.2;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		0A8850FD2A41FB040078A603 /* secp256k1 */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 0A8850FC2A41FB030078A603 /* XCRemoteSwiftPackageReference "secp256k1.swift" */;
-			productName = secp256k1;
-		};
 		0AA6EFFB2C7E65F900503A39 /* URKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 0AA6EFFA2C7E65F900503A39 /* XCRemoteSwiftPackageReference "URKit" */;
@@ -1739,11 +1710,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0AFD7CF12C7E5FB100C46E36 /* XCRemoteSwiftPackageReference "bbqr-swift" */;
 			productName = Bbqr;
-		};
-		D06D788B25B817B500769157 /* LifeHash */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */;
-			productName = LifeHash;
 		};
 /* End XCSwiftPackageProductDependency section */
 

@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import secp256k1
+//import secp256k1
 
 class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
@@ -29,7 +29,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var invoiceHeader: UILabel!
     @IBOutlet weak var denominationControl: UISegmentedControl!
-    @IBOutlet weak var addressImageView: UIImageView!
     @IBOutlet var amountField: UITextField!
     @IBOutlet var labelField: UITextField!
     @IBOutlet var qrView: UIImageView!
@@ -46,7 +45,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         configureView(fieldsBackground)
         configureView(addressBackground)
         configureView(invoiceBackground)
-        addressImageView.layer.magnificationFilter = .nearest
         confirgureFields()
         configureTap()
         getAddressSettings()
@@ -572,7 +570,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             self.addressOutlet.text = address
             self.addressString = address
             self.updateQRImage()
-            self.addressImageView.image = LifeHash.image(address)
             self.spinner.removeConnectingView()
         }
     }

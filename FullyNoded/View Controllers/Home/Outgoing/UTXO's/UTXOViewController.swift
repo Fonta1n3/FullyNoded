@@ -106,15 +106,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         //checkForJmWallet()
     }
     
-//    private func checkForJmWallet() {
-//        guard let wallet = self.wallet else { return }
-////        if wallet.isJm {
-////            self.isJmarketWallet = true
-////            self.getStatus(wallet)
-////        } else {
-//            loadUnlockedUtxos()
-//        //}
-//    }
+//    loadUnlockedUtxos()
     
 //    private func addSpinny(_ spinny: UIActivityIndicatorView) {
 //        DispatchQueue.main.async { [weak self] in
