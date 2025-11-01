@@ -492,6 +492,11 @@ class ActiveWalletViewController: UIViewController {
 
                     if i + 1 == transactions.count && t + 1 == self.transactionArray.count {
                         //self.finishedLoading()
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.walletTable.reloadData()
+                        }
                         self.getFxRate()
                     }
                 }
@@ -1059,7 +1064,7 @@ class ActiveWalletViewController: UIViewController {
                 }
             }
             
-            guard let wallet = wallet else {
+            guard let _ = wallet else {
                 getOnchainWalletBalance()
                 return
             }

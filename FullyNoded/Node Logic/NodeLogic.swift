@@ -231,18 +231,23 @@ class NodeLogic {
     }
     
     class func loadSectionTwo(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
-        if !walletDisabled {
-            let param:List_Transactions = .init(["count": 100])
-            Reducer.sharedInstance.makeCommand(command: .listtransactions(param)) { (response, errorMessage) in
-                if let transactions = response as? NSArray {
-                    parseTransactions(transactions: transactions)
-                }
-                //getOffchainTransactions(completion: completion)
-                getLNDTransactions(completion: completion)
-            }
-        } else {
+        guard !walletDisabled else {
             arrayToReturn = []
             completion((arrayToReturn, nil))
+            return
+        }
+        let param:List_Transactions = .init(["count": 100])
+        Reducer.sharedInstance.makeCommand(command: .listtransactions(param)) { (response, errorMessage) in
+            if let transactions = response as? NSArray {
+                parseTransactions(transactions: transactions)
+            }
+            isLndNode { isLndNode in
+                guard isLndNode else {
+                    completion((arrayToReturn, errorMessage))
+                    return
+                }
+                getLNDTransactions(completion: completion)
+            }
         }
     }
     
