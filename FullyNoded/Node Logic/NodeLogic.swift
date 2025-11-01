@@ -243,6 +243,7 @@ class NodeLogic {
             }
             isLndNode { isLndNode in
                 guard isLndNode else {
+                    arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
                     completion((arrayToReturn, errorMessage))
                     return
                 }
