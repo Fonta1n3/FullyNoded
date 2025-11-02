@@ -2149,7 +2149,7 @@ xxxxx</string>
                                 </constraints>
                             </imageView>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="WVI-Gu-NZf">
-                                <rect key="frame" x="0.0" y="145" width="375" height="522"/>
+                                <rect key="frame" x="0.0" y="128" width="375" height="539"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -2161,44 +2161,33 @@ xxxxx</string>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PmS-3t-Jsb">
-                                                    <rect key="frame" x="58" y="16.5" width="42" height="21"/>
+                                                    <rect key="frame" x="49" y="16.5" width="42" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <view tag="4" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2eZ-I7-Ku1">
-                                                    <rect key="frame" x="15" y="9.5" width="35" height="35"/>
-                                                    <subviews>
-                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="3" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="JCF-fQ-twQ">
-                                                            <rect key="frame" x="5" y="5" width="25" height="25"/>
-                                                            <constraints>
-                                                                <constraint firstAttribute="height" constant="25" id="51y-Pa-Vfx"/>
-                                                                <constraint firstAttribute="width" constant="25" id="C9E-9x-iLQ"/>
-                                                            </constraints>
-                                                        </imageView>
-                                                    </subviews>
-                                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" constant="35" id="9bC-kE-8lD"/>
-                                                        <constraint firstItem="JCF-fQ-twQ" firstAttribute="centerX" secondItem="2eZ-I7-Ku1" secondAttribute="centerX" id="NHN-zq-OQB"/>
-                                                        <constraint firstAttribute="height" constant="35" id="fD4-lY-J3F"/>
-                                                        <constraint firstItem="JCF-fQ-twQ" firstAttribute="centerY" secondItem="2eZ-I7-Ku1" secondAttribute="centerY" id="j9A-me-lyW"/>
-                                                    </constraints>
-                                                </view>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chevron.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Bu6-2i-MzN">
                                                     <rect key="frame" x="305" y="18" width="22" height="18"/>
+                                                    <color key="tintColor" systemColor="systemBlueColor"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="21.5" id="36K-4Q-ls9"/>
                                                         <constraint firstAttribute="width" constant="22" id="pJT-nb-8Pu"/>
                                                     </constraints>
                                                 </imageView>
+                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="3" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="JCF-fQ-twQ">
+                                                    <rect key="frame" x="16" y="14.5" width="25" height="25"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" constant="25" id="PJC-vL-zXz"/>
+                                                        <constraint firstAttribute="height" constant="25" id="R7x-pQ-Rx1"/>
+                                                    </constraints>
+                                                </imageView>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="Bu6-2i-MzN" firstAttribute="centerY" secondItem="OMp-y7-BGg" secondAttribute="centerY" id="5dy-GK-7he"/>
-                                                <constraint firstItem="2eZ-I7-Ku1" firstAttribute="centerY" secondItem="OMp-y7-BGg" secondAttribute="centerY" id="62n-Dc-j1c"/>
-                                                <constraint firstItem="2eZ-I7-Ku1" firstAttribute="leading" secondItem="OMp-y7-BGg" secondAttribute="leading" constant="15" id="7rT-uu-lE8"/>
-                                                <constraint firstItem="PmS-3t-Jsb" firstAttribute="leading" secondItem="2eZ-I7-Ku1" secondAttribute="trailing" constant="8" id="R4L-tb-cnB"/>
+                                                <constraint firstItem="JCF-fQ-twQ" firstAttribute="centerY" secondItem="OMp-y7-BGg" secondAttribute="centerY" id="Bhg-MK-t6D"/>
+                                                <constraint firstItem="JCF-fQ-twQ" firstAttribute="leading" secondItem="OMp-y7-BGg" secondAttribute="leadingMargin" id="Bxf-dF-EYp"/>
                                                 <constraint firstItem="Bu6-2i-MzN" firstAttribute="trailing" secondItem="OMp-y7-BGg" secondAttribute="trailingMargin" id="d6c-VI-Feb"/>
+                                                <constraint firstItem="PmS-3t-Jsb" firstAttribute="leading" secondItem="JCF-fQ-twQ" secondAttribute="trailing" constant="8" id="nCr-er-uPV"/>
                                                 <constraint firstItem="PmS-3t-Jsb" firstAttribute="centerY" secondItem="OMp-y7-BGg" secondAttribute="centerY" id="vaz-Fm-ixh"/>
                                             </constraints>
                                         </tableViewCellContentView>
@@ -2222,7 +2211,7 @@ xxxxx</string>
                         <constraints>
                             <constraint firstItem="L5G-vM-lwW" firstAttribute="top" secondItem="HuK-z1-db0" secondAttribute="top" constant="16" id="9GF-pL-dvB"/>
                             <constraint firstItem="HuK-z1-db0" firstAttribute="trailing" secondItem="WVI-Gu-NZf" secondAttribute="trailing" id="HZp-ML-9k7"/>
-                            <constraint firstItem="WVI-Gu-NZf" firstAttribute="top" secondItem="bdK-RB-KcL" secondAttribute="bottom" constant="27" id="nPQ-Hl-TTb"/>
+                            <constraint firstItem="WVI-Gu-NZf" firstAttribute="top" secondItem="L5G-vM-lwW" secondAttribute="bottom" constant="8" id="ozW-Wu-vR4"/>
                             <constraint firstItem="WVI-Gu-NZf" firstAttribute="leading" secondItem="HuK-z1-db0" secondAttribute="leading" id="qBA-C5-1He"/>
                             <constraint firstItem="bdK-RB-KcL" firstAttribute="leading" secondItem="L5G-vM-lwW" secondAttribute="trailing" constant="8" id="v3B-3O-jTN"/>
                             <constraint firstItem="bdK-RB-KcL" firstAttribute="centerY" secondItem="L5G-vM-lwW" secondAttribute="centerY" constant="0.5" id="x1i-oz-T9W"/>
@@ -2246,7 +2235,7 @@ xxxxx</string>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="rsb-bT-QAF" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-6130" y="-419"/>
+            <point key="canvasLocation" x="-6130.3999999999996" y="-419.64017991004499"/>
         </scene>
         <!--ExternalFN Wallets View Controller-->
         <scene sceneID="NjQ-ou-wPZ">
@@ -4419,7 +4408,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="hcp-eG-lok">
-                                <rect key="frame" x="0.0" y="150" width="375" height="517"/>
+                                <rect key="frame" x="0.0" y="132" width="375" height="535"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -4517,7 +4506,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="hcp-eG-lok" firstAttribute="top" secondItem="mqH-Cg-6Ih" secondAttribute="bottom" constant="29" id="3Lw-jJ-3hH"/>
+                            <constraint firstItem="hcp-eG-lok" firstAttribute="top" secondItem="T5S-zJ-LLT" secondAttribute="bottom" constant="8" symbolic="YES" id="79D-Hc-ahs"/>
                             <constraint firstItem="mqH-Cg-6Ih" firstAttribute="leading" secondItem="T5S-zJ-LLT" secondAttribute="trailing" constant="8" id="Cor-y3-GZQ"/>
                             <constraint firstItem="hcp-eG-lok" firstAttribute="leading" secondItem="Cze-jj-bFe" secondAttribute="leading" id="FXI-eA-xj4"/>
                             <constraint firstItem="hcp-eG-lok" firstAttribute="trailing" secondItem="Cze-jj-bFe" secondAttribute="trailing" id="IIg-gN-qVf"/>
@@ -4540,7 +4529,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="k6b-ep-z2U" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4217" y="-444"/>
+            <point key="canvasLocation" x="4216.8000000000002" y="-444.82758620689657"/>
         </scene>
         <!--Nodes View Controller-->
         <scene sceneID="iSc-Eo-e8H">
