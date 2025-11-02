@@ -4551,7 +4551,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="RkE-8N-Qp0">
-                                <rect key="frame" x="0.0" y="140.5" width="375" height="526.5"/>
+                                <rect key="frame" x="0.0" y="119.5" width="375" height="547.5"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="node" rowHeight="54" id="U6a-cf-m51">
@@ -4623,10 +4623,10 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                             <constraint firstItem="omk-V0-xkJ" firstAttribute="leading" secondItem="Lcc-il-gAQ" secondAttribute="leading" constant="16" id="73E-PH-tlp"/>
                             <constraint firstItem="RkE-8N-Qp0" firstAttribute="leading" secondItem="Lcc-il-gAQ" secondAttribute="leading" id="9gU-Ox-BoV"/>
                             <constraint firstItem="RkE-8N-Qp0" firstAttribute="trailing" secondItem="Lcc-il-gAQ" secondAttribute="trailing" id="A5Q-Zi-uPz"/>
+                            <constraint firstItem="RkE-8N-Qp0" firstAttribute="top" secondItem="omk-V0-xkJ" secondAttribute="bottom" constant="8" id="NIT-ar-5Gg"/>
                             <constraint firstItem="RkE-8N-Qp0" firstAttribute="bottom" secondItem="Lcc-il-gAQ" secondAttribute="bottom" id="Qek-Hu-eWI"/>
                             <constraint firstItem="omk-V0-xkJ" firstAttribute="top" secondItem="Lcc-il-gAQ" secondAttribute="top" constant="14" id="cd8-Pd-9fC"/>
                             <constraint firstItem="Lcc-il-gAQ" firstAttribute="trailing" secondItem="omk-V0-xkJ" secondAttribute="trailing" constant="16" id="s1B-9i-RON"/>
-                            <constraint firstItem="RkE-8N-Qp0" firstAttribute="top" secondItem="omk-V0-xkJ" secondAttribute="bottom" constant="29" id="t24-vm-ABV"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="IbZ-qq-gdB"/>
@@ -4734,7 +4734,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="gto-Hh-JcM">
-                                <rect key="frame" x="0.0" y="140.5" width="375" height="526.5"/>
+                                <rect key="frame" x="0.0" y="119.5" width="375" height="547.5"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -4747,48 +4747,34 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                             <subviews>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chevron.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="uY1-pH-h8U">
                                                     <rect key="frame" x="312" y="21" width="15" height="11.5"/>
-                                                    <color key="tintColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <color key="tintColor" systemColor="systemBlueColor"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="15" id="Shu-16-N7N"/>
                                                         <constraint firstAttribute="width" constant="15" id="hDi-Yn-VMg"/>
                                                     </constraints>
                                                 </imageView>
-                                                <view tag="3" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ocJ-l1-4bf">
-                                                    <rect key="frame" x="15" y="9.5" width="35" height="35"/>
-                                                    <subviews>
-                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="CKc-wE-2oc">
-                                                            <rect key="frame" x="5" y="5" width="25" height="25"/>
-                                                            <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                            <constraints>
-                                                                <constraint firstAttribute="height" constant="25" id="Zr2-ks-hMP"/>
-                                                                <constraint firstAttribute="width" constant="25" id="nWt-7n-YpE"/>
-                                                            </constraints>
-                                                        </imageView>
-                                                    </subviews>
-                                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="CKc-wE-2oc">
+                                                    <rect key="frame" x="16" y="14.5" width="25" height="25"/>
+                                                    <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <constraints>
-                                                        <constraint firstAttribute="width" constant="35" id="HoM-Al-mA8"/>
-                                                        <constraint firstItem="CKc-wE-2oc" firstAttribute="centerX" secondItem="ocJ-l1-4bf" secondAttribute="centerX" id="W6E-IA-k2T"/>
-                                                        <constraint firstAttribute="height" constant="35" id="cVo-mg-LId"/>
-                                                        <constraint firstItem="CKc-wE-2oc" firstAttribute="centerY" secondItem="ocJ-l1-4bf" secondAttribute="centerY" id="dks-S4-dqO"/>
-                                                        <constraint firstItem="CKc-wE-2oc" firstAttribute="centerY" secondItem="ocJ-l1-4bf" secondAttribute="centerY" id="jLZ-8h-kbf"/>
+                                                        <constraint firstAttribute="width" constant="25" id="Mlj-xv-IAk"/>
+                                                        <constraint firstAttribute="height" constant="25" id="NNZ-Oy-K0z"/>
                                                     </constraints>
-                                                </view>
+                                                </imageView>
                                                 <label opaque="NO" userInteractionEnabled="NO" tag="2" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NiX-DV-CO6">
-                                                    <rect key="frame" x="58" y="16.5" width="246" height="21"/>
+                                                    <rect key="frame" x="49" y="16.5" width="255" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstItem="NiX-DV-CO6" firstAttribute="leading" secondItem="ocJ-l1-4bf" secondAttribute="trailing" constant="8" id="5i1-LA-Jn7"/>
                                                 <constraint firstItem="uY1-pH-h8U" firstAttribute="leading" secondItem="NiX-DV-CO6" secondAttribute="trailing" constant="8" id="HDA-bc-d6E"/>
                                                 <constraint firstItem="NiX-DV-CO6" firstAttribute="centerY" secondItem="xYD-lp-qRG" secondAttribute="centerY" id="Iwj-K3-wSr"/>
-                                                <constraint firstItem="ocJ-l1-4bf" firstAttribute="centerY" secondItem="xYD-lp-qRG" secondAttribute="centerY" id="JmP-AG-FKH"/>
                                                 <constraint firstItem="uY1-pH-h8U" firstAttribute="trailing" secondItem="xYD-lp-qRG" secondAttribute="trailingMargin" id="MJ7-6K-Eef"/>
-                                                <constraint firstItem="ocJ-l1-4bf" firstAttribute="leading" secondItem="xYD-lp-qRG" secondAttribute="leading" constant="15" id="nNz-87-PZ2"/>
+                                                <constraint firstItem="CKc-wE-2oc" firstAttribute="centerY" secondItem="xYD-lp-qRG" secondAttribute="centerY" id="iZd-FD-I3c"/>
+                                                <constraint firstItem="NiX-DV-CO6" firstAttribute="leading" secondItem="CKc-wE-2oc" secondAttribute="trailing" constant="8" symbolic="YES" id="jbU-bT-E2O"/>
                                                 <constraint firstItem="uY1-pH-h8U" firstAttribute="centerY" secondItem="xYD-lp-qRG" secondAttribute="centerY" id="q0h-8h-FPv"/>
+                                                <constraint firstItem="CKc-wE-2oc" firstAttribute="leading" secondItem="xYD-lp-qRG" secondAttribute="leadingMargin" id="r2t-7g-SVu"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -4810,7 +4796,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="xLP-Y3-URj" firstAttribute="top" secondItem="k95-vg-x64" secondAttribute="top" constant="14" id="3Vy-Xd-ZuA"/>
-                            <constraint firstItem="gto-Hh-JcM" firstAttribute="top" secondItem="xLP-Y3-URj" secondAttribute="bottom" constant="29" id="9rt-T6-0hz"/>
+                            <constraint firstItem="gto-Hh-JcM" firstAttribute="top" secondItem="xLP-Y3-URj" secondAttribute="bottom" constant="8" id="6W0-zt-hdh"/>
                             <constraint firstItem="xLP-Y3-URj" firstAttribute="leading" secondItem="k95-vg-x64" secondAttribute="leading" constant="16" id="DnQ-oN-Vhn"/>
                             <constraint firstItem="k95-vg-x64" firstAttribute="trailing" secondItem="xLP-Y3-URj" secondAttribute="trailing" constant="160.5" id="EjA-SR-EL8"/>
                             <constraint firstItem="gto-Hh-JcM" firstAttribute="trailing" secondItem="k95-vg-x64" secondAttribute="trailing" id="GzL-mA-UbB"/>
@@ -6864,7 +6850,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
         <segue reference="ejH-sy-hlm"/>
         <segue reference="qed-hl-jG5"/>
         <segue reference="Fvb-gy-rb3"/>
-        <segue reference="4g3-DC-Q5z"/>
+        <segue reference="gF6-29-ZCL"/>
         <segue reference="Wy7-ur-TeS"/>
         <segue reference="EZr-Ut-goC"/>
         <segue reference="mRa-gP-mZ0"/>
