@@ -15,12 +15,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     let ud = UserDefaults.standard
     var addButton = UIBarButtonItem()
     var editButton = UIBarButtonItem()
-    var isNostr = false
-    var isLightning = false
-    var isJoinMarket = false
     var isBitcoinCore = false
-    var isLND = false
-    var isCLN = false
+    var isLnd = false
     private var now: Date = .now
     private var firstTap: Date?
     private var lastTap: Date?
@@ -40,9 +36,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        isNostr = false
-        isLightning = false
-        isJoinMarket = false
+        isLnd = false
         isBitcoinCore = false
         getNodes()
     }
@@ -86,11 +80,11 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return nodeArray.count
+        return 1
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return nodeArray.count
     }
     
     private func decryptedValue(_ encryptedValue: Data) -> String {
@@ -101,51 +95,56 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "node", for: indexPath)
-        cell.layer.borderColor = UIColor.lightGray.cgColor
-        cell.layer.borderWidth = 0.5
+//        cell.layer.borderColor = UIColor.lightGray.cgColor
+//        cell.layer.borderWidth = 0.5
         cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+        cell.tintColor = .systemBlue
         
         let label = cell.viewWithTag(1) as! UILabel
-        let isActive = cell.viewWithTag(2) as! UISwitch
-        let background = cell.viewWithTag(3)!
+        //let isActive = cell.viewWithTag(2) as! UISwitch
+        //let background = cell.viewWithTag(3)!
         let icon = cell.viewWithTag(4) as! UIImageView
         let button = cell.viewWithTag(5) as! UIButton
         
-        button.restorationIdentifier = "\(indexPath.section)"
+        button.restorationIdentifier = "\(indexPath.row)"
         button.addTarget(self, action: #selector(editNode(_:)), for: .touchUpInside)
         
-        background.clipsToBounds = true
-        background.layer.cornerRadius = 8
+        //background.clipsToBounds = true
+        //background.layer.cornerRadius = 8
         
-        let nodeStruct = NodeStruct(dictionary: nodeArray[indexPath.section])
+        let nodeStruct = NodeStruct(dictionary: nodeArray[indexPath.row])
+        label.text = nodeStruct.label
         
-        if !nodeStruct.uncleJim {
-            label.text = nodeStruct.label
-        } else {
-            label.text = "***shared node***"
-        }
         
-        isActive.isOn = nodeArray[indexPath.section]["isActive"] as? Bool ?? false
-        isActive.restorationIdentifier = "\(indexPath.section)"
-        isActive.addTarget(self, action: #selector(setActiveNow(_:)), for: .touchUpInside)
+        //isActive.isOn = nodeArray[indexPath.row]["isActive"] as? Bool ?? false
+        //isActive.restorationIdentifier = "\(indexPath.row)"
+        //isActive.addTarget(self, action: #selector(setActiveNow(_:)), for: .touchUpInside)
         
-        if !isActive.isOn {
-            label.textColor = .darkGray
-        } else {
-            label.textColor = .white
-        }
+//        if !isActive.isOn {
+//            label.textColor = .darkGray
+//        } else {
+//            label.textColor = .white
+//        }
         
         icon.tintColor = .white
         
-        if nodeStruct.isJoinMarket {
-            icon.image = UIImage(systemName: "arrow.triangle.2.circlepath")
-            background.backgroundColor = .black
-        } else if nodeStruct.isLightning {
+        if nodeStruct.isLightning {
             icon.image = UIImage(systemName: "bolt")
-            background.backgroundColor = .systemOrange
+            icon.tintColor = .systemOrange
         } else {
             icon.image = UIImage(systemName: "link")
-            background.backgroundColor = .systemBlue
+            icon.tintColor = .systemBlue
+        }
+        
+        if !nodeStruct.isActive {
+            label.textColor = .secondaryLabel
+            cell.accessoryType = .none
+            cell.isSelected = false
+        } else {
+            label.textColor = .none
+            cell.accessoryType = .checkmark
+            cell.isSelected = true
+            cell.accessoryView?.frame = .init(x: 0, y: 0, width: 35, height: 35)
         }
         
         return cell
@@ -155,14 +154,71 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         return 54
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let nodeStr = NodeStruct(dictionary: nodeArray[indexPath.row])
+        
+        CoreDataService.update(id: nodeStr.id!, keyToUpdate: "isActive", newValue: true, entity: .newNodes) { [weak self] success in
+            guard let self = self else { return }
+            
+            if success {
+                if !nodeStr.isLightning && !nodeStr.isJoinMarket {
+                    self.ud.removeObject(forKey: "walletName")
+                }
+                
+                if self.nodeArray.count == 1 {
+                    self.reloadTable()
+                }
+                
+            } else {
+                displayAlert(viewController: self, isError: true, message: "Error updating node.")
+            }
+        }
+        
+        if nodeArray.count > 1 {
+            for (i, node) in nodeArray.enumerated() {
+                if i != indexPath.row {
+                    let str = NodeStruct(dictionary: node)
+                    if str.id != nodeStr.id {
+                        if !nodeStr.isLightning && !str.isLightning {
+                            CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                        }
+                        if nodeStr.isLightning && str.isLightning {
+                            CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                        }
+                    }
+                }
+                
+                if i + 1 == nodeArray.count {
+                    CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
+                        if nodes != nil {
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
+                                nodeArray.removeAll()
+                                for node in nodes! {
+                                    let str = NodeStruct(dictionary: node)
+                                    if str.id != nil {
+                                        nodeArray.append(node)
+                                    }
+                                }
+                                nodeTable.reloadData()
+                                showAlert(vc: self, title: "", message: "Tap the refresh button on the home view to show the current node.")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     @objc func editNode(_ sender: UIButton) {
         func editNow() {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                self.firstTap = .now
-                guard let id = sender.restorationIdentifier, let section = Int(id) else { return }
-                self.selectedIndex = section
-                self.performSegue(withIdentifier: "updateNode", sender: self)
+                firstTap = .now
+                guard let id = sender.restorationIdentifier, let row = Int(id) else { return }
+                selectedIndex = row
+                print("selectedIndex = \(selectedIndex)")
+                performSegue(withIdentifier: "updateNode", sender: self)
             }
         }
         
@@ -191,23 +247,24 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     private func deleteNode(nodeId: UUID, indexPath: IndexPath) {
-        CoreDataService.deleteEntity(id: nodeId, entityName: .newNodes) { [unowned vc = self] success in
+        CoreDataService.deleteEntity(id: nodeId, entityName: .newNodes) { [weak self] success in
+            guard let self = self else { return }
             if success {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.nodeArray.remove(at: indexPath.section)
-                    vc.nodeTable.deleteSections(IndexSet.init(arrayLiteral: indexPath.section), with: .fade)
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    nodeArray.remove(at: indexPath.row)
+                    nodeTable.deleteRows(at: [indexPath], with: .fade)
+                    nodeTable.reloadData()
                 }
             } else {
-                displayAlert(viewController: vc,
-                             isError: true,
-                             message: "We had an error trying to delete that node")
+                showAlert(vc: self, title: "", message: "We had an error trying to delete that node.")
             }
         }
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == UITableViewCell.EditingStyle.delete {
-            let node = NodeStruct(dictionary: nodeArray[indexPath.section])
+            let node = NodeStruct(dictionary: nodeArray[indexPath.row])
             if node.id != nil {
                 deleteNode(nodeId: node.id!, indexPath: indexPath)
             }
@@ -351,8 +408,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             alert.addAction(UIAlertAction(title: "Bitcoin Core", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                 
-                self.isLightning = false
-                self.isJoinMarket = false
+                self.isLnd = false
                 self.isBitcoinCore = true
                 self.segueToAddNodeManually()
             }))
@@ -360,10 +416,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             alert.addAction(UIAlertAction(title: "LND", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                 
-                self.isLND = true
-                self.isCLN = false
-                self.isLightning = true
-                self.isJoinMarket = false
+                self.isLnd = true
                 self.isBitcoinCore = false
                 self.segueToAddNodeManually()
             }))
@@ -429,11 +482,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         if segue.identifier == "segueToAddBitcoinCoreNode" {
             if let vc = segue.destination as? NodeDetailViewController {
                 vc.createNew = true
-                vc.isLightning = self.isLightning
-                vc.isJoinMarket = self.isJoinMarket
-                vc.isNostr = self.isNostr
-                vc.isBitcoinCore = self.isBitcoinCore
-                vc.isLND = self.isLND
+                vc.isBitcoinCore = isBitcoinCore
+                vc.isLND = isLnd
             }
         }
         
