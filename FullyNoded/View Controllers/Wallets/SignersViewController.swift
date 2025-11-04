@@ -119,16 +119,16 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
         cell.selectionStyle = .none
 //        cell.layer.borderColor = UIColor.lightGray.cgColor
 //        cell.layer.borderWidth = 0.5
-        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+        //cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         let label = cell.viewWithTag(1) as! UILabel
-        let image = cell.viewWithTag(3) as! UIImageView
+        //let image = cell.viewWithTag(3) as! UIImageView
         //let background = cell.viewWithTag(4)!
         //background.clipsToBounds = true
-        let icon = UIImage(systemName: "pencil.and.ellipsis.rectangle")
+        //let icon = UIImage(systemName: "pencil.and.ellipsis.rectangle")
         //background.backgroundColor = .black
         //background.layer.cornerRadius = 5
-        image.tintColor = .systemBlue
-        image.image = icon
+        //image.tintColor = .systemBlue
+        //image.image = icon
         if signers.count > 0 {
             let s = SignerStruct(dictionary: signers[indexPath.row])
             if s.label == "Signer" {

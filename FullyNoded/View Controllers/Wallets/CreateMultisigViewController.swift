@@ -42,8 +42,8 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         
         textView.clipsToBounds = true
         textView.layer.cornerRadius = 8
-        textView.layer.borderColor = UIColor.lightGray.cgColor
-        textView.layer.borderWidth = 0.5
+//        textView.layer.borderColor = UIColor.lightGray.cgColor
+//        textView.layer.borderWidth = 0.5
         
         xpubField.delegate = self
         
