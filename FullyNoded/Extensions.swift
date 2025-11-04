@@ -407,7 +407,14 @@ public extension Double {
         return self / 100000000.0
     }
     
+    var isWholeNumber: Bool {
+        return truncatingRemainder(dividingBy: 1) == 0
+    }
+    
     var btcBalanceWithSpaces: String {
+        if (self * 1.0).isWholeNumber {
+            return "\(self)"
+        }
         if self > 10 {
             return Swift.abs(self.rounded(toPlaces: 2)).avoidNotation.replacingOccurrences(of: ",", with: "")
         }

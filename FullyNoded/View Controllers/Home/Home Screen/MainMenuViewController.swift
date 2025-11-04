@@ -1281,16 +1281,16 @@ class MainMenuViewController: UIViewController {
                 }
             }
             
-        case "showDetailSegue":
-            
-            if let vc = segue.destination as? ShowDetailViewController {
-                vc.command = command
-                vc.iconImage = detailImage
-                vc.backgroundTint = detailImageTint
-                vc.detailHeaderText = detailHeaderText
-                vc.detailSubheaderText = detailSubheaderText
-                vc.detailTextDescription = detailTextDescription
-            }
+//        case "showDetailSegue":
+//            
+//            if let vc = segue.destination as? ShowDetailViewController {
+//                vc.command = command
+//                vc.iconImage = detailImage
+//                vc.backgroundTint = detailImageTint
+//                vc.detailHeaderText = detailHeaderText
+//                vc.detailSubheaderText = detailSubheaderText
+//                vc.detailTextDescription = detailTextDescription
+//            }
             
         //case "segueToAddNode":
             
@@ -1298,14 +1298,14 @@ class MainMenuViewController: UIViewController {
 //                vc.createNew = true
 //            }
             
-        case "segueToRemoteControl":
-            
-            if let vc = segue.destination as? QRDisplayerViewController {
-                vc.text = host
-                vc.headerIcon = UIImage(systemName: "antenna.radiowaves.left.and.right")
-                vc.headerText = "Remote Control - Quick Connect"
-                vc.descriptionText = "Fully Noded hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
-            }
+//        case "segueToRemoteControl":
+//            
+//            if let vc = segue.destination as? QRDisplayerViewController {
+//                vc.text = host
+//                vc.headerIcon = UIImage(systemName: "antenna.radiowaves.left.and.right")
+//                vc.headerText = "Remote Control - Quick Connect"
+//                vc.descriptionText = "Fully Noded hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
+//            }
             
 //        case "segueToPaywall":
 //            guard let vc = segue.destination as? QRDisplayerViewController else { fallthrough }

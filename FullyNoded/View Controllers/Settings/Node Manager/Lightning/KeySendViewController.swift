@@ -223,10 +223,10 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func saveTx(memo: String, hash: String, sats: Int) {
-        FiatConverter.sharedInstance.getFxRate { fxRate in
+        let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        
+        FiatConverter.sharedInstance.getFxRate(currency: fiatCurrency) { fxRate in
             self.spinner.removeConnectingView()
-            
-            let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
             
             var dict:[String:Any] = [
                 "txid":hash,

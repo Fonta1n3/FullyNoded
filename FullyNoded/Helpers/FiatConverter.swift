@@ -12,11 +12,11 @@ class FiatConverter {
     static let sharedInstance = FiatConverter()
     private init() {}
     
-    let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+    //let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     let torClient = TorClient.sharedInstance
     var task: URLSessionDataTask? = nil
     
-    func getFxRate(completion: @escaping ((Double?)) -> Void) {
+    func getFxRate(currency: String, completion: @escaping ((Double?)) -> Void) {
         let useBlockchainInfo = UserDefaults.standard.object(forKey: "useBlockchainInfo") as? Bool ?? true
         let urlString = useBlockchainInfo ? "https://blockchain.info/ticker" : "https://api.coindesk.com/v1/bpi/currentprice.json"
         let url: NSURL? = NSURL(string: urlString)
@@ -25,9 +25,9 @@ class FiatConverter {
             guard let json = self.fetchJson(data: data) else { completion(nil); return }
             
             if useBlockchainInfo {
-                self.parseBlockChainInfoJson(currency: self.currency, json: json, completion: completion)
+                self.parseBlockChainInfoJson(currency: currency, json: json, completion: completion)
             } else {
-                self.parseCoindeskJson(currency: self.currency, json: json, completion: completion)
+                self.parseCoindeskJson(currency: currency, json: json, completion: completion)
             }
         }
         task?.resume()

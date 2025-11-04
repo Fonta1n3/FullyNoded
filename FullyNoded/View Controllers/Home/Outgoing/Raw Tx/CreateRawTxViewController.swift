@@ -967,8 +967,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     private func fiatEnabled() {
         spinner.addConnectingView(vc: self, description: "getting fx rate...")
+        let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
         
-        FiatConverter.sharedInstance.getFxRate { [weak self] (fxrate) in
+        FiatConverter.sharedInstance.getFxRate(currency: fiatCurrency) { [weak self] (fxrate) in
             guard let self = self else { return }
             
             self.spinner.removeConnectingView()
@@ -1746,7 +1747,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func promptToSendLightningPayment(invoice: String, dict: [String:Any], msat: Int?) {
-        FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
+        let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        
+        FiatConverter.sharedInstance.getFxRate(currency: fiatCurrency) { [weak self] fxRate in
             guard let self = self else { return }
             
             DispatchQueue.main.async { [weak self] in
@@ -1855,7 +1858,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func saveTx(memo: String, hash: String, sats: Int, fee: Double?) {
-        FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
+        let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        
+        FiatConverter.sharedInstance.getFxRate(currency: fiatCurrency) { [weak self] fxRate in
             guard let self = self else { return }
             
             var dict:[String:Any] = ["txid": hash,

@@ -851,13 +851,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         recipients.removeAll()
         signatures.removeAll()
         outputsString = ""
+        let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
         
-        FiatConverter.sharedInstance.getFxRate { [weak self] exchangeRate in
+        FiatConverter.sharedInstance.getFxRate(currency: fiatCurrency) { [weak self] exchangeRate in
             guard let self = self else { return }
             
             self.fxRate = exchangeRate
-            
-            
         }
         
         if self.unsignedPsbt == "" {

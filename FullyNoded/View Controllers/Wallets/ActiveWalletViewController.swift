@@ -53,7 +53,6 @@ class ActiveWalletViewController: UIViewController {
     private var isRecovering = false
     var fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     
-    @IBOutlet weak private var currencyControl: UISegmentedControl!
     @IBOutlet weak private var backgroundView: UIVisualEffectView!
     @IBOutlet weak private var walletTable: UITableView!
     @IBOutlet weak private var sendView: UIView!
@@ -72,7 +71,10 @@ class ActiveWalletViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(broadcast(_:)), name: .broadcastTxn, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(signPsbt(_:)), name: .signPsbt, object: nil)
         existingWallet = ud.object(forKey: "walletName") as? String ?? ""
-        setCurrency()
+        //setCurrency()
+        if let savedRate = UserDefaults.standard.object(forKey: "fxRate") as? Double {
+            fxRate = savedRate
+        }
         setNotifications()
         sectionZeroLoaded = false
         addNavBarSpinner()
@@ -80,10 +82,11 @@ class ActiveWalletViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
-        currencyControl.setTitle(fiatCurrency.lowercased(), forSegmentAt: 2)
+        //currencyControl.setTitle(fiatCurrency.lowercased(), forSegmentAt: 2)
+        setDenomination()
+        
         if initialLoad {
             initialLoad = false
-            //getFxRate()
             loadTable()
         }
     }
@@ -106,42 +109,21 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    private func setCurrency() {
-        if ud.object(forKey: "unit") != nil {
-            let unit = ud.object(forKey: "unit") as! String
-            var index = 0
-            switch unit {
-            case "btc":
-                index = 0
-                isBtc = true
-                isFiat = false
-                isSats = false
-            case "sats":
-                index = 1
-                isSats = true
-                isFiat = false
-                isBtc = false
-            case "fiat":
-                index = 2
-                isFiat = true
-                isBtc = false
-                isSats = false
-            default:
-                break
-            }
-            
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.currencyControl.selectedSegmentIndex = index
-            }
-            
-        } else {
+    private func setDenomination() {
+        let denomination = UserDefaults.standard.object(forKey: "unit") as? String ?? "BTC"
+        switch denomination {
+        case "btc":
             isBtc = true
             isFiat = false
             isSats = false
-            
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.currencyControl.selectedSegmentIndex = 0
-            }
+        case "sats":
+            isSats = true
+            isFiat = false
+            isBtc = false
+        default:
+            isFiat = true
+            isBtc = false
+            isSats = false
         }
     }
     
@@ -154,29 +136,29 @@ class ActiveWalletViewController: UIViewController {
     }
     
     
-    @IBAction func switchCurrency(_ sender: UISegmentedControl) {
-        switch sender.selectedSegmentIndex {
-        case 0:
-            isFiat = false
-            isBtc = true
-            isSats = false
-            ud.set("btc", forKey: "unit")
-        case 1:
-            isFiat = false
-            isBtc = false
-            isSats = true
-            ud.set("sats", forKey: "unit")
-        case 2:
-            isFiat = true
-            isBtc = false
-            isSats = false
-            ud.set("fiat", forKey: "unit")
-        default:
-            break
-        }
-        
-        reloadTable()
-    }
+//    @IBAction func switchCurrency(_ sender: UISegmentedControl) {
+//        switch sender.selectedSegmentIndex {
+//        case 0:
+//            isFiat = false
+//            isBtc = true
+//            isSats = false
+//            ud.set("btc", forKey: "unit")
+//        case 1:
+//            isFiat = false
+//            isBtc = false
+//            isSats = true
+//            ud.set("sats", forKey: "unit")
+//        case 2:
+//            isFiat = true
+//            isBtc = false
+//            isSats = false
+//            ud.set("fiat", forKey: "unit")
+//        default:
+//            break
+//        }
+//        
+//        reloadTable()
+//    }
     
     
     @objc func signPsbt(_ notification: NSNotification) {
@@ -216,8 +198,8 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func configureButton(_ button: UIView) {
-        button.layer.borderColor = UIColor.darkGray.cgColor
-        button.layer.borderWidth = 0.5
+//        button.layer.borderColor = UIColor.darkGray.cgColor
+//        button.layer.borderWidth = 0.5
         button.layer.cornerRadius = 5
     }
     
@@ -408,50 +390,50 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    private func promptToChooseJmWallet(jmWallets: [String]) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            self.spinner.removeConnectingView()
-            
-            let tit = "Join Market wallet"
-            
-            let mess = "Please select which wallet you'd like to use."
-            
-            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .actionSheet)
-            for jmWallet in jmWallets {
-                alert.addAction(UIAlertAction(title: jmWallet, style: .default, handler: { [weak self] action in
-                    guard let self = self else { return }
-                    
-                    CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
-                        guard let wallets = wallets else { return }
-                        
-                        guard wallets.count > 0 else {
-                            showAlert(vc: self, title: "", message: "No existing wallets, tap the + button to create a wallet.")
-                            return
-                        }
-                        
-                        for wallet in wallets {
-                            if wallet["id"] != nil {
-                                let wStr = Wallet(dictionary: wallet)
-                                if wStr.isJm && wStr.jmWalletName == jmWallet {
-                                    UserDefaults.standard.set(wStr.name, forKey: "walletName")
-                                    self.wallet = wStr
-                                    self.existingWallet = wStr.name
-                                    self.walletLabel = wStr.label
-                                    self.loadBalances()
-                                }
-                            }
-                        }
-                    }
-                    
-                }))
-            }
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true, completion: nil)
-        }
-    }
+//    private func promptToChooseJmWallet(jmWallets: [String]) {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//            self.spinner.removeConnectingView()
+//            
+//            let tit = "Join Market wallet"
+//            
+//            let mess = "Please select which wallet you'd like to use."
+//            
+//            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .actionSheet)
+//            for jmWallet in jmWallets {
+//                alert.addAction(UIAlertAction(title: jmWallet, style: .default, handler: { [weak self] action in
+//                    guard let self = self else { return }
+//                    
+//                    CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+//                        guard let wallets = wallets else { return }
+//                        
+//                        guard wallets.count > 0 else {
+//                            showAlert(vc: self, title: "", message: "No existing wallets, tap the + button to create a wallet.")
+//                            return
+//                        }
+//                        
+//                        for wallet in wallets {
+//                            if wallet["id"] != nil {
+//                                let wStr = Wallet(dictionary: wallet)
+//                                if wStr.isJm && wStr.jmWalletName == jmWallet {
+//                                    UserDefaults.standard.set(wStr.name, forKey: "walletName")
+//                                    self.wallet = wStr
+//                                    self.existingWallet = wStr.name
+//                                    self.walletLabel = wStr.label
+//                                    self.loadBalances()
+//                                }
+//                            }
+//                        }
+//                    }
+//                    
+//                }))
+//            }
+//            
+//            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+//            alert.popoverPresentationController?.sourceView = self.view
+//            self.present(alert, animated: true, completion: nil)
+//        }
+//    }
     
     private func finishedLoading() {
         DispatchQueue.main.async { [weak self] in
@@ -530,9 +512,9 @@ class ActiveWalletViewController: UIViewController {
     
     private func onchainBalancesCell(_ indexPath: IndexPath) -> UITableViewCell {
         let cell = walletTable.dequeueReusableCell(withIdentifier: "OnBalancesCell", for: indexPath)
-        cell.layer.borderColor = UIColor.lightGray.cgColor
-        cell.layer.borderWidth = 0.5
-        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+        //cell.layer.borderColor = UIColor.lightGray.cgColor
+        //cell.layer.borderWidth = 0.5
+        //cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
         let iconImageView = cell.viewWithTag(67) as! UIImageView
         iconImageView.image = .init(systemName: "link")
@@ -546,11 +528,11 @@ class ActiveWalletViewController: UIViewController {
         
         
         if onchainBalanceBtc == "" || onchainBalanceBtc == "0.0" {
-            onchainBalanceBtc = "0.00 000 000"
+            onchainBalanceBtc = "0"
         }
                 
         if isBtc {
-            onchainBalanceLabel.text = onchainBalanceBtc
+            onchainBalanceLabel.text = onchainBalanceBtc.withCommas
         }
         
         if isSats {
@@ -566,9 +548,9 @@ class ActiveWalletViewController: UIViewController {
     
     private func offchainBalancesCell(_ indexPath: IndexPath) -> UITableViewCell {
         let cell = walletTable.dequeueReusableCell(withIdentifier: "OnBalancesCell", for: indexPath)
-        cell.layer.borderColor = UIColor.lightGray.cgColor
-        cell.layer.borderWidth = 0.5
-        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+        //cell.layer.borderColor = UIColor.lightGray.cgColor
+        //cell.layer.borderWidth = 0.5
+        //cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
         let offchainBalanceLabel = cell.viewWithTag(1) as! UILabel
         let iconImageView = cell.viewWithTag(67) as! UIImageView
@@ -592,15 +574,15 @@ class ActiveWalletViewController: UIViewController {
     
     private func offchainOnchainBalancesCell(_ indexPath: IndexPath) -> UITableViewCell {
         let cell = walletTable.dequeueReusableCell(withIdentifier: "OffOnBalancesCell", for: indexPath)
-        cell.layer.borderColor = UIColor.lightGray.cgColor
-        cell.layer.borderWidth = 0.5
-        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+        //cell.layer.borderColor = UIColor.lightGray.cgColor
+        //cell.layer.borderWidth = 0.5
+        //cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         let offchainBalanceLabel = cell.viewWithTag(2) as! UILabel
         let offchainBalanceView = cell.viewWithTag(66)!
         let onchainBalanceLabel = cell.viewWithTag(1) as! UILabel
         
         if offchainBalanceBtc == "" {
-            offchainBalanceBtc = "0.00 000 000"
+            offchainBalanceBtc = "0"
         }
         if isBtc {
             offchainBalanceLabel.text = offchainBalanceBtc
@@ -615,7 +597,7 @@ class ActiveWalletViewController: UIViewController {
         offchainBalanceView.alpha = 1
         
         if onchainBalanceBtc == "" || onchainBalanceBtc == "0.0" {
-            onchainBalanceBtc = "0.00 000 000"
+            onchainBalanceBtc = "0"
         }
                 
         if isBtc {
@@ -636,9 +618,9 @@ class ActiveWalletViewController: UIViewController {
     private func transactionsCell(_ indexPath: IndexPath) -> UITableViewCell {
         let cell = walletTable.dequeueReusableCell(withIdentifier: "TransactionCell", for: indexPath)
         cell.selectionStyle = .none
-        cell.layer.borderColor = UIColor.lightGray.cgColor
-        cell.layer.borderWidth = 0.5
-        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+        //cell.layer.borderColor = UIColor.lightGray.cgColor
+        //cell.layer.borderWidth = 0.5
+        //cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
         let categoryImage = cell.viewWithTag(1) as! UIImageView
         let amountLabel = cell.viewWithTag(2) as! UILabel
@@ -770,7 +752,7 @@ class ActiveWalletViewController: UIViewController {
             categoryImage.image = UIImage(systemName: "arrow.up.right")
             categoryImage.tintColor = .systemRed
             
-            amountLabel.textColor = UIColor.darkGray
+            amountLabel.textColor = .secondaryLabel
             
             var amountText = ""
             
@@ -788,7 +770,7 @@ class ActiveWalletViewController: UIViewController {
         } else {
             categoryImage.image = UIImage(systemName: "arrow.down.left")
             categoryImage.tintColor = .systemGreen
-            amountLabel.textColor = .white
+            amountLabel.textColor = .label
             
             var amountText = ""
             
@@ -810,7 +792,7 @@ class ActiveWalletViewController: UIViewController {
     private func blankCell() -> UITableViewCell {
         let cell = UITableViewCell()
         cell.selectionStyle = .none
-        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+        //cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         return cell
     }
     
@@ -996,12 +978,15 @@ class ActiveWalletViewController: UIViewController {
     
     
     private func getFxRate() {
-        FiatConverter.sharedInstance.getFxRate { [weak self] rate in
+        let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        
+        FiatConverter.sharedInstance.getFxRate(currency: fiatCurrency) { [weak self] rate in
             guard let self = self else { return }
             
             guard let rate = rate else {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
+                    
                     
                     self.fxRateLabel.text = "no fx rate data"
                 }
@@ -1018,6 +1003,9 @@ class ActiveWalletViewController: UIViewController {
                 
                 self.fxRateLabel.text = rate.exchangeRate
                 self.onchainBalanceFiat = (self.onchainBalanceBtc.doubleValue * Double(rate)).fiatString
+                print("onchainBalanceBtc: \(onchainBalanceBtc)")
+                print("onchainBalanceBtc.doubleValue: \(onchainBalanceBtc.doubleValue)")
+                print("onchainBalanceFiat: \(onchainBalanceFiat)")
                 finishedLoading()
                 //reloadTable()
             }
@@ -1758,14 +1746,14 @@ extension ActiveWalletViewController: UITableViewDelegate {
         let textLabel = UILabel()
         textLabel.textAlignment = .left
         textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
-        textLabel.textColor = .white
+        textLabel.textColor = .secondaryLabel
         textLabel.frame = CGRect(x: 0, y: 0, width: 400, height: 50)
         
         let filterButton = UIButton()
         let filterImage = UIImage(systemName: "line.horizontal.3.decrease.circle", withConfiguration: UIImage.SymbolConfiguration.init(scale: .large))
         filterButton.setImage(filterImage, for: .normal)
         filterButton.frame = CGRect(x: header.frame.size.width - 50, y: 0, width: 50, height: 50)
-        filterButton.tintColor = .systemTeal
+        //filterButton.tintColor = .systemTeal
         filterButton.center.y = textLabel.center.y
         //filterButton.showsTouchWhenHighlighted = true
         filterButton.addTarget(self, action: #selector(filterTxs(_:)), for: .touchUpInside)
@@ -1774,7 +1762,7 @@ extension ActiveWalletViewController: UITableViewDelegate {
         let sortImage = UIImage(systemName: "arrow.up.arrow.down.circle", withConfiguration: UIImage.SymbolConfiguration.init(scale: .large))
         sortButton.setImage(sortImage, for: .normal)
         sortButton.frame = CGRect(x: filterButton.frame.minX - 60, y: 0, width: 50, height: 50)
-        sortButton.tintColor = .systemTeal
+        //sortButton.tintColor = .systemTeal
         sortButton.center.y = textLabel.center.y
         //sortButton.showsTouchWhenHighlighted = true
         sortButton.addTarget(self, action: #selector(sortTxs(_:)), for: .touchUpInside)

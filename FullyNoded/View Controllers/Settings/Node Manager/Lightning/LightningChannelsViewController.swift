@@ -542,7 +542,9 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func saveTx(memo: String, hash: String, sats: Int) {
-        FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
+        let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        
+        FiatConverter.sharedInstance.getFxRate(currency: fiatCurrency) { [weak self] fxRate in
             guard let self = self else { return }
             
             let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
