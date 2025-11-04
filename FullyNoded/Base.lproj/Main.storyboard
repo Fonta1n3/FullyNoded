@@ -4226,9 +4226,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="hcp-eG-lok">
-                                <rect key="frame" x="0.0" y="132" width="375" height="535"/>
-                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <color key="separatorColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <rect key="frame" x="0.0" y="64" width="375" height="603"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="settingsCell" rowHeight="54" id="9RO-xu-o8H">
                                         <rect key="frame" x="16" y="55.5" width="343" height="54"/>
@@ -4269,7 +4267,6 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                                 <constraint firstItem="x8W-at-Yao" firstAttribute="leading" secondItem="mnC-qw-8W7" secondAttribute="trailing" constant="8" id="wGk-zC-iQX"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="checkmarkCell" rowHeight="54" id="EMG-Xr-7Ch">
                                         <rect key="frame" x="16" y="109.5" width="343" height="54"/>
@@ -4299,7 +4296,6 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                                 <constraint firstItem="AUC-uf-zRn" firstAttribute="centerY" secondItem="6yr-Fa-gT8" secondAttribute="centerY" id="ot0-tW-9hg"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </tableViewCell>
                                 </prototypes>
                                 <connections>
@@ -4307,31 +4303,14 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                     <outlet property="delegate" destination="AS8-ke-Yxh" id="p55-w8-V7U"/>
                                 </connections>
                             </tableView>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_grey.png" translatesAutoresizingMaskIntoConstraints="NO" id="T5S-zJ-LLT">
-                                <rect key="frame" x="16" y="84" width="41" height="40"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="41" id="9eC-Dr-Xn0"/>
-                                    <constraint firstAttribute="height" constant="40" id="WYi-1z-NO8"/>
-                                </constraints>
-                            </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Settings" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mqH-Cg-6Ih">
-                                <rect key="frame" x="65" y="87" width="107" height="34"/>
-                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
-                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="hcp-eG-lok" firstAttribute="top" secondItem="T5S-zJ-LLT" secondAttribute="bottom" constant="8" symbolic="YES" id="79D-Hc-ahs"/>
-                            <constraint firstItem="mqH-Cg-6Ih" firstAttribute="leading" secondItem="T5S-zJ-LLT" secondAttribute="trailing" constant="8" id="Cor-y3-GZQ"/>
                             <constraint firstItem="hcp-eG-lok" firstAttribute="leading" secondItem="Cze-jj-bFe" secondAttribute="leading" id="FXI-eA-xj4"/>
                             <constraint firstItem="hcp-eG-lok" firstAttribute="trailing" secondItem="Cze-jj-bFe" secondAttribute="trailing" id="IIg-gN-qVf"/>
-                            <constraint firstItem="mqH-Cg-6Ih" firstAttribute="centerY" secondItem="T5S-zJ-LLT" secondAttribute="centerY" id="KQg-JL-4iU"/>
                             <constraint firstItem="hcp-eG-lok" firstAttribute="bottom" secondItem="Cze-jj-bFe" secondAttribute="bottom" id="dam-qF-WBL"/>
-                            <constraint firstItem="T5S-zJ-LLT" firstAttribute="leading" secondItem="Cze-jj-bFe" secondAttribute="leading" constant="16" id="uP6-5c-PRY"/>
-                            <constraint firstItem="T5S-zJ-LLT" firstAttribute="top" secondItem="Cze-jj-bFe" secondAttribute="top" constant="20" id="veE-tX-a2r"/>
+                            <constraint firstItem="hcp-eG-lok" firstAttribute="top" secondItem="Cze-jj-bFe" secondAttribute="top" id="nl4-1J-Q9E"/>
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
@@ -6655,10 +6634,10 @@ You can upload the wallets.fullynoded file that was created when you made the ba
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="ejH-sy-hlm"/>
-        <segue reference="UBf-qr-XYG"/>
+        <segue reference="ckQ-WD-ole"/>
         <segue reference="Fvb-gy-rb3"/>
         <segue reference="DLx-HT-rGm"/>
-        <segue reference="nTv-zU-127"/>
+        <segue reference="Wy7-ur-TeS"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="IAz-j1-Gq6"/>

@@ -75,7 +75,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         //cell.layer.borderColor = UIColor.lightGray.cgColor
         //cell.layer.borderWidth = 0.5
         cell.tintColor = .systemBlue
-        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+        //cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
     }
     
     private func settingsCell(_ indexPath: IndexPath) -> UITableViewCell {
