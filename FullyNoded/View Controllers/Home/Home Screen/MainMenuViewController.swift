@@ -89,6 +89,7 @@ class MainMenuViewController: UIViewController {
         super.viewDidLoad()
         UserDefaults.standard.set(UIDevice.modelName, forKey: "modelName")
         UIApplication.shared.isIdleTimerDisabled = true
+        torStatusLabel.alpha = 0
         
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
@@ -104,12 +105,12 @@ class MainMenuViewController: UIViewController {
             showAlert(vc: self, title: "", message: "There was an error setupinit.")
         }
         mainMenu.delegate = self
-        mainMenu.alpha = 0
+        //mainMenu.alpha = 0
         mainMenu.tableFooterView = UIView(frame: .zero)
         initialLoad = true
         viewHasLoaded = false
         addNavBarSpinner()
-        addlaunchScreen()
+        //addlaunchScreen()
         showUnlockScreen()
         setFeeTarget()
         NotificationCenter.default.addObserver(self, selector: #selector(refreshNode), name: .refreshNode, object: nil)
@@ -180,7 +181,7 @@ class MainMenuViewController: UIViewController {
                             mgr?.start(delegate: self)
                             
                             if self.activeNode != nil, self.activeNode!.isNostr {
-                                removeBackView()
+                                //removeBackView()
                                 loadTable()
                                 removeTorStatus()
                             }
@@ -188,7 +189,7 @@ class MainMenuViewController: UIViewController {
                     } else {
                         mgr?.start(delegate: self)
                         self.refreshNode()
-                        self.removeBackView()
+                        //self.removeBackView()
                         self.loadTable()
                         removeTorStatus()
                     }
@@ -1129,19 +1130,19 @@ class MainMenuViewController: UIViewController {
     
     //MARK: User Interface
     
-    func addlaunchScreen() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.backView.frame = self.view.frame
-            self.backView.backgroundColor = .black
-            let imageView = UIImageView()
-            imageView.frame = CGRect(x: self.view.center.x - 75, y: self.view.center.y - 75, width: 150, height: 150)
-            imageView.image = UIImage(named: "logo_grey.png")
-            self.backView.addSubview(imageView)
-            self.view.addSubview(self.backView)
-        }
-    }
+//    func addlaunchScreen() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//            
+//            self.backView.frame = self.view.frame
+//            self.backView.backgroundColor = .black
+//            let imageView = UIImageView()
+//            imageView.frame = CGRect(x: self.view.center.x - 75, y: self.view.center.y - 75, width: 150, height: 150)
+//            imageView.image = UIImage(named: "logo_grey.png")
+//            self.backView.addSubview(imageView)
+//            self.view.addSubview(self.backView)
+//        }
+//    }
     
     func removeLoader() {
         DispatchQueue.main.async { [weak self] in
@@ -1156,20 +1157,20 @@ class MainMenuViewController: UIViewController {
         }
     }
     
-    func removeBackView() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            UIView.animate(withDuration: 0.3, animations: { [weak self] in
-                guard let self = self else { return }
-                
-                self.backView.alpha = 0
-                self.mainMenu.alpha = 1
-            }) { (_) in
-                self.backView.removeFromSuperview()
-            }
-        }
-    }
+//    func removeBackView() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//            
+//            UIView.animate(withDuration: 0.3, animations: { [weak self] in
+//                guard let self = self else { return }
+//                
+//                self.backView.alpha = 0
+//                self.mainMenu.alpha = 1
+//            }) { (_) in
+//                self.backView.removeFromSuperview()
+//            }
+//        }
+//    }
     
     func reloadTable() {
         //used when user switches between nodes so old node data is not displayed
@@ -1217,16 +1218,19 @@ class MainMenuViewController: UIViewController {
     
     private func updateTorStatus() {
         DispatchQueue.main.async { [weak self] in
-            self?.torStatusLabel.alpha = 1.0
-            if self?.mgr?.state == .connected {
-                self?.torStatusLabel.text = "Tor connected ✓"
-                self?.torStatusLabel.textColor = .green
-            } else if self?.mgr?.state == .started {
-                self?.torStatusLabel.text = "Tor connecting..."
-                self?.torStatusLabel.textColor = .lightGray
-            } else {
-                self?.torStatusLabel.text = "Tor disconnected ⚠️"
-                self?.torStatusLabel.textColor = .red
+            guard let self = self else { return }
+            
+            if mgr?.state == .connected {
+                torStatusLabel.text = "Tor connected ✓"
+                torStatusLabel.textColor = .green
+                torStatusLabel.alpha = 1.0
+            } else if mgr?.state == .started {
+                //self?.torStatusLabel.text = "Tor connecting..."
+                //self?.torStatusLabel.textColor = .lightGray
+            } else if mgr?.state == .stopped {
+                torStatusLabel.text = "Tor disconnected"
+                torStatusLabel.textColor = .label
+                torStatusLabel.alpha = 1.0
             }
         }
     }
@@ -1271,8 +1275,8 @@ class MainMenuViewController: UIViewController {
                             StreamManager.shared.openWebSocket(urlString: urlString)
                             
                         } else */if isLocalHost() {
-                            removeBackView()
-                            removeTorStatus()
+                            //removeBackView()
+                            //removeTorStatus()
                             loadNode(node: node)
                         }
                     } else {
@@ -1419,7 +1423,7 @@ extension MainMenuViewController: OnionManagerDelegate {
     
     func torConnFinished() {
         viewHasLoaded = true
-        removeBackView()
+        //removeBackView()
         if let activeNode = activeNode {
             if !activeNode.isNostr {
                 loadTable()
@@ -1453,11 +1457,9 @@ extension MainMenuViewController: OnionManagerDelegate {
         removeTorStatus()
         updateTorStatus()
         DispatchQueue.main.async { [weak self] in
-            self?.removeBackView()
-            if let activeNode = self?.activeNode {
-                if !activeNode.isNostr {
-                    self?.loadTable()
-                }
+            guard let self = self else { return }
+            if let activeNode = activeNode {
+                loadTable()
             }
         }
     }

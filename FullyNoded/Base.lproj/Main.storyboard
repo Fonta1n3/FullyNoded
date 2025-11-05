@@ -646,14 +646,20 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="  " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PnO-jn-Gk8">
+                                        <rect key="frame" x="0.0" y="22.333333333333329" width="361" height="19.333333333333329"/>
+                                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="16"/>
+                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                     <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="C5t-Vg-Ik3">
-                                        <rect key="frame" x="0.0" y="22.333333333333329" width="361" height="44"/>
+                                        <rect key="frame" x="0.0" y="49.666666666666657" width="361" height="44"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="23Z-c1-XHN">
                                             <rect key="frame" x="0.0" y="0.0" width="361" height="44"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="4Ob-js-MSS">
-                                                    <rect key="frame" x="8" y="8.0000000000000142" width="345" height="28"/>
+                                                    <rect key="frame" x="8" y="8" width="345" height="28"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="   " lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2nt-hF-coL">
                                                             <rect key="frame" x="0.0" y="0.0" width="345" height="19"/>
@@ -683,12 +689,6 @@
                                         </constraints>
                                         <blurEffect style="dark"/>
                                     </visualEffectView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="node label " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PnO-jn-Gk8">
-                                        <rect key="frame" x="0.0" y="74.333333333333343" width="361" height="19.333333333333329"/>
-                                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="16"/>
-                                        <color key="textColor" systemColor="secondaryLabelColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="WFU-Fl-Gfe">
                                         <rect key="frame" x="0.0" y="101.66666666666669" width="361" height="593.33333333333326"/>
                                         <prototypes>
@@ -6463,16 +6463,16 @@ Fully Noded does its best to support as many hardware and software wallet option
         <segue reference="ejH-sy-hlm"/>
         <segue reference="UBf-qr-XYG"/>
         <segue reference="Fvb-gy-rb3"/>
-        <segue reference="DLx-HT-rGm"/>
+        <segue reference="4g3-DC-Q5z"/>
         <segue reference="nTv-zU-127"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="oY9-Pq-H5b"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="1fQ-PG-chF"/>
+        <segue reference="CQp-9r-70w"/>
         <segue reference="if0-NE-c9T"/>
         <segue reference="yAt-Ra-aPH"/>
-        <segue reference="gzO-Lb-E0s"/>
+        <segue reference="7PS-EL-3d2"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" systemColor="tintColor"/>
     <resources>
