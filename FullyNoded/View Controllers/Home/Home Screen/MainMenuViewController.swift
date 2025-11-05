@@ -94,7 +94,7 @@ class MainMenuViewController: UIViewController {
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
             guard let node = node  else { return }
-            self.activeNode = node
+            activeNode = node
         }
         
         refreshControl.attributedTitle = NSAttributedString(string: "")
@@ -117,7 +117,8 @@ class MainMenuViewController: UIViewController {
         blurView.clipsToBounds = true
         blurView.layer.cornerRadius = 8
         blurView.layer.zPosition = 1
-        blurView.alpha = 0
+        //blurView.alpha = 0
+        torProgressLabel.text = "Tor bootstrapping 0%..."
         torProgressLabel.layer.zPosition = 1
         progressView.layer.zPosition = 1
         progressView.setNeedsFocusUpdate()
@@ -175,11 +176,9 @@ class MainMenuViewController: UIViewController {
                 displayAlert(viewController: self, isError: true, message: "There was a critical error setting your devices encryption key, please delete and reinstall the app")
             } else {
                 if mgr?.state != .started && mgr?.state != .connected  {
-                    
                     if KeyChain.getData("UnlockPassword") != nil {
                         if isUnlocked {
                             mgr?.start(delegate: self)
-                            
                             if self.activeNode != nil, self.activeNode!.isNostr {
                                 //removeBackView()
                                 loadTable()
@@ -189,7 +188,6 @@ class MainMenuViewController: UIViewController {
                     } else {
                         mgr?.start(delegate: self)
                         self.refreshNode()
-                        //self.removeBackView()
                         self.loadTable()
                         removeTorStatus()
                     }
@@ -1414,10 +1412,11 @@ extension MainMenuViewController: OnionManagerDelegate {
     
     func torConnProgress(_ progress: Int) {
         DispatchQueue.main.async { [weak self] in
-            self?.torProgressLabel.text = "Tor bootstrapping \(progress)% complete"
-            self?.progressView.setProgress(Float(Double(progress) / 100.0), animated: true)
-            self?.blurView.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
-            self?.blurView.alpha = 1
+            guard let self = self else { return }
+            torProgressLabel.text = "Tor bootstrapping \(progress)% complete"
+            progressView.setProgress(Float(Double(progress) / 100.0), animated: true)
+            //blurView.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+            //blurView.alpha = 1
         }
     }
     
