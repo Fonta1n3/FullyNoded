@@ -1150,7 +1150,7 @@ class MainMenuViewController: UIViewController {
             self.spinner.stopAnimating()
             self.spinner.alpha = 0
             self.refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(self.refreshData(_:)))
-            self.refreshButton.tintColor = UIColor.lightGray.withAlphaComponent(1)
+            self.refreshButton.tintColor = UIColor.systemBlue.withAlphaComponent(1)
             self.navigationItem.setRightBarButton(self.refreshButton, animated: true)
             self.viewHasLoaded = true
         }

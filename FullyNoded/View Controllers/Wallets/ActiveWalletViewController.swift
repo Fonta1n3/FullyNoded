@@ -127,6 +127,15 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
+    @IBAction func importTransaction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
+        }
+    }
+    
+    
     @IBAction func advancedAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -189,13 +198,13 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    @IBAction func signPsbtAction(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
-        }
-    }
+//    @IBAction func signPsbtAction(_ sender: Any) {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//            
+//            self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
+//        }
+//    }
     
     private func configureButton(_ button: UIView) {
 //        button.layer.borderColor = UIColor.darkGray.cgColor
@@ -1448,7 +1457,7 @@ class ActiveWalletViewController: UIViewController {
             self.barSpinner.stopAnimating()
             self.barSpinner.alpha = 0
             self.refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(self.refreshData(_:)))
-            self.refreshButton.tintColor = UIColor.lightGray.withAlphaComponent(1)
+            self.refreshButton.tintColor = UIColor.systemBlue.withAlphaComponent(1)
             self.navigationItem.setRightBarButton(self.refreshButton, animated: true)
         }
     }
