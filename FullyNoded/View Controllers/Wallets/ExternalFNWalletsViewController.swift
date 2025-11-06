@@ -39,7 +39,6 @@ class ExternalFNWalletsViewController: UIViewController {
             if desc.chain == "Mainnet" {
                 mainnetWallets.append(wallet)
             } else {
-                print("wallet: \(wallet.receiveDescriptor)")
                 testnetWallets.append(wallet)
             }
         }
@@ -116,7 +115,6 @@ class ExternalFNWalletsViewController: UIViewController {
         deleteButton.addTarget(self, action: #selector(deleteWallet(_:)), for: .touchUpInside)
         deleteButton.setImage(.init(systemName: "trash"), for: .normal)
         deleteButton.tintColor = .systemRed
-        deleteButton.showsTouchWhenHighlighted = true
         return deleteButton
     }
     
@@ -143,7 +141,6 @@ class ExternalFNWalletsViewController: UIViewController {
         infoButton.addTarget(self, action: #selector(seeDetail(_:)), for: .touchUpInside)
         infoButton.setImage(.init(systemName: "info.circle"), for: .normal)
         infoButton.tintColor = .systemTeal
-        infoButton.showsTouchWhenHighlighted = true
         return infoButton
     }
     
@@ -195,8 +192,7 @@ class ExternalFNWalletsViewController: UIViewController {
         recoverButton.frame = CGRect(x: x, y: 10, width: 40, height: 40)
         recoverButton.addTarget(self, action: #selector(recoverWallet(_:)), for: .touchUpInside)
         recoverButton.setImage(.init(systemName: "square.and.arrow.down.fill"), for: .normal)
-        recoverButton.tintColor = .systemTeal
-        recoverButton.showsTouchWhenHighlighted = true
+        recoverButton.tintColor = .systemBlue
         return recoverButton
     }
     
@@ -248,10 +244,10 @@ extension ExternalFNWalletsViewController: UITableViewDataSource {
         }
         
         cell.textLabel?.text = wallet.label
-        cell.layer.borderColor = UIColor.lightGray.cgColor
-        cell.layer.borderWidth = 0.5
-        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
-        cell.textLabel?.textColor = .lightGray
+        //cell.layer.borderColor = UIColor.lightGray.cgColor
+        //cell.layer.borderWidth = 0.5
+        //cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+        cell.textLabel?.textColor = .secondaryLabel
         cell.textLabel?.numberOfLines = 0
         cell.textLabel?.lineBreakMode = .byWordWrapping
         cell.textLabel?.sizeToFit()

@@ -3090,7 +3090,7 @@ extension VerifyTransactionViewController: UITableViewDelegate {
                 textLabel.text = "Transaction ID"
                 let copyButton = UIButton()
                 let copyImage = UIImage(systemName: "doc.on.doc")!
-                copyButton.tintColor = .systemTeal
+                copyButton.tintColor = .systemBlue
                 copyButton.setImage(copyImage, for: .normal)
                 copyButton.addTarget(self, action: #selector(copyTxid), for: .touchUpInside)
                 copyButton.frame = CGRect(x: header.frame.maxX - 70, y: 0, width: 50, height: 50)
