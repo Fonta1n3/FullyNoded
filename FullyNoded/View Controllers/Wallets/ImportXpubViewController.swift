@@ -35,9 +35,6 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
         view.addGestureRecognizer(tapGesture)
         labelField.removeGestureRecognizer(tapGesture)
         
-        descriptorField.numberOfLines = 10
-        descriptorField.lineBreakMode = .byTruncatingMiddle
-        
         if let desc = descriptor {
             addDescriptorToLabel(desc)
             loadAddresses(desc)
@@ -71,10 +68,9 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
                 self.addresses.append(address)
             }
             
-            DispatchQueue.main.async {
-                self.addressTableView.reloadData()
-                self.addressTableView.translatesAutoresizingMaskIntoConstraints = true
-                self.addressTableView.sizeToFit()
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                addressTableView.reloadData()
             }
         }
     }
@@ -109,8 +105,6 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
             guard let self = self else { return }
             
             descriptorField.text = descriptor.string
-            descriptorField.translatesAutoresizingMaskIntoConstraints = true
-            descriptorField.sizeToFit()
         }
     }
     
@@ -142,29 +136,9 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "addressCell", for: indexPath)
         let label = cell.viewWithTag(1) as! UILabel
-        label.text = "#\(indexPath.row) " + addresses[indexPath.row]
-        label.numberOfLines = 0
-        label.sizeToFit()
-        label.translatesAutoresizingMaskIntoConstraints = true
-        
-        cell.sizeToFit()
-        cell.translatesAutoresizingMaskIntoConstraints = true
-        
+        label.text = "#\(indexPath.row + 1) " + addresses[indexPath.row]
         return cell
-        
     }
-    
-    private func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        return UITableView.automaticDimension
-    }
-    
-    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableView.automaticDimension
-    }
-    
-//    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-//        return 40
-//    }
     
     // MARK: - Navigation
 

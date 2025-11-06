@@ -2289,16 +2289,16 @@ xxxxx</string>
             </objects>
             <point key="canvasLocation" x="-5713.740458015267" y="420.42253521126764"/>
         </scene>
-        <!--Wallet Detail View Controller-->
+        <!--Wallet Info-->
         <scene sceneID="qgF-W8-mAf">
             <objects>
-                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="l8t-Do-K11" customClass="WalletDetailViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Wallet Info" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="l8t-Do-K11" customClass="WalletDetailViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="VQL-7h-Ppy">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" ambiguous="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="hgF-Hw-8pz">
-                                <rect key="frame" x="0.0" y="166" width="393" height="652"/>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="hgF-Hw-8pz">
+                                <rect key="frame" x="0.0" y="111" width="393" height="707"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletExportQrCell" rowHeight="290" id="HTu-ae-caa">
@@ -2310,7 +2310,7 @@ xxxxx</string>
                                             <subviews>
                                                 <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="abO-4I-6y6">
                                                     <rect key="frame" x="306" y="11" width="27" height="23"/>
-                                                    <color key="backgroundColor" systemColor="systemFillColor"/>
+                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="hZv-NP-XhX"/>
                                                     </constraints>
@@ -2326,7 +2326,7 @@ xxxxx</string>
                                                 </imageView>
                                                 <button opaque="NO" tag="3" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="y6q-8l-Fmn">
                                                     <rect key="frame" x="125.66666666666669" y="257" width="102" height="30"/>
-                                                    <color key="backgroundColor" systemColor="systemFillColor"/>
+                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <color key="tintColor" systemColor="tintColor"/>
                                                     <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                                     <state key="normal" title="Choose format"/>
@@ -2344,7 +2344,7 @@ xxxxx</string>
                                                 </label>
                                                 <button opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iJE-Y5-mbt">
                                                     <rect key="frame" x="281" y="257" width="52" height="30"/>
-                                                    <color key="backgroundColor" systemColor="systemFillColor"/>
+                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <color key="tintColor" systemColor="tintColor"/>
                                                     <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                                     <state key="normal" title="Enlarge"/>
@@ -2365,7 +2365,7 @@ xxxxx</string>
                                                 <constraint firstItem="OOW-9z-O6w" firstAttribute="centerY" secondItem="NC0-oF-NZ9" secondAttribute="centerY" id="yBd-Zx-u6C"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="backupTextCell" rowHeight="136" id="JAd-yf-YW4">
                                         <rect key="frame" x="20" y="345.33333206176758" width="353" height="136"/>
@@ -2376,7 +2376,7 @@ xxxxx</string>
                                             <subviews>
                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="0Rq-B8-Yyk">
                                                     <rect key="frame" x="16" y="8" width="321" height="120"/>
-                                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <color key="textColor" systemColor="labelColor"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
@@ -2389,7 +2389,7 @@ xxxxx</string>
                                                 <constraint firstAttribute="trailing" secondItem="0Rq-B8-Yyk" secondAttribute="trailing" constant="16" id="uh7-gi-zgu"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailLabelCell" rowHeight="50" id="IhG-fk-RA5">
                                         <rect key="frame" x="20" y="481.33333206176758" width="353" height="50"/>
@@ -2420,7 +2420,7 @@ xxxxx</string>
                                                 <constraint firstItem="8lx-cG-7HQ" firstAttribute="leading" secondItem="0Wp-FE-dVc" secondAttribute="trailing" constant="8" id="sPS-l1-DaT"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailFilenameCell" rowHeight="44" id="dla-sS-luL">
                                         <rect key="frame" x="20" y="531.33333206176758" width="353" height="44"/>
@@ -2454,7 +2454,7 @@ xxxxx</string>
                                                 <constraint firstItem="RaQ-2b-3Mi" firstAttribute="leading" secondItem="rRu-X1-cBK" secondAttribute="trailing" constant="8" id="cKo-NJ-XWP"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailReceiveDescCell" rowHeight="120" id="00u-Qc-7uT">
                                         <rect key="frame" x="20" y="575.33333206176758" width="353" height="120"/>
@@ -2486,7 +2486,7 @@ xxxxx</string>
                                                 <constraint firstItem="yFv-CF-yvd" firstAttribute="top" secondItem="MhM-0a-U4a" secondAttribute="topMargin" id="chS-G0-1OH"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletExportFileCell" rowHeight="120" id="50u-mR-2fV">
                                         <rect key="frame" x="20" y="695.33333206176758" width="353" height="120"/>
@@ -2495,14 +2495,14 @@ xxxxx</string>
                                             <rect key="frame" x="0.0" y="0.0" width="353" height="120"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" ambiguous="YES" editable="NO" text="file export" translatesAutoresizingMaskIntoConstraints="NO" id="afU-6S-xBS">
-                                                    <rect key="frame" x="8" y="8" width="311" height="104"/>
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" editable="NO" text="file export" translatesAutoresizingMaskIntoConstraints="NO" id="afU-6S-xBS">
+                                                    <rect key="frame" x="8" y="8" width="290" height="104"/>
                                                     <color key="textColor" systemColor="labelColor"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
-                                                <button opaque="NO" tag="2" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GnZ-4y-DIl">
-                                                    <rect key="frame" x="327" y="11" width="27" height="22"/>
+                                                <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GnZ-4y-DIl">
+                                                    <rect key="frame" x="306" y="11" width="27" height="22"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="GB5-3z-q6r"/>
                                                     </constraints>
@@ -2518,7 +2518,7 @@ xxxxx</string>
                                                 <constraint firstItem="GnZ-4y-DIl" firstAttribute="leading" secondItem="afU-6S-xBS" secondAttribute="trailing" constant="8" id="q0a-U2-vYt"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailChangeDescCell" rowHeight="120" id="7xW-St-WOz">
                                         <rect key="frame" x="20" y="815.33333206176758" width="353" height="120"/>
@@ -2529,7 +2529,7 @@ xxxxx</string>
                                             <subviews>
                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" ambiguous="YES" editable="NO" text="change descriptor keypool" translatesAutoresizingMaskIntoConstraints="NO" id="ciz-jb-Q9k">
                                                     <rect key="frame" x="8" y="8" width="284" height="104"/>
-                                                    <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <color key="textColor" systemColor="labelColor"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
@@ -2550,7 +2550,7 @@ xxxxx</string>
                                                 <constraint firstItem="tLH-RH-kL4" firstAttribute="top" secondItem="wUg-Ag-1E5" secondAttribute="topMargin" id="yPx-n5-N5W"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailCurrentIndexCell" rowHeight="44" id="VQR-gf-H97">
                                         <rect key="frame" x="20" y="935.33333206176758" width="353" height="44"/>
@@ -2561,7 +2561,6 @@ xxxxx</string>
                                             <subviews>
                                                 <textField opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="current index" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="eID-Ss-UxU">
                                                     <rect key="frame" x="8" y="11" width="327" height="22"/>
-                                                    <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits"/>
                                                 </textField>
@@ -2572,7 +2571,7 @@ xxxxx</string>
                                                 <constraint firstAttribute="trailing" secondItem="eID-Ss-UxU" secondAttribute="trailing" constant="8" id="Z5U-Kt-sQb"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailMaxIndexCell" rowHeight="44" id="8SB-Au-WZJ">
                                         <rect key="frame" x="20" y="979.33333206176758" width="353" height="44"/>
@@ -2583,7 +2582,6 @@ xxxxx</string>
                                             <subviews>
                                                 <textField opaque="NO" tag="1" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="max index" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Fyo-az-58s">
                                                     <rect key="frame" x="8" y="11" width="285" height="22"/>
-                                                    <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
                                                 </textField>
@@ -2603,7 +2601,7 @@ xxxxx</string>
                                                 <constraint firstAttribute="trailing" secondItem="ppe-Tt-82b" secondAttribute="trailing" constant="15" id="qFi-Rp-mZB"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailSignerCell" rowHeight="44" id="6tR-qs-qKi">
                                         <rect key="frame" x="20" y="1023.3333320617676" width="353" height="44"/>
@@ -2628,7 +2626,7 @@ xxxxx</string>
                                                 <constraint firstItem="iQl-LS-l1G" firstAttribute="centerY" secondItem="vp9-5f-7hl" secondAttribute="centerY" id="IOH-yj-T3n"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailWatchingCell" rowHeight="120" id="yEm-Jl-P6r">
                                         <rect key="frame" x="20" y="1067.3333320617676" width="353" height="120"/>
@@ -2660,7 +2658,7 @@ xxxxx</string>
                                                 <constraint firstItem="lji-vC-2Q3" firstAttribute="top" secondItem="hGf-5h-g8L" secondAttribute="top" constant="8" id="tnD-V4-3wR"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailAdressesCell" rowHeight="192" id="ID5-e7-adL">
                                         <rect key="frame" x="20" y="1187.3333320617676" width="353" height="192"/>
@@ -2701,7 +2699,7 @@ xxxxx</string>
                                                 <constraint firstItem="f5e-Sk-Vgh" firstAttribute="top" secondItem="hhK-2T-DGa" secondAttribute="bottom" constant="8" id="zzw-0E-F24"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                     </tableViewCell>
                                 </prototypes>
                                 <connections>
@@ -2715,6 +2713,7 @@ xxxxx</string>
                         <constraints>
                             <constraint firstItem="hgF-Hw-8pz" firstAttribute="bottom" secondItem="x1B-QS-pyO" secondAttribute="bottom" id="614-jb-Yib"/>
                             <constraint firstItem="hgF-Hw-8pz" firstAttribute="leading" secondItem="x1B-QS-pyO" secondAttribute="leading" id="Fn3-FA-x77"/>
+                            <constraint firstItem="hgF-Hw-8pz" firstAttribute="top" secondItem="x1B-QS-pyO" secondAttribute="top" constant="8" id="ZCP-5y-EQQ"/>
                             <constraint firstItem="hgF-Hw-8pz" firstAttribute="trailing" secondItem="x1B-QS-pyO" secondAttribute="trailing" id="dGX-0s-btp"/>
                         </constraints>
                     </view>
@@ -2860,65 +2859,56 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="jDD-Cq-X82">
-                                <rect key="frame" x="16" y="116.99999999999997" width="361" height="386.33333333333326"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="jDD-Cq-X82">
+                                <rect key="frame" x="16" y="117" width="361" height="681"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="aPB-RS-h4F">
-                                        <rect key="frame" x="0.0" y="0.0" width="280" height="40"/>
-                                        <subviews>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_grey.png" translatesAutoresizingMaskIntoConstraints="NO" id="M58-lH-WUq">
-                                                <rect key="frame" x="0.0" y="0.0" width="41" height="40"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" constant="40" id="jvp-Eg-ilI"/>
-                                                    <constraint firstAttribute="width" constant="41" id="mer-lH-gHB"/>
-                                                </constraints>
-                                            </imageView>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Descriptor import" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WjC-KR-sms">
-                                                <rect key="frame" x="49" y="0.0" width="231" height="40"/>
-                                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
-                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                        </subviews>
-                                    </stackView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bi0-Um-wb7">
-                                        <rect key="frame" x="0.0" y="48" width="31" height="14.333333333333336"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Give your wallet a name:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bi0-Um-wb7">
+                                        <rect key="frame" x="0.0" y="0.0" width="361" height="20.333333333333332"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" systemColor="secondaryLabelColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="optional label" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="0B2-xL-1ut">
-                                        <rect key="frame" x="0.0" y="70.333333333333343" width="361" height="34"/>
+                                        <rect key="frame" x="0.0" y="24.333333333333343" width="361" height="34"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="34" id="eRh-uQ-Hr4"/>
                                         </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                     </textField>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Descriptor" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vq3-zN-oNC">
-                                        <rect key="frame" x="0.0" y="112.33333333333334" width="59.666666666666664" height="14.333333333333329"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                        <color key="textColor" systemColor="secondaryLabelColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="  " textAlignment="natural" lineBreakMode="characterWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="79T-ee-gg5">
-                                        <rect key="frame" x="0.0" y="134.66666666666666" width="361" height="20.333333333333343"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="   " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Xpb-8I-iFa">
+                                        <rect key="frame" x="0.0" y="62.33333333333335" width="361" height="20.333333333333336"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address Confirmation" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="azy-IC-cbE">
-                                        <rect key="frame" x="0.0" y="163" width="123" height="14.333333333333343"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="The descriptor you pasted:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vq3-zN-oNC">
+                                        <rect key="frame" x="0.0" y="86.666666666666657" width="361" height="20.333333333333329"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="  " textAlignment="natural" lineBreakMode="characterWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="79T-ee-gg5">
+                                        <rect key="frame" x="0.0" y="111" width="361" height="20.333333333333343"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="   " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Z2o-kF-1hL">
+                                        <rect key="frame" x="0.0" y="135.33333333333334" width="361" height="20.333333333333343"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="First 5 addresses derived from  the descriptor, confirm they are correct:" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="azy-IC-cbE">
+                                        <rect key="frame" x="0.0" y="159.66666666666669" width="361" height="40.666666666666657"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" systemColor="secondaryLabelColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="LIV-xG-rU1">
-                                        <rect key="frame" x="0.0" y="185.33333333333331" width="361" height="150"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="150" id="FxB-nL-ALD"/>
-                                        </constraints>
-                                        <color key="sectionIndexBackgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <rect key="frame" x="0.0" y="204.33333333333329" width="361" height="429.66666666666674"/>
                                         <prototypes>
                                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="addressCell" id="FUQ-Te-2Ah">
                                                 <rect key="frame" x="0.0" y="50" width="361" height="42.666667938232422"/>
@@ -2927,10 +2917,10 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                     <rect key="frame" x="0.0" y="0.0" width="361" height="42.666667938232422"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="h3d-nK-F5A">
+                                                        <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="characterWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="h3d-nK-F5A">
                                                             <rect key="frame" x="20" y="11.000000000000002" width="321" height="20.666666666666671"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                            <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            <nil key="textColor"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                     </subviews>
@@ -2950,13 +2940,13 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </connections>
                                     </tableView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sLK-5X-3x7">
-                                        <rect key="frame" x="0.0" y="343.33333333333331" width="361" height="43"/>
-                                        <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
+                                        <rect key="frame" x="0.0" y="638" width="361" height="43"/>
+                                        <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="43" id="Wbp-hA-5nJ"/>
                                         </constraints>
-                                        <state key="normal" title="Import">
-                                            <color key="titleColor" systemColor="systemTealColor"/>
+                                        <state key="normal" title="Create Wallet">
+                                            <color key="titleColor" systemColor="tintColor"/>
                                         </state>
                                         <connections>
                                             <action selector="importAction:" destination="fG5-85-vAV" eventType="touchUpInside" id="THm-ML-Qsc"/>
@@ -2964,29 +2954,30 @@ Fully Noded does its best to support as many hardware and software wallet option
                                     </button>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstAttribute="trailing" secondItem="LIV-xG-rU1" secondAttribute="trailing" id="AId-fH-eNq"/>
-                                    <constraint firstItem="LIV-xG-rU1" firstAttribute="leading" secondItem="jDD-Cq-X82" secondAttribute="leading" id="GKC-2Y-vBF"/>
                                     <constraint firstItem="sLK-5X-3x7" firstAttribute="leading" secondItem="jDD-Cq-X82" secondAttribute="leading" id="OOv-Pu-3Dm"/>
                                     <constraint firstItem="0B2-xL-1ut" firstAttribute="leading" secondItem="jDD-Cq-X82" secondAttribute="leading" id="SlO-Dp-dJI"/>
-                                    <constraint firstItem="sLK-5X-3x7" firstAttribute="top" secondItem="LIV-xG-rU1" secondAttribute="bottom" constant="8" symbolic="YES" id="W8K-rR-hgy"/>
                                     <constraint firstAttribute="trailing" secondItem="79T-ee-gg5" secondAttribute="trailing" id="bAo-ry-BUB"/>
                                     <constraint firstAttribute="trailing" secondItem="sLK-5X-3x7" secondAttribute="trailing" id="fKZ-Om-bHa"/>
+                                    <constraint firstItem="LIV-xG-rU1" firstAttribute="top" secondItem="azy-IC-cbE" secondAttribute="bottom" constant="4" id="jD1-pj-L0g"/>
                                     <constraint firstAttribute="trailing" secondItem="0B2-xL-1ut" secondAttribute="trailing" id="knN-Md-Vq5"/>
                                     <constraint firstItem="79T-ee-gg5" firstAttribute="leading" secondItem="jDD-Cq-X82" secondAttribute="leading" id="qZK-u6-Bwf"/>
+                                    <constraint firstItem="LIV-xG-rU1" firstAttribute="leading" secondItem="jDD-Cq-X82" secondAttribute="leading" id="r9T-oI-0Kf"/>
+                                    <constraint firstAttribute="trailing" secondItem="LIV-xG-rU1" secondAttribute="trailing" id="tp1-D7-Hlx"/>
                                 </constraints>
                             </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="c3d-xP-e7q"/>
-                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="jDD-Cq-X82" firstAttribute="top" secondItem="c3d-xP-e7q" secondAttribute="top" constant="14" id="4k5-TE-IpK"/>
                             <constraint firstItem="c3d-xP-e7q" firstAttribute="trailing" secondItem="jDD-Cq-X82" secondAttribute="trailing" constant="16" id="Uxq-iD-Ipg"/>
                             <constraint firstItem="jDD-Cq-X82" firstAttribute="leading" secondItem="c3d-xP-e7q" secondAttribute="leading" constant="16" id="coz-xr-lOp"/>
+                            <constraint firstItem="c3d-xP-e7q" firstAttribute="bottom" secondItem="jDD-Cq-X82" secondAttribute="bottom" constant="20" id="tl5-Sg-BF2"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="bjo-9U-Qcx">
                         <barButtonItem key="rightBarButtonItem" image="qrcode.viewfinder" catalog="system" id="U3l-YY-pME">
-                            <color key="tintColor" systemColor="systemTealColor"/>
+                            <color key="tintColor" systemColor="tintColor"/>
                             <connections>
                                 <action selector="scanQrAction:" destination="fG5-85-vAV" id="aj1-o4-eGU"/>
                             </connections>
@@ -3002,7 +2993,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="O0T-yA-Vak" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-7383.1999999999998" y="2551.5742128935535"/>
+            <point key="canvasLocation" x="-7383.9694656488546" y="2550.7042253521126"/>
         </scene>
         <!--Seed Words-->
         <scene sceneID="O8O-77-jvo">
@@ -6368,7 +6359,7 @@ Fully Noded does its best to support as many hardware and software wallet option
         <segue reference="mRa-gP-mZ0"/>
         <segue reference="oY9-Pq-H5b"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="1fQ-PG-chF"/>
+        <segue reference="9TT-9o-7xG"/>
         <segue reference="zi9-mK-A5a"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="7PS-EL-3d2"/>
@@ -6429,6 +6420,9 @@ Fully Noded does its best to support as many hardware and software wallet option
         </systemColor>
         <systemColor name="secondarySystemBackgroundColor">
             <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="secondarySystemFillColor">
+            <color red="0.47058823529411764" green="0.47058823529411764" blue="0.50196078431372548" alpha="0.16" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
