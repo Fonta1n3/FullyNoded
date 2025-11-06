@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="nU0-zz-6p3">
-    <device id="retina6_12" orientation="portrait" appearance="dark"/>
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
@@ -1605,13 +1605,14 @@ xxxxx</string>
                         <subviews>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="sl3-9W-VXh">
                                 <rect key="frame" x="16" y="96.666666666666671" width="361" height="34.000000000000014"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="label:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OXp-Lu-TiL">
-                                <rect key="frame" x="16" y="68" width="41" height="20.666666666666671"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OXp-Lu-TiL">
+                                <rect key="frame" x="16" y="68" width="46" height="20.666666666666671"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="textColor" systemColor="secondaryLabelColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="close" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wkr-Ud-L7f">
@@ -1623,7 +1624,7 @@ xxxxx</string>
                                     <action selector="closeAction:" destination="4V7-jZ-58Y" eventType="touchUpInside" id="5d6-V5-wkd"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="memo:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lws-iQ-4kq">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Memo:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lws-iQ-4kq">
                                 <rect key="frame" x="16" y="180.66666666666666" width="53" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1647,7 +1648,7 @@ xxxxx</string>
                                     <constraint firstAttribute="width" constant="89" id="vxt-Np-wBR"/>
                                 </constraints>
                                 <state key="normal" title="save">
-                                    <color key="titleColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="titleColor" systemColor="tintColor"/>
                                 </state>
                                 <connections>
                                     <action selector="saveAction:" destination="4V7-jZ-58Y" eventType="touchUpInside" id="HCt-fp-pbf"/>
@@ -1655,7 +1656,7 @@ xxxxx</string>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="gbH-ku-Tuq"/>
-                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="gbH-ku-Tuq" firstAttribute="trailing" secondItem="sl3-9W-VXh" secondAttribute="trailing" constant="16" id="2IK-0V-7nd"/>
                             <constraint firstItem="OXp-Lu-TiL" firstAttribute="leading" secondItem="gbH-ku-Tuq" secondAttribute="leading" constant="16" id="3ny-c9-Ujo"/>
@@ -1688,7 +1689,7 @@ xxxxx</string>
             <objects>
                 <viewController storyboardIdentifier="QRDisplayer" useStoryboardIdentifierAsRestorationIdentifier="YES" id="GlR-4A-eAx" customClass="QRDisplayerViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" ambiguous="YES" id="1Ax-bN-O8E">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="666"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kT3-vW-HgJ">
@@ -1713,7 +1714,7 @@ xxxxx</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
-                                <rect key="frame" x="16" y="422" width="343" height="400"/>
+                                <rect key="frame" x="16" y="422" width="343" height="224"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" systemColor="secondaryLabelColor"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
@@ -1805,7 +1806,7 @@ xxxxx</string>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="JO2-M4-m8b"/>
-                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="JO2-M4-m8b" firstAttribute="bottom" secondItem="oJM-x2-Or0" secondAttribute="bottom" constant="20" id="4Wt-8N-Mp0"/>
                             <constraint firstItem="CUQ-0c-lMe" firstAttribute="leading" secondItem="JO2-M4-m8b" secondAttribute="leading" id="7vl-P5-Qr7"/>
@@ -1835,11 +1836,11 @@ xxxxx</string>
             <objects>
                 <viewController title="Signer" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="Avw-Yr-vaR" customClass="SignerDetailViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="hXY-Kg-4yD">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="YbQ-Ro-DcZ">
-                                <rect key="frame" x="0.0" y="47" width="393" height="775"/>
+                                <rect key="frame" x="0.0" y="150" width="393" height="648"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="sectionIndexBackgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -1860,7 +1861,7 @@ xxxxx</string>
                                 </connections>
                             </tableView>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="H3c-ew-Tc0">
-                                <rect key="frame" x="280" y="8" width="97" height="32"/>
+                                <rect key="frame" x="280" y="111" width="97" height="32"/>
                                 <segments>
                                     <segment title="main"/>
                                     <segment title="test"/>
@@ -1913,11 +1914,11 @@ xxxxx</string>
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="9kf-Xt-vj8" customClass="SignersViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Co5-sz-PGd">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="WVI-Gu-NZf">
-                                <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
+                                <rect key="frame" x="0.0" y="103" width="393" height="715"/>
                                 <color key="separatorColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="signerCell" rowHeight="54" id="Sir-UC-F0Z">
@@ -2185,11 +2186,11 @@ xxxxx</string>
             <objects>
                 <viewController title="Add Signer" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="G0V-te-kek" customClass="AddSignerViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="kaf-Tr-9T9">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="IHZ-XQ-St6">
-                                <rect key="frame" x="8" y="8" width="377" height="814"/>
+                                <rect key="frame" x="8" y="111" width="377" height="687"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="3xd-ni-TOq">
                                         <rect key="frame" x="0.0" y="0.0" width="377" height="34"/>
@@ -2231,14 +2232,14 @@ xxxxx</string>
                                         </subviews>
                                     </stackView>
                                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zy5-5j-O77">
-                                        <rect key="frame" x="0.0" y="42" width="377" height="676"/>
+                                        <rect key="frame" x="0.0" y="42" width="377" height="549"/>
                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                         <color key="textColor" systemColor="systemGreenColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textView>
                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="optional passphrase" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="yZn-vb-xcG">
-                                        <rect key="frame" x="0.0" y="726" width="377" height="40"/>
+                                        <rect key="frame" x="0.0" y="599" width="377" height="40"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="40" id="fUq-xI-dRn"/>
@@ -2247,7 +2248,7 @@ xxxxx</string>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                     </textField>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GaP-Ag-v0V">
-                                        <rect key="frame" x="0.0" y="774" width="377" height="40"/>
+                                        <rect key="frame" x="0.0" y="647" width="377" height="40"/>
                                         <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="40" id="9Qw-1A-KAa"/>
@@ -2296,7 +2297,7 @@ xxxxx</string>
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="hgF-Hw-8pz">
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" ambiguous="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="hgF-Hw-8pz">
                                 <rect key="frame" x="0.0" y="166" width="393" height="652"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -2309,10 +2310,11 @@ xxxxx</string>
                                             <subviews>
                                                 <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="abO-4I-6y6">
                                                     <rect key="frame" x="306" y="11" width="27" height="23"/>
+                                                    <color key="backgroundColor" systemColor="systemFillColor"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="hZv-NP-XhX"/>
                                                     </constraints>
-                                                    <color key="tintColor" systemColor="systemTealColor"/>
+                                                    <color key="tintColor" systemColor="tintColor"/>
                                                     <state key="normal" image="square.and.arrow.up" catalog="system"/>
                                                 </button>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="OOW-9z-O6w">
@@ -2324,25 +2326,26 @@ xxxxx</string>
                                                 </imageView>
                                                 <button opaque="NO" tag="3" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="y6q-8l-Fmn">
                                                     <rect key="frame" x="125.66666666666669" y="257" width="102" height="30"/>
-                                                    <color key="tintColor" systemColor="systemTealColor"/>
+                                                    <color key="backgroundColor" systemColor="systemFillColor"/>
+                                                    <color key="tintColor" systemColor="tintColor"/>
                                                     <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                                     <state key="normal" title="Choose format"/>
                                                 </button>
                                                 <label opaque="NO" userInteractionEnabled="NO" tag="4" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="UR Output Descriptor" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rin-hP-2DN">
                                                     <rect key="frame" x="94.333333333333329" y="13" width="164.66666666666669" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" tag="5" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sparrow, Blue, Passport" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ccf-E6-I0J">
                                                     <rect key="frame" x="109" y="42" width="135" height="15"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                    <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <color key="textColor" systemColor="secondaryLabelColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <button opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iJE-Y5-mbt">
                                                     <rect key="frame" x="281" y="257" width="52" height="30"/>
-                                                    <color key="tintColor" systemColor="systemTealColor"/>
+                                                    <color key="backgroundColor" systemColor="systemFillColor"/>
+                                                    <color key="tintColor" systemColor="tintColor"/>
                                                     <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                                     <state key="normal" title="Enlarge"/>
                                                 </button>
@@ -2397,8 +2400,6 @@ xxxxx</string>
                                             <subviews>
                                                 <textField opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="wallet label" placeholder="wallet label" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="0Wp-FE-dVc">
                                                     <rect key="frame" x="8" y="14" width="278" height="22"/>
-                                                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                    <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits"/>
                                                 </textField>
@@ -2408,9 +2409,7 @@ xxxxx</string>
                                                         <constraint firstAttribute="width" constant="39" id="D2E-Uj-d45"/>
                                                         <constraint firstAttribute="height" constant="25" id="acT-3H-ALj"/>
                                                     </constraints>
-                                                    <state key="normal" title="Edit">
-                                                        <color key="titleColor" systemColor="systemTealColor"/>
-                                                    </state>
+                                                    <state key="normal" title="Edit"/>
                                                 </button>
                                             </subviews>
                                             <constraints>
@@ -2432,12 +2431,11 @@ xxxxx</string>
                                             <subviews>
                                                 <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Wallet Filename" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rRu-X1-cBK">
                                                     <rect key="frame" x="8" y="5" width="290" height="34"/>
-                                                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="34" id="OsC-gx-82B"/>
                                                     </constraints>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="RaQ-2b-3Mi">
@@ -2445,7 +2443,6 @@ xxxxx</string>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="Bh5-gY-364"/>
                                                     </constraints>
-                                                    <color key="tintColor" systemColor="systemTealColor"/>
                                                     <state key="normal" image="square.and.arrow.up" catalog="system"/>
                                                 </button>
                                             </subviews>
@@ -2468,8 +2465,7 @@ xxxxx</string>
                                             <subviews>
                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" editable="NO" text="receive descriptor keypool" translatesAutoresizingMaskIntoConstraints="NO" id="xnK-2F-JqX">
                                                     <rect key="frame" x="8" y="8" width="290" height="104"/>
-                                                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                    <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <color key="textColor" systemColor="labelColor"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
@@ -2478,7 +2474,6 @@ xxxxx</string>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="M7O-tP-ypC"/>
                                                     </constraints>
-                                                    <color key="tintColor" systemColor="systemTealColor"/>
                                                     <state key="normal" image="square.and.arrow.up" catalog="system"/>
                                                 </button>
                                             </subviews>
@@ -2502,8 +2497,7 @@ xxxxx</string>
                                             <subviews>
                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" ambiguous="YES" editable="NO" text="file export" translatesAutoresizingMaskIntoConstraints="NO" id="afU-6S-xBS">
                                                     <rect key="frame" x="8" y="8" width="311" height="104"/>
-                                                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                    <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <color key="textColor" systemColor="labelColor"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
@@ -2512,7 +2506,6 @@ xxxxx</string>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="GB5-3z-q6r"/>
                                                     </constraints>
-                                                    <color key="tintColor" systemColor="systemTealColor"/>
                                                     <state key="normal" image="folder" catalog="system"/>
                                                 </button>
                                             </subviews>
@@ -2536,7 +2529,6 @@ xxxxx</string>
                                             <subviews>
                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" ambiguous="YES" editable="NO" text="change descriptor keypool" translatesAutoresizingMaskIntoConstraints="NO" id="ciz-jb-Q9k">
                                                     <rect key="frame" x="8" y="8" width="284" height="104"/>
-                                                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
@@ -2546,7 +2538,6 @@ xxxxx</string>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="wM7-mS-yUI"/>
                                                     </constraints>
-                                                    <color key="tintColor" systemColor="systemTealColor"/>
                                                     <state key="normal" image="square.and.arrow.up" catalog="system"/>
                                                 </button>
                                             </subviews>
@@ -2570,7 +2561,6 @@ xxxxx</string>
                                             <subviews>
                                                 <textField opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="current index" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="eID-Ss-UxU">
                                                     <rect key="frame" x="8" y="11" width="327" height="22"/>
-                                                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits"/>
@@ -2593,7 +2583,6 @@ xxxxx</string>
                                             <subviews>
                                                 <textField opaque="NO" tag="1" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="max index" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Fyo-az-58s">
                                                     <rect key="frame" x="8" y="11" width="285" height="22"/>
-                                                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
@@ -2603,7 +2592,6 @@ xxxxx</string>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="dPa-Fk-obf"/>
                                                     </constraints>
-                                                    <color key="tintColor" systemColor="systemTealColor"/>
                                                     <state key="normal" image="plus" catalog="system"/>
                                                 </button>
                                             </subviews>
@@ -2626,11 +2614,10 @@ xxxxx</string>
                                             <subviews>
                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" ambiguous="YES" editable="NO" text="signers" translatesAutoresizingMaskIntoConstraints="NO" id="iQl-LS-l1G">
                                                     <rect key="frame" x="8" y="5" width="327" height="34"/>
-                                                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="34" id="v2Y-XT-EL2"/>
                                                     </constraints>
-                                                    <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <color key="textColor" systemColor="labelColor"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
@@ -2652,8 +2639,7 @@ xxxxx</string>
                                             <subviews>
                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" ambiguous="YES" editable="NO" text="watching descriptors" translatesAutoresizingMaskIntoConstraints="NO" id="lji-vC-2Q3">
                                                     <rect key="frame" x="8" y="8" width="284" height="104"/>
-                                                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                    <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <color key="textColor" systemColor="labelColor"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
@@ -2662,7 +2648,6 @@ xxxxx</string>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="36L-5J-Tm6"/>
                                                     </constraints>
-                                                    <color key="tintColor" systemColor="systemTealColor"/>
                                                     <state key="normal" image="square.and.arrow.up" catalog="system"/>
                                                 </button>
                                             </subviews>
@@ -2686,8 +2671,7 @@ xxxxx</string>
                                             <subviews>
                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" ambiguous="YES" editable="NO" text="addresses list" translatesAutoresizingMaskIntoConstraints="NO" id="f5e-Sk-Vgh">
                                                     <rect key="frame" x="8" y="47" width="284" height="137"/>
-                                                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                    <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <color key="textColor" systemColor="labelColor"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
@@ -2696,7 +2680,6 @@ xxxxx</string>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="2wC-aK-NEt"/>
                                                     </constraints>
-                                                    <color key="tintColor" systemColor="systemTealColor"/>
                                                     <state key="normal" image="square.and.arrow.up" catalog="system"/>
                                                 </button>
                                                 <segmentedControl opaque="NO" tag="3" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="hhK-2T-DGa">
@@ -2726,31 +2709,13 @@ xxxxx</string>
                                     <outlet property="delegate" destination="l8t-Do-K11" id="FaB-PF-QMW"/>
                                 </connections>
                             </tableView>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_grey.png" translatesAutoresizingMaskIntoConstraints="NO" id="zKw-nc-7b0">
-                                <rect key="frame" x="16" y="120" width="41" height="40"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="41" id="UJX-TO-Q6L"/>
-                                    <constraint firstAttribute="height" constant="40" id="bDe-h1-Dd6"/>
-                                </constraints>
-                            </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Wallet Details" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gGB-3u-F3p">
-                                <rect key="frame" x="65" y="122.66666666666669" width="179" height="35"/>
-                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="x1B-QS-pyO"/>
-                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="zKw-nc-7b0" firstAttribute="top" secondItem="x1B-QS-pyO" secondAttribute="top" constant="17" id="3Zp-pV-1f4"/>
                             <constraint firstItem="hgF-Hw-8pz" firstAttribute="bottom" secondItem="x1B-QS-pyO" secondAttribute="bottom" id="614-jb-Yib"/>
                             <constraint firstItem="hgF-Hw-8pz" firstAttribute="leading" secondItem="x1B-QS-pyO" secondAttribute="leading" id="Fn3-FA-x77"/>
-                            <constraint firstItem="zKw-nc-7b0" firstAttribute="leading" secondItem="x1B-QS-pyO" secondAttribute="leading" constant="16" id="NZe-wu-HJw"/>
-                            <constraint firstItem="gGB-3u-F3p" firstAttribute="leading" secondItem="zKw-nc-7b0" secondAttribute="trailing" constant="8" id="Ygb-w0-VYQ"/>
-                            <constraint firstItem="hgF-Hw-8pz" firstAttribute="top" secondItem="zKw-nc-7b0" secondAttribute="bottom" constant="6" id="ZEQ-xA-o7k"/>
                             <constraint firstItem="hgF-Hw-8pz" firstAttribute="trailing" secondItem="x1B-QS-pyO" secondAttribute="trailing" id="dGX-0s-btp"/>
-                            <constraint firstItem="gGB-3u-F3p" firstAttribute="centerY" secondItem="zKw-nc-7b0" secondAttribute="centerY" id="iWI-6f-bH3"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="RAH-Xa-aX3">
@@ -2762,7 +2727,7 @@ xxxxx</string>
                                 </connections>
                             </barButtonItem>
                             <barButtonItem title="rescan" image="clock.arrow.circlepath" catalog="system" id="LGx-lO-rZT">
-                                <color key="tintColor" red="0.35294118520000001" green="0.77647060160000003" blue="0.97647058959999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <color key="tintColor" systemColor="tintColor"/>
                                 <connections>
                                     <action selector="rescanAction:" destination="l8t-Do-K11" id="si5-yZ-rjt"/>
                                 </connections>
@@ -2791,7 +2756,7 @@ xxxxx</string>
                                 <subviews>
                                     <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GO8-o8-fXl">
                                         <rect key="frame" x="0.0" y="0.0" width="361" height="44"/>
-                                        <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
+                                        <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="DY7-55-MO9"/>
                                         </constraints>
@@ -2811,7 +2776,7 @@ xxxxx</string>
                                     </label>
                                     <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ewF-ze-dkg">
                                         <rect key="frame" x="0.0" y="103" width="361" height="44"/>
-                                        <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
+                                        <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="ozy-XE-8dP"/>
                                         </constraints>
@@ -3055,7 +3020,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                             </label>
                             <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JEA-Zw-9G9">
                                 <rect key="frame" x="16" y="456.66666666666669" width="361" height="42"/>
-                                <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
+                                <color key="backgroundColor" systemColor="systemFillColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="42" id="Qqt-MW-TpE"/>
                                 </constraints>
@@ -3111,24 +3076,25 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <subviews>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="pTq-E9-giu">
                                 <rect key="frame" x="16" y="181.66666666666666" width="361" height="34"/>
+                                <color key="textColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add your key" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jyF-jg-2cT">
                                 <rect key="frame" x="16" y="126.00000000000001" width="165" height="33.666666666666671"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Adt-ze-E3l">
                                 <rect key="frame" x="69" y="232.33333333333334" width="255" height="40.000000000000028"/>
-                                <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
+                                <color key="backgroundColor" systemColor="systemFillColor"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="255" id="DpR-tS-BaR"/>
                                     <constraint firstAttribute="height" constant="40" id="nvV-ar-rXL"/>
                                 </constraints>
-                                <state key="normal" title="next">
-                                    <color key="titleColor" systemColor="systemTealColor"/>
+                                <state key="normal" title="Next">
+                                    <color key="titleColor" systemColor="tintColor"/>
                                 </state>
                                 <connections>
                                     <action selector="nextAction:" destination="pBU-jm-875" eventType="touchUpInside" id="s6K-lA-X2C"/>
@@ -3136,7 +3102,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="nll-eS-LUG"/>
-                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="nll-eS-LUG" firstAttribute="trailing" secondItem="pTq-E9-giu" secondAttribute="trailing" constant="16" id="87z-kh-ljy"/>
                             <constraint firstItem="Adt-ze-E3l" firstAttribute="centerX" secondItem="Upe-qb-TZs" secondAttribute="centerX" id="Hj7-9I-cHt"/>
@@ -3149,7 +3115,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                     </view>
                     <navigationItem key="navigationItem" id="FP9-tP-ODK">
                         <barButtonItem key="rightBarButtonItem" image="qrcode.viewfinder" catalog="system" id="g0t-Wn-it6">
-                            <color key="tintColor" systemColor="systemTealColor"/>
+                            <color key="tintColor" systemColor="tintColor"/>
                             <connections>
                                 <action selector="scanQrAction:" destination="pBU-jm-875" id="4eZ-pc-Aob"/>
                             </connections>
@@ -3191,9 +3157,9 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="rzd-uQ-F1w"/>
                                 </constraints>
-                                <color key="tintColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="tintColor" systemColor="tintColor"/>
                                 <state key="normal" title=" Onchain" image="link" catalog="system">
-                                    <color key="titleColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="titleColor" systemColor="tintColor"/>
                                 </state>
                                 <connections>
                                     <action selector="generateOnchainAction:" destination="Xxg-Pp-vvN" eventType="touchUpInside" id="CeE-zw-DRt"/>
@@ -3467,26 +3433,25 @@ Fully Noded does its best to support as many hardware and software wallet option
                                     <constraint firstAttribute="height" constant="73" id="xtY-Ka-kVA"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Top-LU-ubL">
                                 <rect key="frame" x="16" y="204" width="361" height="34"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="19"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="I35-cn-vrC">
                                 <rect key="frame" x="97.666666666666686" y="246" width="198" height="44"/>
-                                <color key="backgroundColor" red="0.12791608967551313" green="0.14715240112100464" blue="0.16878568733857868" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" systemColor="systemFillColor"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="198" id="2qS-cL-Lin"/>
                                     <constraint firstAttribute="height" constant="44" id="bhU-0E-CoL"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <state key="normal" title="next">
-                                    <color key="titleColor" systemColor="systemTealColor"/>
+                                <color key="tintColor" systemColor="tintColor"/>
+                                <state key="normal" title="Next">
+                                    <color key="titleColor" systemColor="tintColor"/>
                                 </state>
                                 <connections>
                                     <action selector="nextAction:" destination="AU8-j7-403" eventType="touchUpInside" id="YBl-hl-aGd"/>
@@ -3494,7 +3459,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Dc3-5z-gLj"/>
-                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="I35-cn-vrC" firstAttribute="top" secondItem="Top-LU-ubL" secondAttribute="bottom" constant="8" id="AZj-dW-YlZ"/>
                             <constraint firstItem="41X-LM-mml" firstAttribute="leading" secondItem="Dc3-5z-gLj" secondAttribute="leading" constant="16" id="Jv0-Sm-8OQ"/>
@@ -6216,11 +6181,11 @@ Fully Noded does its best to support as many hardware and software wallet option
             <objects>
                 <viewController storyboardIdentifier="MultisigCreator" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="00Y-n8-WfC" customClass="CreateMultisigViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="tiY-Z4-d76">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="FEh-Kx-bwz">
-                                <rect key="frame" x="16" y="0.0" width="361" height="822"/>
+                                <rect key="frame" x="16" y="103" width="361" height="695"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="1rW-Ks-Uq6">
                                         <rect key="frame" x="0.0" y="0.0" width="361" height="29"/>
@@ -6253,7 +6218,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TBc-Ns-zDL">
-                                        <rect key="frame" x="0.0" y="65.333333333333329" width="361" height="176.66666666666669"/>
+                                        <rect key="frame" x="0.0" y="65.333333333333343" width="361" height="49.666666666666657"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <state key="normal" title="Derive cosigner from an existing signer ">
                                             <color key="titleColor" systemColor="tintColor"/>
@@ -6263,13 +6228,13 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Manual:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kSh-q9-bOx">
-                                        <rect key="frame" x="0.0" y="250.00000000000003" width="361" height="20.333333333333343"/>
+                                        <rect key="frame" x="0.0" y="122.99999999999999" width="361" height="20.333333333333329"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="JMj-oR-jrn">
-                                        <rect key="frame" x="0.0" y="278.33333333333331" width="361" height="34"/>
+                                        <rect key="frame" x="0.0" y="151.33333333333334" width="361" height="34"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="fingerprint:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Hva-Kw-FGv">
                                                 <rect key="frame" x="0.0" y="0.0" width="84" height="34"/>
@@ -6286,7 +6251,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="mob-my-HL6">
-                                        <rect key="frame" x="0.0" y="320.33333333333331" width="361" height="34"/>
+                                        <rect key="frame" x="0.0" y="193.33333333333331" width="361" height="34"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="origin:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oFS-rG-otI">
                                                 <rect key="frame" x="0.0" y="0.0" width="47.333333333333336" height="34"/>
@@ -6303,7 +6268,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="NUc-p3-Q5n">
-                                        <rect key="frame" x="0.0" y="362.33333333333331" width="361" height="34"/>
+                                        <rect key="frame" x="0.0" y="235.33333333333331" width="361" height="34"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="xpub: " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xax-Va-iJm">
                                                 <rect key="frame" x="0.0" y="0.0" width="47" height="34"/>
@@ -6321,7 +6286,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </subviews>
                                     </stackView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oLZ-lP-Dfx">
-                                        <rect key="frame" x="0.0" y="404.33333333333331" width="361" height="33"/>
+                                        <rect key="frame" x="0.0" y="277.33333333333331" width="361" height="33"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <state key="normal" title="Add cosigner">
                                             <color key="titleColor" systemColor="tintColor"/>
@@ -6331,18 +6296,18 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Cosigners:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dXX-uE-f2N">
-                                        <rect key="frame" x="0.0" y="445.33333333333331" width="361" height="20.333333333333314"/>
+                                        <rect key="frame" x="0.0" y="318.33333333333331" width="361" height="20.333333333333314"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" text="Cosigners will appear here after adding them." translatesAutoresizingMaskIntoConstraints="NO" id="HC3-hY-POM">
-                                        <rect key="frame" x="0.0" y="473.66666666666674" width="361" height="307.33333333333326"/>
+                                        <rect key="frame" x="0.0" y="346.66666666666674" width="361" height="307.33333333333326"/>
                                         <color key="textColor" systemColor="secondaryLabelColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="K1S-Os-ro2">
-                                        <rect key="frame" x="0.0" y="789" width="361" height="33"/>
+                                        <rect key="frame" x="0.0" y="662" width="361" height="33"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <state key="normal" title="Create wallet"/>
@@ -6394,7 +6359,7 @@ Fully Noded does its best to support as many hardware and software wallet option
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="5iI-Ra-crf"/>
+        <segue reference="ejH-sy-hlm"/>
         <segue reference="UBf-qr-XYG"/>
         <segue reference="Fvb-gy-rb3"/>
         <segue reference="4g3-DC-Q5z"/>
@@ -6403,8 +6368,8 @@ Fully Noded does its best to support as many hardware and software wallet option
         <segue reference="mRa-gP-mZ0"/>
         <segue reference="oY9-Pq-H5b"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="CQp-9r-70w"/>
-        <segue reference="ods-Ql-GAw"/>
+        <segue reference="1fQ-PG-chF"/>
+        <segue reference="zi9-mK-A5a"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="7PS-EL-3d2"/>
     </inferredMetricsTieBreakers>
