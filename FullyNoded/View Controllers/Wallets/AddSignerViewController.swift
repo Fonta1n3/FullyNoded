@@ -377,7 +377,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
             vc.textView.resignFirstResponder()
             vc.addSignerOutlet.isEnabled = true
         }
-        showAlert(vc: self, title: "Valid Words ✓", message: "That is a valid recovery phrase, tap \"add signer\" to encrypt it and save it securely to the device so that it may sign your psbt's.")
+        showAlert(vc: self, title: "Valid BIP39 Signer/Seed ✓", message: "That is a valid recovery phrase, tap \"Save\" to encrypt it and save it securely to the device so that it may sign your psbt's.")
     }
     
     private func signerAdded() {
