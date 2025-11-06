@@ -25,19 +25,17 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     let ud = UserDefaults.standard
     var isBtc = false
     var isSats = false
-    var isFiat = false
     
-    @IBOutlet weak var invoiceHeader: UILabel!
-    @IBOutlet weak var denominationControl: UISegmentedControl!
-    @IBOutlet var amountField: UITextField!
-    @IBOutlet var labelField: UITextField!
-    @IBOutlet var qrView: UIImageView!
-    @IBOutlet var addressOutlet: UILabel!
+    @IBOutlet private weak var invoiceHeader: UILabel!
+    @IBOutlet private weak var amountField: UITextField!
+    @IBOutlet private weak var labelField: UITextField!
+    @IBOutlet private weak var qrView: UIImageView!
+    @IBOutlet private weak var addressOutlet: UILabel!
     @IBOutlet private weak var invoiceText: UITextView!
     @IBOutlet private weak var messageField: UITextField!
-    @IBOutlet weak var fieldsBackground: UIView!
-    @IBOutlet weak var addressBackground: UIView!
-    @IBOutlet weak var invoiceBackground: UIView!
+    @IBOutlet private weak var fieldsBackground: UIView!
+    @IBOutlet private weak var addressBackground: UIView!
+    @IBOutlet private weak var invoiceBackground: UIView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,41 +45,24 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         configureView(invoiceBackground)
         confirgureFields()
         configureTap()
+        setUnit()
         getAddressSettings()
         addDoneButtonOnKeyboard()
         addressOutlet.text = ""
         invoiceText.text = ""
         qrView.image = generateQrCode(key: "bitcoin:")
         generateOnchainInvoice()
-        
-        if isFiat || isBtc {
+    }
+    
+    private func setUnit() {
+        let unit = UserDefaults.standard.object(forKey: "unit") as? String ?? "btc"
+        switch unit {
+        case "btc":
             isBtc = true
-            denominationControl.selectedSegmentIndex = 0
-        } else if isSats {
-            denominationControl.selectedSegmentIndex = 1
-        }
-    }
-    
-    
-    @IBAction func switchDenominationsAction(_ sender: UISegmentedControl) {
-        switch sender.selectedSegmentIndex {
-        case 0:
-            self.isBtc = true
-            self.isSats = false
-            self.isFiat = false
         default:
-            self.isBtc = false
-            self.isSats = true
-            self.isFiat = false
-        }
-        
-        if self.invoiceText.text.hasPrefix("l")  {
-            createLightningInvoice()
-        } else {
-           updateQRImage()
+            isSats = true
         }
     }
-    
     
     private func setDelegates() {
         messageField.delegate = self
@@ -307,69 +288,69 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    private func createBolt11Invoice() {
-        var param:[String:Any] = ["expiry": 86400]
-        var description = labelField.text ?? "Fully Noded CLN invoice"
-        
-        if description == "" {
-            description = "Fully Noded CLN bolt11 invoice"
-        }
-        
-        let label = "Fully Noded CLN invoice \(randomString(length: 10))"
-        param["label"] = label
-        
-        if amountField.text != "" {
-            if isBtc {
-                if let dbl = Double(amountField.text!) {
-                    param["amount_msat"] = Int(dbl * 100000000000.0)
-                }
-            } else if isSats {
-                if let int = Double(amountField.text!) {
-                    param["amount_msat"] = Int(int * 1000)
-                }
-            }
-        } else {
-            param["amount_msat"] = "any"
-        }
-        
-        if messageField.text != "" {
-            description += "\n\n" + messageField.text!
-        }
-        param["description"] = description
-        let commandId = UUID()
-        
-//        LightningRPC.sharedInstance.command(id: commandId, method: .invoice, param: param) { [weak self] (uuid, response, errorDesc) in
-//            guard let self = self else { return }
-//            
-//            guard let dict = response as? [String:Any] else {
-//                self.spinner.removeConnectingView()
-//                showAlert(vc: self, title: "Error", message: errorDesc ?? "we had an issue getting your lightning invoice")
-//                return
-//            }
-//            
-//            var inv = "no invoice received..."
-//            
-//            if let bolt11 = dict["bolt11"] as? String {
-//                inv = bolt11
-//            } else if let bolt12 = dict["bolt12"] as? String {
-//                inv = bolt12
-//            }
-//            
-//            DispatchQueue.main.async { [weak self] in
-//                guard let self = self else { return }
-//                
-//                self.showLightningInvoice(inv)
-//            }
-//            
-//            if let warning = dict["warning_capacity"] as? String {
-//                if warning != "" {
-//                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-//                        showAlert(vc: self, title: "Warning", message: warning)
-//                    }
+//    private func createBolt11Invoice() {
+//        var param:[String:Any] = ["expiry": 86400]
+//        var description = labelField.text ?? "Fully Noded CLN invoice"
+//        
+//        if description == "" {
+//            description = "Fully Noded CLN bolt11 invoice"
+//        }
+//        
+//        let label = "Fully Noded CLN invoice \(randomString(length: 10))"
+//        param["label"] = label
+//        
+//        if amountField.text != "" {
+//            if isBtc {
+//                if let dbl = Double(amountField.text!) {
+//                    param["amount_msat"] = Int(dbl * 100000000000.0)
+//                }
+//            } else if isSats {
+//                if let int = Double(amountField.text!) {
+//                    param["amount_msat"] = Int(int * 1000)
 //                }
 //            }
+//        } else {
+//            param["amount_msat"] = "any"
 //        }
-    }
+//        
+//        if messageField.text != "" {
+//            description += "\n\n" + messageField.text!
+//        }
+//        param["description"] = description
+//        let commandId = UUID()
+//        
+////        LightningRPC.sharedInstance.command(id: commandId, method: .invoice, param: param) { [weak self] (uuid, response, errorDesc) in
+////            guard let self = self else { return }
+////            
+////            guard let dict = response as? [String:Any] else {
+////                self.spinner.removeConnectingView()
+////                showAlert(vc: self, title: "Error", message: errorDesc ?? "we had an issue getting your lightning invoice")
+////                return
+////            }
+////            
+////            var inv = "no invoice received..."
+////            
+////            if let bolt11 = dict["bolt11"] as? String {
+////                inv = bolt11
+////            } else if let bolt12 = dict["bolt12"] as? String {
+////                inv = bolt12
+////            }
+////            
+////            DispatchQueue.main.async { [weak self] in
+////                guard let self = self else { return }
+////                
+////                self.showLightningInvoice(inv)
+////            }
+////            
+////            if let warning = dict["warning_capacity"] as? String {
+////                if warning != "" {
+////                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+////                        showAlert(vc: self, title: "Warning", message: warning)
+////                    }
+////                }
+////            }
+////        }
+//    }
     
 //    private func createBolt12Invoice() {
 //        // amount description [issuer] [label] [quantity_max] [absolute_expiry] [recurrence] [recurrence_base] [recurrence_paywindow] [recurrence_limit] [single_use]
@@ -524,9 +505,9 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { success in
             guard success else { return }
             
-            let param:Derive_Addresses = .init(["descriptor":wallet.receiveDescriptor, "range":[index,index]])
+            let param: Derive_Addresses = .init(["descriptor":wallet.receiveDescriptor, "range":[index,index]])
             
-                                                Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { [weak self] (response, errorMessage) in
+            Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let addresses = response as? NSArray, let address = addresses[0] as? String else {

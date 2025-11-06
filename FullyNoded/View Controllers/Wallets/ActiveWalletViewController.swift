@@ -1629,12 +1629,12 @@ class ActiveWalletViewController: UIViewController {
                 vc.balance = onchainBalanceFiat
             }
         
-        case "segueToInvoice":
-            guard let vc = segue.destination as? InvoiceViewController else { fallthrough }
-            
-            vc.isBtc = isBtc
-            vc.isSats = isSats
-            vc.isFiat = isFiat
+//        case "segueToInvoice":
+//            guard let vc = segue.destination as? InvoiceViewController else { fallthrough }
+//            
+//            vc.isBtc = isBtc
+//            vc.isSats = isSats
+//            vc.isFiat = isFiat
         
         case "segueToSignPsbt":
             guard let vc = segue.destination as? VerifyTransactionViewController else { fallthrough }

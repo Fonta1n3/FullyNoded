@@ -43,18 +43,39 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         // Do any additional setup after loading the view.
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.sectionFooterHeight = UITableView.automaticDimension
+        tableView.estimatedSectionFooterHeight = 50
         navigationController?.delegate = self
         
         tableDict = [
-            ["text":"", "footerText": "Tap the label to edit it."],// label 0
-            ["text": "", "ur": "", "selectedSegmentIndex": 0, "censoredText": "", "censoredUr": "", "footerText": "UR for exporting this signer to iOS Seed Tool, Gordian Wallet, Gordian Signer and any other wallet which supports UR crypto-seed. Tap to copy the text."],// words 1
-            ["text": "", "footerText": ""],// xfp 2
-            ["text": "", "footerText": "Tap the passphrase to edit it. ⚠️ This has MAJOR implications, for experts only!"],// passphrase 3
-            ["text": "", "footerText": ""],// dateAdded 4
-            ["text": "", "footerText": "The wallets which this signer can sign for. Tap the + button to create a wallet with this signer."],// wallets 5
-            ["text": "", "ur": "", "selectedSegmentIndex": 0, "footerText": "UR for exporting the segwit mutli-sig cosigner to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text."],// cosigner 6
-            ["text": "", "ur": "", "selectedSegmentIndex": 0, "footerText": "UR for exporting the segwit single-sig watch-only wallet to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text."],// singlesig 7
-            ["text": "", "ur": "", "selectedSegmentIndex": 0, "footerText": "Export your root xpub UR to Casa App by selecting the Keystone option when adding a HWW key to Casa App. Also compatible with Gordian Wallet and Gordian Cosigner. Tap to copy the text."]// casa hdkey 8
+            [
+                "text":"",
+             "footerText": "Tap the label to edit it."
+            ],// label 0
+            [
+                "text": "", "ur": "", "selectedSegmentIndex": 0, "censoredText": "", "censoredUr": "", "footerTextUr": "UR for exporting this signer to any wallet which supports UR crypto-seed. Tap to copy the text.", "footerText": "BIP39 seed words, you need these to sign transactions and recover your wallet."
+            ],// words 1
+            [
+                "text": "", "footerText": "The fingerprint of your master key. Some hardware wallets require this infomation in order to sign PSBT's."
+            ],// xfp 2
+            [
+                "text": "", "footerText": "Tap the passphrase to edit it. ⚠️ This has MAJOR implications, for experts only!"
+            ],// passphrase 3
+            [
+                "text": "", "footerText": ""
+            ],// dateAdded 4
+            [
+                "text": "", "footerText": "The wallets which this signer can sign for. Tap the + button to create a wallet with this signer."
+            ],// wallets 5
+            [
+                "text": "", "ur": "", "selectedSegmentIndex": 0, "footerTextUr": "UR for exporting the segwit mutli-sig cosigner to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text."
+            ],// cosigner 6
+            [
+                "text": "", "ur": "", "selectedSegmentIndex": 0, "footerTextUr": "UR for exporting the segwit single-sig watch-only wallet to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text."
+            ],// singlesig 7
+            [
+                "text": "", "ur": "", "selectedSegmentIndex": 0, "footerTextUr": "Export your root xpub UR to Casa App by selecting the Keystone option when adding a HWW key to Casa App. Also compatible with Gordian Wallet and Gordian Cosigner. Tap to copy the text."
+            ]// casa hdkey 8
         ]
         
         let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
@@ -800,7 +821,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     }
     
     @objc func createWallet() {
-        print("createWallet")
         if signer.words != nil {
             creatWalletLive()
         } else {
@@ -1081,68 +1101,49 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
 extension SignerDetailViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        let vw = UIView()
-        vw.backgroundColor = .clear
-        let titleLabel = UILabel()
-        titleLabel.numberOfLines = 0
-        titleLabel.lineBreakMode = .byWordWrapping
-        titleLabel.backgroundColor = .clear
-        titleLabel.font = .systemFont(ofSize: 14)
-        titleLabel.textColor = .systemGreen
         
+        let footerView = DynamicFooterView(frame: .zero) // Initial frame can be .zero
+        let selectedSegmentIndex = tableDict[section]["selectedSegmentIndex"] as? Int ?? 0
         let text = tableDict[section]["footerText"] as? String ?? ""
-        titleLabel.text = text
+        let urText = tableDict[section]["footerTextUr"] as? String ?? ""
         
-        var height:CGFloat = 0
-        
-        switch Section(rawValue: section) {
-        case .words:
-            height = 60
-            
-        case .passphrase:
-            height = 60
-            
-        case .cosigner:
-            height = 80
-            
-        case .singleSig:
-            height = 80
-            
-        case .rootXpub:
-            height = 80
-            
-        case .signableWallets:
-            height = 60
-            
-        case .label:
-            height = 40
-            
-        default:
-            titleLabel.text  = ""
+        if selectedSegmentIndex == 1 {
+            footerView.configure(with: urText)
+        } else {
+            footerView.configure(with: text)
         }
         
-        titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: height)
+        return footerView
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
         
-        titleLabel.sizeToFit()
-        
-        vw.addSubview(titleLabel)
-        return vw
+        if let footerView = tableView.tableFooterView {
+            let width = tableView.bounds.size.width
+            let size = footerView.systemLayoutSizeFitting(CGSize(width: width, height: UIView.layoutFittingCompressedSize.height))
+            
+            if footerView.frame.size.height != size.height {
+                footerView.frame.size.height = size.height
+                tableView.tableFooterView = footerView
+            }
+        }
     }
 
-    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        switch Section(rawValue: section) {
-        case .label:
-            return 40
-        case .words:
-            return 70
-        case .signableWallets, .passphrase:
-            return 60
-        case .cosigner, .singleSig, .rootXpub:
-            return 80
-        default:
-            return 0
-        }
-    }
+//    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+//        switch Section(rawValue: section) {
+//        case .label:
+//            return 40
+//        case .words:
+//            return 70
+//        case .signableWallets, .passphrase:
+//            return 60
+//        case .cosigner, .singleSig, .rootXpub:
+//            return 80
+//        default:
+//            return 0
+//        }
+//    }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let dict = tableDict[indexPath.section]

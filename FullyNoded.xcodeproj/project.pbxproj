@@ -30,6 +30,7 @@
 		0A212D8D26C66B1800BF6FD4 /* DescriptorInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212D8C26C66B1800BF6FD4 /* DescriptorInfo.swift */; };
 		0A212D9226CBE17600BF6FD4 /* MixIndexes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A212D9126CBE17600BF6FD4 /* MixIndexes.swift */; };
 		0A2B4D702716ABCB00B607EE /* WalletImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2B4D6F2716ABCB00B607EE /* WalletImport.swift */; };
+		0A2EBDEB2EBC62A400AF56CD /* DynamicFooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2EBDEA2EBC62A400AF56CD /* DynamicFooterView.swift */; };
 		0A3013D8266B361E004DA35C /* LndRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3013D7266B361E004DA35C /* LndRpc.swift */; };
 		0A337D012700316E00AD087F /* WalletDir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A337D002700316E00AD087F /* WalletDir.swift */; };
 		0A3450F02902F0440074A545 /* JMWalletCreate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3450EF2902F0430074A545 /* JMWalletCreate.swift */; };
@@ -229,6 +230,7 @@
 		0A212D8C26C66B1800BF6FD4 /* DescriptorInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DescriptorInfo.swift; sourceTree = "<group>"; };
 		0A212D9126CBE17600BF6FD4 /* MixIndexes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MixIndexes.swift; sourceTree = "<group>"; };
 		0A2B4D6F2716ABCB00B607EE /* WalletImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletImport.swift; sourceTree = "<group>"; };
+		0A2EBDEA2EBC62A400AF56CD /* DynamicFooterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicFooterView.swift; sourceTree = "<group>"; };
 		0A3013D7266B361E004DA35C /* LndRpc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LndRpc.swift; sourceTree = "<group>"; };
 		0A337D002700316E00AD087F /* WalletDir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDir.swift; sourceTree = "<group>"; };
 		0A3450EF2902F0430074A545 /* JMWalletCreate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMWalletCreate.swift; sourceTree = "<group>"; };
@@ -722,6 +724,7 @@
 			children = (
 				D08495FE22EBCABC003FE8EB /* Spinner View */,
 				D084960022EBCAF7003FE8EB /* QR Generator */,
+				0A2EBDEA2EBC62A400AF56CD /* DynamicFooterView.swift */,
 			);
 			path = "Sub Views";
 			sourceTree = "<group>";
@@ -1335,6 +1338,7 @@
 				0A1F10E526A1A6C200BE2707 /* CBORExtensions.swift in Sources */,
 				D069051F24EA6C1F007F939D /* LightningPeersViewController.swift in Sources */,
 				0A1F111026A2791B00BE2707 /* ModelObjectType.swift in Sources */,
+				0A2EBDEB2EBC62A400AF56CD /* DynamicFooterView.swift in Sources */,
 				0A6E59882C400728007750F2 /* RPCAuth.swift in Sources */,
 				0A212D8D26C66B1800BF6FD4 /* DescriptorInfo.swift in Sources */,
 				0A3450F02902F0440074A545 /* JMWalletCreate.swift in Sources */,
