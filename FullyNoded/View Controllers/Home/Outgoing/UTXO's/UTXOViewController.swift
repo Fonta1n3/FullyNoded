@@ -383,6 +383,16 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             self.present(alert, animated: true, completion: nil)
         }
     }
+    
+    private func showModal(data: [String: Any], title: String) {
+        let modalVC = TextModalViewController(data: data, viewTitle: title)
+        
+        let nav = UINavigationController(rootViewController: modalVC)
+        nav.modalPresentationStyle = .fullScreen
+        nav.modalTransitionStyle = .coverVertical
+        
+        present(nav, animated: true)
+    }
                 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
@@ -424,25 +434,34 @@ extension UTXOViewController: UTXOCellDelegate {
         }
         
         let p: Get_Address_Info = .init(["address": address])
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: p)) { (response, errorDesc) in
-            guard let addressInfo = response else {
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: p)) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
+            guard let addressInfo = response as? [String: Any] else {
                 showAlert(vc: self, title: "", message: errorDesc ?? "No response.")
                 return
             }
             
-            print("addressInfo: \(addressInfo)")
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                showModal(data: addressInfo, title: "Address Info")
+            }
         }
     }
     
     func getTxInfo(_ utxo: Utxo) {
         let p: Get_Tx = .init(["txid": utxo.txid, "verbose": true, "include_watchonly": true])
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .gettransaction(p)) { (response, errorDesc) in
-            guard let response = response else {
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .gettransaction(p)) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
+            
+            guard let response = response as? [String: Any] else {
                 showAlert(vc: self, title: "", message: errorDesc ?? "No response.")
                 return
             }
             
-            print(response)
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                showModal(data: response, title: "Transaction Info")
+            }
         }
     }
     
@@ -452,13 +471,18 @@ extension UTXOViewController: UTXOCellDelegate {
             return
         }
         let p: Get_Descriptor_Info = .init(["descriptor": descriptor])
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getdescriptorinfo(param: p)) { (response, errorDesc) in
-            guard let response = response else {
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getdescriptorinfo(param: p)) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
+            
+            guard let response = response as? [String: Any] else {
                 showAlert(vc: self, title: "", message: errorDesc ?? "No response.")
                 return
             }
             
-            print(response)
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                showModal(data: response, title: "Descriptor Info")
+            }
         }
     }
     

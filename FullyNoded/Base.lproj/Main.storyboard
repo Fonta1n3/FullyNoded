@@ -5326,6 +5326,21 @@ Fully Noded does its best to support as many hardware and software wallet option
             </objects>
             <point key="canvasLocation" x="-2391.6030534351144" y="-505.63380281690144"/>
         </scene>
+        <!--Text Modal View Controller-->
+        <scene sceneID="aD2-pB-m6Y">
+            <objects>
+                <viewController id="Zjp-rH-cfH" customClass="TextModalViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Nat-co-JA4">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="Q1P-v1-Ovw"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="BcI-MV-4MA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1663" y="-487"/>
+        </scene>
         <!--Confirm Lightning Payment View Controller-->
         <scene sceneID="fKs-py-e7s">
             <objects>
