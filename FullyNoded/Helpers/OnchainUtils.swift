@@ -241,40 +241,5 @@ class OnchainUtils {
             completion((response, errorMessage))
         }
     }
-    
-    // MARK: TODO - add an address tool here to look up signers that can sign for a specific address.
-    
-    //        CoreDataService.retrieveEntity(entityName: .signers) { signers in
-    //            guard let signers = signers else { return }
-    //            for signer in signers {
-    //                let s = SignerStruct(dictionary: signer)
-    //                if let encWords = s.words {
-    //                    guard let decryptedWords = Crypto.decrypt(encWords), let mk = Keys.masterKey(words: decryptedWords.utf8String!, coinType: "0", passphrase: ""), let xfp = Keys.fingerprint(masterKey: mk) else { return }
-    //
-    //
-    //                    let possibleAddresses = [
-    //
-    //                    ]
-    //                    JoinMarket.descriptors(mk, xfp) { descriptors in
-    //                        guard let descriptors = descriptors else { return }
-    //                        for descriptor in descriptors {
-    //                            let p:Derive_Addresses = .init(["descriptor":descriptor, "range":[0,10]])
-    //                            OnchainUtils.deriveAddresses(param: p) { (addresses, message) in
-    //                                guard let addresses = addresses else { return }
-    //                                for address in addresses {
-    //                                    for possibleAddress in possibleAddresses {
-    //                                        if address == possibleAddress {
-    //                                            print("words: \(decryptedWords.utf8String!)")
-    //                                            print("DING: \(address)")
-    //                                        }
-    //                                    }
-    //                                }
-    //                            }
-    //                        }
-    //                    }
-    //                }
-    //
-    //            }
-    //        }
      
 }
