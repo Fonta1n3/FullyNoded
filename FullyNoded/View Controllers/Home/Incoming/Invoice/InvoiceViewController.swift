@@ -507,7 +507,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             
             let param: Derive_Addresses = .init(["descriptor":wallet.receiveDescriptor, "range":[index,index]])
             
-            Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { [weak self] (response, errorMessage) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .deriveaddresses(param: param)) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
@@ -585,7 +585,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     func getAddress(_ params: Get_New_Address) {
-        Reducer.sharedInstance.makeCommand(command: .getnewaddress(param: params)) { [weak self] (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getnewaddress(param: params)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             guard let address = response as? String else {
                 self.spinner.removeConnectingView()

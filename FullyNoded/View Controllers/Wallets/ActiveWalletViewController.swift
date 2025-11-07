@@ -503,7 +503,7 @@ class ActiveWalletViewController: UIViewController {
         let tx = transactionArray[int]
         let id = tx["txID"] as! String
         let param:Get_Tx = .init(["txid":id, "verbose": true])
-        Reducer.sharedInstance.makeCommand(command: .gettransaction(param)) { [weak self] (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .gettransaction(param)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             self.spinner.removeConnectingView()
             guard let dict = response as? NSDictionary, let hex = dict["hex"] as? String else {

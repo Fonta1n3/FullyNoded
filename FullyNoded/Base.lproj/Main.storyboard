@@ -2218,7 +2218,7 @@ xxxxx</string>
                                     </textField>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GaP-Ag-v0V">
                                         <rect key="frame" x="0.0" y="647" width="377" height="40"/>
-                                        <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
+                                        <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="40" id="9Qw-1A-KAa"/>
                                         </constraints>
@@ -5276,46 +5276,38 @@ Fully Noded does its best to support as many hardware and software wallet option
             </objects>
             <point key="canvasLocation" x="4218" y="-1254"/>
         </scene>
-        <!--View Controller-->
+        <!--UTXO's-->
         <scene sceneID="sdb-2g-t0F">
             <objects>
-                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="1tX-je-wOH" customClass="UTXOViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="UTXO's" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="1tX-je-wOH" customClass="UTXOViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="JDj-z9-dsw">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" allowsMultipleSelection="YES" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="CFb-Jk-h9Z">
-                                <rect key="frame" x="0.0" y="152.66666666666669" width="393" height="665.33333333333326"/>
-                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <rect key="frame" x="0.0" y="103" width="393" height="715"/>
+                                <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                             </tableView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Unlocked UTXO's" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QBy-lG-bbB">
-                                <rect key="frame" x="16" y="111" width="225" height="33.666666666666657"/>
-                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Qb7-Z6-hPP"/>
-                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="CFb-Jk-h9Z" firstAttribute="trailing" secondItem="Qb7-Z6-hPP" secondAttribute="trailing" id="9GN-sW-P0U"/>
-                            <constraint firstItem="CFb-Jk-h9Z" firstAttribute="top" secondItem="QBy-lG-bbB" secondAttribute="bottom" constant="8" id="OvD-wQ-or3"/>
+                            <constraint firstItem="CFb-Jk-h9Z" firstAttribute="top" secondItem="Qb7-Z6-hPP" secondAttribute="top" id="EAl-HK-ePj"/>
                             <constraint firstItem="CFb-Jk-h9Z" firstAttribute="bottom" secondItem="Qb7-Z6-hPP" secondAttribute="bottom" id="RP6-te-ZSq"/>
-                            <constraint firstItem="QBy-lG-bbB" firstAttribute="top" secondItem="Qb7-Z6-hPP" secondAttribute="top" constant="8" id="SfX-5v-jhR"/>
                             <constraint firstItem="CFb-Jk-h9Z" firstAttribute="leading" secondItem="Qb7-Z6-hPP" secondAttribute="leading" id="dRz-Hg-Ysz"/>
-                            <constraint firstItem="QBy-lG-bbB" firstAttribute="leading" secondItem="Qb7-Z6-hPP" secondAttribute="leading" constant="16" id="uX0-Bl-fXJ"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="71V-ha-2e7">
                         <rightBarButtonItems>
                             <barButtonItem image="link" catalog="system" id="TaT-MH-4QM">
-                                <color key="tintColor" systemColor="systemTealColor"/>
+                                <color key="tintColor" systemColor="tintColor"/>
                                 <connections>
                                     <action selector="createRaw:" destination="1tX-je-wOH" id="nhq-lb-zu8"/>
                                 </connections>
                             </barButtonItem>
                             <barButtonItem image="lock" catalog="system" id="vnc-yL-mOJ">
-                                <color key="tintColor" systemColor="systemTealColor"/>
+                                <color key="tintColor" systemColor="tintColor"/>
                                 <connections>
                                     <action selector="lockAction:" destination="1tX-je-wOH" id="1li-Ht-ieG"/>
                                 </connections>
@@ -5332,7 +5324,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Kf1-ld-TGL" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-2391.1999999999998" y="-505.09745127436287"/>
+            <point key="canvasLocation" x="-2391.6030534351144" y="-505.63380281690144"/>
         </scene>
         <!--Confirm Lightning Payment View Controller-->
         <scene sceneID="fKs-py-e7s">
@@ -6324,14 +6316,14 @@ Fully Noded does its best to support as many hardware and software wallet option
         <segue reference="Fvb-gy-rb3"/>
         <segue reference="4g3-DC-Q5z"/>
         <segue reference="nTv-zU-127"/>
-        <segue reference="w2g-bl-j8v"/>
+        <segue reference="EZr-Ut-goC"/>
         <segue reference="mRa-gP-mZ0"/>
         <segue reference="kws-xU-XdS"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="BTh-Z9-jlD"/>
+        <segue reference="2DM-Bo-8hK"/>
         <segue reference="2dt-ER-scB"/>
         <segue reference="veA-tY-zvZ"/>
-        <segue reference="7PS-EL-3d2"/>
+        <segue reference="BVG-ie-esh"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" systemColor="tintColor"/>
     <resources>
@@ -6377,6 +6369,9 @@ Fully Noded does its best to support as many hardware and software wallet option
         <image name="timer" catalog="system" width="128" height="123"/>
         <image name="trash.circle" catalog="system" width="128" height="123"/>
         <image name="tray.and.arrow.up" catalog="system" width="128" height="117"/>
+        <systemColor name="groupTableViewBackgroundColor">
+            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

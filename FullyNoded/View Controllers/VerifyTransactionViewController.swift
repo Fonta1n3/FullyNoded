@@ -173,7 +173,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
     
         let param: Wallet_Process_PSBT = .init(["psbt": psbt, "sign": false, "sighashtype": "ALL"])
-        Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt(param: param)) { [weak self] (object, errorDescription) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletprocesspsbt(param: param)) { [weak self] (object, errorDescription) in
             guard let self = self else { return }
             
             guard let dict = object as? NSDictionary, let processedPsbt = dict["psbt"] as? String else {
@@ -199,7 +199,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         guard let hex = Keys.finalize(psbt) else {
             // Libwally used to fail for multisig psbt's so falling back to core finalization.
             let param:Finalize_Psbt = .init(["psbt": psbt])
-            Reducer.sharedInstance.makeCommand(command: .finalizepsbt(param)) { [weak self] (object, errorDescription) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .finalizepsbt(param)) { [weak self] (object, errorDescription) in
                 guard let self = self else { return }
                 
                 guard let result = object as? NSDictionary, let complete = result["complete"] as? Bool else {
@@ -639,7 +639,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         "timeout": 600
                     ]
                 )
-                Reducer.sharedInstance.makeCommand(command: .walletpassphrase(param: param)) { [weak self] (response, errorMessage) in
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletpassphrase(param: param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     self.spinner.removeConnectingView()
@@ -782,7 +782,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 command = psbtBumpFee
             }
             
-            Reducer.sharedInstance.makeCommand(command: command) { [weak self] (response, errorMessage) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: command) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let result = response as? NSDictionary,
@@ -877,7 +877,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     func executeNodeCommand(method: BTC_CLI_COMMAND) {
         
         func send() {
-            Reducer.sharedInstance.makeCommand(command: method) { [weak self] (response, errorMessage) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let _ = response as? String else {
@@ -898,7 +898,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         func decodePsbt() {
-            Reducer.sharedInstance.makeCommand(command: method) { [weak self] (object, errorDesc) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (object, errorDesc) in
                 guard let self = self else { return }
                 
                 guard let dict = object as? NSDictionary else {
@@ -955,7 +955,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         func decodeTx() {
-            Reducer.sharedInstance.makeCommand(command: method) { [weak self] (object, errorDesc) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (object, errorDesc) in
                 guard let self = self else { return }
                 
                 guard let dict = object as? NSDictionary else {
@@ -1233,7 +1233,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             if let address = inputTableArray[index]["address"] as? String, address != "unknown", address != "" {
                 let param:Get_Address_Info = .init(["address":address])
-                Reducer.sharedInstance.makeCommand(command: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     guard errorMessage == nil else {
@@ -1339,7 +1339,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             if let address = outputArray[index]["address"] as? String, address != "" {
                 let param:Get_Address_Info = .init(["address":address])
-                Reducer.sharedInstance.makeCommand(command: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     if let dict = response as? NSDictionary {
@@ -1413,7 +1413,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             if !alreadyBroadcast {
                 updateLabel("verifying mempool accept...")
                 let param:Test_Mempool_Accept = .init(["rawtxs":[signedRawTx]])
-                Reducer.sharedInstance.makeCommand(command: .testmempoolaccept(param)) { [weak self] (response, errorMessage) in
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .testmempoolaccept(param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     if let errorMessage = errorMessage {
@@ -1449,7 +1449,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         updateLabel("estimating smart fee...")
         let param:Estimate_Smart_Fee_Param = .init(["conf_target": target])
         
-        Reducer.sharedInstance.makeCommand(command: .estimatesmartfee(param: param)) { [weak self] (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .estimatesmartfee(param: param)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let dict = response as? NSDictionary, let feeRate = dict["feerate"] as? Double else {
@@ -1486,7 +1486,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     func parsePrevTx(method: BTC_CLI_COMMAND, vout: Int, txid: String) {
         func decodeRaw() {
             updateLabel("decoding inputs previous output...")
-            Reducer.sharedInstance.makeCommand(command: method) { [weak self] (object, errorDescription) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (object, errorDescription) in
                 guard let self = self else { return }
                 
                 guard let txDict = object as? NSDictionary, let outputs = txDict["vout"] as? NSArray else {
@@ -1530,7 +1530,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         func getRawTx() {
             updateLabel("fetching inputs previous output...")
-            Reducer.sharedInstance.makeCommand(command: method) { [weak self] (response, errorMessage) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 guard let response = response as? [String:Any] else {
                     self.parsePrevTxOutput(outputs: [], vout: 0)
@@ -1547,7 +1547,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     }
                     
                     let param_get_tx:Get_Tx = .init(["txid":txid, "verbose": true])
-                    Reducer.sharedInstance.makeCommand(command: .gettransaction(param_get_tx)) { (response, errorMessage) in
+                    MakeRPCCall.sharedInstance.executeRPCCommand(method: .gettransaction(param_get_tx)) { (response, errorMessage) in
                         guard let dict = response as? NSDictionary, let hexToParse = dict["hex"] as? String else {
 //                            guard let useEsplora = UserDefaults.standard.object(forKey: "useEsplora") as? Bool, useEsplora else {
 //                                if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraAlert") == nil {
@@ -2118,7 +2118,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             let wallet = walletsToCheck[walletIndex]
             UserDefaults.standard.set(wallet, forKey: "walletName")
             let param:Get_Address_Info = .init(["address":address])
-            Reducer.sharedInstance.makeCommand(command: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
                 guard let self = self else { resetActiveWallet(); return }
                 
                 if let dict = response as? NSDictionary, let solvable = dict["solvable"] as? Bool, solvable {
@@ -2383,7 +2383,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         spinner.addConnectingView(vc: self, description: "broadcasting...")
         let paramDict:[String:Any] = ["hexstring":self.signedRawTx]
         let param:Send_Raw_Transaction = .init(paramDict)
-        Reducer.sharedInstance.makeCommand(command: .sendrawtransaction(param)) { [weak self] (response, errorMesage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .sendrawtransaction(param)) { [weak self] (response, errorMesage) in
             guard let self = self else { return }
             
             guard let id = response as? String else {

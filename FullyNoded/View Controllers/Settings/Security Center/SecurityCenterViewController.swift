@@ -223,7 +223,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     func executNodeCommand(method: BTC_CLI_COMMAND) {
         let connectingView = ConnectingView()
         connectingView.addConnectingView(vc: self, description: "")
-        Reducer.sharedInstance.makeCommand(command: method) { [weak self] (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             if errorMessage == nil {

@@ -50,7 +50,7 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
     private func unloadWallet(wallet: String, index: Int) {
         connectingView.addConnectingView(vc: self, description: "unloading wallet...")
         // "\"\(wallet)\""
-        Reducer.sharedInstance.makeCommand(command: .unloadwallet) { [weak self] (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .unloadwallet) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let _ = response else {

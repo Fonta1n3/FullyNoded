@@ -10,7 +10,7 @@ import Foundation
 
 class OnchainUtils {
     static func listWalletDir(completion: @escaping ((wallets: WalletDir?, message: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .listwalletdir) { (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listwalletdir) { (response, errorMessage) in
             guard let walletDir = response as? [String:Any] else {
                 completion((nil, errorMessage ?? "Unknown Error"))
                 return
@@ -21,7 +21,7 @@ class OnchainUtils {
     }
     
     static func listWallets(completion: @escaping ((wallets: [String]?, message: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .listwallets) { (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listwallets) { (response, errorMessage) in
             guard let response = response as? [String] else {
                 completion((nil, errorMessage ?? "Unknown error."))
                 return
@@ -32,7 +32,7 @@ class OnchainUtils {
     }
     
     static func getWalletInfo(completion: @escaping ((walletInfo: WalletInfo?, message: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .getwalletinfo) { (response, message) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getwalletinfo) { (response, message) in
             guard let response = response as? [String:Any] else {
                 completion((nil, message ?? "Unknown error."))
                 return
@@ -43,7 +43,7 @@ class OnchainUtils {
     }
     
     static func getDescriptorInfo(_ param: Get_Descriptor_Info, completion: @escaping ((descriptorInfo: DescriptorInfo?, message: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .getdescriptorinfo(param: param)) { (response, message) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getdescriptorinfo(param: param)) { (response, message) in
             guard let response = response as? [String:Any] else {
                 completion((nil, message ?? "Unknown error."))
                 return
@@ -54,7 +54,7 @@ class OnchainUtils {
     }
     
     static func importDescriptors(_ param: Import_Descriptors, completion: @escaping ((imported: Bool, message: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .importdescriptors(param: param)) { (response, message) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .importdescriptors(param: param)) { (response, message) in
             guard let responseArray = response as? [[String:Any]] else {
                 completion((false, "Error importing descriptors: \(message ?? "unknown error")"))
                 return
@@ -86,7 +86,7 @@ class OnchainUtils {
     }
     
 //    static func importMulti(_ param: String, completion: @escaping ((imported: Bool, message: String?)) -> Void) {
-//        Reducer.sharedInstance.makeCommand(command: .importmulti, param: param) { (response, errorDescription) in
+//        MakeRPCCall.sharedInstance.executeRPCCommand(method: .importmulti, param: param) { (response, errorDescription) in
 //            guard let result = response as? NSArray, result.count > 0,
 //                  let dict = result[0] as? NSDictionary,
 //                  let success = dict["success"] as? Bool,
@@ -121,7 +121,7 @@ class OnchainUtils {
     }
     
     static func getBlockchainInfo(completion: @escaping ((blockchainInfo: BlockchainInfo?, message: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .getblockchaininfo) { (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getblockchaininfo) { (response, errorMessage) in
             guard let dict = response as? [String:Any] else {
                 completion((nil, errorMessage))
                 return
@@ -135,7 +135,7 @@ class OnchainUtils {
         let param: Rescan_Blockchain = .init(["start_height": from])
         // current behavior of bitcoin core is to wait until the rescan completes before responding, which is terrible ux.
         // this command may fail, as a work around users need to refresh the home screen to see if it was successful.
-        Reducer.sharedInstance.makeCommand(command: .rescanblockchain(param)) { (_, _) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .rescanblockchain(param)) { (_, _) in
 //            guard let errorMess = errorMess else {
 //                completion((false, "unknown issue starting rescan."))
 //                return
@@ -146,7 +146,7 @@ class OnchainUtils {
     }
     
     static func createWallet(param: Create_Wallet_Param, completion: @escaping ((name: String?, message: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .createwallet(param: param)) { (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .createwallet(param: param)) { (response, errorMessage) in
             guard let response = response as? [String:Any] else {
                 completion((nil, errorMessage))
                 return
@@ -159,7 +159,7 @@ class OnchainUtils {
     }
     
     static func listUnspent(param: List_Unspent, completion: @escaping ((utxos: [Utxo]?, message: String?)) -> Void) {
-        Reducer.sharedInstance.makeCommand(command: .listunspent(param)) { (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listunspent(param)) { (response, errorMessage) in
             guard let response = response as? [[String:Any]] else {
                 completion((nil, errorMessage))
                 return
@@ -183,7 +183,7 @@ class OnchainUtils {
     }
     
     static func deriveAddresses(param: Derive_Addresses, completion: @escaping ((addresses: [String]?, message: String?)) -> Void) {        
-        Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .deriveaddresses(param: param)) { (response, errorMessage) in
             guard let addresses = response as? [String] else {
                 
                 if let em = errorMessage, em.contains("Missing checksum") {
@@ -211,7 +211,7 @@ class OnchainUtils {
     
     static func getAddressInfo(address: String, completion: @escaping ((addressInfo: AddressInfo?, message: String?)) -> Void) {
         let param:Get_Address_Info = .init(["address": address])
-        Reducer.sharedInstance.makeCommand(command: .getaddressinfo(param: param)) { (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: param)) { (response, errorMessage) in
             guard let response = response as? [String:Any] else {
                 completion((nil, errorMessage))
                 return
@@ -229,7 +229,7 @@ class OnchainUtils {
             "avoid_reuse": false
         ] as [String:Any]
         
-        Reducer.sharedInstance.makeCommand(command: .getbalance(param: .init(gb_param))) { (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getbalance(param: .init(gb_param))) { (response, errorMessage) in
             guard let response = response as? Double else {
                 guard let responseInt = response as? Int else {
                     completion((nil, errorMessage))

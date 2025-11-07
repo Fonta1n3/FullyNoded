@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0A00D6A4271BE51600ECAB22 /* TextFileImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A00D6A3271BE51600ECAB22 /* TextFileImport.swift */; };
+		0A0ABC332EBDBDEE000329E0 /* UTXOCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A0ABC322EBDBDEE000329E0 /* UTXOCell.xib */; };
 		0A1E47792EB7268B00D57B29 /* Currencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E47782EB7268B00D57B29 /* Currencies.swift */; };
 		0A1F10CF26A1A47F00BE2707 /* DerivationPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10CE26A1A47F00BE2707 /* DerivationPath.swift */; };
 		0A1F10D226A1A4EE00BE2707 /* DerivationStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10D126A1A4EE00BE2707 /* DerivationStep.swift */; };
@@ -70,7 +71,6 @@
 		0AF73250291DDFC4009F6296 /* BTC_Params.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF7324F291DDFC4009F6296 /* BTC_Params.swift */; };
 		0AFD7CF32C7E5FB100C46E36 /* Bbqr in Frameworks */ = {isa = PBXBuildFile; productRef = 0AFD7CF22C7E5FB100C46E36 /* Bbqr */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
-		844D2A4C2512D4F60046372E /* UTXOCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 844D2A4A2512D4F60046372E /* UTXOCell.xib */; };
 		D00B27BC255A27F300269B51 /* WalletURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00B27BB255A27F300269B51 /* WalletURL.swift */; };
 		D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00B9A272111427200E8B95A /* AppDelegate.swift */; };
 		D00B9A2D2111427200E8B95A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D00B9A2B2111427200E8B95A /* Main.storyboard */; };
@@ -208,6 +208,7 @@
 /* Begin PBXFileReference section */
 		021B4B6C9A2B5B2A991ECF6E /* Pods_FullyNoded.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FullyNoded.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A00D6A3271BE51600ECAB22 /* TextFileImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFileImport.swift; sourceTree = "<group>"; };
+		0A0ABC322EBDBDEE000329E0 /* UTXOCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UTXOCell.xib; sourceTree = "<group>"; };
 		0A1E47782EB7268B00D57B29 /* Currencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Currencies.swift; sourceTree = "<group>"; };
 		0A1F10CE26A1A47F00BE2707 /* DerivationPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationPath.swift; sourceTree = "<group>"; };
 		0A1F10D126A1A4EE00BE2707 /* DerivationStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationStep.swift; sourceTree = "<group>"; };
@@ -270,7 +271,6 @@
 		0AF7324F291DDFC4009F6296 /* BTC_Params.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTC_Params.swift; sourceTree = "<group>"; };
 		55FF5DCF6C4B0C2309EC4BF2 /* Pods-FullyNoded.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FullyNoded.debug.xcconfig"; path = "Target Support Files/Pods-FullyNoded/Pods-FullyNoded.debug.xcconfig"; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
-		844D2A4A2512D4F60046372E /* UTXOCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UTXOCell.xib; sourceTree = "<group>"; };
 		899ECC6727CAAA7F913D0DA1 /* Pods-FullyNoded.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FullyNoded.release.xcconfig"; path = "Target Support Files/Pods-FullyNoded/Pods-FullyNoded.release.xcconfig"; sourceTree = "<group>"; };
 		A084FD782359F7B700DA63CF /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		D00B27BB255A27F300269B51 /* WalletURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletURL.swift; sourceTree = "<group>"; };
@@ -864,10 +864,10 @@
 		D06B3A522272D1C4001921EE /* UTXO's */ = {
 			isa = PBXGroup;
 			children = (
+				0A0ABC322EBDBDEE000329E0 /* UTXOCell.xib */,
 				D0560EE82277F75900C3E909 /* UTXOViewController.swift */,
 				D08A92B6233E113B00409D6E /* LockedViewController.swift */,
 				844D2A492512D4F60046372E /* UTXOCell.swift */,
-				844D2A4A2512D4F60046372E /* UTXOCell.xib */,
 			);
 			path = "UTXO's";
 			sourceTree = "<group>";
@@ -1106,6 +1106,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D0358D9521B1B44B007D56ED /* whiteCheck.png in Resources */,
+				0A0ABC332EBDBDEE000329E0 /* UTXOCell.xib in Resources */,
 				D084960622EC0A94003FE8EB /* LICENSE.md in Resources */,
 				D0DE292B22BCFE9900D9EBCF /* Readme.md in Resources */,
 				D0126FF022443D1100412629 /* whitePlus.png in Resources */,
@@ -1116,7 +1117,6 @@
 				D049CB3924C7EFDF0039711B /* iTunesArtwork@2x.png in Resources */,
 				D05D9732226433B60035F1DE /* strobe.png in Resources */,
 				D06FD7D2250640F800481185 /* logo_grey_.png in Resources */,
-				844D2A4C2512D4F60046372E /* UTXOCell.xib in Resources */,
 				D0EA04EF25592B910032C63F /* logo_grey.png in Resources */,
 				D0FA417E213C7CED0028E4F8 /* whiteFingerPrint.png in Resources */,
 				D00B9A2D2111427200E8B95A /* Main.storyboard in Resources */,

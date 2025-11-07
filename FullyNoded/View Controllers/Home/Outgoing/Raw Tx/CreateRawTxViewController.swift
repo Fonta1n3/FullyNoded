@@ -1149,7 +1149,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
         
         let param:Wallet_Create_Funded_Psbt = .init(paramDict)
-        Reducer.sharedInstance.makeCommand(command: .walletcreatefundedpsbt(param: param)) { [weak self] (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletcreatefundedpsbt(param: param)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let result = response as? NSDictionary, let psbt1 = result["psbt"] as? String else {
@@ -1159,7 +1159,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             }
             
             let param_process:Wallet_Process_PSBT = .init(["psbt": psbt1])
-            Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt(param: param_process)) { [weak self] (response, errorMessage) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletprocesspsbt(param: param_process)) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let dict = response as? NSDictionary, let processedPSBT = dict["psbt"] as? String else {
@@ -1308,7 +1308,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
             let param:Wallet_Create_Funded_Psbt = .init(paramDict)
                         
-            Reducer.sharedInstance.makeCommand(command: .walletcreatefundedpsbt(param: param)) { [weak self] (response, errorMessage) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletcreatefundedpsbt(param: param)) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let result = response as? NSDictionary, let psbt1 = result["psbt"] as? String else {
@@ -1318,7 +1318,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 }
                 
                 let process_param: Wallet_Process_PSBT = .init(["psbt": psbt1])
-                Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt(param: process_param)) { [weak self] (response, errorMessage) in
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletprocesspsbt(param: process_param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     guard let dict = response as? NSDictionary, let processedPSBT = dict["psbt"] as? String else {

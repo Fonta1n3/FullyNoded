@@ -116,7 +116,7 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
             let index = Int(wallet.index) + 1
             let param:Derive_Addresses = .init(["descriptor": wallet.receiveDescriptor, "range": [index,index]])
             
-            Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { (response, errorMessage) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .deriveaddresses(param: param)) { (response, errorMessage) in
                 guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
                     showAlert(vc: self, title: "", message: errorMessage ?? "error getting closing address")
                     return

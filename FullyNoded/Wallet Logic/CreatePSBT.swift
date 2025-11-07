@@ -26,7 +26,7 @@ class CreatePSBT {
         }
         
         func wallet_create(param: Wallet_Create_Funded_Psbt) {
-            Reducer.sharedInstance.makeCommand(command: .walletcreatefundedpsbt(param: param)) { (response, errorMessage) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletcreatefundedpsbt(param: param)) { (response, errorMessage) in
                 guard let result = response as? NSDictionary, let psbt = result["psbt"] as? String else {
                     var desc = errorMessage ?? "unknown error"
                     if desc.contains("Unexpected key fee_rate") {
@@ -45,7 +45,7 @@ class CreatePSBT {
         activeWallet { wallet in
             guard let wallet = wallet else {
                 // using a bitcoin core wallet
-                Reducer.sharedInstance.makeCommand(command: .getrawchangeaddress) { (response, errorMessage) in
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .getrawchangeaddress) { (response, errorMessage) in
                     guard let changeAddress = response else {
                         completion((nil, nil, "error getting a change address: \(errorMessage ?? "unknown")"))
                         return

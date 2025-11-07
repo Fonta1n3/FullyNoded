@@ -400,7 +400,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     
     private func getDescriptorInfo(desc: String, completion: @escaping ((String?)) -> Void) {
         let param:Get_Descriptor_Info = .init(["descriptor":desc])
-        Reducer.sharedInstance.makeCommand(command: .getdescriptorinfo(param: param)) { (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getdescriptorinfo(param: param)) { (response, errorMessage) in
             guard let dict = response as? NSDictionary,
                 let updatedDescriptor = dict["descriptor"] as? String else {
                 UserDefaults.standard.removeObject(forKey: "walletName")
