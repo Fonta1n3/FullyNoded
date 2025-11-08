@@ -55,6 +55,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         passwordInput.keyboardAppearance = .default
         passwordInput.layer.borderWidth = 0.5
         passwordInput.layer.borderColor = UIColor.lightGray.cgColor
+        passwordInput.backgroundColor = .systemFill
 
         touchIDButton.setImage(UIImage(systemName: "faceid"), for: .normal)
         //touchIDButton.tintColor = .systemTeal
@@ -214,7 +215,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             self.nextButton.setTitleColor(.systemBlue, for: .normal)
             self.nextButton.titleLabel?.font = UIFont.systemFont(ofSize: 17)
             self.nextButton.addTarget(self, action: #selector(self.nextButtonAction), for: .touchUpInside)
-            self.nextButton.backgroundColor = #colorLiteral(red: 0.1215686275, green: 0.1294117647, blue: 0.1411764706, alpha: 1)
+            self.nextButton.backgroundColor = .systemFill
             self.nextButton.clipsToBounds = true
             self.nextButton.layer.cornerRadius = 8
             self.view.addSubview(self.nextButton)

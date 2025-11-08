@@ -32,7 +32,6 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         super.viewDidLoad()
         nodeTable.delegate = self
         nodeTable.dataSource = self
-        iconBackground.layer.cornerRadius = 5
         initialLoad = true
         onchainBalanceConf.alpha = 0
         onchainBalanceUnconfirmed.alpha = 0
@@ -230,6 +229,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
             guard let self = self else { return }
             
             guard let dict = response else {
+                spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error", message: error ?? "unknown")
                 return
             }
