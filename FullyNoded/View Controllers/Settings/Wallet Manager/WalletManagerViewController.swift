@@ -94,31 +94,31 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return wallets.count
+        return 1
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return wallets.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "walletCell", for: indexPath)
         cell.selectionStyle = .none
-        cell.layer.borderColor = UIColor.lightGray.cgColor
-        cell.layer.borderWidth = 0.5
+        //cell.layer.borderColor = UIColor.lightGray.cgColor
+        //cell.layer.borderWidth = 0.5
         let label = cell.viewWithTag(1) as! UILabel
-        let toggle = cell.viewWithTag(2) as! UISwitch
-        let dict = wallets[indexPath.section]
+        let dict = wallets[indexPath.row]
         let isActive = dict["isActive"] as! Bool
         let name = dict["name"] as! String
         label.text = name
-        toggle.setOn(isActive, animated: true)
-        toggle.restorationIdentifier = "\(indexPath.section)"
-        toggle.addTarget(self, action: #selector(toggleAction(_:)), for: .valueChanged)
         if isActive {
-            label.textColor = .white
+            cell.accessoryType = .checkmark
+            cell.isSelected = true
+            label.textColor = .label
         } else {
-            label.textColor = .darkGray
+            cell.accessoryType = .none
+            cell.isSelected = false
+            label.textColor = .secondaryLabel
         }
         return cell
     }
@@ -131,30 +131,52 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
         return 54
     }
     
-    @objc func toggleAction(_ sender: UISwitch) {
-        if sender.restorationIdentifier != nil {
-            if let index = Int(sender.restorationIdentifier!) {
-                let wallet = (wallets[index]["name"] as! String)
-                if sender.isOn {
-                    if wallet != "Default Wallet" {
-                        DispatchQueue.main.async {
-                            UserDefaults.standard.set(wallet, forKey: "walletName")
-                            NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                            self.navigationController?.popToRootViewController(animated: true)
-                        }
-                        //wallets.removeAll()
-                        //didChange = true
-                        //refresh()
-                    } else {
-                        UserDefaults.standard.removeObject(forKey: "walletName")
-                        getAllActiveWallets()
-                    }
-                } else {
-                    UserDefaults.standard.removeObject(forKey: "walletName")
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let wallet = wallets[indexPath.row]
+        let name = wallet["name"] as! String
+        let isActive = wallet["isActive"] as! Bool
+        let existingWallet = UserDefaults.standard.object(forKey: "walletName") as? String ?? ""
+        if !isActive {
+            if name != "Default Wallet" {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    UserDefaults.standard.set(name, forKey: "walletName")
+                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                    navigationController?.popToRootViewController(animated: true)
                 }
+            } else {
+                UserDefaults.standard.removeObject(forKey: "walletName")
+                getAllActiveWallets()
             }
+        } else {
+            UserDefaults.standard.removeObject(forKey: "walletName")
         }
     }
+    
+//    @objc func toggleAction(_ sender: UISwitch) {
+//        if sender.restorationIdentifier != nil {
+//            if let index = Int(sender.restorationIdentifier!) {
+//                let wallet = (wallets[index]["name"] as! String)
+//                if sender.isOn {
+//                    if wallet != "Default Wallet" {
+//                        DispatchQueue.main.async {
+//                            UserDefaults.standard.set(wallet, forKey: "walletName")
+//                            NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+//                            self.navigationController?.popToRootViewController(animated: true)
+//                        }
+//                        //wallets.removeAll()
+//                        //didChange = true
+//                        //refresh()
+//                    } else {
+//                        UserDefaults.standard.removeObject(forKey: "walletName")
+//                        getAllActiveWallets()
+//                    }
+//                } else {
+//                    UserDefaults.standard.removeObject(forKey: "walletName")
+//                }
+//            }
+//        }
+//    }
     
     private func getAllActiveWallets() {
         connectingView.addConnectingView(vc: self, description: "getting all loaded wallets...")

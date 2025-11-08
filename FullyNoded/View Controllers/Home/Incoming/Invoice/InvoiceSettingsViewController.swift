@@ -12,7 +12,6 @@ import UIKit
 class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     @IBOutlet weak var table: UITableView!
-    //@IBOutlet weak var table: UITableView!
     var isSingleKey = Bool()
     var isPrivKey = Bool()
 
@@ -49,13 +48,11 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
         let cell = tableView.dequeueReusableCell(withIdentifier: "invoiceCell", for: indexPath)
         cell.selectionStyle = .none
         let label = cell.viewWithTag(1) as! UILabel
-        let check = cell.viewWithTag(2) as! UIImageView
         let chevron = cell.viewWithTag(3) as! UIImageView
         
         switch indexPath.section {
         
         case 0:
-            check.alpha = 0
             label.text = "Bitcoin Core Wallets"
             label.textColor = .white
             chevron.alpha = 1
@@ -70,7 +67,6 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
             }
             chevron.alpha = 1
             label.textColor = .white
-            check.alpha = 0
             return cell
             
 //        case 2:
