@@ -217,7 +217,6 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 firstTap = .now
                 guard let id = sender.restorationIdentifier, let row = Int(id) else { return }
                 selectedIndex = row
-                print("selectedIndex = \(selectedIndex)")
                 performSegue(withIdentifier: "updateNode", sender: self)
             }
         }
@@ -474,7 +473,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         if segue.identifier == "updateNode" {
             if let vc = segue.destination as? NodeDetailViewController {
                 vc.selectedNode = self.nodeArray[selectedIndex]
-                vc.isLND = true
+                vc.isLND = isLnd
+                vc.isBitcoinCore = isBitcoinCore
                 vc.createNew = false
             }
         }

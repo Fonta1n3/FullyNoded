@@ -460,7 +460,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
             }
         case "segueToLightningCreds":
             if let vc = segue.destination as? NodeDetailViewController {
-                vc.isLightning = true
+                vc.isLND = true
                 vc.selectedNode = activeNode
             }
             
