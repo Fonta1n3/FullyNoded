@@ -9,14 +9,12 @@
 import Foundation
 import UIKit
 
-// MARK: - Modal View Controller (pure UIKit)
 class TextModalViewController: UIViewController {
     
     private let data: [String: Any]
     private let viewTitle: String
     private var prettyText: String = ""
     
-    /// Initialize with any dictionary (supports nested dictionaries & arrays)
     init(data: [String: Any], viewTitle: String) {
         self.data = data
         self.viewTitle = viewTitle
@@ -37,7 +35,7 @@ class TextModalViewController: UIViewController {
     
     private lazy var codeContainer: UIView = {
         let view = UIView()
-        view.backgroundColor = .darkGray // Subtle contrast
+        view.backgroundColor = .darkGray
         view.layer.cornerRadius = 16
         view.layer.masksToBounds = true
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -63,7 +61,6 @@ class TextModalViewController: UIViewController {
         setupUI()
         setupNavigationButtons()
         
-        // Pretty-print the dictionary
         textLabel.text = prettyPrintedJSON(from: data)
     }
     
@@ -73,25 +70,20 @@ class TextModalViewController: UIViewController {
         codeContainer.addSubview(textLabel)
         
         NSLayoutConstraint.activate([
-            // ScrollView fills safe area
             scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             
-            // Container: horizontal margins + vertical spacing
             codeContainer.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 20),
             codeContainer.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: 20),
             codeContainer.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -20),
             codeContainer.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -20),
             
-            // Critical: Bind container width to scrollView's FRAME (readable width), not content
             codeContainer.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -40),
             
-            // Optional: Max width for iPad / large screens (prevents super-wide lines)
             codeContainer.widthAnchor.constraint(lessThanOrEqualToConstant: 800).withPriority(.defaultHigh),
             
-            // Label fills container with padding
             textLabel.topAnchor.constraint(equalTo: codeContainer.topAnchor, constant: 24),
             textLabel.leadingAnchor.constraint(equalTo: codeContainer.leadingAnchor, constant: 24),
             textLabel.trailingAnchor.constraint(equalTo: codeContainer.trailingAnchor, constant: -24),
@@ -100,7 +92,6 @@ class TextModalViewController: UIViewController {
     }
     
     private func setupNavigationButtons() {
-        // Copy button (left side)
         let copyButton = UIBarButtonItem(
             image: UIImage(systemName: "doc.on.doc"),
             style: .plain,
@@ -109,7 +100,6 @@ class TextModalViewController: UIViewController {
         )
         copyButton.tintColor = .systemBlue
         
-        // Done button (right side)
         let doneButton = UIBarButtonItem(barButtonSystemItem: .done,
                                          target: self,
                                          action: #selector(dismissModal))
@@ -121,16 +111,13 @@ class TextModalViewController: UIViewController {
     @objc private func copyToClipboard() {
         UIPasteboard.general.string = prettyText
         
-        // Show nice feedback
         let alert = UIAlertController(title: "Copied!", message: "Pretty-printed data copied to clipboard.", preferredStyle: .alert)
         present(alert, animated: true)
         
-        // Auto-dismiss after 1.5 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             alert.dismiss(animated: true)
         }
         
-        // Optional haptic feedback
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
     }
@@ -144,8 +131,6 @@ class TextModalViewController: UIViewController {
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: dictionary, options: [.prettyPrinted, .sortedKeys])
             var jsonString = String(data: jsonData, encoding: .utf8) ?? "Unable to format data."
-            
-            // NEW: Remove all escaped forward slashes (\/ → /)
             jsonString = jsonString.replacingOccurrences(of: "\\/", with: "/")
             
             return jsonString

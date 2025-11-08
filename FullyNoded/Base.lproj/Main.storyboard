@@ -1374,8 +1374,8 @@ xxxxx</string>
                                             <rect key="frame" x="0.0" y="0.0" width="321" height="50"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <button opaque="NO" tag="2" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Nuf-cw-3uc">
-                                                    <rect key="frame" x="273" y="10" width="30" height="30"/>
+                                                <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Nuf-cw-3uc">
+                                                    <rect key="frame" x="283" y="10" width="30" height="30"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="30" id="fDU-Bp-qEk"/>
                                                         <constraint firstAttribute="height" constant="30" id="pc1-lA-2Rk"/>
@@ -1386,8 +1386,8 @@ xxxxx</string>
                                                         <color key="titleColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </state>
                                                 </button>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Add a transaction" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hbG-zg-d12">
-                                                    <rect key="frame" x="16" y="15" width="249" height="20.5"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add a transaction" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hbG-zg-d12">
+                                                    <rect key="frame" x="20" y="14.999999999999998" width="255" height="20.333333333333329"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
@@ -1663,12 +1663,12 @@ xxxxx</string>
         <scene sceneID="Uym-uj-rYU">
             <objects>
                 <viewController storyboardIdentifier="QRDisplayer" useStoryboardIdentifierAsRestorationIdentifier="YES" id="GlR-4A-eAx" customClass="QRDisplayerViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" ambiguous="YES" id="1Ax-bN-O8E">
+                    <view key="view" contentMode="scaleToFill" id="1Ax-bN-O8E">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="666"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kT3-vW-HgJ">
-                                <rect key="frame" x="16" y="71" width="343" height="343"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="kT3-vW-HgJ">
+                                <rect key="frame" x="16" y="71" width="361" height="343"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="343" id="11T-Zr-4bL"/>
                                     <constraint firstAttribute="height" constant="343" id="lbF-go-rBu"/>
@@ -1688,8 +1688,8 @@ xxxxx</string>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
-                                <rect key="frame" x="16" y="422" width="343" height="224"/>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
+                                <rect key="frame" x="16" y="422" width="361" height="224"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" systemColor="secondaryLabelColor"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
@@ -3451,44 +3451,33 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" alignment="bottom" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="j51-al-1TS">
-                                <rect key="frame" x="16" y="113.99999999999999" width="382" height="37.333333333333329"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="TQR-MC-WaO">
+                                <rect key="frame" x="16" y="110.99999999999997" width="382" height="431.33333333333326"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="i4S-3F-zd4">
-                                        <rect key="frame" x="0.0" y="0.0" width="21.333333333333332" height="37.333333333333336"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" alignment="bottom" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="j51-al-1TS">
+                                        <rect key="frame" x="0.0" y="0.0" width="382" height="37.333333333333336"/>
                                         <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="     " lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tft-x5-9Sa">
-                                                <rect key="frame" x="0.0" y="0.0" width="21.333333333333332" height="20.333333333333332"/>
-                                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
-                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="    " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eF5-14-zcH">
-                                                <rect key="frame" x="0.0" y="20.333333333333343" width="21.333333333333332" height="17"/>
-                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                <color key="textColor" systemColor="systemGreenColor"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="i4S-3F-zd4">
+                                                <rect key="frame" x="0.0" y="0.0" width="382" height="37.333333333333336"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="     " lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tft-x5-9Sa">
+                                                        <rect key="frame" x="0.0" y="0.0" width="382" height="20.333333333333332"/>
+                                                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
+                                                        <color key="textColor" systemColor="tertiaryLabelColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="    " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eF5-14-zcH">
+                                                        <rect key="frame" x="0.0" y="20.333333333333343" width="382" height="17"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
                                         </subviews>
                                     </stackView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FTc-X9-DAY">
-                                        <rect key="frame" x="272" y="14.333333333333343" width="110" height="23"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <color key="tintColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <state key="normal" title=" paste invoice" image="doc.on.clipboard" catalog="system">
-                                            <color key="titleColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="pasteAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="iR7-Wj-DOO"/>
-                                        </connections>
-                                    </button>
-                                </subviews>
-                            </stackView>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="TQR-MC-WaO">
-                                <rect key="frame" x="16" y="161.33333333333337" width="382" height="386"/>
-                                <subviews>
                                     <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6ok-Q8-SRj">
-                                        <rect key="frame" x="0.0" y="0.0" width="382" height="141"/>
+                                        <rect key="frame" x="0.0" y="45.333333333333343" width="382" height="141"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Amount:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jPR-ah-bEx">
                                                 <rect key="frame" x="8" y="8" width="66.666666666666671" height="18"/>
@@ -3496,83 +3485,51 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                     <constraint firstAttribute="height" constant="18" id="Oup-uf-rww"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
-                                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <color key="textColor" systemColor="secondaryLabelColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="AXR-UZ-1lO">
-                                                <rect key="frame" x="8" y="53" width="35" height="35"/>
-                                                <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bitcoinsign.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="cDK-QG-hoD">
-                                                        <rect key="frame" x="4" y="4.6666666666666661" width="27" height="25.666666666666671"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="27" id="Vmb-Yx-5M0"/>
-                                                            <constraint firstAttribute="width" constant="27" id="v7I-sm-2qo"/>
-                                                        </constraints>
-                                                    </imageView>
-                                                </subviews>
-                                                <color key="backgroundColor" systemColor="systemIndigoColor"/>
-                                                <constraints>
-                                                    <constraint firstItem="cDK-QG-hoD" firstAttribute="centerY" secondItem="AXR-UZ-1lO" secondAttribute="centerY" id="AIG-KR-YCg"/>
-                                                    <constraint firstItem="cDK-QG-hoD" firstAttribute="centerX" secondItem="AXR-UZ-1lO" secondAttribute="centerX" id="LB9-Ji-oWp"/>
-                                                    <constraint firstAttribute="width" constant="35" id="T81-Vf-aM8"/>
-                                                    <constraint firstAttribute="height" constant="35" id="fzh-La-YNd"/>
-                                                </constraints>
-                                            </view>
                                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="0.0" borderStyle="roundedRect" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="WBT-v4-ipz">
-                                                <rect key="frame" x="51" y="53.666666666666657" width="323" height="34"/>
-                                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <rect key="frame" x="43" y="53.666666666666657" width="331" height="34"/>
+                                                <color key="backgroundColor" systemColor="tertiarySystemBackgroundColor"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="decimalPad" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                             </textField>
-                                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="vMA-Qa-Z9W">
-                                                <rect key="frame" x="240" y="99.999999999999972" width="134" height="32"/>
-                                                <segments>
-                                                    <segment title="btc"/>
-                                                    <segment title="sats"/>
-                                                    <segment title="usd"/>
-                                                </segments>
-                                                <color key="selectedSegmentTintColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bitcoinsign.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="cDK-QG-hoD">
+                                                <rect key="frame" x="8" y="57.666666666666664" width="27" height="25.666666666666679"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="27" id="JRh-A3-OFp"/>
+                                                    <constraint firstAttribute="width" constant="27" id="xhh-7D-V83"/>
+                                                </constraints>
+                                            </imageView>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DPZ-i4-CIL">
+                                                <rect key="frame" x="294" y="7.666666666666659" width="68" height="18.666666666666671"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                                                <color key="tintColor" systemColor="tintColor"/>
+                                                <state key="normal" title=" send all " image="exclamationmark.triangle" catalog="system">
+                                                    <color key="titleColor" systemColor="tintColor"/>
+                                                </state>
                                                 <connections>
-                                                    <action selector="denominationChanged:" destination="pUo-bf-sNm" eventType="valueChanged" id="QG2-EL-RlA"/>
+                                                    <action selector="sweep:" destination="pUo-bf-sNm" eventType="touchUpInside" id="MfD-fA-Tqw"/>
                                                 </connections>
-                                            </segmentedControl>
-                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="z0X-Gf-fTM">
-                                                <rect key="frame" x="297.66666666666669" y="15.000000000000002" width="68" height="18.666666666666671"/>
-                                                <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DPZ-i4-CIL">
-                                                        <rect key="frame" x="0.0" y="0.0" width="68" height="18.666666666666668"/>
-                                                        <fontDescription key="fontDescription" type="system" pointSize="11"/>
-                                                        <color key="tintColor" systemColor="systemTealColor"/>
-                                                        <state key="normal" title=" send all " image="exclamationmark.triangle" catalog="system">
-                                                            <color key="titleColor" systemColor="systemTealColor"/>
-                                                        </state>
-                                                        <connections>
-                                                            <action selector="sweep:" destination="pUo-bf-sNm" eventType="touchUpInside" id="MfD-fA-Tqw"/>
-                                                        </connections>
-                                                    </button>
-                                                </subviews>
-                                            </stackView>
+                                            </button>
                                         </subviews>
-                                        <color key="backgroundColor" red="0.020562656992803845" green="0.021929370673599687" blue="0.024107942681218297" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                         <constraints>
-                                            <constraint firstAttribute="trailing" secondItem="vMA-Qa-Z9W" secondAttribute="trailing" constant="8" id="0vF-HR-O8D"/>
                                             <constraint firstAttribute="height" constant="141" id="8tK-Dn-IzE"/>
+                                            <constraint firstAttribute="trailing" secondItem="DPZ-i4-CIL" secondAttribute="trailing" constant="20" symbolic="YES" id="Cl0-Ui-ixC"/>
                                             <constraint firstItem="jPR-ah-bEx" firstAttribute="leading" secondItem="6ok-Q8-SRj" secondAttribute="leading" constant="8" id="IJA-9c-gnX"/>
-                                            <constraint firstAttribute="bottom" secondItem="vMA-Qa-Z9W" secondAttribute="bottom" constant="10" id="IRe-eF-lTk"/>
-                                            <constraint firstAttribute="trailing" secondItem="z0X-Gf-fTM" secondAttribute="trailing" constant="16.5" id="T8p-oa-Kpw"/>
+                                            <constraint firstItem="cDK-QG-hoD" firstAttribute="leading" secondItem="6ok-Q8-SRj" secondAttribute="leading" constant="8" id="Wlf-eU-KZ5"/>
                                             <constraint firstAttribute="trailing" secondItem="WBT-v4-ipz" secondAttribute="trailing" constant="8" id="ZVf-iq-66d"/>
-                                            <constraint firstItem="WBT-v4-ipz" firstAttribute="leading" secondItem="AXR-UZ-1lO" secondAttribute="trailing" constant="8" id="aEK-RS-lgI"/>
-                                            <constraint firstItem="z0X-Gf-fTM" firstAttribute="top" secondItem="6ok-Q8-SRj" secondAttribute="top" constant="15" id="bqn-fx-LIS"/>
-                                            <constraint firstItem="AXR-UZ-1lO" firstAttribute="centerY" secondItem="6ok-Q8-SRj" secondAttribute="centerY" id="cDR-um-lU1"/>
+                                            <constraint firstItem="WBT-v4-ipz" firstAttribute="leading" secondItem="cDK-QG-hoD" secondAttribute="trailing" constant="8" id="dhv-HO-9aK"/>
                                             <constraint firstItem="WBT-v4-ipz" firstAttribute="centerY" secondItem="6ok-Q8-SRj" secondAttribute="centerY" id="jpl-6v-BhX"/>
-                                            <constraint firstItem="AXR-UZ-1lO" firstAttribute="leading" secondItem="6ok-Q8-SRj" secondAttribute="leading" constant="8" id="vuV-mo-8PI"/>
+                                            <constraint firstItem="WBT-v4-ipz" firstAttribute="centerY" secondItem="cDK-QG-hoD" secondAttribute="centerY" id="o0X-um-DAB"/>
+                                            <constraint firstItem="DPZ-i4-CIL" firstAttribute="centerY" secondItem="jPR-ah-bEx" secondAttribute="centerY" id="vwD-Hn-p1N"/>
                                             <constraint firstItem="jPR-ah-bEx" firstAttribute="top" secondItem="6ok-Q8-SRj" secondAttribute="top" constant="8" id="wSs-aq-2Qe"/>
                                             <constraint firstAttribute="width" constant="363" id="xg0-4s-ZM5"/>
                                         </constraints>
                                     </view>
                                     <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yzj-3l-LdC">
-                                        <rect key="frame" x="0.0" y="148.99999999999997" width="382" height="110.00000000000003"/>
+                                        <rect key="frame" x="0.0" y="194.33333333333331" width="382" height="110"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PFC-7A-3Gn">
                                                 <rect key="frame" x="8" y="8" width="69.333333333333329" height="18"/>
@@ -3580,7 +3537,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                     <constraint firstAttribute="height" constant="18" id="aVm-SL-uBe"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
-                                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <color key="textColor" systemColor="secondaryLabelColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="uKX-Nk-zA1">
@@ -3599,29 +3556,9 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                     </button>
                                                 </subviews>
                                             </stackView>
-                                            <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="CX8-Q9-SO8">
-                                                <rect key="frame" x="8" y="37.666666666666686" width="35" height="35"/>
-                                                <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="person.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="m6x-rI-NH2">
-                                                        <rect key="frame" x="4" y="4.6666666666666661" width="27" height="25.666666666666671"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="27" id="5Q8-Go-Sxf"/>
-                                                            <constraint firstAttribute="width" constant="27" id="MKs-iG-ovZ"/>
-                                                        </constraints>
-                                                    </imageView>
-                                                </subviews>
-                                                <color key="backgroundColor" systemColor="systemGreenColor"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" constant="35" id="1u0-Ax-Hsq"/>
-                                                    <constraint firstItem="m6x-rI-NH2" firstAttribute="centerY" secondItem="CX8-Q9-SO8" secondAttribute="centerY" id="anG-A5-vIz"/>
-                                                    <constraint firstAttribute="width" constant="35" id="hfp-fW-LDr"/>
-                                                    <constraint firstItem="m6x-rI-NH2" firstAttribute="centerX" secondItem="CX8-Q9-SO8" secondAttribute="centerX" id="jrz-Ph-fQm"/>
-                                                </constraints>
-                                            </view>
                                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="vOa-19-8RX">
-                                                <rect key="frame" x="51" y="38" width="323" height="34"/>
-                                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <rect key="frame" x="43" y="38" width="331" height="34"/>
+                                                <color key="backgroundColor" systemColor="tertiarySystemBackgroundColor"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                             </textField>
@@ -3636,34 +3573,39 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                     <action selector="lightningWithdrawAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="IkT-60-d1p"/>
                                                 </connections>
                                             </button>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="iqB-He-pDQ">
-                                                <rect key="frame" x="8" y="37.666666666666686" width="35" height="35"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" constant="35" id="MM7-o0-gGv"/>
-                                                    <constraint firstAttribute="height" constant="35" id="tPq-ih-pCG"/>
-                                                </constraints>
-                                            </imageView>
                                             <stackView opaque="NO" contentMode="scaleToFill" distribution="equalCentering" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="ne0-Tl-EvV">
-                                                <rect key="frame" x="8" y="80.666666666666686" width="366" height="25"/>
+                                                <rect key="frame" x="8" y="78.666666666666686" width="366" height="27"/>
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nA1-eY-B0R">
-                                                        <rect key="frame" x="0.0" y="0.0" width="79" height="25"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="79" height="27"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                        <color key="tintColor" systemColor="systemTealColor"/>
+                                                        <color key="tintColor" systemColor="tintColor"/>
                                                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                                         <state key="normal" title="send to wallet">
-                                                            <color key="titleColor" systemColor="systemTealColor"/>
+                                                            <color key="titleColor" systemColor="tintColor"/>
                                                         </state>
                                                         <connections>
                                                             <action selector="sendToWalletAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="2fy-8F-Jvq"/>
                                                         </connections>
                                                     </button>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rOq-3M-0CP">
-                                                        <rect key="frame" x="291" y="0.0" width="75" height="25"/>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Jln-G7-Beg">
+                                                        <rect key="frame" x="164" y="0.0" width="40" height="27"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                        <color key="tintColor" systemColor="systemTealColor"/>
+                                                        <color key="tintColor" systemColor="tintColor"/>
+                                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                        <state key="normal" title="donate">
+                                                            <color key="titleColor" systemColor="tintColor"/>
+                                                        </state>
+                                                        <connections>
+                                                            <action selector="donateAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="RdC-c4-lmO"/>
+                                                        </connections>
+                                                    </button>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rOq-3M-0CP">
+                                                        <rect key="frame" x="291" y="0.0" width="75" height="27"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                        <color key="tintColor" systemColor="tintColor"/>
                                                         <state key="normal" title=" add to batch">
-                                                            <color key="titleColor" systemColor="systemTealColor"/>
+                                                            <color key="titleColor" systemColor="tintColor"/>
                                                         </state>
                                                         <connections>
                                                             <action selector="addToBatchAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="Tif-TN-mgI"/>
@@ -3671,31 +3613,35 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                     </button>
                                                 </subviews>
                                             </stackView>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="person.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="m6x-rI-NH2">
+                                                <rect key="frame" x="8" y="42.33333333333335" width="27" height="25.666666666666679"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="27" id="SPn-7y-upn"/>
+                                                    <constraint firstAttribute="height" constant="27" id="TlK-bh-ZIi"/>
+                                                </constraints>
+                                            </imageView>
                                         </subviews>
-                                        <color key="backgroundColor" red="0.019498584789999999" green="0.023548513649999998" blue="0.023569250480000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                         <constraints>
-                                            <constraint firstItem="CX8-Q9-SO8" firstAttribute="centerY" secondItem="yzj-3l-LdC" secondAttribute="centerY" id="0ak-wr-A2t"/>
                                             <constraint firstItem="PFC-7A-3Gn" firstAttribute="top" secondItem="yzj-3l-LdC" secondAttribute="top" constant="8" id="3GM-1R-EGG"/>
-                                            <constraint firstItem="vOa-19-8RX" firstAttribute="centerY" secondItem="iqB-He-pDQ" secondAttribute="centerY" id="44A-eI-wSf"/>
-                                            <constraint firstItem="ne0-Tl-EvV" firstAttribute="top" secondItem="CX8-Q9-SO8" secondAttribute="bottom" constant="8" id="4GV-i8-ts5"/>
                                             <constraint firstAttribute="height" constant="110" id="819-iL-EHS"/>
                                             <constraint firstItem="uKX-Nk-zA1" firstAttribute="leading" secondItem="vCU-fw-O9h" secondAttribute="trailing" constant="10" id="8e4-6y-2q1"/>
                                             <constraint firstAttribute="trailing" secondItem="vOa-19-8RX" secondAttribute="trailing" constant="8" id="BrB-xG-8eV"/>
-                                            <constraint firstItem="vOa-19-8RX" firstAttribute="leading" secondItem="CX8-Q9-SO8" secondAttribute="trailing" constant="8" id="DGO-r7-4Xx"/>
                                             <constraint firstAttribute="trailing" secondItem="uKX-Nk-zA1" secondAttribute="trailing" constant="16.5" id="G0Y-qF-1Lb"/>
                                             <constraint firstAttribute="trailing" secondItem="ne0-Tl-EvV" secondAttribute="trailing" constant="8" id="JO7-fD-tKe"/>
+                                            <constraint firstItem="vOa-19-8RX" firstAttribute="leading" secondItem="m6x-rI-NH2" secondAttribute="trailing" constant="8" id="MfY-7k-MTd"/>
+                                            <constraint firstItem="m6x-rI-NH2" firstAttribute="leading" secondItem="yzj-3l-LdC" secondAttribute="leading" constant="8" id="OlW-pE-1Wn"/>
                                             <constraint firstItem="uKX-Nk-zA1" firstAttribute="centerY" secondItem="vCU-fw-O9h" secondAttribute="centerY" id="Sbe-Ts-5W5"/>
                                             <constraint firstItem="ne0-Tl-EvV" firstAttribute="leading" secondItem="yzj-3l-LdC" secondAttribute="leading" constant="8" id="bX8-Bb-7xc"/>
-                                            <constraint firstItem="CX8-Q9-SO8" firstAttribute="leading" secondItem="yzj-3l-LdC" secondAttribute="leading" constant="8" id="gcK-7M-17l"/>
                                             <constraint firstItem="uKX-Nk-zA1" firstAttribute="top" secondItem="yzj-3l-LdC" secondAttribute="top" constant="6" id="iUw-zx-IQQ"/>
                                             <constraint firstItem="PFC-7A-3Gn" firstAttribute="leading" secondItem="yzj-3l-LdC" secondAttribute="leading" constant="8" id="ju5-VI-b7p"/>
+                                            <constraint firstItem="vOa-19-8RX" firstAttribute="centerY" secondItem="m6x-rI-NH2" secondAttribute="centerY" id="lE5-Vp-fKp"/>
                                             <constraint firstAttribute="bottom" secondItem="ne0-Tl-EvV" secondAttribute="bottom" constant="4.5" id="ss8-lR-n0H"/>
                                             <constraint firstItem="vOa-19-8RX" firstAttribute="centerY" secondItem="yzj-3l-LdC" secondAttribute="centerY" id="x3K-rp-yWB"/>
-                                            <constraint firstItem="iqB-He-pDQ" firstAttribute="leading" secondItem="yzj-3l-LdC" secondAttribute="leading" constant="8" id="ycv-wN-6ei"/>
                                         </constraints>
                                     </view>
                                     <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rmu-y9-w5v">
-                                        <rect key="frame" x="0.0" y="267" width="382" height="119"/>
+                                        <rect key="frame" x="0.0" y="312.33333333333331" width="382" height="119"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Fee:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ynD-gu-Xre">
                                                 <rect key="frame" x="8" y="8" width="33.333333333333336" height="18"/>
@@ -3703,7 +3649,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                     <constraint firstAttribute="height" constant="18" id="cR5-SM-iBa"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
-                                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <color key="textColor" systemColor="secondaryLabelColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Target: 2 blocks ~20 minutes" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mdu-uM-jaM">
@@ -3712,32 +3658,11 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                     <constraint firstAttribute="height" constant="22" id="zmS-V5-o6f"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" type="system" pointSize="10"/>
-                                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <color key="textColor" systemColor="secondaryLabelColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="X4T-PA-gul">
-                                                <rect key="frame" x="8" y="42" width="35" height="35"/>
-                                                <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="timer" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Xyt-Vb-mgk">
-                                                        <rect key="frame" x="4" y="4.6666666666666661" width="27" height="25.666666666666671"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="width" constant="27" id="6SN-fy-zLS"/>
-                                                            <constraint firstAttribute="height" constant="27" id="AE6-VG-IvI"/>
-                                                        </constraints>
-                                                    </imageView>
-                                                </subviews>
-                                                <color key="backgroundColor" systemColor="systemOrangeColor"/>
-                                                <constraints>
-                                                    <constraint firstItem="Xyt-Vb-mgk" firstAttribute="centerY" secondItem="X4T-PA-gul" secondAttribute="centerY" id="36f-Cc-G6w"/>
-                                                    <constraint firstAttribute="width" constant="35" id="LZM-2l-6sH"/>
-                                                    <constraint firstItem="Xyt-Vb-mgk" firstAttribute="centerX" secondItem="X4T-PA-gul" secondAttribute="centerX" id="PuB-wh-pGh"/>
-                                                    <constraint firstAttribute="height" constant="35" id="bps-oR-Pum"/>
-                                                </constraints>
-                                            </view>
                                             <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="Nls-an-9n9">
-                                                <rect key="frame" x="49" y="44.666666666666686" width="319" height="31"/>
-                                                <color key="minimumTrackTintColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <color key="thumbTintColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <rect key="frame" x="41" y="44.666666666666686" width="327" height="31"/>
                                             </slider>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="3.1 s/b" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CwA-0R-tRF">
                                                 <rect key="frame" x="342.33333333333331" y="96.000000000000057" width="31.333333333333314" height="22"/>
@@ -3745,11 +3670,12 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                     <constraint firstAttribute="height" constant="22" id="vGd-AL-FZd"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" type="system" pointSize="10"/>
-                                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <color key="textColor" systemColor="secondaryLabelColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="sbh-pS-EJp">
                                                 <rect key="frame" x="289" y="8" width="51" height="34"/>
+                                                <color key="backgroundColor" systemColor="tertiarySystemBackgroundColor"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="51" id="h5d-Ow-rNC"/>
                                                 </constraints>
@@ -3759,7 +3685,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Set a sat/vbyte fee rate:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yHc-bR-waN">
                                                 <rect key="frame" x="165.66666666666666" y="8" width="115.33333333333334" height="12"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="10"/>
-                                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <color key="textColor" systemColor="secondaryLabelColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="close" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7sG-fk-IDe">
@@ -3772,35 +3698,41 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                     <action selector="closeFeeRate:" destination="pUo-bf-sNm" eventType="touchUpInside" id="zer-HG-3Ym"/>
                                                 </connections>
                                             </button>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="timer" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Xyt-Vb-mgk">
+                                                <rect key="frame" x="8" y="46.666666666666664" width="27" height="25.666666666666679"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="27" id="lB9-f1-gaT"/>
+                                                    <constraint firstAttribute="height" constant="27" id="uK3-oh-Ujz"/>
+                                                </constraints>
+                                            </imageView>
                                         </subviews>
-                                        <color key="backgroundColor" red="0.019498584789999999" green="0.023548513649999998" blue="0.023569250480000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                         <constraints>
                                             <constraint firstItem="7sG-fk-IDe" firstAttribute="leading" secondItem="sbh-pS-EJp" secondAttribute="trailing" constant="8" symbolic="YES" id="7Or-fS-cc1"/>
                                             <constraint firstAttribute="bottom" secondItem="mdu-uM-jaM" secondAttribute="bottom" constant="1" id="AaE-4P-YtT"/>
-                                            <constraint firstItem="Nls-an-9n9" firstAttribute="leading" secondItem="X4T-PA-gul" secondAttribute="trailing" constant="8" id="Az7-eM-7zG"/>
                                             <constraint firstItem="mdu-uM-jaM" firstAttribute="leading" secondItem="Rmu-y9-w5v" secondAttribute="leading" constant="8" id="BAw-jU-qDC"/>
                                             <constraint firstAttribute="trailing" secondItem="Nls-an-9n9" secondAttribute="trailing" constant="16" id="Ft6-uQ-C1G"/>
                                             <constraint firstAttribute="trailing" secondItem="CwA-0R-tRF" secondAttribute="trailing" constant="8.5" id="GNM-0T-JCl"/>
+                                            <constraint firstItem="Nls-an-9n9" firstAttribute="leading" secondItem="Xyt-Vb-mgk" secondAttribute="trailing" constant="8" id="LAq-GH-ZUr"/>
                                             <constraint firstItem="Nls-an-9n9" firstAttribute="centerY" secondItem="Rmu-y9-w5v" secondAttribute="centerY" id="Rdg-FD-bke"/>
+                                            <constraint firstItem="Xyt-Vb-mgk" firstAttribute="leading" secondItem="Rmu-y9-w5v" secondAttribute="leading" constant="8" id="Ver-bB-Bzd"/>
                                             <constraint firstItem="7sG-fk-IDe" firstAttribute="centerY" secondItem="sbh-pS-EJp" secondAttribute="centerY" id="Xil-wg-fnw"/>
                                             <constraint firstItem="ynD-gu-Xre" firstAttribute="leading" secondItem="Rmu-y9-w5v" secondAttribute="leading" constant="8" id="YLI-tw-ir5"/>
                                             <constraint firstItem="sbh-pS-EJp" firstAttribute="top" secondItem="Rmu-y9-w5v" secondAttribute="top" constant="8" id="aI8-sW-uus"/>
                                             <constraint firstAttribute="bottom" secondItem="CwA-0R-tRF" secondAttribute="bottom" constant="1" id="bYl-WP-LmC"/>
-                                            <constraint firstItem="X4T-PA-gul" firstAttribute="leading" secondItem="Rmu-y9-w5v" secondAttribute="leading" constant="8" id="blk-VO-vQT"/>
                                             <constraint firstAttribute="trailing" secondItem="7sG-fk-IDe" secondAttribute="trailing" constant="4" id="f5U-V1-wNh"/>
-                                            <constraint firstItem="X4T-PA-gul" firstAttribute="centerY" secondItem="Rmu-y9-w5v" secondAttribute="centerY" id="mTL-pi-Rhq"/>
                                             <constraint firstItem="ynD-gu-Xre" firstAttribute="top" secondItem="Rmu-y9-w5v" secondAttribute="top" constant="8" id="nRO-hj-Jf2"/>
                                             <constraint firstItem="sbh-pS-EJp" firstAttribute="leading" secondItem="yHc-bR-waN" secondAttribute="trailing" constant="8" symbolic="YES" id="oK9-gr-xla"/>
                                             <constraint firstItem="yHc-bR-waN" firstAttribute="top" secondItem="Rmu-y9-w5v" secondAttribute="top" constant="8" id="pdu-I7-eMM"/>
                                             <constraint firstAttribute="height" constant="119" id="uv6-3d-Qs1"/>
+                                            <constraint firstItem="Nls-an-9n9" firstAttribute="centerY" secondItem="Xyt-Vb-mgk" secondAttribute="centerY" id="zFB-NZ-hdk"/>
                                         </constraints>
                                     </view>
                                 </subviews>
                             </stackView>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="jXp-xP-J4h">
-                                <rect key="frame" x="16" y="640.33333333333337" width="382" height="157.66666666666663"/>
+                                <rect key="frame" x="16" y="635.33333333333337" width="382" height="162.66666666666663"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="cell" textLabel="C0I-2Z-mCW" rowHeight="85" style="IBUITableViewCellStyleDefault" id="9QV-RF-yNq">
                                         <rect key="frame" x="0.0" y="50" width="382" height="85"/>
@@ -3813,13 +3745,13 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                     <rect key="frame" x="20" y="0.0" width="342" height="85"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="11"/>
-                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                             </subviews>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                     </tableViewCell>
                                 </prototypes>
                                 <connections>
@@ -3828,22 +3760,22 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 </connections>
                             </tableView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HBB-RM-j15">
-                                <rect key="frame" x="125.00000000000001" y="594.33333333333337" width="164.33333333333337" height="38"/>
+                                <rect key="frame" x="125.00000000000001" y="589.33333333333337" width="164.33333333333337" height="38"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="38" id="3Zm-UY-uaT"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="tintColor" systemColor="systemTealColor"/>
+                                <color key="tintColor" systemColor="tintColor"/>
                                 <state key="normal" title=" create transaction" image="link" catalog="system">
-                                    <color key="titleColor" systemColor="systemTealColor"/>
+                                    <color key="titleColor" systemColor="tintColor"/>
                                 </state>
                                 <connections>
                                     <action selector="createOnchainAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="Y3u-V0-JgZ"/>
                                 </connections>
                             </button>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="Vac-p9-eJN">
-                                <rect key="frame" x="95" y="555.33333333333337" width="224" height="32"/>
+                                <rect key="frame" x="95" y="550.33333333333337" width="224" height="32"/>
                                 <segments>
                                     <segment title="standard"/>
                                     <segment title="blind"/>
@@ -3855,55 +3787,54 @@ Fully Noded does its best to support as many hardware and software wallet option
                             </segmentedControl>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="C0H-pw-RSl"/>
-                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="Vac-p9-eJN" firstAttribute="centerX" secondItem="DIN-Fg-EH6" secondAttribute="centerX" id="2z6-nv-kxw"/>
                             <constraint firstItem="TQR-MC-WaO" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="7Uo-47-t91"/>
                             <constraint firstItem="HBB-RM-j15" firstAttribute="top" secondItem="Vac-p9-eJN" secondAttribute="bottom" constant="8" id="BFd-1H-EkE"/>
                             <constraint firstItem="jXp-xP-J4h" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="Ddi-Bk-0f2"/>
-                            <constraint firstItem="j51-al-1TS" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="DhR-KA-Ttb"/>
-                            <constraint firstItem="TQR-MC-WaO" firstAttribute="top" secondItem="j51-al-1TS" secondAttribute="bottom" constant="10" id="Eaj-au-Eza"/>
-                            <constraint firstItem="j51-al-1TS" firstAttribute="top" secondItem="C0H-pw-RSl" secondAttribute="top" constant="11" id="N8Q-zs-IHz"/>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="jXp-xP-J4h" secondAttribute="trailing" constant="16" id="Umd-7A-1YL"/>
                             <constraint firstItem="Vac-p9-eJN" firstAttribute="top" secondItem="TQR-MC-WaO" secondAttribute="bottom" constant="8" symbolic="YES" id="b2P-wI-WJR"/>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="TQR-MC-WaO" secondAttribute="trailing" constant="16" id="eDW-hC-Wtl"/>
-                            <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="j51-al-1TS" secondAttribute="trailing" constant="16" id="icN-qi-Taq"/>
+                            <constraint firstItem="TQR-MC-WaO" firstAttribute="top" secondItem="C0H-pw-RSl" secondAttribute="top" constant="8" id="kAb-X1-HBi"/>
                             <constraint firstItem="jXp-xP-J4h" firstAttribute="top" secondItem="HBB-RM-j15" secondAttribute="bottom" constant="8" id="sYn-RO-mAB"/>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="bottom" secondItem="jXp-xP-J4h" secondAttribute="bottom" constant="20" id="xoD-Dk-cS5"/>
                             <constraint firstItem="HBB-RM-j15" firstAttribute="centerX" secondItem="DIN-Fg-EH6" secondAttribute="centerX" id="yim-pM-p2i"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="Gt1-eH-cey">
-                        <barButtonItem key="rightBarButtonItem" title="scan invoice" image="qrcode.viewfinder" catalog="system" id="bKr-tP-r4V">
-                            <color key="tintColor" systemColor="systemTealColor"/>
-                            <connections>
-                                <action selector="scanNow:" destination="pUo-bf-sNm" id="o7d-7Q-geJ"/>
-                            </connections>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem title="scan invoice" image="qrcode.viewfinder" catalog="system" id="bKr-tP-r4V">
+                                <color key="tintColor" systemColor="tintColor"/>
+                                <connections>
+                                    <action selector="scanNow:" destination="pUo-bf-sNm" id="o7d-7Q-geJ"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="document.on.clipboard" catalog="system" id="tet-Ma-QDQ">
+                                <connections>
+                                    <action selector="pasteAction:" destination="pUo-bf-sNm" id="kkw-RA-yqy"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <connections>
-                        <outlet property="addressIcon" destination="CX8-Q9-SO8" id="lOq-tc-zUN"/>
-                        <outlet property="addressImageView" destination="iqB-He-pDQ" id="jsq-Ag-M0F"/>
                         <outlet property="addressInput" destination="vOa-19-8RX" id="p5c-LC-6xw"/>
                         <outlet property="amountBackground" destination="6ok-Q8-SRj" id="k8E-mF-PS4"/>
-                        <outlet property="amountIcon" destination="AXR-UZ-1lO" id="kwa-lq-pfa"/>
                         <outlet property="amountInput" destination="WBT-v4-ipz" id="4zO-8O-Q8c"/>
                         <outlet property="balanceLabel" destination="eF5-14-zcH" id="dhG-qG-6v7"/>
                         <outlet property="batchOutlet" destination="rOq-3M-0CP" id="TtL-GS-wFd"/>
                         <outlet property="coinSelectionControl" destination="Vac-p9-eJN" id="WYP-k8-8ch"/>
                         <outlet property="denominationImage" destination="cDK-QG-hoD" id="gXI-bz-daC"/>
-                        <outlet property="feeIconBackground" destination="X4T-PA-gul" id="Gas-HE-S15"/>
                         <outlet property="feeRateInputField" destination="sbh-pS-EJp" id="oKd-NE-FHX"/>
                         <outlet property="fxRateLabel" destination="Tft-x5-9Sa" id="diE-in-GEv"/>
+                        <outlet property="lightningDepositOutlet" destination="opr-fY-bD6" id="2fP-ee-g7x"/>
                         <outlet property="lightningWithdrawOutlet" destination="vCU-fw-O9h" id="ubx-pf-bKu"/>
                         <outlet property="miningTargetLabel" destination="mdu-uM-jaM" id="DQW-cX-yg0"/>
                         <outlet property="outputsTable" destination="jXp-xP-J4h" id="y02-Rq-oD9"/>
                         <outlet property="recipientBackground" destination="yzj-3l-LdC" id="HK4-cn-hVM"/>
                         <outlet property="satPerByteLabel" destination="CwA-0R-tRF" id="XfT-Kz-WSt"/>
-                        <outlet property="segmentedControlOutlet" destination="vMA-Qa-Z9W" id="A92-Wd-MbI"/>
                         <outlet property="slider" destination="Nls-an-9n9" id="6lh-uo-HLc"/>
                         <outlet property="sliderViewBackground" destination="Rmu-y9-w5v" id="KqB-tO-aFv"/>
-                        <outlet property="sweepButton" destination="z0X-Gf-fTM" id="tyE-D1-8MJ"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScannerToGetAddress" id="CQp-9r-70w"/>
                         <segue destination="XA2-Lt-01p" kind="show" identifier="segueToBroadcaster" id="7PS-EL-3d2"/>
                         <segue destination="Kdg-W7-roj" kind="presentation" identifier="segueToLightningConf" modalPresentationStyle="fullScreen" id="5Cj-Af-E6m"/>
@@ -6335,10 +6266,10 @@ Fully Noded does its best to support as many hardware and software wallet option
         <segue reference="mRa-gP-mZ0"/>
         <segue reference="kws-xU-XdS"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="2DM-Bo-8hK"/>
+        <segue reference="CQp-9r-70w"/>
         <segue reference="2dt-ER-scB"/>
         <segue reference="veA-tY-zvZ"/>
-        <segue reference="BVG-ie-esh"/>
+        <segue reference="7PS-EL-3d2"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" systemColor="tintColor"/>
     <resources>
@@ -6360,6 +6291,7 @@ Fully Noded does its best to support as many hardware and software wallet option
         <image name="desktopcomputer" catalog="system" width="128" height="101"/>
         <image name="doc.on.clipboard" catalog="system" width="116" height="128"/>
         <image name="doc.on.doc" catalog="system" width="116" height="128"/>
+        <image name="document.on.clipboard" catalog="system" width="116" height="128"/>
         <image name="exclamationmark.triangle" catalog="system" width="128" height="109"/>
         <image name="eye" catalog="system" width="128" height="79"/>
         <image name="folder" catalog="system" width="128" height="96"/>
@@ -6417,9 +6349,6 @@ Fully Noded does its best to support as many hardware and software wallet option
         <systemColor name="systemIndigoColor">
             <color red="0.34509803921568627" green="0.33725490196078434" blue="0.83921568627450982" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
-        <systemColor name="systemOrangeColor">
-            <color red="1" green="0.58431372549019611" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </systemColor>
         <systemColor name="systemPinkColor">
             <color red="1" green="0.17647058823529413" blue="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
@@ -6434,6 +6363,9 @@ Fully Noded does its best to support as many hardware and software wallet option
         </systemColor>
         <systemColor name="tertiaryLabelColor">
             <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29803921568627451" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="tertiarySystemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="tintColor">
             <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
