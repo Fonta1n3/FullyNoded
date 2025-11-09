@@ -10,7 +10,7 @@ import Foundation
 
 public struct Uptime: CustomStringConvertible {
     
-    let uptime:Int
+    let uptime: Int
     
     init(dictionary: [String: Any]) {
         self.uptime = dictionary["uptime"] as? Int ?? 0

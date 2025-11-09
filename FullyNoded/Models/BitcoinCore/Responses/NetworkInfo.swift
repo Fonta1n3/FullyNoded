@@ -10,15 +10,17 @@ import Foundation
 
 public struct NetworkInfo: CustomStringConvertible {
     
-    let version:String
-    let torReachable:Bool
+    let version: String
+    let torReachable: Bool
+    let rawData: [String: Any]
     
     init(dictionary: [String: Any]) {
         self.version = dictionary["subversion"] as? String ?? ""
         self.torReachable = dictionary["reachable"] as? Bool ?? false
+        self.rawData = dictionary
     }
     
     public var description: String {
-        return ""
+        return "Network Info"
     }
 }

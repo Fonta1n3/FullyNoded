@@ -10,14 +10,16 @@ import Foundation
 
 public struct MempoolInfo: CustomStringConvertible {
     
-    let mempoolCount:Int
+    let mempoolCount: Int
+    let rawData: [String: Any]
     
     init(dictionary: [String: Any]) {
         self.mempoolCount = dictionary["mempoolCount"] as? Int ?? 0
+        self.rawData = dictionary["rawData"] as? [String: Any] ?? [:]
     }
     
     public var description: String {
-        return ""
+        return "Mempool Info"
     }
     
 }

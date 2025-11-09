@@ -201,6 +201,7 @@ class NodeLogic {
             if let dict = response as? [String:Any] {
                 var mempoolInfo = [String:Any]()
                 mempoolInfo["mempoolCount"] = dict["size"] as? Int ?? 0
+                mempoolInfo["rawData"] = dict
                 completion((mempoolInfo, nil))
             } else {
                 completion((nil, errorMessage ?? ""))
@@ -675,6 +676,7 @@ class NodeLogic {
         let hashesPerSecond = miningInfo["networkhashps"] as? Double ?? 0.0
         let exahashesPerSecond = hashesPerSecond / 1000000000000000000
         miningInfoToReturn["networkhashps"] = Int(exahashesPerSecond).withCommas
+        miningInfoToReturn["rawData"] = miningInfo
         completion((miningInfoToReturn, nil))
     }
     
@@ -720,6 +722,8 @@ class NodeLogic {
                 networkInfoToReturn["reachable"] = reachable
             }
         }
+        
+        networkInfoToReturn["rawData"] = networkInfo
         
         completion((networkInfoToReturn, nil))
     }

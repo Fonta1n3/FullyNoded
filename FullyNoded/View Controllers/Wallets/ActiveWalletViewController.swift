@@ -1667,9 +1667,6 @@ class ActiveWalletViewController: UIViewController {
             guard let vc = segue.destination as? UTXOViewController else { fallthrough }
             
             vc.fxRate = fxRate
-            vc.isBtc = isBtc
-            vc.isSats = isSats
-            vc.isFiat = isFiat
             
         case "segueToActiveWalletDetail":
             guard let vc = segue.destination as? WalletDetailViewController else { fallthrough }

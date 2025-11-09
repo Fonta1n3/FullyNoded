@@ -10,13 +10,15 @@ import Foundation
 
 public struct MiningInfo: CustomStringConvertible {
     
-    let hashrate:String
+    let hashrate: String
+    let rawData: [String: Any]
     
     init(dictionary: [String: Any]) {
         self.hashrate = dictionary["networkhashps"] as? String ?? ""
+        self.rawData = dictionary
     }
     
     public var description: String {
-        return ""
+        return "Mining Info"
     }
 }
