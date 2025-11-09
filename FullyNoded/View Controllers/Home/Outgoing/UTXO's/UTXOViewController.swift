@@ -7,33 +7,23 @@
 //
 
 import UIKit
-import Dispatch
 
 class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
-    var dataRefresher = UIBarButtonItem()
-    private var amountTotal = 0.0
+    private var dataRefresher = UIBarButtonItem()
+    private var amountTotal: Decimal = 0.0
     private let refresher = UIRefreshControl()
-    private var unlockedUtxos = [Utxo]()
+    private var unlockedUtxos: [UTXO] = []
     private var inputArray: [[String:Any]] = []
-    private var selectedUTXOs = [Utxo]()
-    //private var spinner = ConnectingView()
+    private var selectedUTXOs: [UTXO] = []
     private let spinner = UIActivityIndicatorView(style: .medium)
-    var refreshButton = UIBarButtonItem()
+    private var refreshButton = UIBarButtonItem()
     private var wallet: Wallet?
     private var psbt: String?
     private var depositAddress: String?
     var fxRate: Double?
-    var isBtc = false
-    var isSats = false
-    var isFiat = false
     
-    @IBOutlet weak private var jmEarnOutlet: UIBarButtonItem!
-    @IBOutlet weak private var jmMixOutlet: UIBarButtonItem!
     @IBOutlet weak private var tableView: UITableView!
-    @IBOutlet weak private var jmStatusImageOutlet: UIImageView!
-    @IBOutlet weak private var jmStatusLabelOutlet: UILabel!
-    @IBOutlet weak private var jmActionOutlet: UIButton!
     
     
     override func viewDidLoad() {
@@ -46,20 +36,14 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         refresher.tintColor = UIColor.white
         refresher.addTarget(self, action: #selector(loadUnlockedUtxos), for: UIControl.Event.valueChanged)
         tableView.addSubview(refresher)
-//        jmMixOutlet.tintColor = .clear
-//        jmEarnOutlet.tintColor = .clear
-//        jmMixOutlet.isEnabled = false
-//        jmEarnOutlet.isEnabled = false
-//        jmStatusImageOutlet.alpha = 0
-//        jmStatusLabelOutlet.alpha = 0
-//        jmActionOutlet.alpha = 0
         
-        activeWallet { wallet in
-            guard let wallet = wallet else {
+        activeWallet { [weak self] activeWallet in
+            guard let self = self else { return }
+            guard let activeWallet = activeWallet else {
                 return
             }
             
-            self.wallet = wallet
+            wallet = activeWallet
         }
     }
     
@@ -71,28 +55,13 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         selectedUTXOs.removeAll()
         inputArray.removeAll()
         loadUnlockedUtxos()
-        //checkForJmWallet()
     }
-    
-
-
-    
     
     @IBAction private func lockAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             self.performSegue(withIdentifier: "goToLocked", sender: self)
-        }
-    }
-            
-    private func updateSelectedUtxos() {
-        selectedUTXOs.removeAll()
-        
-        for utxo in unlockedUtxos {
-            if utxo.isSelected {
-                selectedUTXOs.append(utxo)
-            }
         }
     }
     
@@ -104,20 +73,18 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             return
         }
         
-
-            if self.selectedUTXOs.count > 0 {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.updateInputs()
-                    self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
-                }
-            } else {
-                showAlert(vc: self, title: "Select a UTXO first", message: "Just tap a utxo(s) to select it. Then tap the 🔗 to create a transaction with those utxos.")
+        if self.selectedUTXOs.count > 0 {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
             }
+        } else {
+            showAlert(vc: self, title: "Select a UTXO first", message: "Just tap a utxo(s) to select it. Then tap the 🔗 to create a transaction with those utxos.")
+        }
     }
     
-    private func lock(_ utxo: Utxo) {
+    private func lock(_ utxo: UTXO) {
         addNavBarSpinner()
         
         let param = Lock_Unspent(["unlock": false, "transactions": [["txid": utxo.txid,"vout": utxo.vout]]])
@@ -154,22 +121,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func updateInputs() {
-        inputArray.removeAll()
-        amountTotal = 0.0
-        
-        for utxo in selectedUTXOs {
-            amountTotal += utxo.amount ?? 0.0
-            let input:[String:Any] = ["txid": utxo.txid, "vout": utxo.vout, "sequence": 1]
-            inputArray.append(input)
-        }
-    }
-    
     private func finishedLoading() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.updateSelectedUtxos()
             self.tableView.isUserInteractionEnabled = true
             self.tableView.reloadData()
             self.tableView.setContentOffset(.zero, animated: true)
@@ -191,46 +146,20 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
     
     private func getUtxosFromBtcRpc() {
-        let param:List_Unspent = .init(["minconf":0])
-        OnchainUtils.listUnspent(param: param) { [weak self] (utxos, message) in
+        let param: List_Unspent = .init(["minconf": 0])
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listunspent(param)) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
             
-            guard let utxos = utxos else {
-                self.finishedLoading()
-                showAlert(vc: self, title: "Error", message: message ?? "unknown error fecthing your utxos")
+            guard let rawUtxos = response as? [[String: Any]] else {
+                showAlert(vc: self, title: "", message: errorDesc ?? "No respone from listunpsent.")
                 return
             }
             
-            guard utxos.count > 0 else {
-                self.finishedLoading()
-                showAlert(vc: self, title: "No UTXO's", message: "")
-                return
-            }
-            
-            DispatchQueue.background(delay: 0.0, completion: {
-                for (i, utxo) in utxos.enumerated() {
-                    
-                    var utxoDict = utxo.dict
-                    //utxoDict["isJoinMarket"] = self.isJmarketWallet
-                    
-                    func finish() {
-                        self.unlockedUtxos.append(Utxo(utxoDict))
-                        
-                        if i + 1 == utxos.count {
-                            self.unlockedUtxos = self.unlockedUtxos.sorted {
-                                $0.confs ?? 0 < $1.confs ?? 1
-                            }
-                            self.finishedLoading()
-                        }
-                    }
-                    
-                    //let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
-                    let amountBtc = utxo.amount!
-                    utxoDict["amountSats"] = amountBtc.sats
-                    finish()
-                }
-            }
-        )}
+            unlockedUtxos.removeAll()
+            unlockedUtxos = [UTXO].from(rawArray: rawUtxos)
+            unlockedUtxos = unlockedUtxos.sorted { ($0.confirmations) < ($1.confirmations) }
+            finishedLoading()
+        }
     }
     
     private func removeSpinner() {
@@ -286,51 +215,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
         }
     }
-        
-    private func depositNow(_ utxo: Utxo) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            for (i, unlockedUtxo) in self.unlockedUtxos.enumerated() {
-                if unlockedUtxo.id == utxo.id && unlockedUtxo.txid == utxo.txid && unlockedUtxo.vout == utxo.vout {
-                    self.unlockedUtxos[i].isSelected = true
-                    self.updateSelectedUtxos()
-                    self.updateInputs()
-                }
-                
-                if i + 1 == self.unlockedUtxos.count {
-                    self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
-                }
-            }
-        }
-    }
-    
-    
-    private func promptToDonateChange(_ utxo: Utxo) {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                let tit = "Donate toxic change?"
-                let mess = "Toxic change is best used as a donation to the developer."
-                
-                let alert = UIAlertController(title: tit, message: mess, preferredStyle: .actionSheet)
-                
-                alert.addAction(UIAlertAction(title: "Donate", style: .default, handler: { [weak self] action in
-                    guard let self = self else { return }
-                    
-                    guard let donationAddress = Keys.donationAddress() else {
-                        return
-                    }
-                    
-                    self.depositAddress = donationAddress
-                    self.depositNow(utxo)
-                }))
-                
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-                alert.popoverPresentationController?.sourceView = self.view
-                self.present(alert, animated: true, completion: nil)
-            }
-    }
     
     func addNavBarSpinner() {
         DispatchQueue.main.async { [weak self] in
@@ -358,7 +242,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
         
-    private func promptToEditLabel(_ utxo: Utxo) {
+    private func promptToEditLabel(_ utxo: UTXO) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -401,9 +285,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             guard let vc = segue.destination as? LockedViewController else { fallthrough }
             
             vc.fxRate = fxRate
-            vc.isFiat = isFiat
-            vc.isBtc = isBtc
-            vc.isSats = isSats
             
         case "segueToSendFromUtxos":
             guard let vc = segue.destination as? CreateRawTxViewController else { fallthrough }
@@ -427,7 +308,14 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
 // MARK: UTXOCellDelegate
 
 extension UTXOViewController: UTXOCellDelegate {
-    func getAddressInfo(_ utxo: Utxo) {
+    func showUtxoRawData(_ utxo: UTXO) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            showModal(data: utxo.rawData, title: "Utxo Info")
+        }
+    }
+    
+    func getAddressInfo(_ utxo: UTXO) {
         guard let address = utxo.address else {
             showAlert(vc: self, title: "", message: "No address associated with that UTXO.")
             return
@@ -448,7 +336,7 @@ extension UTXOViewController: UTXOCellDelegate {
         }
     }
     
-    func getTxInfo(_ utxo: Utxo) {
+    func getTxInfo(_ utxo: UTXO) {
         let p: Get_Tx = .init(["txid": utxo.txid, "verbose": true, "include_watchonly": true])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .gettransaction(p)) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
@@ -465,7 +353,7 @@ extension UTXOViewController: UTXOCellDelegate {
         }
     }
     
-    func getDescriptorInfo(_ utxo: Utxo) {
+    func getDescriptorInfo(_ utxo: UTXO) {
         guard let descriptor = utxo.desc else {
             showAlert(vc: self, title: "", message: "No descriptor associated with this UTXO.")
             return
@@ -486,11 +374,9 @@ extension UTXOViewController: UTXOCellDelegate {
         }
     }
     
-    func didTapToSpendUtxo(_ utxo: Utxo) {
+    func didTapToSpendUtxo(_ utxo: UTXO) {
         var utxo = utxo
-        utxo.isSelected = true
-        
-        amountTotal = utxo.amount!
+        amountTotal = utxo.amount
         let input:[String:Any] = ["txid": utxo.txid, "vout": utxo.vout, "sequence": 1]
         inputArray.append(input)
         
@@ -501,40 +387,39 @@ extension UTXOViewController: UTXOCellDelegate {
         }
     }
     
-    func copyAddress(_ utxo: Utxo) {
+    func copyAddress(_ utxo: UTXO) {
         UIPasteboard.general.string = utxo.address!
         showAlert(vc: self, title: "", message: "Address copied ✓")
     }
     
-    func copyTxid(_ utxo: Utxo) {
+    func copyTxid(_ utxo: UTXO) {
         UIPasteboard.general.string = utxo.txid
         showAlert(vc: self, title: "", message: "Transaction ID copied ✓")
     }
     
-    func copyDesc(_ utxo: Utxo) {
+    func copyDesc(_ utxo: UTXO) {
         UIPasteboard.general.string = utxo.desc!
         showAlert(vc: self, title: "", message: "Descriptor copied ✓")
     }
     
-    func editLabel(_ utxo: Utxo) {
+    func editLabel(_ utxo: UTXO) {
         promptToEditLabel(utxo)
     }
     
-    func didTapToLock(_ utxo: Utxo) {
+    func didTapToLock(_ utxo: UTXO) {
         lock(utxo)
     }
     
 }
 
 // Mark: UITableViewDataSource
-
 extension UTXOViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
         let utxo = unlockedUtxos[indexPath.section]
         guard let wallet = wallet else { return cell }
-        cell.configure(wallet: wallet, utxo: utxo, isLocked: false, fxRate: fxRate, isSats: isSats, isBtc: isBtc, isFiat: isFiat, delegate: self)
+        cell.configure(wallet: wallet, utxo: utxo, isLocked: false, fxRate: fxRate, delegate: self)
         return cell
     }
     
@@ -549,12 +434,11 @@ extension UTXOViewController: UITableViewDataSource {
 }
 
 
-// MarK: UITableViewDelegate
-
+// Mark: UITableViewDelegate
 extension UTXOViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 5 // Spacing between cells
+        return 5
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -562,73 +446,4 @@ extension UTXOViewController: UITableViewDelegate {
         headerView.backgroundColor = .clear
         return headerView
     }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let cell = tableView.cellForRow(at: indexPath) as! UTXOCell
-        let isSelected = unlockedUtxos[indexPath.section].isSelected
-        
-        if isSelected {
-            cell.deselectedAnimation()
-        } else {
-            cell.selectedAnimation()
-        }
-        
-        unlockedUtxos[indexPath.section].isSelected = !isSelected
-        
-        updateSelectedUtxos()
-        updateInputs()
-        
-        tableView.deselectRow(at: indexPath, animated: false)
-    }
-    
 }
-
-//extension UTXOViewController: UIPickerViewDataSource {
-//    func numberOfComponents(in pickerView: UIPickerView) -> Int {
-//        return 2
-//    }
-//    
-//    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-//        switch component {
-//        case 0:
-//            return months.count
-//        case 1:
-//            return years.count
-//        default:
-//            return 0
-//        }
-//    }
-//}
-
-//extension UTXOViewController: UIPickerViewDelegate {
-//    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-//        var toReturn:String?
-//        switch component {
-//        case 0:
-//            let dict = months[row]
-//            for (key, _) in dict {
-//                toReturn = key
-//            }
-//        case 1:
-//            toReturn = years[row]
-//        default:
-//            break
-//        }
-//        
-//        return toReturn
-//    }
-//    
-//    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-//        switch component {
-//        case 0:
-//            let dict = months[row]
-//            for (_, value) in dict {
-//                month = value
-//            }
-//        case 1:
-//            year = years[row]
-//        default:
-//            break
-//        }
-//    }
-//}

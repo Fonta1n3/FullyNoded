@@ -10,15 +10,17 @@ import Foundation
 
 public struct PeerInfo: CustomStringConvertible {
     
-    let incomingCount:Int
-    let outgoingCount:Int
+    let incomingCount: Int
+    let outgoingCount: Int
+    let rawData: NSArray
     
     init(dictionary: [String: Any]) {
         self.incomingCount = dictionary["incomingCount"] as? Int ?? 0
         self.outgoingCount = dictionary["outgoingCount"] as? Int ?? 0
+        self.rawData = dictionary["rawData"] as? NSArray ?? []
     }
     
     public var description: String {
-        return ""
+        return "Peer Info"
     }
 }

@@ -170,7 +170,7 @@ class OnchainUtils {
                 return
             }
             
-            var utxosToReturn = [Utxo]()
+            var utxosToReturn: [Utxo] = []
             
             for (i, dict) in response.enumerated() {
                 utxosToReturn.append(Utxo(dict))

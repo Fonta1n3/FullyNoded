@@ -731,8 +731,8 @@ public struct List_Unspent: CustomStringConvertible {
     let param:[String:Any]
     init(_ dict: [String:Any]) {
         let minconf = dict["minconf"] as? Int ?? 0
-        let query_options = ["maximumCount": 100]
-        param = ["minconf": minconf, "query_options": query_options]
+        //let query_options = ["maximumCount": 100]
+        param = ["minconf": minconf]
     }
 }
 

@@ -22,7 +22,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var outputs:[[String:Any]] = []
     var inputs:[[String:Any]] = []
     var txt = ""
-    var utxoTotal = 0.0
+    var utxoTotal: Decimal = 0.0
     let ud = UserDefaults.standard
     var index = 0
     var invoice:[String:Any]?
@@ -1086,7 +1086,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     private func standardSweep(_ receivingAddress: String) {
         var paramDict:[String:Any] = [:]
         paramDict["inputs"] = inputs
-        paramDict["outputs"] = [[receivingAddress: "\(rounded(number: utxoTotal))"]]
+        paramDict["outputs"] = [[receivingAddress: "\(utxoTotal)"]]
         paramDict["bip32derivs"] = true
         
         if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {            

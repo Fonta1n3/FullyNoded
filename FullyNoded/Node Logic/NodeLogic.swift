@@ -696,6 +696,8 @@ class NodeLogic {
             }
         }
         
+        peerInfoToReturn["rawData"] = peerInfo
+        
         completion((peerInfoToReturn, nil))
     }
     

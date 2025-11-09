@@ -31,33 +31,8 @@ public struct Utxo: CustomStringConvertible {
     let txUUID: UUID?
     let amountFiat: String?
     let amountSats: String?
-    let lifehash: UIImage?
-    var commitment: String?
     let dict: [String:Any]
-    var isJoinMarket: Bool
-    let frozen: Bool?
-    let mixdepth: Int?
-    let path: String?
-    let value: Int?
-    let tries_remaining: Int?
     let utxo: String?
-    
-    /*
-     JM utxo
-     {
-     address = tb1q2njwafd6h6cs0pd5qjj2jwg0gvcxvqcslqx636;
-     confirmations = 6;
-     external = 0;
-     frozen = 0;
-     label = "";
-     mixdepth = 0;
-     path = "m/84'/1'/0'/0/0";
-     tries = 0;
-     "tries_remaining" = 3;
-     utxo = "a65a026014c62ee4656ba189b001d22839ea8cd502bc511053db97811bd2c8c4:0";
-     value = 999890;
-     }
-     */
     
     init(_ dictionary: [String: Any]) {
         id = dictionary["id"] as? UUID
@@ -79,24 +54,13 @@ public struct Utxo: CustomStringConvertible {
         txUUID = dictionary["txUUID"] as? UUID
         amountFiat = dictionary["amountFiat"] as? String
         amountSats = dictionary["amountSats"] as? String
-        lifehash = dictionary["lifehash"] as? UIImage
-        commitment = dictionary["commitment"] as? String
-        frozen = dictionary["frozen"] as? Bool
-        mixdepth = dictionary["mixdepth"] as? Int
-        path = dictionary["path"] as? String
-        value = dictionary["value"] as? Int
-        isJoinMarket = dictionary["isJoinMarket"] as? Bool ?? (mixdepth != nil)
-        solvable = dictionary["solvable"] as? Bool ?? (mixdepth != nil)
-        if mixdepth != nil {
-            amount = (dictionary["value"] as! Int).satsToBtcDouble
-        }
-        tries_remaining = dictionary["tries_remaining"] as? Int
+        solvable = dictionary["solvable"] as? Bool
         utxo = dictionary["utxo"] as? String
         dict = dictionary
     }
     
     public var description: String {
-        return ""
+        return "Utxo Info"
     }
     
 }
