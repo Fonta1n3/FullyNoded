@@ -30,8 +30,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         nodeTable.tableFooterView = UIView(frame: .zero)
         addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNode))
         editButton = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(editNodes))
-        addButton.tintColor = .systemTeal
-        editButton.tintColor = .systemTeal
+        addButton.tintColor = .tintColor
+        editButton.tintColor = .tintColor
         self.navigationItem.setRightBarButtonItems([addButton, editButton], animated: true)
     }
     
@@ -239,8 +239,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             editButton = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(editNodes))
         }
         
-        addButton.tintColor = .systemTeal
-        editButton.tintColor = .systemTeal
+        addButton.tintColor = .tintColor
+        editButton.tintColor = .tintColor
         
         self.navigationItem.setRightBarButtonItems([addButton, editButton], animated: true)
     }

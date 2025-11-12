@@ -13,7 +13,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var isFiat = false
     var isBtc = true
     var isSats = false
-    var fxRate:Double?
+    var fxRate: Double?
     var spendable = Double()
     var rawTxUnsigned = String()
     var rawTxSigned = String()
@@ -31,6 +31,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var balance = ""
     
     
+    @IBOutlet weak private var createOutlet: UIButton!
     @IBOutlet weak private var lightningDepositOutlet: UIButton!
     @IBOutlet weak private var balanceLabel: UILabel!
     @IBOutlet weak private var batchOutlet: UIButton!
@@ -40,9 +41,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet weak private var fiatButtonOutlet: UIButton!
     @IBOutlet weak private var fxRateLabel: UILabel!
     @IBOutlet weak private var denominationImage: UIImageView!
-    @IBOutlet weak private var recipientBackground: UIView!
-    @IBOutlet weak private var amountBackground: UIView!
-    @IBOutlet weak private var sliderViewBackground: UIView!
     @IBOutlet weak private var slider: UISlider!
     @IBOutlet weak private var addOutputOutlet: UIBarButtonItem!
     @IBOutlet weak private var playButtonOutlet: UIBarButtonItem!
@@ -54,7 +52,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet weak private var receivingLabel: UILabel!
     @IBOutlet weak private var outputsTable: UITableView!
     @IBOutlet weak private var feeRateInputField: UITextField!
-    @IBOutlet weak var coinSelectionControl: UISegmentedControl!
+    @IBOutlet weak private var coinSelectionControl: UISegmentedControl!
     
     var spinner = ConnectingView()
     var spendableBalance = Double()
@@ -70,20 +68,27 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         outputsTable.tableFooterView = UIView(frame: .zero)
         outputsTable.alpha = 0
         slider.isContinuous = false
-        balanceLabel.text = "Available: \(balance)"
+        createOutlet.layer.cornerRadius = 8
+        createOutlet.clipsToBounds = true
+        if let fxRate = fxRate {
+            balanceLabel.text = balance.doubleValue.btcBalanceWithSpaces + " / " + (fxRate * balance.doubleValue).fiatString
+        } else {
+            balanceLabel.text = balance.doubleValue.btcBalanceWithSpaces
+        }
+       
         addTapGesture()
         
-        sliderViewBackground.layer.cornerRadius = 8
+        //sliderViewBackground.layer.cornerRadius = 8
         //sliderViewBackground.layer.borderColor = UIColor.darkGray.cgColor
         //sliderViewBackground.layer.borderWidth = 0.5
         //sliderViewBackground.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
-        amountBackground.layer.cornerRadius = 8
+        //amountBackground.layer.cornerRadius = 8
         //amountBackground.layer.borderColor = UIColor.darkGray.cgColor
         //amountBackground.layer.borderWidth = 0.5
         //amountBackground.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
-        recipientBackground.layer.cornerRadius = 8
+        //recipientBackground.layer.cornerRadius = 8
         //recipientBackground.layer.borderColor = UIColor.darkGray.cgColor
         //recipientBackground.layer.borderWidth = 0.5
         //recipientBackground.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
@@ -137,8 +142,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         isLndNode { [weak self] lndActive in
             guard let self = self else { return }
             if !lndActive {
-                lightningWithdrawOutlet.alpha = 0
-                lightningDepositOutlet.alpha = 0
+                lightningWithdrawOutlet.removeFromSuperview()
+                lightningDepositOutlet.removeFromSuperview()
             }
         }
     }

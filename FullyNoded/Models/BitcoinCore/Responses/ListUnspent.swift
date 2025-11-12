@@ -46,7 +46,6 @@ struct UTXO: Identifiable {
     var isSpendable: Bool { spendable }
 }
 
-// MARK: - Init from Raw Dict (Super Simple & Safe)
 extension UTXO {
     init(from raw: [String: Any]) {
         self.rawData = raw

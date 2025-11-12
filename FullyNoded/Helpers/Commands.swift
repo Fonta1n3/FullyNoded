@@ -7,6 +7,7 @@
 //
 
 public enum BTC_CLI_COMMAND {
+    case setban(_ param: Set_Ban)
     case scantxoutset(_ param: Scan_Tx_Out)
     case abortrescan
     case listlockunspent
@@ -71,6 +72,8 @@ public enum BTC_CLI_COMMAND {
     
     var stringValue:String {
         switch self {
+        case .setban:
+            return "setban"
         case .setlabel:
             return "setlabel"
         case .scantxoutset:
@@ -198,6 +201,8 @@ public enum BTC_CLI_COMMAND {
     
     var paramDict:[String:Any] {
         switch self {
+        case .setban(param: let setBan):
+            return setBan.param
         case .setlabel(param: let setLabel):
             return setLabel.param
         case .analyzepsbt(param: let analyzePsbt):
@@ -266,6 +271,7 @@ public enum BTC_CLI_COMMAND {
     }
     
     static let all: [BTC_CLI_COMMAND] = [
+        setban(.init(dict: [:])),
         setlabel(param: .init([:])),
         scantxoutset(.init([:])),
         abortrescan,

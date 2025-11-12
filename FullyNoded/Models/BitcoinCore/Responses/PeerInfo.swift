@@ -8,19 +8,39 @@
 
 import Foundation
 
-public struct PeerInfo: CustomStringConvertible {
+// MARK: - Simple GetPeerInfoResponse (for bitcoin-cli NSArray)
+struct GetPeerInfoResponse {
+    let peers: [PeerInfo]
+    let rawData: [[String: Any]]
     
-    let incomingCount: Int
-    let outgoingCount: Int
-    let rawData: NSArray
+    var incomingCount: Int { peers.filter { $0.inbound }.count }
+    var outgoingCount: Int { peers.filter { !$0.inbound }.count }
     
-    init(dictionary: [String: Any]) {
-        self.incomingCount = dictionary["incomingCount"] as? Int ?? 0
-        self.outgoingCount = dictionary["outgoingCount"] as? Int ?? 0
-        self.rawData = dictionary["rawData"] as? NSArray ?? []
-    }
-    
-    public var description: String {
-        return "Peer Info"
+    init(from nsArray: NSArray) throws {
+        guard let arrayOfDicts = nsArray as? [[String: Any]] else {
+            throw NSError(domain: "GetPeerInfo", code: -1, userInfo: [NSLocalizedDescriptionKey: "Expected NSArray of NSDictionary"])
+        }
+        
+        let jsonData = try JSONSerialization.data(withJSONObject: arrayOfDicts)
+        self.rawData = arrayOfDicts
+        self.peers = try JSONDecoder().decode([PeerInfo].self, from: jsonData)
     }
 }
+
+struct PeerInfo: Codable {
+    let addr: String
+    let version: Int
+    let subver: String
+    let inbound: Bool
+    let connectionType: String
+    let network: String
+    
+    enum CodingKeys: String, CodingKey {
+        case addr
+        case version, subver, inbound
+        case connectionType = "connection_type"
+        case network
+    }
+}
+
+

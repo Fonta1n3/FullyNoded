@@ -35,7 +35,7 @@ class TextModalViewController: UIViewController {
     
     private lazy var codeContainer: UIView = {
         let view = UIView()
-        view.backgroundColor = .darkGray
+        view.backgroundColor = .black
         view.layer.cornerRadius = 16
         view.layer.masksToBounds = true
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -44,9 +44,17 @@ class TextModalViewController: UIViewController {
     
     private lazy var textLabel: UILabel = {
         let label = UILabel()
+        let hackerFont = UIFont(name: "Menlo", size: 17) ?? UIFont.systemFont(ofSize: 17)
+        label.font = hackerFont
+        label.textColor = UIColor(red: 0, green: 1, blue: 0, alpha: 1) // Neon green
+        label.shadowColor = UIColor.green
+        label.shadowOffset = CGSize(width: 0, height: 0) // Glow via shadow
+//        label.layer.shadowColor = UIColor.green.cgColor
+//        label.layer.shadowRadius = 4
+//        label.layer.shadowOpacity = 1
+//        label.layer.shadowOffset = .zero
+//        label.layer.masksToBounds = false
         label.numberOfLines = 0
-        label.font = UIFont(name: "Menlo", size: 14) ?? UIFont.preferredFont(forTextStyle: .body) // Monospaced for alignment
-        label.textColor = .systemGreen
         label.backgroundColor = .clear
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -62,6 +70,7 @@ class TextModalViewController: UIViewController {
         setupNavigationButtons()
         
         textLabel.text = prettyPrintedJSON(from: data)
+        prettyText = textLabel.text ?? ""
     }
     
     private func setupUI() {

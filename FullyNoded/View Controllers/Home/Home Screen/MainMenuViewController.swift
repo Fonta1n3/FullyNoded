@@ -11,37 +11,24 @@ import UIKit
 class MainMenuViewController: UIViewController {
     
     weak var mgr = TorClient.sharedInstance
-    let backView = UIView()
     let ud = UserDefaults.standard
-    var command = ""
     @IBOutlet var mainMenu: UITableView!
-    var connectingView = ConnectingView()
     var nodes = [[String:Any]]()
-    var activeNode:NodeStruct?
-    var existingNodeID:UUID!
+    var activeNode: NodeStruct?
+    var existingNodeID: UUID!
     var initialLoad = false
     let spinner = UIActivityIndicatorView(style: .medium)
     var refreshButton = UIBarButtonItem()
     var dataRefresher = UIBarButtonItem()
-    var viewHasLoaded = false
     var isUnlocked = false
-    var nodeLabel = ""
-    var detailImage = UIImage()
-    var detailImageTint = UIColor()
     let refreshControl = UIRefreshControl()
-    
-    var detailHeaderText = ""
-    var detailSubheaderText = ""
-    var detailTextDescription = ""
-    var host = ""
-    
-    var blockchainInfo:BlockchainInfo!
-    var peerInfo:PeerInfo!
-    var networkInfo:NetworkInfo!
-    var miningInfo:MiningInfo!
-    var mempoolInfo:MempoolInfo!
-    var uptimeInfo:Uptime!
-    var feeInfo:FeeInfo!
+    var blockchainInfo: BlockchainInfo?
+    var peerInfo: GetPeerInfoResponse?
+    var networkInfo: NetworkInfo?
+    var miningInfo: MiningInfo?
+    var mempoolInfo: MempoolInfo?
+    var uptimeInfo: Uptime?
+    var feeInfo: FeeInfo?
     
     var showBlockchainInfoSpinner = false
     var showNetworkInfoSpinner = false
@@ -90,7 +77,6 @@ class MainMenuViewController: UIViewController {
         mainMenu.delegate = self
         mainMenu.tableFooterView = UIView(frame: .zero)
         initialLoad = true
-        viewHasLoaded = false
         addNavBarSpinner()
         showUnlockScreen()
         setFeeTarget()
@@ -114,7 +100,6 @@ class MainMenuViewController: UIViewController {
                         if isUnlocked {
                             mgr?.start(delegate: self)
                             if self.activeNode != nil, self.activeNode!.isNostr {
-                                //removeBackView()
                                 loadTable()
                                 removeTorStatus()
                             }
@@ -242,7 +227,6 @@ class MainMenuViewController: UIViewController {
                     }
                 } else {
                     removeLoader()
-                    connectingView.removeConnectingView()
                     showAlert(vc: self, title: "Node inactive.", message: "Go to settings and node manager to activate a Bitcoin Core node.")
                 }
             }
@@ -370,136 +354,145 @@ class MainMenuViewController: UIViewController {
         cell.selectionStyle = .none
         let icon = cell.viewWithTag(1) as! UIImageView
         let label = cell.viewWithTag(2) as! UILabel
-        let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .light, scale: .default)
-        let chevronImage = UIImage(systemName: "chevron.right", withConfiguration: config)
-        let chevronButton = UIButton(type: .system)
-        chevronButton.translatesAutoresizingMaskIntoConstraints = false
-        chevronButton.setImage(chevronImage, for: .normal)
-        chevronButton.tintColor = .tintColor
-        chevronButton.backgroundColor = .clear
-        chevronButton.layer.cornerRadius = 20
-        chevronButton.addTarget(self, action: #selector(chevronButtonTapped(_:)), for: .touchUpInside)
-        chevronButton.alpha = 0
-        cell.contentView.addSubview(chevronButton)
-        chevronButton.translatesAutoresizingMaskIntoConstraints = false
         
-        NSLayoutConstraint.activate([
-            chevronButton.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
-            chevronButton.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -16),
-            chevronButton.widthAnchor.constraint(equalToConstant: 80),
-            chevronButton.heightAnchor.constraint(equalToConstant: 36)
-        ])
-        
-        cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 100)
+        var chevronButton = cell.contentView.viewWithTag(999) as? UIButton
+            if chevronButton == nil {
+                chevronButton = UIButton(type: .system)
+                chevronButton!.tag = 999
+                chevronButton!.translatesAutoresizingMaskIntoConstraints = false
+                let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .light, scale: .default)
+                chevronButton!.setImage(UIImage(systemName: "chevron.right", withConfiguration: config), for: .normal)
+                chevronButton!.tintColor = .tintColor
+                chevronButton!.backgroundColor = .clear
+                chevronButton!.layer.cornerRadius = 20
+                cell.contentView.addSubview(chevronButton!)
+                
+                NSLayoutConstraint.activate([
+                    chevronButton!.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
+                    chevronButton!.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -16),
+                    chevronButton!.widthAnchor.constraint(equalToConstant: 80),
+                    chevronButton!.heightAnchor.constraint(equalToConstant: 36)
+                ])
+            }
+            
+            chevronButton!.alpha = 0
+            chevronButton!.isHidden = true
         
         switch Section(rawValue: indexPath.section) {
             
         case .blockchainInfo:
-            if blockchainInfo != nil {
-                switch indexPath.row {
-                case 0:
-                    if blockchainInfo.progressString == "Fully verified" {
-                        icon.image = UIImage(systemName: "checkmark.seal")
-                    } else {
-                        icon.image = UIImage(systemName: "exclamationmark.triangle")
-                        icon.tintColor = .systemRed
-                    }
-                    label.text = blockchainInfo.progressString
-                    
-                case 1:
-                    label.text = blockchainInfo.network.capitalized + " blockchain"
-                    icon.image = UIImage(systemName: "bitcoinsign.circle")
-                    
-                case 2:
-                    if blockchainInfo.pruned {
-                        label.text = "Pruned node"
-                        icon.image = UIImage(systemName: "rectangle.compress.vertical")
-                        
-                    } else if !blockchainInfo.pruned {
-                        label.text = "Full node"
-                        icon.image = UIImage(systemName: "rectangle.expand.vertical")
-                    }
-                    
-                case 3:
-                    label.text = "Blockheight \(blockchainInfo.blockheight.withCommas)"
-                    icon.image = UIImage(systemName: "square.stack.3d.up")
-                    
-                case 4:
-                    label.text = "Blockchain size \(blockchainInfo.size)"
-                    icon.image = UIImage(systemName: "archivebox")
-                    
-                case 5:
-                    label.text = "\(blockchainInfo.diffString)"
-                    icon.image = UIImage(systemName: "slider.horizontal.3")
-                    
-                default:
-                    break
+            guard let blockchainInfo = blockchainInfo else { return blankCell() }
+            
+            
+            
+            switch indexPath.row {
+            case 0:
+                if blockchainInfo.progressString == "Fully verified" {
+                    icon.image = UIImage(systemName: "checkmark.seal")
+                    icon.tintColor = .tintColor
+                } else {
+                    icon.image = UIImage(systemName: "exclamationmark.triangle")
+                    icon.tintColor = .systemRed
                 }
+                label.text = blockchainInfo.progressString
+                
+            case 1:
+                icon.tintColor = .tintColor
+                label.text = blockchainInfo.network.capitalized + " blockchain"
+                icon.image = UIImage(systemName: "bitcoinsign.circle")
+                
+            case 2:
+                icon.tintColor = .tintColor
+                if blockchainInfo.pruned {
+                    label.text = "Pruned node"
+                    icon.image = UIImage(systemName: "rectangle.compress.vertical")
+                } else if !blockchainInfo.pruned {
+                    label.text = "Full node"
+                    icon.image = UIImage(systemName: "rectangle.expand.vertical")
+                }
+                
+            case 3:
+                icon.tintColor = .tintColor
+                label.text = "Blockheight \(blockchainInfo.blockheight.withCommas)"
+                icon.image = UIImage(systemName: "square.stack.3d.up")
+                
+            case 4:
+                icon.tintColor = .tintColor
+                label.text = "Blockchain size \(blockchainInfo.size)"
+                icon.image = UIImage(systemName: "archivebox")
+                
+            case 5:
+                icon.tintColor = .tintColor
+                label.text = "\(blockchainInfo.diffString)"
+                icon.image = UIImage(systemName: "slider.horizontal.3")
+                
+            default:
+                break
             }
             
         case .networkInfo:
-            if networkInfo != nil {
-                switch indexPath.row {
-                case 0:
-                    label.text = "Bitcoin Core v\(networkInfo.version)"
-                    icon.image = UIImage(systemName: "v.circle")
-                    //background.backgroundColor = .systemBlue
-                    //chevron.alpha = 1
-                    
-                case 1:
-                    if networkInfo.torReachable {
-                        label.text = "Tor hidden service on"
-                        icon.image = UIImage(systemName: "wifi")
-                        //background.backgroundColor = .black
+            guard let networkInfo = networkInfo else { return blankCell() }
                         
-                    } else {
-                        label.text = "Tor hidden service off"
-                        icon.image = UIImage(systemName: "wifi.slash")
-                        //background.backgroundColor = .darkGray
-                    }
-                    //chevron.alpha = 0
+            switch indexPath.row {
+            case 0:
+                icon.tintColor = .tintColor
+                label.text = "Bitcoin Core v\(networkInfo.version)"
+                icon.image = UIImage(systemName: "v.circle")
+                
+            case 1:
+                icon.tintColor = .tintColor
+                if networkInfo.torReachable {
+                    label.text = "Tor hidden service on"
+                    icon.image = UIImage(systemName: "wifi")
                     
-                default:
-                    break
+                } else {
+                    label.text = "Tor hidden service off"
+                    icon.image = UIImage(systemName: "wifi.slash")
                 }
+                
+            default:
+                break
             }
-        
+            
         case .peerInfo:
-            if peerInfo != nil {
-                label.text = "Peers \(peerInfo.outgoingCount) outgoing / \(peerInfo.incomingCount) incoming"
-                icon.image = UIImage(systemName: "person.3")
-                chevronButton.alpha = 1
-            }
+            icon.tintColor = .tintColor
+            guard let peerInfo = peerInfo else { return blankCell() }
+            
+            label.text = "Peers \(peerInfo.outgoingCount) outgoing / \(peerInfo.incomingCount) incoming"
+            icon.image = UIImage(systemName: "person.3")
+            
+            chevronButton!.alpha = 1
+            chevronButton!.isHidden = false
+            chevronButton!.removeTarget(nil, action: nil, for: .allEvents)
+            chevronButton!.addTarget(self, action: #selector(chevronButtonTapped(_:)), for: .touchUpInside)
             
         case .miningInfo:
-            if miningInfo != nil {
-                label.text = miningInfo.hashrate + " " + "EH/s mining hashrate"
-                icon.image = UIImage(systemName: "speedometer")
-            }
-        
+            icon.tintColor = .tintColor
+            guard let miningInfo = miningInfo else { return blankCell() }
+                        
+            label.text = miningInfo.hashrate + " " + "EH/s mining hashrate"
+            icon.image = UIImage(systemName: "speedometer")
+            
         case .upTime:
-            if uptimeInfo != nil {
-                label.text = "\(uptimeInfo.uptime / 86400) days \((uptimeInfo.uptime % 86400) / 3600) hours of uptime"
-                icon.image = UIImage(systemName: "clock")
-                //background.backgroundColor = .systemGreen
-                //chevron.alpha = 0
-            }
+            icon.tintColor = .tintColor
+            guard let uptimeInfo = uptimeInfo else { return blankCell() }
+            
+            label.text = "\(uptimeInfo.uptime / 86400) days \((uptimeInfo.uptime % 86400) / 3600) hours of uptime"
+            icon.image = UIImage(systemName: "clock")
             
         case .mempoolInfo:
-            if mempoolInfo != nil {
-                label.text = "\(mempoolInfo.mempoolCount.withCommas) transactions in mempool"
-                icon.image = UIImage(systemName: "waveform.path.ecg")
-                //background.backgroundColor = .systemGreen
-                //chevron.alpha = 0
-            }
+            icon.tintColor = .tintColor
+            guard let mempoolInfo = mempoolInfo else { return blankCell() }
+            
+            label.text = "\(mempoolInfo.mempoolCount.withCommas) transactions in mempool"
+            icon.image = UIImage(systemName: "waveform.path.ecg")
             
         case .feeInfo:
-            if feeInfo != nil {
-                label.text = feeInfo.feeRate + " " + "fee rate setting"
-                icon.image = UIImage(systemName: "percent")
-                //background.backgroundColor = .systemGray
-                //chevron.alpha = 0
-            }
+            icon.tintColor = .tintColor
+            guard let feeInfo = feeInfo else { return blankCell() }
+            
+            label.text = feeInfo.feeRate + " " + "fee rate setting"
+            icon.image = UIImage(systemName: "percent")
             
         default:
             break
@@ -598,7 +591,7 @@ class MainMenuViewController: UIViewController {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
-                peerInfo = PeerInfo(dictionary: response)
+                peerInfo = response
                 showPeerInfoSpinner = false
                 mainMenu.reloadSections(IndexSet(arrayLiteral: Section.peerInfo.rawValue), with: .fade)
                 getMiningInfo()
@@ -757,12 +750,11 @@ class MainMenuViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.spinner.stopAnimating()
-            self.spinner.alpha = 0
-            self.refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(self.refreshData(_:)))
-            self.refreshButton.tintColor = UIColor.systemBlue.withAlphaComponent(1)
-            self.navigationItem.setRightBarButton(self.refreshButton, animated: true)
-            self.viewHasLoaded = true
+            spinner.stopAnimating()
+            spinner.alpha = 0
+            refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(self.refreshData(_:)))
+            refreshButton.tintColor = UIColor.systemBlue.withAlphaComponent(1)
+            navigationItem.setRightBarButton(self.refreshButton, animated: true)
         }
     }
     
@@ -815,9 +807,6 @@ class MainMenuViewController: UIViewController {
                 torStatusLabel.text = "Tor connected ✓"
                 torStatusLabel.textColor = .green
                 torStatusLabel.alpha = 1.0
-            } else if mgr?.state == .started {
-                //self?.torStatusLabel.text = "Tor connecting..."
-                //self?.torStatusLabel.textColor = .lightGray
             } else if mgr?.state == .stopped {
                 torStatusLabel.text = "Tor disconnected"
                 torStatusLabel.textColor = .label
@@ -839,6 +828,11 @@ class MainMenuViewController: UIViewController {
         
         switch segue.identifier {
             
+        case "segueToPeerInfo":
+            guard let vc = segue.destination as? PeersDetailTableViewController else { fallthrough }
+            
+            vc.peerResponse = peerInfo
+            
         case "lockScreen":
             guard let vc = segue.destination as? LogInViewController else { fallthrough }
             
@@ -851,23 +845,7 @@ class MainMenuViewController: UIViewController {
                     self.mgr?.start(delegate: self)
                     
                     if let node = self.activeNode {
-                        /*if node.isNostr {
-                            // If not using tor then uncomment this, and remove from tor protocol func
-                            StreamManager.shared.node = node
-                            let urlString = UserDefaults.standard.string(forKey: "nostrRelay") ?? "wss://nostr-relay.wlvs.space"
-                            StreamManager.shared.eoseReceivedBlock = { _ in
-                                DispatchQueue.main.async { [weak self] in
-                                    guard let self = self else { return }
-                                    self.removeBackView()
-                                    self.removeTorStatus()
-                                    self.loadNode(node: node)
-                                }
-                            }
-                            StreamManager.shared.openWebSocket(urlString: urlString)
-                            
-                        } else */if isLocalHost() {
-                            //removeBackView()
-                            //removeTorStatus()
+                        if isLocalHost() {
                             loadNode(node: node)
                         }
                     } else {
@@ -887,17 +865,27 @@ class MainMenuViewController: UIViewController {
     
     @objc private func iconButtonTapped(_ sender: UIButton) {
         let section = sender.tag
-        // Perform your action here, e.g., add a row, show an alert, etc.
+        
         switch Section(rawValue: section) {
         case .blockchainInfo:
+            guard let blockchainInfo = blockchainInfo else { return }
+            
             showModal(data: blockchainInfo.rawData, title: blockchainInfo.description)
         case .networkInfo:
+            guard let networkInfo = networkInfo else { return }
+            
             showModal(data: networkInfo.rawData, title: networkInfo.description)
         case .peerInfo:
-            showModal(data: ["peerInfo": peerInfo.rawData], title: peerInfo.description)
+            guard let peerInfo = peerInfo else { return }
+            
+            showModal(data: ["peerInfo": peerInfo.rawData], title: "Peer Info")
         case .miningInfo:
+            guard let miningInfo = miningInfo else { return }
+            
             showModal(data: miningInfo.rawData, title: miningInfo.description)
         case .mempoolInfo:
+            guard let mempoolInfo = mempoolInfo else { return }
+            
             showModal(data: mempoolInfo.rawData, title: mempoolInfo.description)
         default:
             break
@@ -905,7 +893,11 @@ class MainMenuViewController: UIViewController {
     }
     
     @objc private func chevronButtonTapped(_ sender: UIButton) {
-        print("Chevron button on peer info tapped.")
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            performSegue(withIdentifier: "segueToPeerInfo", sender: self)
+        }
     }
     
     private func showModal(data: [String: Any], title: String) {
@@ -953,7 +945,6 @@ extension MainMenuViewController: OnionManagerDelegate {
     }
     
     func torConnFinished() {
-        viewHasLoaded = true
         if let _ = activeNode {
             loadTable()
         } else {
