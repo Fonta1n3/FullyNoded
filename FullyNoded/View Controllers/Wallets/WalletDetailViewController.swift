@@ -31,9 +31,9 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     var outputDescUr = ""
     var urBytes = ""
     var bbqrText = ""
-    var outputDescFormat = true
+    var outputDescFormat = false
     var urBytesFormat = false
-    var bbqrFormat = false
+    var bbqrFormat = true
     var alertStyle = UIAlertController.Style.actionSheet
     private var labelField: UITextField!
     private var labelButton: UIButton!

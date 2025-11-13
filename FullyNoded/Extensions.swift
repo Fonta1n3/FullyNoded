@@ -128,11 +128,16 @@ public extension String {
     }
     
     var withCommas: String {
-        let dbl = Double(self)!
-        let numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = NumberFormatter.Style.decimal
-        numberFormatter.locale = Locale(identifier: "en_US")
-        return numberFormatter.string(from: NSNumber(value:dbl))!
+        if self.doubleValue > 1.0 {
+            let dbl = Double(self)!
+            let numberFormatter = NumberFormatter()
+            numberFormatter.numberStyle = NumberFormatter.Style.decimal
+            numberFormatter.locale = Locale(identifier: "en_US")
+            return numberFormatter.string(from: NSNumber(value:dbl))!
+        } else {
+            return self
+        }
+        
     }
     
     var utf8: Data {

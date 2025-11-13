@@ -42,7 +42,6 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        externalWallets.removeAll()
         if initialLoad {
             getBitcoinCoreWallets()
             initialLoad = false
@@ -60,6 +59,11 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     private func getBitcoinCoreWallets() {
         spinner.addConnectingView(vc: self, description: "getting total balance...")
         bitcoinCoreWallets.removeAll()
+        wallets.removeAll()
+        externalWallets.removeAll()
+        totalBalanceLabel.text = ""
+        balanceFiatLabel.text = ""
+        
         OnchainUtils.listWalletDir { [weak self] (walletDir, message) in
             guard let self = self else { return }
             

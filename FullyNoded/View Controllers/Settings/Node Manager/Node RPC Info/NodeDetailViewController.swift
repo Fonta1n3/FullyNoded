@@ -34,11 +34,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBOutlet weak var usernameHeader: UILabel!
     @IBOutlet weak var scanQROutlet: UIBarButtonItem!
     @IBOutlet weak var header: UILabel!
-    @IBOutlet var nodeLabel: UITextField!
-    @IBOutlet var rpcUserField: UITextField!
-    @IBOutlet var rpcPassword: UITextField!
-    @IBOutlet var rpcLabel: UILabel!
-    @IBOutlet var saveButton: UIButton!
+    @IBOutlet weak var nodeLabel: UITextField!
+    @IBOutlet weak var rpcUserField: UITextField!
+    @IBOutlet weak var rpcPassword: UITextField!
+    @IBOutlet weak var rpcLabel: UILabel!
+    @IBOutlet weak var saveButton: UIButton!
     @IBOutlet weak var onionAddressField: UITextField!
     @IBOutlet weak var addressHeaderOutlet: UILabel!
     @IBOutlet weak var macaroonHeader: UILabel!
@@ -110,13 +110,15 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     
     @objc func textFieldDidChange(_ textField: UITextField) {
-        if rpcUserField.text != "" && rpcPassword.text != "" {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                guard let auth = RPCAuth().generateCreds(username: rpcUserField.text!, password: rpcPassword.text!) else { return }
-                
-                rpcAuthLabel.text = auth.rpcAuth
+        if textField == rpcUserField || textField == rpcPassword {
+            if rpcUserField.text != "" && rpcPassword.text != "" {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    guard let auth = RPCAuth().generateCreds(username: rpcUserField.text!, password: rpcPassword.text!) else { return }
+                    
+                    rpcAuthLabel.text = auth.rpcAuth
+                }
             }
         }
     }
@@ -310,7 +312,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             if onionAddressField != nil, let addressText = onionAddressField.text {
                 let decryptedAddress = addressText.dataUsingUTF8StringEncoding
                 
-                if onionAddressField.text!.hasSuffix(":8080") || onionAddressField.text!.hasSuffix(":10080") || onionAddressField.text!.hasSuffix(":9737") {
+                if onionAddressField.text!.hasSuffix(":8080") {
                     CoreDataService.update(id: id, keyToUpdate: "isLightning", newValue: true, entity: .newNodes) { success in
                         if !success {
                             displayAlert(viewController: self, isError: true, message: "error updating isLightning")
@@ -335,7 +337,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if macaroonField != nil, macaroonField.text != "" {
+            if macaroonField != nil, macaroonField.text != nil, macaroonField.text != "" {
                 var macaroonData:Data?
                 
                 if let macaroonDataCheck = try? Data.decodeUrlSafeBase64(macaroonField.text!) {
@@ -358,8 +360,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if certField != nil && certField.text != "" {
-                guard let encryptedCert = encryptCert(certField.text!) else { return }
+            if certField != nil, certField.text != nil, certField.text != "" {
+                let cert = certField.text!.condenseWhitespace()
+                guard let encryptedCert = encryptCert(cert) else { return }
                 
                 CoreDataService.update(id: id, keyToUpdate: "cert", newValue: encryptedCert, entity: .newNodes) { success in
                     if !success {
@@ -452,7 +455,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     private func removeNonBitcoinCoreStuff() {
-        print("removeNonBitcoinCoreStuff")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             if self.macaroonField != nil {
@@ -517,18 +519,18 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            if self.rpcAuthLabel != nil {
-                self.rpcAuthLabel.removeFromSuperview()
-            }
-            if self.rpcAuthCopyButton != nil {
-                self.rpcAuthCopyButton.removeFromSuperview()
-            }
-            if self.rpcAuthExportButton != nil {
-                self.rpcAuthExportButton.removeFromSuperview()
-            }
-            if createPasswordButton != nil {
-                self.createPasswordButton.removeFromSuperview()
-            }
+//            if self.rpcAuthLabel != nil {
+//                self.rpcAuthLabel.resignFirstResponder()
+//            }
+//            if self.rpcAuthCopyButton != nil {
+//                self.rpcAuthCopyButton.removeFromSuperview()
+//            }
+//            if self.rpcAuthExportButton != nil {
+//                self.rpcAuthExportButton.removeFromSuperview()
+//            }
+//            if createPasswordButton != nil {
+//                self.createPasswordButton.removeFromSuperview()
+//            }
             if self.onionAddressField != nil {
                 self.onionAddressField.resignFirstResponder()
             }

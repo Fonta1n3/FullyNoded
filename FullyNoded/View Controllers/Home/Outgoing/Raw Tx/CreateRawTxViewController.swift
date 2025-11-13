@@ -2030,6 +2030,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             guard let vc = segue.destination as? VerifyTransactionViewController else { fallthrough }
             
             vc.hasSigned = true
+            vc.fxRate = fxRate
             
             if rawTxSigned != "" {
                 vc.signedRawTx = rawTxSigned

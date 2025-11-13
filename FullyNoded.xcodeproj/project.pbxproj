@@ -64,6 +64,7 @@
 		0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */; };
 		0AF61BAA2EC2FCB2001CDF34 /* PeersDetailTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BA92EC2FCB2001CDF34 /* PeersDetailTableViewController.swift */; };
 		0AF61BAC2EC450C1001CDF34 /* ListTransactions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BAB2EC450C1001CDF34 /* ListTransactions.swift */; };
+		0AF61BAE2EC58E3D001CDF34 /* GetTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BAD2EC58E3D001CDF34 /* GetTransaction.swift */; };
 		0AF73250291DDFC4009F6296 /* BTC_Params.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF7324F291DDFC4009F6296 /* BTC_Params.swift */; };
 		0AFD7CF32C7E5FB100C46E36 /* Bbqr in Frameworks */ = {isa = PBXBuildFile; productRef = 0AFD7CF22C7E5FB100C46E36 /* Bbqr */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
@@ -259,6 +260,7 @@
 		0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletRecoveryViewController.swift; sourceTree = "<group>"; };
 		0AF61BA92EC2FCB2001CDF34 /* PeersDetailTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeersDetailTableViewController.swift; sourceTree = "<group>"; };
 		0AF61BAB2EC450C1001CDF34 /* ListTransactions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListTransactions.swift; sourceTree = "<group>"; };
+		0AF61BAD2EC58E3D001CDF34 /* GetTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetTransaction.swift; sourceTree = "<group>"; };
 		0AF7324F291DDFC4009F6296 /* BTC_Params.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTC_Params.swift; sourceTree = "<group>"; };
 		55FF5DCF6C4B0C2309EC4BF2 /* Pods-FullyNoded.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FullyNoded.debug.xcconfig"; path = "Target Support Files/Pods-FullyNoded/Pods-FullyNoded.debug.xcconfig"; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
@@ -542,6 +544,7 @@
 				0A6B365A27B1AA0B00CD4F3A /* AddressInfo.swift */,
 				0A34073C2EC08A0B008576C7 /* ListUnspent.swift */,
 				0AF61BAB2EC450C1001CDF34 /* ListTransactions.swift */,
+				0AF61BAD2EC58E3D001CDF34 /* GetTransaction.swift */,
 			);
 			path = Responses;
 			sourceTree = "<group>";
@@ -1293,6 +1296,7 @@
 				D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */,
 				D0257E6524D6C5F5000EB854 /* LightningRPC.swift in Sources */,
 				D00F851D2494A616008D7CD3 /* TorAuthViewController.swift in Sources */,
+				0AF61BAE2EC58E3D001CDF34 /* GetTransaction.swift in Sources */,
 				0AD9490A273C051B00AF83F5 /* ExternalFNWalletsViewController.swift in Sources */,
 				D0C20EDA24A6E46E00C62AA4 /* Uptime.swift in Sources */,
 				0A0ABC352EBE07F6000329E0 /* TextModalViewController.swift in Sources */,

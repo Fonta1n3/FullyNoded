@@ -18,7 +18,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var txSize = Int()
     var rejectionMessage = ""
     var txValid: Bool?
-    var memo = ""
+    //var memo = ""
     var txFee = Double()
     var fxRate: Double?
     var txid = ""
@@ -42,8 +42,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var signedTxInputs = NSArray()
     var alreadyBroadcast = false
     var confs = 0
-    var labelText = "no label added"
-    var memoText = "no memo added"
+    var labelText = "No label added."
+    //var memoText = "no memo added"
     var id: UUID!
     var hasSigned = false
     var isSigning = false
@@ -119,7 +119,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         //self.voutChannelFunding = nil
         self.rejectionMessage = ""
         self.txValid = nil
-        self.memo = ""
+        //self.memo = ""
         self.txid = ""
         self.outputsString = ""
         self.inputArray.removeAll()
@@ -135,8 +135,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         self.signedTxInputs = NSArray()
         self.confs = 0
         self.alreadyBroadcast = false
-        self.labelText = "no label added"
-        self.memoText = "no memo added"
+        self.labelText = "No label added."
+        //self.memoText = "no memo added"
         self.hasSigned = false
         self.isSigning = false
         self.bitcoinCoreWallets.removeAll()
@@ -747,7 +747,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         self.id = UUID()
         transaction["id"] = self.id
         transaction["label"] = labelText
-        transaction["memo"] = memoText
+        //transaction["memo"] = memoText
         transaction["date"] = Date()
         transaction["txid"] = txid
         transaction["fiatCurrency"] = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
@@ -1746,7 +1746,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             let isDust = input["isDust"] as? Bool ?? false
             let signatureStatus = input["signatures"] as? String ?? "no signature data"
             let desc = input["desc"] as? String ?? "no descriptor"
-            let lifehash = input["lifehash"] as? UIImage ?? UIImage()
+            //let lifehash = input["lifehash"] as? UIImage ?? UIImage()
             let inputAddress = input["address"] as! String
             let hasSigned = input["isSigned"] as! Bool
             
@@ -2072,16 +2072,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         return labelCell
     }
     
-    private func transactionMemoCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let labelCell = verifyTable.dequeueReusableCell(withIdentifier: "memoLabelCell", for: indexPath)
-        configureCell(labelCell)
-        let label = labelCell.viewWithTag(1) as! UILabel
-        let button = labelCell.viewWithTag(2) as! UIButton
-        button.addTarget(self, action: #selector(updateLabelMemoAction), for: .touchUpInside)
-        //button.showsTouchWhenHighlighted = true
-        label.text = memoText
-        return labelCell
-    }
+//    private func transactionMemoCell(_ indexPath: IndexPath) -> UITableViewCell {
+//        let labelCell = verifyTable.dequeueReusableCell(withIdentifier: "memoLabelCell", for: indexPath)
+//        configureCell(labelCell)
+//        let label = labelCell.viewWithTag(1) as! UILabel
+//        let button = labelCell.viewWithTag(2) as! UIButton
+//        button.addTarget(self, action: #selector(updateLabelMemoAction), for: .touchUpInside)
+//        //button.showsTouchWhenHighlighted = true
+//        label.text = memoText
+//        return labelCell
+//    }
     
     @objc func verifyOwner(_ sender: UIButton) {
         guard let id = sender.restorationIdentifier else { return }
@@ -2289,7 +2289,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     alreadySaved = true
                     self.id = txStruct.id!
                     self.labelText = txStruct.label
-                    self.memoText = txStruct.memo
+                    //self.memoText = txStruct.memo
                 }
                 
                 if i + 1 == transactions.count && !alreadySaved {
@@ -2457,11 +2457,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
     }
         
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        if textField.text != "" {
-            memo = textField.text!
-        }
-    }
+//    func textFieldDidEndEditing(_ textField: UITextField) {
+//        if textField.text != "" {
+//            memo = textField.text!
+//        }
+//    }
     
 //    func readerSession(_ session: NFCNDEFReaderSession, didInvalidateWithError error: any Error) {
 //        print("readerSession error")
@@ -2894,11 +2894,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             if let vc = segue.destination as? TransactionLabelMemoViewController {
                 vc.txid = self.txid
                 vc.labelText = labelText
-                vc.memoText = memoText
+                //vc.memoText = memoText
                 
                 vc.doneBlock = { result in
                     self.labelText = result[0]
-                    self.memoText = result[1]
+                    //self.memoText = result[1]
                     
                     DispatchQueue.main.async {
                         self.verifyTable.reloadSections(IndexSet(arrayLiteral: 0, 1), with: .none)
@@ -2966,7 +2966,7 @@ extension VerifyTransactionViewController: UITableViewDelegate {
         if unsignedPsbt == "" && signedRawTx == "" {
             return 1
         } else {
-            return 8
+            return 7
         }
     }
     
@@ -2975,13 +2975,13 @@ extension VerifyTransactionViewController: UITableViewDelegate {
             return 1
         } else {
             switch section {
-            case 4:
+            case 3:
                 return inputArray.count
                 
-            case 5:
+            case 4:
                 return outputArray.count
                 
-            case 0, 3, 1, 6, 2, 7:
+            case 0, 1, 5, 2, 6:
                 return 1
                 
             default:
@@ -2992,19 +2992,19 @@ extension VerifyTransactionViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch indexPath.section {
-        case 4:
+        case 3:
             return 441
             
-        case 5:
+        case 4:
             return 522
         
-        case 1:
-            return 150
+//        case 1:
+//            return 150
             
-        case 0, 2:
+        case 0, 1:
             return 50
             
-        case 3, 6, 7:
+        case 2, 5, 6:
             return 80
             
         default:
@@ -3018,36 +3018,36 @@ extension VerifyTransactionViewController: UITableViewDelegate {
             return defaultCell(indexPath)
         }
         
-        tableView.separatorColor = .lightGray
+        tableView.separatorColor = .none
         
         switch indexPath.section {
             
         case 0:
             return transactionLabelCell(indexPath)
             
-        case 1:
-            return transactionMemoCell(indexPath)
+//        case 1:
+//            return transactionMemoCell(indexPath)
             
-        case 2:
+        case 1:
             if !alreadyBroadcast {
                 return mempoolAcceptCell(indexPath)
             } else {
                 return confsCell(indexPath)
             }
             
-        case 3:
+        case 2:
             return txidCell(indexPath)
             
-        case 4:
+        case 3:
             return inputCell(indexPath)
             
-        case 5:
+        case 4:
             return outputCell(indexPath)
             
-        case 6:
+        case 5:
             return miningFeeCell(indexPath)
             
-        case 7:
+        case 6:
             return etaCell(indexPath)
             
         default:
@@ -3074,11 +3074,11 @@ extension VerifyTransactionViewController: UITableViewDelegate {
                 textLabel.text = "Label"
                 textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
             
-            case 1:
-                textLabel.text = "Memo"
-                textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
+//            case 1:
+//                textLabel.text = "Memo"
+//                textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
                 
-            case 2:
+            case 1:
                 if !alreadyBroadcast {
                     textLabel.text = "Mempool accept"
                 } else {
@@ -3086,7 +3086,7 @@ extension VerifyTransactionViewController: UITableViewDelegate {
                 }
                 textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
                 
-            case 3:
+            case 2:
                 textLabel.text = "Transaction ID"
                 let copyButton = UIButton()
                 let copyImage = UIImage(systemName: "doc.on.doc")!
@@ -3097,19 +3097,19 @@ extension VerifyTransactionViewController: UITableViewDelegate {
                 copyButton.center.y = textLabel.center.y
                 header.addSubview(copyButton)
                                 
-            case 4:
+            case 3:
                 textLabel.text = "Inputs"
                 textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
                                 
-            case 5:
+            case 4:
                 textLabel.text = "Outputs"
                 textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
                 
-            case 6:
+            case 5:
                 textLabel.text = "Mining fee"
                 textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
             
-            case 7:
+            case 6:
                 textLabel.text = "Estimated time to confirm"
                 textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
                                 

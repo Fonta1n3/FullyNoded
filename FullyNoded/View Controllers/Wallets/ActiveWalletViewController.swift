@@ -63,14 +63,16 @@ class ActiveWalletViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        UserDefaults.standard.setValue(false, forKey: "hasPromptedToRescan")
+        if UserDefaults.standard.object(forKey: "hasPromptedToRescan") == nil {
+            UserDefaults.standard.setValue(false, forKey: "hasPromptedToRescan")
+        }
+        
         walletTable.delegate = self
         walletTable.dataSource = self
         configureUi()
         NotificationCenter.default.addObserver(self, selector: #selector(broadcast(_:)), name: .broadcastTxn, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(signPsbt(_:)), name: .signPsbt, object: nil)
         existingWallet = ud.object(forKey: "walletName") as? String ?? ""
-        //setCurrency()
         if let savedRate = UserDefaults.standard.object(forKey: "fxRate") as? Double {
             fxRate = savedRate
         }
@@ -86,7 +88,6 @@ class ActiveWalletViewController: UIViewController {
         if let fxRate = fxRate {
             fxRateLabel.text = fxRate.exchangeRate
         }
-        //currencyControl.setTitle(fiatCurrency.lowercased(), forSegmentAt: 2)
         setDenomination()
         
         if initialLoad {
@@ -133,7 +134,6 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    
     @IBAction func advancedAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -141,32 +141,6 @@ class ActiveWalletViewController: UIViewController {
             self .performSegue(withIdentifier: "goToInvoiceSetting", sender: nil)
         }
     }
-    
-    
-//    @IBAction func switchCurrency(_ sender: UISegmentedControl) {
-//        switch sender.selectedSegmentIndex {
-//        case 0:
-//            isFiat = false
-//            isBtc = true
-//            isSats = false
-//            ud.set("btc", forKey: "unit")
-//        case 1:
-//            isFiat = false
-//            isBtc = false
-//            isSats = true
-//            ud.set("sats", forKey: "unit")
-//        case 2:
-//            isFiat = true
-//            isBtc = false
-//            isSats = false
-//            ud.set("fiat", forKey: "unit")
-//        default:
-//            break
-//        }
-//        
-//        reloadTable()
-//    }
-    
     
     @objc func signPsbt(_ notification: NSNotification) {
         guard let psbtDict = notification.userInfo as? [String:Any], let psbtCheck = psbtDict["psbt"] as? String else {
@@ -196,17 +170,7 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-//    @IBAction func signPsbtAction(_ sender: Any) {
-//        DispatchQueue.main.async { [weak self] in
-//            guard let self = self else { return }
-//            
-//            self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
-//        }
-//    }
-    
     private func configureButton(_ button: UIView) {
-//        button.layer.borderColor = UIColor.darkGray.cgColor
-//        button.layer.borderWidth = 0.5
         button.layer.cornerRadius = 5
     }
     
@@ -345,8 +309,7 @@ class ActiveWalletViewController: UIViewController {
                     guard let self = self, let nodes = nodes else { return }
                     
                     guard nodes.count > 0 else {
-                        //self.finishedLoading()
-                        self.getFxRate()
+                        finishedLoading()
                         showAlert(vc: self, title: "", message: "No nodes added.")
                         return
                     }
@@ -365,8 +328,7 @@ class ActiveWalletViewController: UIViewController {
                                 self.loadLightning()
                             } else {
                                 guard let walletName = UserDefaults.standard.string(forKey: "walletName") else {
-                                    //self.finishedLoading()
-                                    self.getFxRate()
+                                    self.finishedLoading()
                                     showAlert(vc: self, title: "", message: "No wallet currently toggled on.")
                                     return
                                 }
@@ -400,78 +362,45 @@ class ActiveWalletViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
+            getFxRate()
             walletTable.reloadData()
             removeSpinner()
         }
     }
     
     private func updateTransactionArray() {
+        guard let _ = onchainTransactions, onchainTransactions!.transactions.count > 0 else {
+            finishedLoading()
+            return
+        }
+        
         let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
        CoreDataService.retrieveEntity(entityName: .transactions) { [weak self] transactions in
             guard let self = self else { return }
             
-            guard let transactions = transactions, transactions.count > 0, self.transactionArray.count > 0 else {
-                self.getFxRate()
+            guard let transactions = transactions, transactions.count > 0 else {
+                finishedLoading()
                 return
             }
-//            
-//            let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
-//
-//            for (i, transaction) in transactions.enumerated() {
-//                
-//               let localTransactionStruct = TransactionStruct(dictionary: transaction)
-//                
-//                for (t, tx) in self.transactionArray.enumerated() {
-//                    if (tx["txID"] as! String) == localTransactionStruct.txid {
-//                        self.transactionArray[t]["memo"] = localTransactionStruct.memo
-//                        self.transactionArray[t]["transactionLabel"] = localTransactionStruct.label
-//                        if let originRate = localTransactionStruct.fxRate, originRate > 0 {
-//                            if localTransactionStruct.fiatCurrency == currency {
-//                                self.transactionArray[t]["originRate"] = originRate
-//                            }
-//                        }
-//                    }
-//
-//                    if i + 1 == transactions.count && t + 1 == self.transactionArray.count {
-//                        //self.finishedLoading()
-//                        DispatchQueue.main.async { [weak self] in
-//                            guard let self = self else { return }
-//                            
-//                            self.walletTable.reloadData()
-//                        }
-//                        self.getFxRate()
-//                    }
-//                }
-//                
-//                
-//            }
            
-           guard let _ = onchainTransactions, onchainTransactions!.transactions.count > 0 else {
-               DispatchQueue.main.async { [weak self] in
-                   guard let self = self else { return }
-                   
-                   self.walletTable.reloadData()
-               }
-               self.getFxRate()
-               return
-           }
-           
-           for (i, transaction) in transactions.enumerated() {
+           print("transactions.count: \(transactions.count)")
+
+            for (i, transaction) in transactions.enumerated() {
                let localTransactionStruct = TransactionStruct(dictionary: transaction)
-               
-               for (t, tx) in onchainTransactions!.transactions.enumerated() {
-                   if tx.txid == localTransactionStruct.txid {
-                       self.onchainTransactions!.transactions[t].memo = localTransactionStruct.memo
-                       self.onchainTransactions!.transactions[t].label = localTransactionStruct.label
-                       
-                       if let originRate = localTransactionStruct.fxRate, originRate > 0 {
-                           if localTransactionStruct.fiatCurrency == currency {
-                               self.onchainTransactions!.transactions[t].originRate = originRate
-                           }
-                       }
-                   }
-               }
-           }
+                
+                for (t, tx) in self.onchainTransactions!.transactions.enumerated() {
+                    if tx.txid == localTransactionStruct.txid {
+                        if let originRate = localTransactionStruct.fxRate, originRate > 0 {
+                            if localTransactionStruct.fiatCurrency == currency {
+                                self.onchainTransactions!.transactions[t].originRate = originRate
+                            }
+                        }
+                    }
+                    if i + 1 == transactions.count && t + 1 == self.onchainTransactions!.transactions.count {
+                        finishedLoading()
+                    }
+                }
+            }
         }
     }
     
@@ -480,9 +409,10 @@ class ActiveWalletViewController: UIViewController {
         spinner.addConnectingView(vc: self, description: "getting raw transaction...")
         
         guard let intString = sender.restorationIdentifier, let int = Int(intString) else { return }
-        let tx = transactionArray[int]
-        let id = tx["txID"] as! String
-        let param:Get_Tx = .init(["txid":id, "verbose": true])
+        //let tx = transactionArray[int]
+        guard let onchainTransactions = onchainTransactions else { return }
+        let txid = onchainTransactions.transactions[int].txid
+        let param:Get_Tx = .init(["txid": txid, "verbose": true])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .gettransaction(param)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             self.spinner.removeConnectingView()
@@ -490,8 +420,9 @@ class ActiveWalletViewController: UIViewController {
                 showAlert(vc: self, title: "There was an issue getting the transaction.", message: errorMessage ?? "unknown error")
                 return
             }
-            DispatchQueue.main.async {
-                self.confs = Int(tx["confirmations"] as! String)!
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                confs = onchainTransactions.transactions[int].confirmations
                 self.hex = hex
                 self.performSegue(withIdentifier: "segueToTxDetail", sender: self)
             }
@@ -501,9 +432,9 @@ class ActiveWalletViewController: UIViewController {
     
     private func onchainBalancesCell(_ indexPath: IndexPath) -> UITableViewCell {
         let cell = walletTable.dequeueReusableCell(withIdentifier: "OnBalancesCell", for: indexPath)
-        let iconImageView = cell.viewWithTag(67) as! UIImageView
+        //let iconImageView = cell.viewWithTag(67) as! UIImageView
         let fiatBalanceLabel = cell.viewWithTag(3) as! UILabel
-        iconImageView.image = .init(systemName: "link")
+        //iconImageView.image = .init(systemName: "link")
         
         if let offchainBalanceLabel = cell.viewWithTag(2) as? UILabel, let offchainBalanceView = cell.viewWithTag(66) {
             offchainBalanceLabel.removeFromSuperview()
@@ -606,9 +537,6 @@ class ActiveWalletViewController: UIViewController {
     private func transactionsCell(_ indexPath: IndexPath) -> UITableViewCell {
         let cell = walletTable.dequeueReusableCell(withIdentifier: "TransactionCell", for: indexPath)
         cell.selectionStyle = .none
-        //cell.layer.borderColor = UIColor.lightGray.cgColor
-        //cell.layer.borderWidth = 0.5
-        //cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
         let categoryImage = cell.viewWithTag(1) as! UIImageView
         let amountLabel = cell.viewWithTag(2) as! UILabel
@@ -617,10 +545,8 @@ class ActiveWalletViewController: UIViewController {
         let lightningImage = cell.viewWithTag(7) as! UIImageView
         let onchainImage = cell.viewWithTag(8) as! UIImageView
         let currentFiatValueLabel = cell.viewWithTag(9) as! UILabel
-        let memoLabel = cell.viewWithTag(10) as! UILabel
         let transactionLabel = cell.viewWithTag(11) as! UILabel
         let seeDetailButton = cell.viewWithTag(14) as! UIButton
-        let editLabelButton = cell.viewWithTag(15) as! UIButton
         
         amountLabel.alpha = 1
         confirmationsLabel.alpha = 1
@@ -630,11 +556,7 @@ class ActiveWalletViewController: UIViewController {
                 
         seeDetailButton.addTarget(self, action: #selector(goToDetail(_:)), for: .touchUpInside)
         seeDetailButton.restorationIdentifier = "\(index)"
-        
-        editLabelButton.addTarget(self, action: #selector(editTx(_:)), for: .touchUpInside)
-        editLabelButton.restorationIdentifier = "\(index)"
-        
-        //guard transactionArray.count > 0 else { return blankCell() }
+
         guard let onchainTransactions = onchainTransactions else { return blankCell() }
         
         guard onchainTransactions.transactions.count > 0 else { return blankCell() }
@@ -701,7 +623,6 @@ class ActiveWalletViewController: UIViewController {
 //        let amountSats = dict["amountSats"] as! String
 //        let amountFiat = dict["amountFiat"] as! String
         
-        editLabelButton.alpha = 1
         
         var gainText = ""
         
@@ -729,25 +650,28 @@ class ActiveWalletViewController: UIViewController {
                     gain = gain * -1.0
                     gainText = " / loss of \(gain.fiatString) / \(Int((gain / originValueFiat) * 100.0))%"
                 }
-                print("gainText: \(gainText)")
             }
         }
         
         if let fxRate = fxRate {
-            currentFiatValueLabel.text = (fxRate * transaction.amount).fiatString//amountFiat + gainText
+            
+            if transaction.amount < 0.0 {
+                let positiveDouble = transaction.amount * -1.0
+                currentFiatValueLabel.text = (fxRate * positiveDouble).fiatString + gainText
+            } else {
+                currentFiatValueLabel.text = (fxRate * transaction.amount).fiatString + gainText
+            }
+            
         } else {
             currentFiatValueLabel.text = "Exchange rate missing."
         }
         
-        memoLabel.text = transaction.memo
-        transactionLabel.text = transaction.label
-        
-        if memoLabel.text == "" {
-            memoLabel.text = "No transaction memo."
+        if let _ = transaction.label {
+            transactionLabel.text = transaction.label
         }
         
         if transactionLabel.text == "" {
-            transactionLabel.text = "No transaction label."
+            transactionLabel.text = "No utxo label."
         }
         
         if transaction.amount < 0.0 {
@@ -757,13 +681,7 @@ class ActiveWalletViewController: UIViewController {
             amountLabel.textColor = .secondaryLabel
             
             var amountText = ""
-            
-            //if isBtc {
-                amountText = transaction.amount.btcBalanceWithSpaces
-//            } else if isSats {
-//                amountText = amountSats.sats
-//            }
-            
+            amountText = transaction.amount.btcBalanceWithSpaces
             amountText = amountText.replacingOccurrences(of: "-", with: "")
             amountLabel.text = amountText
             
@@ -817,6 +735,11 @@ class ActiveWalletViewController: UIViewController {
                 }
             }
             
+//            DispatchQueue.main.async { [weak self] in
+//                guard let self = self else { return }
+//                
+//                walletTable.reloadData()
+//            }
             updateTransactionArray()
         }
     }
@@ -824,129 +747,7 @@ class ActiveWalletViewController: UIViewController {
     private func blankCell() -> UITableViewCell {
         let cell = UITableViewCell()
         cell.selectionStyle = .none
-        //cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         return cell
-    }
-    
-    @objc func fetchMemo(_ sender: UIButton) {
-        guard let intString = sender.restorationIdentifier, let int = Int(intString) else { return }
-        
-        var tx:[String:Any]!
-        
-        if self.showOffchain {
-            tx = self.offchainTxArray[int]
-        } else if self.showOnchain {
-            tx = self.onchainTxArray[int]
-        } else {
-            tx = self.transactionArray[int]
-        }
-                        
-        guard let invoice = tx["address"] as? String, invoice != "" else {
-            showAlert(vc: self, title: "No invoice.", message: "We do not seem to have an invoice for that transaction.  You can add your own memo by tapping the \"edit memo\" button.")
-            return
-        }
-        
-        spinner.addConnectingView(vc: self, description: "decoding invoice...")
-        
-        //isLndNode { isLnd in
-            //if isLnd {
-                self.decodeInvoiceLND(invoice: invoice, section: int)
-//            } else {
-//                self.decodeInvoiceCL(invoice: invoice, section: int)
-//            }
-        //}
-    }
-    
-//    private func decodeInvoiceCL(invoice: String, section: Int) {
-//        let commandId = UUID()
-//        //bolt11 [description]
-//        LightningRPC.sharedInstance.command(id: commandId, method: .decodepay, param: ["bolt11": invoice]) { [weak self] (uuid, response, errorDesc) in
-//            guard let self = self else { return }
-//                        
-//            guard let dict = response as? [String:Any], let txid = dict["payment_hash"] as? String, let description = dict["description"] as? String else {
-//                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error")
-//                return
-//            }
-//            
-//            self.updateMemo(txid: txid, memo: description)
-//        }
-//    }
-    
-    private func decodeInvoiceLND(invoice: String, section: Int) {
-        LndRpc.sharedInstance.command(.decodepayreq, nil, invoice, nil) { [weak self] (response, error) in
-            guard let self = self else { return }
-            
-            guard let response = response,
-                  let memo = response["description"] as? String,
-                  memo != "",
-                  let txid = response["payment_hash"] as? String else {
-                
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "No memo.", message: "This invoice does not include a memo. You can add your own by tapping the \"edit memo\" button.")
-                return
-            }
-            
-            self.updateMemo(txid: txid, memo: memo)
-        }
-    }
-    
-    private func updateMemo(txid: String, memo: String) {
-        addNavBarSpinner()
-        
-        CoreDataService.retrieveEntity(entityName: .transactions) { savedTxs in
-            guard let savedTxs = savedTxs, savedTxs.count > 0 else {
-                self.removeSpinner()
-                return
-            }
-                        
-            for savedTx in savedTxs {
-                let txStruct = TransactionStruct(dictionary: savedTx)
-                if txStruct.txid == txid {
-                    CoreDataService.update(id: txStruct.id!, keyToUpdate: "memo", newValue: memo, entity: .transactions) { [weak self] updated in
-                        guard let self = self else { return }
-                        
-                        if updated {
-                            self.spinner.label.text = "reloading..."
-                            self.addNavBarSpinner()
-                            self.loadTable()
-                            showAlert(vc: self, title: "Memo updated ✓", message: "")
-                        } else {
-                            self.removeSpinner()
-                            showAlert(vc: self, title: "Error", message: "There was an issue updatinng your memo.")
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    @objc func editTx(_ sender: UIButton) {
-        guard let intString = sender.restorationIdentifier, let int = Int(intString) else { return }
-        
-        let tx = transactionArray[int]
-        let id = tx["txID"] as! String
-        
-        CoreDataService.retrieveEntity(entityName: .transactions) { [weak self] transactions in
-            guard let self = self else { return }
-            
-            guard let transactions = transactions, transactions.count > 0 else {
-                return
-            }
-            
-            for transaction in transactions {
-                let txStruct = TransactionStruct(dictionary: transaction)
-                if txStruct.txid == id {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        self.txToEdit = id
-                        self.memoToEdit = txStruct.memo
-                        self.labelToEdit = txStruct.label
-                        self.performSegue(withIdentifier: "segueToEditTx", sender: self)
-                    }
-                }
-            }
-        }
     }
     
     @objc func refreshWallet() {
@@ -1022,7 +823,6 @@ class ActiveWalletViewController: UIViewController {
                     
                     self.fxRateLabel.text = "no fx rate data"
                 }
-                finishedLoading()
                 return
             }
             
@@ -1034,8 +834,7 @@ class ActiveWalletViewController: UIViewController {
                 
                 self.fxRateLabel.text = rate.exchangeRate
                 self.onchainBalanceFiat = (self.onchainBalanceBtc.doubleValue * Double(rate)).fiatString
-                //fiatBalanceLabel.text = onchainBalanceFiat
-                finishedLoading()
+                walletTable.reloadData()
             }
         }
     }
@@ -1749,26 +1548,27 @@ extension ActiveWalletViewController: UITableViewDelegate {
         textLabel.frame = CGRect(x: 0, y: 0, width: 400, height: 50)
         
         let filterButton = UIButton()
-        let filterImage = UIImage(systemName: "line.horizontal.3.decrease.circle", withConfiguration: UIImage.SymbolConfiguration.init(scale: .large))
+        let filterImage = UIImage(systemName: "line.horizontal.3.decrease.circle", withConfiguration: UIImage.SymbolConfiguration(scale: .large))
         filterButton.setImage(filterImage, for: .normal)
         filterButton.frame = CGRect(x: header.frame.size.width - 50, y: 0, width: 50, height: 50)
-        //filterButton.tintColor = .systemTeal
         filterButton.center.y = textLabel.center.y
-        //filterButton.showsTouchWhenHighlighted = true
         filterButton.addTarget(self, action: #selector(filterTxs(_:)), for: .touchUpInside)
         
         let sortButton = UIButton()
-        let sortImage = UIImage(systemName: "arrow.up.arrow.down.circle", withConfiguration: UIImage.SymbolConfiguration.init(scale: .large))
+        let sortImage = UIImage(systemName: "arrow.up.arrow.down.circle", withConfiguration: UIImage.SymbolConfiguration(scale: .large))
         sortButton.setImage(sortImage, for: .normal)
         sortButton.frame = CGRect(x: filterButton.frame.minX - 60, y: 0, width: 50, height: 50)
-        //sortButton.tintColor = .systemTeal
         sortButton.center.y = textLabel.center.y
-        //sortButton.showsTouchWhenHighlighted = true
         sortButton.addTarget(self, action: #selector(sortTxs(_:)), for: .touchUpInside)
         
         switch section {
         case 0:
-            textLabel.text = walletLabel
+            if walletLabel != "" && walletLabel != nil {
+                textLabel.text = walletLabel
+            } else {
+                textLabel.text = "Wallet Balance"
+            }
+            
             
         case 1:
             //if self.transactionArray.count > 0 {
@@ -1809,7 +1609,7 @@ extension ActiveWalletViewController: UITableViewDelegate {
             }
         default:
             if sectionZeroLoaded {
-                return 230
+                return 175
             } else {
                 return 47
             }
