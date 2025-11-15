@@ -413,7 +413,7 @@ public struct Decode_Psbt: CustomStringConvertible {
      Arguments:
      1. psbt    (string, required) The PSBT base64 string
      */
-    let param:[String:Any]
+    let param: [String:Any]
     init(_ dict: [String:Any]) {
         let psbt = dict["psbt"] as? String ?? ""
         param = ["psbt": psbt]
@@ -768,7 +768,7 @@ public struct List_Unspent: CustomStringConvertible {
     init(_ dict: [String:Any]) {
         let minconf = dict["minconf"] as? Int ?? 0
         //let query_options = ["maximumCount": 100]
-        param = ["minconf": minconf]
+        param = ["minconf": minconf, "include_immature_coinbase": true]
     }
 }
 

@@ -59,6 +59,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        spinner.addConnectingView(vc: self, description: "loading")
         navigationController?.delegate = self
         detailTable.delegate = self
         detailTable.dataSource = self
@@ -68,9 +69,40 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
           alertStyle = UIAlertController.Style.alert
         }
         
-        spinner.addConnectingView(vc: self, description: "loading")
+        
         load()
     }
+    
+    private func showModal(data: [String: Any], title: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let modalVC = TextModalViewController(data: data, viewTitle: title)
+            let nav = UINavigationController(rootViewController: modalVC)
+            nav.modalPresentationStyle = .fullScreen
+            nav.modalTransitionStyle = .coverVertical
+            present(nav, animated: true)
+        }
+    }
+    
+    @IBAction func showGetWalletInfoAction(_ sender: Any) {
+        spinner.addConnectingView(vc: self, description: "Getting wallet info...")
+        
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getwalletinfo) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
+            
+            spinner.removeConnectingView()
+            
+            guard let response = response as? [String: Any] else {
+                showAlert(vc: self, title: "", message: "No response from getwalletinfo.")
+                return
+            }
+            
+            showModal(data: response, title: "getwalletinfo")
+        }
+        
+    }
+    
     
     @IBAction func rescanAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
@@ -120,6 +152,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func getAddresses() {
+        spinner.removeConnectingView()
         deriveAddresses(wallet.receiveDescriptor)
     }
     
@@ -136,13 +169,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         self.addresses += "#\(i): \(address)\n\n"
                         if i + 1 == addr.count {
                             DispatchQueue.main.async { [weak self] in
-                                self?.spinner.removeConnectingView()
                                 self?.detailTable.reloadSections(IndexSet(arrayLiteral: Section.addressExplorer.rawValue), with: .none)
                             }
                         }
                     }
                 } else {
-                    self?.spinner.removeConnectingView()
                     showAlert(vc: self, title: "We were unable to derive your addresses", message: "")
                 }
             }
@@ -257,7 +288,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         
                         self.findSigner()
                         self.getAddresses()
-                        spinner.removeConnectingView()
                     }
                 }
             }

@@ -13,8 +13,6 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     @IBOutlet weak var savedOutlet: UIButton!
     @IBOutlet weak var textView: UITextView!
     
-    var isTaproot = false
-    var isSegwit = false
     var spinner = ConnectingView()
     var primDesc = ""
     var changeDesc = ""
@@ -23,7 +21,6 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     var blockheight:Int64!
     var version:Int = 0
     var dict = [String:Any]()
-    var jmMessage = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -81,18 +78,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
         
         self.version = version
-        if jmMessage != "" {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.textView.text = self.jmMessage
-                showAlert(vc: self, title: "", message: "Join Market Wallet created ✓")
-                NotificationCenter.default.post(name: .refreshWallet, object: nil)
-            }
-        } else {
-            getWords()
-        }
-        
+        getWords()
     }
     
     @IBAction func savedAction(_ sender: Any) {
@@ -127,11 +113,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 return
             }
             
-            if self.isSegwit {
-                self.getMasterKey(seed: seed)
-            } else if self.isTaproot {
-                self.getPassword(seed)
-            }
+            getMasterKey(seed: seed)
             
             var wordsToShow = ""
             let wordArray = seed.components(separatedBy: " ")
@@ -144,83 +126,11 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
-                self.textView.text = wordsToShow
+                textView.text = wordsToShow
             }
         }
     }
-    
-    private func getPassword(_ words: String) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let title = "Add a password"
-            let message = "Taproot wallets store the private keys on your node, this password is used to encrypt them. You must remember this password as Fully Noded does not save it."
-            
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            
-            let setPassword = UIAlertAction(title: "Set password", style: .default) { [weak self] alertAction in
-                guard let self = self else { return }
-                
-                let password1 = (alert.textFields![0] as UITextField).text
-                let password2 = (alert.textFields![1] as UITextField).text
-                
-                guard let password1 = password1, let password2 = password2 else {
-                    DispatchQueue.main.async { [weak self] in
-                        showAlert(vc: self, title: "", message: "No password added, go back and try again.")
-                    }
-                    return
-                }
-                
-                guard password1 == password2 else {
-                    DispatchQueue.main.async { [weak self] in
-                        self?.navigationController?.popViewController(animated: true)
-                        showAlert(vc: self, title: "", message: "Passwords don't match, go back and try again.")
-                    }
-                    return
-                }
-                
-                let (descriptors, error) = Keys.descriptorsFromSigner(words)
-                
-                guard let descriptors = descriptors else {
-                    self.showError(error: error ?? "Unknown")
-                    return
-                }
-                
-                let taprootDesc = descriptors[4]
-                
-                let accountMap:[String:Any] = [
-                    "descriptor": taprootDesc,
-                    "blockheight": Int(self.blockheight),
-                    "label": "Taproot Single Sig",
-                    "password": password1,
-                    "watching":[]
-                ]
-                
-                self.importAccountMap(accountMap)
-            }
-            
-            let cancel = UIAlertAction(title: "Cancel", style: .cancel) { alertAction in
-                DispatchQueue.main.async { [weak self] in
-                    self?.navigationController?.popViewController(animated: true)
-                }
-            }
-            
-            alert.addTextField { textField1 in
-                textField1.isSecureTextEntry = true
-                textField1.keyboardAppearance = .dark
-            }
-            
-            alert.addTextField { textField2 in
-                textField2.isSecureTextEntry = true
-                textField2.keyboardAppearance = .dark
-            }
-            
-            alert.addAction(setPassword)
-            alert.addAction(cancel)
-            self.present(alert, animated:true, completion: nil)
-        }
-    }
-    
+        
     private func importAccountMap(_ accountMap: [String:Any]) {
         ImportWallet.accountMap(accountMap) { (success, errorDescription) in
             if success {
@@ -302,9 +212,10 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 
                 if self.version >= 210100 {
                     self.importDescriptors(name, fingerprint, self.primDesc, self.changeDesc, mk, completion: completion)
-                }// else {
-//                    self.importKeys(name, fingerprint, xpub, self.primDesc, completion: completion)
-//                }
+                } else {
+                    showAlert(vc: self, title: "", message: "Fully Noded requires at least Bitcoin Core v21, please update and try again.")
+                }
+                
             } else {
                 if let message = message {
                     self.spinner.removeConnectingView()
@@ -370,34 +281,6 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
     }
     
-//    private func importKeys(_ name: String,
-//                            _ fingerprint: String,
-//                            _ xpub: String,
-//                            _ desc: String,
-//                            completion: @escaping ((success: Bool, message: String?)) -> Void) {
-//        self.name = name
-//
-//        self.importPrimaryKeys(desc: desc) { [weak self] (success, errorMessage) in
-//            guard let self = self else { return }
-//
-//            if success {
-//                self.importChangeKeys(desc: self.changeSegwitDescriptor(fingerprint, xpub)) { (changeImported, errorDesc) in
-//
-//                    if changeImported {
-//                        completion((true, nil))
-//                    } else {
-//                        UserDefaults.standard.removeObject(forKey: "walletName")
-//                        self.showError(error: "Error importing change keys: \(errorDesc ?? "unknown error")")
-//                    }
-//                }
-//
-//            } else {
-//                UserDefaults.standard.removeObject(forKey: "walletName")
-//                self.showError(error: "Error importing primary keys: \(errorMessage ?? "unknown error")")
-//            }
-//        }
-//    }
-    
     private func getDescriptorInfo(desc: String, completion: @escaping ((String?)) -> Void) {
         let param:Get_Descriptor_Info = .init(["descriptor":desc])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .getdescriptorinfo(param: param)) { (response, errorMessage) in
@@ -409,47 +292,6 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             completion(updatedDescriptor)
         }
     }
-    
-//    private func importPrimaryKeys(desc: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-//        getDescriptorInfo(desc: desc) { [weak self] descriptor in
-//            guard let self = self else { return }
-//
-//            if descriptor != nil {
-//                self.primDesc = descriptor!
-//                let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"Fully Noded\", \"keypool\": true, \"internal\": false }], {\"rescan\": false}"
-//                self.importMulti(params: params, completion: completion)
-//            } else {
-//                UserDefaults.standard.removeObject(forKey: "walletName")
-//                self.showError(error: "error getting primary descriptor info")
-//            }
-//        }
-//    }
-    
-//    private func importChangeKeys(desc: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-//        getDescriptorInfo(desc: desc) { [weak self] descriptor in
-//            guard let self = self else { return }
-//
-//            if descriptor != nil {
-//                self.changeDesc = descriptor!
-//                let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"keypool\": true, \"internal\": true }], {\"rescan\": false}"
-//                self.importMulti(params: params, completion: completion)
-//            } else {
-//                UserDefaults.standard.removeObject(forKey: "walletName")
-//                self.showError(error: "error getting change descriptor info")
-//            }
-//        }
-//    }
-    
-//    private func importMulti(params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-//        OnchainUtils.importMulti(params) { (imported, message) in
-//            if imported {
-//                completion((imported, message))
-//            } else {
-//                UserDefaults.standard.removeObject(forKey: "walletName")
-//                completion((false, message ?? "unknown error importing your keys"))
-//            }
-//        }
-//    }
     
     private func encryptSeed(words: String, completion: @escaping ((Bool)) -> Void) {
         guard let encryptedWords = Crypto.encrypt(words.dataUsingUTF8StringEncoding) else {

@@ -17,8 +17,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var newNode = [String:Any]()
     var isInitialLoad = Bool()
     var scanNow = false
-    var isBitcoinCore = false
-    var isLND = false
     
     @IBOutlet weak var rpcAuthCopyButton: UIButton!
     @IBOutlet weak var createPasswordButton: UIButton!
@@ -29,7 +27,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBOutlet weak var addressHeader: UILabel!
     @IBOutlet weak var certHeader: UILabel!
     @IBOutlet weak var certField: UITextField!
-    @IBOutlet weak var macaroonField: UITextField!
     @IBOutlet weak var passwordHeader: UILabel!
     @IBOutlet weak var usernameHeader: UILabel!
     @IBOutlet weak var scanQROutlet: UIBarButtonItem!
@@ -41,7 +38,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBOutlet weak var saveButton: UIButton!
     @IBOutlet weak var onionAddressField: UITextField!
     @IBOutlet weak var addressHeaderOutlet: UILabel!
-    @IBOutlet weak var macaroonHeader: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -53,9 +49,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         rpcUserField.delegate = self
         onionAddressField.delegate = self
         certField.delegate = self
-        
-        macaroonField.delegate = self
-       
+               
         rpcPassword.isSecureTextEntry = true
         onionAddressField.isSecureTextEntry = false
         saveButton.clipsToBounds = true
@@ -78,6 +72,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
+    @IBAction func showRpcAuthInfoAction(_ sender: Any) {
+        showAlert(vc: self, title: "RPC Auth", message: "RPC Authentication is much more secure then storing your rpc password in your bitcoin.conf. An attacker can not access your node or derive your rpc password from this text. The rpcauth text displayed in Fully Noded is dynamic, you may see it change and that is OK. If you edit your rpcuser or rpcpassword you will need to export the rpcauth to your bitcoin.conf and restart your node to connect.")
+    }
+    
     @IBAction func createRpcPass(_ sender: Any) {
         guard let data = Crypto.secret() else { return }
         rpcPassword.text = data.hex
@@ -89,7 +87,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             rpcAuthLabel.text = auth.rpcAuth
         }
     }
-    
     
     @IBAction func exportRpcAuth(_ sender: Any) {
         guard let rpcAuthText = rpcAuthLabel.text, rpcAuthText != "" else { return }
@@ -158,14 +155,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
-    @IBAction func goManageLightning(_ sender: Any) {
-        if isLND {
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.performSegue(withIdentifier: "segueToLightningSettings", sender: vc)
-            }
-        }
-    }
-    
     private func encryptCert(_ certText: String) -> Data? {
         let certData = Data(certText.utf8)
          
@@ -185,13 +174,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         if createNew || selectedNode == nil {
             newNode["id"] = UUID()
-            newNode["isLightning"] = isLND
+            newNode["isLightning"] = false
             
-            if onionAddressField != nil,
-                let onionAddressText = onionAddressField.text {
-               guard let encryptedOnionAddress = encryptedValue(onionAddressText.utf8)  else {
+            if let onionAddressText = onionAddressField.text {
+                guard let encryptedOnionAddress = encryptedValue(onionAddressText.utf8)  else {
                     showAlert(vc: self, title: "", message: "Error encrypting the address.")
-                    return }
+                    return
+                }
                 newNode["onionAddress"] = encryptedOnionAddress
             }
             
@@ -199,42 +188,18 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 newNode["label"] = nodeLabel.text!
             }
             
-            if isBitcoinCore,
-                rpcUserField != nil {
-                if rpcUserField.text != "" {
-                    guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
-                    newNode["rpcuser"] = enc
-                }
-                
-                if rpcPassword != nil {
-                    if rpcPassword.text != "" {
-                        guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
-                        newNode["rpcpassword"] = enc
-                    }
-                }
+            if rpcUserField.text != "" {
+                guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
+                newNode["rpcuser"] = enc
             }
             
-            
-            
-            if isLND,
-                macaroonField != nil,
-                macaroonField.text != "" {
-                var macaroonData:Data?
-                if let macaroonDataCheck = try? Data.decodeUrlSafeBase64(macaroonField.text!) {
-                    macaroonData = macaroonDataCheck
-                } else if let macaroonDataCheck = Data(hexString: macaroonField.text!) {
-                    macaroonData = macaroonDataCheck
-                }
-                guard let macaroonData = macaroonData else {
-                    showAlert(vc: self, title: "", message: "Error decoding your macaroon. It can either be in hex or base64 format.")
-                    return
-                }
-                guard let encryptedMacaroonHex = Crypto.encrypt(macaroonData.hexString.dataUsingUTF8StringEncoding) else { return }
-                newNode["macaroon"] = encryptedMacaroonHex
+            if rpcPassword.text != "" {
+                guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
+                newNode["rpcpassword"] = enc
             }
             
-            if isLND, certField != nil, certField.text != "" {
-                guard let encryptedCert = encryptCert(certField.text!) else {
+            if let cert = certField.text {
+                guard let encryptedCert = encryptCert(cert) else {
                     return
                 }
                 newNode["cert"] = encryptedCert
@@ -247,16 +212,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         if nodes!.count == 0 {
                             vc.newNode["isActive"] = true
                         } else {
-                            if self.onionAddressField != nil, !self.onionAddressField.text!.hasSuffix(":28183") {
-                                vc.newNode["isActive"] = false
-                            }
+                            vc.newNode["isActive"] = false
                         }
                         
                         CoreDataService.saveEntity(dict: vc.newNode, entityName: .newNodes) { [unowned vc = self] success in
                             if success {
                                 vc.nodeAddedSuccess()
                             } else {
-                                displayAlert(viewController: vc, isError: true, message: "Error saving tor node")
+                                displayAlert(viewController: vc, isError: true, message: "Error saving node.")
                             }
                         }
                     }
@@ -268,7 +231,18 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                              message: "Fill out all fields first")
                 return
             }
-            save()
+            
+            guard let address = onionAddressField.text, address != "" else {
+                showAlert(vc: self, title: "", message: "You need to enter an address.")
+                return
+            }
+            
+            if !address.contains(".onion") && certField.text == nil || certField.text == "" {
+                showAlert(vc: self, title: "Warning!", message: "You are not using an onion address, your network traffic will not be routed over Tor! This is for connecting to nodes over localhost and LAN only, if using LAN https will be used and you must add the base64 SSL cert.")
+            } else {
+                save()
+            }
+            
         } else {
             //updating
             let id = selectedNode!["id"] as! UUID
@@ -281,7 +255,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
                         
-            if rpcUserField != nil, rpcUserField.text != "" {
+            if rpcUserField.text != "" {
                 guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
                 CoreDataService.update(id: id, keyToUpdate: "rpcuser", newValue: enc, entity: .newNodes) { success in
                     if !success {
@@ -290,7 +264,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if rpcPassword != nil, rpcPassword.text != "" {
+            if rpcPassword.text != "" {
                 guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
                 CoreDataService.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { [weak self] success in
                     guard let self = self else { return }
@@ -309,20 +283,12 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if onionAddressField != nil, let addressText = onionAddressField.text {
+            if let addressText = onionAddressField.text {
                 let decryptedAddress = addressText.dataUsingUTF8StringEncoding
-                
-                if onionAddressField.text!.hasSuffix(":8080") {
-                    CoreDataService.update(id: id, keyToUpdate: "isLightning", newValue: true, entity: .newNodes) { success in
-                        if !success {
-                            displayAlert(viewController: self, isError: true, message: "error updating isLightning")
-                        }
-                    }
-                }
                 
                 let arr = addressText.split(separator: ":")
                 guard arr.count == 2 else {
-                    showAlert(vc: self, title: "Not updated, port missing...", message: "Please make sure you add the port at the end of your onion hostname, such as xjshdu.onion:8332.\n\n8332 for mainnet or 8080 for LND.")
+                    showAlert(vc: self, title: "Not updated, port missing...", message: "Please make sure you add the port at the end of your onion hostname, such as xjshdu.onion:8332.\n\n8332 for mainnet.")
                     return
                 }
                 
@@ -336,31 +302,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     }
                 }
             }
-            
-            if macaroonField != nil, macaroonField.text != nil, macaroonField.text != "" {
-                var macaroonData:Data?
-                
-                if let macaroonDataCheck = try? Data.decodeUrlSafeBase64(macaroonField.text!) {
-                    macaroonData = macaroonDataCheck
-                } else if let macaroonDataCheck = Data(hexString: macaroonField.text!) {
-                    macaroonData = macaroonDataCheck
-                }
-                
-                guard let macaroonData = macaroonData else {
-                    showAlert(vc: self, title: "", message: "Error decoding your macaroon. It can either be in hex or base64 format.")
-                    return
-                }
-                
-                guard let encryptedMacaroonHex = Crypto.encrypt(macaroonData.hexString.dataUsingUTF8StringEncoding) else { return }
-                                
-                CoreDataService.update(id: id, keyToUpdate: "macaroon", newValue: encryptedMacaroonHex, entity: .newNodes) { success in
-                    if !success {
-                        displayAlert(viewController: self, isError: true, message: "error updating macaroon")
-                    }
-                }
-            }
-            
-            if certField != nil, certField.text != nil, certField.text != "" {
+                        
+            if certField.text != nil, certField.text != "" {
                 let cert = certField.text!.condenseWhitespace()
                 guard let encryptedCert = encryptCert(cert) else { return }
                 
@@ -392,11 +335,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         if selectedNode != nil {
             let node = NodeStruct(dictionary: selectedNode!)
             if node.id != nil {
-                if node.isLightning {
-                    removeNonLightning()
-                } else {
-                    removeNonBitcoinCoreStuff()
-                }
                 
                 if node.label != "" {
                     nodeLabel.text = node.label
@@ -416,6 +354,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     if onionAddressField != nil {
                         onionAddressField.text = decrypted
                     }
+                    
+                    if !decrypted.contains(".onion") && node.cert == nil && !decrypted.hasPrefix("localhost:") && !decrypted.hasPrefix("127.0.0.1:") {
+                        showAlert(vc: self, title: "Warning!", message: "You are not using an onion address, your network traffic will not be routed over Tor! This is for connecting to nodes over localhost and LAN only, if using LAN https will be used and you must add the base64 SSL cert.")
+                    }
                 }
                 
                 if node.cert != nil, certField != nil {
@@ -423,30 +365,16 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         certField.text = decryptedCert.utf8String ?? ""
                     }
                 }
-                
-                if node.macaroon != nil, macaroonField != nil {
-                    let hex = decryptedValue(node.macaroon!)
-                    macaroonField.text = Data(hexString: hex)!.urlSafeB64String
-                }
-                
             }
         } else {
-            if isLND {
-                removeNonLightning()
+            rpcUserField.text = "FullyNoded"
+            rpcPassword.text = Crypto.privateKey().hex
+            
+            if let auth = RPCAuth().generateCreds(username: rpcUserField.text!, password: rpcPassword.text!) {
+                rpcAuthLabel.text = auth.rpcAuth
             }
             
-            if isBitcoinCore {
-                removeNonBitcoinCoreStuff()
-                
-                rpcUserField.text = "FullyNoded"
-                rpcPassword.text = Crypto.privateKey().hex
-                
-                if let auth = RPCAuth().generateCreds(username: rpcUserField.text!, password: rpcPassword.text!) {
-                    rpcAuthLabel.text = auth.rpcAuth
-                }
-                
-                showAlert(vc: self, title: "RPC credentials created ✓", message: "Fully Noded creates an rpc password for you by default, export the rpc auth text to your bitcoin.conf, save it and restart your node to connect.")
-            }
+            showAlert(vc: self, title: "RPC credentials created ✓", message: "Fully Noded creates an rpc password for you by default, export the rpc auth text to your bitcoin.conf, save it and restart your node to connect.")
         }
         
         DispatchQueue.main.async { [weak self] in
@@ -454,101 +382,15 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
-    private func removeNonBitcoinCoreStuff() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            if self.macaroonField != nil {
-                self.macaroonField.removeFromSuperview()
-            }
-            if self.macaroonHeader != nil {
-                self.macaroonHeader.removeFromSuperview()
-            }
-            if self.certField != nil {
-                self.certField.removeFromSuperview()
-            }
-            if self.certHeader != nil {
-                self.certHeader.removeFromSuperview()
-            }
-        }
-    }
-        
-    private func removeNonLightning() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            if self.rpcAuthLabel != nil {
-                self.rpcAuthLabel.removeFromSuperview()
-            }
-            if self.rpcAuthCopyButton != nil {
-                self.rpcAuthCopyButton.removeFromSuperview()
-            }
-            if self.rpcAuthExportButton != nil {
-                self.rpcAuthExportButton.removeFromSuperview()
-            }
-            if createPasswordButton != nil {
-                self.createPasswordButton.removeFromSuperview()
-            }
-            if self.rpcAuthHeader != nil {
-                self.rpcAuthHeader.removeFromSuperview()
-            }
-            
-            self.onionAddressField.placeholder = "localhost:8080"
-            self.rpcPassword.removeFromSuperview()
-            self.passwordHeader.removeFromSuperview()
-            self.usernameHeader.removeFromSuperview()
-            self.rpcUserField.removeFromSuperview()
-            self.scanQROutlet.tintColor = .clear
-        }
-    }
-    
-    private func removeLND() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            self.usernameHeader.removeFromSuperview()
-            self.macaroonField.removeFromSuperview()
-            self.macaroonHeader.removeFromSuperview()
-            if self.certField != nil {
-                self.certField.removeFromSuperview()
-            }
-            if self.certHeader != nil {
-                self.certHeader.removeFromSuperview()
-            }
-        }
-    }
-    
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-//            if self.rpcAuthLabel != nil {
-//                self.rpcAuthLabel.resignFirstResponder()
-//            }
-//            if self.rpcAuthCopyButton != nil {
-//                self.rpcAuthCopyButton.removeFromSuperview()
-//            }
-//            if self.rpcAuthExportButton != nil {
-//                self.rpcAuthExportButton.removeFromSuperview()
-//            }
-//            if createPasswordButton != nil {
-//                self.createPasswordButton.removeFromSuperview()
-//            }
-            if self.onionAddressField != nil {
-                self.onionAddressField.resignFirstResponder()
-            }
-            if self.nodeLabel != nil {
-                self.nodeLabel.resignFirstResponder()
-            }
-            if self.rpcUserField != nil {
-                self.rpcUserField.resignFirstResponder()
-            }
-            if self.rpcPassword != nil {
-                self.rpcPassword.resignFirstResponder()
-            }
-            if self.certField != nil {
-                self.certField.resignFirstResponder()
-            }
-            if self.macaroonField != nil {
-                self.macaroonField.resignFirstResponder()
-            }
+            
+            self.onionAddressField.resignFirstResponder()
+            self.nodeLabel.resignFirstResponder()
+            self.rpcUserField.resignFirstResponder()
+            self.rpcPassword.resignFirstResponder()
+            self.certField.resignFirstResponder()
         }
     }
     
@@ -569,7 +411,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     func addBtcRpcQr(url: String) {
-        QuickConnect.addNode(uncleJim: false, url: url) { [weak self] (success, errorMessage) in
+        QuickConnect.addNode(url: url) { [weak self] (success, errorMessage) in
             if success {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }

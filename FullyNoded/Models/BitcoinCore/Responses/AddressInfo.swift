@@ -36,12 +36,14 @@ public struct AddressInfo: CustomStringConvertible {
     let hdkeypath: String
     let solvable: Bool
     let desc: String
+    let rawData: [String: Any]
     
     init(_ dictionary: [String: Any]) {
         ismine = dictionary["ismine"] as! Bool
         hdkeypath = dictionary["hdkeypath"] as? String ?? "derivation path unknown"
         solvable = dictionary["solvable"] as? Bool ?? false
         desc = dictionary["desc"] as? String ?? "descriptor unknown"
+        rawData = dictionary
     }
     
     public var description: String {

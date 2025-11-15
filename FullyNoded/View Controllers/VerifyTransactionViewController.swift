@@ -112,6 +112,58 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         exporting = false
     }
     
+    @IBAction func showRawDataAction(_ sender: Any) {
+        if signedRawTx != "" {
+            spinner.addConnectingView(vc: self, description: "Decoding raw transaction...")
+            
+            let p: Decode_Raw_Tx = .init(["hexstring": signedRawTx])
+            
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .decoderawtransaction(param: p)) { [weak self] (response, errorDesc) in
+                guard let self = self else { return }
+                
+                spinner.removeConnectingView()
+                
+                guard let response = response as? [String: Any] else {
+                    showAlert(vc: self, title: "", message: errorDesc ?? "No response from decoderawtransaction.")
+                    return
+                }
+                
+                showModal(data: response, title: "decoderawtransaction")
+            }
+        } else if unsignedPsbt != "" {
+            spinner.addConnectingView(vc: self, description: "Decoding psbt...")
+            
+            let p: Decode_Psbt = Decode_Psbt(["psbt": unsignedPsbt])
+            
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .decodepsbt(param: p)) { [weak self] (response, errorDesc) in
+                guard let self = self else { return }
+                
+                spinner.removeConnectingView()
+                
+                guard let response = response as? [String: Any] else {
+                    showAlert(vc: self, title: "", message: "No response from decodepsbt.")
+                    return
+                }
+                
+                showModal(data: response, title: "decodepsbt")
+            }
+        } else {
+            showAlert(vc: self, title: "", message: "No transaction to decode.")
+        }
+    }
+    
+    private func showModal(data: [String: Any], title: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let modalVC = TextModalViewController(data: data, viewTitle: title)
+            let nav = UINavigationController(rootViewController: modalVC)
+            nav.modalPresentationStyle = .fullScreen
+            nav.modalTransitionStyle = .coverVertical
+            present(nav, animated: true)
+        }
+    }
+    
     private func reset() {
         self.unsignedPsbt = ""
         self.signedRawTx = ""

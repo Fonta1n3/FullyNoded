@@ -13,12 +13,11 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private var dataRefresher = UIBarButtonItem()
     private var amountTotal: Decimal = 0.0
     private let refresher = UIRefreshControl()
-    private var unlockedUtxos: [UTXO] = []
+    var unlockedUtxos: [UTXO] = []
     private var inputArray: [[String:Any]] = []
-    private var selectedUTXOs: [UTXO] = []
     private let spinner = UIActivityIndicatorView(style: .medium)
     private var refreshButton = UIBarButtonItem()
-    private var wallet: Wallet?
+    var wallet: Wallet?
     private var psbt: String?
     private var depositAddress: String?
     var fxRate: Double?
@@ -36,25 +35,16 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         refresher.tintColor = UIColor.white
         refresher.addTarget(self, action: #selector(loadUnlockedUtxos), for: UIControl.Event.valueChanged)
         tableView.addSubview(refresher)
-        
-        activeWallet { [weak self] activeWallet in
-            guard let self = self else { return }
-            guard let activeWallet = activeWallet else {
-                return
-            }
-            
-            wallet = activeWallet
-        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
         amountTotal = 0.0
-        unlockedUtxos.removeAll()
-        selectedUTXOs.removeAll()
         inputArray.removeAll()
-        loadUnlockedUtxos()
+        if unlockedUtxos.count > 0 {
+            tableView.reloadData()
+        }
     }
     
     @IBAction private func lockAction(_ sender: Any) {
@@ -62,25 +52,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             guard let self = self else { return }
             
             self.performSegue(withIdentifier: "goToLocked", sender: self)
-        }
-    }
-    
-    @IBAction private func createRaw(_ sender: Any) {
-        guard let version = UserDefaults.standard.object(forKey: "version") as? Int, version >= 210000 else {
-            showAlert(vc: self, title: "Bitcoin Core needs to be updated",
-                      message: "Manual utxo selection requires Bitcoin Core 0.21, please update and try again. If you already have 0.21 go to the home screen, refresh and load it completely then try again.")
-            
-            return
-        }
-        
-        if self.selectedUTXOs.count > 0 {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
-            }
-        } else {
-            showAlert(vc: self, title: "Select a UTXO first", message: "Just tap a utxo(s) to select it. Then tap the 🔗 to create a transaction with those utxos.")
         }
     }
     
@@ -292,6 +263,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             vc.inputs = inputArray
             vc.utxoTotal = amountTotal
             vc.address = depositAddress ?? ""
+            vc.fxRate = fxRate
             
         case "segueToBroadcasterFromUtxo":
             guard let vc = segue.destination as? VerifyTransactionViewController, let psbt = psbt else { fallthrough }
@@ -316,11 +288,12 @@ extension UTXOViewController: UTXOCellDelegate {
     }
     
     func getAddressInfo(_ utxo: UTXO) {
+        addNavBarSpinner()
         guard let address = utxo.address else {
             showAlert(vc: self, title: "", message: "No address associated with that UTXO.")
             return
         }
-        
+        removeSpinner()
         let p: Get_Address_Info = .init(["address": address])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: p)) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
@@ -337,10 +310,11 @@ extension UTXOViewController: UTXOCellDelegate {
     }
     
     func getTxInfo(_ utxo: UTXO) {
+        addNavBarSpinner()
         let p: Get_Tx = .init(["txid": utxo.txid, "verbose": true, "include_watchonly": true])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .gettransaction(p)) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
-            
+            removeSpinner()
             guard let response = response as? [String: Any] else {
                 showAlert(vc: self, title: "", message: errorDesc ?? "No response.")
                 return
@@ -354,6 +328,7 @@ extension UTXOViewController: UTXOCellDelegate {
     }
     
     func getDescriptorInfo(_ utxo: UTXO) {
+        addNavBarSpinner()
         guard let descriptor = utxo.desc else {
             showAlert(vc: self, title: "", message: "No descriptor associated with this UTXO.")
             return
@@ -361,7 +336,7 @@ extension UTXOViewController: UTXOCellDelegate {
         let p: Get_Descriptor_Info = .init(["descriptor": descriptor])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .getdescriptorinfo(param: p)) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
-            
+            removeSpinner()
             guard let response = response as? [String: Any] else {
                 showAlert(vc: self, title: "", message: errorDesc ?? "No response.")
                 return
@@ -375,7 +350,6 @@ extension UTXOViewController: UTXOCellDelegate {
     }
     
     func didTapToSpendUtxo(_ utxo: UTXO) {
-        var utxo = utxo
         amountTotal = utxo.amount
         let input:[String:Any] = ["txid": utxo.txid, "vout": utxo.vout, "sequence": 1]
         inputArray.append(input)

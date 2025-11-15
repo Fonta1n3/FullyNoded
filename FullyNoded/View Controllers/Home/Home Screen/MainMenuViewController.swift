@@ -21,7 +21,8 @@ class MainMenuViewController: UIViewController {
     var refreshButton = UIBarButtonItem()
     var dataRefresher = UIBarButtonItem()
     var isUnlocked = false
-    let refreshControl = UIRefreshControl()
+    //let refreshControl = UIRefreshControl()
+    
     var blockchainInfo: BlockchainInfo?
     var peerInfo: GetPeerInfoResponse?
     var networkInfo: NetworkInfo?
@@ -67,9 +68,9 @@ class MainMenuViewController: UIViewController {
             activeNode = node
         }
         
-        refreshControl.attributedTitle = NSAttributedString(string: "")
-        refreshControl.addTarget(self, action: #selector(refreshNode), for: .valueChanged)
-        mainMenu.addSubview(refreshControl)
+//        refreshControl.attributedTitle = NSAttributedString(string: "")
+//        refreshControl.addTarget(self, action: #selector(refreshNode), for: .valueChanged)
+//        mainMenu.addSubview(refreshControl)
         
         if !Crypto.setupinit() {
             showAlert(vc: self, title: "", message: "There was an error setupinit.")
@@ -173,25 +174,30 @@ class MainMenuViewController: UIViewController {
             self.spinner.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
             self.dataRefresher = UIBarButtonItem(customView: self.spinner)
             self.navigationItem.setRightBarButton(self.dataRefresher, animated: true)
-            self.spinner.startAnimating()
             self.spinner.alpha = 1
+            self.spinner.startAnimating()
         }
     }
     
     @objc func refreshNode() {
         updateTorStatus()
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.refreshTable()
-            self.existingNodeID = nil
-            self.addNavBarSpinner()
-            self.refreshControl.endRefreshing()
-        }
         
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
-            guard let node = node else { return }
+            guard let node = node else {
+                removeLoader()
+                showAlert(vc: self, title: "", message: "No active node.")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.refreshTable()
+                self.existingNodeID = nil
+                self.addNavBarSpinner()
+            }
+            
             self.initialLoad = false
             self.loadNode(node: node)
         }
@@ -209,26 +215,11 @@ class MainMenuViewController: UIViewController {
                 return
             }
             
-            self.loopThroughNodes(nodes: nodeArray)
-            self.initialLoad = false
-        }
-    }
-    
-    private func loopThroughNodes(nodes: [[String:Any]]) {
-        for (i, node) in nodes.enumerated() {
-            let nodeStruct = NodeStruct.init(dictionary: node)
-            if nodeStruct.isActive && !nodeStruct.isLightning && !nodeStruct.isJoinMarket {
-                self.activeNode = nodeStruct
-            }
-            if i + 1 == nodes.count {
-                if activeNode != nil {
-                    if !activeNode!.isNostr {
-                        loadNode(node: self.activeNode!)
-                    }
-                } else {
-                    removeLoader()
-                    showAlert(vc: self, title: "Node inactive.", message: "Go to settings and node manager to activate a Bitcoin Core node.")
-                }
+            MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
+                guard let self = self else { return }
+                guard let node = node else { return }
+                self.initialLoad = false
+                self.loadNode(node: node)
             }
         }
     }
@@ -793,7 +784,7 @@ class MainMenuViewController: UIViewController {
     }
     
     private func isLocalHost() -> Bool {
-        guard let encAddress = self.activeNode?.onionAddress, let decryptedAddress = Crypto.decrypt(encAddress), let addressText = decryptedAddress.utf8String, addressText.hasPrefix("127.0.0.1:") || addressText.hasPrefix("localhost:") else {
+        guard let encAddress = self.activeNode?.onionAddress, let decryptedAddress = Crypto.decrypt(encAddress), let addressText = decryptedAddress.utf8String, !addressText.contains(".onion") else {
             return false
         }
         return true
@@ -870,23 +861,23 @@ class MainMenuViewController: UIViewController {
         case .blockchainInfo:
             guard let blockchainInfo = blockchainInfo else { return }
             
-            showModal(data: blockchainInfo.rawData, title: blockchainInfo.description)
+            showModal(data: blockchainInfo.rawData, title: "getblockchaininfo")
         case .networkInfo:
             guard let networkInfo = networkInfo else { return }
             
-            showModal(data: networkInfo.rawData, title: networkInfo.description)
+            showModal(data: networkInfo.rawData, title: "getnetworkinfo")
         case .peerInfo:
             guard let peerInfo = peerInfo else { return }
             
-            showModal(data: ["peerInfo": peerInfo.rawData], title: "Peer Info")
+            showModal(data: ["peerInfo": peerInfo.rawData], title: "getpeerinfo")
         case .miningInfo:
             guard let miningInfo = miningInfo else { return }
             
-            showModal(data: miningInfo.rawData, title: miningInfo.description)
+            showModal(data: miningInfo.rawData, title: "getmininginfo")
         case .mempoolInfo:
             guard let mempoolInfo = mempoolInfo else { return }
             
-            showModal(data: mempoolInfo.rawData, title: mempoolInfo.description)
+            showModal(data: mempoolInfo.rawData, title: "getmempoolinfo")
         default:
             break
         }
@@ -1040,8 +1031,6 @@ extension MainMenuViewController: UITableViewDelegate {
         textLabel.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         textLabel.textColor = .quaternaryLabel
         
-        
-        
         let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .light, scale: .default)
         
         let iconImage = UIImage(systemName: "info.circle", withConfiguration: config)
@@ -1068,11 +1057,12 @@ extension MainMenuViewController: UITableViewDelegate {
             case .blockchainInfo:
                 if blockchainInfo != nil {
                     textLabel.textColor = .secondaryLabel
+                    iconButton.tintColor = .tintColor
                 }
                 if showBlockchainInfoSpinner {
                     spinner.stopAnimating()
                     textLabel.textColor = .tertiaryLabel
-                    sectionSpinner.frame = CGRect(x: mainMenu.frame.maxX - 50, y: 0, width: 44, height: 44)
+                    sectionSpinner.frame = CGRect(x: mainMenu.frame.maxX - 50, y: 4, width: 44, height: 44)
                     sectionSpinner.startAnimating()
                 } else {
                     sectionSpinner.stopAnimating()
@@ -1080,6 +1070,7 @@ extension MainMenuViewController: UITableViewDelegate {
             case .networkInfo:
                 if networkInfo != nil {
                     textLabel.textColor = .secondaryLabel
+                    iconButton.tintColor = .tintColor
                 }
                 if showNetworkInfoSpinner {
                     spinner.stopAnimating()
@@ -1092,6 +1083,7 @@ extension MainMenuViewController: UITableViewDelegate {
             case .feeInfo:
                 if feeInfo != nil {
                     textLabel.textColor = .secondaryLabel
+                    iconButton.tintColor = .tintColor
                 }
                 if showFeeInfoSpinner {
                     spinner.stopAnimating()
@@ -1105,6 +1097,7 @@ extension MainMenuViewController: UITableViewDelegate {
             case .mempoolInfo:
                 if mempoolInfo != nil {
                     textLabel.textColor = .secondaryLabel
+                    iconButton.tintColor = .tintColor
                 }
                 if showMempoolInfoSpinner {
                     spinner.stopAnimating()
@@ -1117,6 +1110,7 @@ extension MainMenuViewController: UITableViewDelegate {
             case .miningInfo:
                 if miningInfo != nil {
                     textLabel.textColor = .secondaryLabel
+                    iconButton.tintColor = .tintColor
                 }
                 if showMiningInfoSpinner {
                     spinner.stopAnimating()
@@ -1129,6 +1123,7 @@ extension MainMenuViewController: UITableViewDelegate {
             case .peerInfo:
                 if peerInfo != nil {
                     textLabel.textColor = .secondaryLabel
+                    iconButton.tintColor = .tintColor
                 }
                 if showPeerInfoSpinner {
                     spinner.stopAnimating()
@@ -1141,6 +1136,7 @@ extension MainMenuViewController: UITableViewDelegate {
             case .upTime:
                 if uptimeInfo != nil {
                     textLabel.textColor = .secondaryLabel
+                    iconButton.tintColor = .tintColor
                 }
                 if showUpTimeSpinner {
                     spinner.stopAnimating()
@@ -1154,16 +1150,17 @@ extension MainMenuViewController: UITableViewDelegate {
             }
         }
         
+        header.addSubview(textLabel)
         header.addSubview(iconButton)
         
         NSLayoutConstraint.activate([
             iconButton.trailingAnchor.constraint(equalTo: header.trailingAnchor, constant: -16),
-            iconButton.centerYAnchor.constraint(equalTo: header.centerYAnchor),
-            iconButton.widthAnchor.constraint(equalToConstant: 40),
-            iconButton.heightAnchor.constraint(equalToConstant: 40)
+            iconButton.centerYAnchor.constraint(equalTo: textLabel.centerYAnchor),
+            iconButton.widthAnchor.constraint(equalToConstant: 30),
+            iconButton.heightAnchor.constraint(equalToConstant: 30)
         ])
         
-        header.addSubview(textLabel)
+        
         header.addSubview(sectionSpinner)
         return header
     }

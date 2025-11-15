@@ -380,18 +380,21 @@ class QRScannerViewController: UIViewController {
     
     private func configureCloseButton() {
         closeButton.frame = CGRect(x: view.frame.midX - 15, y: view.frame.maxY - 150, width: 30, height: 30)
-        closeButton.setImage(UIImage(named: "Image-10"), for: .normal)
+        closeButton.setImage(UIImage(systemName: "x.circle"), for: .normal)
+        closeButton.tintColor = .systemBlue
     }
     
     private func configureTorchButton() {
         torchButton.frame = CGRect(x: 17.5, y: 17.5, width: 35, height: 35)
-        torchButton.setImage(UIImage(named: "strobe.png"), for: .normal)
+        torchButton.setImage(UIImage(systemName: "flashlight.on.circle"), for: .normal)
+        torchButton.tintColor = .systemBlue
         addShadow(view: torchButton)
     }
     
     private func configureUploadButton() {
         uploadButton.frame = CGRect(x: 17.5, y: 17.5, width: 35, height: 35)
-        uploadButton.setImage(UIImage(named: "images.png"), for: .normal)
+        uploadButton.setImage(UIImage(systemName: "photo"), for: .normal)
+        uploadButton.tintColor = .systemBlue
         addShadow(view: uploadButton)
     }
     

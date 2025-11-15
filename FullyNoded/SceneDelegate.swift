@@ -198,8 +198,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     
     private func addNode(url: String) {
-        QuickConnect.addNode(uncleJim: false, url: url) { (success, _) in
-            guard success, !url.hasPrefix("clightning-rpc") else { return }
+        QuickConnect.addNode(url: url) { (success, _) in
+            guard success else { return }
             
             DispatchQueue.main.async {
                 NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)

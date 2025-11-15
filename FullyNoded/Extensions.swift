@@ -485,6 +485,27 @@ public extension Int {
         return numberFormatter.string(from: NSNumber(value:self))!
     }
     
+    var dateFromUnixTimestampInt: String {
+        // 1. Create a Date object from the Unix epoch timestamp.
+        // The Unix epoch is in seconds, so cast the Int to TimeInterval.
+        let date = Date(timeIntervalSince1970: TimeInterval(self))
+        
+        // 2. Create a DateFormatter instance.
+        let dateFormatter = DateFormatter()
+        
+        // 3. Set the date style and time style to use the device's locale defaults.
+        // This will automatically adapt the format to the user's regional settings.
+        dateFormatter.dateStyle = .medium // Or .short, .long, .full
+        dateFormatter.timeStyle = .medium // Or .short, .long, .full
+        
+        // 4. Optionally, set the locale explicitly if you need a specific locale,
+        // otherwise, it defaults to the user's current locale.
+        // dateFormatter.locale = Locale(identifier: "en_US")
+        
+        // 5. Convert the Date object to a string using the formatter.
+        return dateFormatter.string(from: date)
+    }
+    
 }
 
 public extension Encodable {
