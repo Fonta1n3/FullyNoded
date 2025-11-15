@@ -1,22 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21513" systemVersion="22D68" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24D81" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="AuthKeys" representedClassName="AuthKeys" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="privateKey" optional="YES" attributeType="Binary"/>
         <attribute name="publicKey" optional="YES" attributeType="String"/>
-    </entity>
-    <entity name="JMWallets" representedClassName="JMWallets" syncable="YES" codeGenerationType="class">
-        <attribute name="account" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="bitcoinCoreWallet" optional="YES" attributeType="String"/>
-        <attribute name="descriptors" optional="YES" attributeType="Binary"/>
-        <attribute name="fnWallet" optional="YES" attributeType="String"/>
-        <attribute name="fnWalletId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="index" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="name" optional="YES" attributeType="String"/>
-        <attribute name="password" optional="YES" attributeType="Binary"/>
-        <attribute name="token" optional="YES" attributeType="Binary"/>
-        <attribute name="words" optional="YES" attributeType="Binary"/>
     </entity>
     <entity name="NewNodes" representedClassName="NewNodes" syncable="YES" codeGenerationType="class">
         <attribute name="cert" optional="YES" attributeType="Binary"/>

@@ -62,6 +62,7 @@
 		0AF61BB02EC84B53001CDF34 /* AppIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BAF2EC84B53001CDF34 /* AppIcons.swift */; };
 		0AF61BB22EC85420001CDF34 /* SelectAppIconViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BB12EC85420001CDF34 /* SelectAppIconViewController.swift */; };
 		0AF61BB42EC8791A001CDF34 /* AppIconSelectorTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BB32EC87919001CDF34 /* AppIconSelectorTableViewController.swift */; };
+		0AF61BB62EC8AF1B001CDF34 /* DuressPinViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BB52EC8AF1B001CDF34 /* DuressPinViewController.swift */; };
 		0AF73250291DDFC4009F6296 /* BTC_Params.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF7324F291DDFC4009F6296 /* BTC_Params.swift */; };
 		0AFD7CF32C7E5FB100C46E36 /* Bbqr in Frameworks */ = {isa = PBXBuildFile; productRef = 0AFD7CF22C7E5FB100C46E36 /* Bbqr */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
@@ -239,6 +240,7 @@
 		0AF61BAF2EC84B53001CDF34 /* AppIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIcons.swift; sourceTree = "<group>"; };
 		0AF61BB12EC85420001CDF34 /* SelectAppIconViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectAppIconViewController.swift; sourceTree = "<group>"; };
 		0AF61BB32EC87919001CDF34 /* AppIconSelectorTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconSelectorTableViewController.swift; sourceTree = "<group>"; };
+		0AF61BB52EC8AF1B001CDF34 /* DuressPinViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuressPinViewController.swift; sourceTree = "<group>"; };
 		0AF7324F291DDFC4009F6296 /* BTC_Params.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTC_Params.swift; sourceTree = "<group>"; };
 		55FF5DCF6C4B0C2309EC4BF2 /* Pods-FullyNoded.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FullyNoded.debug.xcconfig"; path = "Target Support Files/Pods-FullyNoded/Pods-FullyNoded.debug.xcconfig"; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
@@ -625,6 +627,7 @@
 				D02958D4235053B300ED8F72 /* SecurityCenterViewController.swift */,
 				D00F851A24949691008D7CD3 /* AppPasswordViewController.swift */,
 				D00F851C2494A616008D7CD3 /* TorAuthViewController.swift */,
+				0AF61BB52EC8AF1B001CDF34 /* DuressPinViewController.swift */,
 			);
 			path = "Security Center";
 			sourceTree = "<group>";
@@ -1187,6 +1190,7 @@
 				D0C20ED624A6E19600C62AA4 /* NetworkInfo.swift in Sources */,
 				0A1F10CF26A1A47F00BE2707 /* DerivationPath.swift in Sources */,
 				D09F9E4E24B06A63006B588C /* SignerStruct.swift in Sources */,
+				0AF61BB62EC8AF1B001CDF34 /* DuressPinViewController.swift in Sources */,
 				D0F3919024BFE48600EA8A2A /* CreateAccountMap.swift in Sources */,
 				0AF73250291DDFC4009F6296 /* BTC_Params.swift in Sources */,
 				D0C20EDC24A6E51D00C62AA4 /* MempoolInfo.swift in Sources */,

@@ -285,11 +285,20 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         let hashedPassword = Crypto.sha256hash(password)
 
         guard let hexData = Data(hexString: hashedPassword) else { return }
-
-        /// Overwrite users password with the hash of the password, sorry I did not do this before...
+        
+        let duressPINHash = UserDefaults.standard.object(forKey: "DuressPIN") as? String
+        
         if password == retrievedPassword {
             let _ = KeyChain.set(hexData, forKey: "UnlockPassword")
             unlock()
+            
+        } else if let duressPINHash = duressPINHash, hashedPassword == duressPINHash {
+            destroy { [weak self] destroyed in
+                guard let self = self else { return }
+                guard destroyed else { return }
+                
+                unlock()
+            }
 
         } else {
             if hexData.hexString == passwordData.hexString {

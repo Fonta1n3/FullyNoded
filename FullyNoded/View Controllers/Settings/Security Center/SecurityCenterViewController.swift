@@ -28,7 +28,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 5
+        return 6
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -114,6 +114,11 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                 icon.image = UIImage(systemName: "xmark.circle")
                 //background.backgroundColor = .systemRed
             }
+            
+        case 5:
+            label.text = "Duress Pin"
+            icon.image = UIImage(systemName: "person.badge.shield.exclamationmark")
+            label.textColor = .label
                         
         default:
             break
@@ -147,6 +152,9 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             
         case 4:
             textLabel.text = "Passphrase Prompt"
+            
+        case 5:
+            textLabel.text = "Duress Pin"
                         
         default:
             break
@@ -205,6 +213,13 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             }
             DispatchQueue.main.async {
                 tableView.reloadSections([4], with: .fade)
+            }
+            
+        case 5:
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                performSegue(withIdentifier: "segueToDuressPin", sender: self)
             }
             
         default:
@@ -300,7 +315,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             let decrypt = UIAlertAction(title: "Decrypt", style: .default) { [unowned vc = self] (alertAction) in
                 let text = (alert.textFields![0] as UITextField).text
                 if text != "" {
-                    let param: Wallet_Passphrase = .init(["passphrase":text, "timeout": 600])
+                    let param: Wallet_Passphrase = .init(["passphrase": text, "timeout": 600])
                     vc.executNodeCommand(method: .walletpassphrase(param: param))
                 }
             }

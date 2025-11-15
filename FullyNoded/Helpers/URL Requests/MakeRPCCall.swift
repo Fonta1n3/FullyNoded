@@ -83,6 +83,14 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         if decryptedCert != "" && decryptedCert != nil {
             walletUrl = "https://\(rpcusername):\(rpcpassword)@\(onionAddress)"
         }
+        
+        if decryptedCert == nil || decryptedCert == "" {
+            guard onionAddress.contains(".onion:") || onionAddress.hasPrefix("127.0.0.1") || onionAddress.hasPrefix("localhost") else {
+                completion((nil, "You are attempting to make an http network request that is not over Tor or localhost. This is not allowed."))
+                return
+            }
+        }
+        
         let ud = UserDefaults.standard
         
         if ud.object(forKey: "walletName") != nil {
@@ -216,11 +224,12 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
     }
     
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        guard let trust = challenge.protectionSpace.serverTrust else {
-            return
+        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+           let trust = challenge.protectionSpace.serverTrust {
+            completionHandler(.useCredential, URLCredential(trust: trust))
+        } else {
+            completionHandler(.performDefaultHandling, nil)
         }
-        let credential = URLCredential(trust: trust)
-        completionHandler(.useCredential, credential)
     }
 }
 

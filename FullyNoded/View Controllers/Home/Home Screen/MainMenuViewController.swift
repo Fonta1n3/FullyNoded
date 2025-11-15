@@ -783,7 +783,7 @@ class MainMenuViewController: UIViewController {
         }
     }
     
-    private func isLocalHost() -> Bool {
+    private func isNotAnOnion() -> Bool {
         guard let encAddress = self.activeNode?.onionAddress, let decryptedAddress = Crypto.decrypt(encAddress), let addressText = decryptedAddress.utf8String, !addressText.contains(".onion") else {
             return false
         }
@@ -836,7 +836,7 @@ class MainMenuViewController: UIViewController {
                     self.mgr?.start(delegate: self)
                     
                     if let node = self.activeNode {
-                        if isLocalHost() {
+                        if isNotAnOnion() {
                             loadNode(node: node)
                         }
                     } else {

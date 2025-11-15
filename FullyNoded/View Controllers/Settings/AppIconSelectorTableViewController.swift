@@ -74,6 +74,7 @@ class AppIconSelectorTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "appIconCell", for: indexPath)
+        cell.selectionStyle = .none
         let icon = cell.viewWithTag(1) as! UIImageView
         icon.layer.cornerRadius = 8
         icon.clipsToBounds = true
