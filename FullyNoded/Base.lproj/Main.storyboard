@@ -3718,11 +3718,54 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <segue destination="bKH-sI-MiM" kind="show" identifier="reenterCredentials" id="ckQ-WD-ole"/>
                         <segue destination="FrY-WR-Inf" kind="show" identifier="goToNodes" id="Wy7-ur-TeS"/>
                         <segue destination="Jmi-bN-zgj" kind="show" identifier="goToSecurity" id="Qor-Ed-tsy"/>
+                        <segue destination="a5x-qB-oPA" kind="show" identifier="segueToAppIconSelector" id="iHx-LU-UZW"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="k6b-ep-z2U" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="4216.8000000000002" y="-444.82758620689657"/>
+        </scene>
+        <!--App Icon-->
+        <scene sceneID="GEq-kw-p9F">
+            <objects>
+                <tableViewController id="a5x-qB-oPA" customClass="AppIconSelectorTableViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="X4Q-7X-fAC">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="666"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="appIconCell" rowHeight="102" id="tUt-CF-5SJ">
+                                <rect key="frame" x="0.0" y="50" width="393" height="102"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="tUt-CF-5SJ" id="G9P-CG-usN">
+                                    <rect key="frame" x="0.0" y="0.0" width="393" height="102"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="pve-ht-YYx">
+                                            <rect key="frame" x="28" y="11" width="80" height="80"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="80" id="8FP-DN-eST"/>
+                                                <constraint firstAttribute="width" constant="80" id="R9y-An-fQq"/>
+                                            </constraints>
+                                        </imageView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="pve-ht-YYx" firstAttribute="leading" secondItem="G9P-CG-usN" secondAttribute="leadingMargin" constant="8" id="8VQ-Iz-PAI"/>
+                                        <constraint firstItem="pve-ht-YYx" firstAttribute="centerY" secondItem="G9P-CG-usN" secondAttribute="centerY" id="o0b-DP-CRd"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="a5x-qB-oPA" id="0xE-m5-een"/>
+                            <outlet property="delegate" destination="a5x-qB-oPA" id="Iqm-em-4SB"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="App Icon" id="bka-5Y-a5x"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="fOy-fF-5AH" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2704.5801526717555" y="376.76056338028172"/>
         </scene>
         <!--Nodes-->
         <scene sceneID="iSc-Eo-e8H">

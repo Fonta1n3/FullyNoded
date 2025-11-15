@@ -57,6 +57,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             label.text = "Security Center"
             icon.image = UIImage(systemName: "lock.shield")
             
+        case 4:
+            label.text = "App Icon"
+            icon.image = UIImage(systemName: "photo")
+            
         default:
             break
         }
@@ -151,6 +155,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             return currencyCell(indexPath, currencies[indexPath.row])
             
+        case 4:
+            return settingsCell(indexPath)
+            
         default:
             return UITableViewCell()
         }
@@ -179,6 +186,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         case 3:
             textLabel.text = "Fiat Currency"
             
+        case 4:
+            textLabel.text = "App Icon"
+            
         default:
             break
         }
@@ -189,7 +199,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 4
+        return 5
     }
     
     
@@ -286,6 +296,14 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                         showAlert(vc: self, title: "", message: "You need to tap the refresh button on the active wallet view to update the balance currency.")
                     }
                 }
+            }
+            
+        case 4:
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                performSegue(withIdentifier: "segueToAppIconSelector", sender: self)
+                
             }
         default:
             break

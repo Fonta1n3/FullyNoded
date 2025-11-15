@@ -59,6 +59,9 @@
 		0AF61BAA2EC2FCB2001CDF34 /* PeersDetailTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BA92EC2FCB2001CDF34 /* PeersDetailTableViewController.swift */; };
 		0AF61BAC2EC450C1001CDF34 /* ListTransactions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BAB2EC450C1001CDF34 /* ListTransactions.swift */; };
 		0AF61BAE2EC58E3D001CDF34 /* GetTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BAD2EC58E3D001CDF34 /* GetTransaction.swift */; };
+		0AF61BB02EC84B53001CDF34 /* AppIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BAF2EC84B53001CDF34 /* AppIcons.swift */; };
+		0AF61BB22EC85420001CDF34 /* SelectAppIconViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BB12EC85420001CDF34 /* SelectAppIconViewController.swift */; };
+		0AF61BB42EC8791A001CDF34 /* AppIconSelectorTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BB32EC87919001CDF34 /* AppIconSelectorTableViewController.swift */; };
 		0AF73250291DDFC4009F6296 /* BTC_Params.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF7324F291DDFC4009F6296 /* BTC_Params.swift */; };
 		0AFD7CF32C7E5FB100C46E36 /* Bbqr in Frameworks */ = {isa = PBXBuildFile; productRef = 0AFD7CF22C7E5FB100C46E36 /* Bbqr */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
@@ -233,6 +236,9 @@
 		0AF61BA92EC2FCB2001CDF34 /* PeersDetailTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeersDetailTableViewController.swift; sourceTree = "<group>"; };
 		0AF61BAB2EC450C1001CDF34 /* ListTransactions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListTransactions.swift; sourceTree = "<group>"; };
 		0AF61BAD2EC58E3D001CDF34 /* GetTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetTransaction.swift; sourceTree = "<group>"; };
+		0AF61BAF2EC84B53001CDF34 /* AppIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIcons.swift; sourceTree = "<group>"; };
+		0AF61BB12EC85420001CDF34 /* SelectAppIconViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectAppIconViewController.swift; sourceTree = "<group>"; };
+		0AF61BB32EC87919001CDF34 /* AppIconSelectorTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconSelectorTableViewController.swift; sourceTree = "<group>"; };
 		0AF7324F291DDFC4009F6296 /* BTC_Params.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTC_Params.swift; sourceTree = "<group>"; };
 		55FF5DCF6C4B0C2309EC4BF2 /* Pods-FullyNoded.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FullyNoded.debug.xcconfig"; path = "Target Support Files/Pods-FullyNoded/Pods-FullyNoded.debug.xcconfig"; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
@@ -514,6 +520,8 @@
 				D0EF29C0216B82B400EB776A /* SettingsViewController.swift */,
 				D039D3CB2333250900D1ED18 /* Wallet Manager */,
 				D00F85192494966D008D7CD3 /* Security Center */,
+				0AF61BB12EC85420001CDF34 /* SelectAppIconViewController.swift */,
+				0AF61BB32EC87919001CDF34 /* AppIconSelectorTableViewController.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -645,6 +653,7 @@
 		D0286D6121E2675D00954991 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				0AF61BAF2EC84B53001CDF34 /* AppIcons.swift */,
 				0A64633D28FDBDA60079C5DB /* Nostr */,
 				D02094EF2257FB78002E8E7A /* FirstTime.swift */,
 				D073E16D22558CDE0012A28C /* CoreDataService.swift */,
@@ -1105,6 +1114,7 @@
 				0A64634428FDC01B0079C5DB /* NostrResponse.swift in Sources */,
 				D093E2A725A59B9C0038B59A /* TransactionStruct.swift in Sources */,
 				D0233F282361EA5F0041FFBA /* shim.swift in Sources */,
+				0AF61BB22EC85420001CDF34 /* SelectAppIconViewController.swift in Sources */,
 				D0F3919424C0147400EA8A2A /* QRScannerViewController.swift in Sources */,
 				D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */,
 				D07399D9245EEA5F00860B7E /* Broadcaster.swift in Sources */,
@@ -1167,6 +1177,7 @@
 				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,
 				0AF61BAA2EC2FCB2001CDF34 /* PeersDetailTableViewController.swift in Sources */,
 				D00B27BC255A27F300269B51 /* WalletURL.swift in Sources */,
+				0AF61BB42EC8791A001CDF34 /* AppIconSelectorTableViewController.swift in Sources */,
 				D07E0DE622F9168F00A81FA8 /* WalletManagerViewController.swift in Sources */,
 				0A83EB3C2C4837C600502806 /* AccountMap.swift in Sources */,
 				0A337D012700316E00AD087F /* WalletDir.swift in Sources */,
@@ -1185,6 +1196,7 @@
 				D09A32FF24A8419D009FA0B2 /* CreateFullyNodedWallet.swift in Sources */,
 				D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */,
 				0A1F10EB26A1A8C300BE2707 /* DataExtension.swift in Sources */,
+				0AF61BB02EC84B53001CDF34 /* AppIcons.swift in Sources */,
 				D0C20ED824A6E2FF00C62AA4 /* MiningInfo.swift in Sources */,
 				D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */,
 				D00F851D2494A616008D7CD3 /* TorAuthViewController.swift in Sources */,
@@ -1377,7 +1389,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 55FF5DCF6C4B0C2309EC4BF2 /* Pods-FullyNoded.debug.xcconfig */;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon1, AppIcon2";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-6";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNoded.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -1424,7 +1438,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 899ECC6727CAAA7F913D0DA1 /* Pods-FullyNoded.release.xcconfig */;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon1, AppIcon2";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-6";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNodedRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
