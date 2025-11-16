@@ -81,7 +81,6 @@ class TorClient: NSObject, URLSessionDelegate {
                 self.thread = nil
                 
                 self.config.options = [
-                    //"DNSPort": "\(dnsPort)",
                     "AutomapHostsOnResolve": "1",
                     "SocksPort": "\(proxyPort)",//OnionTrafficOnly
                     "AvoidDiskWrites": "1",

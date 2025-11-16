@@ -111,7 +111,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         }
         
         var request = URLRequest(url: url)
-        var timeout = 10.0
+        var timeout = 30.0
         
         switch method {
         case .gettxoutsetinfo:
@@ -158,6 +158,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         var sesh = URLSession(configuration: .default)
         
         if onionAddress.contains("onion") {
+            attempts = 0
             sesh = self.torClient.session
             
         } else {
@@ -174,7 +175,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
             }
             
             // Only with Tor do we need to attempt more then once.
-            attempts = 19
+            attempts = 20
             sesh = URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: .main)
         }
         
@@ -204,7 +205,10 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
                 return
             }
             
-            self.attempts = 0
+            if onionAddress.contains(".onion:") {
+                self.attempts = 0
+            }
+            
             
             guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: .mutableLeaves) as? NSDictionary else {
                 if let httpResponse = response as? HTTPURLResponse {

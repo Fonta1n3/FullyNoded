@@ -199,7 +199,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             if let cert = certField.text {
-                guard let encryptedCert = encryptCert(cert) else {
+                guard let encryptedCert = encryptCert(cert.condenseWhitespace()) else {
                     return
                 }
                 newNode["cert"] = encryptedCert
@@ -476,7 +476,7 @@ extension NodeDetailViewController: UIDocumentPickerDelegate {
         DispatchQueue.main.async { [ weak self] in
             guard let self = self else { return }
             
-            certField.text = base64Cert
+            certField.text = base64Cert.condenseWhitespace()
         }
     }
     

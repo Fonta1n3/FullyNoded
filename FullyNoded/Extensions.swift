@@ -145,8 +145,7 @@ public extension String {
     }
     
     func condenseWhitespace() -> String {
-        let components = self.components(separatedBy: .whitespacesAndNewlines)
-        return components.filter { !$0.isEmpty }.joined(separator: " ")
+        return self.replacingOccurrences(of: " ", with: "")
     }
     
     var isAlphanumeric: Bool {
