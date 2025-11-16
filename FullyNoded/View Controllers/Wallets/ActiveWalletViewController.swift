@@ -174,12 +174,38 @@ class ActiveWalletViewController: UIViewController {
     
     @IBAction func getDetails(_ sender: Any) {
         guard let wallet = wallet else {
-            showAlert(vc: self, title: "", message: "That button only works for \"Fully Noded Wallets\" which can be created by tapping the plus button, you can see your Fully Noded Wallets by tapping the squares button. Fully Noded allows you to access, use and create wallets with ultimate flexibility using your node but it comes with some limitations. In order to get a better user experience we recommend creating a Fully Noded Wallet.")
+            if UserDefaults.standard.object(forKey: "walletName") != nil {
+                addNavBarSpinner()
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .getwalletinfo) { [weak self] (response, errorDesc) in
+                    guard let self = self else { return }
+                    
+                    removeSpinner()
+                    
+                    guard let response = response as? [String: Any] else {
+                        showAlert(vc: self, title: "", message: "You need to either activate a wallet or create a wallet first. You can do this by tapping the plus button and squares button in the top left of the view or on the bottom Advanced > Bitcoin Core Wallets.")
+                        return
+                    }
+                    
+                    showModal(data: response, title: "getwalletinfo")
+                }
+            }
             return
         }
         
         walletLabel = wallet.label
         goToDetail()
+    }
+    
+    private func showModal(data: [String: Any], title: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let modalVC = TextModalViewController(data: data, viewTitle: title)
+            let nav = UINavigationController(rootViewController: modalVC)
+            nav.modalPresentationStyle = .fullScreen
+            nav.modalTransitionStyle = .coverVertical
+            present(nav, animated: true)
+        }
     }
     
     @IBAction func goToFullyNodedWallets(_ sender: Any) {
@@ -272,54 +298,34 @@ class ActiveWalletViewController: UIViewController {
             guard let self = self else { return }
             
             guard let wallet = wallet else {
-                CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
-                    guard let self = self, let nodes = nodes else { return }
-                    
-                    guard nodes.count > 0 else {
-                        finishedLoading()
-                        showAlert(vc: self, title: "", message: "No nodes added.")
-                        return
-                    }
-                    
-                    var anyOnchain = false
-                    
-                    for (i, node) in nodes.enumerated() {
-                        let nodeStr = NodeStruct(dictionary: node)
-                        
-                        if nodeStr.isActive {
-                            anyOnchain = true
-                        }
-                        
-                        if i + 1 == nodes.count {
-                            if anyOnchain {
-                                showAlert(vc: self, title: "", message: "No onchain wallet activated, tap the wallets button in the top left (squares) to activate an onchain wallet or the + button to create one.")
-                                
-                            } else {
-                                guard let walletName = UserDefaults.standard.string(forKey: "walletName") else {
-                                    self.finishedLoading()
-                                    showAlert(vc: self, title: "", message: "No wallet currently toggled on.")
-                                    return
-                                }
-                                
-                                self.existingWallet = walletName
-                                self.walletLabel = walletName
-                                self.getWalletBalance()
-                            }
-                        }
-                    }
+                guard let walletName = UserDefaults.standard.string(forKey: "walletName") else {
+                    self.finishedLoading()
+                    showAlert(vc: self, title: "", message: "No wallet activated, you can either create a wallet by tapping the plus sign in the top left or tap the Advanced button at the bottom of the sreen > Bitcoin Core Wallets and tap one to activate it. If using a Bitcoin Core only wallet you will not get full functionality from Fully Noded.")
+                    return
                 }
+                
+                existingWallet = walletName
+                walletLabel = walletName
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    walletTable.reloadData()
+                }
+                getWalletBalance()
                 return
             }
             
             self.wallet = wallet
-            self.existingWallet = wallet.name
-            self.walletLabel = wallet.label
+            existingWallet = wallet.name
+            walletLabel = wallet.label
             
-            DispatchQueue.main.async {
-                self.walletTable.reloadData()
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                walletTable.reloadData()
             }
             
-            self.getWalletBalance()
+            getWalletBalance()
         }
     }
     
@@ -663,7 +669,7 @@ class ActiveWalletViewController: UIViewController {
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .listunspent(param)) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
                         
-            guard let utxos = response as? [[String: Any]], utxos.count > 0, let wallet = self.wallet else {
+            guard let utxos = response as? [[String: Any]], utxos.count > 0 else {
                 loadTransactions()
                 return
             }
@@ -672,7 +678,11 @@ class ActiveWalletViewController: UIViewController {
             unlockedUtxos = [UTXO].from(rawArray: utxos)
             unlockedUtxos.sort { ($0.confirmations) < ($1.confirmations) }
             
-            print("unlockedUtxos.count: \(unlockedUtxos.count)")
+            guard let wallet = self.wallet else {
+                loadTransactions()
+                return
+            }
+            
                         
             for (i, utxo) in unlockedUtxos.enumerated() {
                 guard let utxo_desc = utxo.desc else {

@@ -129,9 +129,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             self.present(alert, animated: true, completion: nil)
         }
     }
-    
-    
-    
+        
     private func exportJson() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }

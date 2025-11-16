@@ -840,7 +840,7 @@ class MainMenuViewController: UIViewController {
                             loadNode(node: node)
                         }
                     } else {
-                        showAlert(vc: self, title: "", message: "No active Bitcoin Core node, please toggle one on to utlize this view.")
+                        showAlert(vc: self, title: "", message: "No active node, navigate to Settings > Node Manager to add a node or activate one.")
                     }
                 }
             }

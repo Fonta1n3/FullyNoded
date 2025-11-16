@@ -392,7 +392,6 @@ extension UTXOViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
         let utxo = unlockedUtxos[indexPath.section]
-        guard let wallet = wallet else { return cell }
         cell.configure(wallet: wallet, utxo: utxo, isLocked: false, fxRate: fxRate, delegate: self)
         return cell
     }

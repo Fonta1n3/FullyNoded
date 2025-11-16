@@ -10,16 +10,17 @@ import Foundation
 
 class MakeRPCCall: NSObject, URLSessionDelegate {
     
-    
     static let sharedInstance = MakeRPCCall()
+    
+    private override init() {}
+    
     let torClient = TorClient.sharedInstance
     private var attempts = 0
     var connected: Bool = false
-    var onDoneBlock : (((response: Any?, errorDesc: String?)) -> Void)?
+    var onDoneBlock: (((response: Any?, errorDesc: String?)) -> Void)?
     var activeNode: NodeStruct?
+    let delegate = UserCertURLSessionDelegate()
     
-    
-    private override init() {}
     
     func getActiveNode(completion: @escaping ((NodeStruct?) -> Void)) {
         CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
@@ -56,10 +57,12 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         
         var encryptedCert: Data?
         var decryptedCert: String?
+        var cert: SecCertificate?
         
         if let _ = node.cert {
             encryptedCert = node.cert!
             decryptedCert = decryptedValue(encryptedCert!)
+            cert = CertificateManager.shared.base64ToCert(base64: decryptedCert!)
         }
         
         guard let encAddress = node.onionAddress,
@@ -131,7 +134,12 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         request.addValue("Basic \(base64LoginString)", forHTTPHeaderField: "Authorization")
         request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
         
-        let dict:[String:Any] = ["jsonrpc":"1.0","id":id,"method":method.stringValue,"params":method.paramDict]
+        let dict:[String:Any] = [
+            "jsonrpc": "1.0",
+            "id": id,
+            "method": method.stringValue,
+            "params": method.paramDict
+        ]
         
         guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
             #if DEBUG
@@ -151,6 +159,23 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         
         if onionAddress.contains("onion") {
             sesh = self.torClient.session
+            
+        } else {
+            guard let cert = cert else {
+                print("no cert here")
+                return
+            }
+            
+            delegate.cert = cert
+            
+            delegate.onTrustError = { errorMessage in
+                completion((nil, "SSL error:\(errorMessage)"))
+                return
+            }
+            
+            // Only with Tor do we need to attempt more then once.
+            attempts = 19
+            sesh = URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: .main)
         }
         
         let task = sesh.dataTask(with: request as URLRequest) { [weak self] (data, response, error) in
@@ -197,9 +222,9 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
                 return
             }
             
-#if DEBUG
+            #if DEBUG
             print("json: \(json)")
-#endif
+            #endif
             
             guard let errorCheck = json["error"] as? NSDictionary else {
                 completion((json["result"], nil))
@@ -216,20 +241,9 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
             } else {
                 completion((nil, errorMessage))
             }
-            
-            
         }
         
         task.resume()
-    }
-    
-    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
-           let trust = challenge.protectionSpace.serverTrust {
-            completionHandler(.useCredential, URLCredential(trust: trust))
-        } else {
-            completionHandler(.performDefaultHandling, nil)
-        }
     }
 }
 

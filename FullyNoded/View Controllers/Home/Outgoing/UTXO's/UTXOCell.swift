@@ -58,7 +58,7 @@ class UTXOCell: UITableViewCell {
         selectionStyle = .none
     }
     
-    func configure(wallet: Wallet, utxo: UTXO, isLocked: Bool, fxRate: Double?, delegate: UTXOCellDelegate) {
+    func configure(wallet: Wallet?, utxo: UTXO, isLocked: Bool, fxRate: Double?, delegate: UTXOCellDelegate) {
         self.utxo = utxo
         self.isLocked = isLocked
         self.delegate = delegate
@@ -117,13 +117,19 @@ class UTXOCell: UITableViewCell {
             isDustImageView.tintColor = .none
             dustLabel.text = "Not dust"
         }
+        
+        var walletLabel = UserDefaults.standard.object(forKey: "walletName") as! String
+        
+        if let wallet = wallet {
+            walletLabel = wallet.label
+        }
                 
         if utxo.solvable {
-            solvableLabel.text = "Owned by \(wallet.label)"
+            solvableLabel.text = "Owned by \(walletLabel)"
             isSolvableImageView.tintColor = .none
             isSolvableImageView.image = UIImage(systemName: "person.crop.circle.fill.badge.checkmark")
         } else {
-            solvableLabel.text = "Not owned by \(wallet.label)!"
+            solvableLabel.text = "Not owned by \(walletLabel)!"
             isSolvableImageView.tintColor = .systemRed
             isSolvableImageView.image = UIImage(systemName: "person.crop.circle.badge.xmark")
         }

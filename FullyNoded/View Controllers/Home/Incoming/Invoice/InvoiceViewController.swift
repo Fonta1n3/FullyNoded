@@ -191,20 +191,54 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     func getAddress() {
-        let param: Get_New_Address = .init(["":""])
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getnewaddress(param: param)) { [weak self] (response, errorMessage) in
-            guard let self = self else { return }
-            guard let address = response as? String else {
-                self.spinner.removeConnectingView()
+        promptBitcoinAddressType { addressType in
+            let param: Get_New_Address = .init(["address_type": addressType])
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .getnewaddress(param: param)) { [weak self] (response, errorMessage) in
+                guard let self = self else { return }
+                guard let address = response as? String else {
+                    self.spinner.removeConnectingView()
+                    
+                    showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error fetching address")
+                    
+                    return
+                }
                 
-                showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error fetching address")
-                
-                return
+                self.showAddress(address: address)
             }
-            
-            self.showAddress(address: address)
         }
     }
+    
+    // Only gets called when a user is using a non Fully Noded wallet.
+    func promptBitcoinAddressType(completion: @escaping (String) -> Void) {
+        let alert = UIAlertController(
+            title: "Choose Address Type",
+            message: "Select the Bitcoin address format (only required when using non Fully Noded wallets, for experts only):",
+            preferredStyle: .alert
+        )
+        
+        let options: [(title: String, value: String)] = [
+            ("Legacy (P2PKH)",          "legacy"),
+            ("Nested SegWit (P2SH)",    "p2sh-segwit"),
+            ("Native SegWit (Bech32)",  "bech32"),
+            ("Taproot (Bech32m)",       "bech32m")
+        ]
+        
+        for opt in options {
+            alert.addAction(UIAlertAction(title: opt.title, style: .default) { _ in
+                completion(opt.value)
+            })
+        }
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+            completion("")
+        })
+        
+        self.present(alert, animated: true)
+    }
+
+   
+
+
     
     @objc func textFieldDidChange(_ textField: UITextField) {
         updateQRImage()
@@ -218,7 +252,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     func updateQRImage() {
         var newImage = UIImage()
-        var amount = self.amountField.text ?? ""
+        let amount = self.amountField.text ?? ""
         let label = self.labelField.text?.replacingOccurrences(of: " ", with: "%20") ?? ""
         let message = self.messageField.text?.replacingOccurrences(of: " ", with: "%20") ?? ""
         textToShareViaQRCode = "bitcoin:\(self.addressString)"

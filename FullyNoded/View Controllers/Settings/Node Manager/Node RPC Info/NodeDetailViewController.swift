@@ -7,7 +7,8 @@
 //
 
 import UIKit
-import AVFoundation
+import MobileCoreServices
+import UniformTypeIdentifiers
 
 class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
@@ -41,7 +42,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        masterStackView.alpha = 0
         navigationController?.delegate = self
         configureTapGesture()
         nodeLabel.delegate = self
@@ -360,7 +360,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     }
                 }
                 
-                if node.cert != nil, certField != nil {
+                if node.cert != nil {
                     if let decryptedCert = Crypto.decrypt(node.cert!) {
                         certField.text = decryptedCert.utf8String ?? ""
                     }
@@ -375,10 +375,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             showAlert(vc: self, title: "RPC credentials created ✓", message: "Fully Noded creates an rpc password for you by default, export the rpc auth text to your bitcoin.conf, save it and restart your node to connect.")
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            self?.masterStackView.alpha = 1
         }
     }
     
@@ -425,6 +421,29 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
+    func showCertificatePicker() {
+        // Use broad types: certificates + generic data (covers .pem, .cer, .crt, .der)
+        let supportedTypes: [UTType] = [
+            .x509Certificate,  // .cer, .crt (PEM/DER)
+            .data              // fallback for .pem, .der, unknown binaries
+        ]
+        
+        let picker = UIDocumentPickerViewController(
+            forOpeningContentTypes: supportedTypes,
+            asCopy: true  // Copies file into app sandbox (secure)
+        )
+        picker.delegate = self
+        picker.allowsMultipleSelection = false
+        picker.shouldShowFileExtensions = true
+        
+        present(picker, animated: true)
+    }
+    
+    @IBAction func showFilePickerAction(_ sender: Any) {
+        showCertificatePicker()
+    }
+    
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         if segue.identifier == "segueToScanNodeCreds" {
@@ -437,5 +456,38 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
         }
+    }
+}
+
+extension NodeDetailViewController: UIDocumentPickerDelegate {
+    
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let url = urls.first else { return }
+        
+        let fileExtension = url.pathExtension.lowercased()
+        
+        let securedURL = copyToAppContainer(url: url)
+        
+        guard let base64Cert = CertificateManager.shared.certFileToBase64(fileURL: securedURL) else {
+            showAlert(vc: self, title: "Error", message: "Unable to convert the cert file to base64 text. Ensure you are trying to upload a .pem, .cer, .crt or .der file.")
+            return
+        }
+        
+        DispatchQueue.main.async { [ weak self] in
+            guard let self = self else { return }
+            
+            certField.text = base64Cert
+        }
+    }
+    
+    private func copyToAppContainer(url: URL) -> URL {
+        let fm = FileManager.default
+        let docsDir = fm.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let dest = docsDir.appendingPathComponent(url.lastPathComponent)
+        
+        try? fm.removeItem(at: dest)
+        try? fm.copyItem(at: url, to: dest)
+        
+        return dest
     }
 }

@@ -12,7 +12,10 @@ class AppIconSelectorTableViewController: UITableViewController {
     
     var currentIcon: String = ""
 
-    var appIcons: [[String: UIImage]] = [["AppIcon-6": UIImage(named: "Default_Icon")!], ["AppIcon-7": UIImage(named: "Original_Icon")!]]
+    var appIcons: [[String: UIImage]] = [
+        ["AppIcon-6": UIImage(named: "Default_Icon")!],
+        ["AppIcon-7": UIImage(named: "Original_Icon")!]
+    ]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,8 +50,6 @@ class AppIconSelectorTableViewController: UITableViewController {
         // #warning Incomplete implementation, return the number of rows
         return appIcons.count
     }
-    
-    
 
     // MARK: - Get Current Icon (FIXED)
     func currentIconName(completion: @escaping (String?) -> Void) {
@@ -70,7 +71,6 @@ class AppIconSelectorTableViewController: UITableViewController {
             }
         }
     }
-
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "appIconCell", for: indexPath)
