@@ -77,6 +77,8 @@ class MainMenuViewController: UIViewController {
         }
         mainMenu.delegate = self
         mainMenu.tableFooterView = UIView(frame: .zero)
+        mainMenu.layer.cornerRadius = 8
+        mainMenu.clipsToBounds = true
         initialLoad = true
         addNavBarSpinner()
         showUnlockScreen()

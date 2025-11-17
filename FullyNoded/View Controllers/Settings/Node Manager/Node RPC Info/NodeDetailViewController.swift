@@ -48,7 +48,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         rpcPassword.delegate = self
         rpcUserField.delegate = self
         onionAddressField.delegate = self
-        certField.delegate = self
+        //certField.delegate = self
                
         rpcPassword.isSecureTextEntry = true
         onionAddressField.isSecureTextEntry = false
@@ -71,6 +71,63 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             segueToScanNow()
         }
     }
+    
+    @IBAction func pasteCertAction(_ sender: Any) {
+        if let pasted = UIPasteboard.general.string {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                certField.text = pasted
+            }
+        }
+    }
+    
+    @IBAction func deleteCertAction(_ sender: Any) {
+        promptToDeleteCert { [weak self] delete in
+            guard let self = self else { return }
+            
+            guard delete else { return }
+            
+            let n = NodeStruct(dictionary: newNode)
+            
+            CoreDataService.deleteValue(id: n.id!, keyToDelete: "cert", entity: .newNodes) { [weak self] deleted in
+                guard let self else { return }
+                
+                guard deleted else {
+                    showAlert(vc: self, title: "", message: "Unable to delete.")
+                    return
+                }
+                
+                showAlert(vc: self, title: "", message: "Cert deleted.")
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    certField.text = ""
+                }
+            }
+        }
+    }
+    
+    func promptToDeleteCert(completion: @escaping (Bool) -> Void) {
+        let alert = UIAlertController(
+            title: "Delete SSL Cert?",
+            message: "",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { _ in
+            completion(true)
+        })
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+            completion(false)
+        })
+        
+        self.present(alert, animated: true)
+    }
+    
+    
     
     @IBAction func showRpcAuthInfoAction(_ sender: Any) {
         showAlert(vc: self, title: "RPC Auth", message: "RPC Authentication is much more secure then storing your rpc password in your bitcoin.conf. An attacker can not access your node or derive your rpc password from this text. The rpcauth text displayed in Fully Noded is dynamic, you may see it change and that is OK. If you edit your rpcuser or rpcpassword you will need to export the rpcauth to your bitcoin.conf and restart your node to connect.")

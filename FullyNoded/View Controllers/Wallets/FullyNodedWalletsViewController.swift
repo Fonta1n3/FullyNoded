@@ -31,6 +31,8 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         
         walletsTable.delegate = self
         walletsTable.dataSource = self
+        walletsTable.layer.cornerRadius = 8
+        walletsTable.clipsToBounds = true
         totalBalanceLabel.alpha = 0
         totalBalanceLabel.text = ""
         balanceFiatLabel.alpha = 0

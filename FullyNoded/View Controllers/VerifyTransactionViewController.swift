@@ -77,6 +77,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         verifyTable.delegate = self
         verifyTable.dataSource = self
+        verifyTable.layer.cornerRadius = 8
+        verifyTable.clipsToBounds = true
         
         func loadNow() {
             activeWallet { [weak self] w in
@@ -1674,8 +1676,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let imageView = confsCell.viewWithTag(2) as! UIImageView
         let background = confsCell.viewWithTag(3)!
         background.layer.cornerRadius = 5
-        imageView.tintColor = .white
+        imageView.tintColor = .tintColor
         label.text = "\(confs) confirmations"
+        label.textColor = .label
         
         if confs > 0 {
             background.backgroundColor = .systemGreen
@@ -1695,7 +1698,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let imageView = mempoolAcceptCell.viewWithTag(2) as! UIImageView
         let background = mempoolAcceptCell.viewWithTag(3)!
         background.layer.cornerRadius = 5
-        imageView.tintColor = .white
+        imageView.tintColor = .tintColor
         
         if txValid != nil {
             if txValid! {
@@ -1729,7 +1732,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         mempoolAcceptCell.selectionStyle = .none
-        label.textColor = .lightGray
+        label.textColor = .label
         label.adjustsFontSizeToFitWidth = true
         return mempoolAcceptCell
     }
@@ -1743,11 +1746,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let background = txidCell.viewWithTag(3)!
         background.layer.cornerRadius = 5
         background.backgroundColor = .systemBlue
-        imageView.tintColor = .white
+        imageView.tintColor = .tintColor
         imageView.image = UIImage(systemName: "rectangle.and.paperclip")
         txidLabel.text = txid
         txidCell.selectionStyle = .none
-        txidLabel.textColor = .lightGray
+        txidLabel.textColor = .label
         txidLabel.adjustsFontSizeToFitWidth = true
         return txidCell
     }
@@ -1780,14 +1783,17 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         backgroundView2.layer.cornerRadius = 5
         backgroundView3.layer.cornerRadius = 5
         sigsBackgroundView.layer.cornerRadius = 5
-        isDustImageView.tintColor = .white
-        isChangeImageView.tintColor = .white
-        inputIsOursImage.tintColor = .white
-        sigsImageView.tintColor = .white
+        isDustImageView.tintColor = .tintColor
+        isChangeImageView.tintColor = .tintColor
+        inputIsOursImage.tintColor = .tintColor
+        sigsImageView.tintColor = .tintColor
         descTextView.clipsToBounds = true
         descTextView.layer.cornerRadius = 8
         descTextView.layer.borderWidth = 0.5
         descTextView.layer.borderColor = UIColor.darkGray.cgColor
+        utxoLabel.textColor = .label
+        descTextView.textColor = .label
+        inputAddressLabel.textColor = .label
         
         if indexPath.row < inputTableArray.count {
             let input = inputTableArray[indexPath.row]
@@ -1913,11 +1919,13 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         descTextView.layer.borderWidth = 0.5
         descTextView.layer.borderColor = UIColor.darkGray.cgColor
         
-        signableImageView.tintColor = .white
-        isDustImageView.tintColor = .white
-        isChangeImageView.tintColor = .white
-        outputIsOursImage.tintColor = .white
-        verifiedByFnImageView.tintColor = .white
+        signableImageView.tintColor = .tintColor
+        isDustImageView.tintColor = .tintColor
+        isChangeImageView.tintColor = .tintColor
+        outputIsOursImage.tintColor = .tintColor
+        verifiedByFnImageView.tintColor = .tintColor
+        
+        outputAddressLabel.textColor = .label
                         
         if indexPath.row < outputArray.count {
             let output = outputArray[indexPath.row]
@@ -2031,7 +2039,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         configureCell(miningFeeCell)
         
         let miningLabel = miningFeeCell.viewWithTag(1) as! UILabel
-        miningLabel.textColor = .lightGray
+        miningLabel.textColor = .label
         
         let imageView = miningFeeCell.viewWithTag(2) as! UIImageView
         imageView.tintColor = .white
@@ -2068,7 +2076,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         configureCell(etaCell)
         
         let etaLabel = etaCell.viewWithTag(1) as! UILabel
-        etaLabel.textColor = .lightGray
+        etaLabel.textColor = .label
         
         let imageView = etaCell.viewWithTag(2) as! UIImageView
         imageView.tintColor = .white
@@ -2121,19 +2129,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         button.addTarget(self, action: #selector(updateLabelMemoAction), for: .touchUpInside)
         //button.showsTouchWhenHighlighted = true
         label.text = labelText
+        label.textColor = .label
         return labelCell
     }
-    
-//    private func transactionMemoCell(_ indexPath: IndexPath) -> UITableViewCell {
-//        let labelCell = verifyTable.dequeueReusableCell(withIdentifier: "memoLabelCell", for: indexPath)
-//        configureCell(labelCell)
-//        let label = labelCell.viewWithTag(1) as! UILabel
-//        let button = labelCell.viewWithTag(2) as! UIButton
-//        button.addTarget(self, action: #selector(updateLabelMemoAction), for: .touchUpInside)
-//        //button.showsTouchWhenHighlighted = true
-//        label.text = memoText
-//        return labelCell
-//    }
     
     @objc func verifyOwner(_ sender: UIButton) {
         guard let id = sender.restorationIdentifier else { return }
@@ -2412,24 +2410,24 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         return strDate
     }
     
-    private func broadcastPrivately() {
-        spinner.addConnectingView(vc: self, description: "broadcasting...")
-        
-        Broadcaster.sharedInstance.send(rawTx: self.signedRawTx) { [weak self] id in
-            guard let self = self else { return }
-            
-            if id == self.txid {
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                    self.disableSendButton()
-                    self.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "", message: "Transaction sent ✓")
-                }
-            } else {
-                self.showError(error: "Error broadcasting privately, try again and use your node instead. Error: \(id ?? "unknown")")
-            }
-        }
-    }
+//    private func broadcastPrivately() {
+//        spinner.addConnectingView(vc: self, description: "broadcasting...")
+//        
+//        Broadcaster.sharedInstance.send(rawTx: self.signedRawTx) { [weak self] id in
+//            guard let self = self else { return }
+//            
+//            if id == self.txid {
+//                DispatchQueue.main.async {
+//                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+//                    self.disableSendButton()
+//                    self.spinner.removeConnectingView()
+//                    showAlert(vc: self, title: "", message: "Transaction sent ✓")
+//                }
+//            } else {
+//                self.showError(error: "Error broadcasting privately, try again and use your node instead. Error: \(id ?? "unknown")")
+//            }
+//        }
+//    }
     
     private func broadcastWithMyNode() {
         spinner.addConnectingView(vc: self, description: "broadcasting...")
@@ -2448,8 +2446,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     self.disableSendButton()
                     self.spinner.removeConnectingView()
-                    //showAlert(vc: self, title: "", message: "Transaction sent ✓")
-                    // should pop back to wallet view
+                    
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
                         
@@ -2460,9 +2457,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { [weak self] action in
                             self?.navigationController?.popToRootViewController(animated: true)
                         }))
-//                        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { [weak self] action in
-//                            self?.navigationController?.popToRootViewController(animated: true)
-//                        }))
+
                         alert.popoverPresentationController?.sourceView = self.view
                         self.present(alert, animated: true) {}
                     }
@@ -2508,27 +2503,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             displayAlert(viewController: vc, isError: false, message: "Transaction ID copied to clipboard")
         }
     }
-        
-//    func textFieldDidEndEditing(_ textField: UITextField) {
-//        if textField.text != "" {
-//            memo = textField.text!
-//        }
-//    }
-    
-//    func readerSession(_ session: NFCNDEFReaderSession, didInvalidateWithError error: any Error) {
-//        print("readerSession error")
-//        print(error.localizedDescription)
-//    }
-//    
-//    func readerSession(_ session: NFCNDEFReaderSession, didDetectNDEFs messages: [NFCNDEFMessage]) {
-//        for message in messages {
-//            for record in message.records {
-//                if let string = String(data: record.payload, encoding: .ascii) {
-//                    print(string)
-//                }
-//            }
-//        }
-//    }
     
     //Need to export either as blinded or plain text.
     private func exportPsbt(blindedpsbt: String?, plainText: String?) {
@@ -2546,27 +2520,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
             
             let alert = UIAlertController(title: tit, message: "Share?", preferredStyle: .alert)
-            
-//            alert.addAction(UIAlertAction(title: "NFC", style: .default, handler: { [weak self] action in
-//                guard let self = self else { return }
-//                
-//                exporting = true
-//                guard NFCNDEFReaderSession.readingAvailable else {
-//                    let alertController = UIAlertController(
-//                        title: "Scanning Not Supported",
-//                        message: "This device doesn't support tag scanning.",
-//                        preferredStyle: .alert
-//                    )
-//                    alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-//                    self.present(alertController, animated: true, completion: nil)
-//                    return
-//                }
-//                
-//                
-//                readerSession = NFCNDEFReaderSession(delegate: self, queue: nil, invalidateAfterFirstRead: false)
-//                readerSession?.alertMessage = "Hold your iPhone near a writable NFC tag to update."
-//                readerSession?.begin()
-//            }))
             
             alert.addAction(UIAlertAction(title: "File", style: .default, handler: { action in
                 self.convertPSBTtoData(string: itemToExport)
@@ -2605,121 +2558,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             self.present(alert, animated: true) {}
         }
     }
-    
-//    // MARK: - NFCNDEFReaderSessionDelegate
-//    func readerSessionDidBecomeActive(_ session: NFCNDEFReaderSession) {
-////        let textPayload = NFCNDEFPayload.wellKnownTypeTextPayload(
-////            string: "Partly signed PSBT",
-////            locale: Locale(identifier: "En")
-////        )
-//        
-//        //NFCNDEFPayload(format: <#T##NFCTypeNameFormat#>, type: <#T##Data#>, identifier: <#T##Data#>, payload: <#T##Data#>)
-//        
-//        guard let data = Data(base64Encoded: unsignedPsbt) else { return }
-//        
-//        let payload = NFCNDEFPayload(format: .nfcWellKnown, type: "psbt".utf8, identifier: "bitcoin.org:psbt".utf8, payload: data, chunkSize: data.count)
-////        let textPayload = NFCNDEFPayload.wellKnownTypeTextPayload(
-////            string: unsignedPsbt,
-////            locale: Locale(identifier: "En")
-////        )
-////        let textPayload = NFCNDEFPayload.wellKnownTypeTextPayload(
-////            string: unsignedPsbt,
-////            locale: Locale(identifier: "En")
-////        )
-//    
-//        
-//        //let dataPayload = NFCNDEFPayload.
-//        if exporting {
-//            //let urlPayload = self.createURLPayload()
-//            
-//            ndefMessage = NFCNDEFMessage(records: [payload])
-//            //session.wr
-//            //print("urlPayload: \(urlPayload.debugDescription)")
-//            os_log("MessageSize=%d", ndefMessage!.length)
-//        }
-//    }
-//    
-//    func createURLPayload() -> NFCNDEFPayload? {
-//        guard let data = Data(base64Encoded: unsignedPsbt) else {
-//            print("data is nil")
-//            return nil
-//        }
-//        
-//        let fileManager = FileManager.default
-//        let fileURL = fileManager.temporaryDirectory.appendingPathComponent("fullynoded.psbt")
-//        try? data.write(to: fileURL)
-//        os_log("url: %@", (fileURL.absoluteString))
-//        
-//        return NFCNDEFPayload.wellKnownTypeURIPayload(url: fileURL)
-//    }
-//    
-//    func tagRemovalDetect(_ tag: NFCNDEFTag) {
-//        // In the tag removal procedure, you connect to the tag and query for
-//        // its availability. You restart RF polling when the tag becomes
-//        // unavailable; otherwise, wait for certain period of time and repeat
-//        // availability checking.
-//        self.readerSession?.connect(to: tag) { (error: Error?) in
-//            if error != nil || !tag.isAvailable {
-//                
-//                os_log("Restart polling")
-//                
-//                self.readerSession?.restartPolling()
-//                return
-//            }
-//            DispatchQueue.global().asyncAfter(deadline: DispatchTime.now() + .milliseconds(500), execute: {
-//                self.tagRemovalDetect(tag)
-//            })
-//        }
-//    }
-//    
-//    func readerSession(_ session: NFCNDEFReaderSession, didDetect tags: [NFCNDEFTag]) {
-//        print("didDetect")
-//        
-//        if tags.count > 1 {
-//            session.alertMessage = "More than 1 tags found. Please present only 1 tag."
-//            self.tagRemovalDetect(tags.first!)
-//            return
-//        }
-//        
-//        // You connect to the desired tag.
-//        let tag = tags.first!
-//        session.connect(to: tag) { (error: Error?) in
-//            if error != nil {
-//                session.restartPolling()
-//                return
-//            }
-//            
-//            // You then query the NDEF status of tag.
-//            tag.queryNDEFStatus() { (status: NFCNDEFStatus, capacity: Int, error: Error?) in
-//                if error != nil {
-//                    session.invalidate(errorMessage: "Fail to determine NDEF status.  Please try again.")
-//                    return
-//                }
-//                
-//                if status == .readOnly {
-//                    session.invalidate(errorMessage: "Tag is not writable.")
-//                } else if status == .readWrite {
-//                    if self.ndefMessage!.length > capacity {
-//                        session.invalidate(errorMessage: "Tag capacity is too small.  Minimum size requirement is \(self.ndefMessage!.length) bytes.")
-//                        return
-//                    }
-//                    
-//                    // When a tag is read-writable and has sufficient capacity,
-//                    // write an NDEF message to it.
-//                    tag.writeNDEF(self.ndefMessage!) { (error: Error?) in
-//                        if error != nil {
-//                            session.invalidate(errorMessage: "Update tag failed. Please try again.")
-//                        } else {
-//                            session.alertMessage = "Update success!"
-//                            session.invalidate()
-//                        }
-//                    }
-//                } else {
-//                    session.invalidate(errorMessage: "Tag is not NDEF formatted.")
-//                }
-//            }
-//        }
-//    }
     
     private func exportAsQR() {
         DispatchQueue.main.async { [weak self] in
@@ -3115,7 +2953,7 @@ extension VerifyTransactionViewController: UITableViewDelegate {
         let textLabel = UILabel()
         textLabel.textAlignment = .left
         textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
-        textLabel.textColor = .white
+        textLabel.textColor = .secondaryLabel
         textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
         
         if unsignedPsbt == "" && signedRawTx == "" {

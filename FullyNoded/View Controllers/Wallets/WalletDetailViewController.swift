@@ -1044,43 +1044,41 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let header = UIView()
         header.backgroundColor = UIColor.clear
-        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 60)
+        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 30)
         
-        let background = UIView()
-        background.frame = CGRect(x: 0, y: header.frame.minY + 25, width: 35, height: 35)
-        background.clipsToBounds = true
-        background.layer.cornerRadius = 5
-        background.center.y = header.center.y
+//        let background = UIView()
+//        background.frame = CGRect(x: 0, y: header.frame.minY + 25, width: 35, height: 35)
+//        background.clipsToBounds = true
+//        background.layer.cornerRadius = 5
+//        background.center.y = header.center.y
         
         let icon = UIImageView()
-        icon.frame = CGRect(x: 5, y: 5, width: 25, height: 25)
-        icon.tintColor = .white
+        icon.frame = CGRect(x: 0, y: 0, width: 25, height: 25)
+        icon.tintColor = .tintColor
         icon.contentMode = .scaleAspectFit
         
         let textLabel = UILabel()
         textLabel.textAlignment = .left
-        textLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
-        textLabel.textColor = .white
-        textLabel.frame = CGRect(x: 43, y: 0, width: 300, height: 50)
-        textLabel.center.y = background.center.y
+        textLabel.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        textLabel.textColor = .secondaryLabel
+        textLabel.frame = CGRect(x: 33, y: 0, width: 300, height: 25)
+        textLabel.center.y = icon.center.y
         
         if let section = Section(rawValue: section) {
             let (text, image, color) = headerName(for: section)
             
             textLabel.text = text
             icon.image = image
-            background.backgroundColor = color
         }
         
-        background.addSubview(icon)
-        header.addSubview(background)
+        header.addSubview(icon)
         header.addSubview(textLabel)
         
         return header
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 60
+        return 30
     }
     
     @objc func updateAddressExplorer(_ sender: UISegmentedControl) {

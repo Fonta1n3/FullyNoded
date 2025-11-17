@@ -11,7 +11,7 @@ import UIKit
 
 class ConnectingView: UIView {
     
-    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
+    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .regular))
     let label = UILabel()
     let activityIndicator = UIActivityIndicatorView()
     

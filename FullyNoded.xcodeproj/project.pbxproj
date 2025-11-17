@@ -34,6 +34,7 @@
 		0A2EBDEB2EBC62A400AF56CD /* DynamicFooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2EBDEA2EBC62A400AF56CD /* DynamicFooterView.swift */; };
 		0A337D012700316E00AD087F /* WalletDir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A337D002700316E00AD087F /* WalletDir.swift */; };
 		0A34073D2EC08A0B008576C7 /* ListUnspent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A34073C2EC08A0B008576C7 /* ListUnspent.swift */; };
+		0A40118D2ECA3A5F00FC9BA8 /* CurrenciesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A40118C2ECA3A5F00FC9BA8 /* CurrenciesTableViewController.swift */; };
 		0A590357269875CD00510626 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590356269875CB00510626 /* Extensions.swift */; };
 		0A643A25274A540E007F4F44 /* JMWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A643A24274A540E007F4F44 /* JMWallet.swift */; };
 		0A64634428FDC01B0079C5DB /* NostrResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64634328FDC01B0079C5DB /* NostrResponse.swift */; };
@@ -213,6 +214,7 @@
 		0A2EBDEA2EBC62A400AF56CD /* DynamicFooterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicFooterView.swift; sourceTree = "<group>"; };
 		0A337D002700316E00AD087F /* WalletDir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDir.swift; sourceTree = "<group>"; };
 		0A34073C2EC08A0B008576C7 /* ListUnspent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListUnspent.swift; sourceTree = "<group>"; };
+		0A40118C2ECA3A5F00FC9BA8 /* CurrenciesTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrenciesTableViewController.swift; sourceTree = "<group>"; };
 		0A590356269875CB00510626 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		0A643A24274A540E007F4F44 /* JMWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JMWallet.swift; sourceTree = "<group>"; };
 		0A64634328FDC01B0079C5DB /* NostrResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrResponse.swift; sourceTree = "<group>"; };
@@ -528,6 +530,7 @@
 				D039D3CB2333250900D1ED18 /* Wallet Manager */,
 				D00F85192494966D008D7CD3 /* Security Center */,
 				0AF61BB32EC87919001CDF34 /* AppIconSelectorTableViewController.swift */,
+				0A40118C2ECA3A5F00FC9BA8 /* CurrenciesTableViewController.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -1098,6 +1101,7 @@
 				D0C20ED424A6DFE600C62AA4 /* PeerInfo.swift in Sources */,
 				0A83EB3E2C4838BB00502806 /* ColdCardSparrowExport.swift in Sources */,
 				D09F9E5024B1BAC3006B588C /* SignerDetailViewController.swift in Sources */,
+				0A40118D2ECA3A5F00FC9BA8 /* CurrenciesTableViewController.swift in Sources */,
 				0A64634628FDC06B0079C5DB /* NostrRequest.swift in Sources */,
 				0A1F10DE26A1A5F200BE2707 /* ChildIndexRange.swift in Sources */,
 				D09A330524A8C4F6009FA0B2 /* Wallet.swift in Sources */,

@@ -56,6 +56,8 @@ class ActiveWalletViewController: UIViewController {
         
         walletTable.delegate = self
         walletTable.dataSource = self
+        walletTable.layer.cornerRadius = 8
+        walletTable.clipsToBounds = true
         configureUi()
         NotificationCenter.default.addObserver(self, selector: #selector(broadcast(_:)), name: .broadcastTxn, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(signPsbt(_:)), name: .signPsbt, object: nil)
@@ -288,11 +290,12 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func loadTable() {
+        addNavBarSpinner()
         sectionZeroLoaded = false
         existingWallet = ""
         walletLabel = ""
         onchainTransactions?.transactions.removeAll()
-        walletTable.reloadData()
+        //walletTable.reloadData()
         
         activeWallet { [weak self] wallet in
             guard let self = self else { return }
@@ -306,12 +309,15 @@ class ActiveWalletViewController: UIViewController {
                 
                 existingWallet = walletName
                 walletLabel = walletName
+                
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
                     walletTable.reloadData()
                 }
+                
                 getWalletBalance()
+                
                 return
             }
             
@@ -319,11 +325,11 @@ class ActiveWalletViewController: UIViewController {
             existingWallet = wallet.name
             walletLabel = wallet.label
             
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                walletTable.reloadData()
-            }
+//            DispatchQueue.main.async { [weak self] in
+//                guard let self = self else { return }
+//                
+//                walletTable.reloadData()
+//            }
             
             getWalletBalance()
         }
@@ -335,7 +341,7 @@ class ActiveWalletViewController: UIViewController {
             
             getFxRate()
             walletTable.reloadData()
-            removeSpinner()
+            //removeSpinner()
         }
     }
     
@@ -589,8 +595,13 @@ class ActiveWalletViewController: UIViewController {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
-                    self.fxRateLabel.text = "no fx rate data"
+                    self.fxRateLabel.text = "No fx rate data."
+                    walletTable.reloadData()
+                    removeSpinner()
                 }
+                
+                
+                
                 return
             }
             
@@ -601,8 +612,9 @@ class ActiveWalletViewController: UIViewController {
                 guard let self = self else { return }
                 
                 self.fxRateLabel.text = rate.exchangeRate
-                self.onchainBalanceFiat = (self.onchainBalanceBtc.doubleValue * Double(rate)).fiatString
+                self.onchainBalanceFiat = (self.onchainBalanceBtc.condenseWhitespace().doubleValue * rate).fiatString
                 walletTable.reloadData()
+                removeSpinner()
             }
         }
     }
