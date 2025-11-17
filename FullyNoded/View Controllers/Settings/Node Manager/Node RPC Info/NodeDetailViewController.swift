@@ -83,14 +83,21 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     @IBAction func deleteCertAction(_ sender: Any) {
+        let n = NodeStruct(dictionary: newNode)
+        guard let id = n.id, let _ = n.cert else {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                certField.text = ""
+            }
+            return
+        }
         promptToDeleteCert { [weak self] delete in
             guard let self = self else { return }
             
             guard delete else { return }
             
-            let n = NodeStruct(dictionary: newNode)
-            
-            CoreDataService.deleteValue(id: n.id!, keyToDelete: "cert", entity: .newNodes) { [weak self] deleted in
+            CoreDataService.deleteValue(id: id, keyToDelete: "cert", entity: .newNodes) { [weak self] deleted in
                 guard let self else { return }
                 
                 guard deleted else {

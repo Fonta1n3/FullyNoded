@@ -61,16 +61,23 @@ class MainMenuViewController: UIViewController {
         UserDefaults.standard.set(UIDevice.modelName, forKey: "modelName")
         UIApplication.shared.isIdleTimerDisabled = true
         torStatusLabel.alpha = 0
-        
+        addNavBarSpinner()
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
-            guard let node = node  else { return }
+            guard let node = node  else {
+                CoreDataService.retrieveEntity(entityName: .newNodes) { savedNodes in
+                    if savedNodes == nil || savedNodes?.count == 0 {
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            removeLoader()
+                            performSegue(withIdentifier: "segueToFirstTimeHere", sender: self)
+                        }
+                    }
+                }
+                return
+            }
             activeNode = node
         }
-        
-//        refreshControl.attributedTitle = NSAttributedString(string: "")
-//        refreshControl.addTarget(self, action: #selector(refreshNode), for: .valueChanged)
-//        mainMenu.addSubview(refreshControl)
         
         if !Crypto.setupinit() {
             showAlert(vc: self, title: "", message: "There was an error setupinit.")
@@ -80,7 +87,6 @@ class MainMenuViewController: UIViewController {
         mainMenu.layer.cornerRadius = 8
         mainMenu.clipsToBounds = true
         initialLoad = true
-        addNavBarSpinner()
         showUnlockScreen()
         setFeeTarget()
         NotificationCenter.default.addObserver(self, selector: #selector(refreshNode), name: .refreshNode, object: nil)
@@ -109,16 +115,25 @@ class MainMenuViewController: UIViewController {
                         }
                     } else {
                         mgr?.start(delegate: self)
-                        self.refreshNode()
-                        self.loadTable()
-                        removeTorStatus()
+                        if activeNode != nil {
+                            refreshNode()
+                            loadTable()
+                            removeTorStatus()
+                        } else {
+                            removeLoader()
+                            alertToAddNode()
+                        }
                     }
                 }
             }
         } else {
             MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
                 guard let self = self else { return }
-                guard let node = node else { return }
+                guard let node = node else {
+                    removeLoader()
+                    alertToAddNode()
+                    return
+                }
                 
                 self.activeNode = node
             }
@@ -128,26 +143,7 @@ class MainMenuViewController: UIViewController {
     }
     
     private func alertToAddNode() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let tit = "Fully Noded works best when you connect your node to it."
-            
-            let mess = ""
-            
-            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Connect my node", style: .default, handler: { action in
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.performSegue(withIdentifier: "segueToAddNode", sender: self)
-                }
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            self.present(alert, animated: true, completion: nil)
-        }
+        showAlert(vc: self, title: "No active node.", message: "Navigate to Settings > Node Manager to add or activate a node.")
     }
     
         
@@ -188,7 +184,7 @@ class MainMenuViewController: UIViewController {
             guard let self = self else { return }
             guard let node = node else {
                 removeLoader()
-                showAlert(vc: self, title: "", message: "No active node.")
+                alertToAddNode()
                 return
             }
             
@@ -206,23 +202,14 @@ class MainMenuViewController: UIViewController {
     }
     
     private func loadTable() {
-        getNodes { [weak self] nodeArray in
+        MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
-            
-            guard let nodeArray = nodeArray, nodeArray.count > 0 else {
-                self.removeLoader()
-                
-                self.alertToAddNode()
-                
+            guard let node = node else {
+                alertToAddNode()
                 return
             }
-            
-            MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
-                guard let self = self else { return }
-                guard let node = node else { return }
-                self.initialLoad = false
-                self.loadNode(node: node)
-            }
+            self.initialLoad = false
+            self.loadNode(node: node)
         }
     }
     
@@ -266,7 +253,11 @@ class MainMenuViewController: UIViewController {
         addNavBarSpinner()
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
-            guard let node = node else { return }
+            guard let node = node else {
+                removeLoader()
+                alertToAddNode()
+                return
+            }
             self.activeNode = node
             self.loadNode(node: node)
         }

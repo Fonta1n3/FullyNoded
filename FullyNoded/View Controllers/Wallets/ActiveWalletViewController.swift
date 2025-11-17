@@ -303,7 +303,7 @@ class ActiveWalletViewController: UIViewController {
             guard let wallet = wallet else {
                 guard let walletName = UserDefaults.standard.string(forKey: "walletName") else {
                     self.finishedLoading()
-                    showAlert(vc: self, title: "", message: "No wallet activated, you can either create a wallet by tapping the plus sign in the top left or tap the Advanced button at the bottom of the sreen > Bitcoin Core Wallets and tap one to activate it. If using a Bitcoin Core only wallet you will not get full functionality from Fully Noded.")
+                    showAlert(vc: self, title: "", message: "No wallet activated, create a wallet by tapping the plus sign in the top left or if you are an expert tap the Advanced button at the bottom of the screen > Bitcoin Core Wallets and tap one to activate it.")
                     return
                 }
                 

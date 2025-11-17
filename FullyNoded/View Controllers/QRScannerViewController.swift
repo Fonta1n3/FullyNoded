@@ -22,7 +22,6 @@ class QRScannerViewController: UIViewController {
     private var qrString = ""
     private let uploadButton = UIButton()
     private let torchButton = UIButton()
-    private let closeButton = UIButton()
     private let downSwipe = UISwipeGestureRecognizer()
     var isQuickConnect = Bool()
     var isScanningAddress = Bool()
@@ -74,7 +73,6 @@ class QRScannerViewController: UIViewController {
             
             self.scanQRCode()
             self.addScannerButtons()
-            self.scannerView.addSubview(self.closeButton)
             self.spinner.removeConnectingView()
         }
     }
@@ -83,12 +81,10 @@ class QRScannerViewController: UIViewController {
         scannerView.isUserInteractionEnabled = true
         uploadButton.addTarget(self, action: #selector(chooseQRCodeFromLibrary), for: .touchUpInside)
         torchButton.addTarget(self, action: #selector(toggleTorchNow), for: .touchUpInside)
-        closeButton.addTarget(self, action: #selector(back), for: .touchUpInside)
         isTorchOn = false
         configureImagePicker()
         configureUploadButton()
         configureTorchButton()
-        configureCloseButton()
         configureDownSwipe()
     }
     
@@ -124,13 +120,6 @@ class QRScannerViewController: UIViewController {
         blur.contentView.addSubview(button)
         blurArray.append(blur)
         scannerView.addSubview(blur)
-    }
-    
-    @objc func back() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.avCaptureSession.stopRunning()
-            vc.dismiss(animated: true, completion: nil)
-        }
     }
     
     private func stopScanning(_ psbt: String) {
@@ -376,12 +365,6 @@ class QRScannerViewController: UIViewController {
     
     @objc func handleSwipes(_ sender: UIGestureRecognizer) {
         stopScanner()
-    }
-    
-    private func configureCloseButton() {
-        closeButton.frame = CGRect(x: view.frame.midX - 15, y: view.frame.maxY - 150, width: 30, height: 30)
-        closeButton.setImage(UIImage(systemName: "x.circle"), for: .normal)
-        closeButton.tintColor = .systemBlue
     }
     
     private func configureTorchButton() {

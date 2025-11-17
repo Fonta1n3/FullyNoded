@@ -40,7 +40,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         //lockView.backgroundColor = .black
         lockView.alpha = 1
 
-        imageView.image = UIImage(named: "logo_grey.png")
+        imageView.image = UIImage(named: "iTunesArtwork@2x.png")
         imageView.alpha = 1
 
         passwordInput.keyboardType = .default
@@ -126,7 +126,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
 
     override func viewDidLayoutSubviews() {
         lockView.frame = self.view.frame
-        imageView.frame = CGRect(x: self.view.center.x - 40, y: 40, width: 80, height: 80)
+        imageView.frame = CGRect(x: self.view.center.x - 40, y: 100, width: 80, height: 80)
         passwordInput.frame = CGRect(x: 50, y: imageView.frame.maxY + 80, width: view.frame.width - 100, height: 50)
         nextButton.frame = CGRect(x: self.view.center.x - 40, y: passwordInput.frame.maxY + 15, width: 80, height: 35)
         touchIDButton.frame = CGRect(x: self.view.center.x - 30, y: self.nextButton.frame.maxY + 20, width: 60, height: 60)
