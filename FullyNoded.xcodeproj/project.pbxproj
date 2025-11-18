@@ -1406,7 +1406,7 @@
 			baseConfigurationReference = 55FF5DCF6C4B0C2309EC4BF2 /* Pods-FullyNoded.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon1, AppIcon2";
-				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-6";
+				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-7";
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNoded.entitlements;
@@ -1429,7 +1429,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.504;
+				MARKETING_VERSION = 2.0;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
@@ -1455,7 +1455,7 @@
 			baseConfigurationReference = 899ECC6727CAAA7F913D0DA1 /* Pods-FullyNoded.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon1, AppIcon2";
-				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-6";
+				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-7";
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNodedRelease.entitlements;
@@ -1480,7 +1480,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.504;
+				MARKETING_VERSION = 2.0;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;

@@ -10,6 +10,7 @@ import Foundation
 
 public struct NodeStruct: CustomStringConvertible {
     
+    
     let id:UUID?
     let label:String
     let isActive:Bool
@@ -47,7 +48,7 @@ public struct NodeStruct: CustomStringConvertible {
     }
     
     public var description: String {
-        return ""
+        return "A struct for node credentials saved fully encrypted in Core Data."
     }
     
 }

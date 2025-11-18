@@ -12,7 +12,6 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
 
     @IBOutlet weak var wordView: UITextView!
     @IBOutlet weak var textView: UITextField!
-    @IBOutlet weak var passphraseField: UITextField!
     @IBOutlet weak var addSignerOutlet: UIButton!
     
     var addedWords = [String]()
@@ -26,7 +25,6 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
 
         // Do any additional setup after loading the view.
         navigationController?.delegate = self
-        passphraseField.delegate = self
         textView.delegate = self
         addSignerOutlet.isEnabled = false
         wordView.layer.cornerRadius = 8
@@ -40,8 +38,6 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
         textView.removeGestureRecognizer(tapGesture)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
     @IBAction func generateSignerAction(_ sender: Any) {
@@ -98,10 +94,11 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         
         //check if user pasted more then one word
         let processed = processedCharacters(textView.text!)
-        let userAddedWords = processed.split(separator: " ")
+        let userAddedWords = textView.text!.split(separator: " ")
         var multipleWords = [String]()
         
         if userAddedWords.count > 1 {
+            
             //user add multiple words
             for (i, word) in userAddedWords.enumerated() {
                 var isValid = false
@@ -146,25 +143,6 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     private func hideKeyboards() {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.textView.resignFirstResponder()
-            vc.passphraseField.resignFirstResponder()
-        }
-    }
-    
-    @objc func keyboardWillShow(notification: NSNotification) {
-        if passphraseField.isEditing {
-            if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
-                if self.view.frame.origin.y == 0 {
-                    self.view.frame.origin.y -= keyboardSize.height
-                }
-            }
-        }
-    }
-    
-    @objc func keyboardWillHide(notification: NSNotification) {
-        if passphraseField.isEditing {
-            if self.view.frame.origin.y != 0 {
-                self.view.frame.origin.y = 0
-            }
         }
     }
     
@@ -180,9 +158,8 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
             
             let words = self.justWords.joined(separator: " ")
             let mnemonicData = words.dataUsingUTF8StringEncoding
-            let passphrase = self.passphraseField.text ?? ""
             
-            guard let mk = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase) else { return }
+            guard let mk = Keys.masterKey(words: words, coinType: "0", passphrase: "") else { return }
             guard let fingeprint = Keys.fingerprint(masterKey: mk) else { return }
             
             guard let encryptedWords = Crypto.encrypt(mnemonicData) else {
@@ -191,31 +168,20 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
                 return
             }
                         
-            if passphrase != "" {
-                guard let encryptedPassphrase = Crypto.encrypt(passphrase.dataUsingUTF8StringEncoding) else {
-                    self.showError(error: "error encrypting your passphrase")
-                    
-                    return
-                }
-                
-                self.saveSignerAndPassphrase(encryptedWords, encryptedPassphrase, fingeprint)
-            } else {
-                
-                self.saveSigner(encryptedWords, fingeprint)
-            }
+            self.saveSigner(encryptedWords, fingeprint)
         }
     }
     
-    private func saveSignerAndPassphrase(_ encryptedSigner: Data, _ encryptedPassphrase: Data, _ fingerprint: String) {
-        let dict = ["id":UUID(), "words":encryptedSigner, "passphrase":encryptedPassphrase, "added":Date(), "label":fingerprint] as [String:Any]
-        CoreDataService.saveEntity(dict: dict, entityName: .signers) { [unowned vc = self] success in
-            if success {
-                vc.signerAdded()
-            } else {
-                vc.showError(error: "error saving encrypted seed")
-            }
-        }
-    }
+//    private func saveSignerAndPassphrase(_ encryptedSigner: Data, _ encryptedPassphrase: Data, _ fingerprint: String) {
+//        let dict = ["id":UUID(), "words":encryptedSigner, "passphrase":encryptedPassphrase, "added":Date(), "label":fingerprint] as [String:Any]
+//        CoreDataService.saveEntity(dict: dict, entityName: .signers) { [unowned vc = self] success in
+//            if success {
+//                vc.signerAdded()
+//            } else {
+//                vc.showError(error: "error saving encrypted seed")
+//            }
+//        }
+//    }
     
     private func saveSigner(_ encryptedSigner: Data, _ fingerprint: String) {
         let dict = ["id":UUID(), "words":encryptedSigner, "added":Date(), "label":fingerprint] as [String:Any]
@@ -275,22 +241,18 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     }
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        if textField != passphraseField {
-            var subString = (textField.text!.capitalized as NSString).replacingCharacters(in: range, with: string)
-            subString = formatSubstring(subString: subString)
-            if subString.count == 0 {
-                resetValues()
-            } else {
-                searchAutocompleteEntriesWIthSubstring(substring: subString)
-            }
+        var subString = (textField.text!.capitalized as NSString).replacingCharacters(in: range, with: string)
+        subString = formatSubstring(subString: subString)
+        if subString.count == 0 {
+            resetValues()
+        } else {
+            searchAutocompleteEntriesWIthSubstring(substring: subString)
         }
         return true
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if textField != passphraseField {
-            processTextfieldInput()
-        }
+        processTextfieldInput()
         return true
     }
     

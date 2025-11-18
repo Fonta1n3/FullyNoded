@@ -10,11 +10,11 @@ import UIKit
 
 class AppIconSelectorTableViewController: UITableViewController {
     
-    var currentIcon: String = ""
+    var currentIcon: String? = nil
 
-    var appIcons: [[String: UIImage]] = [
+    var appIcons: [[String?: UIImage]] = [
         ["AppIcon-6": UIImage(named: "Default_Icon")!],
-        ["AppIcon-7": UIImage(named: "Original_Icon")!]
+        [nil: UIImage(named: "Original_Icon")!]
     ]
 
     override func viewDidLoad() {
@@ -60,7 +60,7 @@ class AppIconSelectorTableViewController: UITableViewController {
     }
 
     // MARK: - Set Icon
-    func setIcon(name: String, completion: ((Bool, Error?) -> Void)? = nil) {
+    func setIcon(name: String?, completion: ((Bool, Error?) -> Void)? = nil) {
         UIApplication.shared.setAlternateIconName(name) { error in
             DispatchQueue.main.async {
                 if let error = error {

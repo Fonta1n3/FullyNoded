@@ -748,60 +748,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
     }
     
-//    private func fundChannelComplete() {
-//        let chanId = UserDefaults.standard.object(forKey: "channelId") as? String ?? ""
-//        if let psbt = self.processedPsbt, psbt != "" {
-//            Lightning.fundchannelcomplete(channelId: chanId, psbt: psbt) { [weak self] (result, errorMessage) in
-//                guard let self = self else { return }
-//
-//                self.spinner.removeConnectingView()
-//
-//                guard let result = result, let success = result["success"] as? Bool, success else {
-//                    showAlert(vc: self, title: "Error", message: errorMessage ?? "Unknown error.")
-//                    return
-//                }
-//
-//                self.disableSendButton()
-//                self.disableSignButton()
-//
-//                UserDefaults.standard.removeObject(forKey: "scriptPubKey")
-//                UserDefaults.standard.removeObject(forKey: "address")
-//                UserDefaults.standard.removeObject(forKey: "amount")
-//                UserDefaults.standard.removeObject(forKey: "channelId")
-//
-//                showAlert(vc: self, title: "Success ⚡️", message: "Lightning channel funding complete.")
-//            }
-//        }
-//    }
-    
-//    private func promptToCompleteChannelFunding() {
-//        DispatchQueue.main.async { [weak self] in
-//            guard let self = self else { return }
-//
-//            let alert = UIAlertController(title: "Complete ⚡️ channel funding?",
-//                                          message: "This will broadcast the transaction and is irreversible!",
-//                                          preferredStyle: .alert)
-//
-//            alert.addAction(UIAlertAction(title: "Broadcast now", style: .default, handler: { [weak self] action in
-//                guard let self = self else { return }
-//
-//                self.spinner.addConnectingView(vc: self, description: "")
-//                self.fundChannelComplete()
-//            }))
-//
-//            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-//            alert.popoverPresentationController?.sourceView = self.view
-//            self.present(alert, animated: true) {}
-//        }
-//    }
-    
     private func saveNewTx(_ txid: String) {
         var transaction = [String:Any]()
         
         self.id = UUID()
         transaction["id"] = self.id
         transaction["label"] = labelText
-        //transaction["memo"] = memoText
         transaction["date"] = Date()
         transaction["txid"] = txid
         transaction["fiatCurrency"] = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
@@ -1939,12 +1891,13 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             addressQrButton.addTarget(self, action: #selector(showAddressQr(_:)), for: .touchUpInside)
             
             if isOursFullyNoded {
-                verifiedByFnLabel.text = "Owned by \(walletLabel)"
+                verifiedByFnLabel.text = "Owned by \(walletLabel)."
                 verifiedByFnImageView.image = UIImage(systemName: "checkmark.circle")
+                verifiedByFnImageView.tintColor = .systemGreen
                 //verifiedByFnBackgroundView.backgroundColor = .systemGreen
             } else {
                 verifyOwnerButton.alpha = 1
-                verifiedByFnLabel.text = "Not verified by Fully Noded"
+                verifiedByFnLabel.text = "Not verified by Fully Noded."
                 verifiedByFnImageView.image = UIImage(systemName: "questionmark.circle")
                 verifiedByFnImageView.tintColor = .systemRed
                 //verifiedByFnBackgroundView.backgroundColor = .systemGray

@@ -146,46 +146,46 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     
-    private func fetchOriginRate(_ utxo: Utxo) {
-        guard let date = utxo.date, let id = utxo.txUUID else {
-            showAlert(vc: self, title: "", message: "Date or saved tx UUID missing.")
-            return
-        }
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let dateString = dateFormatter.string(from: date)
-        
-        let today = dateFormatter.string(from: Date())
-        
-        if dateString == today {
-            showAlert(vc: self, title: "", message: "You need to wait for the transaction to be at least one day old before fetching the historic rate.")
-        } else {
-            addNavBarSpinner()
-            
-            FiatConverter.sharedInstance.getOriginRate(date: dateString) { [weak self] originRate in
-                guard let self = self else { return }
-                
-                guard let originRate = originRate else {
-                    removeSpinner()
-                    showAlert(vc: self, title: "", message: "There was an issue fetching the historic exchange rate, please let us know about it.")
-                    return
-                }
-                
-                CoreDataService.update(id: id, keyToUpdate: "originFxRate", newValue: originRate, entity: .transactions) { [weak self] success in
-                    guard let self = self else { return }
-                    
-                    guard success else {
-                        removeSpinner()
-                        showAlert(vc: self, title: "", message: "There was an issue saving the historic exchange rate, please let us know about it.")
-                        return
-                    }
-                    
-                    self.loadUnlockedUtxos()
-                }
-            }
-        }
-    }
+//    private func fetchOriginRate(_ utxo: Utxo) {
+//        guard let date = utxo.date, let id = utxo.txUUID else {
+//            showAlert(vc: self, title: "", message: "Date or saved tx UUID missing.")
+//            return
+//        }
+//        
+//        let dateFormatter = DateFormatter()
+//        dateFormatter.dateFormat = "yyyy-MM-dd"
+//        let dateString = dateFormatter.string(from: date)
+//        
+//        let today = dateFormatter.string(from: Date())
+//        
+//        if dateString == today {
+//            showAlert(vc: self, title: "", message: "You need to wait for the transaction to be at least one day old before fetching the historic rate.")
+//        } else {
+//            addNavBarSpinner()
+//            
+//            FiatConverter.sharedInstance.getOriginRate(date: dateString) { [weak self] originRate in
+//                guard let self = self else { return }
+//                
+//                guard let originRate = originRate else {
+//                    removeSpinner()
+//                    showAlert(vc: self, title: "", message: "There was an issue fetching the historic exchange rate, please let us know about it.")
+//                    return
+//                }
+//                
+//                CoreDataService.update(id: id, keyToUpdate: "originFxRate", newValue: originRate, entity: .transactions) { [weak self] success in
+//                    guard let self = self else { return }
+//                    
+//                    guard success else {
+//                        removeSpinner()
+//                        showAlert(vc: self, title: "", message: "There was an issue saving the historic exchange rate, please let us know about it.")
+//                        return
+//                    }
+//                    
+//                    self.loadUnlockedUtxos()
+//                }
+//            }
+//        }
+//    }
     
     func addNavBarSpinner() {
         DispatchQueue.main.async { [weak self] in

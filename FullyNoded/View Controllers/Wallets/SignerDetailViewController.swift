@@ -565,7 +565,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 
                 let title = "⚠️ Editing the passphrase has major implications!"
                 
-                let message = "This signer will no longer be able to sign transactions that invlove the previous passphrase, this will change the cosigner and descriptor used to create new wallets with this signer. Wallets that are associated with this signer will no longer be associated this signer. If you have exported your cosigner or descriptor to other wallets they will no longer be associated with this signer. If you do not understand what any of this means then just STOP."
+                let message = "Editing or adding a passphrase is useful if you want to password protect your bitcoin transactions. When you go to send a transaction Fully Noded will prompt you to add a passphrase if you enable the \"Prompt with passphrase\" setting in Settings > Security. Fully Noded only saves this passphrase here in the Signer Detail view so that you may export xpubs and descriptors to other wallets so they will work with this particular passphrase / signer combination. After you have created the wallet or exported your descriptor to another HWW or software wallet you should delete the passphrase here as Fully Noded will not use it anywhere outside of the app except here in the Signer Detail view."
                 
                 let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
                 
@@ -599,25 +599,33 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             let edit = UIAlertAction(title: "Save", style: .default) { [weak self] alertAction in
                 guard let self = self else { return }
                 
-                let text = (alert.textFields![0] as UITextField).text
+                let text1 = (alert.textFields![0] as UITextField).text
+                let text2 = (alert.textFields![1] as UITextField).text
                 
-                guard let text = text else {
-                    showAlert(vc: self, title: "", message: "No passphrase added.")
+                guard let text1 = text1, let text2 = text2, text1 == text2 else {
+                    showAlert(vc: self, title: "", message: "Passphrases did not match or were empty. Try again.")
                     
                     return
                 }
-                
-                guard let encryptedPassphrase = Crypto.encrypt(text.utf8) else {
+                                
+                guard let encryptedPassphrase = Crypto.encrypt(text1.utf8) else {
                     showAlert(vc: self, title: "Encryption error...", message: "Please let us know about this bug, unable to encrypt your new passphrase")
                     return
                 }
                 
-                self.updatePassphrase(encryptedPassphrase, text)
+                self.updatePassphrase(encryptedPassphrase, text1)
             }
             
             alert.addTextField { textField in
                 textField.keyboardAppearance = .dark
                 textField.isSecureTextEntry = true
+                textField.placeholder = "passphrase"
+            }
+            
+            alert.addTextField { textField in
+                textField.keyboardAppearance = .dark
+                textField.isSecureTextEntry = true
+                textField.placeholder = "confirm passphrase"
             }
             
             alert.addAction(edit)
@@ -686,7 +694,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     
                     let title = "⚠️ Deleting the passphrase has major implications!"
                     
-                    let message = "This signer will no longer be able to sign transactions that invlove the previous passphrase, this will change the cosigner and descriptor used to create new wallets with this signer. Wallets that are associated with this signer will no longer be associated this signer. If you have exported your cosigner or descriptor to other wallets they will no longer be associated with this signer. If you do not understand what any of this means then just STOP."
+                    let message = "Editing or adding a passphrase is useful if you want to password protect your bitcoin transactions. When you go to send a transaction Fully Noded will prompt you to add a passphrase if you enable the \"Prompt with passphrase\" setting in Settings > Security. Fully Noded only saves this passphrase here in the Signer Detail view so that you may export xpubs and descriptors to other wallets so they will work with this particular passphrase / signer combination. After you have created the wallet or exported your descriptor to another HWW or software wallet you should delete the passphrase here as Fully Noded will not use it anywhere outside of the app except here in the Signer Detail view."
                     
                     let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
                     
@@ -897,60 +905,19 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         let primDesc = descriptors[descriptorToUseIndex]
         let desc = Descriptor("\(primDesc)")
         
-        if desc.isP2TR {
-            promptForEncryptionPassword(primDesc)
-        } else {
-            if desc.isCosigner {
-                self.cosigner = desc
+        if desc.isCosigner {
+            self.cosigner = desc
 
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-
-                    self.performSegue(withIdentifier: "segueToCreateMultiSigFromSigner", sender: self)
-                }
-            } else {
-                self.importAccountMap(primDesc, signer.label, "")
-            }
-        }
-    }
-    
-    private func promptForEncryptionPassword(_ primDesc: String) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let title = "Add a password?"
-            let message = "Taproot wallets store the private keys on your node, this password is used to encrypt them. You must remember this password as Fully Noded does not save it."
-            
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            
-            let setPassword = UIAlertAction(title: "Set password", style: .default) { [weak self] alertAction in
+            DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                
-                let password = (alert.textFields![0] as UITextField).text
-                
-                guard let password = password else {
-                    showAlert(vc: self, title: "", message: "No password added, try again.")
-                    
-                    return
-                }
-                
-                self.importAccountMap(primDesc, "Taproot: " + self.signer.label, password)
+
+                self.performSegue(withIdentifier: "segueToCreateMultiSigFromSigner", sender: self)
             }
-            
-            alert.addTextField { textField in
-                textField.isSecureTextEntry = true
-                textField.keyboardAppearance = .dark
-            }
-            
-            alert.addAction(setPassword)
-            
-            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
-            alert.addAction(cancel)
-            
-            self.present(alert, animated:true, completion: nil)
+        } else {
+            self.importAccountMap(primDesc, signer.label, "")
         }
     }
-    
+        
     private func creatWalletLive() {
         guard let encryptedWords = signer.words,
                 let wordsData = Crypto.decrypt(encryptedWords),
@@ -958,31 +925,35 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     return
                 }
         
-        let (descriptors, message) = Keys.descriptorsFromSigner(words)
-        
-        guard let descriptors = descriptors else {
-            showAlert(vc: self, title: "There was an issue deriving your descriptors...", message: message ?? "Unknown")
-            return
-        }
-        
-        var passphrase = ""
-        
         if let encryptedPassphrase = signer.passphrase {
+            var passphrase = ""
+            
             guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) else {
-                showAlert(vc: self, title: "There was an issue decrypting your passphrase...", message: message ?? "Unknown")
+                showAlert(vc: self, title: "Decryption error.", message: "There was an issue decrypting your passphrase...")
                 return
             }
             
             passphrase = decryptedPassphrase.utf8String ?? ""
-        }
-        
-        guard let mk = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase),
-              let _ = Keys.fingerprint(masterKey: mk) else {
-            showAlert(vc: self, title: "There was an issue deriving your master key", message: message ?? "Unknown")
-            return
-        }
+            
+            let (descriptors, message) = Keys.descriptorsFromSigner(signer: words, passphrase: passphrase)
+            
+            guard let descriptors = descriptors else {
+                showAlert(vc: self, title: "There was an issue deriving your descriptors...", message: message ?? "Unknown")
+                return
+            }
 
-        prompToChoosePrimaryDesc(descriptors: descriptors)
+            prompToChoosePrimaryDesc(descriptors: descriptors)
+            
+        } else {
+            let (descriptors, message) = Keys.descriptorsFromSigner(signer: words, passphrase: nil)
+            
+            guard let descriptors = descriptors else {
+                showAlert(vc: self, title: "There was an issue deriving your descriptors...", message: message ?? "Unknown")
+                return
+            }
+
+            prompToChoosePrimaryDesc(descriptors: descriptors)
+        }
     }
     
     @objc func exportQr(_ sender: UIButton) {

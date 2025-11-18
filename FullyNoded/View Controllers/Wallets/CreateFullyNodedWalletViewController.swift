@@ -623,7 +623,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             }
             
         } else if Keys.validMnemonic(item) {
-            let (descriptors, message) = Keys.descriptorsFromSigner(item)
+            let (descriptors, message) = Keys.descriptorsFromSigner(signer: item, passphrase: nil)
             
             guard let encryptedSigner = Crypto.encrypt(item.utf8) else {
                 showAlert(vc: self, title: "Unable to encrypt your signer.", message: "Please let us know about this bug.")
