@@ -39,12 +39,7 @@ class ActiveWalletViewController: UIViewController {
     var fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     
     @IBOutlet weak private var fiatBalanceLabel: UILabel!
-    @IBOutlet weak private var backgroundView: UIVisualEffectView!
     @IBOutlet weak private var walletTable: UITableView!
-    @IBOutlet weak private var sendView: UIView!
-    @IBOutlet weak private var invoiceView: UIView!
-    @IBOutlet weak private var utxosView: UIView!
-    @IBOutlet weak private var advancedView: UIView!
     @IBOutlet weak private var fxRateLabel: UILabel!
     
     override func viewDidLoad() {
@@ -58,7 +53,6 @@ class ActiveWalletViewController: UIViewController {
         walletTable.dataSource = self
         walletTable.layer.cornerRadius = 8
         walletTable.clipsToBounds = true
-        configureUi()
         NotificationCenter.default.addObserver(self, selector: #selector(broadcast(_:)), name: .broadcastTxn, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(signPsbt(_:)), name: .signPsbt, object: nil)
         existingWallet = ud.object(forKey: "walletName") as? String ?? ""
@@ -141,18 +135,6 @@ class ActiveWalletViewController: UIViewController {
     
     private func configureButton(_ button: UIView) {
         button.layer.cornerRadius = 5
-    }
-    
-    private func configureUi() {
-        configureButton(sendView)
-        configureButton(invoiceView)
-        configureButton(utxosView)
-        configureButton(advancedView)
-        
-        fxRateLabel.text = ""
-        
-        backgroundView.clipsToBounds = true
-        backgroundView.layer.cornerRadius = 8
     }
     
     private func setNotifications() {
@@ -696,7 +678,7 @@ class ActiveWalletViewController: UIViewController {
             }
             
                         
-            for (i, utxo) in unlockedUtxos.enumerated() {
+            for (i, utxo) in unlockedUtxos.reversed().enumerated() {
                 guard let utxo_desc = utxo.desc else {
                     if i + 1 == utxos.count {
                         loadTransactions()

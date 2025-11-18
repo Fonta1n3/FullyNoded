@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="nU0-zz-6p3">
-    <device id="retina6_12" orientation="portrait" appearance="dark"/>
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
@@ -12,13 +12,13 @@
         <!--Advanced-->
         <scene sceneID="cju-Of-G1R">
             <objects>
-                <viewController title="Advanced" hidesBottomBarWhenPushed="YES" id="zVU-YI-484" customClass="InvoiceSettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Advanced" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="zVU-YI-484" customClass="InvoiceSettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="dxG-zo-v78">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="749"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="dgY-D7-U76">
-                                <rect key="frame" x="0.0" y="0.0" width="393" height="666"/>
+                                <rect key="frame" x="0.0" y="103" width="393" height="715"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="invoiceCell" rowHeight="54" id="Uj7-IM-wDo">
                                         <rect key="frame" x="20" y="55.333332061767578" width="353" height="54"/>
@@ -76,14 +76,11 @@
         <!--Navigation Controller-->
         <scene sceneID="LKx-jy-Wf3">
             <objects>
-                <navigationController id="eoA-7K-rj7" sceneMemberID="viewController">
+                <navigationController extendedLayoutIncludesOpaqueBars="YES" id="eoA-7K-rj7" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="" image="bitcoinsign.square" catalog="system" id="w6p-mX-zdg"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="d6w-0p-4v0">
                         <rect key="frame" x="0.0" y="59" width="393" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <textAttributes key="titleTextAttributes">
-                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        </textAttributes>
                     </navigationBar>
                     <connections>
                         <segue destination="Dwu-lj-4IN" kind="relationship" relationship="rootViewController" id="cdI-Lt-HkV"/>
@@ -96,43 +93,38 @@
         <!--Wallet-->
         <scene sceneID="brO-BN-cOK">
             <objects>
-                <viewController title="Wallet" id="Dwu-lj-4IN" customClass="ActiveWalletViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" ambiguous="YES" id="vmz-O4-mSm">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="666"/>
+                <viewController title="Wallet" extendedLayoutIncludesOpaqueBars="YES" id="Dwu-lj-4IN" customClass="ActiveWalletViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="vmz-O4-mSm">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="ts5-8f-JgO">
-                                <rect key="frame" x="8" y="0.0" width="375" height="725"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="ts5-8f-JgO">
+                                <rect key="frame" x="8" y="111" width="377" height="687"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="avr-Pf-Mo4">
-                                        <rect key="frame" x="0.0" y="0.0" width="375" height="20.333333333333332"/>
-                                        <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="$9,343 / btc" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yUJ-iQ-fjZ">
-                                                <rect key="frame" x="0.0" y="0.0" width="375" height="20.333333333333332"/>
-                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                <color key="textColor" systemColor="tertiaryLabelColor"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                        </subviews>
-                                    </stackView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="$9,343 / btc" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yUJ-iQ-fjZ">
+                                        <rect key="frame" x="0.0" y="0.0" width="377" height="20.333333333333332"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <color key="textColor" systemColor="tertiaryLabelColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="xuS-Az-tfm">
-                                        <rect key="frame" x="0.0" y="28.333333333333314" width="375" height="688.66666666666674"/>
+                                        <rect key="frame" x="0.0" y="28.333333333333314" width="377" height="600.66666666666674"/>
                                         <prototypes>
                                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="OnBalancesCell" rowHeight="100" id="q8m-Cq-mDe">
-                                                <rect key="frame" x="20" y="55.333332061767578" width="335" height="100"/>
+                                                <rect key="frame" x="20" y="55.333332061767578" width="337" height="100"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="q8m-Cq-mDe" id="wWn-KW-eW3">
-                                                    <rect key="frame" x="0.0" y="0.0" width="335" height="100"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="337" height="100"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="F96-CJ-s9x">
-                                                            <rect key="frame" x="28" y="20.000000000000004" width="279" height="60.333333333333343"/>
+                                                            <rect key="frame" x="28" y="20.000000000000004" width="281" height="60.333333333333343"/>
                                                             <subviews>
                                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1qp-fL-Bz2">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="279" height="40"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="281" height="40"/>
                                                                     <subviews>
                                                                         <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0.00000000" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mpg-F1-sQ5">
-                                                                            <rect key="frame" x="47" y="5.3333333333333321" width="185" height="28.999999999999996"/>
+                                                                            <rect key="frame" x="48" y="5.3333333333333321" width="185" height="28.999999999999996"/>
                                                                             <constraints>
                                                                                 <constraint firstAttribute="height" constant="29" id="02B-jU-zja"/>
                                                                             </constraints>
@@ -148,7 +140,7 @@
                                                                     </constraints>
                                                                 </view>
                                                                 <label opaque="NO" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="     " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="be3-4H-vC4">
-                                                                    <rect key="frame" x="0.0" y="40" width="279" height="20.333333333333329"/>
+                                                                    <rect key="frame" x="0.0" y="40" width="281" height="20.333333333333329"/>
                                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                                     <color key="textColor" systemColor="secondaryLabelColor"/>
                                                                     <nil key="highlightedColor"/>
@@ -170,14 +162,14 @@
                                                 </tableViewCellContentView>
                                             </tableViewCell>
                                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="TransactionCell" rowHeight="175" id="4ho-jk-IbG">
-                                                <rect key="frame" x="20" y="155.33333206176758" width="335" height="175"/>
+                                                <rect key="frame" x="20" y="155.33333206176758" width="337" height="175"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="4ho-jk-IbG" id="UZl-0k-oWM">
-                                                    <rect key="frame" x="0.0" y="0.0" width="335" height="175"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="337" height="175"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Ihm-1X-hpr">
-                                                            <rect key="frame" x="205.66666666666666" y="11.000000000000002" width="109.33333333333334" height="28.666666666666671"/>
+                                                            <rect key="frame" x="207.66666666666666" y="11.000000000000002" width="109.33333333333334" height="28.666666666666671"/>
                                                             <subviews>
                                                                 <label opaque="NO" userInteractionEnabled="NO" tag="5" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Jun-15-2018 22:28" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oE6-dQ-nw7">
                                                                     <rect key="frame" x="0.0" y="0.0" width="109.33333333333333" height="14.333333333333334"/>
@@ -218,7 +210,7 @@
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" tag="11" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="  " lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zAg-cb-nc5">
-                                                            <rect key="frame" x="20" y="97.333333333333329" width="295" height="17"/>
+                                                            <rect key="frame" x="20" y="97.333333333333329" width="297" height="17"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="height" constant="17" id="5sZ-yn-MEM"/>
                                                             </constraints>
@@ -239,7 +231,7 @@
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <button opaque="NO" tag="14" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mbE-fL-dzu">
-                                                            <rect key="frame" x="275" y="68" width="40" height="39"/>
+                                                            <rect key="frame" x="277" y="68" width="40" height="39"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="height" constant="39" id="geF-1b-7bc"/>
                                                                 <constraint firstAttribute="width" constant="40" id="yt7-Gw-Art"/>
@@ -284,132 +276,89 @@
                                             <outlet property="delegate" destination="Dwu-lj-4IN" id="0r9-Ye-t7e"/>
                                         </connections>
                                     </tableView>
-                                    <visualEffectView opaque="NO" contentMode="scaleToFill" ambiguous="YES" id="SdT-Ui-L9v">
-                                        <rect key="frame" x="0.0" y="725" width="375" height="0.0"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" insetsLayoutMarginsFromSafeArea="NO" id="Chg-OV-obp">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="0.0"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                            <subviews>
-                                                <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" distribution="equalSpacing" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="xR0-W6-ppZ">
-                                                    <rect key="frame" x="19" y="15" width="337" height="50"/>
-                                                    <subviews>
-                                                        <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6m9-Q8-MrC">
-                                                            <rect key="frame" x="0.0" y="0.0" width="73" height="50"/>
-                                                            <subviews>
-                                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hgi-ZB-OoB">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="73" height="50"/>
-                                                                    <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                                    <state key="normal" title=" invoice" image="arrow.down.left" catalog="system">
-                                                                        <color key="titleColor" systemColor="tintColor"/>
-                                                                    </state>
-                                                                    <connections>
-                                                                        <action selector="invoiceAction:" destination="Dwu-lj-4IN" eventType="touchUpInside" id="4LA-c8-OrB"/>
-                                                                    </connections>
-                                                                </button>
-                                                            </subviews>
-                                                            <color key="backgroundColor" systemColor="systemFillColor"/>
-                                                            <constraints>
-                                                                <constraint firstAttribute="height" constant="50" id="CMc-VB-DdO"/>
-                                                                <constraint firstItem="hgi-ZB-OoB" firstAttribute="leading" secondItem="6m9-Q8-MrC" secondAttribute="leading" id="Umr-Sm-ODN"/>
-                                                                <constraint firstAttribute="width" constant="73" id="aZK-Dq-3k9"/>
-                                                                <constraint firstAttribute="trailing" secondItem="hgi-ZB-OoB" secondAttribute="trailing" id="cDx-Ef-duE"/>
-                                                                <constraint firstItem="hgi-ZB-OoB" firstAttribute="top" secondItem="6m9-Q8-MrC" secondAttribute="top" id="uIP-Qb-xhG"/>
-                                                                <constraint firstAttribute="bottom" secondItem="hgi-ZB-OoB" secondAttribute="bottom" id="zSK-zJ-veT"/>
-                                                            </constraints>
-                                                        </view>
-                                                        <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dLv-h7-qJT">
-                                                            <rect key="frame" x="88" y="0.0" width="73" height="50"/>
-                                                            <subviews>
-                                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sbB-NO-KJ2">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="73" height="50"/>
-                                                                    <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                                    <state key="normal" title="utxo's"/>
-                                                                    <connections>
-                                                                        <action selector="goToUtxos:" destination="Dwu-lj-4IN" eventType="touchUpInside" id="zv4-2M-JYa"/>
-                                                                    </connections>
-                                                                </button>
-                                                            </subviews>
-                                                            <color key="backgroundColor" systemColor="systemFillColor"/>
-                                                            <constraints>
-                                                                <constraint firstItem="sbB-NO-KJ2" firstAttribute="top" secondItem="dLv-h7-qJT" secondAttribute="top" id="3TH-xa-EbG"/>
-                                                                <constraint firstAttribute="width" constant="73" id="E8N-L8-Kja"/>
-                                                                <constraint firstAttribute="bottom" secondItem="sbB-NO-KJ2" secondAttribute="bottom" id="JIL-Az-pJo"/>
-                                                                <constraint firstAttribute="trailing" secondItem="sbB-NO-KJ2" secondAttribute="trailing" id="Zjh-Ju-sGy"/>
-                                                                <constraint firstAttribute="height" constant="50" id="hEw-Td-qns"/>
-                                                                <constraint firstItem="sbB-NO-KJ2" firstAttribute="leading" secondItem="dLv-h7-qJT" secondAttribute="leading" id="qRj-qc-X0j"/>
-                                                            </constraints>
-                                                        </view>
-                                                        <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ANp-5e-llp">
-                                                            <rect key="frame" x="176" y="0.0" width="73" height="50"/>
-                                                            <subviews>
-                                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4y9-S1-3Km">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="73" height="50"/>
-                                                                    <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                                    <state key="normal" title="advanced"/>
-                                                                    <connections>
-                                                                        <action selector="advancedAction:" destination="Dwu-lj-4IN" eventType="touchUpInside" id="Zpy-ib-jo9"/>
-                                                                    </connections>
-                                                                </button>
-                                                            </subviews>
-                                                            <color key="backgroundColor" systemColor="systemFillColor"/>
-                                                            <constraints>
-                                                                <constraint firstAttribute="width" constant="73" id="IhS-Of-kEw"/>
-                                                                <constraint firstAttribute="bottom" secondItem="4y9-S1-3Km" secondAttribute="bottom" id="Wbe-qc-CRt"/>
-                                                                <constraint firstAttribute="trailing" secondItem="4y9-S1-3Km" secondAttribute="trailing" id="bm9-c5-S6S"/>
-                                                                <constraint firstItem="4y9-S1-3Km" firstAttribute="top" secondItem="ANp-5e-llp" secondAttribute="top" id="gnA-8w-qsQ"/>
-                                                                <constraint firstAttribute="height" constant="50" id="kYr-3A-k0a"/>
-                                                                <constraint firstItem="4y9-S1-3Km" firstAttribute="leading" secondItem="ANp-5e-llp" secondAttribute="leading" id="rVi-XL-zbQ"/>
-                                                            </constraints>
-                                                        </view>
-                                                        <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ccW-GQ-n83">
-                                                            <rect key="frame" x="264" y="0.0" width="73" height="50"/>
-                                                            <subviews>
-                                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1rD-5C-VVj">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="73" height="50"/>
-                                                                    <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                                    <state key="normal" title=" send" image="arrow.up.right" catalog="system">
-                                                                        <color key="titleColor" systemColor="tintColor"/>
-                                                                    </state>
-                                                                    <connections>
-                                                                        <action selector="sendAction:" destination="Dwu-lj-4IN" eventType="touchUpInside" id="SFZ-me-ese"/>
-                                                                    </connections>
-                                                                </button>
-                                                            </subviews>
-                                                            <color key="backgroundColor" systemColor="systemFillColor"/>
-                                                            <constraints>
-                                                                <constraint firstAttribute="height" constant="50" id="8CV-O6-u1a"/>
-                                                                <constraint firstItem="1rD-5C-VVj" firstAttribute="top" secondItem="ccW-GQ-n83" secondAttribute="top" id="GWi-9h-x8P"/>
-                                                                <constraint firstAttribute="width" constant="73" id="P90-g4-IUO"/>
-                                                                <constraint firstItem="1rD-5C-VVj" firstAttribute="leading" secondItem="ccW-GQ-n83" secondAttribute="leading" id="TWi-am-KNe"/>
-                                                                <constraint firstAttribute="trailing" secondItem="1rD-5C-VVj" secondAttribute="trailing" id="U4M-dY-P33"/>
-                                                                <constraint firstAttribute="bottom" secondItem="1rD-5C-VVj" secondAttribute="bottom" id="kZY-JN-fdU"/>
-                                                            </constraints>
-                                                        </view>
-                                                    </subviews>
-                                                </stackView>
-                                            </subviews>
-                                            <constraints>
-                                                <constraint firstItem="xR0-W6-ppZ" firstAttribute="centerY" secondItem="Chg-OV-obp" secondAttribute="centerY" id="Ldi-YG-q1j"/>
-                                                <constraint firstItem="xR0-W6-ppZ" firstAttribute="centerX" secondItem="Chg-OV-obp" secondAttribute="centerX" id="PFe-LA-GYN"/>
-                                            </constraints>
-                                        </view>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="80" id="JMj-Ux-wMO"/>
-                                        </constraints>
-                                        <blurEffect style="regular"/>
-                                    </visualEffectView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="xR0-W6-ppZ">
+                                        <rect key="frame" x="0.0" y="637" width="377" height="50"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hgi-ZB-OoB">
+                                                <rect key="frame" x="0.0" y="0.0" width="88.333333333333329" height="50"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="50" id="mo2-Xs-kaJ"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                <state key="normal" title=" invoice" image="arrow.down.left" catalog="system">
+                                                    <color key="titleColor" systemColor="tintColor"/>
+                                                </state>
+                                                <buttonConfiguration key="configuration" style="gray" title="Invoice">
+                                                    <fontDescription key="titleFontDescription" type="system" pointSize="13"/>
+                                                    <color key="baseForegroundColor" systemColor="tintColor"/>
+                                                </buttonConfiguration>
+                                                <connections>
+                                                    <action selector="invoiceAction:" destination="Dwu-lj-4IN" eventType="touchUpInside" id="4LA-c8-OrB"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sbB-NO-KJ2">
+                                                <rect key="frame" x="96.333333333333343" y="0.0" width="88.333333333333343" height="50"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="50" id="Kzg-JU-JcC"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                <state key="normal" title="utxo's"/>
+                                                <buttonConfiguration key="configuration" style="gray" title="UTXO's">
+                                                    <fontDescription key="titleFontDescription" type="system" pointSize="13"/>
+                                                </buttonConfiguration>
+                                                <connections>
+                                                    <action selector="goToUtxos:" destination="Dwu-lj-4IN" eventType="touchUpInside" id="zv4-2M-JYa"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4y9-S1-3Km">
+                                                <rect key="frame" x="192.66666666666666" y="0.0" width="87.999999999999972" height="50"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="50" id="4Be-ld-CLZ"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                <state key="normal" title="advanced"/>
+                                                <buttonConfiguration key="configuration" style="gray" title="Advanced">
+                                                    <fontDescription key="titleFontDescription" type="system" pointSize="13"/>
+                                                </buttonConfiguration>
+                                                <connections>
+                                                    <action selector="advancedAction:" destination="Dwu-lj-4IN" eventType="touchUpInside" id="Zpy-ib-jo9"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1rD-5C-VVj">
+                                                <rect key="frame" x="288.66666666666669" y="0.0" width="88.333333333333314" height="50"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="50" id="9Rd-qg-C1k"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                <state key="normal" title=" send" image="arrow.up.right" catalog="system">
+                                                    <color key="titleColor" systemColor="tintColor"/>
+                                                </state>
+                                                <buttonConfiguration key="configuration" style="gray" title="Send">
+                                                    <fontDescription key="titleFontDescription" type="system" pointSize="13"/>
+                                                    <color key="baseForegroundColor" systemColor="tintColor"/>
+                                                </buttonConfiguration>
+                                                <connections>
+                                                    <action selector="sendAction:" destination="Dwu-lj-4IN" eventType="touchUpInside" id="SFZ-me-ese"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
                                 </subviews>
+                                <constraints>
+                                    <constraint firstItem="xR0-W6-ppZ" firstAttribute="top" secondItem="xuS-Az-tfm" secondAttribute="bottom" constant="8" symbolic="YES" id="EWF-GG-gKA"/>
+                                    <constraint firstAttribute="trailing" secondItem="xuS-Az-tfm" secondAttribute="trailing" id="Isy-VJ-z4Z"/>
+                                    <constraint firstItem="xuS-Az-tfm" firstAttribute="leading" secondItem="ts5-8f-JgO" secondAttribute="leading" id="cLb-Md-hmu"/>
+                                    <constraint firstItem="xuS-Az-tfm" firstAttribute="top" secondItem="yUJ-iQ-fjZ" secondAttribute="bottom" constant="8" id="fbD-um-eZT"/>
+                                </constraints>
                             </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bmh-eo-0G2"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="ts5-8f-JgO" firstAttribute="top" secondItem="vmz-O4-mSm" secondAttribute="top" constant="8" id="1aU-OI-J7M"/>
-                            <constraint firstItem="ts5-8f-JgO" firstAttribute="top" secondItem="Bmh-eo-0G2" secondAttribute="top" id="AKv-a5-Bj3"/>
-                            <constraint firstAttribute="trailing" secondItem="ts5-8f-JgO" secondAttribute="trailing" constant="8" id="Eck-Rb-Z8M"/>
-                            <constraint firstAttribute="bottom" secondItem="ts5-8f-JgO" secondAttribute="bottom" id="QTR-ow-EZo"/>
-                            <constraint firstItem="ts5-8f-JgO" firstAttribute="leading" secondItem="Bmh-eo-0G2" secondAttribute="leading" constant="8" id="t2i-60-5Ah"/>
+                            <constraint firstItem="ts5-8f-JgO" firstAttribute="top" secondItem="Bmh-eo-0G2" secondAttribute="top" constant="8" id="GgM-h4-FbR"/>
+                            <constraint firstAttribute="trailing" secondItem="ts5-8f-JgO" secondAttribute="trailing" constant="8" id="aa3-kN-8Cl"/>
+                            <constraint firstItem="Bmh-eo-0G2" firstAttribute="bottom" secondItem="ts5-8f-JgO" secondAttribute="bottom" constant="20" id="ryQ-MX-0d9"/>
+                            <constraint firstItem="ts5-8f-JgO" firstAttribute="leading" secondItem="Bmh-eo-0G2" secondAttribute="leading" constant="8" id="suK-hJ-gZ2"/>
                         </constraints>
                     </view>
                     <toolbarItems/>
@@ -444,14 +393,8 @@
                             </barButtonItem>
                         </rightBarButtonItems>
                     </navigationItem>
-                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
-                        <outlet property="advancedView" destination="ANp-5e-llp" id="1t3-sZ-v6l"/>
-                        <outlet property="backgroundView" destination="SdT-Ui-L9v" id="Wm8-fO-xZp"/>
                         <outlet property="fxRateLabel" destination="yUJ-iQ-fjZ" id="WLS-sg-DQk"/>
-                        <outlet property="invoiceView" destination="6m9-Q8-MrC" id="IfR-4d-aik"/>
-                        <outlet property="sendView" destination="ccW-GQ-n83" id="57i-2S-Iu9"/>
-                        <outlet property="utxosView" destination="dLv-h7-qJT" id="pYb-kb-BaU"/>
                         <outlet property="walletTable" destination="xuS-Az-tfm" id="qnM-Ea-25y"/>
                         <segue destination="pUo-bf-sNm" kind="show" identifier="spendFromWallet" id="w2g-bl-j8v"/>
                         <segue destination="Xxg-Pp-vvN" kind="show" identifier="segueToInvoice" id="kq8-dj-bJ2"/>
@@ -473,14 +416,26 @@
         <!--First Time Here View Controller-->
         <scene sceneID="zew-eF-Yr4">
             <objects>
-                <viewController id="LCM-Xo-fPO" customClass="FirstTimeHereViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="LCM-Xo-fPO" customClass="FirstTimeHereViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Oiy-ew-EvP">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fr3-Gv-asX">
-                                <rect key="frame" x="16" y="101.99999999999997" width="361" height="501.33333333333326"/>
-                                <string key="text">Welcome to Fully Noded!
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="dwp-gv-pCo">
+                                <rect key="frame" x="8" y="20" width="377" height="584"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="iTunesArtwork.png" translatesAutoresizingMaskIntoConstraints="NO" id="enp-cV-xco">
+                                        <rect key="frame" x="0.0" y="0.0" width="377" height="80"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="80" id="vdt-fD-2sO"/>
+                                        </constraints>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="TopLeft" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fr3-Gv-asX">
+                                        <rect key="frame" x="0.0" y="88" width="377" height="400"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="400" id="hGP-4q-3di"/>
+                                        </constraints>
+                                        <string key="text">Welcome to Fully Noded!
  
 Thanks for giving the app a try. In order to use it you need to connect a node. Designed to work with Bitcoin Core, Bitcoin Knots and any other Bitcoin client that mirrors Bitcoin Core's RPC API.
 
@@ -489,41 +444,41 @@ Just go to Settings &gt; Node Manager and tap the + button to add a node.
 For more information please visit our website at fullynoded.app.
 
 If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlitz, Fully Noded Server or BTC Pay Server they all support Fully Noded's Quick Connect QR.</string>
-                                <fontDescription key="fontDescription" type="system" pointSize="21"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="RiZ-VU-BQx">
-                                <rect key="frame" x="163" y="679.33333333333337" width="67" height="35"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="gray" title="Close"/>
-                                <connections>
-                                    <action selector="closeAction:" destination="LCM-Xo-fPO" eventType="touchUpInside" id="V7N-KV-VQ7"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qRQ-Zb-lX5">
-                                <rect key="frame" x="16" y="611.33333333333337" width="361" height="35"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="35" id="VDh-U8-6AJ"/>
-                                </constraints>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="www.fullynoded.app"/>
-                                <connections>
-                                    <action selector="visitFullyNoded:" destination="LCM-Xo-fPO" eventType="touchUpInside" id="pWy-gD-rdH"/>
-                                </connections>
-                            </button>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qRQ-Zb-lX5">
+                                        <rect key="frame" x="0.0" y="496" width="377" height="40"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="40" id="hAv-kP-ITJ"/>
+                                        </constraints>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="www.fullynoded.app"/>
+                                        <connections>
+                                            <action selector="visitFullyNoded:" destination="LCM-Xo-fPO" eventType="touchUpInside" id="pWy-gD-rdH"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="RiZ-VU-BQx">
+                                        <rect key="frame" x="0.0" y="544" width="377" height="40"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="40" id="4Uq-K6-jHn"/>
+                                        </constraints>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="gray" title="Close"/>
+                                        <connections>
+                                            <action selector="closeAction:" destination="LCM-Xo-fPO" eventType="touchUpInside" id="V7N-KV-VQ7"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="gHf-G6-FjL"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstAttribute="trailing" secondItem="fr3-Gv-asX" secondAttribute="trailing" constant="16" id="JO9-oc-I94"/>
-                            <constraint firstItem="gHf-G6-FjL" firstAttribute="trailing" secondItem="qRQ-Zb-lX5" secondAttribute="trailing" constant="16" id="TCH-aa-2Ia"/>
-                            <constraint firstItem="qRQ-Zb-lX5" firstAttribute="top" secondItem="fr3-Gv-asX" secondAttribute="bottom" constant="8" id="ard-ED-dr4"/>
-                            <constraint firstItem="RiZ-VU-BQx" firstAttribute="centerX" secondItem="Oiy-ew-EvP" secondAttribute="centerX" id="fmM-Zn-OYC"/>
-                            <constraint firstItem="fr3-Gv-asX" firstAttribute="top" secondItem="gHf-G6-FjL" secondAttribute="top" constant="102" id="jR1-iR-R8z"/>
-                            <constraint firstItem="RiZ-VU-BQx" firstAttribute="top" secondItem="qRQ-Zb-lX5" secondAttribute="bottom" constant="33" id="lWe-Wu-ZA0"/>
-                            <constraint firstItem="fr3-Gv-asX" firstAttribute="leading" secondItem="gHf-G6-FjL" secondAttribute="leading" constant="16" id="mwe-ty-hU3"/>
-                            <constraint firstItem="qRQ-Zb-lX5" firstAttribute="leading" secondItem="gHf-G6-FjL" secondAttribute="leading" constant="16" id="ujn-Vw-jA7"/>
+                            <constraint firstAttribute="trailing" secondItem="dwp-gv-pCo" secondAttribute="trailing" constant="8" id="KjB-eG-Wvs"/>
+                            <constraint firstItem="dwp-gv-pCo" firstAttribute="leading" secondItem="gHf-G6-FjL" secondAttribute="leading" constant="8" id="SaL-1J-Bx5"/>
+                            <constraint firstItem="dwp-gv-pCo" firstAttribute="top" secondItem="gHf-G6-FjL" secondAttribute="top" constant="20" id="VhP-1d-WiN"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -531,12 +486,12 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
             </objects>
             <point key="canvasLocation" x="-11019.083969465648" y="-950"/>
         </scene>
-        <!--Peers Detail Table View Controller-->
+        <!--Peer Detail-->
         <scene sceneID="Rup-35-bHd">
             <objects>
-                <tableViewController id="Wcl-hn-0XG" customClass="PeersDetailTableViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="Wcl-hn-0XG" customClass="PeersDetailTableViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" estimatedSectionHeaderHeight="-1" sectionFooterHeight="18" estimatedSectionFooterHeight="-1" id="472-Uc-XRf">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="666"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="a5I-F5-Udh">
@@ -553,7 +508,7 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                             <outlet property="delegate" destination="Wcl-hn-0XG" id="sO5-A6-Bup"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" id="iur-9f-5xy"/>
+                    <navigationItem key="navigationItem" title="Peer Detail" id="iur-9f-5xy"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ZJy-va-OHd" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -672,7 +627,7 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                     <tabBarItem key="tabBarItem" title="" image="Home" id="2Tc-dk-uCe">
                         <color key="badgeColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </tabBarItem>
-                    <navigationItem key="navigationItem" id="83A-pa-ZRF">
+                    <navigationItem key="navigationItem" title="Node" id="83A-pa-ZRF">
                         <barButtonItem key="leftBarButtonItem" image="lock" catalog="system" id="I6c-Ix-RNr">
                             <color key="tintColor" systemColor="tintColor"/>
                             <connections>
@@ -708,9 +663,6 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="1UV-eZ-dfB">
                         <rect key="frame" x="0.0" y="59" width="393" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <textAttributes key="titleTextAttributes">
-                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        </textAttributes>
                     </navigationBar>
                     <connections>
                         <segue destination="9kf-Xt-vj8" kind="relationship" relationship="rootViewController" id="A1b-Ed-DYW"/>
@@ -728,9 +680,6 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="FRo-C8-mMl">
                         <rect key="frame" x="0.0" y="59" width="393" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <textAttributes key="titleTextAttributes">
-                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        </textAttributes>
                     </navigationBar>
                     <connections>
                         <segue destination="XmP-lK-cua" kind="relationship" relationship="rootViewController" id="LjT-h7-7j2"/>
@@ -749,7 +698,7 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="JOf-3w-unO">
-                                <rect key="frame" x="16" y="103" width="361" height="558"/>
+                                <rect key="frame" x="16" y="103" width="361" height="607"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="inputCell" rowHeight="429" id="1Zh-DT-bup">
                                         <rect key="frame" x="20" y="55.333332061767578" width="321" height="429"/>
@@ -1228,7 +1177,7 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                                 </connections>
                             </tableView>
                             <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="foy-yq-4sY">
-                                <rect key="frame" x="17" y="669" width="359" height="80"/>
+                                <rect key="frame" x="17" y="718" width="359" height="80"/>
                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="EoW-rG-EwJ">
                                     <rect key="frame" x="0.0" y="0.0" width="359" height="80"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1402,7 +1351,7 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
         <!--Transaction Label Memo View Controller-->
         <scene sceneID="JWQ-wN-sBD">
             <objects>
-                <viewController id="4V7-jZ-58Y" customClass="TransactionLabelMemoViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="4V7-jZ-58Y" customClass="TransactionLabelMemoViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="bcP-CD-Xng">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1479,9 +1428,9 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
         <!--Displayer View Controller-->
         <scene sceneID="Uym-uj-rYU">
             <objects>
-                <viewController storyboardIdentifier="QRDisplayer" useStoryboardIdentifierAsRestorationIdentifier="YES" id="GlR-4A-eAx" customClass="QRDisplayerViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="QRDisplayer" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" useStoryboardIdentifierAsRestorationIdentifier="YES" id="GlR-4A-eAx" customClass="QRDisplayerViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" ambiguous="YES" id="1Ax-bN-O8E">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="666"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kT3-vW-HgJ">
@@ -1506,7 +1455,7 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                                 <nil key="highlightedColor"/>
                             </label>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
-                                <rect key="frame" x="16" y="422" width="361" height="224"/>
+                                <rect key="frame" x="16" y="422" width="361" height="410"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" systemColor="secondaryLabelColor"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
@@ -1628,11 +1577,11 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
             <objects>
                 <viewController title="Signer" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="Avw-Yr-vaR" customClass="SignerDetailViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="hXY-Kg-4yD">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="YbQ-Ro-DcZ">
-                                <rect key="frame" x="0.0" y="150" width="393" height="648"/>
+                                <rect key="frame" x="0.0" y="47" width="393" height="775"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="sectionIndexBackgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -1653,7 +1602,7 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                                 </connections>
                             </tableView>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="H3c-ew-Tc0">
-                                <rect key="frame" x="280" y="111" width="97" height="32"/>
+                                <rect key="frame" x="280" y="8" width="97" height="32"/>
                                 <segments>
                                     <segment title="main"/>
                                     <segment title="test"/>
@@ -1701,16 +1650,16 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
             </objects>
             <point key="canvasLocation" x="-6551.9083969465646" y="421.83098591549299"/>
         </scene>
-        <!--Signers View Controller-->
+        <!--Signers-->
         <scene sceneID="HBy-5M-PSd">
             <objects>
-                <viewController extendedLayoutIncludesOpaqueBars="YES" id="9kf-Xt-vj8" customClass="SignersViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Signers" extendedLayoutIncludesOpaqueBars="YES" id="9kf-Xt-vj8" customClass="SignersViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Co5-sz-PGd">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="WVI-Gu-NZf">
-                                <rect key="frame" x="0.0" y="103" width="393" height="715"/>
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
                                 <color key="separatorColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="signerCell" rowHeight="54" id="Sir-UC-F0Z">
@@ -1768,7 +1717,7 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                             <constraint firstItem="HuK-z1-db0" firstAttribute="bottom" secondItem="WVI-Gu-NZf" secondAttribute="bottom" id="y6v-AN-SIy"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" id="aqi-7e-gab">
+                    <navigationItem key="navigationItem" title="Signers" id="aqi-7e-gab">
                         <barButtonItem key="rightBarButtonItem" image="plus.rectangle" catalog="system" id="uDL-r8-3Am">
                             <color key="tintColor" systemColor="tintColor"/>
                             <connections>
@@ -1795,7 +1744,7 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" estimatedSectionHeaderHeight="-1" sectionFooterHeight="18" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="Z2d-EH-10T">
-                                <rect key="frame" x="16" y="185.66666666666669" width="361" height="563.33333333333326"/>
+                                <rect key="frame" x="16" y="185.66666666666669" width="361" height="612.33333333333326"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="externalWalletCell" id="2ym-7V-rvj">
@@ -1865,7 +1814,7 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="6e5-ZU-x5X">
-                                <rect key="frame" x="16" y="111" width="361" height="638"/>
+                                <rect key="frame" x="16" y="111" width="361" height="687"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9ci-C0-8XZ">
                                         <rect key="frame" x="0.0" y="0.0" width="361" height="33.666666666666664"/>
@@ -1885,7 +1834,7 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="e5J-1l-ENr">
-                                        <rect key="frame" x="0.0" y="95" width="361" height="500"/>
+                                        <rect key="frame" x="0.0" y="95" width="361" height="549"/>
                                         <prototypes>
                                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="fnWalletCell" rowHeight="54" id="MUh-Fj-cAe">
                                                 <rect key="frame" x="20" y="55.333332061767578" width="321" height="54"/>
@@ -1923,7 +1872,7 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                                         </connections>
                                     </tableView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OGe-8g-Qaj">
-                                        <rect key="frame" x="0.0" y="603" width="361" height="35"/>
+                                        <rect key="frame" x="0.0" y="652" width="361" height="35"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="35" id="Rmy-4s-jvq"/>
                                         </constraints>
@@ -1972,11 +1921,11 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
             <objects>
                 <viewController title="Add Signer" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="G0V-te-kek" customClass="AddSignerViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="kaf-Tr-9T9">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="IHZ-XQ-St6">
-                                <rect key="frame" x="8" y="111" width="377" height="687"/>
+                                <rect key="frame" x="8" y="8" width="377" height="814"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="3xd-ni-TOq">
                                         <rect key="frame" x="0.0" y="0.0" width="377" height="34"/>
@@ -2018,14 +1967,14 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                                         </subviews>
                                     </stackView>
                                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zy5-5j-O77">
-                                        <rect key="frame" x="0.0" y="42" width="377" height="597"/>
+                                        <rect key="frame" x="0.0" y="42" width="377" height="724"/>
                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                         <color key="textColor" systemColor="systemGreenColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GaP-Ag-v0V">
-                                        <rect key="frame" x="0.0" y="647" width="377" height="40"/>
+                                        <rect key="frame" x="0.0" y="774" width="377" height="40"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="40" id="9Qw-1A-KAa"/>
@@ -2074,7 +2023,7 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="hgF-Hw-8pz">
-                                <rect key="frame" x="0.0" y="111" width="393" height="658"/>
+                                <rect key="frame" x="0.0" y="111" width="393" height="707"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletExportQrCell" rowHeight="290" id="HTu-ae-caa">
@@ -2641,7 +2590,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="jDD-Cq-X82">
-                                <rect key="frame" x="16" y="117" width="361" height="632"/>
+                                <rect key="frame" x="16" y="117" width="361" height="681"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Give your wallet a name:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bi0-Um-wb7">
                                         <rect key="frame" x="0.0" y="0.0" width="361" height="20.333333333333332"/>
@@ -2689,7 +2638,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="LIV-xG-rU1">
-                                        <rect key="frame" x="0.0" y="204.33333333333329" width="361" height="380.66666666666674"/>
+                                        <rect key="frame" x="0.0" y="204.33333333333329" width="361" height="429.66666666666674"/>
                                         <prototypes>
                                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="addressCell" id="FUQ-Te-2Ah">
                                                 <rect key="frame" x="0.0" y="50" width="361" height="42.666667938232422"/>
@@ -2721,7 +2670,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </connections>
                                     </tableView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sLK-5X-3x7">
-                                        <rect key="frame" x="0.0" y="589" width="361" height="43"/>
+                                        <rect key="frame" x="0.0" y="638" width="361" height="43"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="43" id="Wbp-hA-5nJ"/>
@@ -3321,7 +3270,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 </subviews>
                             </stackView>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="jXp-xP-J4h">
-                                <rect key="frame" x="16" y="521.66666666666663" width="361" height="182.33333333333337"/>
+                                <rect key="frame" x="16" y="521.66666666666663" width="361" height="231.33333333333337"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="cell" textLabel="C0I-2Z-mCW" rowHeight="85" style="IBUITableViewCellStyleDefault" id="9QV-RF-yNq">
@@ -3350,7 +3299,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 </connections>
                             </tableView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HBB-RM-j15">
-                                <rect key="frame" x="106" y="712" width="181" height="38"/>
+                                <rect key="frame" x="106" y="761" width="181" height="38"/>
                                 <color key="backgroundColor" systemColor="systemFillColor"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="181" id="22S-4s-GNL"/>
@@ -3531,9 +3480,9 @@ Fully Noded does its best to support as many hardware and software wallet option
         <!--Fiat Currency-->
         <scene sceneID="WqS-UP-lQ0">
             <objects>
-                <tableViewController id="uDY-un-iTX" customClass="CurrenciesTableViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="uDY-un-iTX" customClass="CurrenciesTableViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="kVz-WU-tr7">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="666"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <prototypes>
@@ -3581,9 +3530,9 @@ Fully Noded does its best to support as many hardware and software wallet option
         <!--App Icon-->
         <scene sceneID="GEq-kw-p9F">
             <objects>
-                <tableViewController id="a5x-qB-oPA" customClass="AppIconSelectorTableViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="a5x-qB-oPA" customClass="AppIconSelectorTableViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="X4Q-7X-fAC">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="666"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <prototypes>
@@ -3679,7 +3628,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                 <constraint firstItem="Xlw-4V-HS1" firstAttribute="centerY" secondItem="9ct-J0-fLL" secondAttribute="centerY" id="kov-zX-Due"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
+                                        <color key="backgroundColor" systemColor="systemFillColor"/>
                                     </tableViewCell>
                                 </prototypes>
                                 <connections>
@@ -3719,7 +3668,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="0lx-xC-W8X">
-                                <rect key="frame" x="0.0" y="140" width="393" height="629"/>
+                                <rect key="frame" x="0.0" y="140" width="393" height="678"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletCell" rowHeight="54" id="Z9w-wS-yxJ">
                                         <rect key="frame" x="20" y="55.333332061767578" width="353" height="54"/>
@@ -3833,7 +3782,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                                 <constraint firstItem="CKc-wE-2oc" firstAttribute="leading" secondItem="xYD-lp-qRG" secondAttribute="leadingMargin" id="r2t-7g-SVu"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
+                                        <color key="backgroundColor" systemColor="systemFillColor"/>
                                     </tableViewCell>
                                 </prototypes>
                                 <connections>
@@ -3916,7 +3865,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                 </connections>
                             </button>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3tH-h3-af5">
-                                <rect key="frame" x="16" y="248" width="361" height="501"/>
+                                <rect key="frame" x="16" y="248" width="361" height="550"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <string key="text">This password is never saved to the device. Only the hash of the password is saved. That way even if your device is hacked the thief would not be able to extract a password from it. It is extremely important you remember this password, for each failed attempt at unlocking the app a timeout period will double, this means 20 attempts will take around 30 days! Making brute forcing your password impossible. Even if you delete the app and reinstall it the timeout period will be remembered.</string>
                                 <color key="textColor" systemColor="secondaryLabelColor"/>
@@ -4067,13 +4016,13 @@ Fully Noded does its best to support as many hardware and software wallet option
         <!--Duress PIN-->
         <scene sceneID="5Ms-qE-DEM">
             <objects>
-                <viewController id="QkU-Bb-rFc" customClass="DuressPinViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="QkU-Bb-rFc" customClass="DuressPinViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="5dV-D2-XMd">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="666"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="IJJ-NA-MdJ">
-                                <rect key="frame" x="16" y="8" width="361" height="203.66666666666666"/>
+                                <rect key="frame" x="16" y="110.99999999999999" width="361" height="203.66666666666663"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Duress PIN" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ttc-Mp-8aD">
                                         <rect key="frame" x="0.0" y="0.0" width="361" height="30"/>
@@ -4389,7 +4338,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="U8O-yQ-otK">
-                                <rect key="frame" x="16" y="129" width="361" height="640"/>
+                                <rect key="frame" x="16" y="129" width="361" height="689"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="activeWallet" rowHeight="54" id="yHC-bM-Lzg">
                                         <rect key="frame" x="20" y="55.333332061767578" width="321" height="54"/>
@@ -4465,10 +4414,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="MnD-yK-HXB">
                         <rect key="frame" x="0.0" y="59" width="393" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <textAttributes key="titleTextAttributes">
-                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        </textAttributes>
+                        <color key="tintColor" systemColor="tintColor"/>
                     </navigationBar>
                     <connections>
                         <segue destination="AS8-ke-Yxh" kind="relationship" relationship="rootViewController" id="T9K-B5-w98"/>
@@ -4487,7 +4433,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" allowsMultipleSelection="YES" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="CFb-Jk-h9Z">
-                                <rect key="frame" x="0.0" y="103" width="393" height="666"/>
+                                <rect key="frame" x="0.0" y="103" width="393" height="715"/>
                                 <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                             </tableView>
                         </subviews>
@@ -4516,7 +4462,7 @@ Fully Noded does its best to support as many hardware and software wallet option
         <!--Text Modal View Controller-->
         <scene sceneID="aD2-pB-m6Y">
             <objects>
-                <viewController id="Zjp-rH-cfH" customClass="TextModalViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="Zjp-rH-cfH" customClass="TextModalViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Nat-co-JA4">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -4531,13 +4477,13 @@ Fully Noded does its best to support as many hardware and software wallet option
         <!--Locked UTXO's-->
         <scene sceneID="CKp-4Z-5YA">
             <objects>
-                <viewController title="Locked UTXO's" extendedLayoutIncludesOpaqueBars="YES" id="03r-hX-hYT" customClass="LockedViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Locked UTXO's" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="03r-hX-hYT" customClass="LockedViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="hqF-Ak-aXu">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="0El-QV-frt">
-                                <rect key="frame" x="0.0" y="103" width="393" height="666"/>
+                                <rect key="frame" x="0.0" y="103" width="393" height="715"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="lockedCell" rowHeight="50" id="IMb-wx-CLS">
                                         <rect key="frame" x="20" y="55.333332061767578" width="353" height="50"/>
@@ -4618,11 +4564,11 @@ Fully Noded does its best to support as many hardware and software wallet option
             <objects>
                 <viewController storyboardIdentifier="MultisigCreator" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="00Y-n8-WfC" customClass="CreateMultisigViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="tiY-Z4-d76">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="FEh-Kx-bwz">
-                                <rect key="frame" x="16" y="103" width="361" height="695"/>
+                                <rect key="frame" x="16" y="0.0" width="361" height="822"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="1rW-Ks-Uq6">
                                         <rect key="frame" x="0.0" y="0.0" width="361" height="29"/>
@@ -4655,7 +4601,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TBc-Ns-zDL">
-                                        <rect key="frame" x="0.0" y="65.333333333333343" width="361" height="49.666666666666657"/>
+                                        <rect key="frame" x="0.0" y="65.333333333333329" width="361" height="176.66666666666669"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <state key="normal" title="Derive cosigner from an existing signer ">
                                             <color key="titleColor" systemColor="tintColor"/>
@@ -4665,13 +4611,13 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Manual:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kSh-q9-bOx">
-                                        <rect key="frame" x="0.0" y="122.99999999999999" width="361" height="20.333333333333329"/>
+                                        <rect key="frame" x="0.0" y="250.00000000000003" width="361" height="20.333333333333343"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="JMj-oR-jrn">
-                                        <rect key="frame" x="0.0" y="151.33333333333334" width="361" height="34"/>
+                                        <rect key="frame" x="0.0" y="278.33333333333331" width="361" height="34"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="fingerprint:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Hva-Kw-FGv">
                                                 <rect key="frame" x="0.0" y="0.0" width="84" height="34"/>
@@ -4688,7 +4634,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="mob-my-HL6">
-                                        <rect key="frame" x="0.0" y="193.33333333333331" width="361" height="34"/>
+                                        <rect key="frame" x="0.0" y="320.33333333333331" width="361" height="34"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="origin:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oFS-rG-otI">
                                                 <rect key="frame" x="0.0" y="0.0" width="47.333333333333336" height="34"/>
@@ -4705,7 +4651,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="NUc-p3-Q5n">
-                                        <rect key="frame" x="0.0" y="235.33333333333331" width="361" height="34"/>
+                                        <rect key="frame" x="0.0" y="362.33333333333331" width="361" height="34"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="xpub: " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xax-Va-iJm">
                                                 <rect key="frame" x="0.0" y="0.0" width="47" height="34"/>
@@ -4723,7 +4669,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </subviews>
                                     </stackView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oLZ-lP-Dfx">
-                                        <rect key="frame" x="0.0" y="277.33333333333331" width="361" height="33"/>
+                                        <rect key="frame" x="0.0" y="404.33333333333331" width="361" height="33"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <state key="normal" title="Add cosigner">
                                             <color key="titleColor" systemColor="tintColor"/>
@@ -4733,18 +4679,18 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Cosigners:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dXX-uE-f2N">
-                                        <rect key="frame" x="0.0" y="318.33333333333331" width="361" height="20.333333333333314"/>
+                                        <rect key="frame" x="0.0" y="445.33333333333331" width="361" height="20.333333333333314"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" text="Cosigners will appear here after adding them." translatesAutoresizingMaskIntoConstraints="NO" id="HC3-hY-POM">
-                                        <rect key="frame" x="0.0" y="346.66666666666674" width="361" height="307.33333333333326"/>
+                                        <rect key="frame" x="0.0" y="473.66666666666674" width="361" height="307.33333333333326"/>
                                         <color key="textColor" systemColor="secondaryLabelColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="K1S-Os-ro2">
-                                        <rect key="frame" x="0.0" y="662" width="361" height="33"/>
+                                        <rect key="frame" x="0.0" y="789" width="361" height="33"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <state key="normal" title="Create wallet"/>
@@ -4796,17 +4742,18 @@ Fully Noded does its best to support as many hardware and software wallet option
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
+        <segue reference="PAL-VQ-iLQ"/>
         <segue reference="5iI-Ra-crf"/>
-        <segue reference="UBf-qr-XYG"/>
+        <segue reference="qed-hl-jG5"/>
         <segue reference="Fvb-gy-rb3"/>
         <segue reference="DLx-HT-rGm"/>
-        <segue reference="nTv-zU-127"/>
+        <segue reference="Wy7-ur-TeS"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="IAz-j1-Gq6"/>
-        <segue reference="A1b-Ed-DYW"/>
-        <segue reference="07E-4w-Zh7"/>
-        <segue reference="8MS-xS-DMP"/>
+        <segue reference="6KH-E3-p33"/>
+        <segue reference="BTh-Z9-jlD"/>
+        <segue reference="if0-NE-c9T"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="AK4-4u-w1q"/>
     </inferredMetricsTieBreakers>
@@ -4831,6 +4778,7 @@ Fully Noded does its best to support as many hardware and software wallet option
         <image name="folder" catalog="system" width="128" height="96"/>
         <image name="folder.badge.plus" catalog="system" width="128" height="93"/>
         <image name="gear" catalog="system" width="128" height="122"/>
+        <image name="iTunesArtwork.png" width="512" height="512"/>
         <image name="info.circle" catalog="system" width="128" height="123"/>
         <image name="lock" catalog="system" width="111" height="128"/>
         <image name="minus.rectangle" catalog="system" width="128" height="93"/>

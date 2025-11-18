@@ -15,7 +15,6 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
     private override init() {}
     
     let torClient = TorClient.sharedInstance
-    private var attempts = 0
     var connected: Bool = false
     var onDoneBlock: (((response: Any?, errorDesc: String?)) -> Void)?
     var activeNode: NodeStruct?
@@ -48,8 +47,6 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
     }
     
     func executeRPCCommand(method: BTC_CLI_COMMAND, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
-        attempts += 1
-        
         guard let node = activeNode else {
             completion((nil, "No active Bitcoin Core node."))
             return
@@ -111,7 +108,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         }
         
         var request = URLRequest(url: url)
-        var timeout = 30.0
+        var timeout = 60.0
         
         switch method {
         case .gettxoutsetinfo:
@@ -158,7 +155,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         var sesh = URLSession(configuration: .default)
         
         if onionAddress.contains("onion") {
-            attempts = 0
+            //attempts = 0
             sesh = self.torClient.session
             
         } else {
@@ -174,41 +171,21 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
                 return
             }
             
-            // Only with Tor do we need to attempt more then once.
-            attempts = 20
             sesh = URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: .main)
         }
         
         let task = sesh.dataTask(with: request as URLRequest) { [weak self] (data, response, error) in
             guard let self = self else { return }
             
-            guard let urlContent = data else {
-                
-                guard let error = error else {
-                    if self.attempts < 20 {
-                        self.executeRPCCommand(method: method, completion: completion)
-                    } else {
-                        self.attempts = 0
-                        completion((nil, "Unknown error, ran out of attempts"))
-                    }
-                    
-                    return
-                }
-                
-                if self.attempts < 20 {
-                    self.executeRPCCommand(method: method, completion: completion)
-                } else {
-                    self.attempts = 0
-                    completion((nil, error.localizedDescription))
-                }
-                
+            guard error == nil else {
+                completion((nil, error!.localizedDescription))
                 return
             }
             
-            if onionAddress.contains(".onion:") {
-                self.attempts = 0
+            guard let urlContent = data else {
+                completion((nil, "No resonse and no error from your node..."))
+                return
             }
-            
             
             guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: .mutableLeaves) as? NSDictionary else {
                 if let httpResponse = response as? HTTPURLResponse {
