@@ -239,6 +239,7 @@ class MainMenuViewController: UIViewController {
         peerInfo = nil
         feeInfo = nil
         networkInfo = nil
+        miningInfo = nil
         DispatchQueue.main.async { [weak self] in
             self?.mainMenu.reloadData()
         }
