@@ -266,7 +266,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let restId = sender.restorationIdentifier ?? ""
         let index = Int(restId) ?? 10000
         
-        guard let selectedCell = nodeTable.cellForRow(at: IndexPath.init(row: 0, section: index)) else {
+        guard let selectedCell = nodeTable.cellForRow(at: IndexPath.init(row: index, section: 0)) else {
             return
         }
         
@@ -409,13 +409,10 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     private func addBtcRpcQr(url: String) {
         QuickConnect.addNode(url: url) { [weak self] (success, errorMessage) in
+            guard let self = self else { return }
             if success {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
-                    self.tabBarController?.selectedIndex = 0
-                }
+                getNodes()
+                showAlert(vc: self, title: "Node added ✓", message: "The new node is automatically activated, you need to go home and tap the refresh button to try and connect.")
             } else {
                 displayAlert(viewController: self, isError: true, message: "Error adding that node: \(errorMessage ?? "unknown")")
             }
