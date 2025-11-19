@@ -58,6 +58,8 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
+        
+        derivationField.text = "m/48h/\(cointType)h/0h/2h"
     }
     
     override func viewDidAppear(_ animated: Bool) {}
@@ -128,7 +130,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     }
     
     private func keystring(prefix: String, xpub: String) -> String {
-        return "#\(self.keys.count):\n\n" + "Origin: [\(prefix)]\n\n" + "Key: " + xpub + "\n\n"
+        return "\n#\(self.keys.count):\n\n" + "Origin: [\(prefix)]\n\n" + "Key: " + xpub + "\n\n"
     }
     
     @IBAction func addAction(_ sender: Any) {
