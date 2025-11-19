@@ -26,31 +26,30 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return activeWallets.count
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return activeWallets.count
+        return 1
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "activeWallet", for: indexPath)
         cell.selectionStyle = .none
-        cell.layer.borderColor = UIColor.lightGray.cgColor
-        cell.layer.borderWidth = 0.5
+        //cell.layer.borderColor = UIColor.lightGray.cgColor
+        //cell.layer.borderWidth = 0.5
         let label = cell.viewWithTag(1) as! UILabel
-        label.text = activeWallets[indexPath.section]
+        label.text = activeWallets[indexPath.row]
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        unloadWallet(wallet: activeWallets[indexPath.section], index: indexPath.section)
+        unloadWallet(wallet: activeWallets[indexPath.row], index: indexPath.row)
     }
     
     private func unloadWallet(wallet: String, index: Int) {
         connectingView.addConnectingView(vc: self, description: "unloading wallet...")
-        // "\"\(wallet)\""
-        Reducer.sharedInstance.makeCommand(command: .unloadwallet) { [weak self] (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .unloadwallet) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let _ = response else {

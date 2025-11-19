@@ -66,7 +66,7 @@ class URHelper {
         case _ where lowercased.hasPrefix("ur:crypto-seed"):
             guard let words = cryptoSeedToMnemonic(urString) else { return (nil, "Error deriving descriptors from cytpo-seed.") }
             
-            let (descriptors, errMess) = Keys.descriptorsFromSigner(words)
+            let (descriptors, errMess) = Keys.descriptorsFromSigner(signer: words, passphrase: nil)
             return (descriptors, errMess)
         
         default:

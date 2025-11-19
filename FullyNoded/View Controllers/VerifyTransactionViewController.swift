@@ -10,15 +10,15 @@ import UIKit
 import LibWally
 //import CoreNFC
 
-class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate/*, NFCNDEFReaderSessionDelegate*/ {
+class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate {
     
-    var isChannelFunding = false
-    var voutChannelFunding:Int?
+    //var isChannelFunding = false
+    //var voutChannelFunding:Int?
     var smartFee = Double()
     var txSize = Int()
     var rejectionMessage = ""
     var txValid: Bool?
-    var memo = ""
+    //var memo = ""
     var txFee = Double()
     var fxRate: Double?
     var txid = ""
@@ -42,8 +42,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var signedTxInputs = NSArray()
     var alreadyBroadcast = false
     var confs = 0
-    var labelText = "no label added"
-    var memoText = "no memo added"
+    var labelText = "No label added."
+    //var memoText = "no memo added"
     var id: UUID!
     var hasSigned = false
     var isSigning = false
@@ -77,6 +77,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         verifyTable.delegate = self
         verifyTable.dataSource = self
+        verifyTable.layer.cornerRadius = 8
+        verifyTable.clipsToBounds = true
         
         func loadNow() {
             activeWallet { [weak self] w in
@@ -99,7 +101,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             } else {
                 promptToAddTx()
             }
-            self.voutChannelFunding = 1
         }
                 
         loadNow()
@@ -113,6 +114,58 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         exporting = false
     }
     
+    @IBAction func showRawDataAction(_ sender: Any) {
+        if signedRawTx != "" {
+            spinner.addConnectingView(vc: self, description: "Decoding raw transaction...")
+            
+            let p: Decode_Raw_Tx = .init(["hexstring": signedRawTx])
+            
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .decoderawtransaction(param: p)) { [weak self] (response, errorDesc) in
+                guard let self = self else { return }
+                
+                spinner.removeConnectingView()
+                
+                guard let response = response as? [String: Any] else {
+                    showAlert(vc: self, title: "", message: errorDesc ?? "No response from decoderawtransaction.")
+                    return
+                }
+                
+                showModal(data: response, title: "decoderawtransaction")
+            }
+        } else if unsignedPsbt != "" {
+            spinner.addConnectingView(vc: self, description: "Decoding psbt...")
+            
+            let p: Decode_Psbt = Decode_Psbt(["psbt": unsignedPsbt])
+            
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .decodepsbt(param: p)) { [weak self] (response, errorDesc) in
+                guard let self = self else { return }
+                
+                spinner.removeConnectingView()
+                
+                guard let response = response as? [String: Any] else {
+                    showAlert(vc: self, title: "", message: "No response from decodepsbt.")
+                    return
+                }
+                
+                showModal(data: response, title: "decodepsbt")
+            }
+        } else {
+            showAlert(vc: self, title: "", message: "No transaction to decode.")
+        }
+    }
+    
+    private func showModal(data: [String: Any], title: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let modalVC = TextModalViewController(data: data, viewTitle: title)
+            let nav = UINavigationController(rootViewController: modalVC)
+            nav.modalPresentationStyle = .fullScreen
+            nav.modalTransitionStyle = .coverVertical
+            present(nav, animated: true)
+        }
+    }
+    
     private func reset() {
         self.unsignedPsbt = ""
         self.signedRawTx = ""
@@ -120,7 +173,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         //self.voutChannelFunding = nil
         self.rejectionMessage = ""
         self.txValid = nil
-        self.memo = ""
+        //self.memo = ""
         self.txid = ""
         self.outputsString = ""
         self.inputArray.removeAll()
@@ -136,8 +189,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         self.signedTxInputs = NSArray()
         self.confs = 0
         self.alreadyBroadcast = false
-        self.labelText = "no label added"
-        self.memoText = "no memo added"
+        self.labelText = "No label added."
+        //self.memoText = "no memo added"
         self.hasSigned = false
         self.isSigning = false
         self.bitcoinCoreWallets.removeAll()
@@ -174,7 +227,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
     
         let param: Wallet_Process_PSBT = .init(["psbt": psbt, "sign": false, "sighashtype": "ALL"])
-        Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt(param: param)) { [weak self] (object, errorDescription) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletprocesspsbt(param: param)) { [weak self] (object, errorDescription) in
             guard let self = self else { return }
             
             guard let dict = object as? NSDictionary, let processedPsbt = dict["psbt"] as? String else {
@@ -200,7 +253,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         guard let hex = Keys.finalize(psbt) else {
             // Libwally used to fail for multisig psbt's so falling back to core finalization.
             let param:Finalize_Psbt = .init(["psbt": psbt])
-            Reducer.sharedInstance.makeCommand(command: .finalizepsbt(param)) { [weak self] (object, errorDescription) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .finalizepsbt(param)) { [weak self] (object, errorDescription) in
                 guard let self = self else { return }
                 
                 guard let result = object as? NSDictionary, let complete = result["complete"] as? Bool else {
@@ -544,13 +597,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         isSigning = false
         
         if self.signedRawTx != "" {
-            if !isChannelFunding {
-                broadcast()
-            } else {
-                showAlert(vc: self, title: "", message: "Lightning channel funding wip.")
-                //promptToCompleteChannelFunding()
-            }
-            
+            broadcast()
         } else {
             showAlert(vc: self, title: "", message: "Transaction not fully signed, you can export it to another signer or sign it if the sign button is enabled.")
         }
@@ -646,7 +693,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         "timeout": 600
                     ]
                 )
-                Reducer.sharedInstance.makeCommand(command: .walletpassphrase(param: param)) { [weak self] (response, errorMessage) in
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletpassphrase(param: param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     self.spinner.removeConnectingView()
@@ -701,60 +748,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
     }
     
-//    private func fundChannelComplete() {
-//        let chanId = UserDefaults.standard.object(forKey: "channelId") as? String ?? ""
-//        if let psbt = self.processedPsbt, psbt != "" {
-//            Lightning.fundchannelcomplete(channelId: chanId, psbt: psbt) { [weak self] (result, errorMessage) in
-//                guard let self = self else { return }
-//
-//                self.spinner.removeConnectingView()
-//
-//                guard let result = result, let success = result["success"] as? Bool, success else {
-//                    showAlert(vc: self, title: "Error", message: errorMessage ?? "Unknown error.")
-//                    return
-//                }
-//
-//                self.disableSendButton()
-//                self.disableSignButton()
-//
-//                UserDefaults.standard.removeObject(forKey: "scriptPubKey")
-//                UserDefaults.standard.removeObject(forKey: "address")
-//                UserDefaults.standard.removeObject(forKey: "amount")
-//                UserDefaults.standard.removeObject(forKey: "channelId")
-//
-//                showAlert(vc: self, title: "Success ⚡️", message: "Lightning channel funding complete.")
-//            }
-//        }
-//    }
-    
-//    private func promptToCompleteChannelFunding() {
-//        DispatchQueue.main.async { [weak self] in
-//            guard let self = self else { return }
-//
-//            let alert = UIAlertController(title: "Complete ⚡️ channel funding?",
-//                                          message: "This will broadcast the transaction and is irreversible!",
-//                                          preferredStyle: .alert)
-//
-//            alert.addAction(UIAlertAction(title: "Broadcast now", style: .default, handler: { [weak self] action in
-//                guard let self = self else { return }
-//
-//                self.spinner.addConnectingView(vc: self, description: "")
-//                self.fundChannelComplete()
-//            }))
-//
-//            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-//            alert.popoverPresentationController?.sourceView = self.view
-//            self.present(alert, animated: true) {}
-//        }
-//    }
-    
     private func saveNewTx(_ txid: String) {
         var transaction = [String:Any]()
         
         self.id = UUID()
         transaction["id"] = self.id
         transaction["label"] = labelText
-        transaction["memo"] = memoText
         transaction["date"] = Date()
         transaction["txid"] = txid
         transaction["fiatCurrency"] = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
@@ -789,7 +788,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 command = psbtBumpFee
             }
             
-            Reducer.sharedInstance.makeCommand(command: command) { [weak self] (response, errorMessage) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: command) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let result = response as? NSDictionary,
@@ -858,13 +857,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         recipients.removeAll()
         signatures.removeAll()
         outputsString = ""
+        let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
         
-        FiatConverter.sharedInstance.getFxRate { [weak self] exchangeRate in
+        FiatConverter.sharedInstance.getFxRate(currency: fiatCurrency) { [weak self] exchangeRate in
             guard let self = self else { return }
             
             self.fxRate = exchangeRate
-            
-            
         }
         
         if self.unsignedPsbt == "" {
@@ -885,7 +883,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     func executeNodeCommand(method: BTC_CLI_COMMAND) {
         
         func send() {
-            Reducer.sharedInstance.makeCommand(command: method) { [weak self] (response, errorMessage) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
                 guard let _ = response as? String else {
@@ -906,7 +904,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         func decodePsbt() {
-            Reducer.sharedInstance.makeCommand(command: method) { [weak self] (object, errorDesc) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (object, errorDesc) in
                 guard let self = self else { return }
                 
                 guard let dict = object as? NSDictionary else {
@@ -928,15 +926,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                             } else if let _ = inputDict["final_scriptwitness"] as? [String] {
                                 isSigned = true
                             }
-                            
-                            
                         }
                         
                         let inputDict:[String:Any] = [
                             "index": i + 1,
-                            "amount": "unknown",
-                            "address": "unknown",
-                            "lifehash": UIImage(),
+                            "amount": "Unknown.",
+                            "address": "Unknown.",
                             "isOurs": false,// Hardcode at this stage and update before displaying
                             "isDust": true,
                             "isSigned": isSigned
@@ -963,7 +958,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         func decodeTx() {
-            Reducer.sharedInstance.makeCommand(command: method) { [weak self] (object, errorDesc) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (object, errorDesc) in
                 guard let self = self else { return }
                 
                 guard let dict = object as? NSDictionary else {
@@ -986,9 +981,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     for (i, _) in inputs.enumerated() {
                         let inputDict:[String:Any] = [
                             "index": i + 1,
-                            "amount": "unknown",
-                            "address": "unknown",
-                            "lifehash": UIImage(),
+                            "amount": "Unknown amount.",
+                            "address": "Unknown address.",
                             "isOurs": false,// Hardcode at this stage and update before displaying
                             "isDust": true,
                             "isSigned": false
@@ -1132,23 +1126,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         amountString += " btc / \(fiatAmount(btc: amount))"
                     }
                                         
-//                    if let clightningFundingSPK = UserDefaults.standard.object(forKey: "scriptPubKey") as? String {
-//                        if let hex = scriptpubkey["hex"] as? String {
-//                            if hex == clightningFundingSPK {
-//                                if let clightningFundingAddr = UserDefaults.standard.object(forKey: "address") as? String {
-//                                    for address in addresses {
-//                                        if (address as? String) == clightningFundingAddr {
-//                                            self.isChannelFunding = true
-//                                            if let vout = output["n"] as? Int {
-//                                                self.voutChannelFunding = vout
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-                                        
                     let outputDict:[String:Any] = [
                         "index": number,
                         "amount": amountString,
@@ -1157,7 +1134,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         "isOursBitcoind": false,// Hardcode at this stage and update before displaying
                         "isOursFullyNoded": false,
                         "walletLabel": "",
-                        "lifehash": LifeHash.image(addressString) ?? UIImage(),
                         "signable": false,
                         "signerLabel": "",
                         "isDust": amount < 0.00020000
@@ -1203,7 +1179,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                                 
                                 self.inputTableArray[index]["amount"] = amountString
                                 self.inputTableArray[index]["address"] = addressString
-                                self.inputTableArray[index]["lifehash"] = LifeHash.image(addressString) ?? UIImage()
                                 self.inputTableArray[index]["isDust"] = amount < 0.00020000
                             }
                         }
@@ -1239,9 +1214,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         if index < inputTableArray.count {
             self.updateLabel("verifying input #\(self.index + 1) out of \(self.inputTableArray.count)")
             
-            if let address = inputTableArray[index]["address"] as? String, address != "unknown", address != "" {
+            if let address = inputTableArray[index]["address"] as? String, address != "Unknown address.", address != "" {
                 let param:Get_Address_Info = .init(["address":address])
-                Reducer.sharedInstance.makeCommand(command: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     guard errorMessage == nil else {
@@ -1347,7 +1322,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             if let address = outputArray[index]["address"] as? String, address != "" {
                 let param:Get_Address_Info = .init(["address":address])
-                Reducer.sharedInstance.makeCommand(command: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     if let dict = response as? NSDictionary {
@@ -1421,7 +1396,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             if !alreadyBroadcast {
                 updateLabel("verifying mempool accept...")
                 let param:Test_Mempool_Accept = .init(["rawtxs":[signedRawTx]])
-                Reducer.sharedInstance.makeCommand(command: .testmempoolaccept(param)) { [weak self] (response, errorMessage) in
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .testmempoolaccept(param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
                     if let errorMessage = errorMessage {
@@ -1457,7 +1432,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         updateLabel("estimating smart fee...")
         let param:Estimate_Smart_Fee_Param = .init(["conf_target": target])
         
-        Reducer.sharedInstance.makeCommand(command: .estimatesmartfee(param: param)) { [weak self] (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .estimatesmartfee(param: param)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let dict = response as? NSDictionary, let feeRate = dict["feerate"] as? Double else {
@@ -1494,7 +1469,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     func parsePrevTx(method: BTC_CLI_COMMAND, vout: Int, txid: String) {
         func decodeRaw() {
             updateLabel("decoding inputs previous output...")
-            Reducer.sharedInstance.makeCommand(command: method) { [weak self] (object, errorDescription) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (object, errorDescription) in
                 guard let self = self else { return }
                 
                 guard let txDict = object as? NSDictionary, let outputs = txDict["vout"] as? NSArray else {
@@ -1538,7 +1513,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         func getRawTx() {
             updateLabel("fetching inputs previous output...")
-            Reducer.sharedInstance.makeCommand(command: method) { [weak self] (response, errorMessage) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 guard let response = response as? [String:Any] else {
                     self.parsePrevTxOutput(outputs: [], vout: 0)
@@ -1555,7 +1530,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     }
                     
                     let param_get_tx:Get_Tx = .init(["txid":txid, "verbose": true])
-                    Reducer.sharedInstance.makeCommand(command: .gettransaction(param_get_tx)) { (response, errorMessage) in
+                    MakeRPCCall.sharedInstance.executeRPCCommand(method: .gettransaction(param_get_tx)) { (response, errorMessage) in
                         guard let dict = response as? NSDictionary, let hexToParse = dict["hex"] as? String else {
 //                            guard let useEsplora = UserDefaults.standard.object(forKey: "useEsplora") as? Bool, useEsplora else {
 //                                if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraAlert") == nil {
@@ -1628,16 +1603,15 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         let label = confsCell.viewWithTag(1) as! UILabel
         let imageView = confsCell.viewWithTag(2) as! UIImageView
-        let background = confsCell.viewWithTag(3)!
-        background.layer.cornerRadius = 5
-        imageView.tintColor = .white
+        imageView.tintColor = .tintColor
         label.text = "\(confs) confirmations"
+        label.textColor = .label
         
         if confs > 0 {
-            background.backgroundColor = .systemGreen
+            imageView.tintColor = .systemGreen
             imageView.image = UIImage(systemName: "checkmark.seal")
         } else {
-            background.backgroundColor = .systemRed
+            imageView.tintColor = .systemRed
             imageView.image = UIImage(systemName: "exclamationmark.triangle")
         }
         return confsCell
@@ -1649,18 +1623,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         let label = mempoolAcceptCell.viewWithTag(1) as! UILabel
         let imageView = mempoolAcceptCell.viewWithTag(2) as! UIImageView
-        let background = mempoolAcceptCell.viewWithTag(3)!
-        background.layer.cornerRadius = 5
-        imageView.tintColor = .white
+        imageView.tintColor = .tintColor
         
         if txValid != nil {
             if txValid! {
                 label.text = "Mempool acception verified ✓"
-                background.backgroundColor = .systemGreen
+                imageView.tintColor = .systemGreen
                 imageView.image = UIImage(systemName: "checkmark.seal")
             } else {
-                label.text = "Transaction invalid! Reason: \(rejectionMessage)"
-                background.backgroundColor = .systemRed
+                label.text = "Transaction invalid! Reason: \(rejectionMessage)."
+                imageView.tintColor = .systemRed
                 imageView.image = UIImage(systemName: "exclamationmark.triangle")
             }
         } else {
@@ -1680,12 +1652,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 }
             }
             
-            background.backgroundColor = .darkGray
+            imageView.tintColor = .systemOrange
             imageView.image = UIImage(systemName: "exclamationmark.triangle")
         }
         
         mempoolAcceptCell.selectionStyle = .none
-        label.textColor = .lightGray
+        label.textColor = .label
         label.adjustsFontSizeToFitWidth = true
         return mempoolAcceptCell
     }
@@ -1696,20 +1668,17 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         let txidLabel = txidCell.viewWithTag(1) as! UILabel
         let imageView = txidCell.viewWithTag(2) as! UIImageView
-        let background = txidCell.viewWithTag(3)!
-        background.layer.cornerRadius = 5
-        background.backgroundColor = .systemBlue
-        imageView.tintColor = .white
+        imageView.tintColor = .tintColor
         imageView.image = UIImage(systemName: "rectangle.and.paperclip")
         txidLabel.text = txid
         txidCell.selectionStyle = .none
-        txidLabel.textColor = .lightGray
+        txidLabel.textColor = .label
         txidLabel.adjustsFontSizeToFitWidth = true
         return txidCell
     }
     
     private func inputCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let inputCell = verifyTable.dequeueReusableCell(withIdentifier: "inputOutputCell", for: indexPath)
+        let inputCell = verifyTable.dequeueReusableCell(withIdentifier: "inputCell", for: indexPath)
         configureCell(inputCell)
         
         let inputIndexLabel = inputCell.viewWithTag(1) as! UILabel
@@ -1720,49 +1689,48 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let inputTypeLabel = inputCell.viewWithTag(6) as! UILabel
         let utxoLabel = inputCell.viewWithTag(7) as! UILabel
         let isChangeImageView = inputCell.viewWithTag(8) as! UIImageView
-        let lifehashImageView = inputCell.viewWithTag(9) as! UIImageView
         let isDustImageView = inputCell.viewWithTag(10) as! UIImageView
-        let backgroundView1 = inputCell.viewWithTag(11)!
-        let backgroundView2 = inputCell.viewWithTag(12)!
-        let backgroundView3 = inputCell.viewWithTag(13)!
+        //let backgroundView1 = inputCell.viewWithTag(11)!
+        //let backgroundView2 = inputCell.viewWithTag(12)!
+        //let backgroundView3 = inputCell.viewWithTag(13)!
         let signaturesLabel = inputCell.viewWithTag(14) as! UILabel
         let descTextView = inputCell.viewWithTag(15) as! UITextView
-        let sigsBackgroundView = inputCell.viewWithTag(16)!
+        //let sigsBackgroundView = inputCell.viewWithTag(16)!
         let sigsImageView = inputCell.viewWithTag(17) as! UIImageView
         let copyAddressButton = inputCell.viewWithTag(18) as! UIButton
         let copyDescButton = inputCell.viewWithTag(19) as! UIButton
         let addressQrButton = inputCell.viewWithTag(20) as! UIButton
                 
-        backgroundView1.layer.cornerRadius = 5
-        backgroundView2.layer.cornerRadius = 5
-        backgroundView3.layer.cornerRadius = 5
-        sigsBackgroundView.layer.cornerRadius = 5
-        isDustImageView.tintColor = .white
-        isChangeImageView.tintColor = .white
-        inputIsOursImage.tintColor = .white
-        sigsImageView.tintColor = .white
+//        backgroundView1.layer.cornerRadius = 5
+//        backgroundView2.layer.cornerRadius = 5
+//        backgroundView3.layer.cornerRadius = 5
+//        sigsBackgroundView.layer.cornerRadius = 5
+        isDustImageView.tintColor = .tintColor
+        isChangeImageView.tintColor = .tintColor
+        inputIsOursImage.tintColor = .tintColor
+        sigsImageView.tintColor = .tintColor
         descTextView.clipsToBounds = true
         descTextView.layer.cornerRadius = 8
         descTextView.layer.borderWidth = 0.5
         descTextView.layer.borderColor = UIColor.darkGray.cgColor
-        lifehashImageView.layer.magnificationFilter = .nearest
+        utxoLabel.textColor = .label
+        descTextView.textColor = .label
+        inputAddressLabel.textColor = .label
         
         if indexPath.row < inputTableArray.count {
             let input = inputTableArray[indexPath.row]
             
             let isOurs = input["isOurs"] as? Bool ?? false
             let isChange = input["isChange"] as? Bool ?? false
-            let label = input["label"] as? String ?? "no label"
+            let label = input["label"] as? String ?? "No label."
             let isDust = input["isDust"] as? Bool ?? false
-            let signatureStatus = input["signatures"] as? String ?? "no signature data"
-            let desc = input["desc"] as? String ?? "no descriptor"
-            let lifehash = input["lifehash"] as? UIImage ?? UIImage()
+            let signatureStatus = input["signatures"] as? String ?? "No signature data."
+            let desc = input["desc"] as? String ?? "No descriptor."
             let inputAddress = input["address"] as! String
             let hasSigned = input["isSigned"] as! Bool
             
             utxoLabel.text = label
             descTextView.text = desc
-            lifehashImageView.image = lifehash
             sigsImageView.image = UIImage(systemName: "signature")
             
             inputIndexLabel.text = "Input #\(input["index"] as! Int)"
@@ -1780,54 +1748,65 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             signaturesLabel.text = signatureStatus
             
             if signatureStatus == "Signatures complete" || hasSigned {
-                sigsBackgroundView.backgroundColor = .systemGreen
-                signaturesLabel.text = "Signatures complete"
+                //sigsBackgroundView.backgroundColor = .systemGreen
+                signaturesLabel.text = "Signatures complete."
+                sigsImageView.tintColor = .green
             } else if self.signatures.count > 0 {
-                sigsBackgroundView.backgroundColor = .systemOrange
-                signaturesLabel.text = "Signed"
+                //sigsBackgroundView.backgroundColor = .systemOrange
+                signaturesLabel.text = "Signed."
+                sigsImageView.tintColor = .systemGreen
             } else {
-                sigsBackgroundView.backgroundColor = .systemRed
+                //sigsBackgroundView.backgroundColor = .systemRed
+                sigsImageView.tintColor = .systemOrange
             }
             
             if isDust {
-                isDustImageView.image = UIImage(systemName: "exclamationmark.triangle")
-                backgroundView3.backgroundColor = .systemRed
+                isDustImageView.image = UIImage(systemName: "exclamationmark.circle")
+                isDustImageView.tintColor = .systemRed
+                //backgroundView3.backgroundColor = .systemRed
             } else {
-                isDustImageView.image = UIImage(systemName: "checkmark.circle.fill")
-                backgroundView3.backgroundColor = .systemGreen
+                isDustImageView.image = UIImage(systemName: "checkmark.circle")
+                isDustImageView.tintColor = .tintColor
+                //backgroundView3.backgroundColor = .systemGreen
             }
             
             if isChange {
                 isChangeImageView.image = UIImage(systemName: "arrow.triangle.2.circlepath")
-                backgroundView2.backgroundColor = .systemPurple
+               // backgroundView2.backgroundColor = .systemPurple
+                isChangeImageView.tintColor = .systemPurple
                 inputTypeLabel.text = "Change input"
             } else {
                 isChangeImageView.image = UIImage(systemName: "arrow.down.left")
-                backgroundView2.backgroundColor = .systemBlue
+                //backgroundView2.backgroundColor = .systemBlue
+                isChangeImageView.tintColor = .tintColor
                 inputTypeLabel.text = "Receive input"
             }
             
             if isOurs {
-                backgroundView1.backgroundColor = .systemGreen
-                inputIsOursImage.image = UIImage(systemName: "checkmark.circle.fill")
+                //backgroundView1.backgroundColor = .systemGreen
+                inputIsOursImage.image = UIImage(systemName: "checkmark.circle")
+                inputIsOursImage.tintColor = .tintColor
                 
                 if let walletLabel = wallet?.label {
-                    inputIsOursLabel.text = "Owned by \(walletLabel)"
+                    inputIsOursLabel.text = "Owned by \(walletLabel)."
                 } else {
-                    inputIsOursLabel.text = "Owned by the Active Wallet"
+                    inputIsOursLabel.text = "Owned by the Active Wallet."
                 }
                 
             } else {
-                inputTypeLabel.text = "Unknown type"
-                backgroundView2.backgroundColor = .systemGray
-                backgroundView1.backgroundColor = .systemGray
-                inputIsOursImage.image = UIImage(systemName: "questionmark.diamond.fill")
-                isChangeImageView.image = UIImage(systemName: "questionmark.diamond.fill")
+                inputTypeLabel.text = "Unknown type."
+                //backgroundView2.backgroundColor = .systemGray
+                //backgroundView1.backgroundColor = .systemGray
+                inputIsOursImage.image = UIImage(systemName: "questionmark.circle")
+                isChangeImageView.image = UIImage(systemName: "questionmark.circle")
+                inputIsOursImage.tintColor = .systemRed
+                isChangeImageView.tintColor = .systemRed
                 
                 if let walletLabel = wallet?.label {
-                    inputIsOursLabel.text = "Not owned by \(walletLabel)"
+                    inputIsOursLabel.text = "Not owned by \(walletLabel)."
+                    
                 } else {
-                    inputIsOursLabel.text = "Not owned by the Active Wallet"
+                    inputIsOursLabel.text = "Not owned by the Active Wallet."
                 }
             }
         }
@@ -1843,18 +1822,17 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let outputAmountLabel = outputCell.viewWithTag(2) as! UILabel
         let outputAddressLabel = outputCell.viewWithTag(3) as! UILabel
         let outputIsOursImage = outputCell.viewWithTag(4) as! UIImageView
-        let lifehashImageView = outputCell.viewWithTag(5) as! UIImageView
         let verifiedByFnImageView = outputCell.viewWithTag(6) as! UIImageView
         let labelLabel = outputCell.viewWithTag(7) as! UILabel
         let isChangeImageView = outputCell.viewWithTag(8) as! UIImageView
         let verifiedByFnLabel = outputCell.viewWithTag(9) as! UILabel
         let isDustImageView = outputCell.viewWithTag(10) as! UIImageView
-        let backgroundView1 = outputCell.viewWithTag(11)!
-        let backgroundView2 = outputCell.viewWithTag(12)!
-        let backgroundView3 = outputCell.viewWithTag(13)!
-        let verifiedByFnBackgroundView = outputCell.viewWithTag(14)!
+//        let backgroundView1 = outputCell.viewWithTag(11)!
+//        let backgroundView2 = outputCell.viewWithTag(12)!
+//        let backgroundView3 = outputCell.viewWithTag(13)!
+        //let verifiedByFnBackgroundView = outputCell.viewWithTag(14)!
         let descTextView = outputCell.viewWithTag(15) as! UITextView
-        let signableBackgroundView = outputCell.viewWithTag(16)!
+        //let signableBackgroundView = outputCell.viewWithTag(16)!
         let signableImageView = outputCell.viewWithTag(17) as! UIImageView
         let signerLabel = outputCell.viewWithTag(18) as! UILabel
         let verifiedByNodeLabel = outputCell.viewWithTag(19) as! UILabel
@@ -1864,21 +1842,22 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let verifyOwnerButton = outputCell.viewWithTag(23) as! UIButton
         let addressQrButton = outputCell.viewWithTag(24) as! UIButton
                 
-        signableBackgroundView.layer.cornerRadius = 5
-        verifiedByFnBackgroundView.layer.cornerRadius = 5
-        backgroundView1.layer.cornerRadius = 5
-        backgroundView2.layer.cornerRadius = 5
-        backgroundView3.layer.cornerRadius = 5
+//        signableBackgroundView.layer.cornerRadius = 5
+//        verifiedByFnBackgroundView.layer.cornerRadius = 5
+//        backgroundView1.layer.cornerRadius = 5
+//        backgroundView2.layer.cornerRadius = 5
+//        backgroundView3.layer.cornerRadius = 5
         descTextView.layer.cornerRadius = 8
         descTextView.layer.borderWidth = 0.5
         descTextView.layer.borderColor = UIColor.darkGray.cgColor
-        lifehashImageView.layer.magnificationFilter = .nearest
         
-        signableImageView.tintColor = .white
-        isDustImageView.tintColor = .white
-        isChangeImageView.tintColor = .white
-        outputIsOursImage.tintColor = .white
-        verifiedByFnImageView.tintColor = .white
+        signableImageView.tintColor = .tintColor
+        isDustImageView.tintColor = .tintColor
+        isChangeImageView.tintColor = .tintColor
+        outputIsOursImage.tintColor = .tintColor
+        verifiedByFnImageView.tintColor = .tintColor
+        
+        outputAddressLabel.textColor = .label
                         
         if indexPath.row < outputArray.count {
             let output = outputArray[indexPath.row]
@@ -1893,12 +1872,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             let label = output["label"] as? String ?? "no label"
             let isDust = output["isDust"] as? Bool ?? false
             let desc = output["desc"] as? String ?? "no descriptor"
-            let lifehash = output["lifehash"] as? UIImage ?? UIImage()
             
             labelLabel.text = label
             descTextView.text = desc
-            lifehashImageView.layer.magnificationFilter = .nearest
-            lifehashImageView.image = lifehash
             
             outputIndexLabel.text = "Output #\(output["index"] as! Int)"
             outputAmountLabel.text = "\((output["amount"] as! String))"
@@ -1915,42 +1891,48 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             addressQrButton.addTarget(self, action: #selector(showAddressQr(_:)), for: .touchUpInside)
             
             if isOursFullyNoded {
-                verifiedByFnLabel.text = "Owned by \(walletLabel)"
-                verifiedByFnImageView.image = UIImage(systemName: "checkmark.seal.fill")
-                verifiedByFnBackgroundView.backgroundColor = .systemGreen
+                verifiedByFnLabel.text = "Owned by \(walletLabel)."
+                verifiedByFnImageView.image = UIImage(systemName: "checkmark.circle")
+                verifiedByFnImageView.tintColor = .systemGreen
+                //verifiedByFnBackgroundView.backgroundColor = .systemGreen
             } else {
                 verifyOwnerButton.alpha = 1
-                verifiedByFnLabel.text = "Not verified by Fully Noded"
-                verifiedByFnImageView.image = UIImage(systemName: "questionmark.diamond.fill")
-                verifiedByFnBackgroundView.backgroundColor = .systemGray
+                verifiedByFnLabel.text = "Not verified by Fully Noded."
+                verifiedByFnImageView.image = UIImage(systemName: "questionmark.circle")
+                verifiedByFnImageView.tintColor = .systemRed
+                //verifiedByFnBackgroundView.backgroundColor = .systemGray
             }
             
             if signable {
-                signableImageView.image = UIImage(systemName: "checkmark.square.fill")
-                signableBackgroundView.backgroundColor = .systemGreen
+                signableImageView.image = UIImage(systemName: "signature")
+                //signableBackgroundView.backgroundColor = .systemGreen
                 signerLabel.text = "Signable by \(signer)"
+                signableImageView.tintColor = .systemGreen
             } else {
-                signableImageView.image = UIImage(systemName: "questionmark.diamond.fill")
-                signableBackgroundView.backgroundColor = .systemRed
-                signerLabel.text = "Unable to determine"
+                signableImageView.image = UIImage(systemName: "signature")
+                //signableBackgroundView.backgroundColor = .systemRed
+                signerLabel.text = "Unable to determine."
+                signableImageView.tintColor = .systemOrange
             }
             
             if isDust {
-                isDustImageView.image = UIImage(systemName: "exclamationmark.triangle")
-                backgroundView3.backgroundColor = .systemRed
+                isDustImageView.image = UIImage(systemName: "exclamationmark.circle")
+                isDustImageView.tintColor = .systemRed
+                //backgroundView3.backgroundColor = .systemRed
             } else {
-                isDustImageView.image = UIImage(systemName: "checkmark.circle.fill")
-                backgroundView3.backgroundColor = .systemGreen
+                isDustImageView.image = UIImage(systemName: "checkmark.circle")
+                isDustImageView.tintColor = .tintColor
+                //backgroundView3.backgroundColor = .systemGreen
             }
             
             if isChange {
                 isChangeImageView.image = UIImage(systemName: "arrow.triangle.2.circlepath")
-                backgroundView2.backgroundColor = .systemPurple
-                addressTypeLabel.text = "Change address"
+                isChangeImageView.tintColor = .systemPurple
+                addressTypeLabel.text = "Change address."
             } else {
                 isChangeImageView.image = UIImage(systemName: "arrow.up.right")
-                backgroundView2.backgroundColor = .systemBlue
-                addressTypeLabel.text = "Receive address"
+                isChangeImageView.tintColor = .tintColor
+                addressTypeLabel.text = "Receive address."
             }
             
             var activeWalletLabel = "Bitcoin Core"
@@ -1961,28 +1943,28 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             if isOursBitcoind {
                 verifyOwnerButton.alpha = 0
-                verifiedByNodeLabel.text = "Owned by Bitcoin Core"
-                backgroundView1.backgroundColor = .systemGreen
-                outputIsOursImage.image = UIImage(systemName: "checkmark.circle.fill")
+                verifiedByNodeLabel.text = "Owned by Bitcoin Core."
+                outputIsOursImage.tintColor = .systemGreen
+                outputIsOursImage.image = UIImage(systemName: "checkmark.circle")
                 
                 if self.wallet != nil {
                     let ds = Descriptor(self.wallet!.receiveDescriptor)
                     if ds.isHot {
-                        signableImageView.image = UIImage(systemName: "checkmark.square.fill")
-                        signableBackgroundView.backgroundColor = .systemGreen
-                        signerLabel.text = "Bitcoin Core hot wallet"
+                        signableImageView.image = UIImage(systemName: "checkmark.square")
+                        signableImageView.tintColor = .systemGreen
+                        signerLabel.text = "Bitcoin Core hot wallet."
                     }
                 }
                 
             } else {
                 verifyOwnerButton.alpha = 1
-                verifiedByNodeLabel.text = "Not owned by \(activeWalletLabel)"
-                backgroundView1.backgroundColor = .systemGray
-                outputIsOursImage.image = UIImage(systemName: "questionmark.diamond.fill")
+                verifiedByNodeLabel.text = "Not owned by \(activeWalletLabel)."
+                outputIsOursImage.tintColor = .systemOrange
+                outputIsOursImage.image = UIImage(systemName: "questionmark.circle")
                 
-                isChangeImageView.image = UIImage(systemName: "questionmark.diamond.fill")
-                backgroundView2.backgroundColor = .systemGray
-                addressTypeLabel.text = "Address type unknown"
+                isChangeImageView.image = UIImage(systemName: "questionmark.circle")
+                isChangeImageView.tintColor = .systemOrange
+                addressTypeLabel.text = "Address type unknown."
             }
         }
         
@@ -1995,30 +1977,29 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         configureCell(miningFeeCell)
         
         let miningLabel = miningFeeCell.viewWithTag(1) as! UILabel
-        miningLabel.textColor = .lightGray
+        miningLabel.textColor = .label
         
         let imageView = miningFeeCell.viewWithTag(2) as! UIImageView
         imageView.tintColor = .white
         
-        let background = miningFeeCell.viewWithTag(3)!
-        background.layer.cornerRadius = 5
-        
         if inputTotal > 0.0 {
             if txFee < 0.0 {
-                background.backgroundColor = .systemGray
+                imageView.tintColor = .systemOrange
                 imageView.image = UIImage(systemName: "questionmark.circle")
                 miningLabel.text = "Can not determine fee for inputs which don't belong to us."
+                
             } else if txFee < 0.00050000 {
-                background.backgroundColor = .systemGreen
+                imageView.tintColor = .systemGreen
                 imageView.image = UIImage(systemName: "checkmark.circle")
                 miningLabel.text = miningFee + " / \(satsPerByte()) sats per byte"
+                
             } else {
-                background.backgroundColor = .systemRed
+                imageView.tintColor = .systemRed
                 imageView.image = UIImage(systemName: "exclamationmark.triangle")
                 miningLabel.text = miningFee + " / \(satsPerByte()) sats per byte"
             }
         } else {
-            background.backgroundColor = .systemOrange
+            imageView.tintColor = .systemOrange
             imageView.image = UIImage(systemName: "questionmark.circle")
             miningLabel.text = miningFee
         }
@@ -2032,13 +2013,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         configureCell(etaCell)
         
         let etaLabel = etaCell.viewWithTag(1) as! UILabel
-        etaLabel.textColor = .lightGray
+        etaLabel.textColor = .label
         
         let imageView = etaCell.viewWithTag(2) as! UIImageView
         imageView.tintColor = .white
         
-        let background = etaCell.viewWithTag(3)!
-        background.layer.cornerRadius = 5
         var feeWarning = ""
         
         if txFee > 0.0 {
@@ -2054,23 +2033,23 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
             
             if percentage >= 90 && percentage <= 110 {
-                background.backgroundColor = .systemGreen
+                imageView.tintColor = .systemGreen
                 imageView.image = UIImage(systemName: "checkmark.circle")
-                etaLabel.text = "Fee is on target for a confirmation in approximately \(eta()) or \(feeTarget()) blocks"
+                etaLabel.text = "Fee is on target for a confirmation in approximately \(eta()) or \(feeTarget()) blocks."
             } else {
                 if percentage <= 90 {
-                    background.backgroundColor = .systemRed
+                    imageView.tintColor = .systemRed
                     imageView.image = UIImage(systemName: "tortoise")
                     etaLabel.text = feeWarning
                 } else {
-                    background.backgroundColor = .systemRed
+                    imageView.tintColor = .systemRed
                     imageView.image = UIImage(systemName: "hare")
                     etaLabel.text = feeWarning
                 }
             }
         } else {
             imageView.image = UIImage(systemName: "questionmark.circle")
-            background.backgroundColor = .systemOrange
+            imageView.tintColor = .systemOrange
             etaLabel.text = "No fee data."
         }
         
@@ -2085,17 +2064,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         button.addTarget(self, action: #selector(updateLabelMemoAction), for: .touchUpInside)
         //button.showsTouchWhenHighlighted = true
         label.text = labelText
-        return labelCell
-    }
-    
-    private func transactionMemoCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let labelCell = verifyTable.dequeueReusableCell(withIdentifier: "memoLabelCell", for: indexPath)
-        configureCell(labelCell)
-        let label = labelCell.viewWithTag(1) as! UILabel
-        let button = labelCell.viewWithTag(2) as! UIButton
-        button.addTarget(self, action: #selector(updateLabelMemoAction), for: .touchUpInside)
-        //button.showsTouchWhenHighlighted = true
-        label.text = memoText
+        label.textColor = .label
         return labelCell
     }
     
@@ -2134,7 +2103,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             let wallet = walletsToCheck[walletIndex]
             UserDefaults.standard.set(wallet, forKey: "walletName")
             let param:Get_Address_Info = .init(["address":address])
-            Reducer.sharedInstance.makeCommand(command: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
                 guard let self = self else { resetActiveWallet(); return }
                 
                 if let dict = response as? NSDictionary, let solvable = dict["solvable"] as? Bool, solvable {
@@ -2305,7 +2274,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     alreadySaved = true
                     self.id = txStruct.id!
                     self.labelText = txStruct.label
-                    self.memoText = txStruct.memo
+                    //self.memoText = txStruct.memo
                 }
                 
                 if i + 1 == transactions.count && !alreadySaved {
@@ -2376,30 +2345,30 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         return strDate
     }
     
-    private func broadcastPrivately() {
-        spinner.addConnectingView(vc: self, description: "broadcasting...")
-        
-        Broadcaster.sharedInstance.send(rawTx: self.signedRawTx) { [weak self] id in
-            guard let self = self else { return }
-            
-            if id == self.txid {
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                    self.disableSendButton()
-                    self.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "", message: "Transaction sent ✓")
-                }
-            } else {
-                self.showError(error: "Error broadcasting privately, try again and use your node instead. Error: \(id ?? "unknown")")
-            }
-        }
-    }
+//    private func broadcastPrivately() {
+//        spinner.addConnectingView(vc: self, description: "broadcasting...")
+//        
+//        Broadcaster.sharedInstance.send(rawTx: self.signedRawTx) { [weak self] id in
+//            guard let self = self else { return }
+//            
+//            if id == self.txid {
+//                DispatchQueue.main.async {
+//                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+//                    self.disableSendButton()
+//                    self.spinner.removeConnectingView()
+//                    showAlert(vc: self, title: "", message: "Transaction sent ✓")
+//                }
+//            } else {
+//                self.showError(error: "Error broadcasting privately, try again and use your node instead. Error: \(id ?? "unknown")")
+//            }
+//        }
+//    }
     
     private func broadcastWithMyNode() {
         spinner.addConnectingView(vc: self, description: "broadcasting...")
         let paramDict:[String:Any] = ["hexstring":self.signedRawTx]
         let param:Send_Raw_Transaction = .init(paramDict)
-        Reducer.sharedInstance.makeCommand(command: .sendrawtransaction(param)) { [weak self] (response, errorMesage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .sendrawtransaction(param)) { [weak self] (response, errorMesage) in
             guard let self = self else { return }
             
             guard let id = response as? String else {
@@ -2412,8 +2381,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     self.disableSendButton()
                     self.spinner.removeConnectingView()
-                    //showAlert(vc: self, title: "", message: "Transaction sent ✓")
-                    // should pop back to wallet view
+                    
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
                         
@@ -2424,9 +2392,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { [weak self] action in
                             self?.navigationController?.popToRootViewController(animated: true)
                         }))
-//                        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { [weak self] action in
-//                            self?.navigationController?.popToRootViewController(animated: true)
-//                        }))
+
                         alert.popoverPresentationController?.sourceView = self.view
                         self.present(alert, animated: true) {}
                     }
@@ -2472,27 +2438,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             displayAlert(viewController: vc, isError: false, message: "Transaction ID copied to clipboard")
         }
     }
-        
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        if textField.text != "" {
-            memo = textField.text!
-        }
-    }
-    
-//    func readerSession(_ session: NFCNDEFReaderSession, didInvalidateWithError error: any Error) {
-//        print("readerSession error")
-//        print(error.localizedDescription)
-//    }
-//    
-//    func readerSession(_ session: NFCNDEFReaderSession, didDetectNDEFs messages: [NFCNDEFMessage]) {
-//        for message in messages {
-//            for record in message.records {
-//                if let string = String(data: record.payload, encoding: .ascii) {
-//                    print(string)
-//                }
-//            }
-//        }
-//    }
     
     //Need to export either as blinded or plain text.
     private func exportPsbt(blindedpsbt: String?, plainText: String?) {
@@ -2510,27 +2455,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
             
             let alert = UIAlertController(title: tit, message: "Share?", preferredStyle: .alert)
-            
-//            alert.addAction(UIAlertAction(title: "NFC", style: .default, handler: { [weak self] action in
-//                guard let self = self else { return }
-//                
-//                exporting = true
-//                guard NFCNDEFReaderSession.readingAvailable else {
-//                    let alertController = UIAlertController(
-//                        title: "Scanning Not Supported",
-//                        message: "This device doesn't support tag scanning.",
-//                        preferredStyle: .alert
-//                    )
-//                    alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-//                    self.present(alertController, animated: true, completion: nil)
-//                    return
-//                }
-//                
-//                
-//                readerSession = NFCNDEFReaderSession(delegate: self, queue: nil, invalidateAfterFirstRead: false)
-//                readerSession?.alertMessage = "Hold your iPhone near a writable NFC tag to update."
-//                readerSession?.begin()
-//            }))
             
             alert.addAction(UIAlertAction(title: "File", style: .default, handler: { action in
                 self.convertPSBTtoData(string: itemToExport)
@@ -2569,121 +2493,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             self.present(alert, animated: true) {}
         }
     }
-    
-//    // MARK: - NFCNDEFReaderSessionDelegate
-//    func readerSessionDidBecomeActive(_ session: NFCNDEFReaderSession) {
-////        let textPayload = NFCNDEFPayload.wellKnownTypeTextPayload(
-////            string: "Partly signed PSBT",
-////            locale: Locale(identifier: "En")
-////        )
-//        
-//        //NFCNDEFPayload(format: <#T##NFCTypeNameFormat#>, type: <#T##Data#>, identifier: <#T##Data#>, payload: <#T##Data#>)
-//        
-//        guard let data = Data(base64Encoded: unsignedPsbt) else { return }
-//        
-//        let payload = NFCNDEFPayload(format: .nfcWellKnown, type: "psbt".utf8, identifier: "bitcoin.org:psbt".utf8, payload: data, chunkSize: data.count)
-////        let textPayload = NFCNDEFPayload.wellKnownTypeTextPayload(
-////            string: unsignedPsbt,
-////            locale: Locale(identifier: "En")
-////        )
-////        let textPayload = NFCNDEFPayload.wellKnownTypeTextPayload(
-////            string: unsignedPsbt,
-////            locale: Locale(identifier: "En")
-////        )
-//    
-//        
-//        //let dataPayload = NFCNDEFPayload.
-//        if exporting {
-//            //let urlPayload = self.createURLPayload()
-//            
-//            ndefMessage = NFCNDEFMessage(records: [payload])
-//            //session.wr
-//            //print("urlPayload: \(urlPayload.debugDescription)")
-//            os_log("MessageSize=%d", ndefMessage!.length)
-//        }
-//    }
-//    
-//    func createURLPayload() -> NFCNDEFPayload? {
-//        guard let data = Data(base64Encoded: unsignedPsbt) else {
-//            print("data is nil")
-//            return nil
-//        }
-//        
-//        let fileManager = FileManager.default
-//        let fileURL = fileManager.temporaryDirectory.appendingPathComponent("fullynoded.psbt")
-//        try? data.write(to: fileURL)
-//        os_log("url: %@", (fileURL.absoluteString))
-//        
-//        return NFCNDEFPayload.wellKnownTypeURIPayload(url: fileURL)
-//    }
-//    
-//    func tagRemovalDetect(_ tag: NFCNDEFTag) {
-//        // In the tag removal procedure, you connect to the tag and query for
-//        // its availability. You restart RF polling when the tag becomes
-//        // unavailable; otherwise, wait for certain period of time and repeat
-//        // availability checking.
-//        self.readerSession?.connect(to: tag) { (error: Error?) in
-//            if error != nil || !tag.isAvailable {
-//                
-//                os_log("Restart polling")
-//                
-//                self.readerSession?.restartPolling()
-//                return
-//            }
-//            DispatchQueue.global().asyncAfter(deadline: DispatchTime.now() + .milliseconds(500), execute: {
-//                self.tagRemovalDetect(tag)
-//            })
-//        }
-//    }
-//    
-//    func readerSession(_ session: NFCNDEFReaderSession, didDetect tags: [NFCNDEFTag]) {
-//        print("didDetect")
-//        
-//        if tags.count > 1 {
-//            session.alertMessage = "More than 1 tags found. Please present only 1 tag."
-//            self.tagRemovalDetect(tags.first!)
-//            return
-//        }
-//        
-//        // You connect to the desired tag.
-//        let tag = tags.first!
-//        session.connect(to: tag) { (error: Error?) in
-//            if error != nil {
-//                session.restartPolling()
-//                return
-//            }
-//            
-//            // You then query the NDEF status of tag.
-//            tag.queryNDEFStatus() { (status: NFCNDEFStatus, capacity: Int, error: Error?) in
-//                if error != nil {
-//                    session.invalidate(errorMessage: "Fail to determine NDEF status.  Please try again.")
-//                    return
-//                }
-//                
-//                if status == .readOnly {
-//                    session.invalidate(errorMessage: "Tag is not writable.")
-//                } else if status == .readWrite {
-//                    if self.ndefMessage!.length > capacity {
-//                        session.invalidate(errorMessage: "Tag capacity is too small.  Minimum size requirement is \(self.ndefMessage!.length) bytes.")
-//                        return
-//                    }
-//                    
-//                    // When a tag is read-writable and has sufficient capacity,
-//                    // write an NDEF message to it.
-//                    tag.writeNDEF(self.ndefMessage!) { (error: Error?) in
-//                        if error != nil {
-//                            session.invalidate(errorMessage: "Update tag failed. Please try again.")
-//                        } else {
-//                            session.alertMessage = "Update success!"
-//                            session.invalidate()
-//                        }
-//                    }
-//                } else {
-//                    session.invalidate(errorMessage: "Tag is not NDEF formatted.")
-//                }
-//            }
-//        }
-//    }
     
     private func exportAsQR() {
         DispatchQueue.main.async { [weak self] in
@@ -2910,11 +2719,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             if let vc = segue.destination as? TransactionLabelMemoViewController {
                 vc.txid = self.txid
                 vc.labelText = labelText
-                vc.memoText = memoText
+                //vc.memoText = memoText
                 
                 vc.doneBlock = { result in
                     self.labelText = result[0]
-                    self.memoText = result[1]
+                    //self.memoText = result[1]
                     
                     DispatchQueue.main.async {
                         self.verifyTable.reloadSections(IndexSet(arrayLiteral: 0, 1), with: .none)
@@ -2982,7 +2791,7 @@ extension VerifyTransactionViewController: UITableViewDelegate {
         if unsignedPsbt == "" && signedRawTx == "" {
             return 1
         } else {
-            return 8
+            return 7
         }
     }
     
@@ -2991,13 +2800,13 @@ extension VerifyTransactionViewController: UITableViewDelegate {
             return 1
         } else {
             switch section {
-            case 4:
+            case 3:
                 return inputArray.count
                 
-            case 5:
+            case 4:
                 return outputArray.count
                 
-            case 0, 3, 1, 6, 2, 7:
+            case 0, 1, 5, 2, 6:
                 return 1
                 
             default:
@@ -3008,19 +2817,19 @@ extension VerifyTransactionViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch indexPath.section {
-        case 4:
+        case 3:
             return 441
             
-        case 5:
+        case 4:
             return 522
         
-        case 1:
-            return 150
+//        case 1:
+//            return 150
             
-        case 0, 2:
+        case 0, 1:
             return 50
             
-        case 3, 6, 7:
+        case 2, 5, 6:
             return 80
             
         default:
@@ -3034,36 +2843,36 @@ extension VerifyTransactionViewController: UITableViewDelegate {
             return defaultCell(indexPath)
         }
         
-        tableView.separatorColor = .lightGray
+        tableView.separatorColor = .none
         
         switch indexPath.section {
             
         case 0:
             return transactionLabelCell(indexPath)
             
-        case 1:
-            return transactionMemoCell(indexPath)
+//        case 1:
+//            return transactionMemoCell(indexPath)
             
-        case 2:
+        case 1:
             if !alreadyBroadcast {
                 return mempoolAcceptCell(indexPath)
             } else {
                 return confsCell(indexPath)
             }
             
-        case 3:
+        case 2:
             return txidCell(indexPath)
             
-        case 4:
+        case 3:
             return inputCell(indexPath)
             
-        case 5:
+        case 4:
             return outputCell(indexPath)
             
-        case 6:
+        case 5:
             return miningFeeCell(indexPath)
             
-        case 7:
+        case 6:
             return etaCell(indexPath)
             
         default:
@@ -3079,7 +2888,7 @@ extension VerifyTransactionViewController: UITableViewDelegate {
         let textLabel = UILabel()
         textLabel.textAlignment = .left
         textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
-        textLabel.textColor = .white
+        textLabel.textColor = .secondaryLabel
         textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
         
         if unsignedPsbt == "" && signedRawTx == "" {
@@ -3090,11 +2899,11 @@ extension VerifyTransactionViewController: UITableViewDelegate {
                 textLabel.text = "Label"
                 textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
             
-            case 1:
-                textLabel.text = "Memo"
-                textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
+//            case 1:
+//                textLabel.text = "Memo"
+//                textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
                 
-            case 2:
+            case 1:
                 if !alreadyBroadcast {
                     textLabel.text = "Mempool accept"
                 } else {
@@ -3102,30 +2911,30 @@ extension VerifyTransactionViewController: UITableViewDelegate {
                 }
                 textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
                 
-            case 3:
+            case 2:
                 textLabel.text = "Transaction ID"
                 let copyButton = UIButton()
                 let copyImage = UIImage(systemName: "doc.on.doc")!
-                copyButton.tintColor = .systemTeal
+                copyButton.tintColor = .systemBlue
                 copyButton.setImage(copyImage, for: .normal)
                 copyButton.addTarget(self, action: #selector(copyTxid), for: .touchUpInside)
                 copyButton.frame = CGRect(x: header.frame.maxX - 70, y: 0, width: 50, height: 50)
                 copyButton.center.y = textLabel.center.y
                 header.addSubview(copyButton)
                                 
-            case 4:
+            case 3:
                 textLabel.text = "Inputs"
                 textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
                                 
-            case 5:
+            case 4:
                 textLabel.text = "Outputs"
                 textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
                 
-            case 6:
+            case 5:
                 textLabel.text = "Mining fee"
                 textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
             
-            case 7:
+            case 6:
                 textLabel.text = "Estimated time to confirm"
                 textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
                                 

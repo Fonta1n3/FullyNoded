@@ -46,7 +46,7 @@ class LockedViewController: UIViewController {
     private func loadLockedUTxos() {
         lockedUtxos.removeAll()
         
-        Reducer.sharedInstance.makeCommand(command: .listlockunspent) { [weak self] (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listlockunspent) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let locked = response as? NSArray else {
@@ -102,7 +102,7 @@ class LockedViewController: UIViewController {
         spinner.addConnectingView(vc: self, description: "unlocking...")
         let param:Lock_Unspent = .init(["unlock": true, "transactions": [["txid":utxo.txid,"vout":utxo.vout]]])
         
-        Reducer.sharedInstance.makeCommand(command: .lockunspent(param)) { (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .lockunspent(param)) { (response, errorMessage) in
             guard let success = response as? Bool else {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
@@ -133,43 +133,53 @@ class LockedViewController: UIViewController {
             }
         }
     }
+    @objc func unlockUtxo(_ sender: UIButton) {
+        guard let id = sender.restorationIdentifier, let section = Int(id) else { return }
+        
+        unlock(lockedUtxos[section])
+    }
 }
 
 // MARK: UTXOCellDelegate
 
-extension LockedViewController: UTXOCellDelegate {
-    
-    func didTapToLock(_ utxo: Utxo) {
-        unlock(utxo)
-    }
-    
-    func didTapToEditLabel(_ utxo: Utxo) {}
-    
-    func didTapToFetchOrigin(_ utxo: Utxo) {}
-    
-    func didTapToMix(_ utxo: Utxo) {}
-    
-    func didTapDonateChange(_ utxo: Utxo) {}
-    
-    func didTapFidelity(_ utxo: Utxo) {}
-    
-//    func didTapInfoFor(_ utxo: Utxo) {
-//        performSegue(withIdentifier: "getUTXOinfo", sender: utxo)
+//extension LockedViewController: UTXOCellDelegate {
+//    
+//    func didTapToLock(_ utxo: Utxo) {
+//        unlock(utxo)
 //    }
-    
-}
+//    
+//    func didTapToEditLabel(_ utxo: Utxo) {}
+//    
+//    func didTapToFetchOrigin(_ utxo: Utxo) {}
+//    
+//    func didTapToMix(_ utxo: Utxo) {}
+//    
+//    func didTapDonateChange(_ utxo: Utxo) {}
+//    
+//    func didTapFidelity(_ utxo: Utxo) {}
+//    
+////    func didTapInfoFor(_ utxo: Utxo) {
+////        performSegue(withIdentifier: "getUTXOinfo", sender: utxo)
+////    }
+//    
+//}
 
 // Mark: UITableViewDataSource
 
 extension LockedViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "lockedCell", for: indexPath)
         let utxo = lockedUtxos[indexPath.section]
-        
-        cell.configure(utxo: utxo, isLocked: true, fxRate: fxRate, isSats: isSats, isBtc: isBtc, isFiat: isFiat, delegate: self)
-        
+        let voutLabel = cell.viewWithTag(2) as! UILabel
+        let txid = cell.viewWithTag(3) as! UILabel
+        let unlockButton = cell.viewWithTag(4) as! UIButton
+        unlockButton.restorationIdentifier = "\(indexPath.section)"
+        unlockButton.addTarget(self, action: #selector(unlockUtxo(_:)), for: .touchUpInside)
+        voutLabel.text = "vout \(utxo.vout)"
+        txid.text = utxo.txid
+        txid.translatesAutoresizingMaskIntoConstraints = true
+        txid.sizeToFit()
         return cell
     }
     

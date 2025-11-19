@@ -45,7 +45,7 @@ class Signer {
             //
             //            } else {
             let param:Finalize_Psbt = .init(["psbt": psbtToSign.description])
-            Reducer.sharedInstance.makeCommand(command: .finalizepsbt(param)) { (object, errorDescription) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .finalizepsbt(param)) { (object, errorDescription) in
                 if let result = object as? NSDictionary {
                     if let complete = result["complete"] as? Bool {
                         if complete {
@@ -73,7 +73,7 @@ class Signer {
         
         func processWithActiveWallet() {
             let param: Wallet_Process_PSBT = .init(["psbt": psbtToSign.description])
-            Reducer.sharedInstance.makeCommand(command: .walletprocesspsbt(param: param)) { (object, errorDescription) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletprocesspsbt(param: param)) { (object, errorDescription) in
                 if let dict = object as? NSDictionary {
                     if let processedPsbt = dict["psbt"] as? String {
                         do {
@@ -215,27 +215,27 @@ class Signer {
                                 }
                             }
                             
-                        } else if let encryptedPassphrase = signerStruct.passphrase {
-                            guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) else {
-                                reset()
-                                completion((nil, nil, "Unable to decrypt your seed!"))
-                                return
-                            }
-                            
-                            if let passphrase = String(data: decryptedPassphrase, encoding: .utf8) {
-                                if var masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase) {
-                                    words = ""
-                                    if var hdkey = try? HDKey(base58: masterKey) {
-                                        masterKey = ""
-                                        xprvsToSignWith.append(hdkey)
-                                        hdkey = try! HDKey(base58: "xpub6FETvV487Sr4VSV9Ya5em5ZAug4dtnFwgnMG7TFAfkJDHoQ1uohXft49cFenfpJHbPueMnfyxtBoAuvSu7XNL9bbLzcM1QJCPwtofqv3dqC")
-                                        if i + 1 == seedsToSignWith.count {
-                                            seedsToSignWith.removeAll()
-                                            processWithActiveWallet()
-                                        }
-                                    }
-                                }
-                            }
+//                        } else if let encryptedPassphrase = signerStruct.passphrase {
+//                            guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) else {
+//                                reset()
+//                                completion((nil, nil, "Unable to decrypt your seed!"))
+//                                return
+//                            }
+//                            
+//                            if let passphrase = String(data: decryptedPassphrase, encoding: .utf8) {
+//                                if var masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase) {
+//                                    words = ""
+//                                    if var hdkey = try? HDKey(base58: masterKey) {
+//                                        masterKey = ""
+//                                        xprvsToSignWith.append(hdkey)
+//                                        hdkey = try! HDKey(base58: "xpub6FETvV487Sr4VSV9Ya5em5ZAug4dtnFwgnMG7TFAfkJDHoQ1uohXft49cFenfpJHbPueMnfyxtBoAuvSu7XNL9bbLzcM1QJCPwtofqv3dqC")
+//                                        if i + 1 == seedsToSignWith.count {
+//                                            seedsToSignWith.removeAll()
+//                                            processWithActiveWallet()
+//                                        }
+//                                    }
+//                                }
+//                            }
                         } else {
                             if var masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: "") {
                                 words = ""

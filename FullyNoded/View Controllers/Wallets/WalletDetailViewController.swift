@@ -18,7 +18,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     var coinType = "0"
     var addresses = ""
     var originalLabel = ""
-    var backupQrImage: UIImage!
     var exportWalletImageCryptoOutput: UIImage!
     var exportWalletImageURBytes: UIImage!
     var exportWalletImageBBQr: UIImage!
@@ -31,9 +30,9 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     var outputDescUr = ""
     var urBytes = ""
     var bbqrText = ""
-    var outputDescFormat = true
+    var outputDescFormat = false
     var urBytesFormat = false
-    var bbqrFormat = false
+    var bbqrFormat = true
     var alertStyle = UIAlertController.Style.actionSheet
     private var labelField: UITextField!
     private var labelButton: UIButton!
@@ -43,7 +42,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         case label
         case backupText
         case walletExport
-        case backupQr
         case exportFile
         case filename
         case receiveDesc
@@ -59,6 +57,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        spinner.addConnectingView(vc: self, description: "loading")
         navigationController?.delegate = self
         detailTable.delegate = self
         detailTable.dataSource = self
@@ -68,9 +67,40 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
           alertStyle = UIAlertController.Style.alert
         }
         
-        spinner.addConnectingView(vc: self, description: "loading")
+        
         load()
     }
+    
+    private func showModal(data: [String: Any], title: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let modalVC = TextModalViewController(data: data, viewTitle: title)
+            let nav = UINavigationController(rootViewController: modalVC)
+            nav.modalPresentationStyle = .fullScreen
+            nav.modalTransitionStyle = .coverVertical
+            present(nav, animated: true)
+        }
+    }
+    
+    @IBAction func showGetWalletInfoAction(_ sender: Any) {
+        spinner.addConnectingView(vc: self, description: "Getting wallet info...")
+        
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getwalletinfo) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
+            
+            spinner.removeConnectingView()
+            
+            guard let response = response as? [String: Any] else {
+                showAlert(vc: self, title: "", message: "No response from getwalletinfo.")
+                return
+            }
+            
+            showModal(data: response, title: "getwalletinfo")
+        }
+        
+    }
+    
     
     @IBAction func rescanAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
@@ -97,9 +127,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             self.present(alert, animated: true, completion: nil)
         }
     }
-    
-    
-    
+        
     private func exportJson() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -120,6 +148,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func getAddresses() {
+        spinner.removeConnectingView()
         deriveAddresses(wallet.receiveDescriptor)
     }
     
@@ -136,13 +165,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         self.addresses += "#\(i): \(address)\n\n"
                         if i + 1 == addr.count {
                             DispatchQueue.main.async { [weak self] in
-                                self?.spinner.removeConnectingView()
                                 self?.detailTable.reloadSections(IndexSet(arrayLiteral: Section.addressExplorer.rawValue), with: .none)
                             }
                         }
                     }
                 } else {
-                    self?.spinner.removeConnectingView()
                     showAlert(vc: self, title: "We were unable to derive your addresses", message: "")
                 }
             }
@@ -194,7 +221,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         let generator = QRGenerator()
                         generator.textInput = self.json
                         self.backupText = self.json
-                        self.backupQrImage = generator.getQRCode()
+                        //self.backupQrImage = generator.getQRCode()
                         
                         guard self.wallet.receiveDescriptor != "" else {
                             showAlert(vc: self, title: "", message: "Unable to get receive descriptor.")
@@ -257,7 +284,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         
                         self.findSigner()
                         self.getAddresses()
-                        spinner.removeConnectingView()
                     }
                 }
             }
@@ -574,8 +600,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                 exportItem(exportWalletImageBBQr as Any)
             }
             
-        case .backupQr:
-            exportItem(backupQrImage as Any)
+//        case .backupQr:
+//            exportItem(backupQrImage as Any)
     
         case .exportFile:
             exportJson()
@@ -615,15 +641,15 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         return true
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        switch Section(rawValue: indexPath.section) {
-        case .backupQr:
-            textToShow = backupText
-            showQr()
-        default:
-            break
-        }
-    }
+//    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+//        switch Section(rawValue: indexPath.section) {
+//        case .backupQr:
+//            textToShow = backupText
+//            showQr()
+//        default:
+//            break
+//        }
+//    }
     
     private func showQr() {
         DispatchQueue.main.async { [weak self] in
@@ -807,51 +833,28 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         
         if urBytesFormat {
             headerLabel.text = "UR Bytes"
-            subheaderLabel.text = "Passport, Keystone, Blue"
+            subheaderLabel.text = "Passport, Keystone, Blue, Fully Noded and more."
             imageView.image = exportWalletImageURBytes
             exportText = urBytes
         }
         
         if bbqrFormat {
             headerLabel.text = "BBQr"
-            subheaderLabel.text = "Coldcard"
+            subheaderLabel.text = "Coldcard, Fully Noded and more."
             imageView.image = exportWalletImageBBQr
             exportText = bbqrText
         }
         
         if outputDescFormat {
             headerLabel.text = "UR Output Descriptor"
-            subheaderLabel.text = "Sparrow, Blue"
+            subheaderLabel.text = "Sparrow, Blue, Fully Noded and more."
             imageView.image = exportWalletImageCryptoOutput
             exportText = outputDescUr
         }
         
         return cell
     }
-    
-    private func backupQrCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletExportQrCell", for: indexPath)
-        configureCell(cell)
         
-        let imageView = cell.viewWithTag(1) as! UIImageView
-        
-        imageView.image = backupQrImage
-        
-        let exportButton = cell.viewWithTag(2) as! UIButton
-        configureExportButton(exportButton, indexPath: indexPath)
-        
-        let headerLabel = cell.viewWithTag(4) as! UILabel
-        let subheaderLabel = cell.viewWithTag(5) as! UILabel
-        let chooseFormatButton = cell.viewWithTag(3) as! UIButton
-        let enlargeButton = cell.viewWithTag(6) as! UIButton
-        headerLabel.alpha = 0
-        subheaderLabel.alpha = 0
-        chooseFormatButton.alpha = 0
-        enlargeButton.alpha = 0
-        
-        return cell
-    }
-    
     private func exportFileCell(_ indexPath: IndexPath) -> UITableViewCell {
         let cell = detailTable.dequeueReusableCell(withIdentifier: "walletExportFileCell", for: indexPath)
         configureCell(cell)
@@ -866,7 +869,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 14
+        return 13
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -909,8 +912,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             return labelCell(indexPath)
         case .walletExport:
             return exportWalletCell(indexPath)
-        case .backupQr:
-            return backupQrCell(indexPath)
         case .exportFile:
             return exportFileCell(indexPath)
         case .filename:
@@ -940,8 +941,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             return 180
         case .label:
             return 50
-        case .backupQr:
-            return 192
         case .walletExport:
             return 270
         case .exportFile:
@@ -984,16 +983,12 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         if let section = Section(rawValue: section) {
             switch section {
             case .walletExport:
-                textLabel.text = "This QR is for exporting your wallet to other Hardware Wallets and Software wallets. Compatible with Sparrow, Blue Wallet, Passport, Coldcard and more."
-                
-            case .backupQr:
-                textLabel.text = "This QR is best for restoring to Fully Noded, either QR works but this one includes the wallet label and blockheight your wallet was created at."
-                
+                textLabel.text = "This QR is for exporting your wallet to Hardware Wallets and Software wallets. Compatible with Sparrow, Blue Wallet, Passport, Coldcard and Fully Noded."
+                                
             default:
                 break
             }
         }
-        
         
         footer.addSubview(textLabel)
         
@@ -1003,7 +998,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         if let section = Section(rawValue: section) {
             switch section {
-            case .walletExport, .backupQr:
+            case .walletExport:
                 return 100
             default:
                 return 10
@@ -1016,43 +1011,41 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let header = UIView()
         header.backgroundColor = UIColor.clear
-        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 60)
+        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 30)
         
-        let background = UIView()
-        background.frame = CGRect(x: 0, y: header.frame.minY + 25, width: 35, height: 35)
-        background.clipsToBounds = true
-        background.layer.cornerRadius = 5
-        background.center.y = header.center.y
+//        let background = UIView()
+//        background.frame = CGRect(x: 0, y: header.frame.minY + 25, width: 35, height: 35)
+//        background.clipsToBounds = true
+//        background.layer.cornerRadius = 5
+//        background.center.y = header.center.y
         
         let icon = UIImageView()
-        icon.frame = CGRect(x: 5, y: 5, width: 25, height: 25)
-        icon.tintColor = .white
+        icon.frame = CGRect(x: 0, y: 0, width: 25, height: 25)
+        icon.tintColor = .tintColor
         icon.contentMode = .scaleAspectFit
         
         let textLabel = UILabel()
         textLabel.textAlignment = .left
-        textLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
-        textLabel.textColor = .white
-        textLabel.frame = CGRect(x: 43, y: 0, width: 300, height: 50)
-        textLabel.center.y = background.center.y
+        textLabel.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        textLabel.textColor = .secondaryLabel
+        textLabel.frame = CGRect(x: 33, y: 0, width: 300, height: 25)
+        textLabel.center.y = icon.center.y
         
         if let section = Section(rawValue: section) {
-            let (text, image, color) = headerName(for: section)
+            let (text, image) = headerName(for: section)
             
             textLabel.text = text
             icon.image = image
-            background.backgroundColor = color
         }
         
-        background.addSubview(icon)
-        header.addSubview(background)
+        header.addSubview(icon)
         header.addSubview(textLabel)
         
         return header
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 60
+        return 30
     }
     
     @objc func updateAddressExplorer(_ sender: UISegmentedControl) {
@@ -1229,34 +1222,28 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         if let vc = segue.destination as? QRDisplayerViewController {
             vc.text = textToShow
             
-            if textToShow == backupText {
-                vc.headerText = "Wallet Backup QR"
-                vc.headerIcon = UIImage(systemName: "rectangle.and.paperclip")
-                vc.descriptionText = "Save this QR in lots of places so you can always easily recreate this wallet as watch-only. This QR code is best used with Fully Noded only."
-            } else {
-                if bbqrFormat {
-                    vc.headerText = "Wallet Export BBQr"
-                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                    vc.descriptionText = "This QR code is best for exporting this wallet to Coldcard."
-                    vc.isBbqr = true
-                    vc.isUR = false
-                }
-                
-                if outputDescFormat {
-                    vc.headerText = "Wallet Export Descriptor"
-                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                    vc.descriptionText = "This QR code is best for exporting this wallet to Sparrow, Passport, Blue Wallet and others..."
-                    vc.isBbqr = false
-                    vc.isUR = true
-                }
-                
-                if urBytesFormat {
-                    vc.headerText = "Wallet Export UR Bytes"
-                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                    vc.descriptionText = "This QR code is best for exporting this wallet to Passport, Blue Wallet and others..."
-                    vc.isUR = true
-                    vc.isBbqr = false
-                }
+            if bbqrFormat {
+                vc.headerText = "Wallet Export BBQr"
+                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                vc.descriptionText = "This QR code is best for exporting this wallet to Coldcard, also works with Fully Noded."
+                vc.isBbqr = true
+                vc.isUR = false
+            }
+            
+            if outputDescFormat {
+                vc.headerText = "Wallet Export Descriptor"
+                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                vc.descriptionText = "This QR code is best for exporting this wallet to Sparrow, Passport, Blue Wallet and more, including Fully Noded."
+                vc.isBbqr = false
+                vc.isUR = true
+            }
+            
+            if urBytesFormat {
+                vc.headerText = "Wallet Export UR Bytes"
+                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                vc.descriptionText = "This QR code is best for exporting this wallet to Passport, Blue Wallet and others, including Fully Noded."
+                vc.isUR = true
+                vc.isBbqr = false
             }
         }
         default:
@@ -1268,34 +1255,32 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
 
 extension WalletDetailViewController {
     
-    private func headerName(for section: Section) -> (text: String, icon: UIImage, color: UIColor) {
+    private func headerName(for section: Section) -> (text: String, icon: UIImage) {
         switch section {
         case .backupText:
-            return ("Wallet Info", UIImage(systemName: "info.circle")!, .systemGray)
+            return ("Wallet Info", UIImage(systemName: "info.circle")!)
         case .label:
-            return ("Label", UIImage(systemName: "rectangle.and.paperclip")!, .systemBlue)
+            return ("Label", UIImage(systemName: "rectangle.and.paperclip")!)
         case .walletExport:
-            return ("Wallet export", UIImage(systemName: "square.and.arrow.up")!, .systemIndigo)
-        case .backupQr:
-            return ("Backup QR", UIImage(systemName: "qrcode")!, .systemGreen)
+            return ("Wallet export", UIImage(systemName: "square.and.arrow.up")!)
         case .exportFile:
-            return ("Backup file", UIImage(systemName: "folder")!, .systemPink)
+            return ("Backup file", UIImage(systemName: "folder")!)
         case .filename:
-            return ("Bitcoin Core filename", UIImage(systemName: "rectangle.and.paperclip")!, .systemOrange)
+            return ("Bitcoin Core filename", UIImage(systemName: "rectangle.and.paperclip")!)
         case .receiveDesc:
-            return ("Receive descriptor - keypool", UIImage(systemName: "arrow.down.left")!, .systemBlue)
+            return ("Receive descriptor - keypool", UIImage(systemName: "arrow.down.left")!)
         case .changeDesc:
-            return ("Change descriptor - keypool", UIImage(systemName: "arrow.2.circlepath")!, .systemPurple)
+            return ("Change descriptor - keypool", UIImage(systemName: "arrow.2.circlepath")!)
         case .currentIndex:
-            return ("Current address index", UIImage(systemName: "number")!, .systemGreen)
+            return ("Current address index", UIImage(systemName: "number")!)
         case .maxIndex:
-            return ("Range limit", UIImage(systemName: "exclamationmark.triangle")!, .systemRed)
+            return ("Range limit", UIImage(systemName: "exclamationmark.triangle")!)
         case .signer:
-            return ("Signers", UIImage(systemName: "pencil.and.ellipsis.rectangle")!, .darkGray)
+            return ("Signers", UIImage(systemName: "pencil.and.ellipsis.rectangle")!)
         case .watching:
-            return ("Watching descriptors", UIImage(systemName: "eye")!, .systemOrange)
+            return ("Watching descriptors", UIImage(systemName: "eye")!)
         case .addressExplorer:
-            return ("Address explorer", UIImage(systemName: "list.number")!, .systemBlue)
+            return ("Address explorer", UIImage(systemName: "list.number")!)
         }
     }
     

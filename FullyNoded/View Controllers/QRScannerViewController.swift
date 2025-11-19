@@ -22,7 +22,6 @@ class QRScannerViewController: UIViewController {
     private var qrString = ""
     private let uploadButton = UIButton()
     private let torchButton = UIButton()
-    private let closeButton = UIButton()
     private let downSwipe = UISwipeGestureRecognizer()
     var isQuickConnect = Bool()
     var isScanningAddress = Bool()
@@ -74,7 +73,6 @@ class QRScannerViewController: UIViewController {
             
             self.scanQRCode()
             self.addScannerButtons()
-            self.scannerView.addSubview(self.closeButton)
             self.spinner.removeConnectingView()
         }
     }
@@ -83,12 +81,10 @@ class QRScannerViewController: UIViewController {
         scannerView.isUserInteractionEnabled = true
         uploadButton.addTarget(self, action: #selector(chooseQRCodeFromLibrary), for: .touchUpInside)
         torchButton.addTarget(self, action: #selector(toggleTorchNow), for: .touchUpInside)
-        closeButton.addTarget(self, action: #selector(back), for: .touchUpInside)
         isTorchOn = false
         configureImagePicker()
         configureUploadButton()
         configureTorchButton()
-        configureCloseButton()
         configureDownSwipe()
     }
     
@@ -124,13 +120,6 @@ class QRScannerViewController: UIViewController {
         blur.contentView.addSubview(button)
         blurArray.append(blur)
         scannerView.addSubview(blur)
-    }
-    
-    @objc func back() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.avCaptureSession.stopRunning()
-            vc.dismiss(animated: true, completion: nil)
-        }
     }
     
     private func stopScanning(_ psbt: String) {
@@ -378,20 +367,17 @@ class QRScannerViewController: UIViewController {
         stopScanner()
     }
     
-    private func configureCloseButton() {
-        closeButton.frame = CGRect(x: view.frame.midX - 15, y: view.frame.maxY - 150, width: 30, height: 30)
-        closeButton.setImage(UIImage(named: "Image-10"), for: .normal)
-    }
-    
     private func configureTorchButton() {
         torchButton.frame = CGRect(x: 17.5, y: 17.5, width: 35, height: 35)
-        torchButton.setImage(UIImage(named: "strobe.png"), for: .normal)
+        torchButton.setImage(UIImage(systemName: "flashlight.on.circle"), for: .normal)
+        torchButton.tintColor = .systemBlue
         addShadow(view: torchButton)
     }
     
     private func configureUploadButton() {
         uploadButton.frame = CGRect(x: 17.5, y: 17.5, width: 35, height: 35)
-        uploadButton.setImage(UIImage(named: "images.png"), for: .normal)
+        uploadButton.setImage(UIImage(systemName: "photo"), for: .normal)
+        uploadButton.tintColor = .systemBlue
         addShadow(view: uploadButton)
     }
     

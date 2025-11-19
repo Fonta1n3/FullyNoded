@@ -43,18 +43,39 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         // Do any additional setup after loading the view.
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.sectionFooterHeight = UITableView.automaticDimension
+        tableView.estimatedSectionFooterHeight = 50
         navigationController?.delegate = self
         
         tableDict = [
-            ["text":"", "footerText": "Tap the label to edit it."],// label 0
-            ["text": "", "ur": "", "selectedSegmentIndex": 0, "censoredText": "", "censoredUr": "", "footerText": "UR for exporting this signer to iOS Seed Tool, Gordian Wallet, Gordian Signer and any other wallet which supports UR crypto-seed. Tap to copy the text."],// words 1
-            ["text": "", "footerText": ""],// xfp 2
-            ["text": "", "footerText": "Tap the passphrase to edit it. ⚠️ This has MAJOR implications, for experts only!"],// passphrase 3
-            ["text": "", "footerText": ""],// dateAdded 4
-            ["text": "", "footerText": "The wallets which this signer can sign for. Tap the + button to create a wallet with this signer."],// wallets 5
-            ["text": "", "ur": "", "selectedSegmentIndex": 0, "footerText": "UR for exporting the segwit mutli-sig cosigner to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text."],// cosigner 6
-            ["text": "", "ur": "", "selectedSegmentIndex": 0, "footerText": "UR for exporting the segwit single-sig watch-only wallet to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text."],// singlesig 7
-            ["text": "", "ur": "", "selectedSegmentIndex": 0, "footerText": "Export your root xpub UR to Casa App by selecting the Keystone option when adding a HWW key to Casa App. Also compatible with Gordian Wallet and Gordian Cosigner. Tap to copy the text."]// casa hdkey 8
+            [
+                "text":"",
+             "footerText": "Tap the label to edit it."
+            ],// label 0
+            [
+                "text": "", "ur": "", "selectedSegmentIndex": 0, "censoredText": "", "censoredUr": "", "footerTextUr": "UR for exporting this signer to any wallet which supports UR crypto-seed. Tap to copy the text.", "footerText": "BIP39 seed words, you need these to sign transactions and recover your wallet."
+            ],// words 1
+            [
+                "text": "", "footerText": "The fingerprint of your master key. Some hardware wallets require this infomation in order to sign PSBT's."
+            ],// xfp 2
+            [
+                "text": "", "footerText": "Tap the passphrase to edit it. ⚠️ This has MAJOR implications, for experts only!"
+            ],// passphrase 3
+            [
+                "text": "", "footerText": "When you added this signer."
+            ],// dateAdded 4
+            [
+                "text": "", "footerText": "The wallets which this signer can sign for. Tap the + button to create a wallet with this signer."
+            ],// wallets 5
+            [
+                "text": "", "ur": "", "selectedSegmentIndex": 0, "footerTextUr": "UR for exporting the segwit mutli-sig cosigner to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text.", "footerText": "This can be used to create multisig wallets via the multisig creator."
+            ],// cosigner 6
+            [
+                "text": "", "ur": "", "selectedSegmentIndex": 0, "footerTextUr": "UR for exporting the segwit single-sig watch-only wallet to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text.", "footerText": "The native segwit watch-only descriptor, can be used to create a segwit watch-only wallet from this signer."
+            ],// singlesig 7
+            [
+                "text": "", "ur": "", "selectedSegmentIndex": 0, "footerTextUr": "The UR for the root xpub, you can create any type of watch-only wallet with the root xpup. Proceed with caution.", "footerText": "Create any type of watch-only wallet with the root xpup. Proceed with caution, if you do not have a dep understanding of what a root xpub is or how wallets are derived you should stay away."
+            ]// casa hdkey 8
         ]
         
         let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
@@ -544,7 +565,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 
                 let title = "⚠️ Editing the passphrase has major implications!"
                 
-                let message = "This signer will no longer be able to sign transactions that invlove the previous passphrase, this will change the cosigner and descriptor used to create new wallets with this signer. Wallets that are associated with this signer will no longer be associated this signer. If you have exported your cosigner or descriptor to other wallets they will no longer be associated with this signer. If you do not understand what any of this means then just STOP."
+                let message = "Editing or adding a passphrase is useful if you want to password protect your bitcoin transactions. When you go to send a transaction Fully Noded will prompt you to add a passphrase if you enable the \"Prompt with passphrase\" setting in Settings > Security. Fully Noded only saves this passphrase here in the Signer Detail view so that you may export xpubs and descriptors to other wallets so they will work with this particular passphrase / signer combination. After you have created the wallet or exported your descriptor to another HWW or software wallet you should delete the passphrase here as Fully Noded will not use it anywhere outside of the app except here in the Signer Detail view."
                 
                 let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
                 
@@ -578,25 +599,33 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             let edit = UIAlertAction(title: "Save", style: .default) { [weak self] alertAction in
                 guard let self = self else { return }
                 
-                let text = (alert.textFields![0] as UITextField).text
+                let text1 = (alert.textFields![0] as UITextField).text
+                let text2 = (alert.textFields![1] as UITextField).text
                 
-                guard let text = text else {
-                    showAlert(vc: self, title: "", message: "No passphrase added.")
+                guard let text1 = text1, let text2 = text2, text1 == text2 else {
+                    showAlert(vc: self, title: "", message: "Passphrases did not match or were empty. Try again.")
                     
                     return
                 }
-                
-                guard let encryptedPassphrase = Crypto.encrypt(text.utf8) else {
+                                
+                guard let encryptedPassphrase = Crypto.encrypt(text1.utf8) else {
                     showAlert(vc: self, title: "Encryption error...", message: "Please let us know about this bug, unable to encrypt your new passphrase")
                     return
                 }
                 
-                self.updatePassphrase(encryptedPassphrase, text)
+                self.updatePassphrase(encryptedPassphrase, text1)
             }
             
             alert.addTextField { textField in
                 textField.keyboardAppearance = .dark
                 textField.isSecureTextEntry = true
+                textField.placeholder = "passphrase"
+            }
+            
+            alert.addTextField { textField in
+                textField.keyboardAppearance = .dark
+                textField.isSecureTextEntry = true
+                textField.placeholder = "confirm passphrase"
             }
             
             alert.addAction(edit)
@@ -621,7 +650,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private func exportQrButton(_ x: CGFloat) -> UIButton {
         let qrButton = UIButton()
         qrButton.setImage(.init(systemName: "qrcode"), for: .normal)
-        qrButton.imageView?.tintColor = .systemTeal
+        qrButton.imageView?.tintColor = .systemBlue
         qrButton.frame = CGRect(x: x, y: 5, width: 40, height: 40)
         qrButton.addTarget(self, action: #selector(exportQr(_:)), for: .touchUpInside)
         return qrButton
@@ -630,7 +659,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private func createWalletButton(_ x: CGFloat) -> UIButton {
         let createWalletButton = UIButton()
         createWalletButton.setImage(.init(systemName: "plus"), for: .normal)
-        createWalletButton.imageView?.tintColor = .systemTeal
+        createWalletButton.imageView?.tintColor = .systemBlue
         createWalletButton.frame = CGRect(x: x, y: 5, width: 40, height: 40)
         createWalletButton.addTarget(self, action: #selector(createWallet), for: .touchUpInside)
         return createWalletButton
@@ -665,7 +694,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     
                     let title = "⚠️ Deleting the passphrase has major implications!"
                     
-                    let message = "This signer will no longer be able to sign transactions that invlove the previous passphrase, this will change the cosigner and descriptor used to create new wallets with this signer. Wallets that are associated with this signer will no longer be associated this signer. If you have exported your cosigner or descriptor to other wallets they will no longer be associated with this signer. If you do not understand what any of this means then just STOP."
+                    let message = "Editing or adding a passphrase is useful if you want to password protect your bitcoin transactions. When you go to send a transaction Fully Noded will prompt you to add a passphrase if you enable the \"Prompt with passphrase\" setting in Settings > Security. Fully Noded only saves this passphrase here in the Signer Detail view so that you may export xpubs and descriptors to other wallets so they will work with this particular passphrase / signer combination. After you have created the wallet or exported your descriptor to another HWW or software wallet you should delete the passphrase here as Fully Noded will not use it anywhere outside of the app except here in the Signer Detail view."
                     
                     let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
                     
@@ -800,7 +829,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     }
     
     @objc func createWallet() {
-        print("createWallet")
         if signer.words != nil {
             creatWalletLive()
         } else {
@@ -877,60 +905,19 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         let primDesc = descriptors[descriptorToUseIndex]
         let desc = Descriptor("\(primDesc)")
         
-        if desc.isP2TR {
-            promptForEncryptionPassword(primDesc)
-        } else {
-            if desc.isCosigner {
-                self.cosigner = desc
+        if desc.isCosigner {
+            self.cosigner = desc
 
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-
-                    self.performSegue(withIdentifier: "segueToCreateMultiSigFromSigner", sender: self)
-                }
-            } else {
-                self.importAccountMap(primDesc, signer.label, "")
-            }
-        }
-    }
-    
-    private func promptForEncryptionPassword(_ primDesc: String) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let title = "Add a password?"
-            let message = "Taproot wallets store the private keys on your node, this password is used to encrypt them. You must remember this password as Fully Noded does not save it."
-            
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            
-            let setPassword = UIAlertAction(title: "Set password", style: .default) { [weak self] alertAction in
+            DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                
-                let password = (alert.textFields![0] as UITextField).text
-                
-                guard let password = password else {
-                    showAlert(vc: self, title: "", message: "No password added, try again.")
-                    
-                    return
-                }
-                
-                self.importAccountMap(primDesc, "Taproot: " + self.signer.label, password)
+
+                self.performSegue(withIdentifier: "segueToCreateMultiSigFromSigner", sender: self)
             }
-            
-            alert.addTextField { textField in
-                textField.isSecureTextEntry = true
-                textField.keyboardAppearance = .dark
-            }
-            
-            alert.addAction(setPassword)
-            
-            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
-            alert.addAction(cancel)
-            
-            self.present(alert, animated:true, completion: nil)
+        } else {
+            self.importAccountMap(primDesc, signer.label, "")
         }
     }
-    
+        
     private func creatWalletLive() {
         guard let encryptedWords = signer.words,
                 let wordsData = Crypto.decrypt(encryptedWords),
@@ -938,31 +925,35 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     return
                 }
         
-        let (descriptors, message) = Keys.descriptorsFromSigner(words)
-        
-        guard let descriptors = descriptors else {
-            showAlert(vc: self, title: "There was an issue deriving your descriptors...", message: message ?? "Unknown")
-            return
-        }
-        
-        var passphrase = ""
-        
         if let encryptedPassphrase = signer.passphrase {
+            var passphrase = ""
+            
             guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) else {
-                showAlert(vc: self, title: "There was an issue decrypting your passphrase...", message: message ?? "Unknown")
+                showAlert(vc: self, title: "Decryption error.", message: "There was an issue decrypting your passphrase...")
                 return
             }
             
             passphrase = decryptedPassphrase.utf8String ?? ""
-        }
-        
-        guard let mk = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase),
-              let _ = Keys.fingerprint(masterKey: mk) else {
-            showAlert(vc: self, title: "There was an issue deriving your master key", message: message ?? "Unknown")
-            return
-        }
+            
+            let (descriptors, message) = Keys.descriptorsFromSigner(signer: words, passphrase: passphrase)
+            
+            guard let descriptors = descriptors else {
+                showAlert(vc: self, title: "There was an issue deriving your descriptors...", message: message ?? "Unknown")
+                return
+            }
 
-        prompToChoosePrimaryDesc(descriptors: descriptors)
+            prompToChoosePrimaryDesc(descriptors: descriptors)
+            
+        } else {
+            let (descriptors, message) = Keys.descriptorsFromSigner(signer: words, passphrase: nil)
+            
+            guard let descriptors = descriptors else {
+                showAlert(vc: self, title: "There was an issue deriving your descriptors...", message: message ?? "Unknown")
+                return
+            }
+
+            prompToChoosePrimaryDesc(descriptors: descriptors)
+        }
     }
     
     @objc func exportQr(_ sender: UIButton) {
@@ -995,12 +986,12 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             case 0:
                 stringToExport = dict["text"] as? String ?? ""
                 headerText = "Cosigner BIP48"
-                descriptionText = "This can be shared with other wallets like Specter and Sparrow to create segwit multi-sig wallets."
+                //descriptionText = "This can be shared with other wallets like Specter and Sparrow to create segwit multi-sig wallets."
                 
             case 1:
                 stringToExport = dict["ur"] as? String ?? ""
                 headerText = "Cosigner BIP48"
-                descriptionText = "This can be shared with other wallets like Blue Wallet, Passport, Sparrow, and Keystone to create segwit multi-sig wallets."
+                //descriptionText = "This can be shared with other wallets like Blue Wallet, Passport, Sparrow, and Keystone to create segwit multi-sig wallets."
                 
             default:
                 break
@@ -1013,12 +1004,12 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             case 0:
                 stringToExport = dict["text"] as? String ?? ""
                 headerText = "BIP84 Account"
-                descriptionText = "This can be shared with other wallets to create watch-only segwit single-sig wallets."
+                //descriptionText = "This can be shared with other wallets to create watch-only segwit single-sig wallets."
                 
             case 1:
                 stringToExport = dict["ur"] as? String ?? ""
                 headerText = "BIP84 Account"
-                descriptionText = "This can be shared with other wallets like Blue Wallet, Passport, Sparrow, Keystone to create watch-only segwit single-sig wallets."
+                //descriptionText = "This can be shared with other wallets like Blue Wallet, Passport, Sparrow, Keystone to create watch-only segwit single-sig wallets."
                 
             default:
                 break
@@ -1031,12 +1022,12 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             case 0:
                 stringToExport = dict["text"] as? String ?? ""
                 headerText = "Root xpub"
-                descriptionText = "This can be used with other wallets to create *non hardened* accounts."
+                //descriptionText = "This can be used with other wallets to create *non hardened* accounts."
                 
             case 1:
                 stringToExport = dict["ur"] as? String ?? ""
                 headerText = "Root xpub hdkey"
-                descriptionText = "You can scan this with your Casa App to add a multi-sig cosigner from Fully Noded.\n\n⚠️ Currently Casa App does not display Fully Noded as an option, select Keystone instead."
+                //descriptionText = "You can scan this with your Casa App to add a multi-sig cosigner from Fully Noded.\n\n⚠️ Currently Casa App does not display Fully Noded as an option, select Keystone instead."
                 
             default:
                 break
@@ -1072,76 +1063,24 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         default:
             break
         }
-        
     }
-    
-
 }
 
 extension SignerDetailViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        let vw = UIView()
-        vw.backgroundColor = .clear
-        let titleLabel = UILabel()
-        titleLabel.numberOfLines = 0
-        titleLabel.lineBreakMode = .byWordWrapping
-        titleLabel.backgroundColor = .clear
-        titleLabel.font = .systemFont(ofSize: 14)
-        titleLabel.textColor = .systemGreen
-        
+        let footerView = DynamicFooterView(frame: .zero)
+        let selectedSegmentIndex = tableDict[section]["selectedSegmentIndex"] as? Int ?? 0
         let text = tableDict[section]["footerText"] as? String ?? ""
-        titleLabel.text = text
+        let urText = tableDict[section]["footerTextUr"] as? String ?? ""
         
-        var height:CGFloat = 0
-        
-        switch Section(rawValue: section) {
-        case .words:
-            height = 60
-            
-        case .passphrase:
-            height = 60
-            
-        case .cosigner:
-            height = 80
-            
-        case .singleSig:
-            height = 80
-            
-        case .rootXpub:
-            height = 80
-            
-        case .signableWallets:
-            height = 60
-            
-        case .label:
-            height = 40
-            
-        default:
-            titleLabel.text  = ""
+        if selectedSegmentIndex == 1 {
+            footerView.configure(with: urText)
+        } else {
+            footerView.configure(with: text)
         }
         
-        titleLabel.frame = CGRect(x:0, y: 8, width: tableView.frame.width - 32, height: height)
-        
-        titleLabel.sizeToFit()
-        
-        vw.addSubview(titleLabel)
-        return vw
-    }
-
-    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        switch Section(rawValue: section) {
-        case .label:
-            return 40
-        case .words:
-            return 70
-        case .signableWallets, .passphrase:
-            return 60
-        case .cosigner, .singleSig, .rootXpub:
-            return 80
-        default:
-            return 0
-        }
+        return footerView
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

@@ -6,7 +6,7 @@
 //
 // Copied and modified by Peter Denton on 2022-10-21
 
-import Foundation
+//import Foundation
 
 //struct NostrSubscribe {
 //    let filters: [NostrFilter]

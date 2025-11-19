@@ -115,7 +115,7 @@ enum Keys {
         return try? BIP39Mnemonic(words: words).entropy
     }
     
-    static func descriptorsFromSigner(_ signer: String) -> (descriptors: [String]?, errorMess: String?) {
+    static func descriptorsFromSigner(signer: String, passphrase: String?) -> (descriptors: [String]?, errorMess: String?) {
         let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
         
         var cointType = "0"
@@ -124,23 +124,17 @@ enum Keys {
             cointType = "1"
         }
         
-        guard let mk = Keys.masterKey(words: signer, coinType: cointType, passphrase: ""),
+        guard let mk = Keys.masterKey(words: signer, coinType: cointType, passphrase: passphrase ?? ""),
               let xfp = Keys.fingerprint(masterKey: mk),
               let bip84Xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: cointType, account: 0),
-              let bip49Xpub = Keys.xpub(path: "m/49h/\(cointType)h/0h", masterKey: mk),
-              let bip44Xpub = Keys.xpub(path: "m/44h/\(cointType)h/0h", masterKey: mk),
-              let bip86Xprv = Keys.xprv(path: "m/86h/\(cointType)h/0h", masterKey: mk),// Needs to be a hot wallet until libwally updates for taproot
               let bip48Xpub = Keys.xpub(path: "m/48h/\(cointType)h/0h/2h", masterKey: mk) else {
             return (nil, "Error deriving descriptors.")
         }
         
         let cosigner = "wsh([\(xfp)/48h/\(cointType)h/0h/2h]\(bip48Xpub)/0/*)"
         let bip84 = "wpkh([\(xfp)/84h/\(cointType)h/0h]\(bip84Xpub)/0/*)"
-        let bip49 = "sh(wpkh([\(xfp)/49h/\(cointType)h/0h]\(bip49Xpub)/0/*))"
-        let bip86 = "tr([\(xfp)/86h/\(cointType)h/0h]\(bip86Xprv)/0/*)"
-        let bip44 = "pkh([\(xfp)/44h/\(cointType)h/0h]\(bip44Xpub)/0/*)"
         
-        return ([bip84, bip49, bip44, cosigner, bip86], nil)
+        return ([bip84, cosigner], nil)
     }
     
     static func donationAddress() -> String? {
@@ -285,6 +279,8 @@ enum Keys {
                         passphrase = pp
                     }
                     
+                    
+                    // Unfortunately LibWally does not recognise regtest brct1 addresses as addresses.
                     guard let a = try? Address(string: address) else {
                         completion((false, nil))
                         return
@@ -296,8 +292,6 @@ enum Keys {
                         cointype = "1"
                     }
                     
-                    print("path: \(path.description)")
-                    
                     guard let mk = masterKey(words: words, coinType: cointype, passphrase: passphrase),
                           let hdKey = try? HDKey(base58: mk),
                           let childKey = try? hdKey.derive(using: path) else { return }
@@ -307,7 +301,6 @@ enum Keys {
                     let legacy = childKey.address(type: .payToPubKeyHash).description
                     
                     if address == segwit || address == wrappedSegwit || address == legacy {
-                        print("signerStruct.label: \(signerStruct.label)")
                         completion((true, signerStruct.label))
                         break
                     } else {
@@ -375,7 +368,7 @@ enum Keys {
     static func verifyAddress(_ address: String, _ path: String, _ descriptor: String, completion: @escaping ((isOurs: Bool, wallet: String?, signable: Bool, signer: String?)) -> Void) {
         CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
             guard let wallets = wallets, wallets.count > 0 else {
-                // need to check if signers can sign here
+                // need to check if signers can sign here. User using a bitcoin core only wallet.
                 completion((false, nil, false, nil))
                 return
             }
@@ -393,9 +386,11 @@ enum Keys {
                     let providedDescStr = Descriptor(descriptor)
                     
                     if let type = addressType(descStr) {
-                        print("we are getting here")
                         if !providedDescStr.isMulti && path != "no key path" {
-                            guard let fullPath = try? BIP32Path(string: path) else { completion((isOurs, walletLabel, signable, signer)); return }
+                            guard let fullPath = try? BIP32Path(string: path) else {
+                                completion((isOurs, walletLabel, signable, signer))
+                                return
+                            }
                             
                             addressSignable(address, fullPath) { (isSignable, signerLabel) in
                                 if isSignable {

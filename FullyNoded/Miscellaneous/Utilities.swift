@@ -9,27 +9,27 @@
 import Foundation
 import UIKit
 
-public func isLndNode(completion: @escaping (Bool) -> Void) {
-    CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
-        guard let nodes = nodes, nodes.count > 0 else { completion(false); return }
-        
-        var isLnd = false
-        
-        for (i, node) in nodes.enumerated() {
-            let nodeStr = NodeStruct(dictionary: node)
-            
-            if nodeStr.isLightning && nodeStr.isActive {
-                if nodeStr.macaroon != nil {
-                    isLnd = true
-                }
-            }
-            
-            if i + 1 == nodes.count {
-                completion(isLnd)
-            }
-        }
-    }
-}
+//public func isLndNode(completion: @escaping (Bool) -> Void) {
+//    CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
+//        guard let nodes = nodes, nodes.count > 0 else { completion(false); return }
+//        
+//        var isLnd = false
+//        
+//        for (i, node) in nodes.enumerated() {
+//            let nodeStr = NodeStruct(dictionary: node)
+//            
+//            if nodeStr.isLightning && nodeStr.isActive {
+//                if nodeStr.macaroon != nil {
+//                    isLnd = true
+//                }
+//            }
+//            
+//            if i + 1 == nodes.count {
+//                completion(isLnd)
+//            }
+//        }
+//    }
+//}
 
 public func decryptedValue(_ encryptedValue: Data) -> String {
     guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
@@ -216,35 +216,33 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
     var boolToReturn = Bool()
     
     switch command {
-    case .listtransactions,
-         .getbalance,
-         .getnewaddress,
-         .getwalletinfo,
-         .getrawchangeaddress,
-         .importmulti,
-         .importprivkey,
-         .rescanblockchain,
-         //.fundrawtransaction,
-         .listunspent,
-         .walletprocesspsbt,
-         .gettransaction,
-         .getaddressinfo,
-         .bumpfee,
-         //.signrawtransactionwithwallet,
-         .listaddressgroupings,
-         .listlabels,
-         .getaddressesbylabel,
-         .listlockunspent,
-         .lockunspent,
-         .abortrescan,
-         .walletcreatefundedpsbt,
-         .encryptwallet,
-         .walletpassphrase,
-         .walletpassphrasechange,
-         .walletlock,
-         .psbtbumpfee,
-         .importdescriptors:
-         //.signmessage:
+    case .setlabel,
+            .listtransactions,
+            .getbalance,
+            .getnewaddress,
+            .getwalletinfo,
+            .getrawchangeaddress,
+            .importmulti,
+            .importprivkey,
+            .rescanblockchain,
+            .listunspent,
+            .walletprocesspsbt,
+            .gettransaction,
+            .getaddressinfo,
+            .bumpfee,
+            .listaddressgroupings,
+            .listlabels,
+            .getaddressesbylabel,
+            .listlockunspent,
+            .lockunspent,
+            .abortrescan,
+            .walletcreatefundedpsbt,
+            .encryptwallet,
+            .walletpassphrase,
+            .walletpassphrasechange,
+            .walletlock,
+            .psbtbumpfee,
+            .importdescriptors:
         boolToReturn = true
         
     default:

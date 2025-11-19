@@ -96,17 +96,18 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     private func reload() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.signerTable.reloadData()
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            signerTable.reloadData()
         }
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return signers.count
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return signers.count
+        return 1
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -116,22 +117,22 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "signerCell", for: indexPath)
         cell.selectionStyle = .none
-        cell.layer.borderColor = UIColor.lightGray.cgColor
-        cell.layer.borderWidth = 0.5
-        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+//        cell.layer.borderColor = UIColor.lightGray.cgColor
+//        cell.layer.borderWidth = 0.5
+        //cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         let label = cell.viewWithTag(1) as! UILabel
-        let image = cell.viewWithTag(3) as! UIImageView
-        let background = cell.viewWithTag(4)!
-        background.clipsToBounds = true
-        let icon = UIImage(systemName: "pencil.and.ellipsis.rectangle")
-        background.backgroundColor = .black
-        background.layer.cornerRadius = 5
-        image.tintColor = .white
-        image.image = icon
+        //let image = cell.viewWithTag(3) as! UIImageView
+        //let background = cell.viewWithTag(4)!
+        //background.clipsToBounds = true
+        //let icon = UIImage(systemName: "pencil.and.ellipsis.rectangle")
+        //background.backgroundColor = .black
+        //background.layer.cornerRadius = 5
+        //image.tintColor = .systemBlue
+        //image.image = icon
         if signers.count > 0 {
-            let s = SignerStruct(dictionary: signers[indexPath.section])
+            let s = SignerStruct(dictionary: signers[indexPath.row])
             if s.label == "Signer" {
-                label.text = "Signer #\(indexPath.section + 1)"
+                label.text = "Signer #\(indexPath.row + 1)"
             } else {
                 label.text = s.label
             }
@@ -146,10 +147,10 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if !isCreatingMsig {
-            seeDetails(indexPath.section)
+            seeDetails(indexPath.row)
             
         } else {
-            promptToDeriveFromSigner(SignerStruct(dictionary: signers[indexPath.section]))
+            promptToDeriveFromSigner(SignerStruct(dictionary: signers[indexPath.row]))
             
         }
     }

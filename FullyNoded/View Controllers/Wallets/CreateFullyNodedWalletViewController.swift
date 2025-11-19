@@ -21,8 +21,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     var xpub = ""
     var deriv = ""
     var descriptor: Descriptor?
-    var isSegwit = false
-    var isTaproot = false
     let jsonDecoder = JSONDecoder()
     
     override func viewDidLoad() {
@@ -126,33 +124,9 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     @IBAction func automaticAction(_ sender: Any) {
-        promptForSingleSigFormat()
+        segueToSingleSigCreator()
     }
-    
-    private func promptForSingleSigFormat() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Choose an address format.", message: "", preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Segwit", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                self.isSegwit = true
-                self.segueToSingleSigCreator()
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Taproot", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                self.isTaproot = true
-                self.segueToSingleSigCreator()
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true, completion: nil)
-        }
-    }
-    
+        
     private func segueToSingleSigCreator() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -176,57 +150,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             self.performSegue(withIdentifier: "segueToCreateMultiSig", sender: self)
         }
     }
-    
-    
-//    private func promptToLockWallets() {
-//        CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
-//            guard let wallets = wallets else { return }
-//            
-//            DispatchQueue.main.async { [weak self] in
-//                guard let self = self else { return }
-//                
-//                let tit = "You have an existing Join Market wallet which is unlocked, you need to lock it before we can create a new one."
-//                
-//                let mess = ""
-//                
-//                let alert = UIAlertController(title: tit, message: mess, preferredStyle: .actionSheet)
-//                
-//                JMUtils.wallets { (server_wallets, message) in
-//                    guard let server_wallets = server_wallets else { return }
-//                    for server_wallet in server_wallets {
-//                        DispatchQueue.main.async {
-//                            alert.addAction(UIAlertAction(title: server_wallet, style: .default, handler: { [weak self] action in
-//                                guard let self = self else { return }
-//                                
-//                                self.spinner.addConnectingView(vc: self, description: "locking wallet...")
-//                                
-//                                for fnwallet in wallets {
-//                                    if fnwallet["id"] != nil {
-//                                        let str = Wallet(dictionary: fnwallet)
-//                                        if str.jmWalletName == server_wallet {
-//                                            JMUtils.lockWallet(wallet: str) { [weak self] (locked, message) in
-//                                                guard let self = self else { return }
-//                                                self.spinner.removeConnectingView()
-//                                                if locked {
-//                                                    showAlert(vc: self, title: "Wallet locked ✓", message: "Try joining the utxo again.")
-//                                                } else {
-//                                                    showAlert(vc: self, title: message ?? "Unknown issue locking that wallet...", message: "FN can only work with one JM wallet at a time, it looks like you need to restart your JM daemon in order to create a new wallet. Restart JM daemon and try again.")
-//                                                }
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }))
-//                        }
-//                    }
-//                }
-//                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-//                alert.popoverPresentationController?.sourceView = self.view
-//                self.present(alert, animated: true, completion: nil)
-//            }
-//        }
-//    }
-    
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
@@ -544,7 +467,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
         
         if let url = accountMap["quickConnect"] as? String {
-            QuickConnect.addNode(uncleJim: true, url: url) { (success, errorMessage) in
+            QuickConnect.addNode(url: url) { (success, errorMessage) in
                 guard success else {
                     self.spinner.removeConnectingView()
                     showAlert(vc: self, title: "Node connection issue:", message: errorMessage ?? "unknown error")
@@ -700,7 +623,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             }
             
         } else if Keys.validMnemonic(item) {
-            let (descriptors, message) = Keys.descriptorsFromSigner(item)
+            let (descriptors, message) = Keys.descriptorsFromSigner(signer: item, passphrase: nil)
             
             guard let encryptedSigner = Crypto.encrypt(item.utf8) else {
                 showAlert(vc: self, title: "Unable to encrypt your signer.", message: "Please let us know about this bug.")
@@ -778,11 +701,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
         switch segue.identifier {
-        case "segueToSeedWords":
-            guard let vc = segue.destination as? SeedDisplayerViewController else { fallthrough }
-            
-            vc.isSegwit = isSegwit
-            vc.isTaproot = isTaproot
             
         case "segueToScanner":
             if #available(macCatalyst 14.0, *) {

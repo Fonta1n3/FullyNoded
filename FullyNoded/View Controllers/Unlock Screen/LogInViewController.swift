@@ -37,10 +37,10 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         passwordInput.delegate = self
         passwordInput.returnKeyType = .done
 
-        lockView.backgroundColor = .black
+        //lockView.backgroundColor = .black
         lockView.alpha = 1
 
-        imageView.image = UIImage(named: "logo_grey.png")
+        imageView.image = UIImage(named: "iTunesArtwork@2x.png")
         imageView.alpha = 1
 
         passwordInput.keyboardType = .default
@@ -52,15 +52,16 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         passwordInput.isSecureTextEntry = true
         passwordInput.returnKeyType = .go
         passwordInput.textAlignment = .center
-        passwordInput.keyboardAppearance = .dark
+        passwordInput.keyboardAppearance = .default
         passwordInput.layer.borderWidth = 0.5
         passwordInput.layer.borderColor = UIColor.lightGray.cgColor
+        passwordInput.backgroundColor = .systemFill
 
         touchIDButton.setImage(UIImage(systemName: "faceid"), for: .normal)
-        touchIDButton.tintColor = .systemTeal
+        //touchIDButton.tintColor = .systemTeal
         touchIDButton.backgroundColor = UIColor.clear
         touchIDButton.addTarget(self, action: #selector(authenticationWithTouchID), for: .touchUpInside)
-        touchIDButton.showsTouchWhenHighlighted = true
+        //touchIDButton.showsTouchWhenHighlighted = true
 
         #if !targetEnvironment(macCatalyst)
             touchIDButton.alpha = 1
@@ -116,7 +117,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     
     private func addResetPassword() {
         resetButton.removeFromSuperview()
-        resetButton.showsTouchWhenHighlighted = true
+        //resetButton.showsTouchWhenHighlighted = true
         resetButton.setTitle("reset app", for: .normal)
         resetButton.addTarget(self, action: #selector(promptToReset), for: .touchUpInside)
         resetButton.setTitleColor(.systemRed, for: .normal)
@@ -125,7 +126,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
 
     override func viewDidLayoutSubviews() {
         lockView.frame = self.view.frame
-        imageView.frame = CGRect(x: self.view.center.x - 40, y: 40, width: 80, height: 80)
+        imageView.frame = CGRect(x: self.view.center.x - 40, y: 100, width: 80, height: 80)
         passwordInput.frame = CGRect(x: 50, y: imageView.frame.maxY + 80, width: view.frame.width - 100, height: 50)
         nextButton.frame = CGRect(x: self.view.center.x - 40, y: passwordInput.frame.maxY + 15, width: 80, height: 35)
         touchIDButton.frame = CGRect(x: self.view.center.x - 30, y: self.nextButton.frame.maxY + 20, width: 60, height: 60)
@@ -209,12 +210,12 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             guard let self = self else { return }
 
             self.nextButton.removeFromSuperview()
-            self.nextButton.showsTouchWhenHighlighted = true
-            self.nextButton.setTitle("next", for: .normal)
-            self.nextButton.setTitleColor(.systemTeal, for: .normal)
+            //self.nextButton.showsTouchWhenHighlighted = true
+            self.nextButton.setTitle("Unlock", for: .normal)
+            self.nextButton.setTitleColor(.systemBlue, for: .normal)
             self.nextButton.titleLabel?.font = UIFont.systemFont(ofSize: 17)
             self.nextButton.addTarget(self, action: #selector(self.nextButtonAction), for: .touchUpInside)
-            self.nextButton.backgroundColor = #colorLiteral(red: 0.1215686275, green: 0.1294117647, blue: 0.1411764706, alpha: 1)
+            self.nextButton.backgroundColor = .systemFill
             self.nextButton.clipsToBounds = true
             self.nextButton.layer.cornerRadius = 8
             self.view.addSubview(self.nextButton)
@@ -284,11 +285,20 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         let hashedPassword = Crypto.sha256hash(password)
 
         guard let hexData = Data(hexString: hashedPassword) else { return }
-
-        /// Overwrite users password with the hash of the password, sorry I did not do this before...
+        
+        let duressPINHash = UserDefaults.standard.object(forKey: "DuressPIN") as? String
+        
         if password == retrievedPassword {
             let _ = KeyChain.set(hexData, forKey: "UnlockPassword")
             unlock()
+            
+        } else if let duressPINHash = duressPINHash, hashedPassword == duressPINHash {
+            destroy { [weak self] destroyed in
+                guard let self = self else { return }
+                guard destroyed else { return }
+                
+                unlock()
+            }
 
         } else {
             if hexData.hexString == passwordData.hexString {
@@ -314,7 +324,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     }
 
     private func configureTimeoutLabel() {
-        nextAttemptLabel.textColor = .lightGray
+        nextAttemptLabel.textColor = .secondaryLabel
         nextAttemptLabel.frame = CGRect(x: 0, y: view.frame.maxY - 50, width: view.frame.width, height: 50)
         nextAttemptLabel.textAlignment = .center
         nextAttemptLabel.text = ""

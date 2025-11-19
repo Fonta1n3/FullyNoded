@@ -6,7 +6,7 @@
 //
 // Copied by Peter Denton on 2022-10-21
 
-import Foundation
+//import Foundation
 
 //enum NostrResponse: Decodable {
 //    case event(String, NostrEvent)

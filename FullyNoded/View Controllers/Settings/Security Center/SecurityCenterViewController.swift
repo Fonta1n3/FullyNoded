@@ -28,7 +28,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 5
+        return 6
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -52,21 +52,21 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         cell.selectionStyle = .none
         let label = cell.viewWithTag(2) as! UILabel
         let icon = cell.viewWithTag(1) as! UIImageView
-        let background = cell.viewWithTag(3)!
-        background.clipsToBounds = true
-        background.layer.cornerRadius = 8
+        icon.tintColor = .systemBlue
+        //let background = cell.viewWithTag(3)!
+        //background.clipsToBounds = true
+        //background.layer.cornerRadius = 8
         
         cell.clipsToBounds = true
-        cell.layer.cornerRadius = 8
-        cell.layer.borderWidth = 0.5
-        cell.layer.borderColor = UIColor.lightGray.cgColor
-        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+        //cell.layer.cornerRadius = 8
+        //cell.layer.borderWidth = 0.5
+        //cell.layer.borderColor = UIColor.lightGray.cgColor
         
         switch indexPath.section {
         case 0:
             icon.image = UIImage(systemName: "lock.shield")
             label.text = "V3 Authentication Key"
-            background.backgroundColor = .systemGreen
+            //background.backgroundColor = .systemGreen
             
         case 1:
             if KeyChain.getData("UnlockPassword") != nil {
@@ -77,41 +77,47 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                 icon.image = UIImage(systemName: "plus")
             }
             
-            background.backgroundColor = .systemBlue
+            //background.backgroundColor = .systemBlue
             
         case 2:
             switch indexPath.row {
-            case 0: label.text = "Set Passphrase"; icon.image = UIImage(systemName: "plus"); background.backgroundColor = .systemPink
-            case 1: label.text = "Change Passphrase"; icon.image = UIImage(systemName: "arrow.clockwise") ; background.backgroundColor = .systemGreen
-            case 2: label.text = "Encrypt"; icon.image = UIImage(systemName: "lock.shield"); background.backgroundColor = .systemOrange
-            case 3: label.text = "Decrypt"; icon.image = UIImage(systemName: "lock.open"); background.backgroundColor = .systemIndigo
-            default: break}
+            case 0: label.text = "Set Passphrase"; icon.image = UIImage(systemName: "plus"); //background.backgroundColor = .systemPink
+            case 1: label.text = "Change Passphrase"; icon.image = UIImage(systemName: "arrow.clockwise") ; //background.backgroundColor = .systemGreen
+            case 2: label.text = "Encrypt"; icon.image = UIImage(systemName: "lock.shield"); //background.backgroundColor = .systemOrange
+            case 3: label.text = "Decrypt"; icon.image = UIImage(systemName: "lock.open"); //background.backgroundColor = .systemIndigo
+            default: break
+        }
                         
         case 3:
             if ud.object(forKey: "bioMetricsDisabled") != nil {
                 label.text = "Disabled"
-                label.textColor = .darkGray
+                label.textColor = .secondaryLabel
                 icon.image = UIImage(systemName: "eye.slash")
             } else {
                 label.text = "Enabled"
-                label.textColor = .lightGray
+                label.textColor = .label
                 icon.image = UIImage(systemName: "eye")
             }
             
-            background.backgroundColor = .systemPurple
+            //background.backgroundColor = .systemPurple
             
         case 4:
             if ud.object(forKey: "passphrasePrompt") != nil {
                 label.text = "On"
-                label.textColor = .lightGray
+                label.textColor = .label
                 icon.image = UIImage(systemName: "checkmark.circle")
-                background.backgroundColor = .systemGreen
+                //background.backgroundColor = .systemGreen
             } else {
                 label.text = "Off"
-                label.textColor = .darkGray
+                label.textColor = .secondaryLabel
                 icon.image = UIImage(systemName: "xmark.circle")
-                background.backgroundColor = .systemRed
+                //background.backgroundColor = .systemRed
             }
+            
+        case 5:
+            label.text = "Duress Pin"
+            icon.image = UIImage(systemName: "person.badge.shield.exclamationmark")
+            label.textColor = .label
                         
         default:
             break
@@ -128,7 +134,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         let textLabel = UILabel()
         textLabel.textAlignment = .left
         textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
-        textLabel.textColor = .white
+        textLabel.textColor = .secondaryLabel
         textLabel.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
         switch section {
         case 0:
@@ -145,6 +151,9 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             
         case 4:
             textLabel.text = "Passphrase Prompt"
+            
+        case 5:
+            textLabel.text = "Duress Pin"
                         
         default:
             break
@@ -205,6 +214,13 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                 tableView.reloadSections([4], with: .fade)
             }
             
+        case 5:
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                performSegue(withIdentifier: "segueToDuressPin", sender: self)
+            }
+            
         default:
             break
         }
@@ -221,7 +237,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     func executNodeCommand(method: BTC_CLI_COMMAND) {
         let connectingView = ConnectingView()
         connectingView.addConnectingView(vc: self, description: "")
-        Reducer.sharedInstance.makeCommand(command: method) { [weak self] (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             if errorMessage == nil {
@@ -298,7 +314,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             let decrypt = UIAlertAction(title: "Decrypt", style: .default) { [unowned vc = self] (alertAction) in
                 let text = (alert.textFields![0] as UITextField).text
                 if text != "" {
-                    let param: Wallet_Passphrase = .init(["passphrase":text, "timeout": 600])
+                    let param: Wallet_Passphrase = .init(["passphrase": text, "timeout": 600])
                     vc.executNodeCommand(method: .walletpassphrase(param: param))
                 }
             }

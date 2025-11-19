@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import LifeHash
+//import LifeHash
 import URKit
 
 struct ModelSubtype: Identifiable, Hashable {
@@ -22,7 +22,7 @@ struct ModelSubtype: Identifiable, Hashable {
     }
 }
 
-protocol ModelObject: Fingerprintable, Identifiable, ObservableObject, Hashable {
+protocol ModelObject: Identifiable, ObservableObject, Hashable {
     var modelObjectType: ModelObjectType { get }
     var name: String { get set }
     var ur: UR { get }

@@ -9,218 +9,193 @@
 import UIKit
 
 protocol UTXOCellDelegate: AnyObject {
-    func didTapToLock(_ utxo: Utxo)
+    func didTapToLock(_ utxo: UTXO)
+    func didTapToSpendUtxo(_ utxo: UTXO)
+    func copyAddress(_ utxo: UTXO)
+    func copyTxid(_ utxo: UTXO)
+    func copyDesc(_ utxo: UTXO)
+    func editLabel(_ utxo: UTXO)
+    func getAddressInfo(_ utxo: UTXO)
+    func getTxInfo(_ utxo: UTXO)
+    func getDescriptorInfo(_ utxo: UTXO)
+    func showUtxoRawData(_ utxo: UTXO)
 }
 
 class UTXOCell: UITableViewCell {
     
     static let identifier = "UTXOCell"
-    private var utxo: Utxo!
+    private var utxo: UTXO!
     private var isLocked: Bool!
     private unowned var delegate: UTXOCellDelegate!
     
-    @IBOutlet private weak var addressLabel: UILabel!
-    @IBOutlet public weak var roundeBackgroundView: UIView!
-    @IBOutlet public weak var checkMarkImageView: UIImageView!
-    @IBOutlet private weak var confirmationsLabel: UILabel!
-    @IBOutlet private weak var spendableLabel: UILabel!
-    @IBOutlet private weak var solvableLabel: UILabel!
-    @IBOutlet private weak var amountLabel: UILabel!
-    @IBOutlet private weak var isChangeBackground: UIView!
-    @IBOutlet private weak var isChangeImageView: UIImageView!
-    @IBOutlet private weak var isSolvableBackground: UIView!
-    @IBOutlet private weak var isSolvableImageView: UIImageView!
-    @IBOutlet private weak var isDustBackground: UIView!
-    @IBOutlet private weak var isDustImageView: UIImageView!
-    @IBOutlet private weak var lockButtonOutlet: UIButton!
-    @IBOutlet private weak var reusedBackground: UIView!
-    @IBOutlet private weak var reusedImageView: UIImageView!
-    @IBOutlet private weak var derivationLabel: UILabel!
+    
+    @IBOutlet weak var spendUtxoButtonOutlet: UIButton!
+    @IBOutlet weak var addressLabel: UILabel!
+    @IBOutlet weak var checkMarkImageView: UIImageView!
+    @IBOutlet weak var confirmationsLabel: UILabel!
+    @IBOutlet weak var solvableLabel: UILabel!
+    @IBOutlet weak var amountLabel: UILabel!
+    @IBOutlet weak var labelOutlet: UILabel!
+    @IBOutlet weak var reusedLabel: UILabel!
+    @IBOutlet weak var reusedImageView: UIImageView!
+    @IBOutlet weak var changeLabel: UILabel!
+    @IBOutlet weak var dustLabel: UILabel!
+    @IBOutlet weak var confsIcon: UIImageView!
+    @IBOutlet weak var descriptorLabel: UILabel!
+    @IBOutlet weak var txidLabel: UILabel!
+    @IBOutlet weak var voutLabel: UILabel!
+    @IBOutlet weak var isChangeImageView: UIImageView!
+    @IBOutlet weak var lockButtonOutlet: UIButton!
+    @IBOutlet weak var isDustImageView: UIImageView!
+    @IBOutlet weak var isSolvableImageView: UIImageView!
+    @IBOutlet weak var fiatAmount: UILabel!
+    
+    
     
     override func awakeFromNib() {
         super.awakeFromNib()
         
-        layer.borderColor = UIColor.lightGray.cgColor
-        layer.borderWidth = 0.5
-        layer.cornerRadius = 8
-        
-        roundeBackgroundView.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
-        
-        isChangeBackground.clipsToBounds = true
-        isSolvableBackground.clipsToBounds = true
-        isDustBackground.clipsToBounds = true
-        reusedBackground.clipsToBounds = true
-        
-        isChangeBackground.layer.cornerRadius = 5
-        isSolvableBackground.layer.cornerRadius = 5
-        isDustBackground.layer.cornerRadius = 5
-        reusedBackground.layer.cornerRadius = 5
-        
-        isChangeImageView.tintColor = .white
-        isSolvableImageView.tintColor = .white
-        isDustImageView.tintColor = .white
-        reusedImageView.tintColor = .white
-        
         selectionStyle = .none
     }
     
-    func configure(utxo: Utxo, isLocked: Bool, fxRate: Double?, isSats: Bool, isBtc: Bool, isFiat: Bool, delegate: UTXOCellDelegate) {
+    func configure(wallet: Wallet?, utxo: UTXO, isLocked: Bool, fxRate: Double?, delegate: UTXOCellDelegate) {
         self.utxo = utxo
         self.isLocked = isLocked
         self.delegate = delegate
+                
+        labelOutlet.text = utxo.label?.isEmpty ?? true ? "No label" : utxo.label!
         
         if isLocked {
             lockButtonOutlet.setImage(UIImage(systemName: "lock"), for: .normal)
-            lockButtonOutlet.tintColor = .systemPink
         } else {
             lockButtonOutlet.setImage(UIImage(systemName: "lock.open"), for: .normal)
-            lockButtonOutlet.tintColor = .systemTeal
         }
         
-        if utxo.reused != nil {
-            if utxo.reused! {
+        if let reused = utxo.reused {
+            if reused {
                 reusedImageView.image = UIImage(systemName: "shield.slash")
-                reusedBackground.backgroundColor = .systemOrange
+                reusedImageView.tintColor = .systemOrange
+                reusedLabel.text = "Address reused!"
             } else {
                 reusedImageView.image = UIImage(systemName: "shield")
-                reusedBackground.backgroundColor = .systemIndigo
+                reusedImageView.tintColor = .none
+                reusedLabel.text = "Used once"
             }
-            reusedImageView.alpha = 1
-            reusedBackground.alpha = 1
         } else {
-            reusedImageView.alpha = 0
-            reusedBackground.alpha = 0
+            reusedImageView.image = UIImage(systemName: "questionmark")
         }
         
-        if let desc = utxo.desc ?? utxo.path {
+        if let desc = utxo.desc {
             if desc.contains("/1/") {
                 isChangeImageView.image = UIImage(systemName: "arrow.2.circlepath")
-                isChangeBackground.backgroundColor = .systemPurple
-                
+                isChangeImageView.tintColor = .none
+                changeLabel.text = "Change address"
             } else {
                 isChangeImageView.image = UIImage(systemName: "arrow.down.left")
-                isChangeBackground.backgroundColor = .systemBlue
+                isChangeImageView.tintColor = .none
+                changeLabel.text = "Receive address"
             }
-            let descriptor = Descriptor(desc)
-            derivationLabel.text = descriptor.derivation
             
         } else {
             isChangeImageView.image = UIImage(systemName: "questionmark")
-            isChangeBackground.backgroundColor = .clear
+            changeLabel.text = "Unknown address type"
         }
         
-        if let path = utxo.path, let mixdepth = utxo.mixdepth {
-            derivationLabel.text = path + " mixdepth: \(mixdepth)"
+        amountLabel.text = utxo.btcAmount
+        
+        if let fxRate = fxRate {
+            let doubleValue = NSDecimalNumber(decimal: utxo.amount).doubleValue
+            fiatAmount.text = (doubleValue * fxRate).fiatString
+        }
+            
+        if utxo.amount <= 0.00010000 {
+            isDustImageView.image = UIImage(systemName: "exclamationmark.triangle")
+            isDustImageView.tintColor = .systemRed
+            dustLabel.text = "Dust amount!"
+        } else {
+            isDustImageView.image = UIImage(systemName: "checkmark")
+            isDustImageView.tintColor = .none
+            dustLabel.text = "Not dust"
+        }
+        
+        var walletLabel = UserDefaults.standard.object(forKey: "walletName") as! String
+        
+        if let wallet = wallet {
+            walletLabel = wallet.label
+        }
+                
+        if utxo.solvable {
+            solvableLabel.text = "Owned by \(walletLabel)"
+            isSolvableImageView.tintColor = .none
+            isSolvableImageView.image = UIImage(systemName: "person.crop.circle.fill.badge.checkmark")
+        } else {
+            solvableLabel.text = "Not owned by \(walletLabel)!"
+            isSolvableImageView.tintColor = .systemRed
+            isSolvableImageView.image = UIImage(systemName: "person.crop.circle.badge.xmark")
+        }
+        
+        if Int(utxo.confirmations) == 0 {
+            confsIcon.tintColor = .systemRed
+        } else {
+            confsIcon.tintColor = .none
+        }
+            
+        confirmationsLabel.text = "\(utxo.confirmations) confirmations"
+        
+        if let desc = utxo.desc {
+            descriptorLabel.text = desc
         }
         
         if let address = utxo.address {
             addressLabel.text = address
         }
-                
-        if let amount = utxo.amount {
-            if isFiat {
-                amountLabel.text = utxo.amountFiat ?? "missing fx rate"
-            } else if isBtc {
-                amountLabel.text = amount.btcBalanceWithSpaces
-            } else if isSats {
-                amountLabel.text = amount.sats
-            }
-            
-            if amount <= 0.00010000 {
-                isDustImageView.image = UIImage(systemName: "exclamationmark.triangle")
-                isDustBackground.backgroundColor = .systemRed
-            } else {
-                isDustImageView.image = UIImage(systemName: "checkmark")
-                isDustBackground.backgroundColor = .darkGray
-            }
-            
-        }  else {
-            isDustImageView.image = UIImage(systemName: "questionmark")
-            isDustBackground.backgroundColor = .clear
-            amountLabel.text = "?"
-        }
-
-        if utxo.isSelected {
-            checkMarkImageView.alpha = 1
-            self.roundeBackgroundView.backgroundColor = .darkGray
-        } else {
-            checkMarkImageView.alpha = 0
-            self.roundeBackgroundView.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
-        }
         
-        if utxo.solvable != nil {
-            if utxo.solvable! {
-                solvableLabel.text = "Solvable"
-                solvableLabel.textColor = .systemGreen
-                
-                isSolvableBackground.backgroundColor = .systemGreen
-                isSolvableImageView.image = UIImage(systemName: "person.crop.circle.fill.badge.checkmark")
-            } else {
-                solvableLabel.text = "Not Solvable"
-                solvableLabel.textColor = .systemBlue
-                
-                isSolvableBackground.backgroundColor = .systemRed
-                isSolvableImageView.image = UIImage(systemName: "person.crop.circle.badge.xmark")
-            }
-        } else {
-            solvableLabel.text = "?"
-            solvableLabel.textColor = .lightGray
-            isSolvableImageView.image = UIImage(systemName: "questionmark")
-            isSolvableBackground.backgroundColor = .clear
-        }
+        txidLabel.text = utxo.txid
+        voutLabel.text = "\(utxo.vout)"
         
-        if utxo.confs != nil {
-            if Int(utxo.confs!) == 0 {
-                confirmationsLabel.textColor = .systemRed
-            } else {
-                confirmationsLabel.textColor = .systemGreen
-            }
-            
-            confirmationsLabel.text = "\(utxo.confs!) confs"
-        } else {
-            confirmationsLabel.text = "?"
-            confirmationsLabel.textColor = .lightGray
-        }
+        self.translatesAutoresizingMaskIntoConstraints = true
+        self.sizeToFit()
     }
-    
-    func selectedAnimation() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
             
-            UIView.animate(withDuration: 0.2, animations: {
-                self.alpha = 0
-            }) { _ in
-                UIView.animate(withDuration: 0.2, animations: {
-                    self.alpha = 1
-                    self.checkMarkImageView.alpha = 1
-                    self.roundeBackgroundView.backgroundColor = .darkGray
-                    
-                })
-            }
-        }
-    }
-    
-    func deselectedAnimation() {
-        DispatchQueue.main.async {
-            
-            UIView.animate(withDuration: 0.2, animations: { [weak self] in
-                guard let self = self else { return }
-                
-                self.checkMarkImageView.alpha = 0
-                self.alpha = 0
-            }) { _ in
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    self.alpha = 1
-                    self.roundeBackgroundView.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
-                    
-                })
-            }
-        }
-    }
-    
     @IBAction func lockButtonTapped(_ sender: Any) {
         delegate.didTapToLock(utxo)
     }
+    
+    @IBAction func sendUtxoTapped(_ sender: Any) {
+        delegate.didTapToSpendUtxo(utxo)
+    }
+    
+    @IBAction func copyAddressTapped(_ sender: Any) {
+        delegate.copyAddress(utxo)
+    }
+    
+    @IBAction func copyTxidTapped(_ sender: Any) {
+        delegate.copyTxid(utxo)
+    }
+    
+    @IBAction func copyDescriptorTapped(_ sender: Any) {
+        delegate.copyDesc(utxo)
+    }
+    
+    @IBAction func editLabelTapped(_ sender: Any) {
+        delegate.editLabel(utxo)
+    }
+    
+    @IBAction func getAddressInfoTapped(_ sender: Any) {
+        delegate.getAddressInfo(utxo)
+    }
+    
+    @IBAction func getTxInfoTapped(_ sender: Any) {
+        delegate.getTxInfo(utxo)
+    }
+    
+    @IBAction func getDescInfoTapped(_ sender: Any) {
+        delegate.getDescriptorInfo(utxo)
+    }
+    
+    @IBAction func showUtxoRawData(_ sender: Any) {
+        delegate.showUtxoRawData(utxo)
+    }
+    
     
 }

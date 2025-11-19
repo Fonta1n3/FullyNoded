@@ -193,7 +193,7 @@ class BlindPsbt {
                 let startIndex = Int(wallet.index + 4)
                 let descriptor = wallet.changeDescriptor
                 let param:Derive_Addresses = .init(["descriptor": descriptor, "range": [startIndex, startIndex]])
-                Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { (response, errorMessage) in
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .deriveaddresses(param: param)) { (response, errorMessage) in
                     guard let addresses = response as? [String] else {
                         completion((nil, "addresses not returned: \(errorMessage ?? "unknown error.")"))
                         return
@@ -228,7 +228,7 @@ class BlindPsbt {
             var totalOutputAmount = 0.0
             
             let param:Derive_Addresses = .init(["descriptor": descriptor, "range": [startIndex, stopIndex]])
-            Reducer.sharedInstance.makeCommand(command: .deriveaddresses(param: param)) { (response, errorMessage) in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .deriveaddresses(param: param)) { (response, errorMessage) in
                 guard let addresses = response as? [String] else {
                     completion((nil, "addresses not returned: \(errorMessage ?? "unknown error.")"))
                     return
@@ -291,7 +291,7 @@ class BlindPsbt {
         var inputArray:[[String:Any]] = []
         
         let decode_param:Decode_Psbt = .init(["psbt": psbt])
-        Reducer.sharedInstance.makeCommand(command: .decodepsbt(param: decode_param)) { (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .decodepsbt(param: decode_param)) { (response, errorMessage) in
             guard let dict = response as? NSDictionary else {
                 completion((nil, errorMessage))
                 return
@@ -333,7 +333,7 @@ class BlindPsbt {
                             return
                         }
                         let param:Join_Psbt = .init(["txs": [ourPsbt, decryptedPsbtData.base64EncodedString()]])
-                        Reducer.sharedInstance.makeCommand(command: .joinpsbts(param)) { (response, errorMessage) in
+                        MakeRPCCall.sharedInstance.executeRPCCommand(method: .joinpsbts(param)) { (response, errorMessage) in
                             guard let response = response as? String else {
                                 completion((nil, "There was an error joining the psbts: \(errorMessage ?? "unknown error")"))
                                 return
@@ -387,7 +387,7 @@ class BlindPsbt {
         paramDict["options"] = options
         let param: Wallet_Create_Funded_Psbt = .init(paramDict)
                 
-        Reducer.sharedInstance.makeCommand(command: .walletcreatefundedpsbt(param: param)) { (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletcreatefundedpsbt(param: param)) { (response, errorMessage) in
             guard let result = response as? NSDictionary, let psbt = result["psbt"] as? String else {
                 var desc = errorMessage ?? "unknown error"
                 if desc.contains("Unexpected key fee_rate") {

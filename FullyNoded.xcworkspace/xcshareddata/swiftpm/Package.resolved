@@ -1,5 +1,5 @@
 {
-  "originHash" : "34885d4311103fd471ee95e9ed607469c915554d9c79e294bdd6657a428ad45f",
+  "originHash" : "24109acb7b4b1b2f6becee49ebea709e70bca8c2170182cc9f65fbed5c79d555",
   "pins" : [
     {
       "identity" : "bbqr-swift",
@@ -8,15 +8,6 @@
       "state" : {
         "revision" : "83b828077ecc4f5d2cf8889da5543a61b4a60a3c",
         "version" : "0.3.1"
-      }
-    },
-    {
-      "identity" : "bc-lifehash",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/BlockchainCommons/bc-lifehash",
-      "state" : {
-        "revision" : "9f1d125749b763b932619e682588bb7f26933d29",
-        "version" : "0.4.1"
       }
     },
     {
@@ -44,24 +35,6 @@
       "state" : {
         "revision" : "ced8d92c7cc53375cdf9806c59251fe0161f02ec",
         "version" : "0.2.3"
-      }
-    },
-    {
-      "identity" : "lifehash",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/BlockchainCommons/LifeHash",
-      "state" : {
-        "revision" : "fb842d1378b960be6750267e98ae6ce8f287054d",
-        "version" : "6.3.2"
-      }
-    },
-    {
-      "identity" : "secp256k1.swift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/jb55/secp256k1.swift.git",
-      "state" : {
-        "branch" : "main",
-        "revision" : "40b4b38b3b1c83f7088c76189a742870e0ca06a9"
       }
     },
     {

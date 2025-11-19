@@ -296,7 +296,7 @@ class ImportWallet {
             if password != "" {
                 UserDefaults.standard.setValue(name, forKey: "walletName")
                 let param:Wallet_Passphrase = .init(["passphrase":password, "timeout":600])
-                Reducer.sharedInstance.makeCommand(command: .walletpassphrase(param: param)) { (response, errorMessage) in
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletpassphrase(param: param)) { (response, errorMessage) in
                     if errorMessage == nil {
                         completion((name, message))
                     } else {

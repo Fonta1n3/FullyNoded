@@ -7,6 +7,7 @@
 //
 
 public enum BTC_CLI_COMMAND {
+    case setban(_ param: Set_Ban)
     case scantxoutset(_ param: Scan_Tx_Out)
     case abortrescan
     case listlockunspent
@@ -67,9 +68,14 @@ public enum BTC_CLI_COMMAND {
     case testmempoolaccept(_ param: Test_Mempool_Accept)
     case psbtbumpfee(param: PSBT_Bump_Fee)
     case importdescriptors(param: Import_Descriptors)
+    case setlabel(param: Set_Label_Param)
     
     var stringValue:String {
         switch self {
+        case .setban:
+            return "setban"
+        case .setlabel:
+            return "setlabel"
         case .scantxoutset:
             return "scantxoutset"
         case .abortrescan:
@@ -195,6 +201,10 @@ public enum BTC_CLI_COMMAND {
     
     var paramDict:[String:Any] {
         switch self {
+        case .setban(param: let setBan):
+            return setBan.param
+        case .setlabel(param: let setLabel):
+            return setLabel.param
         case .analyzepsbt(param: let analyzePsbt):
             return analyzePsbt.param
         case .getbalance(param: let getBalance):
@@ -261,6 +271,8 @@ public enum BTC_CLI_COMMAND {
     }
     
     static let all: [BTC_CLI_COMMAND] = [
+        setban(.init(dict: [:])),
+        setlabel(param: .init([:])),
         scantxoutset(.init([:])),
         abortrescan,
         listlockunspent,
@@ -335,165 +347,5 @@ public enum BTC_CLI_COMMAND {
         }
         guard let c = c else { return nil }
         self = c
-    }
-}
-
-
-
-public enum LIGHTNING_CLI: String {
-    case listconfigs = "listconfigs"
-    case getinfo = "getinfo"
-    case invoice = "invoice"
-    case offer = "offer"
-    case fetchinvoice = "fetchinvoice"
-    case newaddr = "newaddr"
-    case listfunds = "listfunds"
-    case listtransactions = "listtransactions"
-    case txprepare = "txprepare"
-    case txsend = "txsend"
-    case pay = "pay"
-    case decode = "decode"
-    case decodepay = "decodepay"
-    case connect = "connect"
-    case fundchannel_start = "fundchannel_start"
-    case fundchannel_complete = "fundchannel_complete"
-    case listpeers = "listpeers"
-    case listsendpays = "listsendpays"
-    case listinvoices = "listinvoices"
-    case withdraw = "withdraw"
-    case getroute = "getroute"
-    case listchannels = "listchannels"
-    case sendpay = "sendpay"
-    case rebalance = "rebalance"
-    case keysend = "keysend"
-    case listnodes = "listnodes"
-    case sendmsg = "sendmsg"
-    case recvmsg = "recvmsg"
-    case close = "close"
-    case disconnect = "disconnect"
-}
-
-public enum LND_REST: String {
-    case walletbalance
-    case getinfo
-    case channelbalance
-    case addinvoice
-    case payreq, decodepayreq
-    case getnewaddress
-    case sendcoins, gettransactions
-    case routepayment
-    case payinvoice
-    case listpeers, connect
-    case listchannels
-    case getnodeinfo
-    case queryroutes
-    case openchannel
-    case fundingstep
-    case closechannel
-    case fwdinghistory
-    case disconnect
-    case keysend
-    case listpayments
-    case listinvoices
-    
-    var stringValue:String {
-        switch self {
-        case .connect, .listpeers, .disconnect:
-            return "v1/peers"
-        case .sendcoins, .gettransactions:
-            return "v1/transactions"
-        case .payreq, .decodepayreq:
-            return "v1/payreq"
-        case .walletbalance:
-            return "v1/balance/blockchain"
-        case .getinfo:
-            return "v1/getinfo"
-        case .channelbalance:
-            return "v1/balance/channels"
-        case .addinvoice, .listinvoices:
-            return "v1/invoices"
-        case .getnewaddress:
-            return "v2/wallet/address/next"
-        case .routepayment:
-            return "v1/channels/transactions/route"
-        case .payinvoice, .keysend:
-            return "v1/channels/transactions"
-        case .listchannels, .openchannel, .closechannel:
-            return "v1/channels"
-        case .getnodeinfo:
-            return "v1/graph/node"
-        case .queryroutes:
-            return "v1/graph/routes"
-        case .fundingstep:
-            return "v1/funding/step"
-        case .fwdinghistory:
-            return "v1/switch"
-        case .listpayments:
-            return "v1/payments"
-        }
-    }
-}
-
-let rootUrl = "api/v1"
-
-public enum JM_REST {
-    case walletall
-    case walletcreate
-    case session
-    case lockwallet(jmWallet: Wallet)
-    case unlockwallet(jmWallet: Wallet)
-    case walletdisplay(jmWallet: Wallet)
-    case getaddress(jmWallet: Wallet, mixdepth: Int)
-    case coinjoin(jmWallet: Wallet)
-    case makerStart(jmWallet: Wallet)
-    case makerStop(jmWallet: Wallet)
-    case takerStop(jmWallet: Wallet)
-    case configGet(jmWallet: Wallet)
-    case configSet(jmWallet: Wallet)
-    case gettimelockaddress(jmWallet: Wallet, date: String)
-    case getSeed(jmWallet: Wallet)
-    case unfreeze(jmWallet: Wallet)
-    case listutxos(jmWallet: Wallet)
-    case directSend(jmWallet: Wallet)
-    
-    var stringValue:String {
-        switch self {
-        case .walletall:
-            return "\(rootUrl)/wallet/all"
-        case .session:
-            return "\(rootUrl)/session"
-        case .walletcreate:
-            return "\(rootUrl)/wallet/create"
-        case .lockwallet(let wallet):
-            return "\(rootUrl)/wallet/\(wallet.jmWalletName)/lock"
-        case .unlockwallet(jmWallet: let wallet):
-            return "\(rootUrl)/wallet/\(wallet.jmWalletName)/unlock"
-        case .walletdisplay(jmWallet: let wallet):
-            return "\(rootUrl)/wallet/\(wallet.jmWalletName)/display"
-        case .getaddress(jmWallet: let wallet, mixdepth: let mixdepth):
-            return "\(rootUrl)/wallet/\(wallet.jmWalletName)/address/new/\(mixdepth)"
-        case .coinjoin(jmWallet: let wallet):
-            return "\(rootUrl)/wallet/\(wallet.jmWalletName)/taker/coinjoin"
-        case .makerStart(jmWallet: let wallet):
-            return "\(rootUrl)/wallet/\(wallet.jmWalletName)/maker/start"
-        case .makerStop(jmWallet: let wallet):
-            return "\(rootUrl)/wallet/\(wallet.jmWalletName)/maker/stop"
-        case .takerStop(jmWallet: let wallet):
-            return "\(rootUrl)/wallet/\(wallet.jmWalletName)/taker/stop"
-        case .configGet(jmWallet: let wallet):
-            return "\(rootUrl)/wallet/\(wallet.jmWalletName)/configget"
-        case .configSet(jmWallet: let wallet):
-            return "\(rootUrl)/wallet/\(wallet.jmWalletName)/configset"
-        case .gettimelockaddress(jmWallet: let wallet, date: let date):
-            return "\(rootUrl)/wallet/\(wallet.jmWalletName)/address/timelock/new/\(date)"
-        case .getSeed(jmWallet: let wallet):
-            return "\(rootUrl)/wallet/\(wallet.jmWalletName)/getseed"
-        case .unfreeze(jmWallet: let wallet):
-            return "\(rootUrl)/wallet/\(wallet.jmWalletName)/freeze"
-        case .listutxos(jmWallet: let wallet):
-            return "\(rootUrl)/wallet/\(wallet.jmWalletName)/utxos"
-        case .directSend(jmWallet: let wallet):
-            return "\(rootUrl)/wallet/\(wallet.jmWalletName)/taker/direct-send"
-        }
     }
 }

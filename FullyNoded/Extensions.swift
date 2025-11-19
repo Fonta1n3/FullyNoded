@@ -128,11 +128,16 @@ public extension String {
     }
     
     var withCommas: String {
-        let dbl = Double(self)!
-        let numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = NumberFormatter.Style.decimal
-        numberFormatter.locale = Locale(identifier: "en_US")
-        return numberFormatter.string(from: NSNumber(value:dbl))!
+        if self.doubleValue > 1.0 {
+            let dbl = Double(self)!
+            let numberFormatter = NumberFormatter()
+            numberFormatter.numberStyle = NumberFormatter.Style.decimal
+            numberFormatter.locale = Locale(identifier: "en_US")
+            return numberFormatter.string(from: NSNumber(value:dbl))!
+        } else {
+            return self
+        }
+        
     }
     
     var utf8: Data {
@@ -140,8 +145,7 @@ public extension String {
     }
     
     func condenseWhitespace() -> String {
-        let components = self.components(separatedBy: .whitespacesAndNewlines)
-        return components.filter { !$0.isEmpty }.joined(separator: " ")
+        return self.replacingOccurrences(of: " ", with: "")
     }
     
     var isAlphanumeric: Bool {
@@ -407,7 +411,17 @@ public extension Double {
         return self / 100000000.0
     }
     
+    var isWholeNumber: Bool {
+        return truncatingRemainder(dividingBy: 1) == 0
+    }
+    
     var btcBalanceWithSpaces: String {
+        if (self * 1.0).isWholeNumber {
+            return "\(self)"
+        }
+        if self > 10 {
+            return Swift.abs(self.rounded(toPlaces: 2)).avoidNotation.replacingOccurrences(of: ",", with: "")
+        }
         var btcBalance = Swift.abs(self.rounded(toPlaces: 8)).avoidNotation
         btcBalance = btcBalance.replacingOccurrences(of: ",", with: "")
         
@@ -468,6 +482,27 @@ public extension Int {
         numberFormatter.numberStyle = NumberFormatter.Style.decimal
         numberFormatter.locale = Locale(identifier: "en_US")
         return numberFormatter.string(from: NSNumber(value:self))!
+    }
+    
+    var dateFromUnixTimestampInt: String {
+        // 1. Create a Date object from the Unix epoch timestamp.
+        // The Unix epoch is in seconds, so cast the Int to TimeInterval.
+        let date = Date(timeIntervalSince1970: TimeInterval(self))
+        
+        // 2. Create a DateFormatter instance.
+        let dateFormatter = DateFormatter()
+        
+        // 3. Set the date style and time style to use the device's locale defaults.
+        // This will automatically adapt the format to the user's regional settings.
+        dateFormatter.dateStyle = .medium // Or .short, .long, .full
+        dateFormatter.timeStyle = .medium // Or .short, .long, .full
+        
+        // 4. Optionally, set the locale explicitly if you need a specific locale,
+        // otherwise, it defaults to the user's current locale.
+        // dateFormatter.locale = Locale(identifier: "en_US")
+        
+        // 5. Convert the Date object to a string using the formatter.
+        return dateFormatter.string(from: date)
     }
     
 }

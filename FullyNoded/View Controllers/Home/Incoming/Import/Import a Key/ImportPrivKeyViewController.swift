@@ -211,7 +211,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func importPrivKey(param: String) {
-        Reducer.sharedInstance.makeCommand(command: .importprivkey) { (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .importprivkey) { (response, errorMessage) in
             self.connectingView.removeConnectingView()
             if errorMessage == nil {
                 self.triggerRescan()
