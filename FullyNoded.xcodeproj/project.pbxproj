@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -57,6 +57,7 @@
 		0A9287FA2EC9930A002484C3 /* CertificateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9287F92EC9930A002484C3 /* CertificateManager.swift */; };
 		0A9FDC9126A84CE30050C4AE /* WalletTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9FDC9026A84CE30050C4AE /* WalletTypes.swift */; };
 		0AA6EFFC2C7E65F900503A39 /* URKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA6EFFB2C7E65F900503A39 /* URKit */; };
+		0AD2023F2ECEDBF3006286DD /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0AD2023E2ECEDBF3006286DD /* BitcoinDevKit */; };
 		0AD8AD5029FF45B200F1ADD8 /* InvoiceSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD8AD4F29FF45B200F1ADD8 /* InvoiceSettingsViewController.swift */; };
 		0AD9490A273C051B00AF83F5 /* ExternalFNWalletsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD94909273C051B00AF83F5 /* ExternalFNWalletsViewController.swift */; };
 		0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */; };
@@ -360,6 +361,7 @@
 				0AA6EFFC2C7E65F900503A39 /* URKit in Frameworks */,
 				0AFD7CF32C7E5FB100C46E36 /* Bbqr in Frameworks */,
 				0A8850FF2A4201C10078A603 /* LibWally.xcframework in Frameworks */,
+				0AD2023F2ECEDBF3006286DD /* BitcoinDevKit in Frameworks */,
 				F4505B6A72D68BD208B4904B /* Pods_FullyNoded.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -926,6 +928,7 @@
 			packageProductDependencies = (
 				0AFD7CF22C7E5FB100C46E36 /* Bbqr */,
 				0AA6EFFB2C7E65F900503A39 /* URKit */,
+				0AD2023E2ECEDBF3006286DD /* BitcoinDevKit */,
 			);
 			productName = BitSense;
 			productReference = D00B9A242111427200E8B95A /* FullyNoded.app */;
@@ -1000,6 +1003,7 @@
 			packageReferences = (
 				0AFD7CF12C7E5FB100C46E36 /* XCRemoteSwiftPackageReference "bbqr-swift" */,
 				0AA6EFFA2C7E65F900503A39 /* XCRemoteSwiftPackageReference "URKit" */,
+				0AD2023D2ECEDBF3006286DD /* XCLocalSwiftPackageReference "../bdk-swift" */,
 			);
 			productRefGroup = D00B9A252111427200E8B95A /* Products */;
 			projectDirPath = "";
@@ -1581,6 +1585,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		0AD2023D2ECEDBF3006286DD /* XCLocalSwiftPackageReference "../bdk-swift" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../bdk-swift";
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		0AA6EFFA2C7E65F900503A39 /* XCRemoteSwiftPackageReference "URKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -1605,6 +1616,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0AA6EFFA2C7E65F900503A39 /* XCRemoteSwiftPackageReference "URKit" */;
 			productName = URKit;
+		};
+		0AD2023E2ECEDBF3006286DD /* BitcoinDevKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BitcoinDevKit;
 		};
 		0AFD7CF22C7E5FB100C46E36 /* Bbqr */ = {
 			isa = XCSwiftPackageProductDependency;
