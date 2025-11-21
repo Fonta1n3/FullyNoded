@@ -424,13 +424,12 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         if segue.identifier == "updateNode" {
             if let vc = segue.destination as? NodeDetailViewController {
                 vc.selectedNode = self.nodeArray[selectedIndex]
-                vc.createNew = false
             }
         }
         
         if segue.identifier == "segueToAddBitcoinCoreNode" {
             if let vc = segue.destination as? NodeDetailViewController {
-                vc.createNew = true
+                vc.selectedNode = nil
             }
         }
         

@@ -13,8 +13,7 @@ import UniformTypeIdentifiers
 class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
     let spinner = ConnectingView()
-    var selectedNode:[String:Any]?
-    var createNew = Bool()
+    var selectedNode: [String:Any]?
     var newNode = [String:Any]()
     var isInitialLoad = Bool()
     var scanNow = false
@@ -48,7 +47,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         rpcPassword.delegate = self
         rpcUserField.delegate = self
         onionAddressField.delegate = self
-        //certField.delegate = self
+        certField.delegate = self
                
         rpcPassword.isSecureTextEntry = true
         onionAddressField.isSecureTextEntry = false
@@ -62,14 +61,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         rpcAuthLabel.numberOfLines = 0
         rpcAuthLabel.sizeToFit()
         rpcAuthLabel.translatesAutoresizingMaskIntoConstraints = false
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        loadValues()
         
-        if scanNow {
-            segueToScanNow()
-        }
+        loadValues()
     }
     
     @IBAction func pasteCertAction(_ sender: Any) {
@@ -83,7 +76,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     @IBAction func deleteCertAction(_ sender: Any) {
-        let n = NodeStruct(dictionary: newNode)
+        let n = NodeStruct(dictionary: selectedNode ?? newNode)
         guard let id = n.id, let _ = n.cert else {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -133,9 +126,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         self.present(alert, animated: true)
     }
-    
-    
-    
+        
     @IBAction func showRpcAuthInfoAction(_ sender: Any) {
         showAlert(vc: self, title: "RPC Auth", message: "RPC Authentication is much more secure then storing your rpc password in your bitcoin.conf. An attacker can not access your node or derive your rpc password from this text. The rpcauth text displayed in Fully Noded is dynamic, you may see it change and that is OK. If you edit your rpcuser or rpcpassword you will need to export the rpcauth to your bitcoin.conf and restart your node to connect.")
     }
@@ -207,18 +198,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         showAlert(vc: self, title: "", message: "Rpc auth copied ✓")
     }
     
-    @IBAction func scanQuickConnect(_ sender: Any) {
-        segueToScanNow()
-    }
-    
-    private func segueToScanNow() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.performSegue(withIdentifier: "segueToScanNodeCreds", sender: self)
-        }
-    }
-    
     private func encryptCert(_ certText: String) -> Data? {
         let certData = Data(certText.utf8)
          
@@ -231,154 +210,190 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     @IBAction func save(_ sender: Any) {
+        var encryptedCert: Data?
         
+        guard let address = onionAddressField.text, address != "" else {
+            showAlert(vc: self, title: "", message: "You need to add an address first.")
+            return
+        }
+        
+        guard let user = rpcUserField.text, user != "" else {
+            showAlert(vc: self, title: "", message: "You need to add a rpc user first.")
+            return
+        }
+        
+        guard let pass = rpcPassword.text, pass != "" else {
+            showAlert(vc: self, title: "", message: "You need to add an rpc password first.")
+            return
+        }
+        
+        guard let label = nodeLabel.text, label != "" else {
+            showAlert(vc: self, title: "", message: "You need to add a label first.")
+            return
+        }
+        
+        let arr = address.split(separator: ":")
+        let addressData = address.utf8
+    
+        guard arr.count == 2 else {
+            showAlert(vc: self, title: "Not updated, port missing...", message: "Please make sure you add the port at the end of your hostname, such as xxxx.onion:8332.\n\n8332 for mainnet, 18332 for testnet, 38332 for signet or 18443 for regtest.")
+            return
+        }
+            
+        if let cert = certField.text, cert != "" {
+            if let encCert = encryptedValue(certField.text!.condenseWhitespace().utf8) {
+                encryptedCert = encCert
+            }
+        } else {
+            guard address.contains(".onion") || address.hasPrefix("localhost:") || address.hasPrefix("127.0.0.1:") else {
+                showAlert(vc: self, title: "Node not updated!", message: "You are not using an onion address or localhost. If using LAN then a SSL cert is required, you will need the text of the cert, in terminal you can run: cat /path/to/your/cert.crt to get the text.")
+                return
+            }
+        }
+            
         func encryptedValue(_ decryptedValue: Data) -> Data? {
             return Crypto.encrypt(decryptedValue)
         }
         
-        if createNew || selectedNode == nil {
+        guard let encAddress = encryptedValue(addressData)  else {
+            showAlert(vc: self, title: "", message: "Error encrypting the address.")
+            return
+        }
+        
+        guard let encUser = encryptedValue(user.utf8) else {
+            showAlert(vc: self, title: "", message: "Error encrypting the rpc user.")
+            return
+        }
+        
+        guard let encPass = encryptedValue(pass.utf8) else {
+            showAlert(vc: self, title: "", message: "Error encrypting the rpc password.")
+            return
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            guard let auth = RPCAuth().generateCreds(username: user, password: pass) else {
+                showAlert(vc: self, title: "Node not saved.", message: "Unable to create an rpc auth string. Please let us know about this!")
+                return
+            }
+            
+            rpcAuthLabel.text = auth.rpcAuth
+        }
+        
+        if selectedNode == nil {
             newNode["id"] = UUID()
             newNode["isLightning"] = false
-            
-            if let onionAddressText = onionAddressField.text {
-                guard let encryptedOnionAddress = encryptedValue(onionAddressText.utf8)  else {
-                    showAlert(vc: self, title: "", message: "Error encrypting the address.")
-                    return
-                }
-                newNode["onionAddress"] = encryptedOnionAddress
-            }
-            
-            if nodeLabel.text != "" {
-                newNode["label"] = nodeLabel.text!
-            }
-            
-            if rpcUserField.text != "" {
-                guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
-                newNode["rpcuser"] = enc
-            }
-            
-            if rpcPassword.text != "" {
-                guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
-                newNode["rpcpassword"] = enc
-            }
-            
-            if let cert = certField.text {
-                guard let encryptedCert = encryptCert(cert.condenseWhitespace()) else {
-                    return
-                }
-                newNode["cert"] = encryptedCert
-            }
-            
-            
-            func save() {
-                CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
-                    if nodes != nil {
-                        if nodes!.count == 0 {
-                            vc.newNode["isActive"] = true
-                        } else {
-                            vc.newNode["isActive"] = false
-                        }
-                        
-                        CoreDataService.saveEntity(dict: vc.newNode, entityName: .newNodes) { [unowned vc = self] success in
-                            if success {
-                                vc.nodeAddedSuccess()
-                            } else {
-                                displayAlert(viewController: vc, isError: true, message: "Error saving node.")
-                            }
-                        }
-                    }
-                }
-            }
-            guard nodeLabel.text != "" else {
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Fill out all fields first")
-                return
-            }
-            
-            guard let address = onionAddressField.text, address != "" else {
-                showAlert(vc: self, title: "", message: "You need to enter an address.")
-                return
-            }
-            
-            if !address.contains(".onion") && certField.text == nil || certField.text == "" {
-                showAlert(vc: self, title: "Warning!", message: "You are not using an onion address, your network traffic will not be routed over Tor! This is for connecting to nodes over localhost and LAN only, if using LAN https will be used and you must add the base64 SSL cert.")
-            } else {
-                save()
-            }
+            newNode["label"] = label
+            newNode["onionAddress"] = encAddress
+            newNode["rpcuser"] = encUser
+            newNode["rpcpassword"] = encPass
+            newNode["cert"] = encryptedCert
+            saveNewNode()
             
         } else {
             //updating
-            let id = selectedNode!["id"] as! UUID
-            
-            if nodeLabel.text != "" {
-                CoreDataService.update(id: id, keyToUpdate: "label", newValue: nodeLabel.text!, entity: .newNodes) { success in
-                    if !success {
-                        displayAlert(viewController: self, isError: true, message: "error updating label")
-                    }
-                }
-            }
-                        
-            if rpcUserField.text != "" {
-                guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
-                CoreDataService.update(id: id, keyToUpdate: "rpcuser", newValue: enc, entity: .newNodes) { success in
-                    if !success {
-                        displayAlert(viewController: self, isError: true, message: "error updating rpc username")
-                    }
-                }
+            guard let selectedNode = selectedNode else {
+                showAlert(vc: self, title: "", message: "Selected node does not exist.")
+                return
             }
             
-            if rpcPassword.text != "" {
-                guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
-                CoreDataService.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { [weak self] success in
+            // This check is for backwards compatibility where there was a bug from long ago where an ID did not exist.
+            guard let id = selectedNode["id"] as? UUID else {
+                return
+            }
+            
+            updateNodeValues(id: id, label: label, encUser: encUser, encPass: encPass, encAddress: encAddress, encCert: encryptedCert)
+        }
+    }
+    
+    func updateNodeValues(id: UUID, label: String, encUser: Data, encPass: Data, encAddress: Data, encCert: Data?) {
+        
+        updateNodeValue(id: id, keyToUpdate: "label", newValue: label) { [weak self] (updated, errorMessage) in
+            guard let self = self else { return }
+            
+            guard updated else {
+                showAlert(vc: self, title: "", message: errorMessage!)
+                return
+            }
+            
+            updateNodeValue(id: id, keyToUpdate: "rpcuser", newValue: encUser) { [weak self] (rpcUserUpdated, errorMessage) in
+                guard let self = self else { return }
+                
+                guard rpcUserUpdated else {
+                    showAlert(vc: self, title: "", message: errorMessage!)
+                    return
+                }
+                
+                updateNodeValue(id: id, keyToUpdate: "rpcpassword", newValue: encPass) { [weak self] (rpcPassUpdated, errorMessage) in
                     guard let self = self else { return }
                     
-                    if !success {
-                        displayAlert(viewController: self, isError: true, message: "error updating rpc password")
-                    } else {
-                        DispatchQueue.main.async { [weak self] in
+                    guard rpcPassUpdated else {
+                        showAlert(vc: self, title: "", message: errorMessage!)
+                        return
+                    }
+                    
+                    updateNodeValue(id: id, keyToUpdate: "onionAddress", newValue: encAddress) { [weak self] (addressUpdated, errorMessage) in
+                        guard let self = self else { return }
+                        
+                        guard addressUpdated else {
+                            showAlert(vc: self, title: "", message: errorMessage!)
+                            return
+                        }
+                        
+                        guard let encCert = encCert else {
+                            showAlert(vc: self, title: "", message: "Node updated ✓")
+                            return
+                        }
+                        
+                        updateNodeValue(id: id, keyToUpdate: "cert", newValue: encCert) { [weak self] (certUpdated, errorMessage) in
                             guard let self = self else { return }
                             
-                            guard let auth = RPCAuth().generateCreds(username: rpcUserField.text!, password: rpcPassword.text!) else { return }
+                            guard updated else {
+                                showAlert(vc: self, title: "", message: errorMessage!)
+                                return
+                            }
                             
-                            rpcAuthLabel.text = auth.rpcAuth
+                            showAlert(vc: self, title: "", message: "Node updated ✓")
                         }
                     }
                 }
             }
-            
-            if let addressText = onionAddressField.text {
-                let decryptedAddress = addressText.dataUsingUTF8StringEncoding
-                
-                let arr = addressText.split(separator: ":")
-                guard arr.count == 2 else {
-                    showAlert(vc: self, title: "Not updated, port missing...", message: "Please make sure you add the port at the end of your onion hostname, such as xjshdu.onion:8332.\n\n8332 for mainnet.")
-                    return
-                }
-                
-                guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
-                
-                CoreDataService.update(id: id, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
-                    if success {
-                        vc.nodeAddedSuccess()
-                    } else {
-                        displayAlert(viewController: vc, isError: true, message: "Error updating node!")
-                    }
-                }
+        }
+    }
+    
+    func updateNodeValue(id: UUID, keyToUpdate: String, newValue: Any, completion: @escaping ((updated: Bool, errorMessage: String?)) -> Void) {
+        CoreDataService.update(id: id, keyToUpdate: keyToUpdate, newValue: newValue, entity: .newNodes) { success in
+            guard success else {
+                completion((false, "There was an error updating \(keyToUpdate). Please let us know about it!"))
+                return
             }
-                        
-            if certField.text != nil, certField.text != "" {
-                let cert = certField.text!.condenseWhitespace()
-                guard let encryptedCert = encryptCert(cert) else { return }
-                
-                CoreDataService.update(id: id, keyToUpdate: "cert", newValue: encryptedCert, entity: .newNodes) { success in
-                    if !success {
-                        displayAlert(viewController: self, isError: true, message: "error updating cert")
-                    }
-                }
+            completion((success, nil))
+        }
+    }
+        
+    func saveNewNode() {
+        CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
+            guard let self = self else { return }
+            
+            guard let nodes = nodes else {
+                showAlert(vc: self, title: "Not not saved.", message: "Unable to fetch Core Data.")
+                return
             }
             
-            nodeAddedSuccess()
+            newNode["isActive"] = (nodes.count == 0)
+            
+            CoreDataService.saveEntity(dict: newNode, entityName: .newNodes) { [weak self] success in
+                guard let self = self else { return }
+                
+                if success {
+                    selectedNode = newNode
+                    newNode.removeAll()
+                    showAlert(vc: self, title: "", message: "Node saved ✓")
+                } else {
+                    showAlert(vc: self, title: "Node not saved!", message: "Unable to save node to Core Data, please let us know about this.")
+                }
+            }
         }
     }
     
@@ -459,32 +474,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         return true
     }
     
-    private func nodeAddedSuccess() {
-        if selectedNode == nil || createNew {
-            selectedNode = newNode
-            createNew = false
-            showAlert(vc: self, title: "Node saved ✓", message: "")
-        } else {
-            showAlert(vc: self, title: "Node updated ✓", message: "")
-        }
-        
-    }
-    
-    func addBtcRpcQr(url: String) {
-        QuickConnect.addNode(url: url) { [weak self] (success, errorMessage) in
-            if success {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.navigationController?.popViewController(animated: true)
-                    NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
-                }
-            } else {
-                displayAlert(viewController: self, isError: true, message: "Error adding that node: \(errorMessage ?? "unknown")")
-            }
-        }
-    }
-    
     func showCertificatePicker() {
         // Use broad types: certificates + generic data (covers .pem, .cer, .crt, .der)
         let supportedTypes: [UTType] = [
@@ -506,29 +495,12 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBAction func showFilePickerAction(_ sender: Any) {
         showCertificatePicker()
     }
-    
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-        if segue.identifier == "segueToScanNodeCreds" {
-            if let vc = segue.destination as? QRScannerViewController {
-                vc.isQuickConnect = true
-                vc.onDoneBlock = { [weak self] url in
-                    guard let self = self else { return }
-                    guard let url = url else { return }
-                    addBtcRpcQr(url: url)
-                }
-            }
-        }
-    }
 }
 
 extension NodeDetailViewController: UIDocumentPickerDelegate {
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
-        
-        let fileExtension = url.pathExtension.lowercased()
         
         let securedURL = copyToAppContainer(url: url)
         
