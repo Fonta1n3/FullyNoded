@@ -160,7 +160,6 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
             
         } else {
             guard let cert = cert else {
-                print("no cert here")
                 return
             }
             
@@ -175,7 +174,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         }
         
         let task = sesh.dataTask(with: request as URLRequest) { [weak self] (data, response, error) in
-            guard let self = self else { return }
+            guard let _ = self else { return }
             
             guard error == nil else {
                 completion((nil, error!.localizedDescription))
