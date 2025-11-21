@@ -1434,14 +1434,14 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kT3-vW-HgJ">
-                                <rect key="frame" x="16" y="71" width="361" height="343"/>
+                                <rect key="frame" x="16" y="174" width="361" height="343"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="343" id="11T-Zr-4bL"/>
                                     <constraint firstAttribute="height" constant="343" id="lbF-go-rBu"/>
                                 </constraints>
                             </imageView>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="antenna.radiowaves.left.and.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="dfM-Fg-VDq">
-                                <rect key="frame" x="16" y="16.333333333333332" width="44" height="41.333333333333343"/>
+                                <rect key="frame" x="16" y="119.33333333333333" width="44" height="41.333333333333329"/>
                                 <color key="tintColor" systemColor="tintColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="ip8-ZB-8iJ"/>
@@ -1449,13 +1449,13 @@ If you are using a node package such as NODL, MyNode, Start 9, Umbrel, RaspiBlit
                                 </constraints>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Header" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cLD-vU-YX6">
-                                <rect key="frame" x="68" y="20.666666666666671" width="90" height="33"/>
+                                <rect key="frame" x="68" y="123.66666666666669" width="90" height="33"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="27"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
-                                <rect key="frame" x="16" y="422" width="361" height="410"/>
+                                <rect key="frame" x="16" y="525" width="361" height="273"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" systemColor="secondaryLabelColor"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
@@ -3365,7 +3365,7 @@ Fully Noded does its best to support as many hardware and software wallet option
             </objects>
             <point key="canvasLocation" x="-2791.6030534351144" y="375.35211267605638"/>
         </scene>
-        <!--v2.0.0-->
+        <!--v2.0.1-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -3462,7 +3462,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v2.0.0" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v2.0.1" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -4294,14 +4294,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                             <constraint firstItem="qBh-RP-hWz" firstAttribute="top" secondItem="uUf-aQ-0bN" secondAttribute="top" constant="8" id="l3f-Ew-U7p"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Node Credentials" id="J9p-j8-H8t">
-                        <barButtonItem key="rightBarButtonItem" image="qrcode.viewfinder" catalog="system" id="awp-qu-L3a">
-                            <color key="tintColor" systemColor="tintColor"/>
-                            <connections>
-                                <action selector="scanQuickConnect:" destination="B99-yZ-naR" id="TMH-9e-2OO"/>
-                            </connections>
-                        </barButtonItem>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" title="Node Credentials" id="J9p-j8-H8t"/>
                     <connections>
                         <outlet property="addressHeader" destination="1oS-WI-SUN" id="HzV-ar-yfP"/>
                         <outlet property="addressHeaderOutlet" destination="1oS-WI-SUN" id="Oiu-pO-bzi"/>
@@ -4319,7 +4312,6 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <outlet property="rpcPassword" destination="4YC-xq-wqu" id="KIS-dN-d6I"/>
                         <outlet property="rpcUserField" destination="uRk-PX-ulA" id="pCP-J4-Y3p"/>
                         <outlet property="saveButton" destination="p2J-sn-A5I" id="ZWz-y2-s1b"/>
-                        <outlet property="scanQROutlet" destination="awp-qu-L3a" id="pQ4-ao-MZ5"/>
                         <outlet property="usernameHeader" destination="Shd-1m-99a" id="WmB-Kw-SMe"/>
                         <segue destination="GlR-4A-eAx" kind="show" identifier="segueToExportNode" id="8MS-xS-DMP"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanNodeCreds" id="07E-4w-Zh7"/>
@@ -4327,7 +4319,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="YxC-Y3-iSs" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3709.5999999999999" y="2024.4377811094455"/>
+            <point key="canvasLocation" x="3709" y="1181"/>
         </scene>
         <!--Active Wallets View Controller-->
         <scene sceneID="cxp-Bp-OUI">
@@ -4404,7 +4396,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="xUE-pm-qLc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4641" y="2024"/>
+            <point key="canvasLocation" x="4640" y="1180"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="sfg-es-QcU">
@@ -4742,7 +4734,6 @@ Fully Noded does its best to support as many hardware and software wallet option
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="PAL-VQ-iLQ"/>
         <segue reference="5iI-Ra-crf"/>
         <segue reference="qed-hl-jG5"/>
         <segue reference="Fvb-gy-rb3"/>
@@ -4752,8 +4743,8 @@ Fully Noded does its best to support as many hardware and software wallet option
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="BTh-Z9-jlD"/>
-        <segue reference="if0-NE-c9T"/>
+        <segue reference="07E-4w-Zh7"/>
+        <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="AK4-4u-w1q"/>
     </inferredMetricsTieBreakers>

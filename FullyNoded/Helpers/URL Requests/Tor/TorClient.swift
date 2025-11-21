@@ -16,7 +16,7 @@ protocol OnionManagerDelegate: AnyObject {
     func torConnDifficulties()
 }
 
-class TorClient: NSObject, URLSessionDelegate {
+class TorClient: NSObject {
     
     enum TorState {
         case none
@@ -35,6 +35,7 @@ class TorClient: NSObject, URLSessionDelegate {
     private var controller: TorController?
     private var authDirPath = ""
     var isRefreshing = false
+    let urlSessionDelegate = UserCertURLSessionDelegate()
     
     // The tor url session configuration.
     // Start with default config as fallback.
@@ -60,7 +61,7 @@ class TorClient: NSObject, URLSessionDelegate {
                                                           kCFStreamPropertySOCKSProxyHost: "localhost",
                                                           kCFStreamPropertySOCKSProxyPort: proxyPort]
         
-        session = URLSession(configuration: sessionConfiguration, delegate: self, delegateQueue: .main)
+        session = URLSession(configuration: sessionConfiguration, delegate: urlSessionDelegate, delegateQueue: .main)
         
         #if targetEnvironment(macCatalyst)
             // Code specific to Mac.
@@ -171,14 +172,14 @@ class TorClient: NSObject, URLSessionDelegate {
         }
     }
     
-    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
-           let trust = challenge.protectionSpace.serverTrust {
-            completionHandler(.useCredential, URLCredential(trust: trust))
-        } else {
-            completionHandler(.performDefaultHandling, nil)
-        }
-    }
+//    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+//        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+//           let trust = challenge.protectionSpace.serverTrust {
+//            completionHandler(.useCredential, URLCredential(trust: trust))
+//        } else {
+//            completionHandler(.performDefaultHandling, nil)
+//        }
+//    }
     
     func resign() {
         controller?.disconnect()
