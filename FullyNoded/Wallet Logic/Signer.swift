@@ -26,24 +26,7 @@ class Signer {
         }
         
         func finalize() {
-            //            if psbtToSign.inputs.count < 4 {
-            /// reproducable bug when finalizing segwit msig psbts with more then 3 inputs.
-            //                guard let finalizedPsbt = try? psbtToSign.finalized() else {
-            //                    reset()
-            //                    completion((psbtToSign.description, nil, nil))
-            //                    return
-            //                }
-            //
-            //                guard let hex = finalizedPsbt.transactionFinal else {
-            //                    reset()
-            //                    completion((finalizedPsbt.description, nil, nil))
-            //                    return
-            //                }
-            //
-            //                reset()
-            //                completion((nil, hex.description, nil))
-            //
-            //            } else {
+            
             let param:Finalize_Psbt = .init(["psbt": psbtToSign.description])
             MakeRPCCall.sharedInstance.executeRPCCommand(method: .finalizepsbt(param)) { (object, errorDescription) in
                 if let result = object as? NSDictionary {
@@ -68,7 +51,6 @@ class Signer {
                     completion((nil, nil, errorDescription))
                 }
             }
-            //}
         }
         
         func processWithActiveWallet() {
@@ -214,28 +196,6 @@ class Signer {
                                     }
                                 }
                             }
-                            
-//                        } else if let encryptedPassphrase = signerStruct.passphrase {
-//                            guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) else {
-//                                reset()
-//                                completion((nil, nil, "Unable to decrypt your seed!"))
-//                                return
-//                            }
-//                            
-//                            if let passphrase = String(data: decryptedPassphrase, encoding: .utf8) {
-//                                if var masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase) {
-//                                    words = ""
-//                                    if var hdkey = try? HDKey(base58: masterKey) {
-//                                        masterKey = ""
-//                                        xprvsToSignWith.append(hdkey)
-//                                        hdkey = try! HDKey(base58: "xpub6FETvV487Sr4VSV9Ya5em5ZAug4dtnFwgnMG7TFAfkJDHoQ1uohXft49cFenfpJHbPueMnfyxtBoAuvSu7XNL9bbLzcM1QJCPwtofqv3dqC")
-//                                        if i + 1 == seedsToSignWith.count {
-//                                            seedsToSignWith.removeAll()
-//                                            processWithActiveWallet()
-//                                        }
-//                                    }
-//                                }
-//                            }
                         } else {
                             if var masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: "") {
                                 words = ""

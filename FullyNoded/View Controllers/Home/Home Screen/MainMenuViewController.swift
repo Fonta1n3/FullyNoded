@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import BitcoinDevKit
+
 
 class MainMenuViewController: UIViewController {
     
@@ -98,6 +98,9 @@ class MainMenuViewController: UIViewController {
         torProgressLabel.layer.zPosition = 1
         progressView.layer.zPosition = 1
         progressView.setNeedsFocusUpdate()
+        
+        //WalletLogic.shared.taprootBip86Wallet(passphrase: nil, network: .regtest, mnemonic: .init(wordCount: .words12), name: "test_wallet")
+        try? WalletLogic.shared.securelyDeleteWallet(name: "test_wallet")
     }
     
     override func viewDidAppear(_ animated: Bool) {
