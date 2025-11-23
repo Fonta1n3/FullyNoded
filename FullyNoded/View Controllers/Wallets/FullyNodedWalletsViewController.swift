@@ -243,15 +243,12 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "fnWalletCell", for: indexPath)
         cell.selectionStyle = .none
-        //cell.layer.borderColor = UIColor.lightGray.cgColor
-        //cell.layer.borderWidth = 0.5
         cell.sizeToFit()
         let label = cell.viewWithTag(1) as! UILabel
         label.numberOfLines = 0
         label.lineBreakMode = .byWordWrapping
         label.sizeToFit()
         let button = cell.viewWithTag(2) as! UIButton
-        //let toggle = cell.viewWithTag(3) as! UISwitch
         let wallet = wallets[indexPath.row]
         let btcBalance = (wallet["balance"] as? Double ?? 0.0)
         let walletStruct = Wallet(dictionary: wallet)
