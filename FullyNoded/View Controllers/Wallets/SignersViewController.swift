@@ -63,10 +63,10 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
                 
                 // Only fires off if account xpubs had not been saved before.
-                if let encryptedWords = signerStruct.words,
-                   let decryptedSigner = Crypto.decrypt(encryptedWords),
+                if var encryptedWords = signerStruct.words,
+                   var decryptedSigner = Crypto.decrypt(encryptedWords),
                    signerStruct.rootTpub == nil,
-                   let words = decryptedSigner.utf8String,
+                   var words = decryptedSigner.utf8String,
                    let mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
                    let xfp = Keys.fingerprint(masterKey: mkMain),
                    let encryptedXfp = Crypto.encrypt(xfp.utf8),
@@ -83,6 +83,14 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
                    let encryptedbip84tpub = Crypto.encrypt(bip84tpub.utf8),
                    let encryptedbip48xpub = Crypto.encrypt(bip48xpub.utf8),
                    let encryptedbip48tpub = Crypto.encrypt(bip48tpub.utf8) {
+                    
+                    defer {
+                        encryptedWords.secureZero()
+                        decryptedSigner.secureZero()
+                        words.secureWipe()
+                        passphrase.secureWipe()
+                    }
+                    
                     CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip84xpub", newValue: encryptedbip84xpub, entity: .signers) { _ in }
                     CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip84tpub", newValue: encryptedbip84tpub, entity: .signers) { _ in }
                     CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip48xpub", newValue: encryptedbip48xpub, entity: .signers) { _ in }
@@ -156,15 +164,22 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     private func promptToDeriveFromSigner(_ signer: SignerStruct) {
+        
         DispatchQueue.main.async { [unowned vc = self] in
             var alertStyle = UIAlertController.Style.actionSheet
             if (UIDevice.current.userInterfaceIdiom == .pad) {
               alertStyle = UIAlertController.Style.alert
             }
             
-            guard let encryptedWords = signer.words,
-                    let words = Crypto.decrypt(encryptedWords),
-                    var arr = words.utf8String?.split(separator: " ") else { return }            
+            guard var encryptedWords = signer.words,
+                    var words = Crypto.decrypt(encryptedWords),
+                    var arr = words.utf8String?.split(separator: " ") else { return }
+            
+            defer {
+                encryptedWords.secureZero()
+                words.secureZero()
+                arr.removeAll()
+            }
             
             for (i, _) in arr.enumerated() {
                 if i > 0 && i < arr.count - 1 {

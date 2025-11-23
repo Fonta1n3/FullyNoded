@@ -13,7 +13,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     @IBOutlet weak var detailTable: UITableView!
     var walletId:UUID!
     var wallet:Wallet!
-    var signer = ""
+    //var signer = ""
     var spinner = ConnectingView()
     var coinType = "0"
     var addresses = ""
@@ -48,7 +48,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         case changeDesc
         case currentIndex
         case maxIndex
-        case signer
+        //case signer
         case watching
         case addressExplorer
     }
@@ -66,7 +66,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         if (UIDevice.current.userInterfaceIdiom == .pad) {
           alertStyle = UIAlertController.Style.alert
         }
-        
         
         load()
     }
@@ -282,7 +281,16 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         generator.textInput = bbqrText
                         exportWalletImageBBQr = generator.getQRCode()
                         
-                        self.findSigner()
+                        //self.findSigner()
+                        
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else {
+                                return
+                            }
+                            
+                            detailTable.reloadData()
+                        }
+                        
                         self.getAddresses()
                     }
                 }
@@ -297,95 +305,95 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         return fingerprintsString.components(separatedBy: ",")
     }
     
-    private func findSigner() {
-        CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
-            guard let signers = signers, signers.count > 0 else {
-                DispatchQueue.main.async {
-                    self?.detailTable.reloadData()
-                }
-                return
-            }
-            
-            self?.parseSigners(signers)
-        }
-    }
+//    private func findSigner() {
+//        CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
+//            guard let signers = signers, signers.count > 0 else {
+//                DispatchQueue.main.async {
+//                    self?.detailTable.reloadData()
+//                }
+//                return
+//            }
+//            
+//            self?.parseSigners(signers)
+//        }
+//    }
     
-    private func parseSigners(_ signers: [[String:Any]]) {
-        for (i, signer) in signers.enumerated() {
-            let signerStruct = SignerStruct(dictionary: signer)
-            
-            if let encryptedWords = signerStruct.words {
-                guard let decryptedData = Crypto.decrypt(encryptedWords) else { return }
-                
-                parseWords(decryptedData, signerStruct)
-            }
-            
-            if i + 1 == signers.count {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.detailTable.reloadData()
-                }
-            }
-        }
-    }
+//    private func parseSigners(_ signers: [[String:Any]]) {
+//        for (i, signer) in signers.enumerated() {
+//            let signerStruct = SignerStruct(dictionary: signer)
+//            
+//            if let encryptedWords = signerStruct.words {
+//                guard let decryptedData = Crypto.decrypt(encryptedWords) else { return }
+//                
+//                parseWords(decryptedData, signerStruct)
+//            }
+//            
+//            if i + 1 == signers.count {
+//                DispatchQueue.main.async { [weak self] in
+//                    guard let self = self else { return }
+//                    
+//                    self.detailTable.reloadData()
+//                }
+//            }
+//        }
+//    }
     
-    private func parseWords(_ decryptedData: Data, _ signer: SignerStruct) {
-        let descriptor = Descriptor(self.wallet.receiveDescriptor)
-        guard let words = String(bytes: decryptedData, encoding: .utf8) else { return }
-        
-        if signer.passphrase != nil {
-            parsePassphrase(words, signer.passphrase!, descriptor, signer)
-        } else {
-            guard let masterKey = Keys.masterKey(words: words, coinType: self.coinType, passphrase: "") else { return }
-            
-            self.crossCheckXpubs(descriptor, masterKey, words, signer)
-        }
-    }
+//    private func parseWords(_ decryptedData: Data, _ signer: SignerStruct) {
+//        let descriptor = Descriptor(self.wallet.receiveDescriptor)
+//        guard let words = String(bytes: decryptedData, encoding: .utf8) else { return }
+//        
+//        if signer.passphrase != nil {
+//            parsePassphrase(words, signer.passphrase!, descriptor, signer)
+//        } else {
+//            guard let masterKey = Keys.masterKey(words: words, coinType: self.coinType, passphrase: "") else { return }
+//            
+//            self.crossCheckXpubs(descriptor, masterKey, words, signer)
+//        }
+//    }
     
-    private func parsePassphrase(_ words: String, _ passphrase: Data, _ descriptor: Descriptor, _ signerStr: SignerStruct) {
-        guard let decryptedPass = Crypto.decrypt(passphrase),
-            let pass = String(bytes: decryptedPass, encoding: .utf8),
-            let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: pass) else {
-            return
-        }
-        
-        crossCheckXpubs(descriptor, masterKey, words, signerStr)
-    }
+//    private func parsePassphrase(_ words: String, _ passphrase: Data, _ descriptor: Descriptor, _ signerStr: SignerStruct) {
+//        guard let decryptedPass = Crypto.decrypt(passphrase),
+//            let pass = String(bytes: decryptedPass, encoding: .utf8),
+//            let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: pass) else {
+//            return
+//        }
+//        
+//        crossCheckXpubs(descriptor, masterKey, words, signerStr)
+//    }
     
-    private func crossCheckXpubs(_ descriptor: Descriptor, _ masterKey: String, _ words: String, _ signerStr: SignerStruct) {
-        if descriptor.isMulti {
-            for (x, xpub) in descriptor.multiSigKeys.enumerated() {
-                if let derivedXpub = Keys.xpub(path: descriptor.derivationArray[x], masterKey: masterKey) {
-                    if xpub == derivedXpub {
-                        guard let fingerprint = Keys.fingerprint(masterKey: masterKey) else { return }
-                        
-                        var toDisplay = fingerprint
-                        
-                        if fingerprint != signerStr.label {
-                            toDisplay += ":" + " \(signerStr.label)"
-                        }
-                        
-                        self.signer += toDisplay + "\n\n"
-                    }
-                }                
-            }
-        } else {
-            if let derivedXpub = Keys.xpub(path: descriptor.derivation, masterKey: masterKey) {
-                if descriptor.accountXpub == derivedXpub {
-                    guard let fingerprint = Keys.fingerprint(masterKey: masterKey) else { return }
-                    
-                    var toDisplay = fingerprint
-                    
-                    if fingerprint != signerStr.label {
-                        toDisplay += ":" + " \(signerStr.label)"
-                    }
-                    
-                    self.signer += toDisplay + "\n\n"
-                }
-            }
-        }
-    }
+//    private func crossCheckXpubs(_ descriptor: Descriptor, _ masterKey: String, _ words: String, _ signerStr: SignerStruct) {
+//        if descriptor.isMulti {
+//            for (x, xpub) in descriptor.multiSigKeys.enumerated() {
+//                if let derivedXpub = Keys.xpub(path: descriptor.derivationArray[x], masterKey: masterKey) {
+//                    if xpub == derivedXpub {
+//                        guard let fingerprint = Keys.fingerprint(masterKey: masterKey) else { return }
+//                        
+//                        var toDisplay = fingerprint
+//                        
+//                        if fingerprint != signerStr.label {
+//                            toDisplay += ":" + " \(signerStr.label)"
+//                        }
+//                        
+//                        self.signer += toDisplay + "\n\n"
+//                    }
+//                }                
+//            }
+//        } else {
+//            if let derivedXpub = Keys.xpub(path: descriptor.derivation, masterKey: masterKey) {
+//                if descriptor.accountXpub == derivedXpub {
+//                    guard let fingerprint = Keys.fingerprint(masterKey: masterKey) else { return }
+//                    
+//                    var toDisplay = fingerprint
+//                    
+//                    if fingerprint != signerStr.label {
+//                        toDisplay += ":" + " \(signerStr.label)"
+//                    }
+//                    
+//                    self.signer += toDisplay + "\n\n"
+//                }
+//            }
+//        }
+//    }
     
     private func accountXpub() -> String {
         if wallet.receiveDescriptor != "" {
@@ -761,15 +769,15 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         return cell
     }
     
-    private func signerCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailSignerCell", for: indexPath)
-        configureCell(cell)
-        
-        let textView = cell.viewWithTag(1) as! UITextView
-        textView.text = signer
-        
-        return cell
-    }
+//    private func signerCell(_ indexPath: IndexPath) -> UITableViewCell {
+//        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailSignerCell", for: indexPath)
+//        configureCell(cell)
+//        
+//        let textView = cell.viewWithTag(1) as! UITextView
+//        textView.text = signer
+//        
+//        return cell
+//    }
     
     private func watchingCell(_ indexPath: IndexPath) -> UITableViewCell {
         let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailWatchingCell", for: indexPath)
@@ -869,7 +877,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 13
+        return 12
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -924,8 +932,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             return currentIndexCell(indexPath)
         case .maxIndex:
             return maxIndexCell(indexPath)
-        case .signer:
-            return signerCell(indexPath)
+//        case .signer:
+//            return signerCell(indexPath)
         case .watching:
             return watchingCell(indexPath)
         case .addressExplorer:
@@ -955,8 +963,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             return 50
         case .maxIndex:
             return 50
-        case .signer:
-            return 50
+//        case .signer:
+//            return 50
         case .watching:
             return 120
         case .addressExplorer:
@@ -1250,7 +1258,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             break
         }
     }
-
 }
 
 extension WalletDetailViewController {
@@ -1275,8 +1282,8 @@ extension WalletDetailViewController {
             return ("Current address index", UIImage(systemName: "number")!)
         case .maxIndex:
             return ("Range limit", UIImage(systemName: "exclamationmark.triangle")!)
-        case .signer:
-            return ("Signers", UIImage(systemName: "pencil.and.ellipsis.rectangle")!)
+//        case .signer:
+//            return ("Signers", UIImage(systemName: "pencil.and.ellipsis.rectangle")!)
         case .watching:
             return ("Watching descriptors", UIImage(systemName: "eye")!)
         case .addressExplorer:

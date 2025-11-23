@@ -38,15 +38,30 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
         textView.removeGestureRecognizer(tapGesture)
+        
+        
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        addedWords.removeAll()
+        justWords.removeAll()
+        bip39Words.removeAll()
+        wordView.text = ""
+        textView.text = ""
     }
     
     @IBAction func generateSignerAction(_ sender: Any) {
-        guard let words = Keys.seed() else { return }
+        guard var words = Keys.seed() else { return }
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             self.textView.text = words
+            
+            defer {
+                words.secureWipe()
+            }
+            
             self.processTextfieldInput()
             self.validWordsAdded()
         }
@@ -93,9 +108,14 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         }
         
         //check if user pasted more then one word
-        let processed = processedCharacters(textView.text!)
-        let userAddedWords = textView.text!.split(separator: " ")
+        //let processed = processedCharacters(textView.text!)
+        var userAddedWords = textView.text!.split(separator: " ")
         var multipleWords = [String]()
+        
+        defer {
+            multipleWords.removeAll()
+            userAddedWords.removeAll()
+        }
         
         if userAddedWords.count > 1 {
             
@@ -125,7 +145,11 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
             }
         } else {
             //its one word
-            let processedWord = textView.text!.replacingOccurrences(of: " ", with: "")
+            var processedWord = textView.text!.replacingOccurrences(of: " ", with: "")
+            
+            defer {
+                processedWord.secureWipe()
+            }
             
             for word in bip39Words {
                 if processedWord == word {
@@ -156,16 +180,23 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let words = self.justWords.joined(separator: " ")
-            let mnemonicData = words.dataUsingUTF8StringEncoding
+            var words = self.justWords.joined(separator: " ")
+            var mnemonicData = words.dataUsingUTF8StringEncoding
             
-            guard let mk = Keys.masterKey(words: words, coinType: "0", passphrase: "") else { return }
+            guard var mk = Keys.masterKey(words: words, coinType: "0", passphrase: "") else { return }
             guard let fingeprint = Keys.fingerprint(masterKey: mk) else { return }
             
-            guard let encryptedWords = Crypto.encrypt(mnemonicData) else {
+            guard var encryptedWords = Crypto.encrypt(mnemonicData) else {
                 self.showError(error: "error encrypting your seed")
                 
                 return
+            }
+            
+            defer {
+                words.secureWipe()
+                mnemonicData.secureZero()
+                mk.secureWipe()
+                encryptedWords.secureZero()
             }
                         
             self.saveSigner(encryptedWords, fingeprint)
@@ -242,6 +273,11 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         var subString = (textField.text!.capitalized as NSString).replacingCharacters(in: range, with: string)
+        
+        defer {
+            subString.secureWipe()
+        }
+        
         subString = formatSubstring(subString: subString)
         if subString.count == 0 {
             resetValues()
@@ -258,12 +294,22 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     
     func getAutocompleteSuggestions(userText: String) -> [String]{
         var possibleMatches: [String] = []
+        
+        defer {
+            possibleMatches.removeAll()
+        }
+        
         for item in bip39Words {
-            let myString:NSString! = item as NSString
+            var myString:NSString! = item as NSString
+            defer {
+                myString = "" as NSString
+            }
+            
             let substringRange:NSRange! = myString.range(of: userText)
             if (substringRange.location == 0) {
                 possibleMatches.append(item)
             }
+            
         }
         return possibleMatches
     }

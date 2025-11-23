@@ -20,7 +20,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private var stringToExport = ""
     private var descriptionText = ""
     private var headerText = ""
-    private var masterKey = ""
+    //private var masterKey = ""
     
     private enum Section: Int {
         case label
@@ -236,14 +236,25 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             
             var passphrase = ""
             
-            if let encryptedPassphrase = signer.passphrase {
-                guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
-                        let string = decryptedPassphrase.utf8String else { return }
+            if var encryptedPassphrase = signer.passphrase {
+                guard var decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
+                        var string = decryptedPassphrase.utf8String else { return }
+                
+                defer {
+                    string.secureWipe()
+                    decryptedPassphrase.secureZero()
+                    encryptedPassphrase.secureZero()
+                }
                 
                 passphrase = string
                 self.tableDict[3]["text"] = "  " + "*********"
+                
             } else {
                 self.tableDict[3]["text"] = "  ** no passphrase **"
+            }
+            
+            defer {
+                passphrase.secureWipe()
             }
             
             let encryptedXfp = signer.xfp ?? "".utf8
@@ -336,16 +347,16 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 }
             }
             
-            if let encryptedWords = signer.words {
-                guard let decrypted = Crypto.decrypt(encryptedWords),
-                      let words = decrypted.utf8String else { return }
+            if var encryptedWords = signer.words {
+                guard var decrypted = Crypto.decrypt(encryptedWords),
+                      var words = decrypted.utf8String else { return }
                 
-                guard let masterKey = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase) else {
+                guard var masterKey = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase) else {
                     showAlert(vc: self, title: "", message: "Unable to derive your master key.")
                     return
                 }
                 
-                self.masterKey = masterKey
+                //self.masterKey = masterKey
                 
                 var arr = words.split(separator: " ")
                 
@@ -356,8 +367,20 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 }
                 
                 self.tableDict[1]["censoredText"] = arr.joined(separator: " ")
+                
+                defer {
+                    arr.removeAll()
+                    masterKey.secureWipe()
+                    decrypted.secureZero()
+                    words.secureWipe()
+                }
                                 
-                if let urSeed = URHelper.mnemonicToCryptoSeed(words) {
+                if var urSeed = URHelper.mnemonicToCryptoSeed(words) {
+                    
+                    defer {
+                        urSeed.secureWipe()
+                    }
+                    
                     self.tableDict[1]["ur"] = urSeed
                     
                     var firstHalf = ""
@@ -471,10 +494,10 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     }
     
     private func updateSigner(_ passphrase: String) {
-        if let encryptedWords = self.signer.words,
-           let decryptedSigner = Crypto.decrypt(encryptedWords),
-           let words = decryptedSigner.utf8String,
-           let mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
+        if var encryptedWords = self.signer.words,
+           var decryptedSigner = Crypto.decrypt(encryptedWords),
+           var words = decryptedSigner.utf8String,
+           var mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
            let xfp = Keys.fingerprint(masterKey: mkMain),
            let encryptedXfp = Crypto.encrypt(xfp.utf8),
            let mkTest = Keys.masterKey(words: words, coinType: "1", passphrase: passphrase),
@@ -490,6 +513,13 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
            let encryptedbip84tpub = Crypto.encrypt(bip84tpub.utf8),
            let encryptedbip48xpub = Crypto.encrypt(bip48xpub.utf8),
            let encryptedbip48tpub = Crypto.encrypt(bip48tpub.utf8) {
+            
+            defer {
+                encryptedWords.secureZero()
+                decryptedSigner.secureZero()
+                words.secureWipe()
+                mkMain.secureWipe()
+            }
             
             CoreDataService.update(id: self.signer.id, keyToUpdate: "bip84xpub", newValue: encryptedbip84xpub, entity: .signers) { _ in }
             CoreDataService.update(id: self.signer.id, keyToUpdate: "bip84tpub", newValue: encryptedbip84tpub, entity: .signers) { _ in }
@@ -599,21 +629,26 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             let edit = UIAlertAction(title: "Save", style: .default) { [weak self] alertAction in
                 guard let self = self else { return }
                 
-                let text1 = (alert.textFields![0] as UITextField).text
-                let text2 = (alert.textFields![1] as UITextField).text
+                var text1 = (alert.textFields![0] as UITextField).text
+                var text2 = (alert.textFields![1] as UITextField).text
                 
-                guard let text1 = text1, let text2 = text2, text1 == text2 else {
+                guard var _ = text1, var _ = text2, text1 == text2 else {
                     showAlert(vc: self, title: "", message: "Passphrases did not match or were empty. Try again.")
                     
                     return
                 }
                                 
-                guard let encryptedPassphrase = Crypto.encrypt(text1.utf8) else {
+                guard let encryptedPassphrase = Crypto.encrypt(text1!.utf8) else {
                     showAlert(vc: self, title: "Encryption error...", message: "Please let us know about this bug, unable to encrypt your new passphrase")
                     return
                 }
                 
-                self.updatePassphrase(encryptedPassphrase, text1)
+                defer {
+                    text1?.secureWipe()
+                    text2?.secureWipe()
+                }
+                
+                self.updatePassphrase(encryptedPassphrase, text1!)
             }
             
             alert.addTextField { textField in
@@ -919,18 +954,30 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     }
         
     private func creatWalletLive() {
-        guard let encryptedWords = signer.words,
-                let wordsData = Crypto.decrypt(encryptedWords),
-                let words = wordsData.utf8String else {
+        guard var encryptedWords = signer.words,
+                var wordsData = Crypto.decrypt(encryptedWords),
+                var words = wordsData.utf8String else {
                     return
                 }
         
-        if let encryptedPassphrase = signer.passphrase {
+        defer {
+            encryptedWords.secureZero()
+            wordsData.secureZero()
+            words.secureWipe()
+        }
+        
+        if var encryptedPassphrase = signer.passphrase {
             var passphrase = ""
             
-            guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) else {
+            guard var decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) else {
                 showAlert(vc: self, title: "Decryption error.", message: "There was an issue decrypting your passphrase...")
                 return
+            }
+            
+            defer {
+                encryptedPassphrase.secureZero()
+                decryptedPassphrase.secureZero()
+                passphrase.secureWipe()
             }
             
             passphrase = decryptedPassphrase.utf8String ?? ""
@@ -959,7 +1006,12 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     @objc func exportQr(_ sender: UIButton) {
         let section = sender.tag
         
-        let dict = tableDict[section]
+        var dict = tableDict[section]
+        
+        defer {
+            dict.removeAll()
+        }
+        
         let selectedSegment = dict["selectedSegmentIndex"] as? Int ?? 0
                 
         switch section {
@@ -1139,7 +1191,12 @@ extension SignerDetailViewController: UITableViewDelegate {
         
         configureField(cell)
         
-        let dict = self.tableDict[indexPath.section]
+        var dict = self.tableDict[indexPath.section]
+        
+        defer {
+            dict.removeAll()
+        }
+        
         let selectedSegment = dict["selectedSegmentIndex"] as? Int ?? 0
         
         switch Section(rawValue: indexPath.section) {
