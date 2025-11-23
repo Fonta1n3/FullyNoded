@@ -98,6 +98,34 @@ extension Array where Element == UInt8 {
 }
 
 public extension String {
+    /// Securely overwrites the string's memory with zeros and then clears it
+    mutating func secureWipe() {
+        // Get mutable access to the underlying UTF-8 bytes
+        let count = self.utf8.count
+        guard count > 0 else { self = ""; return }
+        
+        self.withMutableStrings { pointer in
+            guard let base = pointer else { return }
+            base.initialize(repeating: 0, count: count)  // zero-fill
+        }
+        
+        // Final obfuscation + clear
+        self = String(repeating: "X", count: min(count, 200))
+        self = ""
+    }
+    
+    // Helper to get mutable pointer to UTF-8 buffer
+    func withMutableStrings<T>(_ body: (UnsafeMutablePointer<CChar>?) -> T) -> T {
+        return self.withCString { cString in
+            //let length = strlen(cString) + 1
+            guard let mutableCopy = strdup(cString) else {
+                return body(nil)
+            }
+            defer { free(mutableCopy) }
+            return body(mutableCopy)
+        }
+    }
+    
     var pong: String {
         return self.replacingOccurrences(of: "PING", with: "PONG")
     }
@@ -607,9 +635,18 @@ public extension ContiguousBytes {
 }
 
 public extension Data {
-    @inlinable var bytesNostr: [UInt8] {
-        withUnsafeBytes { bytesPtr in Array(bytesPtr) }
+    /// Securely zeroizes the memory of this Data instance
+    mutating func secureZero() {
+        guard !isEmpty else { return }
+        withUnsafeMutableBytes { bytes in
+            bytes.baseAddress?.assumingMemoryBound(to: UInt8.self).initialize(repeating: 0, count: bytes.count)
+        }
+        // Force deallocation if possible
+        self = Data()
     }
+//    @inlinable var bytesNostr: [UInt8] {
+//        withUnsafeBytes { bytesPtr in Array(bytesPtr) }
+//    }
 
     func copyToUnsafeMutableBytes<T>(of value: inout T) {
         _ = Swift.withUnsafeMutableBytes(of: &value) { ptr in
