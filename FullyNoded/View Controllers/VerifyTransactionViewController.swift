@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import LibWally
+//import LibWally
 //import CoreNFC
 
 class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate {
@@ -22,7 +22,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var txFee = Double()
     var fxRate: Double?
     var txid = ""
-    var psbtDict:NSDictionary!
+    var psbtDict: NSDictionary!
     var doneBlock: ((Bool) -> Void)?
     let spinner = ConnectingView()
     var unsignedPsbt = ""
@@ -52,13 +52,14 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var walletIndex = 0
     var qrCodeStringToExport = ""
     var blind = false
-    var processedPsbt:String?
+    //var processedPsbt:String?
     var isBBQr = false
     var isUR = false
     var isPlainText = false
     //var ndefMessage: NFCNDEFMessage?
     //var readerSession: NFCNDEFReaderSession?
     var exporting = false
+    var passphrase: String?
     
     @IBOutlet weak private var verifyTable: UITableView!
     @IBOutlet weak private var exportButtonOutlet: UIButton!
@@ -199,33 +200,42 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         self.blind = false
     }
     
-    private func processPsbt(_ psbt: String) {
-        spinner.addConnectingView(vc: self, description: "processing psbt...")
-        
-        let network = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
-        var chain: Network
-        if network == "main" {
-            chain = .mainnet
-        } else {
-            chain = .testnet
+    private func processWithBDK(psbt: String) -> ((rawTx: String?, psbt: String?)) {
+        guard let bdkPsbt = try? WalletLogic.BDKPsbt(psbtBase64: psbt) else {
+            return (nil, psbt)
         }
         
-        guard let importedPsbt = try? PSBT(psbt: psbt, network: chain) else {
-            showAlert(vc: self, title: "", message: "Invalid psbt.")
+        let finalized = bdkPsbt.finalize()
+        
+        guard finalized.couldFinalize else {
+            return (nil, psbt)
+        }
+        
+        guard let rawTx = try? finalized.psbt.extractTx() else {
+            return (nil, bdkPsbt.serialize())
+        }
+        
+        return (rawTx.description, nil)
+    }
+    
+    private func processPsbt(_ psbt: String) {
+        // Check if it can be finalized, if it can finalize and extract it.
+        spinner.addConnectingView(vc: self, description: "processing psbt...")
+                
+        let (rawTx, _) = processWithBDK(psbt: psbt)
+        
+        guard let rawTx = rawTx else {
+            processWithBitcoinCore(psbt: psbt)
             return
         }
+
+        signedRawTx = rawTx
         
-        let inputs = importedPsbt.inputs
-        var signed = false
-        for input in inputs {
-            signed = false
-            if let sigs = input.signatures, let origins = input.origins {
-                if sigs.count == origins.count {
-                    signed = true
-                }
-            }
-        }
+        load()
+    }
     
+    // Use core to populate bip32 derivs and other info needed to finalize as a fallback.
+    private func processWithBitcoinCore(psbt: String) {
         let param: Wallet_Process_PSBT = .init(["psbt": psbt, "sign": false, "sighashtype": "ALL"])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletprocesspsbt(param: param)) { [weak self] (object, errorDescription) in
             guard let self = self else { return }
@@ -236,59 +246,24 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 return
             }
             
-            self.processedPsbt = processedPsbt
-            enableExportButton()
+            let (rawTx, _) = processWithBDK(psbt: psbt)
             
-            if signed {
-                self.finalizePsbt(processedPsbt)
+            if let rawTx = rawTx {
+                signedRawTx = rawTx
+                load()
+                   
             } else {
-                self.unsignedPsbt = processedPsbt
-                self.enableSignButton()
-                self.load()
+                unsignedPsbt = processedPsbt
+                enableSignAndLoad()
             }
         }
     }
     
-    private func finalizePsbt(_ psbt: String) {
-        guard let hex = Keys.finalize(psbt) else {
-            // Libwally used to fail for multisig psbt's so falling back to core finalization.
-            let param:Finalize_Psbt = .init(["psbt": psbt])
-            MakeRPCCall.sharedInstance.executeRPCCommand(method: .finalizepsbt(param)) { [weak self] (object, errorDescription) in
-                guard let self = self else { return }
-                
-                guard let result = object as? NSDictionary, let complete = result["complete"] as? Bool else {
-                    self.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "", message: "There was an issue finalizing your psbt: \(errorDescription ?? "unknown error")")
-                    return
-                }
-                
-                self.enableExportButton()
-                
-                guard complete, let hex = result["hex"] as? String else {
-                    guard let psbt = result["psbt"] as? String else {
-                        self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "", message: "There was an issue finalizing your psbt: \(errorDescription ?? "unknown error")")
-                        return
-                    }
-                    
-                    self.unsignedPsbt = psbt
-                    self.enableSignButton()
-                    self.load()
-                    
-                    return
-                }
-                
-                self.signedRawTx = hex
-                self.load()
-            }
-            
-            return
-        }
-
-        self.signedRawTx = hex
-        self.load()
+    private func enableSignAndLoad() {
+        enableSignButton()
+        load()
     }
-    
+        
     private func enableExportButton() {
         enableView(exportBackgroundView)
         enableButton(exportButtonOutlet)
@@ -470,16 +445,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         } else if processed.lowercased().hasPrefix("ur:bytes") {
             self.blind = true
             self.parseBlindPsbt(processed)
-        } else if processed.count == 64 {
-            fetchTxFromId(txid: processed)
+//        } else if processed.count == 64 {
+//            fetchTxFromId(txid: processed)
         } else {
             showAlert(vc: self, title: "Invalid", message: "Whatever you pasted was not a valid psbt, raw transaction or txid.")
         }
     }
     
-    private func fetchTxFromId(txid: String) {
-        print("fetchTxFromId")
-    }
+//    private func fetchTxFromId(txid: String) {
+//        print("fetchTxFromId")
+//    }
     
     private func presentUploader() {
         DispatchQueue.main.async { [weak self] in
@@ -605,7 +580,15 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     @IBAction func bumpFeeAction(_ sender: Any) {
         if confs == 0 && alreadyBroadcast {
-            bumpFee()
+            if UserDefaults.standard.object(forKey: "passphrasePrompt") == nil {
+                self.bumpFee(nil)
+            } else {
+                self.setPassphrase { [weak self] passphrase in
+                    guard let self = self else { return }
+                    
+                    self.bumpFee(passphrase)
+                }
+            }
         } else {
             showAlert(vc: self, title: "", message: "You can only bump the fee for transactions that have zero confirmations.")
         }
@@ -726,19 +709,26 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         isSigning = true
         spinner.addConnectingView(vc: self, description: "signing...")
         
-        Signer.sign(psbt: self.unsignedPsbt, passphrase: passphrase) { [weak self] (signedPsbt, rawTx, errorMessage) in
+        //Signer.sign(psbt: self.unsignedPsbt, passphrase: passphrase) { [weak self] (signedPsbt, rawTx, errorMessage) in
+        guard let wallet = wallet else {
+            spinner.removeConnectingView()
+            showAlert(vc: self, title: "", message: "Fully Noded can only sign transactions when using a Fully Noded wallet.")
+            return
+        }
+        
+        Signer.shared.attemptToSignPsbt(fnWallet: wallet, psbt: unsignedPsbt, passphrase: passphrase) { [weak self] (signedPsbt, rawTx, errorMessage) in
             guard let self = self else { return }
             
             self.disableSignButton()
             
-            if rawTx != nil {
+            if let rawTx = rawTx {
                 self.unsignedPsbt = ""
-                self.signedRawTx = rawTx!
+                self.signedRawTx = rawTx
                 self.enableSendButton()
                 self.load()
                 
-            } else if signedPsbt != nil {
-                self.unsignedPsbt = signedPsbt!
+            } else if let signedPsbt = signedPsbt {
+                self.unsignedPsbt = signedPsbt
                 self.load()
                 
             } else {
@@ -765,14 +755,18 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         CoreDataService.saveEntity(dict: transaction, entityName: .transactions) { _ in }
     }
     
-    private func bumpFee() {
+    private func bumpFee(_ passphrase: String?) {
+        guard let wallet = wallet else {
+            showAlert(vc: self, title: "", message: "Signing transactions only works with Fully Noded wallets.")
+            return
+        }
+        
         spinner.addConnectingView(vc: self, description: "increasing fee...")
-        let param_bump_fee:Bump_Fee = .init(["txid":self.txid])
-        let param_psbt_bump_fee:PSBT_Bump_Fee = .init(["txid":self.txid])
-        let bumpfee:BTC_CLI_COMMAND = .bumpfee(param: param_bump_fee)
-        let psbtBumpFee:BTC_CLI_COMMAND = .psbtbumpfee(param: param_psbt_bump_fee)
-        var command:BTC_CLI_COMMAND!
-        command = bumpfee
+        let param_bump_fee: Bump_Fee = .init(["txid":self.txid])
+        let param_psbt_bump_fee: PSBT_Bump_Fee = .init(["txid":self.txid])
+        let bumpfee: BTC_CLI_COMMAND = .bumpfee(param: param_bump_fee)
+        let psbtBumpFee: BTC_CLI_COMMAND = .psbtbumpfee(param: param_psbt_bump_fee)
+        var command: BTC_CLI_COMMAND = bumpfee
         
         OnchainUtils.getWalletInfo { [weak self] (walletInfo, message) in
             guard let self = self else { return }
@@ -811,7 +805,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 
                 self.signedRawTx = ""
                 
-                Signer.sign(psbt: psbt, passphrase: nil) { (signedPsbt, rawTx, errorMessage) in
+                Signer.shared.attemptToSignPsbt(fnWallet: wallet, psbt: psbt, passphrase: passphrase) { [weak self] (signedPsbt, rawTx, errorMessage) in
+                    guard let self = self else { return }
+                    
                     self.spinner.removeConnectingView()
                     
                     self.disableBumpButton()
@@ -1332,6 +1328,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         let desc = dict["desc"] as? String ?? "no descriptor"
                         var isChange = dict["ischange"] as? Bool ?? false
                         let fingerprint = dict["hdmasterfingerprint"] as? String ?? "no fingerprint"
+                        let parentDesc = dict["parent_desc"] as? String ?? ""
                         var labelsText = ""
                         
                         if labels.count > 0 {
@@ -1361,13 +1358,14 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         self.outputArray[self.index]["label"] = labelsText
                         self.outputArray[self.index]["fingerprint"] = fingerprint
                         self.outputArray[self.index]["desc"] = desc
+                        //self.outputArray[self.index]["parent_desc"] = parentDesc
                         
                         // Currently only verify address if the node knows about it.. otherwise we have to brute force 200k addresses...
                         // will add a dedicated verify button for unsolvable to cross check against all wallets
                         // also adding a signer verify button to show whether FN is able to sign for the output or not
                         if solvable && self.wallet != nil {
                             // Only do this if we are not using the default wallet.
-                            Keys.verifyAddress(address, keypath, desc) { (isOursFullyNoded, walletLabel, signable, signer) in
+                            Keys.verifyAddress(parentDesc: parentDesc, path: keypath, passphrase: passphrase) { (isOursFullyNoded, walletLabel, signable, signer) in
                                 self.outputArray[self.index]["isOursFullyNoded"] = isOursFullyNoded
                                 self.outputArray[self.index]["walletLabel"] = walletLabel
                                 self.outputArray[self.index]["signable"] = signable
@@ -2112,6 +2110,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     let desc = dict["desc"] as? String ?? "no descriptor"
                     var isChange = dict["ischange"] as? Bool ?? false
                     let fingerprint = dict["hdmasterfingerprint"] as? String ?? "no fingerprint"
+                    let parentDesc = dict["parent_desc"] as? String ?? ""
                     var labelsText = ""
                     
                     if labels.count > 0 {
@@ -2140,7 +2139,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     // will add a dedicated verify button for unsolvable to cross check against all wallets
                     // also adding a signer verify button to show whether FN is able to sign for the output or not
                     
-                    Keys.verifyAddress(address, keypath, desc) {(isOursFullyNoded, walletLabel, signable, signer) in
+                    Keys.verifyAddress(parentDesc: parentDesc, path: keypath, passphrase: passphrase) { (isOursFullyNoded, walletLabel, signable, signer) in
                         updatedOutput["isOursFullyNoded"] = isOursFullyNoded
                         updatedOutput["walletLabel"] = walletLabel
                         updatedOutput["signable"] = signable
@@ -2345,24 +2344,24 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         return strDate
     }
     
-//    private func broadcastPrivately() {
-//        spinner.addConnectingView(vc: self, description: "broadcasting...")
-//        
-//        Broadcaster.sharedInstance.send(rawTx: self.signedRawTx) { [weak self] id in
-//            guard let self = self else { return }
-//            
-//            if id == self.txid {
-//                DispatchQueue.main.async {
-//                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-//                    self.disableSendButton()
-//                    self.spinner.removeConnectingView()
-//                    showAlert(vc: self, title: "", message: "Transaction sent ✓")
-//                }
-//            } else {
-//                self.showError(error: "Error broadcasting privately, try again and use your node instead. Error: \(id ?? "unknown")")
-//            }
-//        }
-//    }
+    private func broadcastPrivately() {
+        spinner.addConnectingView(vc: self, description: "broadcasting...")
+        
+        Broadcaster.sharedInstance.send(rawTx: self.signedRawTx) { [weak self] id in
+            guard let self = self else { return }
+            
+            if id == self.txid {
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                    self.disableSendButton()
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "", message: "Transaction sent ✓")
+                }
+            } else {
+                self.showError(error: "Error broadcasting privately, try again and use your node instead. Error: \(id ?? "unknown")")
+            }
+        }
+    }
     
     private func broadcastWithMyNode() {
         spinner.addConnectingView(vc: self, description: "broadcasting...")
@@ -2408,12 +2407,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Send transaction?",
-                                          message: "",
+            let alert = UIAlertController(title: "Broadcast transaction?",
+                                          message: "You can broadcast with your node or via Blockstreams Esplora onion. Broadcasting with Esplora is more private.",
                                           preferredStyle: .alert)
             
-            alert.addAction(UIAlertAction(title: "Send", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "Via my node", style: .default, handler: { action in
                 self.broadcastWithMyNode()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Via Esplora (Tor)", style: .default, handler: { action in
+                self.broadcastPrivately()
             }))
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
@@ -2722,11 +2725,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 //vc.memoText = memoText
                 
                 vc.doneBlock = { result in
-                    self.labelText = result[0]
-                    //self.memoText = result[1]
+                    self.labelText = result
                     
                     DispatchQueue.main.async {
-                        self.verifyTable.reloadSections(IndexSet(arrayLiteral: 0, 1), with: .none)
+                        self.verifyTable.reloadSections(IndexSet(arrayLiteral: 0), with: .none)
                         showAlert(vc: self, title: "", message: "Transaction updated ✓")
                     }
                 }
