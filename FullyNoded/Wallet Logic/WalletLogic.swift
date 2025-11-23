@@ -19,33 +19,82 @@ class WalletLogic {
     typealias BDKDescriptor = BitcoinDevKit.Descriptor
     //typealias BDKAddressInfo = BitcoinDevKit.AddressInfo
     typealias BDKPsbt = BitcoinDevKit.Psbt
-    //typealias BDKDerivationPath = BitcoinDevKit.DerivationPath
+    typealias BDKNetwork = BitcoinDevKit.Network
+    typealias BDKMnemonic = BitcoinDevKit.Mnemonic
+    typealias BDKDerivationPath = BitcoinDevKit.DerivationPath
+    typealias BDKAddress = BitcoinDevKit.Address
     
-    // Takes in any receive and change descriptor as strings and a mnemonic/passphrase to create a BDKWallet which we can use for signing psbts.
-    func wallet(passphrase: String?, network: Network, mnemonic: Mnemonic, recDescStr: String, changeDesStr: String) -> BDKWallet? {
-        let masterKeyWithPassphrase = DescriptorSecretKey(
+    func bdkMasterKey(network: BDKNetwork, mnemonic: String, passphrase: String?) -> DescriptorSecretKey? {
+        guard let bdkMnemonic = try? Mnemonic.fromString(mnemonic: mnemonic) else { return nil }
+        
+        return DescriptorSecretKey(
+            network: network,
+            mnemonic: bdkMnemonic,
+            password: passphrase ?? ""
+        )
+    }
+    
+    /// Takes in watch-only receive and change descriptors as strings, a mnemonic and optional passphrase to create a BDKWallet which we can use for signing psbts.
+    func wallet(passphrase: String?,
+                network: Network,
+                mnemonic: Mnemonic,
+                recDescStr: String,
+                changeDesStr: String,
+                completion: @escaping ((bdkWallet: BDKWallet?, errorMessage: String?)) -> Void) {
+        
+        let masterKey = DescriptorSecretKey(
             network: network,
             mnemonic: mnemonic,
             password: passphrase ?? ""
         )
-        
-        guard let receiveDescriptor = try? BDKDescriptor(descriptor: recDescStr, network: network) else {
-            print("Could not convert receive descriptor string to BDKDescriptor.")
-            return nil
-        }
-        
-        guard let changeDescriptor = try? BDKDescriptor(descriptor: changeDesStr, network: network) else {
-            print("Could not convert change descriptor string to BDKDescriptor.")
-            return nil
-        }
+            
+        hotDescriptor(watchOnlyDescriptor: Descriptor(recDescStr), masterKey: masterKey) { [weak self] hotRecDescString in
+            guard let self = self else { return }
+            
+            guard let hotRecDescString = hotRecDescString else {
+                //print("Fetching hotRecDescString failed.")
+                completion((nil, "Fetching hotRecDescString failed."))
+                return
+            }
+            
+            guard let hotReceiveBDKDescriptor = try? BDKDescriptor(descriptor: hotRecDescString, network: network) else {
+                //print("Could not convert hot receive descriptor string to BDKDescriptor.")
+                completion((nil, "Could not convert hot receive descriptor string to BDKDescriptor."))
+                return
+            }
+            
+            hotDescriptor(watchOnlyDescriptor: Descriptor(changeDesStr), masterKey: masterKey) { [weak self] hotChangeDescString in
+                guard let self = self else { return }
                 
-        let tempDbURL = walletDatabaseURL(named: "temp_wallet")
-        
-        guard let database = try? Persister.newSqlite(path: tempDbURL) else {
-            return nil
+                guard let hotChangeDescString = hotChangeDescString else {
+                    //print("Fetching hotChangeDescString failed.")
+                    completion((nil, "Fetching hotChangeDescString failed."))
+                    return
+                }
+                
+                guard let hotChangeBDKDescriptor = try? BDKDescriptor(descriptor: hotChangeDescString, network: network) else {
+                    //print("Could not convert hot change descriptor string to BDKDescriptor.")
+                    completion((nil, "Could not convert hot change descriptor string to BDKDescriptor."))
+                    return
+                }
+                
+                let tempDbURL = walletDatabaseURL(named: "temp_wallet")
+                
+                guard let database = try? Persister.newSqlite(path: tempDbURL) else {
+                    //print("Unable to securely delete temp_wallet.")
+                    completion((nil, "Unable to securely delete temp_wallet."))
+                    return
+                }
+                
+                guard let bdkWallet = try? BDKWallet(descriptor: hotReceiveBDKDescriptor, changeDescriptor: hotChangeBDKDescriptor, network: network, persister: database) else {
+                    //print("Unable to derive bdkWallet.")
+                    completion((nil, "Unable to derive bdkWallet."))
+                    return
+                }
+                                
+                completion((bdkWallet, nil))
+            }
         }
-        
-        return try? BDKWallet(descriptor: receiveDescriptor, changeDescriptor: changeDescriptor, network: network, persister: database)
     }
     
     func securelyDeleteWallet(name: String) throws {
@@ -54,7 +103,7 @@ class WalletLogic {
         
         guard FileManager.default.fileExists(atPath: dbURL.path) else { return }
         
-        // Overwrite with random data first (optional but paranoid)
+        // Overwrite with random data first.
         let fileHandle = try FileHandle(forWritingTo: dbURL)
         let randomData = Data((0..<Int(64_000)).map { _ in UInt8.random(in: 0...255) })
         try fileHandle.write(contentsOf: randomData)
@@ -70,10 +119,9 @@ class WalletLogic {
         return documents.appendingPathComponent("\(walletName).sqlite3").absoluteString
     }
     
-    func signPsbt(wallet: BDKWallet, psbtBase64: String) -> String? {
-        guard var psbt = try? BDKPsbt(psbtBase64: psbtBase64) else {
-            print("failed converting bas64 psbt to")
-            return nil
+    func signPsbt(wallet: BDKWallet, psbtBase64: String) -> ((signedPsbt: String?, rawTx: String?, errorMessage: String?)) {
+        guard let psbt = try? BDKPsbt(psbtBase64: psbtBase64) else {
+            return (nil, nil, "Failed converting bas64 psbt to BDKPsbt.")
         }
         
         let signOptions = SignOptions(
@@ -86,29 +134,121 @@ class WalletLogic {
         )
         
         guard let finalized = try? wallet.sign(psbt: psbt, signOptions: signOptions) else {
-            print("signing failed")
-            return nil
+            do {
+                try securelyDeleteWallet(name: "temp_wallet")
+            } catch {
+                return (nil, nil, error.localizedDescription)
+            }
+            return ((nil, nil, "Signing failed."))
         }
         
-        print("Signed successfully!")
-        
+        do {
+            try securelyDeleteWallet(name: "temp_wallet")
+        } catch {
+            return (nil, nil, error.localizedDescription)
+        }
+                
         if finalized {
-            print("Fully finalized!")
-            
             guard let tx = try? psbt.extractTx() else {
-                print("Error extracting the raw transaction from the finalized psbt.")
-                return nil
+                return (nil, nil, "Error extracting the raw transaction from the finalized psbt.")
             }
-            print("raw tx: \(tx.serialize().hex)")
-            return tx.serialize().hex
+            return (nil, tx.serialize().hex, nil)
             
         } else {
-            // 5. Return signed PSBT (base64)
             let signedBase64 = psbt.serialize()
-            print("signedBase64: \(signedBase64)")
-            return signedBase64
+            return (signedBase64, nil, nil)
+        }
+    }
+    
+    func bdkNetwork() -> BDKNetwork? {
+        let network = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+        
+        var bdkNetwork: BDKNetwork?
+        
+        switch network {
+        case "main": bdkNetwork = .bitcoin
+        case "test": bdkNetwork = .testnet
+        case "regtest": bdkNetwork = .regtest
+        case "signet": bdkNetwork = .signet
+        default:
+            break
         }
         
+        return bdkNetwork
+    }
+    
+    private func hotDescriptor(watchOnlyDescriptor: Descriptor, masterKey: DescriptorSecretKey, completion: @escaping((String?)) -> Void) {
+        
+        if watchOnlyDescriptor.isMulti {
+            var hotDescriptor: String?
+            
+            defer {
+                hotDescriptor?.secureWipe()
+            }
+            
+            for (x, _) in watchOnlyDescriptor.multiSigKeys.enumerated() {
+                
+                guard let path = try? BDKDerivationPath(path: watchOnlyDescriptor.derivationArray[x]) else {
+                    return
+                }
+                
+                guard let derivedKey = try? masterKey.derive(path: path) else {
+                    return
+                }
+                
+                if derivedKey.asPublic().description.contains(watchOnlyDescriptor.accountXpub) {
+                    hotDescriptor = process(derivedKey: derivedKey, watchOnlyDescriptor: watchOnlyDescriptor)
+                }
+                
+                if x + 1 == watchOnlyDescriptor.multiSigKeys.count {
+                    completion((hotDescriptor))
+                }
+            }
+        } else {
+            guard let path = try? BDKDerivationPath(path: watchOnlyDescriptor.derivation) else {
+                completion((nil))
+                return
+            }
+            
+            guard let derivedKey = try? masterKey.derive(path: path) else {
+                completion((nil))
+                return
+            }
+            
+            var xprvString = derivedKey.asPublic().description
+            
+            guard derivedKey.asPublic().description.contains(watchOnlyDescriptor.accountXpub) else {
+                completion((nil))
+                return
+            }
+
+            var processedHotDescriptor = process(derivedKey: derivedKey, watchOnlyDescriptor: watchOnlyDescriptor)
+            
+            defer {
+                xprvString.secureWipe()
+                processedHotDescriptor.secureWipe()
+            }
+            
+            completion((processedHotDescriptor))
+        }
+    }
+    
+    private func process(derivedKey: DescriptorSecretKey, watchOnlyDescriptor: Descriptor) -> String {
+        var derivedKeyString = derivedKey.description
+        var derivedKeyArr = derivedKeyString.components(separatedBy: "]")
+        var derivedKeyArr2 = derivedKeyArr[1].components(separatedBy: "/")
+        var plainXprv = "\(derivedKeyArr2[0])"
+        let coldDescArr = watchOnlyDescriptor.string.components(separatedBy: "#")
+        let checksumLessWatchOnlyDesc = "\(coldDescArr[0])"
+        
+        defer {
+            plainXprv.secureWipe()
+            derivedKeyString.secureWipe()
+            derivedKeyArr.removeAll()
+            derivedKeyArr2.removeAll()
+        }
+        
+        return checksumLessWatchOnlyDesc.replacingOccurrences(of: watchOnlyDescriptor.accountXpub, with: plainXprv)
     }
 }
 
