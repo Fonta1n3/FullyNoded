@@ -12,12 +12,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     var fxRate: Double?
     var spendable = Double()
-    var rawTxUnsigned = String()
-    var rawTxSigned = String()
+    var rawTx: String?
     var address = String()
     var amount = String()
-    var outputs:[[String:Any]] = []
-    var inputs:[[String:Any]] = []
+    var outputs: [[String:Any]] = []
+    var inputs: [[String:Any]] = []
     var txt = ""
     var utxoTotal: Decimal = 0.0
     let ud = UserDefaults.standard
@@ -26,6 +25,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var invoiceString = ""
     let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     var balance = ""
+    var psbt: String?
     
     
     @IBOutlet weak private var createOutlet: UIButton!
@@ -250,8 +250,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.rawTxSigned = ""
-            self.rawTxUnsigned = ""
+            //self.rawTxSigned = ""
+            //self.rawTxUnsigned = ""
             self.amountInput.resignFirstResponder()
             self.addressInput.resignFirstResponder()
         }
@@ -305,8 +305,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             if let error = error {
                 showAlert(vc: self, title: "There was an issue creating the \(type) psbt.", message: error)
             } else if let psbt = psbt {
-                self.rawTxUnsigned = psbt
-                self.showRaw(raw: psbt)
+                //self.rawTxUnsigned = psbt
+                self.psbt = psbt
+                self.showRaw()
             }
         }
     }
@@ -610,23 +611,25 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func sign(psbt: String) {
-        Signer.sign(psbt: psbt, passphrase: nil) { [weak self] (psbt, rawTx, errorMessage) in
-            guard let self = self else { return }
-            
-            self.spinner.removeConnectingView()
-            
-            if rawTx != nil {
-                self.rawTxSigned = rawTx!
-                self.showRaw(raw: rawTx!)
-                
-            } else if psbt != nil {
-                self.rawTxUnsigned = psbt!
-                self.showRaw(raw: psbt!)
-                
-            } else if errorMessage != nil {
-                showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown signing error")
-            }
-        }
+        self.psbt = psbt
+        showRaw()
+//        Signer.sign(psbt: psbt, passphrase: nil) { [weak self] (psbt, rawTx, errorMessage) in
+//            guard let self = self else { return }
+//            
+//            self.spinner.removeConnectingView()
+//            
+//            if rawTx != nil {
+//                self.rawTxSigned = rawTx!
+//                self.showRaw(raw: rawTx!)
+//                
+//            } else if psbt != nil {
+//                self.rawTxUnsigned = psbt!
+//                self.showRaw(raw: psbt!)
+//                
+//            } else if errorMessage != nil {
+//                showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown signing error")
+//            }
+//        }
     }
     
     private func sweep() {
@@ -650,7 +653,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         promptToSweep()
     }
     
-    func showRaw(raw: String) {
+    func showRaw() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -829,13 +832,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 
                 self.spinner.removeConnectingView()
                 
-                if rawTx != nil {
-                    self.rawTxSigned = rawTx!
-                    self.showRaw(raw: rawTx!)
+                if let rawTx = rawTx {
+                    self.rawTx = rawTx
+                    self.showRaw()
                 
-                } else if psbt != nil {
-                    self.rawTxUnsigned = psbt!
-                    self.showRaw(raw: psbt!)
+                } else if let psbt = psbt {
+                    self.psbt = psbt
+                    self.showRaw()
                                     
                 } else {
                     self.outputs.removeAll()
@@ -890,10 +893,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             vc.hasSigned = true
             vc.fxRate = fxRate
             
-            if rawTxSigned != "" {
-                vc.signedRawTx = rawTxSigned
-            } else if rawTxUnsigned != "" {
-                vc.unsignedPsbt = rawTxUnsigned
+            if let rawTx = rawTx {
+                vc.signedRawTx = rawTx
+            } else if let psbt = psbt {
+                vc.unsignedPsbt = psbt
             }
             
             
