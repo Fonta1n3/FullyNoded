@@ -245,9 +245,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 encryptedCert = encCert
             }
         } else {
-            guard address.contains(".onion") || address.hasPrefix("localhost:") || address.hasPrefix("127.0.0.1:") else {
-                showAlert(vc: self, title: "Node not updated!", message: "You are not using an onion address or localhost. If using LAN then a SSL cert is required, you will need the text of the cert, in terminal you can run: cat /path/to/your/cert.crt to get the text.")
-                return
+            if !address.contains(".onion") || !address.hasPrefix("localhost:") || !address.hasPrefix("127.0.0.1:") {
+                showAlert(vc: self, title: "Warning! ⚠️", message: "You are not using an onion address or localhost. Your RPC credentials could be compromised! This is intended for LAN usage or testing purposes only! To be safer consider adding a SSL cert.")
             }
         }
             
