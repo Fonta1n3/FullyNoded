@@ -87,8 +87,8 @@ struct TransactionInfo: Codable {
     let time: Int
     let timereceived: Int
     let bip125Replaceable: String
-    let label: String?
     // Used for convenience, not from Core.
+    var label: String?
     var originRate: Double?
     
     enum CodingKeys: String, CodingKey {
