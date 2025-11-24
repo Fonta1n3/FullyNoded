@@ -975,6 +975,7 @@ class ActiveWalletViewController: UIViewController {
             
             vc.unsignedPsbt = self.psbt.condenseWhitespace()
             vc.signedRawTx = self.rawTx.condenseWhitespace()
+            vc.fxRate = self.fxRate
             
         case "segueToEditTx":
             guard let vc = segue.destination as? TransactionLabelMemoViewController else { fallthrough }

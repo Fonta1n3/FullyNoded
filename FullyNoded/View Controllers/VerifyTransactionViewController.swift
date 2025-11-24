@@ -1132,10 +1132,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         isChange = false
                     }
                                         
-                    var amountString = amount.avoidNotation
+                    var amountString = amount.btcBalanceWithSpaces
                     
-                    if fxRate != nil {
-                        amountString += " btc / \(fiatAmount(btc: amount))"
+                    if let fxRate = fxRate {
+                        amountString += " / \((fxRate * amount).fiatString)"
                     }
                                         
                     let outputDict:[String:Any] = [
@@ -1183,10 +1183,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                             
                             if let amount = output["value"] as? Double {
                                 inputTotal += amount
-                                var amountString = amount.avoidNotation
+                                var amountString = amount.btcBalanceWithSpaces
                                 
-                                if fxRate != nil {
-                                    amountString += " btc / \(fiatAmount(btc: amount))"
+                                if let fxRate = fxRate {
+                                    amountString += " / \((fxRate * amount).fiatString)"
                                 }
                                 
                                 self.inputTableArray[index]["amount"] = amountString
