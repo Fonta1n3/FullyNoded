@@ -53,13 +53,13 @@ class WalletLogic {
             
             guard let hotRecDescString = hotRecDescString else {
                 //print("Fetching hotRecDescString failed.")
-                completion((nil, "Fetching hotRecDescString failed."))
+                //completion((nil, "Fetching hotRecDescString failed."))
                 return
             }
-            
+                        
             guard let hotReceiveBDKDescriptor = try? BDKDescriptor(descriptor: hotRecDescString, network: network) else {
                 //print("Could not convert hot receive descriptor string to BDKDescriptor.")
-                completion((nil, "Could not convert hot receive descriptor string to BDKDescriptor."))
+                //completion((nil, "Could not convert hot receive descriptor string to BDKDescriptor."))
                 return
             }
             
@@ -68,31 +68,35 @@ class WalletLogic {
                 
                 guard let hotChangeDescString = hotChangeDescString else {
                     //print("Fetching hotChangeDescString failed.")
-                    completion((nil, "Fetching hotChangeDescString failed."))
+                    //completion((nil, "Fetching hotChangeDescString failed."))
+                    return
+                }
+                                
+                guard let hotChangeBDKDescriptor = try? BDKDescriptor(descriptor: hotChangeDescString, network: network) else {
+                    //print("Could not convert hot change descriptor string to BDKDescriptor.")
+                    //completion((nil, "Could not convert hot change descriptor string to BDKDescriptor."))
                     return
                 }
                 
-                guard let hotChangeBDKDescriptor = try? BDKDescriptor(descriptor: hotChangeDescString, network: network) else {
-                    //print("Could not convert hot change descriptor string to BDKDescriptor.")
-                    completion((nil, "Could not convert hot change descriptor string to BDKDescriptor."))
-                    return
-                }
+                try? securelyDeleteWallet(name: "temp_wallet")
                 
                 let tempDbURL = walletDatabaseURL(named: "temp_wallet")
                 
                 guard let database = try? Persister.newSqlite(path: tempDbURL) else {
                     //print("Unable to securely delete temp_wallet.")
-                    completion((nil, "Unable to securely delete temp_wallet."))
+                    //completion((nil, "Unable to securely delete temp_wallet."))
                     return
                 }
                 
-                guard let bdkWallet = try? BDKWallet(descriptor: hotReceiveBDKDescriptor, changeDescriptor: hotChangeBDKDescriptor, network: network, persister: database) else {
-                    //print("Unable to derive bdkWallet.")
-                    completion((nil, "Unable to derive bdkWallet."))
-                    return
+                
+                do {
+                    let bdkWallet = try BDKWallet(descriptor: hotReceiveBDKDescriptor, changeDescriptor: hotChangeBDKDescriptor, network: network, persister: database)
+                    completion((bdkWallet, nil))
+                    
+                } catch {
+                    //print(error.localizedDescription)
+                    completion((nil, error.localizedDescription))
                 }
-                                
-                completion((bdkWallet, nil))
             }
         }
     }
@@ -141,7 +145,7 @@ class WalletLogic {
             }
             return ((nil, nil, "Signing failed."))
         }
-        
+                
         do {
             try securelyDeleteWallet(name: "temp_wallet")
         } catch {
@@ -186,6 +190,8 @@ class WalletLogic {
                 hotDescriptor?.secureWipe()
             }
             
+            
+            
             for (x, _) in watchOnlyDescriptor.multiSigKeys.enumerated() {
                 
                 guard let path = try? BDKDerivationPath(path: watchOnlyDescriptor.derivationArray[x]) else {
@@ -196,8 +202,8 @@ class WalletLogic {
                     return
                 }
                 
-                if derivedKey.asPublic().description.contains(watchOnlyDescriptor.accountXpub) {
-                    hotDescriptor = process(derivedKey: derivedKey, watchOnlyDescriptor: watchOnlyDescriptor)
+                if derivedKey.asPublic().description.contains(watchOnlyDescriptor.multiSigKeys[x]) {
+                    hotDescriptor = processMultiSig(derivedKey: derivedKey, watchOnlyDescriptor: watchOnlyDescriptor, keyIndex: x)
                 }
                 
                 if x + 1 == watchOnlyDescriptor.multiSigKeys.count {
@@ -222,7 +228,7 @@ class WalletLogic {
                 return
             }
 
-            var processedHotDescriptor = process(derivedKey: derivedKey, watchOnlyDescriptor: watchOnlyDescriptor)
+            var processedHotDescriptor = processSingleSig(derivedKey: derivedKey, watchOnlyDescriptor: watchOnlyDescriptor)
             
             defer {
                 xprvString.secureWipe()
@@ -233,7 +239,7 @@ class WalletLogic {
         }
     }
     
-    private func process(derivedKey: DescriptorSecretKey, watchOnlyDescriptor: Descriptor) -> String {
+    private func processSingleSig(derivedKey: DescriptorSecretKey, watchOnlyDescriptor: Descriptor) -> String {
         var derivedKeyString = derivedKey.description
         var derivedKeyArr = derivedKeyString.components(separatedBy: "]")
         var derivedKeyArr2 = derivedKeyArr[1].components(separatedBy: "/")
@@ -249,6 +255,24 @@ class WalletLogic {
         }
         
         return checksumLessWatchOnlyDesc.replacingOccurrences(of: watchOnlyDescriptor.accountXpub, with: plainXprv)
+    }
+    
+    private func processMultiSig(derivedKey: DescriptorSecretKey, watchOnlyDescriptor: Descriptor, keyIndex: Int) -> String {
+        var derivedKeyString = derivedKey.description
+        var derivedKeyArr = derivedKeyString.components(separatedBy: "]")
+        var derivedKeyArr2 = derivedKeyArr[1].components(separatedBy: "/")
+        var plainXprv = "\(derivedKeyArr2[0])"
+        let coldDescArr = watchOnlyDescriptor.string.components(separatedBy: "#")
+        let checksumLessWatchOnlyDesc = "\(coldDescArr[0])"
+        
+        defer {
+            plainXprv.secureWipe()
+            derivedKeyString.secureWipe()
+            derivedKeyArr.removeAll()
+            derivedKeyArr2.removeAll()
+        }
+        
+        return checksumLessWatchOnlyDesc.replacingOccurrences(of: watchOnlyDescriptor.multiSigKeys[keyIndex], with: plainXprv)
     }
 }
 

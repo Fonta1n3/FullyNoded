@@ -14,7 +14,15 @@ class Signer {
     
     private init(){}
     
-    func attemptToSignPsbt(fnWallet: Wallet, psbt: String, passphrase: String?, completion: @escaping ((psbt: String?, rawTx: String?, errorMessage: String?)) -> Void) {
+    func attemptToSignPsbt(fnWallet: Wallet,
+                           psbt: String,
+                           passphrase: String?,
+                           completion: @escaping ((psbt: String?, rawTx: String?, errorMessage: String?)) -> Void) {
+                
+        var psbtToReturn: String?
+        var rawTxToReturn: String?
+        var errorToReturn: String?
+        
         guard let bdkNetwork = WalletLogic.shared.bdkNetwork() else {
             completion((nil, nil, "Failed getting bdkNetwork."))
             return
@@ -25,12 +33,12 @@ class Signer {
                 completion((nil, nil, "No signers."))
                 return
             }
-            
-            for signer in signers {
+                        
+            for (i, signer) in signers.enumerated() {
                 
                 let signerStruct = SignerStruct(dictionary: signer)
                 
-                if let encryptedWords = signerStruct.words {
+                if var encryptedWords = signerStruct.words {
                     
                     guard var decryptedData = Crypto.decrypt(encryptedWords) else {
                         completion((nil, nil, "Unable to decrypt encrypted words."))
@@ -50,6 +58,7 @@ class Signer {
                     defer {
                         decryptedData.secureZero()
                         words.secureWipe()
+                        encryptedWords.secureZero()
                     }
                     
                     WalletLogic.shared.wallet(passphrase: passphrase,
@@ -67,16 +76,17 @@ class Signer {
                         let (signedPsbt, signedRawTx, errorMessage) = WalletLogic.shared.signPsbt(wallet: bdkWallet, psbtBase64: psbt)
                         
                         if signedPsbt != nil {
-                            completion((signedPsbt, nil, nil))
-                            return
+                            psbtToReturn = signedPsbt
                         } else if signedRawTx != nil {
-                            completion((nil, signedRawTx, nil))
-                            return
+                            rawTxToReturn = signedRawTx
                         } else {
-                            completion((nil, nil, errorMessage ?? "Unable to sign psbt."))
-                            return
+                            errorToReturn = errorMessage
                         }
                     })
+                }
+                
+                if i + 1 == signers.count {
+                    completion((psbtToReturn, rawTxToReturn, errorToReturn))
                 }
             }
         }

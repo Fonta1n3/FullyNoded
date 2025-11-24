@@ -261,57 +261,111 @@ enum Keys {
     }
     
     static func addressSignable(_ parentDesc: String, _ path: String, _ passphrase: String?, completion: @escaping ((signable: Bool, signer: String?)) -> Void) {
-        let pathArr = path.split(separator: "/")
+        print("addressSignable")
+        // no path supplied for multisig.
+        let fnParentDesc = Descriptor(parentDesc)
+        //let parentDescDerivationArray = fnParentDesc.derivationArray
+        var signable = false
+        var signerLabel: String?
         
-        guard pathArr.count == 6 else {
-            // Non standard path, you are on your own.
-            #if DEBUG
-            print("non standard path")
-            #endif
-            completion((false, nil))
-            return
-        }
-        
-        let accountKeyPath = "m/\(pathArr[1])/\(pathArr[2])/\(pathArr[3])"
-        
-        guard let accountDerivationPathBDK = try? WalletLogic.BDKDerivationPath(path: accountKeyPath) else { return }
+        if fnParentDesc.isMulti {
+            // its msig, needs special handling
+            print("stop here for msig")
+            for (x, derivation) in fnParentDesc.derivationArray.enumerated() {
+                guard let accountDerivationPathBDK = try? WalletLogic.BDKDerivationPath(path: derivation) else { return }
                 
-        CoreDataService.retrieveEntity(entityName: .signers) { signers in
-            guard let signers = signers, signers.count > 0 else { completion((false, nil)); return }
+                CoreDataService.retrieveEntity(entityName: .signers) { signers in
+                    guard let signers = signers, signers.count > 0 else { completion((false, nil)); return }
+                    
+                    
+                    for (i, signer) in signers.enumerated() {
+                        let signerStruct = SignerStruct(dictionary: signer)
+                        
+                        if var encryptedWords = signerStruct.words,
+                           var decryptedWords = Crypto.decrypt(encryptedWords),
+                           var words = decryptedWords.utf8String {
+                            
+                            var passphrase = ""
+                            var encryptedPassphrase: Data = "".utf8
+                            
+                            defer {
+                                encryptedWords.secureZero()
+                                decryptedWords.secureZero()
+                                words.secureWipe()
+                                encryptedPassphrase.secureZero()
+                                passphrase.secureWipe()
+                            }
+                            
+                            guard let network = WalletLogic.shared.bdkNetwork() else { return }
+                            
+                            guard let bdkMasterKey = WalletLogic.shared.bdkMasterKey(network: network, mnemonic: words, passphrase: passphrase) else { return }
+                            
+                            guard let derivedAccountKey = try? bdkMasterKey.derive(path: accountDerivationPathBDK) else { return }
+                            
+                            // The prefix doesn't matter here we just want the damn xpub.
+                            let derivedAccountXpubDesc = "wpkh(\(derivedAccountKey.asPublic().description))"
+                            let plainXpub = Descriptor(derivedAccountXpubDesc).accountXpub
+                            
+                            if parentDesc.contains(plainXpub) {
+                                //completion((true, signerStruct.label))
+                                signerLabel = signerStruct.label
+                                signable = true
+                            }
+                        }
+                        
+                        if i + 1 == signers.count && x + 1 == fnParentDesc.derivationArray.count {
+                            completion((signable, signerLabel))
+                        }
+                    }
+                }
+            }
             
-            for (i, signer) in signers.enumerated() {
-                let signerStruct = SignerStruct(dictionary: signer)
+        } else {
+            //its single sig
+            guard let accountDerivationPathBDK = try? WalletLogic.BDKDerivationPath(path: fnParentDesc.derivation) else { return }
+            
+            CoreDataService.retrieveEntity(entityName: .signers) { signers in
+                guard let signers = signers, signers.count > 0 else { completion((false, nil)); return }
                 
-                if var encryptedWords = signerStruct.words,
-                   var decryptedWords = Crypto.decrypt(encryptedWords),
-                   var words = decryptedWords.utf8String {
+                
+                for (i, signer) in signers.enumerated() {
+                    let signerStruct = SignerStruct(dictionary: signer)
                     
-                    var passphrase = ""
-                    var encryptedPassphrase: Data = "".utf8
-                    
-                    defer {
-                        encryptedWords.secureZero()
-                        decryptedWords.secureZero()
-                        words.secureWipe()
-                        encryptedPassphrase.secureZero()
-                        passphrase.secureWipe()
+                    if var encryptedWords = signerStruct.words,
+                       var decryptedWords = Crypto.decrypt(encryptedWords),
+                       var words = decryptedWords.utf8String {
+                        
+                        var passphrase = ""
+                        var encryptedPassphrase: Data = "".utf8
+                        
+                        defer {
+                            encryptedWords.secureZero()
+                            decryptedWords.secureZero()
+                            words.secureWipe()
+                            encryptedPassphrase.secureZero()
+                            passphrase.secureWipe()
+                        }
+                        
+                        guard let network = WalletLogic.shared.bdkNetwork() else { return }
+                        
+                        guard let bdkMasterKey = WalletLogic.shared.bdkMasterKey(network: network, mnemonic: words, passphrase: passphrase) else { return }
+                        
+                        guard let derivedAccountKey = try? bdkMasterKey.derive(path: accountDerivationPathBDK) else { return }
+                        
+                        // The prefix doesn't matter here we just want the damn xpub.
+                        let derivedAccountXpubDesc = "wpkh(\(derivedAccountKey.asPublic().description))"
+                        let plainXpub = Descriptor(derivedAccountXpubDesc).accountXpub
+                        
+                        if parentDesc.contains(plainXpub) {
+                            //completion((true, signerStruct.label))
+                            signerLabel = signerStruct.label
+                            signable = true
+                        }
                     }
-                                        
-                    guard let network = WalletLogic.shared.bdkNetwork() else { return }
-                                        
-                    guard let bdkMasterKey = WalletLogic.shared.bdkMasterKey(network: network, mnemonic: words, passphrase: passphrase) else { return }
                     
-                    guard let derivedAccountKey = try? bdkMasterKey.derive(path: accountDerivationPathBDK) else { return }
-                                        
-                    // The prefix doesn't matter here we just want the damn xpub.
-                    let derivedAccountXpubDesc = "wpkh(\(derivedAccountKey.asPublic().description))"
-                    let plainXpub = Descriptor(derivedAccountXpubDesc).accountXpub
-                                        
-                    if parentDesc.contains(plainXpub) {
-                        completion((true, signerStruct.label))
+                    if i + 1 == signers.count {
+                        completion((signable, signerLabel))
                     }
-                } else if i + 1 == signers.count {
-                    completion((false, nil))
                 }
             }
         }
@@ -324,6 +378,7 @@ enum Keys {
                                                       wallet: String?,
                                                       signable: Bool,
                                                       signer: String?)) -> Void) {
+        print("verifyAddress")
         
         var isOurs = false
         var walletLabel: String?
@@ -365,16 +420,16 @@ enum Keys {
                         walletLabel = localWalletStruct.label
                     }
                     
-                    addressSignable(parentDesc, path, passphrase) { (isSignable, signerLabel) in
-                        if isSignable {
-                            signable = true
-                        }
-                        
-                        if signerLabel != nil {
-                            signer = signerLabel
-                        }
-                        
-                        if i + 1 == wallets.count {
+                    if i + 1 == wallets.count {
+                        addressSignable(parentDesc, path, passphrase) { (isSignable, signerLabel) in
+                            if isSignable {
+                                signable = true
+                            }
+                            
+                            if signerLabel != nil {
+                                signer = signerLabel
+                            }
+                            
                             completion((isOurs, walletLabel, signable, signer))
                         }
                     }

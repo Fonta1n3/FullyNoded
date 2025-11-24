@@ -39,7 +39,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var addressToVerify = ""
     var sweeping = Bool()
     var signatures = [[String:String]]()
-    var signedTxInputs = NSArray()
+    var signedTxInputs: [[String: Any]] = []
     var alreadyBroadcast = false
     var confs = 0
     var labelText = "No label added."
@@ -115,6 +115,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         exporting = false
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        passphrase?.secureWipe()
+    }
+    
     @IBAction func showRawDataAction(_ sender: Any) {
         if signedRawTx != "" {
             spinner.addConnectingView(vc: self, description: "Decoding raw transaction...")
@@ -168,6 +172,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func reset() {
+        print("reset")
         self.unsignedPsbt = ""
         self.signedRawTx = ""
         //self.isChannelFunding = false
@@ -187,7 +192,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         self.recipients.removeAll()
         self.addressToVerify = ""
         self.signatures.removeAll()
-        self.signedTxInputs = NSArray()
+        self.signedTxInputs.removeAll()
         self.confs = 0
         self.alreadyBroadcast = false
         self.labelText = "No label added."
@@ -299,16 +304,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         disableView(bumpFeeBackgroundView)
     }
     
-    private func disableExportButton() {
-        disableView(exportBackgroundView)
-        disableButton(exportButtonOutlet)
-    }
+//    private func disableExportButton() {
+//        disableView(exportBackgroundView)
+//        disableButton(exportButtonOutlet)
+//    }
     
     private func configureViews() {
         disableSendButton()
         disableBumpButton()
         disableSignButton()
-        disableExportButton()
+        //disableExportButton()
         
         buttonsBackgroundView.clipsToBounds = true
         buttonsBackgroundView.layer.cornerRadius = 8
@@ -585,6 +590,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             } else {
                 self.setPassphrase { [weak self] passphrase in
                     guard let self = self else { return }
+                    self.passphrase = passphrase
                     
                     self.bumpFee(passphrase)
                 }
@@ -613,6 +619,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 return
             }
             
+            //reset()
+            
             if UserDefaults.standard.object(forKey: "passphrasePrompt") == nil {
                 self.spinner.removeConnectingView()
                 self.signNow(nil)
@@ -620,7 +628,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 self.spinner.removeConnectingView()
                 self.setPassphrase { [weak self] passphrase in
                     guard let self = self else { return }
-                    
+                    self.passphrase = passphrase
                     self.signNow(passphrase)
                 }
             }
@@ -719,21 +727,31 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         Signer.shared.attemptToSignPsbt(fnWallet: wallet, psbt: unsignedPsbt, passphrase: passphrase) { [weak self] (signedPsbt, rawTx, errorMessage) in
             guard let self = self else { return }
             
-            self.disableSignButton()
+            print("return from signer")
             
             if let rawTx = rawTx {
+                showAlert(vc: self, title: "", message: "Signed successfully ✓")
+                self.disableSignButton()
                 self.unsignedPsbt = ""
+                reset()
                 self.signedRawTx = rawTx
                 self.enableSendButton()
+                //self.enableExportButton()
                 self.load()
                 
             } else if let signedPsbt = signedPsbt {
+                reset()
                 self.unsignedPsbt = signedPsbt
+                //self.enableExportButton()
                 self.load()
                 
             } else {
                 self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "unknown")
+                
+                if let errorMessage = errorMessage {
+                    showAlert(vc: self, title: "Error Signing", message: errorMessage)
+                }
+                
             }
         }
     }
@@ -825,7 +843,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "The transaction still needs more signatures before it can be broadcast.")
                         
                     } else {
-                        showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "unknown")
+                        if let errorMessage = errorMessage {
+                            showAlert(vc: self, title: "Error Signing", message: errorMessage)
+                        }
                     }
                 }
             }
@@ -841,11 +861,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func load() {
-        if !isSigning || unsignedPsbt == "" {
-            spinner.addConnectingView(vc: self, description: "getting exchange rate....")
-        } else {
-            updateLabel("reloading signed transaction...")
-        }
+        spinner.addConnectingView(vc: self, description: "loading...")
         
         inputArray.removeAll()
         inputTableArray.removeAll()
@@ -853,13 +869,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         recipients.removeAll()
         signatures.removeAll()
         outputsString = ""
-        let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
         
-        FiatConverter.sharedInstance.getFxRate(currency: fiatCurrency) { [weak self] exchangeRate in
-            guard let self = self else { return }
-            
-            self.fxRate = exchangeRate
-        }
+//        FiatConverter.sharedInstance.getFxRate(currency: fiatCurrency) { [weak self] exchangeRate in
+//            guard let self = self else { return }
+//            
+//            self.fxRate = exchangeRate
+//        }
         
         if self.unsignedPsbt == "" {
             self.updateLabel("decoding raw transaction...")
@@ -972,7 +987,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     self.loadLabelAndMemo()
                 }
                 
-                if let inputs = dict["vin"] as? NSArray {
+                if let inputs = dict["vin"] as? [[String: Any]] {
                     
                     for (i, _) in inputs.enumerated() {
                         let inputDict:[String:Any] = [
@@ -987,6 +1002,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         self.inputTableArray.append(inputDict)
                     }
                     
+                    self.index = 0
                     self.signedTxInputs = inputs
                 }
                 
@@ -1211,6 +1227,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             self.updateLabel("verifying input #\(self.index + 1) out of \(self.inputTableArray.count)")
             
             if let address = inputTableArray[index]["address"] as? String, address != "Unknown address.", address != "" {
+                
                 let param:Get_Address_Info = .init(["address":address])
                 MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
@@ -1226,71 +1243,71 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         return
                     }
                     
-                    if let dict = response as? NSDictionary {
-                        let solvable = dict["solvable"] as? Bool ?? false
-                        let keypath = dict["hdkeypath"] as? String ?? "no key path"
-                        let labels = dict["labels"] as? NSArray ?? ["no label"]
-                        let desc = dict["desc"] as? String ?? "no descriptor"
-                        var isChange = dict["ischange"] as? Bool ?? false
-                        let fingerprint = dict["hdmasterfingerprint"] as? String ?? "no fingerprint"
-                        let script = dict["script"] as? String ?? ""
-                        let sigsrequired = dict["sigsrequired"] as? Int ?? 0
-                        let pubkeys = dict["pubkeys"] as? [String] ?? []
-                        var labelsText = ""
-                        if labels.count > 0 {
-                            for label in labels {
-                                if label as? String == "" {
-                                    labelsText += "no label "
-                                } else {
-                                    labelsText += "\(label as? String ?? "") "
-                                }
+                    guard let dict = response as? NSDictionary else { return }
+                    
+                    let solvable = dict["solvable"] as? Bool ?? false
+                    let keypath = dict["hdkeypath"] as? String ?? "no key path"
+                    let labels = dict["labels"] as? NSArray ?? ["no label"]
+                    let desc = dict["desc"] as? String ?? "no descriptor"
+                    var isChange = dict["ischange"] as? Bool ?? false
+                    let fingerprint = dict["hdmasterfingerprint"] as? String ?? "no fingerprint"
+                    let script = dict["script"] as? String ?? ""
+                    let sigsrequired = dict["sigsrequired"] as? Int ?? 0
+                    let pubkeys = dict["pubkeys"] as? [String] ?? []
+                    var labelsText = ""
+                    if labels.count > 0 {
+                        for label in labels {
+                            if label as? String == "" {
+                                labelsText += "no label "
+                            } else {
+                                labelsText += "\(label as? String ?? "") "
                             }
-                        } else {
-                            labelsText += "no label "
                         }
+                    } else {
+                        labelsText += "no label "
+                    }
+                    
+                    isChange = desc.contains("/1/")
+                    
+                    self.inputTableArray[self.index]["isOurs"] = solvable
+                    self.inputTableArray[self.index]["hdKeyPath"] = keypath
+                    self.inputTableArray[self.index]["isChange"] = isChange
+                    self.inputTableArray[self.index]["label"] = labelsText
+                    self.inputTableArray[self.index]["fingerprint"] = fingerprint
+                    self.inputTableArray[self.index]["desc"] = desc
+                    
+                    if script == "multisig" && self.signedRawTx == "" {
+                        self.inputTableArray[self.index]["sigsrequired"] = sigsrequired
+                        self.inputTableArray[self.index]["pubkeys"] = pubkeys
+                        var numberOfSigs = 0
                         
-                        isChange = desc.contains("/1/")
-                        
-                        self.inputTableArray[self.index]["isOurs"] = solvable
-                        self.inputTableArray[self.index]["hdKeyPath"] = keypath
-                        self.inputTableArray[self.index]["isChange"] = isChange
-                        self.inputTableArray[self.index]["label"] = labelsText
-                        self.inputTableArray[self.index]["fingerprint"] = fingerprint
-                        self.inputTableArray[self.index]["desc"] = desc
-                        
-                        if script == "multisig" && self.signedRawTx == "" {
-                            self.inputTableArray[self.index]["sigsrequired"] = sigsrequired
-                            self.inputTableArray[self.index]["pubkeys"] = pubkeys
-                            var numberOfSigs = 0
-                            
-                            // Will only be any for a psbt
-                            for (i, sigs) in self.signatures.enumerated() {
-                                for (key, _) in sigs {
-                                    for pk in pubkeys {
-                                        if pk == key {
-                                            numberOfSigs += 1
-                                        }
+                        // Will only be any for a psbt
+                        for (i, sigs) in self.signatures.enumerated() {
+                            for (key, _) in sigs {
+                                for pk in pubkeys {
+                                    if pk == key {
+                                        numberOfSigs += 1
                                     }
                                 }
-                                
-                                if i + 1 == self.signatures.count {
-                                    self.inputTableArray[self.index]["signatures"] = "\(numberOfSigs) out of \(sigsrequired) signatures"
-                                }
-                                
                             }
                             
-                        } else {
-                            // Will only be any for a signed raw transaction
-                            if self.signedTxInputs.count > 0 {
-                                self.inputTableArray[self.index]["signatures"] = "Unsigned"
-                                let input = self.signedTxInputs[self.index] as? NSDictionary ?? [:]
-                                let scriptsig = input["scriptSig"] as? NSDictionary ?? [:]
+                            if i + 1 == self.signatures.count {
+                                self.inputTableArray[self.index]["signatures"] = "\(numberOfSigs) out of \(sigsrequired) signatures"
+                            }
+                            
+                        }
+                    } else {
+                        // Will only be any for a signed raw transaction
+                        if self.signedTxInputs.count > 0 {
+                            self.inputTableArray[self.index]["signatures"] = "Unsigned"
+                            
+                            for signedTxInput in signedTxInputs {
+                                let scriptsig = signedTxInput["scriptSig"] as? [String: Any] ?? [:]
                                 let hex = scriptsig["hex"] as? String ?? ""
-                                
                                 if hex != "" {
                                     self.inputTableArray[self.index]["signatures"] = "Signatures complete"
                                 } else {
-                                    if let txwitness = input["txinwitness"] as? NSArray {
+                                    if let txwitness = signedTxInput["txinwitness"] as? NSArray {
                                         if txwitness.count > 0 {
                                             self.inputTableArray[self.index]["signatures"] = "Signatures complete"
                                         }
@@ -1298,9 +1315,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                                 }
                             }
                         }
-                        self.index += 1
-                        self.verifyInputs()
                     }
+                    self.index += 1
+                    self.verifyInputs()
                 }
             } else {
                 self.index += 1
@@ -1313,6 +1330,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func verifyOutputs() {
+        print("verifyOutputs")
         if index < outputArray.count {
             self.updateLabel("verifying output #\(self.index + 1) out of \(self.outputArray.count)")
             
