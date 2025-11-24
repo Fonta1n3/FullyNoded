@@ -1716,6 +1716,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let copyAddressButton = inputCell.viewWithTag(18) as! UIButton
         let copyDescButton = inputCell.viewWithTag(19) as! UIButton
         let addressQrButton = inputCell.viewWithTag(20) as! UIButton
+        let getAddressInfoButton = inputCell.viewWithTag(21) as! UIButton
                 
 //        backgroundView1.layer.cornerRadius = 5
 //        backgroundView2.layer.cornerRadius = 5
@@ -1756,10 +1757,13 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             copyAddressButton.restorationIdentifier = inputAddress
             copyDescButton.restorationIdentifier = desc
             addressQrButton.restorationIdentifier = inputAddress
+            getAddressInfoButton.restorationIdentifier = inputAddress
+            
             
             copyAddressButton.addTarget(self, action: #selector(copyAddress(_:)), for: .touchUpInside)
             copyDescButton.addTarget(self, action: #selector(copyDesc(_:)), for: .touchUpInside)
             addressQrButton.addTarget(self, action: #selector(showAddressQr(_:)), for: .touchUpInside)
+            getAddressInfoButton.addTarget(self, action: #selector(showAddressInfo(_:)), for: .touchUpInside)
             
             signaturesLabel.text = signatureStatus
             
@@ -1857,6 +1861,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let copyDescriptorButton = outputCell.viewWithTag(22) as! UIButton
         let verifyOwnerButton = outputCell.viewWithTag(23) as! UIButton
         let addressQrButton = outputCell.viewWithTag(24) as! UIButton
+        let getAddressInfoButton = outputCell.viewWithTag(25) as! UIButton
                 
 //        signableBackgroundView.layer.cornerRadius = 5
 //        verifiedByFnBackgroundView.layer.cornerRadius = 5
@@ -1900,11 +1905,13 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             verifyOwnerButton.restorationIdentifier = outputAddress + " " + "\(indexPath.row)"
             copyDescriptorButton.restorationIdentifier = desc
             addressQrButton.restorationIdentifier = outputAddress
+            getAddressInfoButton.restorationIdentifier = outputAddress
             
             copyAddressButton.addTarget(self, action: #selector(copyAddress(_:)), for: .touchUpInside)
             copyDescriptorButton.addTarget(self, action: #selector(copyDesc(_:)), for: .touchUpInside)
             verifyOwnerButton.addTarget(self, action: #selector(verifyOwner(_:)), for: .touchUpInside)
             addressQrButton.addTarget(self, action: #selector(showAddressQr(_:)), for: .touchUpInside)
+            getAddressInfoButton.addTarget(self, action: #selector(showAddressInfo(_:)), for: .touchUpInside)
             
             if isOursFullyNoded {
                 verifiedByFnLabel.text = "Owned by \(walletLabel)."
@@ -2265,6 +2272,26 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             self.qrCodeStringToExport = address
             self.performSegue(withIdentifier: "segueToShowAddressQR", sender: self)
+        }
+    }
+    
+    @objc func showAddressInfo(_ sender: UIButton) {
+        spinner.addConnectingView(vc: self, description: "getting address info...")
+        guard let address = sender.restorationIdentifier else { return }
+        
+        let p = Get_Address_Info(["address": address])
+        
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: p)) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
+            
+            spinner.removeConnectingView()
+            
+            guard let response = response as? [String: Any] else {
+                showAlert(vc: self, title: "", message: errorDesc ?? "Unable to get address info.")
+                return
+            }
+            
+            self.showModal(data: response, title: "getaddressinfo")
         }
     }
     
