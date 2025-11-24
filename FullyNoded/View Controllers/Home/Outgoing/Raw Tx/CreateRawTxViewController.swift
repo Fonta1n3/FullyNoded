@@ -66,9 +66,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         createOutlet.clipsToBounds = true
         
         if let fxRate = fxRate {
-            balanceLabel.text = balance.doubleValue.btcBalanceWithSpaces + " / " + (fxRate * balance.doubleValue).fiatString
+            balanceLabel.text = balance + " btc" + " / " + (fxRate * balance.condenseWhitespace().doubleValue).fiatString
         } else {
-            balanceLabel.text = balance.doubleValue.btcBalanceWithSpaces
+            balanceLabel.text = balance + " btc"
         }
        
         addTapGesture()
@@ -94,7 +94,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         amountInput.text = ""
         if address != "" {
             addAddress(address)
-        }
+        }        
     }
     
     @IBAction func sendToWalletAction(_ sender: Any) {
