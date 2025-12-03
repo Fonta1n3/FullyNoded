@@ -53,7 +53,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
              "footerText": "Tap the label to edit it."
             ],// label 0
             [
-                "text": "", "ur": "", "selectedSegmentIndex": 0, "censoredText": "", "censoredUr": "", "footerTextUr": "UR for exporting this signer to any wallet which supports UR crypto-seed. Tap to copy the text.", "footerText": "BIP39 seed words, you need these to sign transactions and recover your wallet."
+                "text": "", "censoredText": "", "footerText": "BIP39 seed words, you need these to sign transactions and recover your wallet."
             ],// words 1
             [
                 "text": "", "footerText": "The fingerprint of your master key. Some hardware wallets require this infomation in order to sign PSBT's."
@@ -146,22 +146,10 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 guard let self = self else { return }
                 
                 if success {
-                    let selectedSegmentIndex = self.tableDict[1]["selectedSegmentIndex"] as? Int ?? 0
-                    
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
                         
-                        switch selectedSegmentIndex {
-                        case 0:
-                            self.tableDict[1]["censoredText"] = self.tableDict[1]["text"] as? String ?? "no seed words"
-                            
-                        case 1:
-                            self.tableDict[1]["censoredUr"] = self.tableDict[1]["ur"] as? String ?? "no crypto-seed"
-                            
-                        default:
-                            break
-                        }
-                        
+                        self.tableDict[1]["censoredText"] = self.tableDict[1]["text"] as? String ?? "no seed words"
                         self.tableView.reloadSections(IndexSet(arrayLiteral: 1), with: .fade)
                     }
                 } else {
@@ -373,33 +361,9 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     masterKey.secureWipe()
                     decrypted.secureZero()
                     words.secureWipe()
+                    encryptedWords.secureZero()
                 }
-                                
-                if var urSeed = URHelper.mnemonicToCryptoSeed(words) {
-                    
-                    defer {
-                        urSeed.secureWipe()
-                    }
-                    
-                    self.tableDict[1]["ur"] = urSeed
-                    
-                    var firstHalf = ""
-                    var secondHalf = ""
-                    
-                    for (i, c) in urSeed.enumerated() {
-                        if i < 20 {
-                            firstHalf += "\(c)"
-                        }
-                        
-                        if i > urSeed.count - 5 {
-                            secondHalf += "\(c)"
-                        }
-                    }
-                    
-                    let displaySeed = "\(firstHalf + "*****" + secondHalf)"
-                    self.tableDict[1]["censoredUr"] = displaySeed
-                }
-                
+                                                
                 self.tableDict[1]["text"] = words
                 self.setWallets(masterKey)
             } else {
@@ -494,7 +458,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     }
     
     private func updateSigner(_ passphrase: String) {
-        if var encryptedWords = self.signer.words,
+        if let encryptedWords = self.signer.words,
            var decryptedSigner = Crypto.decrypt(encryptedWords),
            var words = decryptedSigner.utf8String,
            var mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
@@ -515,7 +479,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
            let encryptedbip48tpub = Crypto.encrypt(bip48tpub.utf8) {
             
             defer {
-                encryptedWords.secureZero()
                 decryptedSigner.secureZero()
                 words.secureWipe()
                 mkMain.secureWipe()
@@ -792,11 +755,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 return
             }
             
-            self.tableDict[1]["ur"] = ""
             self.tableDict[1]["text"] = ""
             self.tableDict[1]["censoredText"] = ""
-            self.tableDict[1]["censoredUr"] = ""
-            
             self.getData()
         }
     }
@@ -844,7 +804,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     
                     let tit = "Wallet created ✓"
                     
-                    let mess = "A rescan was triggered, you may not see transactions or balances until the rescan completes."
+                    let mess = "Navigate to the active wallet view, optionally go to the wallet detail view to rescan for a missing balance."
                     
                     let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
                     
@@ -982,24 +942,24 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             
             passphrase = decryptedPassphrase.utf8String ?? ""
             
-            let (descriptors, message) = Keys.descriptorsFromSigner(signer: words, passphrase: passphrase)
+            let (bip84, bip86, segwitCosigner, taprootCosigner, message) = Keys.descriptorsFromSigner(signer: words, passphrase: passphrase)
             
-            guard let descriptors = descriptors else {
-                showAlert(vc: self, title: "There was an issue deriving your descriptors...", message: message ?? "Unknown")
+            guard message == nil else {
+                showAlert(vc: self, title: "", message: message!)
                 return
             }
 
-            prompToChoosePrimaryDesc(descriptors: descriptors)
+            prompToChoosePrimaryDesc(descriptors: [bip84!, bip86!, segwitCosigner!, taprootCosigner!])
             
         } else {
-            let (descriptors, message) = Keys.descriptorsFromSigner(signer: words, passphrase: nil)
+            let (bip84, bip86, segwitCosigner, taprootCosigner, message) = Keys.descriptorsFromSigner(signer: words, passphrase: nil)
             
-            guard let descriptors = descriptors else {
-                showAlert(vc: self, title: "There was an issue deriving your descriptors...", message: message ?? "Unknown")
+            guard message == nil else {
+                showAlert(vc: self, title: "", message: message!)
                 return
             }
-
-            prompToChoosePrimaryDesc(descriptors: descriptors)
+            
+            prompToChoosePrimaryDesc(descriptors: [bip84!, bip86!, segwitCosigner!, taprootCosigner!])
         }
     }
     
@@ -1204,14 +1164,7 @@ extension SignerDetailViewController: UITableViewDelegate {
             cell.textLabel?.text = dict["text"] as? String ?? "no label"
             
         case .words:
-            switch selectedSegment {
-            case 0:
-                cell.textLabel?.text = dict["censoredText"] as? String ?? "no seed words"
-            case 1:
-                cell.textLabel?.text = dict["censoredUr"] as? String ?? "no seed words"
-            default:
-                break
-            }
+            cell.textLabel?.text = dict["censoredText"] as? String ?? "no seed words"
             
         case .masterKeyFingerprint:
             cell.textLabel?.text = dict["text"] as? String ?? "no fingerprint"
@@ -1288,9 +1241,8 @@ extension SignerDetailViewController: UITableViewDelegate {
                 textLabel.text = headerName(for: section)
                 
             case .words:
-                let deleteButtonSeed = deleteButton(segmentedControl.frame.minX - 46)
+                let deleteButtonSeed = deleteButton(exportQrButtonGeneric.frame.minX - 46)
                 deleteButtonSeed.addTarget(self, action: #selector(promptToDeleteSeed), for: .touchUpInside)
-                header.addSubview(segmentedControl)
                 header.addSubview(exportQrButtonGeneric)
                 header.addSubview(deleteButtonSeed)
                 
