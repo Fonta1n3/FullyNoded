@@ -191,6 +191,10 @@ extension LockedViewController: UITableViewDataSource {
         return 1
     }
     
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 87
+    }
+    
 }
 
 // MarK: UITableViewDelegate
