@@ -28,7 +28,7 @@ public enum BTC_CLI_COMMAND {
     case getmempoolinfo
     case signrawtransactionwithkey
     case listwallets
-    case unloadwallet
+    case unloadwallet(param: Unload_Wallet)
     case rescanblockchain(_ param: Rescan_Blockchain)
     case listwalletdir
     case loadwallet(_ param: Load_Wallet)
@@ -265,6 +265,8 @@ public enum BTC_CLI_COMMAND {
             return p.param
         case .lockunspent(let p):
             return p.param
+        case.unloadwallet(param: let p):
+            return p.param
         default:
             return [:]
         }
@@ -293,7 +295,7 @@ public enum BTC_CLI_COMMAND {
         getmempoolinfo,
         signrawtransactionwithkey,
         listwallets,
-        unloadwallet,
+        unloadwallet(param: .init([:])),
         rescanblockchain(.init([:])),
         listwalletdir,
         loadwallet(.init([:])),
