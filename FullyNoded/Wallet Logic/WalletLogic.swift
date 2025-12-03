@@ -24,6 +24,28 @@ class WalletLogic {
     typealias BDKDerivationPath = BitcoinDevKit.DerivationPath
     typealias BDKAddress = BitcoinDevKit.Address
     
+    func dummyKey() -> String? {
+        let dummyMnemonic = BDKMnemonic(wordCount: .words12)
+        guard let network = bdkNetwork() else {
+            return nil
+        }
+        guard let randomData = Crypto.secret() else { return nil }
+        
+        // Include random passphrase to add entropy to dummy master key.
+        let hash = Crypto.sha256hash(Crypto.sha256hash(Crypto.sha256hash(randomData))).hex
+        
+        guard let dummyMk = bdkMasterKey(network: network, mnemonic: dummyMnemonic.description, passphrase: hash) else {
+            return nil
+        }
+        let arr = dummyMk.asPublic().description.components(separatedBy: "/")
+        
+        return "\(arr[0])"
+    }
+    
+    func fingerprint(masterKey: DescriptorSecretKey) -> String {
+        return masterKey.asPublic().masterFingerprint()
+    }
+    
     func bdkMasterKey(network: BDKNetwork, mnemonic: String, passphrase: String?) -> DescriptorSecretKey? {
         guard let bdkMnemonic = try? Mnemonic.fromString(mnemonic: mnemonic) else { return nil }
         
@@ -47,11 +69,11 @@ class WalletLogic {
             mnemonic: mnemonic,
             password: passphrase ?? ""
         )
-            
+                    
         hotDescriptor(watchOnlyDescriptor: Descriptor(recDescStr), masterKey: masterKey) { [weak self] hotRecDescString in
             guard let self = self else { return }
             
-            guard let hotRecDescString = hotRecDescString else {
+            guard var hotRecDescString = hotRecDescString else {
                 //print("Fetching hotRecDescString failed.")
                 //completion((nil, "Fetching hotRecDescString failed."))
                 return
@@ -66,7 +88,7 @@ class WalletLogic {
             hotDescriptor(watchOnlyDescriptor: Descriptor(changeDesStr), masterKey: masterKey) { [weak self] hotChangeDescString in
                 guard let self = self else { return }
                 
-                guard let hotChangeDescString = hotChangeDescString else {
+                guard var hotChangeDescString = hotChangeDescString else {
                     //print("Fetching hotChangeDescString failed.")
                     //completion((nil, "Fetching hotChangeDescString failed."))
                     return
@@ -83,17 +105,22 @@ class WalletLogic {
                 let tempDbURL = walletDatabaseURL(named: "temp_wallet")
                 
                 guard let database = try? Persister.newSqlite(path: tempDbURL) else {
-                    //print("Unable to securely delete temp_wallet.")
+                    //print("Unable to securely create temp_wallet.")
                     //completion((nil, "Unable to securely delete temp_wallet."))
                     return
                 }
                 
+                defer {
+                    hotRecDescString.secureWipe()
+                    hotChangeDescString.secureWipe()
+                }
                 
                 do {
                     let bdkWallet = try BDKWallet(descriptor: hotReceiveBDKDescriptor, changeDescriptor: hotChangeBDKDescriptor, network: network, persister: database)
                     completion((bdkWallet, nil))
                     
                 } catch {
+                    //print("error creating bdkwallet")
                     //print(error.localizedDescription)
                     completion((nil, error.localizedDescription))
                 }
@@ -190,18 +217,18 @@ class WalletLogic {
                 hotDescriptor?.secureWipe()
             }
             
-            
-            
             for (x, _) in watchOnlyDescriptor.multiSigKeys.enumerated() {
                 
                 guard let path = try? BDKDerivationPath(path: watchOnlyDescriptor.derivationArray[x]) else {
+                    //print("deriving path failed")
                     return
                 }
                 
                 guard let derivedKey = try? masterKey.derive(path: path) else {
+                    //print("deriving key failed")
                     return
                 }
-                
+                                
                 if derivedKey.asPublic().description.contains(watchOnlyDescriptor.multiSigKeys[x]) {
                     hotDescriptor = processMultiSig(derivedKey: derivedKey, watchOnlyDescriptor: watchOnlyDescriptor, keyIndex: x)
                 }
