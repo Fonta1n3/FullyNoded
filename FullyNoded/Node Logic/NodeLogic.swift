@@ -150,9 +150,9 @@ class NodeLogic {
     
     class func parseNetworkInfo(networkInfo: [String:Any], completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         var networkInfoToReturn = [String:Any]()
-        let subversion = (networkInfo["subversion"] as! String).replacingOccurrences(of: "/", with: "")
-        let version = subversion.replacingOccurrences(of: "Satoshi:", with: "")
-        networkInfoToReturn["subversion"] = version
+        let subversion = (networkInfo["subversion"] as! String)//.replacingOccurrences(of: "/", with: "")
+        //let version = subversion.replacingOccurrences(of: "Satoshi:", with: "")
+        networkInfoToReturn["subversion"] = subversion
         let versionInt = networkInfo["version"] as! Int
         UserDefaults.standard.set(versionInt, forKey: "version")
         
