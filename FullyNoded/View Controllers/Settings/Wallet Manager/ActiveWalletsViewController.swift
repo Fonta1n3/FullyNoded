@@ -49,7 +49,8 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
     
     private func unloadWallet(wallet: String, index: Int) {
         connectingView.addConnectingView(vc: self, description: "unloading wallet...")
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .unloadwallet) { [weak self] (response, errorMessage) in
+        let p = Unload_Wallet(["wallet_name": wallet])
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .unloadwallet(param: p)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let _ = response else {
@@ -66,9 +67,9 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
                 if self.activeWallets.count == 0 {
                     UserDefaults.standard.removeObject(forKey: "walletName")
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                    self.unloadedSuccess()
                 }
                 
+                self.unloadedSuccess()
                 self.table.reloadData()
                 self.connectingView.removeConnectingView()
             }
@@ -79,7 +80,7 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "All wallets unloaded!", message: "You may now work with the default wallet, we are now refreshing the wallet screen. Tap Done to go back.", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "", message: "Wallet unloaded.", preferredStyle: self.alertStyle)
             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
