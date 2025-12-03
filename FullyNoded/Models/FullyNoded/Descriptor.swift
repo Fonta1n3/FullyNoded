@@ -28,8 +28,8 @@ public struct Descriptor: CustomStringConvertible {
     let multiSigKeys:[String]
     let multiSigPaths:[String]
     let sigsRequired:UInt
-    let accountXpub:String
-    let accountXprv:String
+    let accountXpub: String
+    let accountXprv: String
     let derivation:String
     let derivationArray:[String]
     let isSpecter:Bool
@@ -45,6 +45,8 @@ public struct Descriptor: CustomStringConvertible {
     
     init(_ descriptor: String) {
         string = descriptor
+        
+        print("descriptor: \(descriptor)")
         
         var dictionary = [String:Any]()
         
@@ -66,6 +68,7 @@ public struct Descriptor: CustomStringConvertible {
             
             let arr = descriptor.split(separator: "(")
             for (i, item) in arr.enumerated() {
+                print("item: \(item)")
                 if i == 0 {
                     
                     switch item {
@@ -87,6 +90,119 @@ public struct Descriptor: CustomStringConvertible {
                             dictionary["format"] = "P2SH"
                             dictionary["scriptType"] = "Legacy multi-sig"
                             
+                        }
+                        
+                    case "tr":
+                        dictionary["format"] = "P2TR"
+                        dictionary["scriptType"] = "Taproot multi-sig"
+                        
+                        let mofnarray = (arr[2]).split(separator: ",")
+                        let numberOfKeys = mofnarray.count - 1
+                        dictionary["mOfNType"] = "\(mofnarray[0]) of \(numberOfKeys)"
+                        dictionary["sigsRequired"] = UInt(mofnarray[0])
+                        
+                        var keysWithPath = [String]()
+                        for (i, item) in mofnarray.enumerated() {
+                            if i != 0 {
+                                keysWithPath.append("\(item.replacingOccurrences(of: ")", with: ""))")
+                            }
+                            if i + 1 == mofnarray.count {
+                                dictionary["keysWithPath"] = keysWithPath
+                            }
+                        }
+                        
+                        var fingerprints = [String]()
+                        var keyArray = [String]()
+                        var paths = [String]()
+                        var derivationArray = [String]()
+                        
+                        /// extracting the xpubs and their paths so we can derive the individual multisig addresses locally
+                        for key in keysWithPath {
+                            var path = ""
+                            if key.contains("/") {
+                                if key.contains("[") && key.contains("]") {
+                                    // remove the bracket with deriv/fingerprint
+                                    let arr = key.split(separator: "]")
+                                    let rootPath = arr[0].replacingOccurrences(of: "[", with: "")
+                                    
+                                    let rootPathArr = rootPath.split(separator: "/")
+                                    dictionary["index"] = Int(rootPathArr[rootPathArr.count - 1])
+                                    if rootPathArr.count > 0 {
+                                        fingerprints.append("[\(rootPathArr[0])]")
+                                    }
+                                    
+                                    var deriv = "m"
+                                    for (i, rootPathItem) in rootPathArr.enumerated() {
+                                        if i > 0 {
+                                            deriv += "/" + "\(rootPathItem)"
+                                        }
+                                    }
+                                    derivationArray.append(deriv)
+                                    
+                                    let processedKey = arr[1]
+                                    // it has a path
+                                    let pathArray = processedKey.split(separator: "/")
+                                    for pathItem in pathArray {
+                                        if pathItem.contains("xpub") || pathItem.contains("tpub") || pathItem.contains("xprv") || pathItem.contains("tprv") {
+                                            keyArray.append("\(pathItem.replacingOccurrences(of: "))", with: ""))")
+                                        } else if pathItem.hasPrefix("0") {
+                                            var pubkey = ""
+                                            if pathItem.contains(")") {
+                                                let arr = pathItem.split(separator: ")")
+                                                pubkey = "\(arr[0])"
+                                            } else {
+                                                pubkey = "\(pathItem)"
+                                            }
+                                            if let pubkeyData = Data(hexString: pubkey) {
+                                                if pubkeyData.count == 33 || pubkeyData.count == 65 {
+                                                    keyArray.append(pubkey)
+                                                }
+                                            }
+                                        } else {
+                                            if !pathItem.contains("*") {
+                                                if path == "" {
+                                                    path = "\(pathItem)"
+                                                } else {
+                                                    path += "/" + pathItem
+                                                }
+                                            } else {
+                                                paths.append(path)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        dictionary["derivationArray"] = derivationArray
+                        dictionary["multiSigKeys"] = keyArray
+                        dictionary["multiSigPaths"] = paths
+                        
+                        var processed = fingerprints.description.replacingOccurrences(of: "[\"", with: "")
+                        processed = processed.replacingOccurrences(of: "\"]", with: "")
+                        processed = processed.replacingOccurrences(of: "\"", with: "")
+                        dictionary["fingerprint"] = processed
+                        
+                        for deriv in derivationArray {
+                            let withH = deriv.replacingOccurrences(of: "h", with: "'")
+                            switch withH {
+                                
+                            case "m/48'/0'/0'/3'", "m/48'/1'/0'/3'":
+                                dictionary["isBIP44"] = false
+                                dictionary["isP2PKH"] = false
+                                dictionary["isBIP84"] = false
+                                dictionary["isP2WPKH"] = false
+                                dictionary["isBIP49"] = false
+                                dictionary["isP2SHP2WPKH"] = false
+                                dictionary["isBIP48"] = true
+                                dictionary["isAccount"] = true
+                                //dictionary["scriptType"] = "Taproot - multi-sig"
+                                //dictionary["format"] = "P2TR"
+                                
+                            default:
+                                break
+                                
+                            }
                         }
                         
                     default:
@@ -186,6 +302,8 @@ public struct Descriptor: CustomStringConvertible {
                     for deriv in derivationArray {
                         let withH = deriv.replacingOccurrences(of: "h", with: "'")
                         switch withH {
+                            
+                        
                         
                         case "m/48'/0'/0'/1'", "m/48'/1'/0'/1'":
                             dictionary["isBIP44"] = false
@@ -206,6 +324,18 @@ public struct Descriptor: CustomStringConvertible {
                             dictionary["isP2SHP2WPKH"] = false
                             dictionary["isBIP48"] = true
                             dictionary["isAccount"] = true
+                            
+                        case "m/48'/0'/0'/3'", "m/48'/1'/0'/3'":
+                            dictionary["isBIP44"] = false
+                            dictionary["isP2PKH"] = false
+                            dictionary["isBIP84"] = false
+                            dictionary["isP2WPKH"] = false
+                            dictionary["isBIP49"] = false
+                            dictionary["isP2SHP2WPKH"] = false
+                            dictionary["isBIP48"] = true
+                            dictionary["isAccount"] = true
+                            //dictionary["scriptType"] = "Taproot - multi-sig"
+                            //dictionary["format"] = "P2TR"
                             
                         case "m/44'/0'/0'", "m/44'/1'/0'":
                             dictionary["isBIP44"] = true
@@ -262,6 +392,7 @@ public struct Descriptor: CustomStringConvertible {
                 let index = derivarr[derivarr.count - 1]
                 dictionary["index"] = Int(index)
                 dictionary["fingerprint"] = "\(derivarr[0])"
+                print("arr2: \(arr2)")
                 let extendedKeyWithPath = arr2[1]
                 let arr4 = extendedKeyWithPath.split(separator: "/")
                 let extendedKey = arr4[0]
@@ -305,20 +436,33 @@ public struct Descriptor: CustomStringConvertible {
                                     dictionary["isBIP44"] = true
                                     dictionary["isP2PKH"] = true
                                     dictionary["isAccount"] = true
+                                    dictionary["isCosigner"] = false
                                     
                                 case "m/84'/0'/0'", "m/84'/1'/0'":
                                     dictionary["isBIP84"] = true
                                     dictionary["isP2WPKH"] = true
                                     dictionary["isAccount"] = true
+                                    dictionary["isCosigner"] = false
                                     
                                 case "m/49'/0'/0'", "m/49'/1'/0'":
                                     dictionary["isBIP49"] = true
                                     dictionary["isP2SHP2WPKH"] = true
                                     dictionary["isAccount"] = true
+                                    dictionary["isCosigner"] = false
                                     
-                                case "m/86'/0'/0'", "m/86'1'/0'":
+                                case "m/86'/0'/0'", "m/86'/1'/0'":
                                     dictionary["isBIP86"] = true
                                     dictionary["isAccount"] = true
+                                    dictionary["format"] = "P2TR"
+                                    dictionary["scriptType"] = "Taproot single-sig"
+                                    dictionary["isCosigner"] = false
+                                    
+                                case "m/48'/0'/0'/3'", "m/48'/1'/0'/3'":
+                                    dictionary["isBIP48"] = true
+                                    dictionary["isAccount"] = true
+                                    dictionary["scriptType"] = "Taproot multi-sig"
+                                    dictionary["format"] = "P2TR"
+                                    dictionary["isCosigner"] = true
                                     
                                 default:
                                     
@@ -339,7 +483,8 @@ public struct Descriptor: CustomStringConvertible {
                 
             }
             
-            dictionary["isCosigner"] = false
+                //dictionary["isCosigner"] = false
+            
             
             if descriptor.contains("combo") {
                 dictionary["format"] = "Combo"
@@ -350,9 +495,9 @@ public struct Descriptor: CustomStringConvertible {
                     
                     if i == 0 {
                         switch item {
-                        case "tr":
-                            dictionary["format"] = "P2TR"
-                            dictionary["scriptType"] = "Taproot"
+                        //case "tr":
+                            
+                            
                         case "wsh":
                             dictionary["format"] = "P2WSH"
                             dictionary["scriptType"] = "Segwit multi-sig"

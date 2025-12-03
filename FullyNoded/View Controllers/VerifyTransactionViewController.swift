@@ -1383,7 +1383,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         // also adding a signer verify button to show whether FN is able to sign for the output or not
                         if solvable && self.wallet != nil {
                             // Only do this if we are not using the default wallet.
-                            Keys.verifyAddress(parentDesc: parentDesc, path: keypath, passphrase: passphrase) { (isOursFullyNoded, walletLabel, signable, signer) in
+                            Keys.verifyAddress(parentDesc: parentDesc, passphrase: self.passphrase) { (isOursFullyNoded, walletLabel, signable, signer) in
                                 self.outputArray[self.index]["isOursFullyNoded"] = isOursFullyNoded
                                 self.outputArray[self.index]["walletLabel"] = walletLabel
                                 self.outputArray[self.index]["signable"] = signable
@@ -2164,7 +2164,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     // will add a dedicated verify button for unsolvable to cross check against all wallets
                     // also adding a signer verify button to show whether FN is able to sign for the output or not
                     
-                    Keys.verifyAddress(parentDesc: parentDesc, path: keypath, passphrase: passphrase) { (isOursFullyNoded, walletLabel, signable, signer) in
+                    Keys.verifyAddress(parentDesc: parentDesc, passphrase: self.passphrase) { (isOursFullyNoded, walletLabel, signable, signer) in
                         updatedOutput["isOursFullyNoded"] = isOursFullyNoded
                         updatedOutput["walletLabel"] = walletLabel
                         updatedOutput["signable"] = signable
