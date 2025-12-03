@@ -100,31 +100,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         
     }
     
-    
     @IBAction func rescanAction(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let tit = "Rescan blockchain?"
-            
-            let mess = "This is useful to troubleshoot missing utxos."
-            
-            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Rescan", style: .default, handler: { action in
-                OnchainUtils.rescan() { (started, message) in
-                    guard started else {
-                        showAlert(vc: self, title: "", message: message ?? "error rescanning")
-                        return
-                    }
-                    
-                    showAlert(vc: self, title: "", message: "Rescan started, refresh the active wallet view to see rescan completion status.")
-                }
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            self.present(alert, animated: true, completion: nil)
-        }
+        promptToRescan()
     }
         
     private func exportJson() {
@@ -227,12 +204,10 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                             return
                         }
                         
-                        if let urOutput = URHelper.descriptorToUrOutput(Descriptor(self.wallet.receiveDescriptor)) {
+                        if !wallet.receiveDescriptor.contains("sortedmulti_a"), let urOutput = URHelper.descriptorToUrOutput(Descriptor(self.wallet.receiveDescriptor)) {
                             generator.textInput = urOutput.uppercased()
                             self.outputDescUr = urOutput.uppercased()
                             self.exportWalletImageCryptoOutput = generator.getQRCode()
-                        } else {
-                            showAlert(vc: self, title: "", message: "Unable to convert your wallet to crypto-output.")
                         }
                                                 
                         let receiveDescriptor = Descriptor(walletStruct.receiveDescriptor)
@@ -1163,23 +1138,72 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Rescan now?", message: "You have increased the range limit but you will need to rescan the blockchain to see updated balances and transaction history.", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "Rescan?", message: "Input the year you'd like to rescan from.", preferredStyle: .alert)
             
-            alert.addAction(UIAlertAction(title: "Rescan", style: .default, handler: { [weak self] action in
+            let rescan = UIAlertAction(title: "Rescan", style: .default) { [weak self] (alertAction) in
                 guard let self = self else { return }
-                
-                self.updateSpinnerText(text: "starting a rescan...")
-                
-                OnchainUtils.rescan { [weak self] (started, message) in
-                    guard let self = self else { return }
+                let textField = (alert.textFields![0] as UITextField)
+                var blockheight = 0
+                let currentYear = Int(Calendar.current.component(.year, from: .now))
+                if let text = textField.text {
+                    var yearToScanFrom = Int(text) ?? 2009
                     
-                    if started {
-                        self.spinner.removeConnectingView()
-                    } else {
-                        self.showError(error: "Error starting a rescan, your wallet has not been saved. Please check your connection to your node and try again.")
+                    if yearToScanFrom <= currentYear {
+                        if yearToScanFrom < 2010 {
+                            yearToScanFrom = 2010
+                        }
+                        let yearsToScan = (currentYear - yearToScanFrom) + 1
+                        let blocksToScan = yearsToScan * 55000
+                        
+                        spinner.addConnectingView(vc: self, description: "rescanning...")
+                        
+                        OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
+                            guard let self = self else { return }
+                            
+                            guard let blockchainInfo = blockchainInfo else {
+                                spinner.removeConnectingView()
+                                showAlert(vc: self, title: "", message: message ?? "Unknown issue getblockchaininfo.")
+                                return
+                            }
+                            
+                            if !blockchainInfo.initialblockdownload {
+                                blockheight = blockchainInfo.blockheight - blocksToScan
+                                
+                                if blockchainInfo.pruned {
+                                    if blockheight < blockchainInfo.pruneheight {
+                                        blockheight = blockchainInfo.pruneheight
+                                    }
+                                }
+                                
+                                OnchainUtils.rescanNow(from: blockheight) { [weak self] (started, message) in
+                                    guard let self = self else { return }
+                                    
+                                    guard started else {
+                                        spinner.removeConnectingView()
+                                        showAlert(vc: self, title: "", message: message ?? "Unknown issue from rescan.")
+                                        return
+                                    }
+                                    
+                                    self.spinner.removeConnectingView()
+                                    showAlert(vc: self, title: "", message: "Rescanning, you can refresh this page to see completion status.")
+                                }
+                            } else {
+                                spinner.removeConnectingView()
+                                showAlert(vc: self, title: "", message: "Wait till your node is done syncing before attempting to rescan or use wallets.")
+                            }
+                        }
                     }
                 }
-            }))
+            }
+            
+            alert.addTextField { (textField) in
+                textField.placeholder = "From year"
+                textField.keyboardAppearance = .dark
+                textField.keyboardType = .numberPad
+                textField.text = "2009"
+            }
+            
+            alert.addAction(rescan)
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = self.view
