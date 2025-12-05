@@ -28,6 +28,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var psbt: String?
     
     
+    @IBOutlet weak private var addressInput: UILabel!
     @IBOutlet weak private var createOutlet: UIButton!
     @IBOutlet weak private var balanceLabel: UILabel!
     @IBOutlet weak private var batchOutlet: UIButton!
@@ -40,7 +41,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet weak private var addOutputOutlet: UIBarButtonItem!
     @IBOutlet weak private var playButtonOutlet: UIBarButtonItem!
     @IBOutlet weak private var amountInput: UITextField!
-    @IBOutlet weak private var addressInput: UITextField!
+    //@IBOutlet weak private var addressInput: UITextField!
     @IBOutlet weak private var amountLabel: UILabel!
     @IBOutlet weak private var actionOutlet: UIButton!
     @IBOutlet weak private var scanOutlet: UIButton!
@@ -55,7 +56,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     override func viewDidLoad() {
         super.viewDidLoad()
         amountInput.delegate = self
-        addressInput.delegate = self
         outputsTable.delegate = self
         feeRateInputField.delegate = self
         outputsTable.dataSource = self
@@ -167,25 +167,49 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     showAlert(vc: self, title: "There was an issue getting an address from that wallet...", message: message ?? "Unknown error.")
                     return
                 }
-                self.addAdressNow(address: addresses[0], wallet: wallet)
+                self.addAddressNow(address: addresses[0], wallet: wallet)
             }
         }
         getFromFnWallet()
     }
     
-    private func addAdressNow(address: String, wallet: Wallet) {
+    private func addAddressNow(address: String, wallet: Wallet) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.addAddress("\(address)")
-            
-            OnchainUtils.getAddressInfo(address: address) { (addressInfo, message) in
-                guard let addressInfo = addressInfo else { return }
-                
-                showAlert(vc: self, title: "Address added ✓", message: "Derived from \(wallet.label): \(addressInfo.desc), solvable: \(addressInfo.solvable)")
-            }
+            self.addAddress("\(address.addressExpanded)")
+            showAlert(vc: self, title: "Address added from \(wallet.label) ✓", message: "Tap the info button to get more details.")
         }
     }
+    
+    @IBAction func showAddressInfoAction(_ sender: Any) {
+        guard let address = addressInput.text, address != "", address != "Paste or scan an address or invoice." else {
+            showAlert(vc: self, title: "", message: "Not a valid address or invoice.")
+            return
+        }
+        spinner.addConnectingView(vc: self, description: "")
+        OnchainUtils.getAddressInfo(address: address.replacingOccurrences(of: "-", with: "")) { [weak self] (addressInfo, message) in
+            guard let self = self else { return }
+            
+            spinner.removeConnectingView()
+            
+            guard let addressInfo = addressInfo else {
+                showAlert(vc: self, title: "Error getting address info.", message: message ?? "Unknown.")
+                return
+            }
+            
+            showModal(data: addressInfo.rawData, title: "address info")
+        }
+    }
+    
+    private func showModal(data: [String: Any], title: String) {
+        let modalVC = TextModalViewController(data: data, viewTitle: title)
+        let nav = UINavigationController(rootViewController: modalVC)
+        nav.modalPresentationStyle = .fullScreen
+        nav.modalTransitionStyle = .coverVertical
+        present(nav, animated: true)
+    }
+    
     
     @IBAction func switchCoinSelectionAction(_ sender: Any) {
         switch coinSelectionControl.selectedSegmentIndex {
@@ -221,8 +245,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            addressInput.text = donationAddress
-            showAlert(vc: self, title: "Thank you!", message: "Any amount you send to this address will help support Fully Noded and is greatly appreciated. ❤️")
+            addressInput.text = donationAddress.addressExpanded
+            showAlert(vc: self, title: "Thank you!", message: "Any amount you send to this address will help directly support Fully Noded and is greatly appreciated. ❤️")
         }
     }
     
@@ -230,20 +254,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBAction func pasteAction(_ sender: Any) {
         guard let item = UIPasteboard.general.string else { return }
         
-        switch item {
-        case _ where item.hasPrefix("1"),
-             _ where item.hasPrefix("3"),
-             _ where item.hasPrefix("tb1"),
-             _ where item.hasPrefix("bc1"),
-             _ where item.hasPrefix("2"),
-             _ where item.hasPrefix("bcrt"),
-             _ where item.hasPrefix("m"),
-             _ where item.hasPrefix("n"),
-            _ where item.lowercased().hasPrefix("bitcoin:"):
-            processBIP21(url: item)
-        default:
-            showAlert(vc: self, title: "", message: "This button is for pasting bitcoin addresses and bip21 invoices.")
-        }
+        processBIP21(url: item)
     }
     
     @IBAction func createOnchainAction(_ sender: Any) {
@@ -256,7 +267,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             self.addressInput.resignFirstResponder()
         }
         
-        guard let addressInput = addressInput.text else {
+        guard let addressInput = addressInput.text?.replacingOccurrences(of: "-", with: "") else {
             showAlert(vc: self, title: "", message: "Enter an address or invoice.")
             return
         }
@@ -334,7 +345,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             return
         }
                 
-        outputs.append([address:amount])
+        outputs.append([address.replacingOccurrences(of: "-", with: ""):amount])
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -362,12 +373,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        amountInput.text = ""
-        addressInput.text = ""
-        outputs.removeAll()
-        inputs.removeAll()
-    }
+//    override func viewWillDisappear(_ animated: Bool) {
+//        //amountInput.text = ""
+//        //addressInput.text = ""
+//        //outputs.removeAll()
+//        //inputs.removeAll()
+//    }
                 
     @IBAction func createPsbt(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
@@ -613,23 +624,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     private func sign(psbt: String) {
         self.psbt = psbt
         showRaw()
-//        Signer.sign(psbt: psbt, passphrase: nil) { [weak self] (psbt, rawTx, errorMessage) in
-//            guard let self = self else { return }
-//            
-//            self.spinner.removeConnectingView()
-//            
-//            if rawTx != nil {
-//                self.rawTxSigned = rawTx!
-//                self.showRaw(raw: rawTx!)
-//                
-//            } else if psbt != nil {
-//                self.rawTxUnsigned = psbt!
-//                self.showRaw(raw: psbt!)
-//                
-//            } else if errorMessage != nil {
-//                showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown signing error")
-//            }
-//        }
     }
     
     private func sweep() {
@@ -641,11 +635,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
         if inputs.count > 0 {
             spinner.addConnectingView(vc: self, description: "sweeping selected utxo's...")
-            sweepSelectedUtxos(receivingAddress)
+            sweepSelectedUtxos(receivingAddress.replacingOccurrences(of: "-", with: ""))
         } else {
             
             spinner.addConnectingView(vc: self, description: "sweeping wallet...")
-            sweepWallet(receivingAddress)
+            sweepWallet(receivingAddress.replacingOccurrences(of: "-", with: ""))
         }
     }
     
@@ -666,7 +660,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
         if outputs.count == 0 {
             if let amount = convertedAmount(), self.addressInput.text != "" {
-                outputs.append([self.addressInput.text!:amount])
+                outputs.append([self.addressInput.text!.replacingOccurrences(of: "-", with: ""):amount])
                 getRawTx()
                 
             } else {
@@ -711,7 +705,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         textField.resignFirstResponder()
         
         if textField == addressInput && addressInput.text != "" {
-            processBIP21(url: addressInput.text!)
+            let address = addressInput.text!
+            addressInput.text = address.addressExpanded
+            processBIP21(url: address)
         }
         
         if textField == feeRateInputField {
@@ -773,7 +769,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     //MARK: Helpers
     private func estimateSmartFee() {
-        NodeLogic.estimateSmartFee { (response, errorMessage) in
+        NodeLogic.sharedInstance.estimateSmartFee { (response, errorMessage) in
             guard let response = response, let feeRate = response["feeRate"] as? String else { return }
             
             DispatchQueue.main.async {
@@ -795,20 +791,19 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     func processBIP21(url: String) {
-        let (address, amount, label, message) = AddressParser.parse(url: url)
+        let (address, amount, label, message) = AddressParser.sharedInstance.parse(url: url)
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.addressInput.resignFirstResponder()
             self.amountInput.resignFirstResponder()
             
             guard let address = address else {
-                showAlert(vc: self, title: "Not compatible.", message: "FN does not support Bitpay.")
+                showAlert(vc: self, title: "", message: "Not a valid address or BIP21 invoice.")
                 return
             }
             
-            self.addAddress(address)
+            self.addAddress(address.addressExpanded)
             
             if amount != nil || label != nil || message != nil {
                 var amountText = "not specified"
@@ -852,23 +847,16 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
         createNow()
     }
-        
-    func textFieldDidBeginEditing(_ textField: UITextField) {
-        if textField == addressInput {
-            if textField.text != "" {
-                textField.becomeFirstResponder()
-            } else {
-                if let string = UIPasteboard.general.string {
-                    textField.becomeFirstResponder()
-                    textField.text = string
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [unowned vc = self] in
-                        textField.resignFirstResponder()
-                        vc.processBIP21(url: string)
-                    }
-                } else {
-                    textField.becomeFirstResponder()
-                }
-            }
+    
+    @IBAction func pasteAddressAction(_ sender: Any) {
+        guard let pasteBoardContents = UIPasteboard.general.string else {
+            showAlert(vc: self, title: "", message: "Nothing on your clipboard. You can paste addresses or BIP21 invoices here.")
+            return
+        }
+        DispatchQueue.main.async() { [weak self] in
+            guard let self = self else { return }
+            
+            processBIP21(url: pasteBoardContents)
         }
     }
     
@@ -890,7 +878,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         case "segueToBroadcaster":
             guard let vc = segue.destination as? VerifyTransactionViewController else { fallthrough }
             
-            vc.hasSigned = true
             vc.fxRate = fxRate
             
             if let rawTx = rawTx {
@@ -898,7 +885,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             } else if let psbt = psbt {
                 vc.unsignedPsbt = psbt
             }
-            
+            outputs.removeAll()
+            inputs.removeAll()
+            addressInput.text = ""
+            amountInput.text = ""
             
         default:
             break
