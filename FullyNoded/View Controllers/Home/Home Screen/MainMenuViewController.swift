@@ -552,7 +552,7 @@ class MainMenuViewController: UIViewController {
             mainMenu.reloadSections(IndexSet(arrayLiteral: Section.peerInfo.rawValue), with: .none)
         }
         
-        NodeLogic.getPeerInfo { [weak self] (response, errorMessage) in
+        NodeLogic.sharedInstance.getPeerInfo { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let response = response else {
@@ -581,7 +581,7 @@ class MainMenuViewController: UIViewController {
             mainMenu.reloadSections(IndexSet(arrayLiteral: Section.networkInfo.rawValue), with: .fade)
         }
         
-        NodeLogic.getNetworkInfo { [weak self] (response, errorMessage) in
+        NodeLogic.sharedInstance.getNetworkInfo { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let response = response else {
@@ -610,7 +610,7 @@ class MainMenuViewController: UIViewController {
             self.mainMenu.reloadSections(IndexSet(arrayLiteral: Section.miningInfo.rawValue), with: .none)
         }
         
-        NodeLogic.getMiningInfo { [weak self] (response, errorMessage) in
+        NodeLogic.sharedInstance.getMiningInfo { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let response = response else {
@@ -639,7 +639,7 @@ class MainMenuViewController: UIViewController {
             self.mainMenu.reloadSections(IndexSet(arrayLiteral: Section.upTime.rawValue), with: .fade)
         }
         
-        NodeLogic.getUptime { [weak self] (response, errorMessage) in
+        NodeLogic.sharedInstance.getUptime { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let response = response else {
@@ -668,7 +668,7 @@ class MainMenuViewController: UIViewController {
             self.mainMenu.reloadSections(IndexSet(arrayLiteral: Section.mempoolInfo.rawValue), with: .none)
         }
         
-        NodeLogic.getMempoolInfo { [weak self] (response, errorMessage) in
+        NodeLogic.sharedInstance.getMempoolInfo { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let response = response else {
@@ -697,7 +697,7 @@ class MainMenuViewController: UIViewController {
             self.mainMenu.reloadSections(IndexSet(arrayLiteral: Section.feeInfo.rawValue), with: .none)
         }
         
-        NodeLogic.estimateSmartFee { [weak self] (response, errorMessage) in
+        NodeLogic.sharedInstance.estimateSmartFee { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let response = response else {

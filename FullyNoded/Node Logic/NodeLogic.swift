@@ -10,14 +10,14 @@ import Foundation
 
 class NodeLogic {
     
-    static let dateFormatter = DateFormatter()
-    static var dictToReturn = [String:Any]()
-    static var arrayToReturn = [TransactionInfo]()
-    static var walletDisabled = Bool()
-
+    static let sharedInstance = NodeLogic()
+    
+    private init() {}
+    
             
-    class func getPeerInfo(completion: @escaping ((response: GetPeerInfoResponse?, errorMessage: String?)) -> Void) {
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getpeerinfo) { (response, errorMessage) in
+    func getPeerInfo(completion: @escaping ((response: GetPeerInfoResponse?, errorMessage: String?)) -> Void) {
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getpeerinfo) { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
             if let peerInfo = response as? NSArray {
                 parsePeerInfo(peerInfo: peerInfo, completion: completion)
             } else {
@@ -26,8 +26,9 @@ class NodeLogic {
         }
     }
     
-    class func getNetworkInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getnetworkinfo) { (response, errorMessage) in
+    func getNetworkInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getnetworkinfo) { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
             if let networkInfo = response as? [String:Any] {
                 parseNetworkInfo(networkInfo: networkInfo, completion: completion)
             } else {
@@ -36,8 +37,9 @@ class NodeLogic {
         }
     }
     
-    class func getMiningInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getmininginfo) { (response, errorMessage) in
+    func getMiningInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getmininginfo) { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
             if let miningInfo = response as? [String:Any] {
                 parseMiningInfo(miningInfo: miningInfo, completion: completion)
             } else {
@@ -46,7 +48,7 @@ class NodeLogic {
         }
     }
     
-    class func getUptime(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+    func getUptime(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .uptime) { (response, errorMessage) in
             if let uptime = response as? Double {
                 var toReturn = [String:Any]()
@@ -58,7 +60,7 @@ class NodeLogic {
         }
     }
     
-    class func getMempoolInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+    func getMempoolInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .getmempoolinfo) { (response, errorMessage) in
             if let dict = response as? [String:Any] {
                 var mempoolInfo = [String:Any]()
@@ -71,9 +73,10 @@ class NodeLogic {
         }
     }
     
-    class func estimateSmartFee(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+    func estimateSmartFee(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         let feeRate = UserDefaults.standard.integer(forKey: "feeTarget")
         let param:Estimate_Smart_Fee_Param = .init(["conf_target":feeRate])
+        var dictToReturn: [String: Any] = [:]
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .estimatesmartfee(param: param)) { (response, errorMessage) in
             if let result = response as? [String:Any] {
                 if let feeRate = result["feerate"] as? Double {
@@ -93,11 +96,7 @@ class NodeLogic {
         }
     }
     
-    class func listOnchainTransactions(completion: @escaping ((response: ListTransactionsResponse?, errorMessage: String?)) -> Void) {
-        guard !walletDisabled else {
-            completion((nil, "Wallet is disabled."))
-            return
-        }
+    func listOnchainTransactions(completion: @escaping ((response: ListTransactionsResponse?, errorMessage: String?)) -> Void) {
         let param:List_Transactions = .init(["count": 100])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .listtransactions(param)) { (response, errorMessage) in
             guard let response = response as? NSArray else {
@@ -112,25 +111,11 @@ class NodeLogic {
             
             completion((listTransactionsResponse, nil))
         }
-        
-    }
-        
-    private class func saveLocally(txid: String, date: Date) {
-        let dict = [
-            "txid":txid,
-            "id":UUID(),
-            "memo":"no transaction memo",
-            "date":date,
-            "label":""
-        ] as [String:Any]
-
-        CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
     }
     
+    // MARK: Parsers
     
-    // MARK: Section 1 parsers
-    
-    class func parseMiningInfo(miningInfo: [String:Any], completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+    private func parseMiningInfo(miningInfo: [String:Any], completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         var miningInfoToReturn = [String:Any]()
         let hashesPerSecond = miningInfo["networkhashps"] as? Double ?? 0.0
         let exahashesPerSecond = hashesPerSecond / 1000000000000000000
@@ -139,7 +124,7 @@ class NodeLogic {
         completion((miningInfoToReturn, nil))
     }
     
-    class func parsePeerInfo(peerInfo: NSArray, completion: @escaping ((response: GetPeerInfoResponse?, errorMessage: String?)) -> Void) {
+    private func parsePeerInfo(peerInfo: NSArray, completion: @escaping ((response: GetPeerInfoResponse?, errorMessage: String?)) -> Void) {
        guard let getPeerInfoResponse = try? GetPeerInfoResponse(from: peerInfo) else {
            completion((nil, "Error parsing peer info, please let us know about this."))
             return
@@ -148,10 +133,9 @@ class NodeLogic {
         completion((getPeerInfoResponse, nil))
     }
     
-    class func parseNetworkInfo(networkInfo: [String:Any], completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+    private func parseNetworkInfo(networkInfo: [String:Any], completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         var networkInfoToReturn = [String:Any]()
-        let subversion = (networkInfo["subversion"] as! String)//.replacingOccurrences(of: "/", with: "")
-        //let version = subversion.replacingOccurrences(of: "Satoshi:", with: "")
+        let subversion = (networkInfo["subversion"] as! String)
         networkInfoToReturn["subversion"] = subversion
         let versionInt = networkInfo["version"] as! Int
         UserDefaults.standard.set(versionInt, forKey: "version")
@@ -172,107 +156,4 @@ class NodeLogic {
         
         completion((networkInfoToReturn, nil))
     }
-    
-//    class func parseTransactions(transactions: NSArray) {
-//        arrayToReturn.removeAll()
-//                
-//        for item in transactions {
-//            if let transaction = item as? [String:Any] {
-//                var label = String()
-//                var replaced_by_txid = String()
-//                let address = transaction["address"] as? String ?? ""
-//                let amount = transaction["amount"] as? Double ?? 0.0
-//                let amountString = amount.avoidNotation
-//                let confirmations = transaction["confirmations"] as! Int
-//                
-//                if let replaced_by_txid_check = transaction["replaced_by_txid"] as? String {
-//                    replaced_by_txid = replaced_by_txid_check
-//                }
-//                
-//                if let labelCheck = transaction["label"] as? String {
-//                    label = labelCheck
-//                    if labelCheck == "" || labelCheck == "," {
-//                        label = ""
-//                    }
-//                } else {
-//                    label = ""
-//                }
-//                
-//                let secondsSince = transaction["time"] as? Double ?? 0.0
-//                let rbf = transaction["bip125-replaceable"] as? String ?? ""
-//                let txID = transaction["txid"] as? String ?? ""
-//                
-//                let date = Date(timeIntervalSince1970: secondsSince)
-//                dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
-//                let dateString = dateFormatter.string(from: date)
-//                
-//                let amountSats = amountString.btcToSats
-//                let amountBtc = amountString.doubleValue.btcBalanceWithSpaces
-//                let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
-//                let amountFiat = (amountString.doubleValue * fxRate).balanceText
-//                
-//                let tx = [
-//                    "address": address,
-//                    "amountBtc": amountBtc,
-//                    "amountSats": amountSats,
-//                    "amountFiat": amountFiat,
-//                    "confirmations": confirmations,
-//                    "label": label,
-//                    "date": dateString,
-//                    "rbf": rbf,
-//                    "txID": txID,
-//                    "replacedBy": replaced_by_txid,
-//                    "selfTransfer": false,
-//                    "remove": false,
-//                    "onchain": true,
-//                    "isLightning": false,
-//                    "sortDate": date
-//                ] as [String:Any]
-//                
-//                arrayToReturn.append(tx)
-//                                
-//                func saveLocally() {
-//                    #if DEBUG
-//                    print("saveLocally")
-//                    #endif
-//                    var labelToSave = "no transaction label"
-//                    
-//                    if label != "" {
-//                        labelToSave = label
-//                    }
-//                    
-//                    let dict = [
-//                        "txid":txID,
-//                        "id":UUID(),
-//                        "memo":"no transaction memo",
-//                        "date":date,
-//                        "label":labelToSave
-//                    ] as [String:Any]
-//                    
-//                    CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
-//                }
-//                
-//                CoreDataService.retrieveEntity(entityName: .transactions) { txs in
-//                    guard let txs = txs, txs.count > 0 else {
-//                        saveLocally()
-//                        return
-//                    }
-//                    
-//                    var alreadySaved = false
-//                    
-//                    for (i, tx) in txs.enumerated() {
-//                        let txStruct = TransactionStruct(dictionary: tx)
-//                        if txStruct.txid == txID {
-//                            alreadySaved = true
-//                        }
-//                        if i + 1 == txs.count {
-//                            if !alreadySaved {
-//                                saveLocally()
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
 }

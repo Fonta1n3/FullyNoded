@@ -118,7 +118,7 @@ class PeersDetailTableViewController: UITableViewController {
     }
     
     private func refreshData() {
-        NodeLogic.getPeerInfo { [weak self] (response, errorMessage) in
+        NodeLogic.sharedInstance.getPeerInfo { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             stopRefreshing()
