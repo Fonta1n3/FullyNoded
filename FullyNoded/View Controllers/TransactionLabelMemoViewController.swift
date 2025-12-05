@@ -12,38 +12,25 @@ class TransactionLabelMemoViewController: UIViewController, UITextViewDelegate, 
     
     var txid = ""
     var labelText = ""
-    var memoText = ""
-    var doneBlock:(([String]) -> Void)?
+    var doneBlock:((String) -> Void)?
 
     @IBOutlet weak var labelField: UITextField!
-    @IBOutlet weak var memoField: UITextView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         configureTapGesture()
         
-        memoField.delegate = self
         labelField.delegate = self
-
-        // Do any additional setup after loading the view.
-        memoField.clipsToBounds = true
-        memoField.layer.cornerRadius = 8
-        memoField.layer.borderWidth = 0.5
-        memoField.layer.borderColor = UIColor.lightGray.cgColor
-        memoField.textColor = .white
-        
         labelField.layer.borderColor = UIColor.lightGray.cgColor
         labelField.layer.borderWidth = 0.5
         labelField.clipsToBounds = true
         labelField.layer.cornerRadius = 8
-        
         labelField.text = labelText
-        memoField.text = memoText
     }
     
     @IBAction func saveAction(_ sender: Any) {
-        guard let newLabel = labelField.text, let newMemo = memoField.text else { return }
+        guard let newLabel = labelField.text else { return }
         
         CoreDataService.retrieveEntity(entityName: .transactions) { transactions in
             guard let transactions = transactions, transactions.count > 0 else { return }
@@ -58,18 +45,11 @@ class TransactionLabelMemoViewController: UIViewController, UITextViewDelegate, 
                             showAlert(vc: self, title: "", message: "Label not updated! Please let us know about this issue.")
                             return
                         }
-                        
-                        CoreDataService.update(id: txStuct.id!, keyToUpdate: "memo", newValue: newMemo, entity: .transactions) { success in
-                            guard success else {
-                                showAlert(vc: self, title: "", message: "Memo not updated! Please let us know about this issue.")
-                                return
-                            }
-                        }
                     }
                 }
                 
                 if i + 1 == transactions.count {
-                    self.doneBlock!([newLabel, newMemo])
+                    self.doneBlock!(newLabel)
                     
                     DispatchQueue.main.async {
                         self.dismiss(animated: true, completion: nil)
@@ -93,7 +73,6 @@ class TransactionLabelMemoViewController: UIViewController, UITextViewDelegate, 
     
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
         labelField.resignFirstResponder()
-        memoField.resignFirstResponder()
     }
     
     /*

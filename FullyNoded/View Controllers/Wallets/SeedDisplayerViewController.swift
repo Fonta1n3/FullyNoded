@@ -21,6 +21,8 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     var blockheight:Int64!
     var version:Int = 0
     var dict = [String:Any]()
+    var isTaproot = false
+    var isSegwit = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -140,7 +142,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                 }
                 
-                showAlert(vc: self, title: "Success ✓", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!")
+                showAlert(vc: self, title: "Success ✓", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!\n\nFully Noded encrypts and stores your signer, you can access it and delete it in the Signer view, if you delete the signer Fully Noded will not be able to sign transactions.")
             } else {
                 UserDefaults.standard.removeObject(forKey: "walletName")
                 self.showError(error: "Error creating wallet: \(errorDescription ?? "Unknown error.")")
@@ -150,20 +152,40 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     
     private func getMasterKey(seed: String) {
         if let masterKey = Keys.masterKey(words: seed, coinType: coinType, passphrase: "") {
-            getSegwitData(masterKey: masterKey)
+            getAccountXpub(masterKey: masterKey)
         } else {
             showError(error: "Error deriving master key")
         }
     }
         
-    private func getSegwitData(masterKey: String) {
-        guard let xpub = Keys.bip84AccountXpub(masterKey: masterKey, coinType: coinType, account: 0),
-              let fingerprint = Keys.fingerprint(masterKey: masterKey) else {
-            showError(error: "Error deriving xpub or fingerprint.")
+    private func getAccountXpub(masterKey: String) {
+        var accountXpub = ""
+        
+        if isSegwit {
+            guard let xpub = Keys.bip84AccountXpub(masterKey: masterKey, coinType: coinType, account: 0) else {
+                showError(error: "Error deriving xpub or fingerprint.")
+                return
+            }
+            accountXpub = xpub
+        } else if isTaproot {
+            guard let xpub = Keys.bip86AccountXpub(masterKey: masterKey, coinType: coinType, account: 0) else {
+                showError(error: "Error deriving xpub or fingerprint.")
+                return
+            }
+            accountXpub = xpub
+        }
+        
+        guard accountXpub != "" else {
+            showAlert(vc: self, title: "", message: "Unable to derive account xpub.")
             return
         }
         
-        createSegwitWallet(fingerprint: fingerprint, xpub: xpub, mk: masterKey) { [weak self] (success, error) in
+        guard let fingerprint = Keys.fingerprint(masterKey: masterKey) else {
+            showAlert(vc: self, title: "", message: "Unable to derive fingerprint.")
+            return
+        }
+        
+        createWallet(fingerprint: fingerprint, xpub: accountXpub, mk: masterKey) { [weak self] (success, error) in
             guard let self = self else { return }
             
             if success {
@@ -191,9 +213,23 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         return "wpkh([\(fingerprint)/84h/\(coinType)h/0h]\(xpub)/1/*)"
     }
     
-    private func createSegwitWallet(fingerprint: String, xpub: String, mk: String, completion: @escaping ((success: Bool, message: String?)) -> Void) {
-        primDesc = primarySegwitDescriptor(fingerprint, xpub)
-        changeDesc = changeSegwitDescriptor(fingerprint, xpub)
+    private func primaryBip86Descriptor(_ fingerprint: String, _ xpub: String) -> String {
+        return "tr([\(fingerprint)/86h/\(coinType)h/0h]\(xpub)/0/*)"
+    }
+    
+    private func changeBip86tDescriptor(_ fingerprint: String, _ xpub: String) -> String {
+        return "tr([\(fingerprint)/86h/\(coinType)h/0h]\(xpub)/1/*)"
+    }
+    
+    private func createWallet(fingerprint: String, xpub: String, mk: String, completion: @escaping ((success: Bool, message: String?)) -> Void) {
+        if isSegwit {
+            primDesc = primarySegwitDescriptor(fingerprint, xpub)
+            changeDesc = changeSegwitDescriptor(fingerprint, xpub)
+        } else if isTaproot {
+            primDesc = primaryBip86Descriptor(fingerprint, xpub)
+            changeDesc = changeBip86tDescriptor(fingerprint, xpub)
+        }
+        
         let walletName = "FullyNoded-\(Crypto.sha256hash(primDesc))"
         let param:Create_Wallet_Param = .init([
             "wallet_name": walletName,

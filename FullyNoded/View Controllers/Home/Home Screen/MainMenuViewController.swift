@@ -8,6 +8,7 @@
 
 import UIKit
 
+
 class MainMenuViewController: UIViewController {
     
     weak var mgr = TorClient.sharedInstance
@@ -21,7 +22,7 @@ class MainMenuViewController: UIViewController {
     var refreshButton = UIBarButtonItem()
     var dataRefresher = UIBarButtonItem()
     var isUnlocked = false
-    //let refreshControl = UIRefreshControl()
+    let refreshControl = UIRefreshControl()
     
     var blockchainInfo: BlockchainInfo?
     var peerInfo: GetPeerInfoResponse?
@@ -90,6 +91,8 @@ class MainMenuViewController: UIViewController {
         showUnlockScreen()
         setFeeTarget()
         NotificationCenter.default.addObserver(self, selector: #selector(refreshNode), name: .refreshNode, object: nil)
+        refreshControl.addTarget(self, action: #selector(refreshNode), for: UIControl.Event.valueChanged)
+        mainMenu.addSubview(refreshControl)
         blurView.clipsToBounds = true
         blurView.layer.cornerRadius = 8
         blurView.layer.zPosition = 1
@@ -178,6 +181,8 @@ class MainMenuViewController: UIViewController {
     }
     
     @objc func refreshNode() {
+        addNavBarSpinner()
+        refreshTable()
         updateTorStatus()
         
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
@@ -190,10 +195,9 @@ class MainMenuViewController: UIViewController {
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                
                 self.refreshTable()
                 self.existingNodeID = nil
-                self.addNavBarSpinner()
+                
             }
             
             self.initialLoad = false
@@ -519,23 +523,7 @@ class MainMenuViewController: UIViewController {
                     return
                 }
                 
-                if message.contains("Loading block index") || message.contains("Verifying") || message.contains("Rewinding") || message.contains("Rescanning") {
-                    showAlert(vc: self, title: "", message: "Your node is still getting warmed up! Wait 15 seconds and tap the refresh button to try again")
-                    
-                } else if message.contains("Could not connect to the server.") {
-                    showAlert(vc: self, title: "", message: "Looks like your node is not on, make sure it is running and try again.")
-                    
-                } else if message.contains("unknown error") {
-                    showAlert(vc: self, title: "", message: "We got a strange response from your node, first of all make 100% sure your credentials are correct, if they are then your node could be overloaded... Either wait a few minutes and try again or reboot Tor on your node, if that fails reboot your node too, force quit Fully Noded and open it again.")
-                    
-                } else if message.contains("timed out") || message.contains("The Internet connection appears to be offline") {
-                    showAlert(vc: self, title: "", message: "Hmmm we are not getting a response from your node, you can try rebooting Tor on your node and force quitting Fully Noded and reopening it, that generally fixes the issue.")
-                    
-                } else if message.contains("Unable to decode the response") {
-                    showAlert(vc: self, title: "", message: "There was an issue... This can mean your node is busy doing an intense task like rescanning or syncing whoich may be preventing it from responding to commands. If that is the case then just wait a few minutes and try again. As a last resort try rebooting your node and Fully Noded.")
-                } else {
-                    showAlert(vc: self, title: "Connection issue...", message: message)
-                }
+                showAlert(vc: self, title: "", message: message)
                 
                 removeLoader()
                 
@@ -735,6 +723,7 @@ class MainMenuViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
+            refreshControl.endRefreshing()
             spinner.stopAnimating()
             spinner.alpha = 0
             refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(self.refreshData(_:)))

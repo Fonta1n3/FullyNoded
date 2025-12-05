@@ -334,16 +334,16 @@ class ActiveWalletViewController: UIViewController {
         }
         
         let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
-       CoreDataService.retrieveEntity(entityName: .transactions) { [weak self] transactions in
+        CoreDataService.retrieveEntity(entityName: .transactions) { [weak self] transactions in
             guard let self = self else { return }
             
             guard let transactions = transactions, transactions.count > 0 else {
                 finishedLoading()
                 return
             }
-           
+            
             for (i, transaction) in transactions.enumerated() {
-               let localTransactionStruct = TransactionStruct(dictionary: transaction)
+                let localTransactionStruct = TransactionStruct(dictionary: transaction)
                 
                 for (t, tx) in self.onchainTransactions!.transactions.enumerated() {
                     if tx.txid == localTransactionStruct.txid {
@@ -352,6 +352,7 @@ class ActiveWalletViewController: UIViewController {
                                 self.onchainTransactions!.transactions[t].originRate = originRate
                             }
                         }
+                        self.onchainTransactions!.transactions[t].label = localTransactionStruct.label
                     }
                     if i + 1 == transactions.count && t + 1 == self.onchainTransactions!.transactions.count {
                         finishedLoading()
@@ -568,6 +569,7 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func getFxRate() {
+        removeSpinner()
         let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
         
         FiatConverter.sharedInstance.getFxRate(currency: fiatCurrency) { [weak self] rate in
@@ -577,13 +579,8 @@ class ActiveWalletViewController: UIViewController {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
-                    self.fxRateLabel.text = "No fx rate data."
                     walletTable.reloadData()
-                    removeSpinner()
                 }
-                
-                
-                
                 return
             }
             
@@ -596,7 +593,6 @@ class ActiveWalletViewController: UIViewController {
                 self.fxRateLabel.text = rate.exchangeRate
                 self.onchainBalanceFiat = (self.onchainBalanceBtc.condenseWhitespace().doubleValue * rate).fiatString
                 walletTable.reloadData()
-                removeSpinner()
             }
         }
     }
@@ -979,6 +975,7 @@ class ActiveWalletViewController: UIViewController {
             
             vc.unsignedPsbt = self.psbt.condenseWhitespace()
             vc.signedRawTx = self.rawTx.condenseWhitespace()
+            vc.fxRate = self.fxRate
             
         case "segueToEditTx":
             guard let vc = segue.destination as? TransactionLabelMemoViewController else { fallthrough }

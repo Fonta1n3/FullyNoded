@@ -18,12 +18,24 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     var keysString = ""
     var isDone = false
     var cosigner: Descriptor?
+    var isTaproot = false
     var keys = [[String:String]]()
     var alertStyle = UIAlertController.Style.alert
     var multiSigAccountDesc = ""
     var qrToExport = ""
     var isBbqr = false
     let jsonDecoder = JSONDecoder()
+    @IBOutlet weak var scriptSegmentedControl: UISegmentedControl!
+    
+    var coinType: String {
+        let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+        switch chain {
+        case "main":
+            return "0"
+        default:
+            return "1"
+        }
+    }
     
     @IBOutlet weak var derivationField: UITextField!
     @IBOutlet weak var fingerprintField: UITextField!
@@ -35,34 +47,55 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        addOutlet.alpha = 0
-        
         createOutlet.clipsToBounds = true
         createOutlet.layer.cornerRadius = 8
-        
         textView.clipsToBounds = true
         textView.layer.cornerRadius = 8
-//        textView.layer.borderColor = UIColor.lightGray.cgColor
-//        textView.layer.borderWidth = 0.5
-        
         xpubField.delegate = self
-        
         fingerprintField.text = ""
+        
+        derivationField.text = "m/48h/\(coinType)h/0h/2h"
                 
         if let cosigner = cosigner {
+            isTaproot = cosigner.isP2TR
             derivationField.text = cosigner.derivation
             addKeyStore(cosigner.fingerprint, cosigner.accountXpub == "" ? cosigner.accountXprv : cosigner.accountXpub)
+            scriptSegmentedControl.selectedSegmentIndex = 1
             showAlert(vc: self, title: "Cosigner added ✓", message: "Add more or select create wallet.")
         }
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
-        
-        derivationField.text = "m/48h/\(cointType)h/0h/2h"
     }
     
     override func viewDidAppear(_ animated: Bool) {}
+    
+    @IBAction func scriptSegmentedControlAction(_ sender: UISegmentedControl) {
+        let segwitPath = "m/48h/\(coinType)h/0h/2h"
+        let taprootPath = "m/48h/\(coinType)h/0h/3h"
+        var pathToUse = segwitPath
+        
+        switch sender.selectedSegmentIndex {
+        case 0:
+            isTaproot = false
+            pathToUse = segwitPath
+            
+        case 1:
+            isTaproot = true
+            pathToUse = taprootPath
+            
+        default:
+            break
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            derivationField.text = pathToUse
+        }
+    }
+    
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         fingerprintField.resignFirstResponder()
@@ -97,8 +130,8 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     
     
     @IBAction func refreshAction(_ sender: Any) {
-        guard self.derivationField.text == "m/48'/\(self.cointType)'/0'/2'" || self.derivationField.text == "m/48h/\(self.cointType)h/0h/2h" || self.derivationField.text == "m/48’/1’/0’/2’" else {
-            showAlert(vc: self, title: "", message: "You can not use custom derivations when deriving a cosigner from an existing signer. Derivation must be set to m/48'/\(self.cointType)'/0'/2'")
+        guard self.derivationField.text == "m/48'/\(self.coinType)'/0'/2'" || self.derivationField.text == "m/48h/\(self.coinType)h/0h/2h" || self.derivationField.text == "m/48’/1’/0’/2’" || self.derivationField.text == "m/48'/\(self.coinType)'/0'/3'" || self.derivationField.text == "m/48h/\(self.coinType)h/0h/3h" else {
+            showAlert(vc: self, title: "", message: "You can not use custom derivations when deriving a cosigner from an existing signer. Derivation must be set to m/48'/\(self.coinType)'/0'/2'")
             return
         }
         
@@ -122,7 +155,9 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            self.keys.append(["fingerprint":xfp,"xpub":xpub])
+            derivationField.isUserInteractionEnabled = false
+            scriptSegmentedControl.isUserInteractionEnabled = false
+            self.keys.append(["fingerprint": xfp, "xpub": xpub])
             self.textView.text += self.keystring(prefix: prefix, xpub: xpub)
             self.fingerprintField.text = ""
             self.xpubField.text = ""
@@ -176,15 +211,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         }
     }
     
-    var cointType: String {
-        let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
-        switch chain {
-        case "main":
-            return "0"
-        default:
-            return "1"
-        }
-    }
+    
     
     private func promptToCreate() {
         guard keys.count > 0 else {
@@ -261,6 +288,15 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                     rawPrimDesc = "sh(wsh(sortedmulti(\(m),\(descriptorKeys))))"
                 }
                 
+                if isTaproot {
+                    // create a dummy key for the internal key so its a true multisig.
+                    guard let dummyKey = WalletLogic.shared.dummyKey() else {
+                        showAlert(vc: self, title: "", message: "Unable to derive a dummy key for taproot multisig.")
+                        return
+                    }
+                    rawPrimDesc = "tr(\(dummyKey),multi_a(\(m),\(descriptorKeys)))"
+                }
+                
                 multiSigAccountDesc = rawPrimDesc
                 
                 let accountMap = ["descriptor": rawPrimDesc,"label": "\(m) of \(keys.count)", "blockheight": blockheight] as [String:Any]
@@ -292,6 +328,14 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             guard let self = self else { return }
             
             var message = "The wallet has been activated and the wallet view is refreshing, tap done to go back"
+            
+            var format = "P2WSH"
+            if isNested {
+                format = "SHP2WSH"
+            }
+            if isTaproot {
+                format = "TR"
+            }
             var text = ""
             
                 message = "Export the wallet as a text file (compatible with Coldcard) or QR code (compatible with Passport, Sparrow, Blue Wallet and more)."
@@ -300,7 +344,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 Name: Fully Noded
                 Policy: \(mofn)
                 Derivation: \(self.derivationField.text ?? "error getting the derivation path, you should report this issue")
-                Format: P2WSH
+                Format: \(format)
                 
                 \(self.keysString)
                 """
@@ -375,14 +419,15 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     private func clear() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
-            self.fingerprintField.text = ""
-            self.xpubField.text = ""
+            derivationField.isUserInteractionEnabled = true
+            scriptSegmentedControl.isUserInteractionEnabled = true
+            fingerprintField.text = ""
+            xpubField.text = ""
         }
     }
     
     private func convertWords(_ words: String, _ passphrase: String) {
-        guard let mk = Keys.masterKey(words: words, coinType: cointType, passphrase: passphrase),
+        guard let mk = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase),
             let fingerprint = Keys.fingerprint(masterKey: mk) else {
                 clear()
                 showAlert(vc: self, title: "Invalid words", message: "The words need to conform with BIP39")
@@ -401,6 +446,8 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 showAlert(vc: self, title: "Unable to derive xpub", message: "Looks like you added an invalid extended key")
                 return
         }
+        
+        
         
         self.addKeyStore(fingerprint, xpub)
     }

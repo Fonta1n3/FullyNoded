@@ -135,7 +135,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
         let wallet = wallets[indexPath.row]
         let name = wallet["name"] as! String
         let isActive = wallet["isActive"] as! Bool
-        let existingWallet = UserDefaults.standard.object(forKey: "walletName") as? String ?? ""
+        //let existingWallet = UserDefaults.standard.object(forKey: "walletName") as? String ?? ""
         if !isActive {
             if name != "Default Wallet" {
                 DispatchQueue.main.async { [weak self] in

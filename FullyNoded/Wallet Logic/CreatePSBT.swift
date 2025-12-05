@@ -36,9 +36,7 @@ class CreatePSBT {
                     return
                 }
                 
-                Signer.sign(psbt: psbt, passphrase: nil) { (psbt, rawTx, errorMessage) in
-                    completion((psbt, rawTx, errorMessage))
-                }
+                completion((psbt, nil, nil))
             }
         }
         

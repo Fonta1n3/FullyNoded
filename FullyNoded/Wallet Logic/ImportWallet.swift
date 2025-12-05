@@ -53,12 +53,14 @@ class ImportWallet {
         let arr = primDescriptor.split(separator: "#")
         primDescriptor = "\(arr[0])"
         descStruct = Descriptor(primDescriptor)
-        
-        // If the descriptor is multisig, we sort the keys lexicographically
+            
+        // If the descriptor is multisig, we sort the keys lexicographically, even if using sortedmulti as BDK does not support
+        // sortedmulti_a.
         if descStruct.isMulti {
             var dictArray = [[String:String]]()
             
-            for keyWithPath in descStruct.keysWithPath {                
+            for keyWithPath in descStruct.keysWithPath {
+                                
                 if keyWithPath.contains("]") {
                     let keyPathArr = keyWithPath.split(separator: "]")
                     
@@ -110,8 +112,12 @@ class ImportWallet {
             }
             
             let arr2 = primDescriptor.split(separator: ",")
-            
-            primDescriptor = "\(arr2[0])," + sortedKeys + "))"
+                        
+            if descStruct.isP2TR && descStruct.string.contains("multi_a") {
+                primDescriptor = "\(arr2[0]),\(arr2[1]),\(sortedKeys)))"
+            } else {
+                primDescriptor = "\(arr2[0])," + sortedKeys + "))"
+            }
             
             if primDescriptor.hasPrefix("sh(wsh") {
                 primDescriptor += ")"
@@ -387,7 +393,6 @@ class ImportWallet {
                 completion((nil, message))
                 return
             }
-            let descStruct = Descriptor(desc)
             completion((desc + "#" + descriptorInfo.checksum, message))
         }
     }
@@ -425,26 +430,6 @@ class ImportWallet {
                     } else {
                         completion((true, nil))
                     }
-                }
-            }
-        }
-    }
-    
-    class func rescan(wallet: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
-        let walletStr = Wallet(dictionary: wallet)
-        OnchainUtils.getBlockchainInfo { (blockchainInfo, message) in
-            guard let blockchainInfo = blockchainInfo else {
-                saveLocally(wallet: wallet, completion: completion)
-                return
-            }
-            
-            if blockchainInfo.pruned {
-                OnchainUtils.rescanNow(from: blockchainInfo.pruneheight) { (started, message) in
-                    saveLocally(wallet: wallet, completion: completion)
-                }
-            } else {
-                OnchainUtils.rescanNow(from: walletStr.blockheight) { (started, message) in
-                    saveLocally(wallet: wallet, completion: completion)
                 }
             }
         }

@@ -83,23 +83,11 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         if decryptedCert != "" && decryptedCert != nil {
             walletUrl = "https://\(rpcusername):\(rpcpassword)@\(onionAddress)"
         }
-        
-        if decryptedCert == nil || decryptedCert == "" {
-            guard onionAddress.contains(".onion:") || onionAddress.hasPrefix("127.0.0.1") || onionAddress.hasPrefix("localhost") else {
-                completion((nil, "You are attempting to make an http network request that is not over Tor or localhost. This is not allowed."))
-                return
-            }
-        }
-        
-        let ud = UserDefaults.standard
-        
-        if ud.object(forKey: "walletName") != nil {
-            if let walletName = ud.object(forKey: "walletName") as? String {
-                let b = isWalletRPC(command: method)
-                if b {
-                    walletUrl += "/wallet/" + walletName
-                }
-            }
+                        
+        var walletName = UserDefaults.standard.object(forKey: "walletName") as? String
+        let b = isWalletRPC(command: method)
+        if b, let walletName = walletName {
+                walletUrl += "/wallet/" + walletName
         }
         
         guard let url = URL(string: walletUrl) else {
@@ -218,6 +206,24 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
             
             if errorMessage.hasPrefix("Wallet file not specified") {
                 completion((nil, "No active wallet, either select one via the wallets button (squares) on the wallt view or the plus button to create one."))
+                
+            } else if errorMessage.contains("Requested wallet does not exist or is not loaded"), let walletName = walletName {
+                let p = Load_Wallet(["filename": walletName])
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .loadwallet(p)) { [weak self] (response, _) in
+                    guard let self = self else { return }
+                    
+                    guard let response = response as? [String: Any] else {
+                        completion((nil, errorMessage))
+                        return
+                    }
+                    
+                    guard let name = response["name"] as? String, name == walletName else {
+                        completion((nil, errorMessage))
+                        return
+                    }
+                    
+                    executeRPCCommand(method: method, completion: completion)
+                }
             } else {
                 completion((nil, errorMessage))
             }

@@ -295,6 +295,18 @@ public struct Derive_Addresses: CustomStringConvertible {
     }
 }
 
+public struct Unload_Wallet: CustomStringConvertible {
+    public var description: String {
+        return ""
+    }
+    
+    let param:[String:Any]
+    init(_ dict: [String: Any]) {
+        let filename = dict["wallet_name"] as! String
+        param = ["wallet_name": filename]
+    }
+}
+
 public struct Get_New_Address: CustomStringConvertible {
     public var description: String {
         return ""
@@ -822,7 +834,7 @@ public struct Load_Wallet: CustomStringConvertible {
     let param: [String:Any]
     init(_ dict: [String:Any]) {
         let filename = dict["filename"] as? String ?? ""
-        param = ["filename": filename]
+        param = ["filename": filename, "load_on_startup": true]
     }
 }
 

@@ -7,8 +7,8 @@
 //
 
 import Foundation
-import UIKit
-import LibWally
+//import UIKit
+//import LibWally
 
 class CreateAccountMap {
     
@@ -24,9 +24,9 @@ class CreateAccountMap {
         }
         
         // Don't show xprvs in backup QR incase user imported an xprv
-        let ds = Descriptor(primDesc)
-        
-        if ds.isHot && !ds.isMulti {
+//        let ds = Descriptor(primDesc)
+//        
+//        if ds.isHot && !ds.isMulti {
 //            if let key = try? HDKey(base58: ds.accountXprv) {
 //                primDesc = primDesc.replacingOccurrences(of: ds.accountXprv, with: key.xpub)
 //                
@@ -34,8 +34,8 @@ class CreateAccountMap {
 //                    watching[i] = watching[i].replacingOccurrences(of: ds.accountXprv, with: key.xpub)
 //                }
 //            }
-        } else if ds.isHot {
-            for key in ds.multiSigKeys {
+//        } else if ds.isHot {
+//            for key in ds.multiSigKeys {
 //                if key.hasPrefix("xprv") || key.hasPrefix("tprv") {
 //                    if let hdkey = try? HDKey(base58: key) {
 //                        primDesc = primDesc.replacingOccurrences(of: key, with: hdkey.xpub)
@@ -45,8 +45,8 @@ class CreateAccountMap {
 //                        }
 //                    }
 //                }
-            }
-        }
+//            }
+//        }
         
         let dict = [
             "descriptor":"\(primDesc)",

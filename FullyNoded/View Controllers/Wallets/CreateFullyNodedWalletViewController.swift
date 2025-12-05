@@ -22,37 +22,15 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     var deriv = ""
     var descriptor: Descriptor?
     let jsonDecoder = JSONDecoder()
+    var isSegwit = false
+    var isTaproot = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.delegate = self
         singleSigOutlet.layer.cornerRadius = 8
         multiSigOutlet.layer.cornerRadius = 8
-        
-       
-        
-//        if #available(iOS 17.0, *) {
-//            let reader = NFCReader()
-//            print("reader: \(reader.canBeginSession)")
-//            //let session = read
-//            do {
-//                try await reader.beginSession()
-//                var tag
-//                print("\(try await reader.readTag(<#T##tag: any NFCNDEFTag##any NFCNDEFTag#>))")
-//            } catch {
-//                print("begin session error: \(error.localizedDescription)")
-//            }
-//             
-//        } else {
-//            // Fallback on earlier versions
-//        }
     }
-    
-//    override func viewDidAppear(_ animated: Bool) {
-//        readNfc()
-//    }
-    
-    
     
     @IBAction func pasteAction(_ sender: Any) {
         if let data = UIPasteboard.general.data(forPasteboardType: "com.apple.traditional-mac-plain-text") {
@@ -68,6 +46,32 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             showAlert(vc: self, title: "", message: "Not a supported import item. Please let us know about it so we can add it.")
         }
     }
+    
+    private func promptForSingleSigFormat() {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                let alert = UIAlertController(title: "Choose a single sig wallet type.", message: "", preferredStyle: .alert)
+                
+                alert.addAction(UIAlertAction(title: "Segwit (BIP84)", style: .default, handler: { [weak self] action in
+                    guard let self = self else { return }
+                    
+                    isSegwit = true
+                    segueToSingleSigCreator()
+                }))
+                
+                alert.addAction(UIAlertAction(title: "Taproot (BIP86)", style: .default, handler: { [weak self] action in
+                    guard let self = self else { return }
+                    
+                    isTaproot = true
+                    segueToSingleSigCreator()
+                }))
+                
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+                alert.popoverPresentationController?.sourceView = view
+                present(alert, animated: true, completion: nil)
+            }
+        }
     
     private func isExtendedKey(_ lowercased: String) -> Bool {
         if lowercased.hasPrefix("xprv") || lowercased.hasPrefix("tprv") || lowercased.hasPrefix("vprv") || lowercased.hasPrefix("yprv") || lowercased.hasPrefix("zprv") || lowercased.hasPrefix("uprv") || lowercased.hasPrefix("xpub") || lowercased.hasPrefix("tpub") || lowercased.hasPrefix("vpub") || lowercased.hasPrefix("ypub") || lowercased.hasPrefix("zpub") || lowercased.hasPrefix("upub") {
@@ -124,7 +128,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     @IBAction func automaticAction(_ sender: Any) {
-        segueToSingleSigCreator()
+        promptForSingleSigFormat()
     }
         
     private func segueToSingleSigCreator() {
@@ -499,6 +503,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         accountMap["descriptor"] = primDesc
         
         let desc = Descriptor("\(primDesc)")
+        self.isTaproot = desc.isTaproot
         
         if desc.isCosigner {
             self.ccXfp = desc.fingerprint
@@ -623,7 +628,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             }
             
         } else if Keys.validMnemonic(item) {
-            let (descriptors, message) = Keys.descriptorsFromSigner(signer: item, passphrase: nil)
+            let (bip84, bip86, segwitCosigner, taprootCosigner, message) = Keys.descriptorsFromSigner(signer: item, passphrase: nil)
             
             guard let encryptedSigner = Crypto.encrypt(item.utf8) else {
                 showAlert(vc: self, title: "Unable to encrypt your signer.", message: "Please let us know about this bug.")
@@ -636,12 +641,12 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                     return
                 }
                 
-                guard let descriptors = descriptors else {
-                    showAlert(vc: self, title: "Unable to derive descriptors...", message: "Please let us know about this issue. Error: \(message ?? "unknown.")")
+                guard message == nil else {
+                    showAlert(vc: self, title: "", message: message!)
                     return
                 }
                 
-                self.prompToChoosePrimaryDesc(descriptors: descriptors)
+                self.prompToChoosePrimaryDesc(descriptors: [bip84!, bip86!, segwitCosigner!, taprootCosigner!])
             }
             
         } else if let coldcardSparrowExport = try? jsonDecoder.decode(ColdcardSparrowExport.self, from: item.utf8) {
@@ -702,6 +707,12 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         // Pass the selected object to the new view controller.
         switch segue.identifier {
             
+        case "segueToSeedWords":
+            guard let vc = segue.destination as? SeedDisplayerViewController else { fallthrough }
+            
+            vc.isSegwit = isSegwit
+            vc.isTaproot = isTaproot
+            
         case "segueToScanner":
             if #available(macCatalyst 14.0, *) {
                 guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
@@ -726,6 +737,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             guard let vc = segue.destination as? CreateMultisigViewController else { fallthrough }
             
             vc.cosigner = cosigner
+            vc.isTaproot = isTaproot
             
         case "segueToImportDescriptor":
             guard let vc = segue.destination as? ImportXpubViewController else { fallthrough }

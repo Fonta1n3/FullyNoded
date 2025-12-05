@@ -17,6 +17,17 @@ class UserCertURLSessionDelegate: NSObject, URLSessionDelegate {
                     didReceive challenge: URLAuthenticationChallenge,
                     completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         
+        let host = challenge.protectionSpace.host
+        
+        let whitelistedHosts = [
+            "blockchain.info"
+        ]
+        
+        if whitelistedHosts.contains(host) {
+            completionHandler(.performDefaultHandling, nil)
+            return
+        }
+        
         guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
               let serverTrust = challenge.protectionSpace.serverTrust else {
             completionHandler(.performDefaultHandling, nil)
@@ -26,6 +37,7 @@ class UserCertURLSessionDelegate: NSObject, URLSessionDelegate {
         // Trust ONLY the user's cert
         guard let cert = cert else {
             onTrustError?("No SSL cert.")
+            completionHandler(.cancelAuthenticationChallenge, nil)
             return
         }
         

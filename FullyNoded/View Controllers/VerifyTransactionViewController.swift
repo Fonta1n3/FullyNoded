@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import LibWally
+//import LibWally
 //import CoreNFC
 
 class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate {
@@ -22,7 +22,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var txFee = Double()
     var fxRate: Double?
     var txid = ""
-    var psbtDict:NSDictionary!
+    var psbtDict: NSDictionary!
     var doneBlock: ((Bool) -> Void)?
     let spinner = ConnectingView()
     var unsignedPsbt = ""
@@ -39,7 +39,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var addressToVerify = ""
     var sweeping = Bool()
     var signatures = [[String:String]]()
-    var signedTxInputs = NSArray()
+    var signedTxInputs: [[String: Any]] = []
     var alreadyBroadcast = false
     var confs = 0
     var labelText = "No label added."
@@ -52,13 +52,14 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var walletIndex = 0
     var qrCodeStringToExport = ""
     var blind = false
-    var processedPsbt:String?
+    //var processedPsbt:String?
     var isBBQr = false
     var isUR = false
     var isPlainText = false
     //var ndefMessage: NFCNDEFMessage?
     //var readerSession: NFCNDEFReaderSession?
     var exporting = false
+    var passphrase: String?
     
     @IBOutlet weak private var verifyTable: UITableView!
     @IBOutlet weak private var exportButtonOutlet: UIButton!
@@ -114,6 +115,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         exporting = false
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        passphrase?.secureWipe()
+    }
+    
     @IBAction func showRawDataAction(_ sender: Any) {
         if signedRawTx != "" {
             spinner.addConnectingView(vc: self, description: "Decoding raw transaction...")
@@ -167,6 +172,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func reset() {
+        print("reset")
         self.unsignedPsbt = ""
         self.signedRawTx = ""
         //self.isChannelFunding = false
@@ -186,7 +192,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         self.recipients.removeAll()
         self.addressToVerify = ""
         self.signatures.removeAll()
-        self.signedTxInputs = NSArray()
+        self.signedTxInputs.removeAll()
         self.confs = 0
         self.alreadyBroadcast = false
         self.labelText = "No label added."
@@ -199,33 +205,42 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         self.blind = false
     }
     
-    private func processPsbt(_ psbt: String) {
-        spinner.addConnectingView(vc: self, description: "processing psbt...")
-        
-        let network = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
-        var chain: Network
-        if network == "main" {
-            chain = .mainnet
-        } else {
-            chain = .testnet
+    private func processWithBDK(psbt: String) -> ((rawTx: String?, psbt: String?)) {
+        guard let bdkPsbt = try? WalletLogic.BDKPsbt(psbtBase64: psbt) else {
+            return (nil, psbt)
         }
         
-        guard let importedPsbt = try? PSBT(psbt: psbt, network: chain) else {
-            showAlert(vc: self, title: "", message: "Invalid psbt.")
+        let finalized = bdkPsbt.finalize()
+        
+        guard finalized.couldFinalize else {
+            return (nil, psbt)
+        }
+        
+        guard let rawTx = try? finalized.psbt.extractTx() else {
+            return (nil, bdkPsbt.serialize())
+        }
+        
+        return (rawTx.description, nil)
+    }
+    
+    private func processPsbt(_ psbt: String) {
+        // Check if it can be finalized, if it can finalize and extract it.
+        spinner.addConnectingView(vc: self, description: "processing psbt...")
+                
+        let (rawTx, _) = processWithBDK(psbt: psbt)
+        
+        guard let rawTx = rawTx else {
+            processWithBitcoinCore(psbt: psbt)
             return
         }
+
+        signedRawTx = rawTx
         
-        let inputs = importedPsbt.inputs
-        var signed = false
-        for input in inputs {
-            signed = false
-            if let sigs = input.signatures, let origins = input.origins {
-                if sigs.count == origins.count {
-                    signed = true
-                }
-            }
-        }
+        load()
+    }
     
+    // Use core to populate bip32 derivs and other info needed to finalize as a fallback.
+    private func processWithBitcoinCore(psbt: String) {
         let param: Wallet_Process_PSBT = .init(["psbt": psbt, "sign": false, "sighashtype": "ALL"])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletprocesspsbt(param: param)) { [weak self] (object, errorDescription) in
             guard let self = self else { return }
@@ -236,59 +251,24 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 return
             }
             
-            self.processedPsbt = processedPsbt
-            enableExportButton()
+            let (rawTx, _) = processWithBDK(psbt: psbt)
             
-            if signed {
-                self.finalizePsbt(processedPsbt)
+            if let rawTx = rawTx {
+                signedRawTx = rawTx
+                load()
+                   
             } else {
-                self.unsignedPsbt = processedPsbt
-                self.enableSignButton()
-                self.load()
+                unsignedPsbt = processedPsbt
+                enableSignAndLoad()
             }
         }
     }
     
-    private func finalizePsbt(_ psbt: String) {
-        guard let hex = Keys.finalize(psbt) else {
-            // Libwally used to fail for multisig psbt's so falling back to core finalization.
-            let param:Finalize_Psbt = .init(["psbt": psbt])
-            MakeRPCCall.sharedInstance.executeRPCCommand(method: .finalizepsbt(param)) { [weak self] (object, errorDescription) in
-                guard let self = self else { return }
-                
-                guard let result = object as? NSDictionary, let complete = result["complete"] as? Bool else {
-                    self.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "", message: "There was an issue finalizing your psbt: \(errorDescription ?? "unknown error")")
-                    return
-                }
-                
-                self.enableExportButton()
-                
-                guard complete, let hex = result["hex"] as? String else {
-                    guard let psbt = result["psbt"] as? String else {
-                        self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "", message: "There was an issue finalizing your psbt: \(errorDescription ?? "unknown error")")
-                        return
-                    }
-                    
-                    self.unsignedPsbt = psbt
-                    self.enableSignButton()
-                    self.load()
-                    
-                    return
-                }
-                
-                self.signedRawTx = hex
-                self.load()
-            }
-            
-            return
-        }
-
-        self.signedRawTx = hex
-        self.load()
+    private func enableSignAndLoad() {
+        enableSignButton()
+        load()
     }
-    
+        
     private func enableExportButton() {
         enableView(exportBackgroundView)
         enableButton(exportButtonOutlet)
@@ -324,16 +304,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         disableView(bumpFeeBackgroundView)
     }
     
-    private func disableExportButton() {
-        disableView(exportBackgroundView)
-        disableButton(exportButtonOutlet)
-    }
+//    private func disableExportButton() {
+//        disableView(exportBackgroundView)
+//        disableButton(exportButtonOutlet)
+//    }
     
     private func configureViews() {
         disableSendButton()
         disableBumpButton()
         disableSignButton()
-        disableExportButton()
+        //disableExportButton()
         
         buttonsBackgroundView.clipsToBounds = true
         buttonsBackgroundView.layer.cornerRadius = 8
@@ -470,16 +450,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         } else if processed.lowercased().hasPrefix("ur:bytes") {
             self.blind = true
             self.parseBlindPsbt(processed)
-        } else if processed.count == 64 {
-            fetchTxFromId(txid: processed)
+//        } else if processed.count == 64 {
+//            fetchTxFromId(txid: processed)
         } else {
             showAlert(vc: self, title: "Invalid", message: "Whatever you pasted was not a valid psbt, raw transaction or txid.")
         }
     }
     
-    private func fetchTxFromId(txid: String) {
-        print("fetchTxFromId")
-    }
+//    private func fetchTxFromId(txid: String) {
+//        print("fetchTxFromId")
+//    }
     
     private func presentUploader() {
         DispatchQueue.main.async { [weak self] in
@@ -605,7 +585,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     @IBAction func bumpFeeAction(_ sender: Any) {
         if confs == 0 && alreadyBroadcast {
-            bumpFee()
+            if UserDefaults.standard.object(forKey: "passphrasePrompt") == nil {
+                self.bumpFee(nil)
+            } else {
+                self.setPassphrase { [weak self] passphrase in
+                    guard let self = self else { return }
+                    self.passphrase = passphrase
+                    
+                    self.bumpFee(passphrase)
+                }
+            }
         } else {
             showAlert(vc: self, title: "", message: "You can only bump the fee for transactions that have zero confirmations.")
         }
@@ -630,6 +619,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 return
             }
             
+            //reset()
+            
             if UserDefaults.standard.object(forKey: "passphrasePrompt") == nil {
                 self.spinner.removeConnectingView()
                 self.signNow(nil)
@@ -637,7 +628,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 self.spinner.removeConnectingView()
                 self.setPassphrase { [weak self] passphrase in
                     guard let self = self else { return }
-                    
+                    self.passphrase = passphrase
                     self.signNow(passphrase)
                 }
             }
@@ -726,24 +717,41 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         isSigning = true
         spinner.addConnectingView(vc: self, description: "signing...")
         
-        Signer.sign(psbt: self.unsignedPsbt, passphrase: passphrase) { [weak self] (signedPsbt, rawTx, errorMessage) in
+        //Signer.sign(psbt: self.unsignedPsbt, passphrase: passphrase) { [weak self] (signedPsbt, rawTx, errorMessage) in
+        guard let wallet = wallet else {
+            spinner.removeConnectingView()
+            showAlert(vc: self, title: "", message: "Fully Noded can only sign transactions when using a Fully Noded wallet.")
+            return
+        }
+        
+        Signer.shared.attemptToSignPsbt(fnWallet: wallet, psbt: unsignedPsbt, passphrase: passphrase) { [weak self] (signedPsbt, rawTx, errorMessage) in
             guard let self = self else { return }
             
-            self.disableSignButton()
+            print("return from signer")
             
-            if rawTx != nil {
+            if let rawTx = rawTx {
+                showAlert(vc: self, title: "", message: "Signed successfully ✓")
+                self.disableSignButton()
                 self.unsignedPsbt = ""
-                self.signedRawTx = rawTx!
+                reset()
+                self.signedRawTx = rawTx
                 self.enableSendButton()
+                //self.enableExportButton()
                 self.load()
                 
-            } else if signedPsbt != nil {
-                self.unsignedPsbt = signedPsbt!
+            } else if let signedPsbt = signedPsbt {
+                reset()
+                self.unsignedPsbt = signedPsbt
+                //self.enableExportButton()
                 self.load()
                 
             } else {
                 self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "unknown")
+                
+                if let errorMessage = errorMessage {
+                    showAlert(vc: self, title: "Error Signing", message: errorMessage)
+                }
+                
             }
         }
     }
@@ -765,14 +773,18 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         CoreDataService.saveEntity(dict: transaction, entityName: .transactions) { _ in }
     }
     
-    private func bumpFee() {
+    private func bumpFee(_ passphrase: String?) {
+        guard let wallet = wallet else {
+            showAlert(vc: self, title: "", message: "Signing transactions only works with Fully Noded wallets.")
+            return
+        }
+        
         spinner.addConnectingView(vc: self, description: "increasing fee...")
-        let param_bump_fee:Bump_Fee = .init(["txid":self.txid])
-        let param_psbt_bump_fee:PSBT_Bump_Fee = .init(["txid":self.txid])
-        let bumpfee:BTC_CLI_COMMAND = .bumpfee(param: param_bump_fee)
-        let psbtBumpFee:BTC_CLI_COMMAND = .psbtbumpfee(param: param_psbt_bump_fee)
-        var command:BTC_CLI_COMMAND!
-        command = bumpfee
+        let param_bump_fee: Bump_Fee = .init(["txid":self.txid])
+        let param_psbt_bump_fee: PSBT_Bump_Fee = .init(["txid":self.txid])
+        let bumpfee: BTC_CLI_COMMAND = .bumpfee(param: param_bump_fee)
+        let psbtBumpFee: BTC_CLI_COMMAND = .psbtbumpfee(param: param_psbt_bump_fee)
+        var command: BTC_CLI_COMMAND = bumpfee
         
         OnchainUtils.getWalletInfo { [weak self] (walletInfo, message) in
             guard let self = self else { return }
@@ -811,7 +823,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 
                 self.signedRawTx = ""
                 
-                Signer.sign(psbt: psbt, passphrase: nil) { (signedPsbt, rawTx, errorMessage) in
+                Signer.shared.attemptToSignPsbt(fnWallet: wallet, psbt: psbt, passphrase: passphrase) { [weak self] (signedPsbt, rawTx, errorMessage) in
+                    guard let self = self else { return }
+                    
                     self.spinner.removeConnectingView()
                     
                     self.disableBumpButton()
@@ -829,7 +843,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "The transaction still needs more signatures before it can be broadcast.")
                         
                     } else {
-                        showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "unknown")
+                        if let errorMessage = errorMessage {
+                            showAlert(vc: self, title: "Error Signing", message: errorMessage)
+                        }
                     }
                 }
             }
@@ -845,11 +861,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func load() {
-        if !isSigning || unsignedPsbt == "" {
-            spinner.addConnectingView(vc: self, description: "getting exchange rate....")
-        } else {
-            updateLabel("reloading signed transaction...")
-        }
+        spinner.addConnectingView(vc: self, description: "loading...")
         
         inputArray.removeAll()
         inputTableArray.removeAll()
@@ -857,13 +869,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         recipients.removeAll()
         signatures.removeAll()
         outputsString = ""
-        let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
         
-        FiatConverter.sharedInstance.getFxRate(currency: fiatCurrency) { [weak self] exchangeRate in
-            guard let self = self else { return }
-            
-            self.fxRate = exchangeRate
-        }
+//        FiatConverter.sharedInstance.getFxRate(currency: fiatCurrency) { [weak self] exchangeRate in
+//            guard let self = self else { return }
+//            
+//            self.fxRate = exchangeRate
+//        }
         
         if self.unsignedPsbt == "" {
             self.updateLabel("decoding raw transaction...")
@@ -976,7 +987,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     self.loadLabelAndMemo()
                 }
                 
-                if let inputs = dict["vin"] as? NSArray {
+                if let inputs = dict["vin"] as? [[String: Any]] {
                     
                     for (i, _) in inputs.enumerated() {
                         let inputDict:[String:Any] = [
@@ -991,6 +1002,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         self.inputTableArray.append(inputDict)
                     }
                     
+                    self.index = 0
                     self.signedTxInputs = inputs
                 }
                 
@@ -1120,10 +1132,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         isChange = false
                     }
                                         
-                    var amountString = amount.avoidNotation
+                    var amountString = amount.btcBalanceWithSpaces
                     
-                    if fxRate != nil {
-                        amountString += " btc / \(fiatAmount(btc: amount))"
+                    if let fxRate = fxRate {
+                        amountString += " / \((fxRate * amount).fiatString)"
                     }
                                         
                     let outputDict:[String:Any] = [
@@ -1171,10 +1183,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                             
                             if let amount = output["value"] as? Double {
                                 inputTotal += amount
-                                var amountString = amount.avoidNotation
+                                var amountString = amount.btcBalanceWithSpaces
                                 
-                                if fxRate != nil {
-                                    amountString += " btc / \(fiatAmount(btc: amount))"
+                                if let fxRate = fxRate {
+                                    amountString += " / \((fxRate * amount).fiatString)"
                                 }
                                 
                                 self.inputTableArray[index]["amount"] = amountString
@@ -1215,6 +1227,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             self.updateLabel("verifying input #\(self.index + 1) out of \(self.inputTableArray.count)")
             
             if let address = inputTableArray[index]["address"] as? String, address != "Unknown address.", address != "" {
+                
                 let param:Get_Address_Info = .init(["address":address])
                 MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
@@ -1230,71 +1243,71 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         return
                     }
                     
-                    if let dict = response as? NSDictionary {
-                        let solvable = dict["solvable"] as? Bool ?? false
-                        let keypath = dict["hdkeypath"] as? String ?? "no key path"
-                        let labels = dict["labels"] as? NSArray ?? ["no label"]
-                        let desc = dict["desc"] as? String ?? "no descriptor"
-                        var isChange = dict["ischange"] as? Bool ?? false
-                        let fingerprint = dict["hdmasterfingerprint"] as? String ?? "no fingerprint"
-                        let script = dict["script"] as? String ?? ""
-                        let sigsrequired = dict["sigsrequired"] as? Int ?? 0
-                        let pubkeys = dict["pubkeys"] as? [String] ?? []
-                        var labelsText = ""
-                        if labels.count > 0 {
-                            for label in labels {
-                                if label as? String == "" {
-                                    labelsText += "no label "
-                                } else {
-                                    labelsText += "\(label as? String ?? "") "
-                                }
+                    guard let dict = response as? NSDictionary else { return }
+                    
+                    let solvable = dict["solvable"] as? Bool ?? false
+                    let keypath = dict["hdkeypath"] as? String ?? "no key path"
+                    let labels = dict["labels"] as? NSArray ?? ["no label"]
+                    let desc = dict["desc"] as? String ?? "no descriptor"
+                    var isChange = dict["ischange"] as? Bool ?? false
+                    let fingerprint = dict["hdmasterfingerprint"] as? String ?? "no fingerprint"
+                    let script = dict["script"] as? String ?? ""
+                    let sigsrequired = dict["sigsrequired"] as? Int ?? 0
+                    let pubkeys = dict["pubkeys"] as? [String] ?? []
+                    var labelsText = ""
+                    if labels.count > 0 {
+                        for label in labels {
+                            if label as? String == "" {
+                                labelsText += "no label "
+                            } else {
+                                labelsText += "\(label as? String ?? "") "
                             }
-                        } else {
-                            labelsText += "no label "
                         }
+                    } else {
+                        labelsText += "no label "
+                    }
+                    
+                    isChange = desc.contains("/1/")
+                    
+                    self.inputTableArray[self.index]["isOurs"] = solvable
+                    self.inputTableArray[self.index]["hdKeyPath"] = keypath
+                    self.inputTableArray[self.index]["isChange"] = isChange
+                    self.inputTableArray[self.index]["label"] = labelsText
+                    self.inputTableArray[self.index]["fingerprint"] = fingerprint
+                    self.inputTableArray[self.index]["desc"] = desc
+                    
+                    if script == "multisig" && self.signedRawTx == "" {
+                        self.inputTableArray[self.index]["sigsrequired"] = sigsrequired
+                        self.inputTableArray[self.index]["pubkeys"] = pubkeys
+                        var numberOfSigs = 0
                         
-                        isChange = desc.contains("/1/")
-                        
-                        self.inputTableArray[self.index]["isOurs"] = solvable
-                        self.inputTableArray[self.index]["hdKeyPath"] = keypath
-                        self.inputTableArray[self.index]["isChange"] = isChange
-                        self.inputTableArray[self.index]["label"] = labelsText
-                        self.inputTableArray[self.index]["fingerprint"] = fingerprint
-                        self.inputTableArray[self.index]["desc"] = desc
-                        
-                        if script == "multisig" && self.signedRawTx == "" {
-                            self.inputTableArray[self.index]["sigsrequired"] = sigsrequired
-                            self.inputTableArray[self.index]["pubkeys"] = pubkeys
-                            var numberOfSigs = 0
-                            
-                            // Will only be any for a psbt
-                            for (i, sigs) in self.signatures.enumerated() {
-                                for (key, _) in sigs {
-                                    for pk in pubkeys {
-                                        if pk == key {
-                                            numberOfSigs += 1
-                                        }
+                        // Will only be any for a psbt
+                        for (i, sigs) in self.signatures.enumerated() {
+                            for (key, _) in sigs {
+                                for pk in pubkeys {
+                                    if pk == key {
+                                        numberOfSigs += 1
                                     }
                                 }
-                                
-                                if i + 1 == self.signatures.count {
-                                    self.inputTableArray[self.index]["signatures"] = "\(numberOfSigs) out of \(sigsrequired) signatures"
-                                }
-                                
                             }
                             
-                        } else {
-                            // Will only be any for a signed raw transaction
-                            if self.signedTxInputs.count > 0 {
-                                self.inputTableArray[self.index]["signatures"] = "Unsigned"
-                                let input = self.signedTxInputs[self.index] as? NSDictionary ?? [:]
-                                let scriptsig = input["scriptSig"] as? NSDictionary ?? [:]
+                            if i + 1 == self.signatures.count {
+                                self.inputTableArray[self.index]["signatures"] = "\(numberOfSigs) out of \(sigsrequired) signatures"
+                            }
+                            
+                        }
+                    } else {
+                        // Will only be any for a signed raw transaction
+                        if self.signedTxInputs.count > 0 {
+                            self.inputTableArray[self.index]["signatures"] = "Unsigned"
+                            
+                            for signedTxInput in signedTxInputs {
+                                let scriptsig = signedTxInput["scriptSig"] as? [String: Any] ?? [:]
                                 let hex = scriptsig["hex"] as? String ?? ""
-                                
                                 if hex != "" {
                                     self.inputTableArray[self.index]["signatures"] = "Signatures complete"
                                 } else {
-                                    if let txwitness = input["txinwitness"] as? NSArray {
+                                    if let txwitness = signedTxInput["txinwitness"] as? NSArray {
                                         if txwitness.count > 0 {
                                             self.inputTableArray[self.index]["signatures"] = "Signatures complete"
                                         }
@@ -1302,9 +1315,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                                 }
                             }
                         }
-                        self.index += 1
-                        self.verifyInputs()
                     }
+                    self.index += 1
+                    self.verifyInputs()
                 }
             } else {
                 self.index += 1
@@ -1317,6 +1330,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func verifyOutputs() {
+        print("verifyOutputs")
         if index < outputArray.count {
             self.updateLabel("verifying output #\(self.index + 1) out of \(self.outputArray.count)")
             
@@ -1332,6 +1346,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         let desc = dict["desc"] as? String ?? "no descriptor"
                         var isChange = dict["ischange"] as? Bool ?? false
                         let fingerprint = dict["hdmasterfingerprint"] as? String ?? "no fingerprint"
+                        let parentDesc = dict["parent_desc"] as? String ?? ""
                         var labelsText = ""
                         
                         if labels.count > 0 {
@@ -1361,13 +1376,14 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         self.outputArray[self.index]["label"] = labelsText
                         self.outputArray[self.index]["fingerprint"] = fingerprint
                         self.outputArray[self.index]["desc"] = desc
+                        //self.outputArray[self.index]["parent_desc"] = parentDesc
                         
                         // Currently only verify address if the node knows about it.. otherwise we have to brute force 200k addresses...
                         // will add a dedicated verify button for unsolvable to cross check against all wallets
                         // also adding a signer verify button to show whether FN is able to sign for the output or not
                         if solvable && self.wallet != nil {
                             // Only do this if we are not using the default wallet.
-                            Keys.verifyAddress(address, keypath, desc) { (isOursFullyNoded, walletLabel, signable, signer) in
+                            Keys.verifyAddress(parentDesc: parentDesc, passphrase: self.passphrase) { (isOursFullyNoded, walletLabel, signable, signer) in
                                 self.outputArray[self.index]["isOursFullyNoded"] = isOursFullyNoded
                                 self.outputArray[self.index]["walletLabel"] = walletLabel
                                 self.outputArray[self.index]["signable"] = signable
@@ -1700,6 +1716,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let copyAddressButton = inputCell.viewWithTag(18) as! UIButton
         let copyDescButton = inputCell.viewWithTag(19) as! UIButton
         let addressQrButton = inputCell.viewWithTag(20) as! UIButton
+        let getAddressInfoButton = inputCell.viewWithTag(21) as! UIButton
                 
 //        backgroundView1.layer.cornerRadius = 5
 //        backgroundView2.layer.cornerRadius = 5
@@ -1740,10 +1757,13 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             copyAddressButton.restorationIdentifier = inputAddress
             copyDescButton.restorationIdentifier = desc
             addressQrButton.restorationIdentifier = inputAddress
+            getAddressInfoButton.restorationIdentifier = inputAddress
+            
             
             copyAddressButton.addTarget(self, action: #selector(copyAddress(_:)), for: .touchUpInside)
             copyDescButton.addTarget(self, action: #selector(copyDesc(_:)), for: .touchUpInside)
             addressQrButton.addTarget(self, action: #selector(showAddressQr(_:)), for: .touchUpInside)
+            getAddressInfoButton.addTarget(self, action: #selector(showAddressInfo(_:)), for: .touchUpInside)
             
             signaturesLabel.text = signatureStatus
             
@@ -1841,6 +1861,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let copyDescriptorButton = outputCell.viewWithTag(22) as! UIButton
         let verifyOwnerButton = outputCell.viewWithTag(23) as! UIButton
         let addressQrButton = outputCell.viewWithTag(24) as! UIButton
+        let getAddressInfoButton = outputCell.viewWithTag(25) as! UIButton
                 
 //        signableBackgroundView.layer.cornerRadius = 5
 //        verifiedByFnBackgroundView.layer.cornerRadius = 5
@@ -1884,11 +1905,13 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             verifyOwnerButton.restorationIdentifier = outputAddress + " " + "\(indexPath.row)"
             copyDescriptorButton.restorationIdentifier = desc
             addressQrButton.restorationIdentifier = outputAddress
+            getAddressInfoButton.restorationIdentifier = outputAddress
             
             copyAddressButton.addTarget(self, action: #selector(copyAddress(_:)), for: .touchUpInside)
             copyDescriptorButton.addTarget(self, action: #selector(copyDesc(_:)), for: .touchUpInside)
             verifyOwnerButton.addTarget(self, action: #selector(verifyOwner(_:)), for: .touchUpInside)
             addressQrButton.addTarget(self, action: #selector(showAddressQr(_:)), for: .touchUpInside)
+            getAddressInfoButton.addTarget(self, action: #selector(showAddressInfo(_:)), for: .touchUpInside)
             
             if isOursFullyNoded {
                 verifiedByFnLabel.text = "Owned by \(walletLabel)."
@@ -2112,6 +2135,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     let desc = dict["desc"] as? String ?? "no descriptor"
                     var isChange = dict["ischange"] as? Bool ?? false
                     let fingerprint = dict["hdmasterfingerprint"] as? String ?? "no fingerprint"
+                    let parentDesc = dict["parent_desc"] as? String ?? ""
                     var labelsText = ""
                     
                     if labels.count > 0 {
@@ -2140,7 +2164,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     // will add a dedicated verify button for unsolvable to cross check against all wallets
                     // also adding a signer verify button to show whether FN is able to sign for the output or not
                     
-                    Keys.verifyAddress(address, keypath, desc) {(isOursFullyNoded, walletLabel, signable, signer) in
+                    Keys.verifyAddress(parentDesc: parentDesc, passphrase: self.passphrase) { (isOursFullyNoded, walletLabel, signable, signer) in
                         updatedOutput["isOursFullyNoded"] = isOursFullyNoded
                         updatedOutput["walletLabel"] = walletLabel
                         updatedOutput["signable"] = signable
@@ -2251,6 +2275,26 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
     }
     
+    @objc func showAddressInfo(_ sender: UIButton) {
+        spinner.addConnectingView(vc: self, description: "getting address info...")
+        guard let address = sender.restorationIdentifier else { return }
+        
+        let p = Get_Address_Info(["address": address])
+        
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: p)) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
+            
+            spinner.removeConnectingView()
+            
+            guard let response = response as? [String: Any] else {
+                showAlert(vc: self, title: "", message: errorDesc ?? "Unable to get address info.")
+                return
+            }
+            
+            self.showModal(data: response, title: "getaddressinfo")
+        }
+    }
+    
     @objc func copyDesc(_ sender: UIButton) {
         UIPasteboard.general.string = sender.restorationIdentifier
         
@@ -2345,24 +2389,24 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         return strDate
     }
     
-//    private func broadcastPrivately() {
-//        spinner.addConnectingView(vc: self, description: "broadcasting...")
-//        
-//        Broadcaster.sharedInstance.send(rawTx: self.signedRawTx) { [weak self] id in
-//            guard let self = self else { return }
-//            
-//            if id == self.txid {
-//                DispatchQueue.main.async {
-//                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-//                    self.disableSendButton()
-//                    self.spinner.removeConnectingView()
-//                    showAlert(vc: self, title: "", message: "Transaction sent ✓")
-//                }
-//            } else {
-//                self.showError(error: "Error broadcasting privately, try again and use your node instead. Error: \(id ?? "unknown")")
-//            }
-//        }
-//    }
+    private func broadcastPrivately() {
+        spinner.addConnectingView(vc: self, description: "broadcasting...")
+        
+        Broadcaster.sharedInstance.send(rawTx: self.signedRawTx) { [weak self] id in
+            guard let self = self else { return }
+            
+            if id == self.txid {
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                    self.disableSendButton()
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "", message: "Transaction sent ✓")
+                }
+            } else {
+                self.showError(error: "Error broadcasting privately, try again and use your node instead. Error: \(id ?? "unknown")")
+            }
+        }
+    }
     
     private func broadcastWithMyNode() {
         spinner.addConnectingView(vc: self, description: "broadcasting...")
@@ -2408,12 +2452,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Send transaction?",
-                                          message: "",
+            let alert = UIAlertController(title: "Broadcast transaction?",
+                                          message: "You can broadcast with your node or via Blockstreams Esplora onion. Broadcasting with Esplora is more private.",
                                           preferredStyle: .alert)
             
-            alert.addAction(UIAlertAction(title: "Send", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "Via my node", style: .default, handler: { action in
                 self.broadcastWithMyNode()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Via Esplora (Tor)", style: .default, handler: { action in
+                self.broadcastPrivately()
             }))
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
@@ -2722,11 +2770,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 //vc.memoText = memoText
                 
                 vc.doneBlock = { result in
-                    self.labelText = result[0]
-                    //self.memoText = result[1]
+                    self.labelText = result
                     
                     DispatchQueue.main.async {
-                        self.verifyTable.reloadSections(IndexSet(arrayLiteral: 0, 1), with: .none)
+                        self.verifyTable.reloadSections(IndexSet(arrayLiteral: 0), with: .none)
                         showAlert(vc: self, title: "", message: "Transaction updated ✓")
                     }
                 }

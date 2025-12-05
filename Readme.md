@@ -27,7 +27,7 @@ Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own 
 
 * You can donate to me and support the app directly by navigating to the send view and tapping the donate button, this adds a donation address that I control, your support is greatly appreciated and will directly fund the app.
 * [GitHub Sponsors](https://github.com/sponsors/fonta1n3)
-* Many thanks to [OpenSats](https://opensats.org) and [Human Rights Foundation](https://hrf.orf) for supporting my work in the past, this has helped Fully Noded apps come a long way and is greatly appreciated, consider directly donating to these organziations!
+* Many thanks to [OpenSats](https://opensats.org) and [Human Rights Foundation](https://hrf.orf) for supporting my work in the past, this has helped Fully Noded apps come a long way and is greatly appreciated, consider directly donating to these organizations!
 
 
 ## Why Fully Noded®?
