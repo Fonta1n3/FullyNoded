@@ -98,6 +98,18 @@ extension Array where Element == UInt8 {
 }
 
 public extension String {
+    
+    var addressExpanded: String {
+        var addressExpanded = ""
+        for (i, char) in self.enumerated() {
+            if i > 0 && i % 5 == 0 {
+                addressExpanded.append("-")
+            }
+            addressExpanded.append(char)
+        }
+        return addressExpanded
+    }
+    
     /// Securely overwrites the string's memory with zeros and then clears it
     mutating func secureWipe() {
         // Get mutable access to the underlying UTF-8 bytes

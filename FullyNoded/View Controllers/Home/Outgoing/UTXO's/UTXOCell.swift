@@ -147,7 +147,7 @@ class UTXOCell: UITableViewCell {
         }
         
         if let address = utxo.address {
-            addressLabel.text = address
+            addressLabel.text = address.addressExpanded
         }
         
         txidLabel.text = utxo.txid

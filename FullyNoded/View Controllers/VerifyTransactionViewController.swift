@@ -1706,22 +1706,14 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let utxoLabel = inputCell.viewWithTag(7) as! UILabel
         let isChangeImageView = inputCell.viewWithTag(8) as! UIImageView
         let isDustImageView = inputCell.viewWithTag(10) as! UIImageView
-        //let backgroundView1 = inputCell.viewWithTag(11)!
-        //let backgroundView2 = inputCell.viewWithTag(12)!
-        //let backgroundView3 = inputCell.viewWithTag(13)!
         let signaturesLabel = inputCell.viewWithTag(14) as! UILabel
         let descTextView = inputCell.viewWithTag(15) as! UITextView
-        //let sigsBackgroundView = inputCell.viewWithTag(16)!
         let sigsImageView = inputCell.viewWithTag(17) as! UIImageView
         let copyAddressButton = inputCell.viewWithTag(18) as! UIButton
         let copyDescButton = inputCell.viewWithTag(19) as! UIButton
         let addressQrButton = inputCell.viewWithTag(20) as! UIButton
         let getAddressInfoButton = inputCell.viewWithTag(21) as! UIButton
-                
-//        backgroundView1.layer.cornerRadius = 5
-//        backgroundView2.layer.cornerRadius = 5
-//        backgroundView3.layer.cornerRadius = 5
-//        sigsBackgroundView.layer.cornerRadius = 5
+
         isDustImageView.tintColor = .tintColor
         isChangeImageView.tintColor = .tintColor
         inputIsOursImage.tintColor = .tintColor
@@ -1752,7 +1744,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             inputIndexLabel.text = "Input #\(input["index"] as! Int)"
             inputAmountLabel.text = "\((input["amount"] as! String))"
-            inputAddressLabel.text = inputAddress
+            inputAddressLabel.text = inputAddress.addressExpanded
             
             copyAddressButton.restorationIdentifier = inputAddress
             copyDescButton.restorationIdentifier = desc
@@ -1847,12 +1839,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let isChangeImageView = outputCell.viewWithTag(8) as! UIImageView
         let verifiedByFnLabel = outputCell.viewWithTag(9) as! UILabel
         let isDustImageView = outputCell.viewWithTag(10) as! UIImageView
-//        let backgroundView1 = outputCell.viewWithTag(11)!
-//        let backgroundView2 = outputCell.viewWithTag(12)!
-//        let backgroundView3 = outputCell.viewWithTag(13)!
-        //let verifiedByFnBackgroundView = outputCell.viewWithTag(14)!
         let descTextView = outputCell.viewWithTag(15) as! UITextView
-        //let signableBackgroundView = outputCell.viewWithTag(16)!
         let signableImageView = outputCell.viewWithTag(17) as! UIImageView
         let signerLabel = outputCell.viewWithTag(18) as! UILabel
         let verifiedByNodeLabel = outputCell.viewWithTag(19) as! UILabel
@@ -1862,12 +1849,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let verifyOwnerButton = outputCell.viewWithTag(23) as! UIButton
         let addressQrButton = outputCell.viewWithTag(24) as! UIButton
         let getAddressInfoButton = outputCell.viewWithTag(25) as! UIButton
-                
-//        signableBackgroundView.layer.cornerRadius = 5
-//        verifiedByFnBackgroundView.layer.cornerRadius = 5
-//        backgroundView1.layer.cornerRadius = 5
-//        backgroundView2.layer.cornerRadius = 5
-//        backgroundView3.layer.cornerRadius = 5
+
         descTextView.layer.cornerRadius = 8
         descTextView.layer.borderWidth = 0.5
         descTextView.layer.borderColor = UIColor.darkGray.cgColor
@@ -1899,7 +1881,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             outputIndexLabel.text = "Output #\(output["index"] as! Int)"
             outputAmountLabel.text = "\((output["amount"] as! String))"
-            outputAddressLabel.text = outputAddress
+            outputAddressLabel.text = outputAddress.addressExpanded
             
             copyAddressButton.restorationIdentifier = outputAddress
             verifyOwnerButton.restorationIdentifier = outputAddress + " " + "\(indexPath.row)"
@@ -2896,9 +2878,6 @@ extension VerifyTransactionViewController: UITableViewDelegate {
             
         case 0:
             return transactionLabelCell(indexPath)
-            
-//        case 1:
-//            return transactionMemoCell(indexPath)
             
         case 1:
             if !alreadyBroadcast {

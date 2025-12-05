@@ -12,17 +12,17 @@ import Foundation
 // bitcoin:175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W?amount=20.3&label=Luke-Jr
 
 class AddressParser {
+    
+    static let sharedInstance = AddressParser()
+    
+    private init() {}
         
-    class func parse(url: String) -> (address: String?, amount: Double?, label: String?, message: String?) {
+    func parse(url: String) -> (address: String?, amount: Double?, label: String?, message: String?) {
         var addressToReturn:String?
         var amountToReturn:Double?
         var labelToReturn:String?
         var message:String?
         var processedUrl = url
-        
-        guard !processedUrl.contains("bitpay") else {
-            return (address: nil, amount: nil, label: nil, message: nil)
-        }
         
         processedUrl = processedUrl.replacingOccurrences(of: "bitcoin:", with: "")
         processedUrl = processedUrl.replacingOccurrences(of: "BITCOIN:", with: "")
@@ -83,12 +83,10 @@ class AddressParser {
         return (address: addressToReturn, amount: amountToReturn, label: labelToReturn, message: message)
     }
     
-    private class func processedAddress(_ processed: String) -> String? {
+    private func processedAddress(_ processed: String) -> String? {
         var address = processed.replacingOccurrences(of: "bitcoin:", with: "")
-        address = address.replacingOccurrences(of: "lightning:", with: "")
-        address = address.replacingOccurrences(of: "LIGHTNING:", with: "")
         address = address.replacingOccurrences(of: "BITCOIN:", with: "")
-        switch address {
+        switch address.lowercased() {
         case _ where address.hasPrefix("1"),
             _ where address.hasPrefix("3"),
             _ where address.lowercased().hasPrefix("tb1"),
@@ -96,12 +94,7 @@ class AddressParser {
             _ where address.hasPrefix("2"),
             _ where address.lowercased().hasPrefix("bcrt"),
             _ where address.hasPrefix("m"),
-            _ where address.hasPrefix("n"),
-            _ where address.lowercased().hasPrefix("lntb"),
-            _ where address.lowercased().hasPrefix("lno"),
-            _ where address.lowercased().hasPrefix("lightning:"),
-            _ where address.lowercased().hasPrefix("lnbc"),
-            _ where address.lowercased().hasPrefix("lnbcrt"):
+            _ where address.hasPrefix("n"):
             if address.hasPrefix("BC1") || address.hasPrefix("TB1") {
                 return address.lowercased()
             } else {
@@ -111,5 +104,4 @@ class AddressParser {
             return nil
         }
     }
-    
 }
