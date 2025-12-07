@@ -13,14 +13,20 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     
     var id:UUID!
     var cosigner:Descriptor?
-    private var spinner = ConnectingView()
+    private let spinner = ConnectingView.shared
     private var signer: SignerStruct!
     private var tableDict = [[String:Any]]()
     private var network = 0
     private var stringToExport = ""
     private var descriptionText = ""
     private var headerText = ""
-    //private var masterKey = ""
+    private var accountPubkey = ""
+    private var accountBip84Pubkey = ""
+    private var accountBip86Pubkey = ""
+    private var accountPath = ""
+    private var bip86AccountPath = ""
+    private var bip84AccountPath = ""
+
     
     private enum Section: Int {
         case label
@@ -30,8 +36,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         case dateAdded
         case signableWallets
         case cosigner
-        case singleSig
-        case rootXpub
+        case singleSigBip84
+        case singleSigBip86
     }
     
     @IBOutlet weak var tableView: UITableView!
@@ -72,10 +78,10 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             ],// cosigner 6
             [
                 "text": "", "ur": "", "selectedSegmentIndex": 0, "footerTextUr": "UR for exporting the segwit single-sig watch-only wallet to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text.", "footerText": "The native segwit watch-only descriptor, can be used to create a segwit watch-only wallet from this signer."
-            ],// singlesig 7
+            ],// singlesigbip84 7
             [
-                "text": "", "ur": "", "selectedSegmentIndex": 0, "footerTextUr": "The UR for the root xpub, you can create any type of watch-only wallet with the root xpup. Proceed with caution.", "footerText": "Create any type of watch-only wallet with the root xpup. Proceed with caution, if you do not have a dep understanding of what a root xpub is or how wallets are derived you should stay away."
-            ]// casa hdkey 8
+                "text": "", "ur": "", "selectedSegmentIndex": 0, "footerTextUr": "UR for exporting the taproot single-sig watch-only wallet to any wallet which supports UR crypto-account (Blue Wallet, Passport, Keystone, SeedSigner, Cobo, Sparrow). Tap to copy the text.", "footerText": "The taproot watch-only descriptor, can be used to create a taproot watch-only wallet from this signer."
+            ]// singlesigbip86 8
         ]
         
         let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
@@ -102,10 +108,10 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             return "Wallets"
         case .cosigner:
             return "Cosigner - BIP48"
-        case .singleSig:
+        case .singleSigBip84:
             return "Descriptor - BIP84"
-        case .rootXpub:
-            return "Root xpub"
+        case .singleSigBip86:
+            return "Descriptor - BIP86"
         }
     }
     
@@ -255,6 +261,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let decryptedbip84xpub = Crypto.decrypt(encryptedbip84xpub),
                     let xpub = decryptedbip84xpub.utf8String {
                     let descriptor = "wpkh([\(xfp)/84h/0h/0h]\(xpub)/0/*)"
+                    self.accountBip84Pubkey = xpub
+                    self.bip84AccountPath = "m/84h/0h/0h"
                     
                     if let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) {
                         self.tableDict[7]["text"] = descriptor
@@ -262,6 +270,22 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     } else {
                         self.tableDict[7]["text"] = descriptor
                         self.tableDict[7]["ur"] = ""
+                    }
+                }
+                
+                if let encryptedbip86xpub = signer.bip86xpub,
+                    let decryptedbip86xpub = Crypto.decrypt(encryptedbip86xpub),
+                    let xpub = decryptedbip86xpub.utf8String {
+                    let descriptor = "tr([\(xfp)/86h/0h/0h]\(xpub)/0/*)"
+                    self.accountBip86Pubkey = xpub
+                    self.bip86AccountPath = "m/86h/0h/0h"
+                    
+                    if let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) {
+                        self.tableDict[8]["text"] = descriptor
+                        self.tableDict[8]["ur"] = singleSigCryptoAccount
+                    } else {
+                        self.tableDict[8]["text"] = descriptor
+                        self.tableDict[8]["ur"] = ""
                     }
                 }
                 
@@ -277,19 +301,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                         self.tableDict[6]["text"] = cosigner
                         self.tableDict[6]["ur"] = ""
                     }
-
-                    if let encryptedRootXpub = signer.rootXpub,
-                       let decryptedRootXpub = Crypto.decrypt(encryptedRootXpub),
-                       let xpub = decryptedRootXpub.utf8String {
-                        
-                        if let rootHdkey = URHelper.rootXpubToUrHdkey(xpub) {
-                            self.tableDict[8]["text"] = xpub
-                            self.tableDict[8]["ur"] = rootHdkey
-                        } else {
-                            self.tableDict[8]["text"] = xpub
-                            self.tableDict[8]["ur"] = ""
-                        }
-                    }
                 }
                 
             } else {
@@ -297,6 +308,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let decryptedbip84tpub = Crypto.decrypt(encryptedbip84tpub),
                     let tpub = decryptedbip84tpub.utf8String {
                     let descriptor = "wpkh([\(xfp)/84h/1h/0h]\(tpub)/0/*)"
+                    self.accountBip84Pubkey = tpub
+                    self.bip84AccountPath = "m/84h/1h/0h"
                     
                     if let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) {
                         self.tableDict[7]["text"] = descriptor
@@ -304,6 +317,22 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     } else {
                         self.tableDict[7]["text"] = descriptor
                         self.tableDict[7]["ur"] = ""
+                    }
+                }
+                
+                if let encryptedbip86tpub = signer.bip86tpub,
+                    let decryptedbip86tpub = Crypto.decrypt(encryptedbip86tpub),
+                    let tpub = decryptedbip86tpub.utf8String {
+                    let descriptor = "tr([\(xfp)/86h/1h/0h]\(tpub)/0/*)"
+                    self.accountBip86Pubkey = tpub
+                    self.bip86AccountPath = "m/86h/1h/0h"
+                    
+                    if let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) {
+                        self.tableDict[8]["text"] = descriptor
+                        self.tableDict[8]["ur"] = singleSigCryptoAccount
+                    } else {
+                        self.tableDict[8]["text"] = descriptor
+                        self.tableDict[8]["ur"] = ""
                     }
                 }
                 
@@ -319,19 +348,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                         self.tableDict[6]["text"] = cosigner
                         self.tableDict[6]["ur"] = ""
                     }
-                    
-                    if let encryptedRootTpub = signer.rootTpub,
-                       let decryptedRootTpub = Crypto.decrypt(encryptedRootTpub),
-                       let tpub = decryptedRootTpub.utf8String {
-                        
-                        if let rootHdkey = URHelper.rootXpubToUrHdkey(tpub) {
-                            self.tableDict[8]["text"] = tpub
-                            self.tableDict[8]["ur"] = rootHdkey
-                        } else {
-                            self.tableDict[8]["text"] = tpub
-                            self.tableDict[8]["ur"] = ""
-                        }
-                    }
                 }
             }
             
@@ -343,9 +359,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     showAlert(vc: self, title: "", message: "Unable to derive your master key.")
                     return
                 }
-                
-                //self.masterKey = masterKey
-                
+                                
                 var arr = words.split(separator: " ")
                 
                 for (i, _) in arr.enumerated() {
@@ -467,14 +481,14 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
            let mkTest = Keys.masterKey(words: words, coinType: "1", passphrase: passphrase),
            let bip84xpub = Keys.bip84AccountXpub(masterKey: mkMain, coinType: "0", account: 0),
            let bip84tpub = Keys.bip84AccountXpub(masterKey: mkTest, coinType: "1", account: 0),
+           let bip86xpub = Keys.bip86AccountXpub(masterKey: mkMain, coinType: "0", account: 0),
+           let bip86tpub = Keys.bip86AccountXpub(masterKey: mkTest, coinType: "1", account: 0),
            let bip48xpub = Keys.xpub(path: "m/48'/0'/0'/2'", masterKey: mkMain),
            let bip48tpub = Keys.xpub(path: "m/48'/1'/0'/2'", masterKey: mkTest),
-           let rootTpub = Keys.xpub(path: "m", masterKey: mkTest),
-           let rootXpub = Keys.xpub(path: "m", masterKey: mkMain),
-           let encryptedRootTpub = Crypto.encrypt(rootTpub.utf8),
-           let encryptedRootXpub = Crypto.encrypt(rootXpub.utf8),
            let encryptedbip84xpub = Crypto.encrypt(bip84xpub.utf8),
            let encryptedbip84tpub = Crypto.encrypt(bip84tpub.utf8),
+           let encryptedbip86xpub = Crypto.encrypt(bip86xpub.utf8),
+           let encryptedbip86tpub = Crypto.encrypt(bip86tpub.utf8),
            let encryptedbip48xpub = Crypto.encrypt(bip48xpub.utf8),
            let encryptedbip48tpub = Crypto.encrypt(bip48tpub.utf8) {
             
@@ -486,11 +500,13 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             
             CoreDataService.update(id: self.signer.id, keyToUpdate: "bip84xpub", newValue: encryptedbip84xpub, entity: .signers) { _ in }
             CoreDataService.update(id: self.signer.id, keyToUpdate: "bip84tpub", newValue: encryptedbip84tpub, entity: .signers) { _ in }
+            
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip86xpub", newValue: encryptedbip86xpub, entity: .signers) { _ in }
+            CoreDataService.update(id: self.signer.id, keyToUpdate: "bip86tpub", newValue: encryptedbip86tpub, entity: .signers) { _ in }
+            
             CoreDataService.update(id: self.signer.id, keyToUpdate: "bip48xpub", newValue: encryptedbip48xpub, entity: .signers) { _ in }
             CoreDataService.update(id: self.signer.id, keyToUpdate: "bip48tpub", newValue: encryptedbip48tpub, entity: .signers) { _ in }
             CoreDataService.update(id: self.signer.id, keyToUpdate: "xfp", newValue: encryptedXfp, entity: .signers) { _ in }
-            CoreDataService.update(id: self.signer.id, keyToUpdate: "rootTpub", newValue: encryptedRootTpub, entity: .signers) { _ in }
-            CoreDataService.update(id: self.signer.id, keyToUpdate: "rootXpub", newValue: encryptedRootXpub, entity: .signers) { _ in }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
                 guard let self = self else { return }
@@ -654,6 +670,17 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         return qrButton
     }
     
+    private func nodelessButton(_ x: CGFloat) -> UIButton {
+        let nodelessButton = UIButton()
+        nodelessButton.setTitle("Nodeless", for: .normal)
+        nodelessButton.tintColor = .tintColor
+        nodelessButton.configuration = .tinted()
+        nodelessButton.setTitleColor(.tintColor, for: .normal)
+        nodelessButton.frame = CGRect(x: x, y: 5, width: 100, height: 40)
+        nodelessButton.addTarget(self, action: #selector(nodeless(_:)), for: .touchUpInside)
+        return nodelessButton
+    }
+    
     private func createWalletButton(_ x: CGFloat) -> UIButton {
         let createWalletButton = UIButton()
         createWalletButton.setImage(.init(systemName: "plus"), for: .normal)
@@ -719,28 +746,28 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     
     @objc func promptToDeleteSeed() {
         if signer.words != nil {
-                DispatchQueue.main.async { [weak self] in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                let title = "⚠️ Deleting the seed has major implications!"
+                
+                let message = "This signer will no longer be able to sign transactions! All other data will remain intact so that you may easily create watch-only wallets and export the public key based cosigner to other hardware/software wallets."
+                
+                let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+                
+                let delete = UIAlertAction(title: "Delete Seed", style: .destructive) { [weak self] alertAction in
                     guard let self = self else { return }
                     
-                    let title = "⚠️ Deleting the seed has major implications!"
-                    
-                    let message = "This signer will no longer be able to sign transactions! All other data will remain intact so that you may easily create watch-only wallets and export the public key based cosigner to other hardware/software wallets."
-                    
-                    let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-                    
-                    let delete = UIAlertAction(title: "Delete Seed", style: .destructive) { [weak self] alertAction in
-                        guard let self = self else { return }
-                        
-                        self.deleteSeed()
-                    }
-                    
-                    alert.addAction(delete)
-                    
-                    let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
-                    alert.addAction(cancel)
-                    
-                    self.present(alert, animated:true, completion: nil)
+                    self.deleteSeed()
                 }
+                
+                alert.addAction(delete)
+                
+                let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+                alert.addAction(cancel)
+                
+                self.present(alert, animated:true, completion: nil)
+            }
         } else {
             showAlert(vc: self, title: "No seed exists...", message: "")
         }
@@ -773,12 +800,12 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     }
     
     private func importAccountMap(_ descriptor: String, _ label: String, _ password: String) {
-        spinner.addConnectingView(vc: self, description: "creating wallet...")
+        spinner.show(vc: self, description: "creating wallet...")
         
         OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
             guard let self = self else { return }
             guard let blockchainInfo = blockchainInfo else {
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 showAlert(vc: self, title: "", message: message ?? "error getting blockchaininfo")
                 return
             }
@@ -792,7 +819,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             }
             
             ImportWallet.accountMap(accountMap) { (success, errorDescription) in
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 
                 guard success else {
                     showAlert(vc: self, title: "There was an issue creating your wallet...", message: errorDescription ?? "Unknown...")
@@ -963,6 +990,25 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         }
     }
     
+    @objc func nodeless(_ sender: UIButton) {
+        switch sender.tag {
+        case 7:
+            accountPubkey = accountBip84Pubkey
+            accountPath = bip84AccountPath
+        case 8:
+            accountPubkey = accountBip86Pubkey
+            accountPath = bip86AccountPath
+        default:
+            break
+            
+        }
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            performSegue(withIdentifier: "segueToNodeless", sender: self)
+        }
+    }
+    
     @objc func exportQr(_ sender: UIButton) {
         let section = sender.tag
         
@@ -1033,13 +1079,13 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             switch selectedSegment {
             case 0:
                 stringToExport = dict["text"] as? String ?? ""
-                headerText = "Root xpub"
-                //descriptionText = "This can be used with other wallets to create *non hardened* accounts."
+                headerText = "BIP86 Account"
+                //descriptionText = "This can be shared with other wallets to create watch-only segwit single-sig wallets."
                 
             case 1:
                 stringToExport = dict["ur"] as? String ?? ""
-                headerText = "Root xpub hdkey"
-                //descriptionText = "You can scan this with your Casa App to add a multi-sig cosigner from Fully Noded.\n\n⚠️ Currently Casa App does not display Fully Noded as an option, select Keystone instead."
+                headerText = "BIP86 Account"
+                //descriptionText = "This can be shared with other wallets like Blue Wallet, Passport, Sparrow, Keystone to create watch-only segwit single-sig wallets."
                 
             default:
                 break
@@ -1072,6 +1118,18 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
             vc.headerText = headerText
             vc.text = stringToExport
+            
+        case "segueToNodeless":
+            guard let vc = segue.destination as? NodelessTableViewController else { fallthrough }
+            
+            vc.signer = signer
+            vc.accountPubkey = accountPubkey
+            vc.accountPath = accountPath
+            
+            if segmentedControl.selectedSegmentIndex == 0 {
+                vc.network = .bitcoin
+            }
+            
         default:
             break
         }
@@ -1124,9 +1182,6 @@ extension SignerDetailViewController: UITableViewDelegate {
             default:
                 break
             }
-            
-        case 8:
-            setClipBoard(dict["text"] as? String ?? "")
             
         default:
             break
@@ -1188,7 +1243,7 @@ extension SignerDetailViewController: UITableViewDelegate {
                 break
             }
             
-        case .singleSig:
+        case .singleSigBip84:
             switch selectedSegment {
             case 0:
                 cell.textLabel?.text = dict["text"] as? String ?? "no descriptor"
@@ -1198,12 +1253,12 @@ extension SignerDetailViewController: UITableViewDelegate {
                 break
             }
             
-        case .rootXpub:
+        case .singleSigBip86:
             switch selectedSegment {
             case 0:
-                cell.textLabel?.text = dict["text"] as? String ?? "no root xpub"
+                cell.textLabel?.text = dict["text"] as? String ?? "no descriptor"
             case 1:
-                cell.textLabel?.text = dict["ur"] as? String ?? "no root xpub hdkey"
+                cell.textLabel?.text = dict["ur"] as? String ?? "no descriptor"
             default:
                 break
             }
@@ -1234,6 +1289,9 @@ extension SignerDetailViewController: UITableViewDelegate {
         let segmentedControl = segmentedControll(exportQrButtonGeneric.frame.minX - 108, selectedSegmentIndex)
         segmentedControl.tag = section
         
+        let nodelessButton = nodelessButton(segmentedControl.frame.minX - 108)
+        nodelessButton.tag = section
+        
         if let section = Section(rawValue: section) {
             switch section {
             case .signableWallets:
@@ -1263,14 +1321,10 @@ extension SignerDetailViewController: UITableViewDelegate {
                 header.addSubview(exportQrButtonGeneric)
                 textLabel.text = headerName(for: section)
                 
-            case .singleSig:
+            case .singleSigBip84, .singleSigBip86:
                 header.addSubview(segmentedControl)
                 header.addSubview(exportQrButtonGeneric)
-                textLabel.text = headerName(for: section)
-                
-            case .rootXpub:
-                header.addSubview(segmentedControl)
-                header.addSubview(exportQrButtonGeneric)
+                header.addSubview(nodelessButton)
                 textLabel.text = headerName(for: section)
                 
             default:

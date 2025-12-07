@@ -12,7 +12,6 @@ import Foundation
 class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource  {
     
     let ud = UserDefaults.standard
-    let spinner = ConnectingView()
     @IBOutlet var settingsTable: UITableView!
     
         

@@ -10,7 +10,7 @@ import UIKit
 
 class CreateMultisigViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate {
     
-    var spinner = ConnectingView()
+    let spinner = ConnectingView.shared
     private var isNested = false
     var blockheight = 0
     var m = Int()
@@ -241,13 +241,13 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     }
     
     private func create(m: Int) {
-        spinner.addConnectingView(vc: self, description: "creating multisig wallet...")
+        spinner.show(vc: self, description: "creating multisig wallet...")
         
         var descriptorKeys = ""
         
         for (i, signer) in keys.enumerated() {
             guard let fingerprint = signer["fingerprint"], var xpub = signer["xpub"] else {
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 
                 showAlert(vc: self, title: "Something is missing", message: "Either the xpub or fingerprint was not added... Please tap the trashcan to reset everything and try again.")
                 
@@ -256,7 +256,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             
             if !xpub.hasPrefix("xpub") && !xpub.hasPrefix("tpub") {
                 guard let convertedXpub = XpubConverter.convert(extendedKey: xpub) else {
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     
                     showAlert(vc: self, title: "Invalid extended key", message: "Only valid extended public keys are allowed. Please tap the trashcan to reset everything and try again.")
                     
@@ -267,7 +267,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             }
             
             guard let derivationPathProcessed = derivationProcessed()?.replacingOccurrences(of: "m/", with: "") else {
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 
                 showAlert(vc: self, title: "Invalid derivation", message: "Only valid derivation paths that start with m/ are allowed. Please tap the trashcan to reset everything and try again.")
                 
@@ -307,7 +307,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                     if success {
                         self.exportWallet(mofn: "\(m) of \(self.keys.count)")
                     } else {
-                        self.spinner.removeConnectingView()
+                        self.spinner.dismiss()
                         showAlert(vc: self, title: "There was an error!", message: "Something went wrong during the wallet creation process: \(errorDescription ?? "unknown error")")
                     }
                 }
@@ -351,7 +351,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 
                 self.textView.text = text
             
-            self.spinner.removeConnectingView()
+            self.spinner.dismiss()
             
             var alertStyle = UIAlertController.Style.actionSheet
             

@@ -12,7 +12,6 @@ import UniformTypeIdentifiers
 
 class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
-    let spinner = ConnectingView()
     var selectedNode: [String:Any]?
     var newNode = [String:Any]()
     var isInitialLoad = Bool()

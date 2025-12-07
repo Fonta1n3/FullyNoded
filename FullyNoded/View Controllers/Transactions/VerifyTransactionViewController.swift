@@ -24,7 +24,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var txid = ""
     var psbtDict: NSDictionary!
     var doneBlock: ((Bool) -> Void)?
-    let spinner = ConnectingView()
+    let spinner = ConnectingView.shared
     var unsignedPsbt = ""
     var signedRawTx = ""
     var outputsString = ""
@@ -121,14 +121,14 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     @IBAction func showRawDataAction(_ sender: Any) {
         if signedRawTx != "" {
-            spinner.addConnectingView(vc: self, description: "Decoding raw transaction...")
+            spinner.show(vc: self, description: "Decoding raw transaction...")
             
             let p: Decode_Raw_Tx = .init(["hexstring": signedRawTx])
             
             MakeRPCCall.sharedInstance.executeRPCCommand(method: .decoderawtransaction(param: p)) { [weak self] (response, errorDesc) in
                 guard let self = self else { return }
                 
-                spinner.removeConnectingView()
+                spinner.dismiss()
                 
                 guard let response = response as? [String: Any] else {
                     showAlert(vc: self, title: "", message: errorDesc ?? "No response from decoderawtransaction.")
@@ -138,14 +138,14 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 showModal(data: response, title: "decoderawtransaction")
             }
         } else if unsignedPsbt != "" {
-            spinner.addConnectingView(vc: self, description: "Decoding psbt...")
+            spinner.show(vc: self, description: "Decoding psbt...")
             
             let p: Decode_Psbt = Decode_Psbt(["psbt": unsignedPsbt])
             
             MakeRPCCall.sharedInstance.executeRPCCommand(method: .decodepsbt(param: p)) { [weak self] (response, errorDesc) in
                 guard let self = self else { return }
                 
-                spinner.removeConnectingView()
+                spinner.dismiss()
                 
                 guard let response = response as? [String: Any] else {
                     showAlert(vc: self, title: "", message: "No response from decodepsbt.")
@@ -225,7 +225,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func processPsbt(_ psbt: String) {
         // Check if it can be finalized, if it can finalize and extract it.
-        spinner.addConnectingView(vc: self, description: "processing psbt...")
+        spinner.show(vc: self, description: "processing psbt...")
                 
         let (rawTx, _) = processWithBDK(psbt: psbt)
         
@@ -482,7 +482,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         guard let text = try? String(contentsOf: urls[0].absoluteURL), Keys.validTx(text) else {
             
             guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
-                spinner.removeConnectingView()
+                spinner.dismiss()
                 showAlert(vc: self, title: "Invalid File", message: "That is not a recognized format, generally it will be a .psbt or .txn file.")
                 return
             }
@@ -501,7 +501,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     self.reset()
                     processPsbt(psbtUtf8)
                 } else {
-                    spinner.removeConnectingView()
+                    spinner.dismiss()
                     showAlert(vc: self, title: "Invalid format", message: "That is not a valid BIP174 format.")
                 }                
             }
@@ -603,13 +603,13 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     @IBAction func signAction(_ sender: Any) {
         isSigning = true
         
-        spinner.addConnectingView(vc: self, description: "Checking for wallet encryption...")
+        spinner.show(vc: self, description: "Checking for wallet encryption...")
         
         OnchainUtils.getWalletInfo { [weak self] (walletInfo, message) in
             guard let self = self else { return }
                         
             guard let walletInfo = walletInfo else {
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 showAlert(vc: self, title: "Error getting wallet info...", message: message ?? "unknown")
                 return
             }
@@ -622,10 +622,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             //reset()
             
             if UserDefaults.standard.object(forKey: "passphrasePrompt") == nil {
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 self.signNow(nil)
             } else {
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 self.setPassphrase { [weak self] passphrase in
                     guard let self = self else { return }
                     self.passphrase = passphrase
@@ -677,7 +677,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 
                 let password = (alert.textFields![0] as UITextField).text ?? ""
                 
-                self.spinner.addConnectingView(vc: self, description: "Unlocking wallet...")
+                self.spinner.show(vc: self, description: "Unlocking wallet...")
                 let param:Wallet_Passphrase = .init(
                     [
                         "passphrase": password,
@@ -687,7 +687,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletpassphrase(param: param)) { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     
                     guard errorMessage == nil else {
                         self.showError(error: errorMessage ?? "Unknown error unlocking your wallet.")
@@ -715,11 +715,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func signNow(_ passphrase: String?) {
         isSigning = true
-        spinner.addConnectingView(vc: self, description: "signing...")
+        spinner.show(vc: self, description: "signing...")
         
         //Signer.sign(psbt: self.unsignedPsbt, passphrase: passphrase) { [weak self] (signedPsbt, rawTx, errorMessage) in
         guard let wallet = wallet else {
-            spinner.removeConnectingView()
+            spinner.dismiss()
             showAlert(vc: self, title: "", message: "Fully Noded can only sign transactions when using a Fully Noded wallet.")
             return
         }
@@ -746,7 +746,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 self.load()
                 
             } else {
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 
                 if let errorMessage = errorMessage {
                     showAlert(vc: self, title: "Error Signing", message: errorMessage)
@@ -779,7 +779,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             return
         }
         
-        spinner.addConnectingView(vc: self, description: "increasing fee...")
+        spinner.show(vc: self, description: "increasing fee...")
         let param_bump_fee: Bump_Fee = .init(["txid":self.txid])
         let param_psbt_bump_fee: PSBT_Bump_Fee = .init(["txid":self.txid])
         let bumpfee: BTC_CLI_COMMAND = .bumpfee(param: param_bump_fee)
@@ -806,13 +806,13 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 guard let result = response as? NSDictionary,
                         let originalFee = result["origfee"] as? Double,
                         let newFee = result["fee"] as? Double else {
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     showAlert(vc: self, title: "There was an issue increasing the fee.", message: errorMessage ?? "unknown")
                     return
                 }
                 
                 guard let psbt = result["psbt"] as? String else {
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     if let txid = result["txid"] as? String {
                         self.saveNewTx(txid)
                         displayAlert(viewController: self, isError: false, message: "fee bumped from \(originalFee.avoidNotation) to \(newFee.avoidNotation)")
@@ -826,7 +826,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 Signer.shared.attemptToSignPsbt(fnWallet: wallet, psbt: psbt, passphrase: passphrase) { [weak self] (signedPsbt, rawTx, errorMessage) in
                     guard let self = self else { return }
                     
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     
                     self.disableBumpButton()
                     
@@ -861,7 +861,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func load() {
-        spinner.addConnectingView(vc: self, description: "loading...")
+        spinner.show(vc: self, description: "loading...")
         
         inputArray.removeAll()
         inputTableArray.removeAll()
@@ -898,7 +898,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 guard let self = self else { return }
                 
                 guard let _ = response as? String else {
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                     return
                 }
@@ -907,7 +907,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     guard let self = self else { return }
                     
                     self.disableSendButton()
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     self.navigationItem.title = "Sent ✓"
                     displayAlert(viewController: self, isError: false, message: "Transaction sent ✓")
                 }
@@ -919,7 +919,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 guard let self = self else { return }
                 
                 guard let dict = object as? NSDictionary else {
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     displayAlert(viewController: self, isError: true, message: errorDesc ?? "")
                     return
                 }
@@ -973,7 +973,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 guard let self = self else { return }
                 
                 guard let dict = object as? NSDictionary else {
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     displayAlert(viewController: self, isError: true, message: errorDesc ?? "")
                     return
                 }
@@ -1233,7 +1233,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     guard let self = self else { return }
                     
                     guard errorMessage == nil else {
-                        self.spinner.removeConnectingView()
+                        self.spinner.dismiss()
                         if errorMessage!.contains("Wallet file not specified (must request wallet RPC through") {
                             showAlert(vc: self, title: "No wallet specified!", message: "Please go to your Active Wallet tab and toggle on a wallet then try this operation again, for certain commands Bitcoin Core needs to know which wallet to talk to.")
                         } else {
@@ -1473,7 +1473,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async { [weak self] in
             self?.verifyTable.reloadData()
         }
-        spinner.removeConnectingView()
+        spinner.dismiss()
         
         guard let _ = KeyChain.getData("UnlockPassword") else {
             showAlert(vc: self, title: "You are not using the app securely...", message: "Anyone who gets access to this device will be able to spend your Bitcoin, we urge you to add a lock password via the lock button on the home screen.")
@@ -1489,7 +1489,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 guard let self = self else { return }
                 
                 guard let txDict = object as? NSDictionary, let outputs = txDict["vout"] as? NSArray else {
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     displayAlert(viewController: self, isError: true, message: "Error decoding raw transaction")
                     return
                 }
@@ -1540,7 +1540,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     guard let errorMessage = errorMessage else { return }
                     
                     guard errorMessage.contains("No such mempool transaction") else {
-                        self.spinner.removeConnectingView()
+                        self.spinner.dismiss()
                         displayAlert(viewController: self, isError: true, message: "Error parsing inputs: \(errorMessage)")
                         return
                     }
@@ -2087,7 +2087,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                                           preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Verify Owner", style: .default, handler: { action in
-                self.spinner.addConnectingView(vc: self, description: "checking other FN wallets...")
+                self.spinner.show(vc: self, description: "checking other FN wallets...")
                 self.getBitcoinCoreWallets(address, index)
             }))
             
@@ -2158,7 +2158,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                             resetActiveWallet()
                             self.outputArray[int] = updatedOutput
                             self.verifyTable.reloadData()
-                            self.spinner.removeConnectingView()
+                            self.spinner.dismiss()
                             showAlert(vc: self, title: "", message: "Owned by \(walletLabel ?? "Bitcoin Core") ✓")
                         }
                         
@@ -2175,7 +2175,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 
                 resetActiveWallet()
                 self.verifyTable.reloadData()
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 showAlert(vc: self, title: "", message: "Address not owned by any of the FN Wallets associated with this node.")
             }
         }
@@ -2218,7 +2218,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             guard let walletDir = walletDir else {
                 DispatchQueue.main.async {
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     displayAlert(viewController: self, isError: true, message: "error getting wallets: \(message ?? "")")
                 }
                 return
@@ -2258,7 +2258,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     @objc func showAddressInfo(_ sender: UIButton) {
-        spinner.addConnectingView(vc: self, description: "getting address info...")
+        spinner.show(vc: self, description: "getting address info...")
         guard let address = sender.restorationIdentifier else { return }
         
         let p = Get_Address_Info(["address": address])
@@ -2266,7 +2266,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: p)) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
             
-            spinner.removeConnectingView()
+            spinner.dismiss()
             
             guard let response = response as? [String: Any] else {
                 showAlert(vc: self, title: "", message: errorDesc ?? "Unable to get address info.")
@@ -2372,7 +2372,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func broadcastPrivately() {
-        spinner.addConnectingView(vc: self, description: "broadcasting...")
+        spinner.show(vc: self, description: "broadcasting...")
         
         Broadcaster.sharedInstance.send(rawTx: self.signedRawTx) { [weak self] id in
             guard let self = self else { return }
@@ -2381,7 +2381,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     self.disableSendButton()
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     showAlert(vc: self, title: "", message: "Transaction sent ✓")
                 }
             } else {
@@ -2391,7 +2391,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func broadcastWithMyNode() {
-        spinner.addConnectingView(vc: self, description: "broadcasting...")
+        spinner.show(vc: self, description: "broadcasting...")
         let paramDict:[String:Any] = ["hexstring":self.signedRawTx]
         let param:Send_Raw_Transaction = .init(paramDict)
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .sendrawtransaction(param)) { [weak self] (response, errorMesage) in
@@ -2406,7 +2406,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 if self.txid == id {
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     self.disableSendButton()
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
@@ -2423,7 +2423,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         self.present(alert, animated: true) {}
                     }
                 } else {
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     showAlert(vc: self, title: "Hmmm we got a strange response...", message: id)
                 }
             }
@@ -2456,7 +2456,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.spinner.removeConnectingView()
+            self.spinner.dismiss()
             showAlert(vc: self, title: "Uh oh", message: error)
         }
     }
@@ -2675,10 +2675,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
         
     private func parseBlindPsbt(_ blindPsbt: String) {
-        spinner.addConnectingView(vc: self, description: "")
+        spinner.show(vc: self, description: "")
         
         guard let ur = URHelper.ur(blindPsbt), let encryptedData = URHelper.bytesToData(ur) else {
-            spinner.removeConnectingView()
+            spinner.dismiss()
             showAlert(vc: self, title: "", message: "Error converting blind psbt to data.")
             return
         }
@@ -2691,7 +2691,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             guard let self = self else { return }
                         
             guard let joinedPsbt = joinedPsbt else {
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 showAlert(vc: self, title: "Error getting joined psbt.", message: "\(error ?? "unknown error")")
                 return
             }

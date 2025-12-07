@@ -26,7 +26,7 @@ class ActiveWalletViewController: UIViewController {
     private var alertStyle = UIAlertController.Style.alert
     private let barSpinner = UIActivityIndicatorView(style: .medium)
     private let ud = UserDefaults.standard
-    private let spinner = ConnectingView()
+    private let spinner = ConnectingView.shared
     private var hex = ""
     private var confs = 0
     private var txToEdit = ""
@@ -223,10 +223,10 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @objc func importWallet(_ notification: NSNotification) {
-        spinner.addConnectingView(vc: self, description: "Creating your wallet, this can take a minute...")
+        spinner.show(vc: self, description: "Creating your wallet, this can take a minute...")
         
         guard let accountMap = notification.userInfo as? [String:Any] else {
-            self.spinner.removeConnectingView()
+            self.spinner.dismiss()
             showAlert(vc: self, title: "", message: "That file does not seem to be a compatible wallet import, please raise an issue on the github so we can add support for it.")
             return
         }
@@ -235,12 +235,12 @@ class ActiveWalletViewController: UIViewController {
             guard let self = self else { return }
             
             guard success else {
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 showAlert(vc: self, title: "Error importing wallet", message: errorDescription ?? "unknown")
                 return
             }
             
-            self.spinner.removeConnectingView()
+            self.spinner.dismiss()
             OnchainUtils.rescan { _ in }
             showAlert(vc: self, title: "Wallet created ✓", message: "It has been activated and is refreshing now. A rescan has been initiated, you may not see balances or transaction history until the rescan completes.")
             self.refreshWallet()
@@ -248,10 +248,10 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @objc func addColdcard(_ notification: NSNotification) {
-        spinner.addConnectingView(vc: self, description: "creating your Coldcard wallet, this can take a minute...")
+        spinner.show(vc: self, description: "creating your Coldcard wallet, this can take a minute...")
         
         guard let coldCard = notification.userInfo as? [String:Any] else {
-            self.spinner.removeConnectingView()
+            self.spinner.dismiss()
             showAlert(vc: self, title: "Ooops", message: "That file does not seem to be a compatible wallet import, please raise an issue on the github so we can add support for it.")
             return
         }
@@ -260,12 +260,12 @@ class ActiveWalletViewController: UIViewController {
             guard let self = self else { return }
             
             guard success else {
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 showAlert(vc: self, title: "Error creating Coldcard wallet", message: errorDescription ?? "unknown")
                 return
             }
             
-            self.spinner.removeConnectingView()
+            self.spinner.dismiss()
             showAlert(vc: self, title: "Coldcard Wallet imported ✓", message: "It has been activated and is refreshing now.")
             self.refreshWallet()
         }
@@ -364,7 +364,7 @@ class ActiveWalletViewController: UIViewController {
     
     
     @objc func goToDetail(_ sender: UIButton) {
-        spinner.addConnectingView(vc: self, description: "getting raw transaction...")
+        spinner.show(vc: self, description: "getting raw transaction...")
         
         guard let intString = sender.restorationIdentifier, let int = Int(intString) else { return }
         //let tx = transactionArray[int]
@@ -373,7 +373,7 @@ class ActiveWalletViewController: UIViewController {
         let param:Get_Tx = .init(["txid": txid, "verbose": true])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .gettransaction(param)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
-            self.spinner.removeConnectingView()
+            self.spinner.dismiss()
             guard let dict = response as? NSDictionary, let hex = dict["hex"] as? String else {
                 showAlert(vc: self, title: "There was an issue getting the transaction.", message: errorMessage ?? "unknown error")
                 return
@@ -643,7 +643,7 @@ class ActiveWalletViewController: UIViewController {
             }
             
             self.walletInfo = walletInfo
-            self.syncIndexes()
+            self.loadTransactions()
             
             
             guard let progress = walletInfo.progress else {
@@ -651,70 +651,6 @@ class ActiveWalletViewController: UIViewController {
             }
             
             showAlert(vc: self, title: "Wallet scanning \(Int(progress * 100))% complete", message: "Your wallet is currently rescanning the blockchain, you need to wait until it completes before you will see your balances and transactions.")
-        }
-    }
-    
-    private func syncIndexes() {
-        let param: List_Unspent = .init(["minconf": 0])
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listunspent(param)) { [weak self] (response, errorDesc) in
-            guard let self = self else { return }
-                        
-            guard let utxos = response as? [[String: Any]], utxos.count > 0 else {
-                loadTransactions()
-                return
-            }
-            
-            unlockedUtxos.removeAll()
-            unlockedUtxos = [UTXO].from(rawArray: utxos)
-            unlockedUtxos.sort { ($0.confirmations) < ($1.confirmations) }
-            
-            guard let wallet = self.wallet else {
-                loadTransactions()
-                return
-            }
-            
-                        
-            for (i, utxo) in unlockedUtxos.reversed().enumerated() {
-                guard let utxo_desc = utxo.desc else {
-                    if i + 1 == utxos.count {
-                        loadTransactions()
-                    }
-                    return
-                }
-                
-                let desc = Descriptor(utxo_desc)
-                
-                guard let index = desc.index else {
-                    if i + 1 == utxos.count {
-                        loadTransactions()
-                    }
-                    return
-                }
-                
-                if index >= wallet.index {
-                    let newIndex = Int64(index + 1)
-                    if newIndex >= wallet.maxIndex {
-                        showAlert(vc: self, title: "Action required", message: "Go to wallet info, scroll to \"Index\", and tap the + button to add more addresses.")
-                    }
-                    CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: newIndex, entity: .wallets) { [weak self] updated in
-                        guard let self = self else { return }
-                        #if DEBUG
-                        print("Incremented index to \(newIndex): \(updated).")
-                        #endif
-                        guard updated else {
-                            if i + 1 == utxos.count {
-                                loadTransactions()
-                            }
-                            showAlert(vc: self, title: "", message: "Unable to update your wallet index.")
-                            return
-                        }
-                    }
-                }
-                
-                if i + 1 == utxos.count {
-                    self.loadTransactions()
-                }
-            }
         }
     }
     
@@ -742,13 +678,13 @@ class ActiveWalletViewController: UIViewController {
                             let yearsToScan = (currentYear - yearToScanFrom) + 1
                             let blocksToScan = yearsToScan * 55000
                             
-                            spinner.addConnectingView(vc: self, description: "rescanning...")
+                            spinner.show(vc: self, description: "rescanning...")
                             
                             OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
                                 guard let self = self else { return }
                                 
                                 guard let blockchainInfo = blockchainInfo else {
-                                    spinner.removeConnectingView()
+                                    spinner.dismiss()
                                     showAlert(vc: self, title: "", message: message ?? "Unknown issue getblockchaininfo.")
                                     return
                                 }
@@ -766,16 +702,16 @@ class ActiveWalletViewController: UIViewController {
                                         guard let self = self else { return }
                                         
                                         guard started else {
-                                            spinner.removeConnectingView()
+                                            spinner.dismiss()
                                             showAlert(vc: self, title: "", message: message ?? "Unknown issue from rescan.")
                                             return
                                         }
                                         
-                                        self.spinner.removeConnectingView()
+                                        self.spinner.dismiss()
                                         showAlert(vc: self, title: "", message: "Rescanning, you can refresh this page to see completion status.")
                                     }
                                 } else {
-                                    spinner.removeConnectingView()
+                                    spinner.dismiss()
                                     showAlert(vc: self, title: "", message: "Wait till your node is done syncing before attempting to rescan or use wallets.")
                                 }
                             }
@@ -870,7 +806,7 @@ class ActiveWalletViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.spinner.removeConnectingView()
+            self.spinner.dismiss()
             self.barSpinner.stopAnimating()
             self.barSpinner.alpha = 0
             self.refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(self.refreshData(_:)))
@@ -986,7 +922,7 @@ class ActiveWalletViewController: UIViewController {
                 guard let self = self else { return }
                 
                 showAlert(vc: self, title: "", message: "Transaction updated ✓")
-                self.spinner.addConnectingView(vc: self, description: "refreshing transactions...")
+                self.spinner.show(vc: self, description: "refreshing transactions...")
                 self.loadTransactions()
             }
             

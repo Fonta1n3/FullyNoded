@@ -20,7 +20,7 @@ class QRDisplayerViewController: UIViewController {
     var headerText = ""
     var descriptionText = ""
     var headerIcon: UIImage!
-    var spinner = ConnectingView()
+    let spinner = ConnectingView.shared
     let qrGenerator = QRGenerator()
     var isBbqr = false
     var isUR = false
@@ -54,7 +54,7 @@ class QRDisplayerViewController: UIViewController {
         
         
         if isBbqr {
-            spinner.addConnectingView(vc: self, description: "loading...")
+            spinner.show(vc: self, description: "")
             
             var parts: [String]? = []
             
@@ -75,17 +75,17 @@ class QRDisplayerViewController: UIViewController {
             }
             
         } else if isUR {
-            spinner.addConnectingView(vc: self, description: "loading...")
+            spinner.show(vc: self, description: "loading...")
             
             if psbt != "" {
                 guard let data = Data(base64Encoded: psbt) else {
-                    spinner.removeConnectingView()
+                    spinner.dismiss()
                     showAlert(vc: self, title: "", message: "Unable to convert base64 text to data.")
                     return
                 }
                 
                 guard let psbtUr = URHelper.psbtUr(data) else {
-                    spinner.removeConnectingView()
+                    spinner.dismiss()
                     showAlert(vc: self, title: "", message: "Unable to convert to ur:crypto-psbt QR.")
                     return
                 }
@@ -100,7 +100,7 @@ class QRDisplayerViewController: UIViewController {
                 }
             }
         } else if psbt.lowercased().hasPrefix("ur:") || text.lowercased().hasPrefix("ur:") {
-            spinner.addConnectingView(vc: self, description: "loading...")
+            spinner.show(vc: self, description: "loading...")
             
             guard let ur = URHelper.ur(text == "" ? psbt : text) else { return }
                 
@@ -160,7 +160,7 @@ class QRDisplayerViewController: UIViewController {
         guard let data = data else { return [] }
 
         let split = try Split.tryFromData(bytes: data, fileType: fileType, options: options)
-        spinner.removeConnectingView()
+        spinner.dismiss()
 
         return split.parts()
     }
@@ -204,7 +204,7 @@ class QRDisplayerViewController: UIViewController {
     private func animateUr(ur: UR) {
         let encoder = UREncoder(ur, maxFragmentLen: 250)
         if encoder.isSinglePart {
-            spinner.removeConnectingView()
+            spinner.dismiss()
             showQR(ur.qrString)
         } else {
             timer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
@@ -216,7 +216,7 @@ class QRDisplayerViewController: UIViewController {
                 if index <= encoder.seqLen {
                     self.parts.append(part.uppercased())
                 } else {
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     self.animate()
                     timer?.invalidate()
                     timer = Timer.scheduledTimer(timeInterval: 0.3, target: self, selector: #selector(self.animate), userInfo: nil, repeats: true)

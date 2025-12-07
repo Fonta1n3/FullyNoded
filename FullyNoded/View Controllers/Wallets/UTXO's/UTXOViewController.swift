@@ -11,7 +11,7 @@ import UIKit
 class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
     private var dataRefresher = UIBarButtonItem()
-    private var amountTotal: Decimal = 0.0
+    private var amountTotal: Double = 0.0
     private let refresher = UIRefreshControl()
     var unlockedUtxos: [UTXO] = []
     private var inputArray: [[String:Any]] = []
@@ -35,6 +35,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         refresher.tintColor = UIColor.white
         refresher.addTarget(self, action: #selector(loadUnlockedUtxos), for: UIControl.Event.valueChanged)
         tableView.addSubview(refresher)
+        loadCachedUtxos()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -42,8 +43,99 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
         amountTotal = 0.0
         inputArray.removeAll()
-        if unlockedUtxos.count > 0 {
+    }
+    
+    private func loadCachedUtxos() {
+        addNavBarSpinner()
+        unlockedUtxos.removeAll()
+        
+        guard let _ = wallet else {
+            loadUtxos()
+            return
+        }
+        
+        CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] utxos in
+            guard let self = self else { return }
+            
+            guard let utxos = utxos, utxos.count > 0 else {
+                loadUtxos()
+                return
+            }
+            
+            for (i, utxo) in utxos.enumerated() {
+                let utxoStr = UTXO(from: utxo)
+                if let id = utxoStr.walletId {
+                    if utxoStr.id == id {
+                        unlockedUtxos.append(utxoStr)
+                    }
+                }
+                
+                if i + 1 == utxos.count {
+                    unlockedUtxos.sort { ($0.confirmations) < ($1.confirmations) }
+                    reload()
+                    loadUtxos()
+                }
+            }
+        }
+    }
+    
+    private func reload() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
             tableView.reloadData()
+        }
+    }
+    
+    private func loadUtxos() {
+        let param: List_Unspent = .init(["minconf": 0])
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listunspent(param)) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
+            
+            guard let utxos = response as? [[String: Any]], utxos.count > 0 else {
+                removeSpinner()
+                
+                showAlert(vc: self, title: "", message: errorDesc ?? "Unable to fetch utxos from your node.")
+                return
+            }
+            
+            unlockedUtxos.removeAll()
+            unlockedUtxos = [UTXO].from(rawArray: utxos)
+            unlockedUtxos.sort { ($0.confirmations) < ($1.confirmations) }
+            reload()
+            removeSpinner()
+            
+            CoreDataService.deleteAllData(entity: .utxos) { [weak self] deleted in
+                guard let self = self else { return }
+                guard deleted else { return }
+                guard let walletId = wallet?.id else { return }
+                
+                DispatchQueue.global(qos: .background).async { [weak self] in
+                    guard let self = self else { return }
+                    for unlockedUtxo in unlockedUtxos {
+                        var dict: [String: Any] = [:]
+                        dict["walletId"] = walletId
+                        dict["amount"] = unlockedUtxo.amount
+                        dict["address"] = unlockedUtxo.address ?? ""
+                        dict["txid"] = unlockedUtxo.txid
+                        dict["vout"] = unlockedUtxo.vout
+                        dict["label"] = unlockedUtxo.label ?? ""
+                        dict["desc"] = unlockedUtxo.desc ?? ""
+                        dict["confirmations"] = unlockedUtxo.confirmations
+                        dict["solvable"] = unlockedUtxo.solvable
+                        dict["spendable"] = unlockedUtxo.spendable
+                        if let reused = unlockedUtxo.reused {
+                            dict["reused"] = reused
+                        }
+                        
+                        CoreDataService.saveEntity(dict: dict, entityName: .utxos) { utxosSaved in
+                            guard utxosSaved else {
+                                return
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     
@@ -112,25 +204,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             self.tableView.isUserInteractionEnabled = false
             self.addNavBarSpinner()
         }
-        getUtxosFromBtcRpc()
-    }
-    
-    
-    private func getUtxosFromBtcRpc() {
-        let param: List_Unspent = .init(["minconf": 0])
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listunspent(param)) { [weak self] (response, errorDesc) in
-            guard let self = self else { return }
-            
-            guard let rawUtxos = response as? [[String: Any]] else {
-                showAlert(vc: self, title: "", message: errorDesc ?? "No respone from listunpsent.")
-                return
-            }
-            
-            unlockedUtxos.removeAll()
-            unlockedUtxos = [UTXO].from(rawArray: rawUtxos)
-            unlockedUtxos = unlockedUtxos.sorted { ($0.confirmations) < ($1.confirmations) }
-            finishedLoading()
-        }
+        
+        loadUtxos()
     }
     
     private func removeSpinner() {

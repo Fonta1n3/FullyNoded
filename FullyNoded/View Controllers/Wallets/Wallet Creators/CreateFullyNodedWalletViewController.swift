@@ -16,7 +16,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     var cosigner:Descriptor?
     var onDoneBlock:(((Bool)) -> Void)?
-    var spinner = ConnectingView()
+    let spinner = ConnectingView.shared
     var ccXfp = ""
     var xpub = ""
     var deriv = ""
@@ -157,7 +157,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
-            spinner.removeConnectingView()
+            spinner.dismiss()
             showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup/export/import file")
             return
         }
@@ -165,7 +165,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         guard let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
             
             guard let txt = String(bytes: data, encoding: .utf8) else {
-                spinner.removeConnectingView()
+                spinner.dismiss()
                 showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup/export/import file")
                 return
             }
@@ -445,7 +445,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func importAccountMap(_ accountMap: [String:Any]) {
-        spinner.addConnectingView(vc: self, description: "importing...")
+        spinner.show(vc: self, description: "importing...")
         
         func importAccount() {
             if let _ = accountMap["descriptor"] as? String {
@@ -454,18 +454,18 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                     ImportWallet.accountMap(accountMap) { (success, errorDescription) in
                         if success {
                             DispatchQueue.main.async {
-                                self.spinner.removeConnectingView()
+                                self.spinner.dismiss()
                                 self.onDoneBlock!(true)
                                 self.navigationController?.popViewController(animated: true)
                             }
                         } else {
-                            self.spinner.removeConnectingView()
+                            self.spinner.dismiss()
                             showAlert(vc: self, title: "Error", message: "There was an error importing your wallet: \(errorDescription ?? "unknown")")
                         }
                     }
                 }
             } else if let _ = accountMap["ExtPubKey"] as? String {
-                spinner.removeConnectingView()
+                spinner.dismiss()
                 promptToImportCoboSingleSig(accountMap)
             }
         }
@@ -473,7 +473,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         if let url = accountMap["quickConnect"] as? String {
             QuickConnect.addNode(url: url) { (success, errorMessage) in
                 guard success else {
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     showAlert(vc: self, title: "Node connection issue:", message: errorMessage ?? "unknown error")
                     return
                 }

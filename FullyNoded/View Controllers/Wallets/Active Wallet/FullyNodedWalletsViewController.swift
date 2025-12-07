@@ -23,7 +23,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     var totalBtcBalance = 0.0
     var fxRate = 0.0
     var bitcoinCoreWallets = [String]()
-    let spinner = ConnectingView()
+    let spinner = ConnectingView.shared
     var initialLoad = true
     
     override func viewDidLoad() {
@@ -59,7 +59,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func getBitcoinCoreWallets() {
-        spinner.addConnectingView(vc: self, description: "getting total balance...")
+        spinner.show(vc: self, description: "getting total balance...")
         bitcoinCoreWallets.removeAll()
         wallets.removeAll()
         externalWallets.removeAll()
@@ -73,7 +73,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     self.initialLoad = false
                     displayAlert(viewController: self, isError: true, message: "error getting wallets: \(message ?? "")")
                 }
@@ -85,7 +85,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func parseWallets(wallets: [String]) {
-        guard !wallets.isEmpty else { self.spinner.removeConnectingView(); return }
+        guard !wallets.isEmpty else { self.spinner.dismiss(); return }
         
         for (i, walletName) in wallets.enumerated() {
             bitcoinCoreWallets.append(walletName)
@@ -104,7 +104,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
             guard let self = self else { return }
             
             guard let ws = ws, ws.count > 0 else {
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 let title = "No Fully Noded Wallets"
                 let message = "Looks like you have not yet created any Fully Noded wallets, on the active wallet tab you can tap the plus sign (top left) to create a Fully Noded wallet."
                 self.initialLoad = false
@@ -154,18 +154,17 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func loadTotalBalance() {
-        spinner.label.text = "getting total balance..."
         let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
         
         guard TorClient.sharedInstance.state == .connected  else {
-            self.spinner.removeConnectingView();  self.getTotals(); return
+            self.spinner.dismiss();  self.getTotals(); return
         }
         
         FiatConverter.sharedInstance.getFxRate(currency: fiatCurrency) { [weak self] fxRate in
             guard let self = self else { return }
 
-            guard let fxRate = fxRate else { self.spinner.removeConnectingView();  self.getTotals(); return }
-            guard self.wallets.count > 0 else { self.spinner.removeConnectingView(); return }
+            guard let fxRate = fxRate else { self.spinner.dismiss();  self.getTotals(); return }
+            guard self.wallets.count > 0 else { self.spinner.dismiss(); return }
             self.fxRate = fxRate
             self.getTotals()
         }
@@ -181,7 +180,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                 guard let self = self else { return }
                 
                 guard let balance = balance else {
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     
                     guard let message = message else {
                         showAlert(vc: self, title: "", message: "There was an unknown error getting your balances.")
@@ -218,7 +217,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                 self.balanceFiatLabel.alpha = 1
                 self.initialLoad = false
                 self.walletsTable.reloadData()
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
             }
         }
     }

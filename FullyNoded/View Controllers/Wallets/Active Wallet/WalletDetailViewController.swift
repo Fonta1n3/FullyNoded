@@ -13,8 +13,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     @IBOutlet weak var detailTable: UITableView!
     var walletId:UUID!
     var wallet:Wallet!
-    //var signer = ""
-    var spinner = ConnectingView()
+    let spinner = ConnectingView.shared
     var coinType = "0"
     var addresses = ""
     var originalLabel = ""
@@ -48,8 +47,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         case changeDesc
         case currentIndex
         case maxIndex
-        //case signer
-        case watching
         case addressExplorer
     }
     
@@ -57,7 +54,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        spinner.addConnectingView(vc: self, description: "loading")
+        spinner.show(vc: self, description: "loading")
         navigationController?.delegate = self
         detailTable.delegate = self
         detailTable.dataSource = self
@@ -83,12 +80,12 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     @IBAction func showGetWalletInfoAction(_ sender: Any) {
-        spinner.addConnectingView(vc: self, description: "Getting wallet info...")
+        spinner.show(vc: self, description: "Getting wallet info...")
         
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .getwalletinfo) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
             
-            spinner.removeConnectingView()
+            spinner.dismiss()
             
             guard let response = response as? [String: Any] else {
                 showAlert(vc: self, title: "", message: "No response from getwalletinfo.")
@@ -124,7 +121,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func getAddresses() {
-        spinner.removeConnectingView()
+        spinner.dismiss()
         deriveAddresses(wallet.receiveDescriptor)
     }
     
@@ -583,9 +580,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                 exportItem(exportWalletImageBBQr as Any)
             }
             
-//        case .backupQr:
-//            exportItem(backupQrImage as Any)
-    
         case .exportFile:
             exportJson()
             
@@ -594,11 +588,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             
         case .changeDesc:
             exportItem(wallet.changeDescriptor)
-            
-        case .watching:
-            guard let watching = wallet.watching else { return }
-            
-            exportItem(watching.description)
             
         case .addressExplorer:
             exportItem(addresses)
@@ -623,16 +612,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         
         return true
     }
-    
-//    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        switch Section(rawValue: indexPath.section) {
-//        case .backupQr:
-//            textToShow = backupText
-//            showQr()
-//        default:
-//            break
-//        }
-//    }
     
     private func showQr() {
         DispatchQueue.main.async { [weak self] in
@@ -738,39 +717,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         field.layer.borderColor = UIColor.clear.cgColor
         
         let increaseButton = cell.viewWithTag(2) as! UIButton
-        //increaseButton.showsTouchWhenHighlighted = true
         increaseButton.addTarget(self, action: #selector(increaseGapLimit), for: .touchUpInside)
-        
-        return cell
-    }
-    
-//    private func signerCell(_ indexPath: IndexPath) -> UITableViewCell {
-//        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailSignerCell", for: indexPath)
-//        configureCell(cell)
-//        
-//        let textView = cell.viewWithTag(1) as! UITextView
-//        textView.text = signer
-//        
-//        return cell
-//    }
-    
-    private func watchingCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailWatchingCell", for: indexPath)
-        configureCell(cell)
-        
-        let textView = cell.viewWithTag(1) as! UITextView
-        var watching = ""
-        
-        if wallet.watching != nil {
-            for watch in wallet.watching! {
-                watching += watch + "\n\n"
-            }
-        }
-        
-        textView.text = watching
-        
-        let exportButton = cell.viewWithTag(2) as! UIButton
-        configureExportButton(exportButton, indexPath: indexPath)
         
         return cell
     }
@@ -852,7 +799,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 12
+        return 11
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -907,10 +854,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             return currentIndexCell(indexPath)
         case .maxIndex:
             return maxIndexCell(indexPath)
-//        case .signer:
-//            return signerCell(indexPath)
-        case .watching:
-            return watchingCell(indexPath)
         case .addressExplorer:
             return addressesCell(indexPath)
         default:
@@ -938,10 +881,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             return 50
         case .maxIndex:
             return 50
-//        case .signer:
-//            return 50
-        case .watching:
-            return 120
         case .addressExplorer:
             return 180
         default:
@@ -1036,10 +975,10 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         addresses = ""
         
         if showReceive == 0 {
-            spinner.addConnectingView(vc: self, description: "deriving receive addresses...")
+            spinner.show(vc: self, description: "deriving receive addresses...")
             deriveAddresses(wallet.receiveDescriptor)
         } else {
-            spinner.addConnectingView(vc: self, description: "deriving change addresses...")
+            spinner.show(vc: self, description: "deriving change addresses...")
             deriveAddresses(wallet.changeDescriptor)
         }
     }
@@ -1073,40 +1012,23 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         }
     }
     
-    private func updateSpinnerText(text: String) {
-        DispatchQueue.main.async { [weak self] in
-            self?.spinner.label.text = text
-        }
-    }
-    
     private func importUpdatedIndex(maxRange: Int) {
-        spinner.addConnectingView(vc: self, description: "importing \(maxRange - Int(wallet.maxIndex) + 1) public keys...")
+        spinner.show(vc: self, description: "importing \(maxRange - Int(wallet.maxIndex) + 1) public keys...")
         
         var descriptorsToImport = [String]()
         descriptorsToImport.append(wallet.receiveDescriptor)
         descriptorsToImport.append(wallet.changeDescriptor)
-        
-        if wallet.watching != nil {
-            if wallet.watching!.count > 0 {
-                for watcher in wallet.watching! {
-                    descriptorsToImport.append(watcher)
-                }
-            }
-        }
-        
         importDescriptors(index: 0, maxRange: maxRange, descriptorsToImport: descriptorsToImport)
     }
     
     private func importDescriptors(index: Int, maxRange: Int, descriptorsToImport: [String]) {
-        if index < descriptorsToImport.count {
-            updateSpinnerText(text: "importing descriptor #\(index + 1), \(maxRange - Int(wallet.maxIndex) + 1) public keys...")
-            
+        if index < descriptorsToImport.count {            
             let descriptor = descriptorsToImport[index]
             var paramDict:[String:Any] = [:]
             var requests:[[String:Any]] = []
             var request:[String:Any] = [:]
             request["desc"] = descriptor
-            request["range"] = [0, maxRange]
+            request["range"] = [Int(wallet.maxIndex) + 1, maxRange]
             request["timestamp"] = "now"
             request["next_index"] = Int(wallet.maxIndex) + 1
             
@@ -1125,7 +1047,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                 if success {
                     self?.importDescriptors(index: index + 1, maxRange: maxRange, descriptorsToImport: descriptorsToImport)
                 } else {
-                    self?.showError(error: "Error importing a recovery descriptor.")
+                    self?.showError(error: "Error importing a descriptor.")
                 }
             }
         } else {
@@ -1155,13 +1077,13 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         let yearsToScan = (currentYear - yearToScanFrom) + 1
                         let blocksToScan = yearsToScan * 55000
                         
-                        spinner.addConnectingView(vc: self, description: "rescanning...")
+                        spinner.show(vc: self, description: "rescanning...")
                         
                         OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
                             guard let self = self else { return }
                             
                             guard let blockchainInfo = blockchainInfo else {
-                                spinner.removeConnectingView()
+                                spinner.dismiss()
                                 showAlert(vc: self, title: "", message: message ?? "Unknown issue getblockchaininfo.")
                                 return
                             }
@@ -1179,16 +1101,16 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                                     guard let self = self else { return }
                                     
                                     guard started else {
-                                        spinner.removeConnectingView()
+                                        spinner.dismiss()
                                         showAlert(vc: self, title: "", message: message ?? "Unknown issue from rescan.")
                                         return
                                     }
                                     
-                                    self.spinner.removeConnectingView()
+                                    self.spinner.dismiss()
                                     showAlert(vc: self, title: "", message: "Rescanning, you can refresh this page to see completion status.")
                                 }
                             } else {
-                                spinner.removeConnectingView()
+                                spinner.dismiss()
                                 showAlert(vc: self, title: "", message: "Wait till your node is done syncing before attempting to rescan or use wallets.")
                             }
                         }
@@ -1229,7 +1151,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                     }
                 }
                 
-                self?.spinner.removeConnectingView()
+                self?.spinner.dismiss()
                 showAlert(vc: self, title: "Success, you have imported up to \(max) public keys.", message: "Your wallet is now rescanning. In order to see balances for all your addresses you'll need to wait for the rescan to complete.")
             } else {
                 self?.showError(error: "There was an error updating the wallets maximum index.")
@@ -1239,7 +1161,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private func showError(error:String) {
         DispatchQueue.main.async { [weak self] in
-            self?.spinner.removeConnectingView()
+            self?.spinner.dismiss()
             showAlert(vc: self, title: "Error", message: error)
         }
     }
@@ -1306,10 +1228,6 @@ extension WalletDetailViewController {
             return ("Current address index", UIImage(systemName: "number")!)
         case .maxIndex:
             return ("Range limit", UIImage(systemName: "exclamationmark.triangle")!)
-//        case .signer:
-//            return ("Signers", UIImage(systemName: "pencil.and.ellipsis.rectangle")!)
-        case .watching:
-            return ("Watching descriptors", UIImage(systemName: "eye")!)
         case .addressExplorer:
             return ("Address explorer", UIImage(systemName: "list.number")!)
         }

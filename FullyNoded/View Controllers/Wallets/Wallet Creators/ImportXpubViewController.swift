@@ -16,7 +16,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
     @IBOutlet var addressTableView: UITableView!
     
     var addresses: [String] = []
-    var spinner = ConnectingView()
+    let spinner = ConnectingView.shared
     var onDoneBlock:(((Bool)) -> Void)?
     var descriptor: Descriptor?
 
@@ -76,7 +76,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
     }
         
     private func importDescriptor(_ desc: String) {
-        spinner.addConnectingView(vc: self, description: "importing descriptor wallet, this can take a minute...")
+        spinner.show(vc: self, description: "importing descriptor wallet, this can take a minute...")
         
         let defaultLabel = "Descriptor import"
         
@@ -94,7 +94,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
             if success {
                 self.doneAlert("Descriptor wallet created ✓", "Tap done to go back and the home screen will refresh, your wallet is rescanning the blockchain, this can take awhile, to monitor rescan progress tap the refresh button on the \"Active Wallet\" tab. You will not see your balances or transaction history until the rescan completes.")
             } else {
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 showAlert(vc: self, title: "", message: errorDescription ?? "unknown error")
             }
         }
@@ -114,7 +114,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
             
             NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
             
-            self.spinner.removeConnectingView()
+            self.spinner.dismiss()
             
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             

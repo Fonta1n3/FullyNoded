@@ -216,7 +216,8 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
     var boolToReturn = Bool()
     
     switch command {
-    case .setlabel,
+    case .listdescriptors,
+            .setlabel,
             .listtransactions,
             .getbalance,
             .getnewaddress,

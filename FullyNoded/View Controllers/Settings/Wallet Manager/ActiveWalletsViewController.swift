@@ -12,7 +12,7 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
     
     @IBOutlet weak var table: UITableView!
     var activeWallets:[String] = []
-    var connectingView = ConnectingView()
+    let connectingView = ConnectingView.shared
     var alertStyle = UIAlertController.Style.actionSheet
 
     override func viewDidLoad() {
@@ -48,13 +48,13 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     private func unloadWallet(wallet: String, index: Int) {
-        connectingView.addConnectingView(vc: self, description: "unloading wallet...")
+        connectingView.show(vc: self, description: "unloading wallet...")
         let p = Unload_Wallet(["wallet_name": wallet])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .unloadwallet(param: p)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let _ = response else {
-                self.connectingView.removeConnectingView()
+                self.connectingView.dismiss()
                 showAlert(vc: self, title: "Error", message: "There was an error unloading your wallet: \(errorMessage!)")
                 return
             }
@@ -71,7 +71,7 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
                 
                 self.unloadedSuccess()
                 self.table.reloadData()
-                self.connectingView.removeConnectingView()
+                self.connectingView.dismiss()
             }
         }
     }

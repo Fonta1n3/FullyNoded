@@ -6,76 +6,131 @@
 //  Copyright © 2019 Fontaine. All rights reserved.
 //
 
-import Foundation
 import UIKit
 
-class ConnectingView: UIView {
+/// A singleton overlay view that shows a blurred background with a large activity indicator and description label.
+/// Designed to be shown over any view controller safely and removed cleanly.
+import UIKit
+
+final class ConnectingView {
     
-    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .regular))
+    static let shared = ConnectingView()
+    
+    private init() {}
+    
+    // MARK: - Private Views
+    private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
+    private let activityIndicator = UIActivityIndicatorView(style: .large)
     let label = UILabel()
-    let activityIndicator = UIActivityIndicatorView()
     
-    func addConnectingView(vc: UIViewController, description: String) {
+    private var isVisible = false
+    
+    // MARK: - Public Methods
+    
+    func show(vc: UIViewController, description: String = "Connecting...") {
+        guard !isVisible else { return }
+        isVisible = true
         
-        DispatchQueue.main.async {
-            
-            self.blurView.frame = CGRect(x: 0, y: -20, width: vc.view.frame.width, height: vc.view.frame.height + 20)
-            vc.view.addSubview(self.blurView)
-            
-            self.activityIndicator.frame = CGRect(x: self.blurView.center.x - 25,
-                                             y: (self.blurView.center.y - 25) - 20,
-                                             width: 50,
-                                             height: 50)
-            
-            self.activityIndicator.hidesWhenStopped = true
-            self.activityIndicator.style = .large
-            self.activityIndicator.alpha = 0
-            self.blurView.contentView.addSubview(self.activityIndicator)
-            self.activityIndicator.startAnimating()
-            
-            self.label.frame = CGRect(x: (self.blurView.frame.maxX - 250) / 2,
-                                 y: self.activityIndicator.frame.maxY,
-                                 width: 250,
-                                 height: 60)
-            
-            self.label.text = description.lowercased()
-            self.label.textColor = UIColor.white
-            self.label.font = UIFont.systemFont(ofSize: 12)
-            self.label.textAlignment = .center
-            self.label.alpha = 0
-            self.label.numberOfLines = 0
-            self.blurView.contentView.addSubview(self.label)
-            
-            UIView.animate(withDuration: 0.5) {
-                
-                self.blurView.alpha = 1
-                self.activityIndicator.alpha = 1
-                self.label.alpha = 1
-                
-            }
-            
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.setupViews(in: vc, description: description)
+            self.animateIn()
         }
-        
     }
     
-    func removeConnectingView() {
-        
-        DispatchQueue.main.async {
-            
-            UIView.animate(withDuration: 0.5, animations: {
-                
-                self.blurView.alpha = 0
-                
-            }) { _ in
-                
-                self.blurView.removeFromSuperview()
-                self.label.removeFromSuperview()
-                self.activityIndicator.stopAnimating()
-                self.activityIndicator.removeFromSuperview()
-                
-            }
-            
+    func dismiss(completion: (() -> Void)? = nil) {
+        guard isVisible else {
+            completion?()
+            return
         }
+        isVisible = false
         
+        DispatchQueue.main.async { [weak self] in
+            self?.animateOut(completion: completion)
+        }
+    }
+    
+    // MARK: - Private Setup
+    
+    private func setupViews(in viewController: UIViewController, description: String) {
+        // Remove any existing
+        blurView.removeFromSuperview()
+        
+        // Find the best parent view: prefer window > navigationController > tabBarController > view
+        let parentView: UIView = {
+            if let window = viewController.view.window {
+                return window
+            } else if let nav = viewController.navigationController?.view {
+                return nav
+            } else if let tab = viewController.tabBarController?.view {
+                return tab
+            } else {
+                return viewController.view
+            }
+        }()
+        
+        blurView.translatesAutoresizingMaskIntoConstraints = false
+        parentView.addSubview(blurView)
+        
+        // Ensure it's on top
+        parentView.bringSubviewToFront(blurView)
+        
+        // Activity Indicator
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        activityIndicator.color = .white
+        activityIndicator.hidesWhenStopped = true
+        activityIndicator.startAnimating()
+        
+        // Label
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = description
+        label.textColor = .white
+        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        
+        blurView.contentView.addSubview(activityIndicator)
+        blurView.contentView.addSubview(label)
+        
+        // Constraints
+        NSLayoutConstraint.activate([
+            blurView.topAnchor.constraint(equalTo: parentView.topAnchor),
+            blurView.leadingAnchor.constraint(equalTo: parentView.leadingAnchor),
+            blurView.trailingAnchor.constraint(equalTo: parentView.trailingAnchor),
+            blurView.bottomAnchor.constraint(equalTo: parentView.bottomAnchor),
+            
+            activityIndicator.centerXAnchor.constraint(equalTo: blurView.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: blurView.centerYAnchor, constant: -40),
+            
+            label.topAnchor.constraint(equalTo: activityIndicator.bottomAnchor, constant: 20),
+            label.leadingAnchor.constraint(equalTo: blurView.leadingAnchor, constant: 40),
+            label.trailingAnchor.constraint(equalTo: blurView.trailingAnchor, constant: -40),
+        ])
+    }
+    
+    private func animateIn() {
+        blurView.alpha = 0
+        activityIndicator.alpha = 0
+        label.alpha = 0
+        
+        UIView.animate(withDuration: 0.4, delay: 0, options: .curveEaseOut) {
+            self.blurView.alpha = 1
+            self.activityIndicator.alpha = 1
+            self.label.alpha = 1
+        }
+    }
+    
+    private func animateOut(completion: (() -> Void)? = nil) {
+        UIView.animate(withDuration: 0.3, animations: {
+            self.blurView.alpha = 0
+            self.activityIndicator.alpha = 0
+            self.label.alpha = 0
+        }) { _ in
+            self.blurView.removeFromSuperview()
+            self.activityIndicator.stopAnimating()
+            completion?()
+        }
     }
 }
+
+

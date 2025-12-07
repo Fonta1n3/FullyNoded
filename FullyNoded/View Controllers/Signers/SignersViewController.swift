@@ -61,16 +61,18 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
                    let string = decryptedPassphrase.utf8String {
                     passphrase = string
                 }
-                
+                                
                 // Only fires off if account xpubs had not been saved before.
-                if var encryptedWords = signerStruct.words,
+                if signerStruct.bip86tpub == nil,
+                   var encryptedWords = signerStruct.words,
                    var decryptedSigner = Crypto.decrypt(encryptedWords),
-                   signerStruct.rootTpub == nil,
                    var words = decryptedSigner.utf8String,
                    let mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
                    let xfp = Keys.fingerprint(masterKey: mkMain),
                    let encryptedXfp = Crypto.encrypt(xfp.utf8),
                    let mkTest = Keys.masterKey(words: words, coinType: "1", passphrase: passphrase),
+                   let bip86xpub = Keys.bip86AccountXpub(masterKey: mkMain, coinType: "0", account: 0),
+                   let bip86tpub = Keys.bip86AccountXpub(masterKey: mkTest, coinType: "1", account: 0),
                    let bip84xpub = Keys.bip84AccountXpub(masterKey: mkMain, coinType: "0", account: 0),
                    let bip84tpub = Keys.bip84AccountXpub(masterKey: mkTest, coinType: "1", account: 0),
                    let bip48xpub = Keys.xpub(path: "m/48'/0'/0'/2'", masterKey: mkMain),
@@ -81,9 +83,11 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
                    let encryptedRootXpub = Crypto.encrypt(rootXpub.utf8),
                    let encryptedbip84xpub = Crypto.encrypt(bip84xpub.utf8),
                    let encryptedbip84tpub = Crypto.encrypt(bip84tpub.utf8),
+                   let encryptedbip86xpub = Crypto.encrypt(bip86xpub.utf8),
+                   let encryptedbip86tpub = Crypto.encrypt(bip86tpub.utf8),
                    let encryptedbip48xpub = Crypto.encrypt(bip48xpub.utf8),
                    let encryptedbip48tpub = Crypto.encrypt(bip48tpub.utf8) {
-                    
+                                        
                     defer {
                         encryptedWords.secureZero()
                         decryptedSigner.secureZero()
@@ -93,11 +97,15 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
                     
                     CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip84xpub", newValue: encryptedbip84xpub, entity: .signers) { _ in }
                     CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip84tpub", newValue: encryptedbip84tpub, entity: .signers) { _ in }
+                    CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip86xpub", newValue: encryptedbip86xpub, entity: .signers) { _ in }
+                    CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip86tpub", newValue: encryptedbip86tpub, entity: .signers) { _ in }
                     CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip48xpub", newValue: encryptedbip48xpub, entity: .signers) { _ in }
                     CoreDataService.update(id: signerStruct.id, keyToUpdate: "bip48tpub", newValue: encryptedbip48tpub, entity: .signers) { _ in }
                     CoreDataService.update(id: signerStruct.id, keyToUpdate: "xfp", newValue: encryptedXfp, entity: .signers) { _ in }
                     CoreDataService.update(id: signerStruct.id, keyToUpdate: "rootTpub", newValue: encryptedRootTpub, entity: .signers) { _ in }
                     CoreDataService.update(id: signerStruct.id, keyToUpdate: "rootXpub", newValue: encryptedRootXpub, entity: .signers) { _ in }
+                    
+                    print("updated signer")
                 }
             }
         }
@@ -125,18 +133,8 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "signerCell", for: indexPath)
         cell.selectionStyle = .none
-//        cell.layer.borderColor = UIColor.lightGray.cgColor
-//        cell.layer.borderWidth = 0.5
-        //cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         let label = cell.viewWithTag(1) as! UILabel
-        //let image = cell.viewWithTag(3) as! UIImageView
-        //let background = cell.viewWithTag(4)!
-        //background.clipsToBounds = true
-        //let icon = UIImage(systemName: "pencil.and.ellipsis.rectangle")
-        //background.backgroundColor = .black
-        //background.layer.cornerRadius = 5
-        //image.tintColor = .systemBlue
-        //image.image = icon
+       
         if signers.count > 0 {
             let s = SignerStruct(dictionary: signers[indexPath.row])
             if s.label == "Signer" {

@@ -11,7 +11,7 @@ import UIKit
 class LockedViewController: UIViewController {
     
     private var lockedUtxos = [Utxo]()
-    let spinner = ConnectingView()
+    let spinner = ConnectingView.shared
     var selectedVout = Int()
     var selectedTxid = ""
     var fxRate:Double?
@@ -26,7 +26,7 @@ class LockedViewController: UIViewController {
         tableView.dataSource = self
         tableView.register(UINib(nibName: UTXOCell.identifier, bundle: nil), forCellReuseIdentifier: UTXOCell.identifier)
         tableView.tableFooterView = UIView(frame: .zero)
-        spinner.addConnectingView(vc: self, description: "Getting Locked UTXO's")
+        spinner.show(vc: self, description: "Getting Locked UTXO's")
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -37,7 +37,7 @@ class LockedViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.spinner.removeConnectingView()
+            self.spinner.dismiss()
             self.tableView.reloadData()
             self.tableView.isUserInteractionEnabled = true
         }
@@ -99,7 +99,7 @@ class LockedViewController: UIViewController {
     }
     
     private func unlock(_ utxo: Utxo) {
-        spinner.addConnectingView(vc: self, description: "unlocking...")
+        spinner.show(vc: self, description: "unlocking...")
         let param:Lock_Unspent = .init(["unlock": true, "transactions": [["txid":utxo.txid,"vout":utxo.vout]]])
         
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .lockunspent(param)) { (response, errorMessage) in

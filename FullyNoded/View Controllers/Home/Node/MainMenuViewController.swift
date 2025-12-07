@@ -425,7 +425,7 @@ class MainMenuViewController: UIViewController {
             switch indexPath.row {
             case 0:
                 icon.tintColor = .tintColor
-                label.text = "Bitcoin Core v\(networkInfo.version)"
+                label.text = networkInfo.version
                 icon.image = UIImage(systemName: "v.circle")
                 
             case 1:

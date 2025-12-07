@@ -101,11 +101,10 @@ class UTXOCell: UITableViewCell {
             changeLabel.text = "Unknown address type"
         }
         
-        amountLabel.text = utxo.btcAmount
+        amountLabel.text = utxo.amount.btcBalanceWithSpaces
         
         if let fxRate = fxRate {
-            let doubleValue = NSDecimalNumber(decimal: utxo.amount).doubleValue
-            fiatAmount.text = (doubleValue * fxRate).fiatString
+            fiatAmount.text = (utxo.amount * fxRate).fiatString
         }
             
         if utxo.amount <= 0.00010000 {

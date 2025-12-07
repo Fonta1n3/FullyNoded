@@ -84,10 +84,10 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
             walletUrl = "https://\(rpcusername):\(rpcpassword)@\(onionAddress)"
         }
                         
-        var walletName = UserDefaults.standard.object(forKey: "walletName") as? String
-        let b = isWalletRPC(command: method)
-        if b, let walletName = walletName {
-                walletUrl += "/wallet/" + walletName
+        let walletName = UserDefaults.standard.object(forKey: "walletName") as? String
+        
+        if isWalletRPC(command: method), let walletName = walletName {
+            walletUrl += "/wallet/" + walletName
         }
         
         guard let url = URL(string: walletUrl) else {

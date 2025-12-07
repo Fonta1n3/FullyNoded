@@ -14,7 +14,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     var textToShareViaQRCode = ""
     var addressString = ""
     var qrCode = UIImage()
-    let spinner = ConnectingView()
+    let spinner = ConnectingView.shared
     let qrGenerator = QRGenerator()
     let ud = UserDefaults.standard
     
@@ -126,7 +126,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
                     
     func generateOnchainInvoice() {
-        spinner.addConnectingView(vc: self, description: "fetching address...")
+        spinner.show(vc: self, description: "fetching address...")
         
         addressOutlet.text = ""
         
@@ -174,7 +174,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             self.addressOutlet.text = address
             self.addressString = address
             self.updateQRImage()
-            self.spinner.removeConnectingView()
+            self.spinner.dismiss()
         }
     }
         
@@ -196,7 +196,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             MakeRPCCall.sharedInstance.executeRPCCommand(method: .getnewaddress(param: param)) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 guard let address = response as? String else {
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     
                     showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error fetching address")
                     

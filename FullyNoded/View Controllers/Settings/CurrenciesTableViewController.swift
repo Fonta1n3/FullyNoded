@@ -11,7 +11,7 @@ import UIKit
 class CurrenciesTableViewController: UITableViewController {
     
     let currencies = Currencies.currenciesWithCircle
-    let spinner = ConnectingView()
+    let spinner = ConnectingView.shared
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -70,12 +70,12 @@ class CurrenciesTableViewController: UITableViewController {
     }
     
     func updateFxRate(currency: String) {
-        spinner.addConnectingView(vc: self, description: "fetching fx rate...")
+        spinner.show(vc: self, description: "fetching fx rate...")
         
         FiatConverter.sharedInstance.getFxRate(currency: currency) { [weak self] fxRate in
             guard let self = self else { return }
             
-            spinner.removeConnectingView()
+            spinner.dismiss()
             
             guard let fxRate = fxRate else {
                 showAlert(vc: self, title: "", message: "There was an error fetching the exchange rate for \(currency).")

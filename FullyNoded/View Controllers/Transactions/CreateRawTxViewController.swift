@@ -18,7 +18,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var outputs: [[String:Any]] = []
     var inputs: [[String:Any]] = []
     var txt = ""
-    var utxoTotal: Decimal = 0.0
+    var utxoTotal: Double = 0.0
     let ud = UserDefaults.standard
     var index = 0
     var invoice:[String:Any]?
@@ -50,7 +50,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet weak private var feeRateInputField: UITextField!
     @IBOutlet weak private var coinSelectionControl: UISegmentedControl!
     
-    var spinner = ConnectingView()
+    let spinner = ConnectingView.shared
     var spendableBalance = Double()
     
     override func viewDidLoad() {
@@ -155,14 +155,14 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func getAddressFromWallet(_ wallet: Wallet) {
-        spinner.addConnectingView(vc: self, description: "getting address...")
+        spinner.show(vc: self, description: "getting address...")
         
         func getFromFnWallet() {
             let index = Int(wallet.index + 1)
             let param:Derive_Addresses = .init(["descriptor": wallet.receiveDescriptor, "range": [index, index]])
             OnchainUtils.deriveAddresses(param: param) { [weak self] (addresses, message) in
                 guard let self = self else { return }
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 guard let addresses = addresses, !addresses.isEmpty else {
                     showAlert(vc: self, title: "There was an issue getting an address from that wallet...", message: message ?? "Unknown error.")
                     return
@@ -187,11 +187,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             showAlert(vc: self, title: "", message: "Not a valid address or invoice.")
             return
         }
-        spinner.addConnectingView(vc: self, description: "")
+        spinner.show(vc: self, description: "")
         OnchainUtils.getAddressInfo(address: address.replacingOccurrences(of: "-", with: "")) { [weak self] (addressInfo, message) in
             guard let self = self else { return }
             
-            spinner.removeConnectingView()
+            spinner.dismiss()
             
             guard let addressInfo = addressInfo else {
                 showAlert(vc: self, title: "Error getting address info.", message: message ?? "Unknown.")
@@ -276,7 +276,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 if !self.outputs.isEmpty {
                     tryRaw()
                 } else {
-                    spinner.removeConnectingView()
+                    spinner.dismiss()
                     showAlert(vc: self, title: "", message: "No amount or address.")
                 }
                 return
@@ -306,12 +306,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             type = "blind"
         }
         
-        spinner.addConnectingView(vc: self, description: "creating \(type) psbt...")
+        spinner.show(vc: self, description: "creating \(type) psbt...")
         
         BlindPsbt.getInputs(amountBtc: amount, recipient: recipient, strict: strict, inputsToJoin: nil) { [weak self] (psbt, error) in
             guard let self = self else { return }
             
-            self.spinner.removeConnectingView()
+            self.spinner.dismiss()
             
             if let error = error {
                 showAlert(vc: self, title: "There was an issue creating the \(type) psbt.", message: error)
@@ -360,13 +360,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     override func viewDidAppear(_ animated: Bool) {
         if inputs.count > 0 {
-            
-            let doubleUtxoValue = (utxoTotal as NSDecimalNumber).doubleValue
-            
+                        
             if let fxRate = fxRate {
-                balanceLabel.text = doubleUtxoValue.btcBalanceWithSpaces + " / " + (fxRate * doubleUtxoValue).fiatString
+                balanceLabel.text = utxoTotal.btcBalanceWithSpaces + " / " + (fxRate * utxoTotal).fiatString
             } else {
-                balanceLabel.text = doubleUtxoValue.btcBalanceWithSpaces
+                balanceLabel.text = utxoTotal.btcBalanceWithSpaces
             }
             
             showAlert(vc: self, title: "Coin control ✓", message: "Only the utxo's you have just selected will be used in this transaction. You may send the total balance of the *selected utxo's* by tapping the \"Send all\" button or enter a custom amount as normal.")
@@ -520,7 +518,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             guard let self = self else { return }
             
             guard let result = response as? NSDictionary, let psbt1 = result["psbt"] as? String else {
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                 return
             }
@@ -530,7 +528,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 guard let self = self else { return }
                 
                 guard let dict = response as? NSDictionary, let processedPSBT = dict["psbt"] as? String else {
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                     return
                 }
@@ -550,7 +548,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             guard let self = self else { return }
             
             guard let utxos = utxos else {
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 displayAlert(viewController: self, isError: true, message: message ?? "error fetching utxo's")
                 return
             }
@@ -567,7 +565,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 amount += utxo.amount!
                 
                 guard utxo.confs! > 0 else {
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     showAlert(vc: self, title: "", message: "You have unconfirmed utxo's, wait till they get a confirmation before trying to sweep them.")
                     return
                 }
@@ -600,7 +598,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 guard let self = self else { return }
                 
                 guard let result = response as? NSDictionary, let psbt1 = result["psbt"] as? String else {
-                    self.spinner.removeConnectingView()
+                    self.spinner.dismiss()
                     displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                     return
                 }
@@ -610,7 +608,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     guard let self = self else { return }
                     
                     guard let dict = response as? NSDictionary, let processedPSBT = dict["psbt"] as? String else {
-                        self.spinner.removeConnectingView()
+                        self.spinner.dismiss()
                         displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                         return
                     }
@@ -634,11 +632,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
               }
         
         if inputs.count > 0 {
-            spinner.addConnectingView(vc: self, description: "sweeping selected utxo's...")
+            spinner.show(vc: self, description: "sweeping selected utxo's...")
             sweepSelectedUtxos(receivingAddress.replacingOccurrences(of: "-", with: ""))
         } else {
             
-            spinner.addConnectingView(vc: self, description: "sweeping wallet...")
+            spinner.show(vc: self, description: "sweeping wallet...")
             sweepWallet(receivingAddress.replacingOccurrences(of: "-", with: ""))
         }
     }
@@ -656,7 +654,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     @objc func tryRaw() {
-        spinner.addConnectingView(vc: self, description: "creating psbt...")
+        spinner.show(vc: self, description: "creating psbt...")
         
         if outputs.count == 0 {
             if let amount = convertedAmount(), self.addressInput.text != "" {
@@ -664,19 +662,19 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 getRawTx()
                 
             } else {
-                spinner.removeConnectingView()
+                spinner.dismiss()
                 showAlert(vc: self, title: "", message: "You need to fill out an amount and a recipient")
             }
             
         } else if outputs.count > 0 && self.amountInput.text != "" || self.amountInput.text != "0.0" && self.addressInput.text != "" {
-            spinner.removeConnectingView()
+            spinner.dismiss()
             displayAlert(viewController: self, isError: true, message: "If you want to add multiple recipients please tap the \"+\" and add them all first.")
             
         } else if outputs.count > 0 {
             getRawTx()
             
         } else {
-            spinner.removeConnectingView()
+            spinner.dismiss()
             showAlert(vc: self, title: "This is not right...", message: "Please reach out and let us know about this so we can fix it.")
         }
     }
@@ -825,7 +823,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             CreatePSBT.create(inputs: self.inputs, outputs: self.outputs) { [weak self] (psbt, rawTx, errorMessage) in
                 guard let self = self else { return }
                 
-                self.spinner.removeConnectingView()
+                self.spinner.dismiss()
                 
                 if let rawTx = rawTx {
                     self.rawTx = rawTx

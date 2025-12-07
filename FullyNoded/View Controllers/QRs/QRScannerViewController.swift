@@ -29,7 +29,7 @@ class QRScannerViewController: UIViewController {
     var fromSignAndVerify = Bool()
     var decoder:URDecoder!
     var bbqrParts: [String] = []
-    private let spinner = ConnectingView()
+    private let spinner = ConnectingView.shared
     private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     private var blurArray = [UIVisualEffectView]()
     private var isTorchOn = Bool()
@@ -49,7 +49,7 @@ class QRScannerViewController: UIViewController {
         progressDescriptionLabel.alpha = 0
         progressView.alpha = 0
         configureScanner()
-        spinner.addConnectingView(vc: self, description: "")
+        spinner.show(vc: self, description: "")
         decoder = URDecoder()
     }
     
@@ -73,7 +73,7 @@ class QRScannerViewController: UIViewController {
             
             self.scanQRCode()
             self.addScannerButtons()
-            self.spinner.removeConnectingView()
+            self.spinner.dismiss()
         }
     }
     
@@ -335,7 +335,7 @@ class QRScannerViewController: UIViewController {
                 // could be a specter animated psbt
                 parseSpecterAnimatedQr(text)
             } else {
-                spinner.removeConnectingView()
+                spinner.dismiss()
                 showAlert(vc: self, 
                           title: "Unrecognized format",
                           message: "That is an unrecognized transaction format, please reach out to us so we can add compatibility.")
