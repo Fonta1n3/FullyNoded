@@ -35,6 +35,7 @@
 		0A2D4F522EE2F98500121667 /* AddressCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2D4F512EE2F98500121667 /* AddressCell.swift */; };
 		0A2D4F562EE442A000121667 /* AddressStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2D4F552EE442A000121667 /* AddressStruct.swift */; };
 		0A2D4F582EE4705D00121667 /* EsploraBalanceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2D4F572EE4705D00121667 /* EsploraBalanceFetcher.swift */; };
+		0A2D4F5D2EE5C69500121667 /* ListDescriptors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2D4F5C2EE5C69500121667 /* ListDescriptors.swift */; };
 		0A2EBDEB2EBC62A400AF56CD /* DynamicFooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2EBDEA2EBC62A400AF56CD /* DynamicFooterView.swift */; };
 		0A337D012700316E00AD087F /* WalletDir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A337D002700316E00AD087F /* WalletDir.swift */; };
 		0A34073D2EC08A0B008576C7 /* ListUnspent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A34073C2EC08A0B008576C7 /* ListUnspent.swift */; };
@@ -218,6 +219,7 @@
 		0A2D4F512EE2F98500121667 /* AddressCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressCell.swift; sourceTree = "<group>"; };
 		0A2D4F552EE442A000121667 /* AddressStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressStruct.swift; sourceTree = "<group>"; };
 		0A2D4F572EE4705D00121667 /* EsploraBalanceFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EsploraBalanceFetcher.swift; sourceTree = "<group>"; };
+		0A2D4F5C2EE5C69500121667 /* ListDescriptors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDescriptors.swift; sourceTree = "<group>"; };
 		0A2EBDEA2EBC62A400AF56CD /* DynamicFooterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicFooterView.swift; sourceTree = "<group>"; };
 		0A337D002700316E00AD087F /* WalletDir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDir.swift; sourceTree = "<group>"; };
 		0A34073C2EC08A0B008576C7 /* ListUnspent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListUnspent.swift; sourceTree = "<group>"; };
@@ -551,6 +553,7 @@
 				0A34073C2EC08A0B008576C7 /* ListUnspent.swift */,
 				0AF61BAB2EC450C1001CDF34 /* ListTransactions.swift */,
 				0AF61BAD2EC58E3D001CDF34 /* GetTransaction.swift */,
+				0A2D4F5C2EE5C69500121667 /* ListDescriptors.swift */,
 			);
 			path = Responses;
 			sourceTree = "<group>";
@@ -1237,6 +1240,7 @@
 				0A0ABC352EBE07F6000329E0 /* TextModalViewController.swift in Sources */,
 				D09A330124A848DA009FA0B2 /* SeedDisplayerViewController.swift in Sources */,
 				D0C4EE6F24F0EC9B003C929A /* BitSense.xcdatamodeld in Sources */,
+				0A2D4F5D2EE5C69500121667 /* ListDescriptors.swift in Sources */,
 				D0390326246B960B00D32C43 /* KeyChain.swift in Sources */,
 				D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */,
 				D0A7CF73227967F900B683A0 /* AddressParser.swift in Sources */,

@@ -32,6 +32,10 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     var outputDescFormat = false
     var urBytesFormat = false
     var bbqrFormat = true
+    var externalRange: [Int] = []
+    var internalRange: [Int] = []
+    var externalNextIndex: Int?
+    var internalNextIndex: Int?
     var alertStyle = UIAlertController.Style.actionSheet
     private var labelField: UITextField!
     private var labelButton: UIButton!
@@ -45,8 +49,10 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         case filename
         case receiveDesc
         case changeDesc
-        case currentIndex
-        case maxIndex
+        case nextIndexExternal
+        case nextIndexInternal
+        case externalRange
+        case internalRange
         case addressExplorer
     }
     
@@ -122,19 +128,33 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private func getAddresses() {
         spinner.dismiss()
-        deriveAddresses(wallet.receiveDescriptor)
+        listDescriptors()
     }
     
     private func deriveAddresses(_ descriptor: String) {
         let p:Get_Descriptor_Info = .init(["descriptor": descriptor])
-        OnchainUtils.getDescriptorInfo(p) { (descriptorInfo, message) in
-            guard let descriptorInfo = descriptorInfo else { return }
+        OnchainUtils.getDescriptorInfo(p) { [weak self] (descriptorInfo, message) in
+            guard let self = self else { return }
+            
+            guard let descriptorInfo = descriptorInfo else {
+                spinner.dismiss()
+                showAlert(vc: self, title: "", message: message ?? "Can not get descriptorinfo.")
+                return
+            }
+            
             let desc = descriptorInfo.descriptor
-            let param:Derive_Addresses = .init(["descriptor":desc, "range":[0,999]])
+            var range = self.externalRange
+            
+            if descriptor == wallet.changeDescriptor {
+                range = self.internalRange
+            }
+            
+            let param: Derive_Addresses = .init(["descriptor": desc, "range": range])
             OnchainUtils.deriveAddresses(param: param) { [weak self] (response, message) in
+                guard let self = self else { return }
+                spinner.dismiss()
                 if let addr = response as? NSArray {
                     for (i, address) in addr.enumerated() {
-                        guard let self = self else { return }
                         self.addresses += "#\(i): \(address)\n\n"
                         if i + 1 == addr.count {
                             DispatchQueue.main.async { [weak self] in
@@ -146,6 +166,63 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                     showAlert(vc: self, title: "We were unable to derive your addresses", message: "")
                 }
             }
+        }
+    }
+    
+    private func listDescriptors() {
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
+            
+            guard let response = response else {
+                showAlert(vc: self, title: "", message: errorDesc ?? "No response from listdescriptors.")
+                return
+            }
+                        
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: response, options: [])
+                let listDescriptorResponse = try JSONDecoder().decode(ListDescriptorsResponse.self, from: jsonData)
+                
+                if listDescriptorResponse.descriptors.count == 2 {
+                    guard let externalRange = listDescriptorResponse.descriptors[0].range else {
+                        showAlert(vc: self, title: "", message: "Failed parsing listdescriptor.")
+                        return
+                    }
+                    
+                    guard let internalRange = listDescriptorResponse.descriptors[1].range else {
+                        showAlert(vc: self, title: "", message: "Failed parsing listdescriptor.")
+                        return
+                    }
+                    
+                    self.externalRange = externalRange
+                    self.internalRange = internalRange
+                    
+                    guard let nextExternal = listDescriptorResponse.descriptors[0].nextIndex else {
+                        showAlert(vc: self, title: "", message: "Failed parsing listdescriptor.")
+                        return
+                    }
+                    
+                    guard let nextInternal = listDescriptorResponse.descriptors[1].nextIndex else {
+                        showAlert(vc: self, title: "", message: "Failed parsing listdescriptor.")
+                        return
+                    }
+                    
+                    self.externalNextIndex = nextExternal
+                    self.internalNextIndex = nextInternal
+                }
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    detailTable.reloadSections(IndexSet(arrayLiteral: Section.externalRange.rawValue), with: .none)
+                    detailTable.reloadSections(IndexSet(arrayLiteral: Section.internalRange.rawValue), with: .none)
+                    detailTable.reloadSections(IndexSet(arrayLiteral: Section.nextIndexExternal.rawValue), with: .none)
+                    detailTable.reloadSections(IndexSet(arrayLiteral: Section.nextIndexInternal.rawValue), with: .none)
+                }
+                
+            } catch {
+                showAlert(vc: self, title: "", message: error.localizedDescription)
+            }
+            
+            deriveAddresses(wallet.receiveDescriptor)
         }
     }
     
@@ -253,8 +330,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         generator.textInput = bbqrText
                         exportWalletImageBBQr = generator.getQRCode()
                         
-                        //self.findSigner()
-                        
                         DispatchQueue.main.async { [weak self] in
                             guard let self = self else {
                                 return
@@ -276,96 +351,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         fingerprintsString = fingerprintsString.replacingOccurrences(of: "]", with: "")
         return fingerprintsString.components(separatedBy: ",")
     }
-    
-//    private func findSigner() {
-//        CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
-//            guard let signers = signers, signers.count > 0 else {
-//                DispatchQueue.main.async {
-//                    self?.detailTable.reloadData()
-//                }
-//                return
-//            }
-//            
-//            self?.parseSigners(signers)
-//        }
-//    }
-    
-//    private func parseSigners(_ signers: [[String:Any]]) {
-//        for (i, signer) in signers.enumerated() {
-//            let signerStruct = SignerStruct(dictionary: signer)
-//            
-//            if let encryptedWords = signerStruct.words {
-//                guard let decryptedData = Crypto.decrypt(encryptedWords) else { return }
-//                
-//                parseWords(decryptedData, signerStruct)
-//            }
-//            
-//            if i + 1 == signers.count {
-//                DispatchQueue.main.async { [weak self] in
-//                    guard let self = self else { return }
-//                    
-//                    self.detailTable.reloadData()
-//                }
-//            }
-//        }
-//    }
-    
-//    private func parseWords(_ decryptedData: Data, _ signer: SignerStruct) {
-//        let descriptor = Descriptor(self.wallet.receiveDescriptor)
-//        guard let words = String(bytes: decryptedData, encoding: .utf8) else { return }
-//        
-//        if signer.passphrase != nil {
-//            parsePassphrase(words, signer.passphrase!, descriptor, signer)
-//        } else {
-//            guard let masterKey = Keys.masterKey(words: words, coinType: self.coinType, passphrase: "") else { return }
-//            
-//            self.crossCheckXpubs(descriptor, masterKey, words, signer)
-//        }
-//    }
-    
-//    private func parsePassphrase(_ words: String, _ passphrase: Data, _ descriptor: Descriptor, _ signerStr: SignerStruct) {
-//        guard let decryptedPass = Crypto.decrypt(passphrase),
-//            let pass = String(bytes: decryptedPass, encoding: .utf8),
-//            let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: pass) else {
-//            return
-//        }
-//        
-//        crossCheckXpubs(descriptor, masterKey, words, signerStr)
-//    }
-    
-//    private func crossCheckXpubs(_ descriptor: Descriptor, _ masterKey: String, _ words: String, _ signerStr: SignerStruct) {
-//        if descriptor.isMulti {
-//            for (x, xpub) in descriptor.multiSigKeys.enumerated() {
-//                if let derivedXpub = Keys.xpub(path: descriptor.derivationArray[x], masterKey: masterKey) {
-//                    if xpub == derivedXpub {
-//                        guard let fingerprint = Keys.fingerprint(masterKey: masterKey) else { return }
-//                        
-//                        var toDisplay = fingerprint
-//                        
-//                        if fingerprint != signerStr.label {
-//                            toDisplay += ":" + " \(signerStr.label)"
-//                        }
-//                        
-//                        self.signer += toDisplay + "\n\n"
-//                    }
-//                }                
-//            }
-//        } else {
-//            if let derivedXpub = Keys.xpub(path: descriptor.derivation, masterKey: masterKey) {
-//                if descriptor.accountXpub == derivedXpub {
-//                    guard let fingerprint = Keys.fingerprint(masterKey: masterKey) else { return }
-//                    
-//                    var toDisplay = fingerprint
-//                    
-//                    if fingerprint != signerStr.label {
-//                        toDisplay += ":" + " \(signerStr.label)"
-//                    }
-//                    
-//                    self.signer += toDisplay + "\n\n"
-//                }
-//            }
-//        }
-//    }
     
     private func accountXpub() -> String {
         if wallet.receiveDescriptor != "" {
@@ -696,28 +681,52 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         return cell
     }
     
-    private func currentIndexCell(_ indexPath: IndexPath) -> UITableViewCell {
+    private func externalRangeCell(_ indexPath: IndexPath) -> UITableViewCell {
         let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailCurrentIndexCell", for: indexPath)
         configureCell(cell)
         
         let field = cell.viewWithTag(1) as! UITextField
-        field.text = "\(wallet.index)"
+        field.text = "\(externalRange)"
         field.layer.borderColor = UIColor.clear.cgColor
         
         return cell
     }
     
-    private func maxIndexCell(_ indexPath: IndexPath) -> UITableViewCell {
+    private func internalRangeCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailCurrentIndexCell", for: indexPath)
+        configureCell(cell)
+        
+        let field = cell.viewWithTag(1) as! UITextField
+        field.text = "\(internalRange)"
+        field.layer.borderColor = UIColor.clear.cgColor
+        
+        return cell
+    }
+    
+    private func nextExternalIndexCell(_ indexPath: IndexPath) -> UITableViewCell {
         let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailMaxIndexCell", for: indexPath)
         configureCell(cell)
         
         let field = cell.viewWithTag(1) as! UITextField
-        field.text = "\(wallet.maxIndex)"
+        if let externalNextIndex = self.externalNextIndex {
+            field.text = "\(externalNextIndex)"
+        }
         field.isUserInteractionEnabled = false
         field.layer.borderColor = UIColor.clear.cgColor
         
-        let increaseButton = cell.viewWithTag(2) as! UIButton
-        increaseButton.addTarget(self, action: #selector(increaseGapLimit), for: .touchUpInside)
+        return cell
+    }
+    
+    private func nextInternalIndexCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailMaxIndexCell", for: indexPath)
+        configureCell(cell)
+        
+        let field = cell.viewWithTag(1) as! UITextField
+        if let internalNextIndex = self.internalNextIndex {
+            field.text = "\(internalNextIndex)"
+        }
+        field.isUserInteractionEnabled = false
+        field.layer.borderColor = UIColor.clear.cgColor
         
         return cell
     }
@@ -799,7 +808,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 11
+        return 13
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -850,10 +859,14 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             return recDescCell(indexPath)
         case .changeDesc:
             return changeDescCell(indexPath)
-        case .currentIndex:
-            return currentIndexCell(indexPath)
-        case .maxIndex:
-            return maxIndexCell(indexPath)
+        case .externalRange:
+            return externalRangeCell(indexPath)
+        case .internalRange:
+            return internalRangeCell(indexPath)
+        case .nextIndexExternal:
+            return nextExternalIndexCell(indexPath)
+        case .nextIndexInternal:
+            return nextInternalIndexCell(indexPath)
         case .addressExplorer:
             return addressesCell(indexPath)
         default:
@@ -863,26 +876,14 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch Section(rawValue: indexPath.section) {
-        case .backupText:
+        case .backupText, .addressExplorer:
             return 180
-        case .label:
-            return 50
         case .walletExport:
             return 270
-        case .exportFile:
+        case .exportFile, .receiveDesc, .changeDesc:
             return 120
-        case .filename:
+        case .nextIndexExternal, .nextIndexInternal, .label, .filename, .externalRange, .internalRange:
             return 50
-        case .receiveDesc:
-            return 120
-        case .changeDesc:
-            return 120
-        case .currentIndex:
-            return 50
-        case .maxIndex:
-            return 50
-        case .addressExplorer:
-            return 180
         default:
             return 0
         }
@@ -983,79 +984,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         }
     }
     
-    @objc func increaseGapLimit() {
-        var max = Int(wallet.maxIndex) + 999
-        if max > 99999 {
-            max = 99999
-        }
-        
-        promptToUpdateMaxIndex(max: max)
-    }
-    
-    private func promptToUpdateMaxIndex(max: Int) {
-        if (max - (Int(self.wallet.maxIndex) + 1)) < 20001 {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                let alert = UIAlertController(title: "Increase the range limit to \(max)?", message: "Selecting yes will trigger a series of calls to your node to import \(max - (Int(self.wallet.maxIndex) + 1)) additional keys for each descriptor your wallet holds. This can take a bit of time so please be patient and wait for the spinner to dismiss.", preferredStyle: self.alertStyle)
-                
-                alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
-                    self.importUpdatedIndex(maxRange: max)
-                }))
-                
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-                alert.popoverPresentationController?.sourceView = self.view
-                self.present(alert, animated: true, completion: nil)
-            }
-        } else {
-            showAlert(vc: self, title: "Thats too many keys...", message: "Please only attempt to import less then 20,000 keys at a time otherwise things can get weird.")
-        }
-    }
-    
-    private func importUpdatedIndex(maxRange: Int) {
-        spinner.show(vc: self, description: "importing \(maxRange - Int(wallet.maxIndex) + 1) public keys...")
-        
-        var descriptorsToImport = [String]()
-        descriptorsToImport.append(wallet.receiveDescriptor)
-        descriptorsToImport.append(wallet.changeDescriptor)
-        importDescriptors(index: 0, maxRange: maxRange, descriptorsToImport: descriptorsToImport)
-    }
-    
-    private func importDescriptors(index: Int, maxRange: Int, descriptorsToImport: [String]) {
-        if index < descriptorsToImport.count {            
-            let descriptor = descriptorsToImport[index]
-            var paramDict:[String:Any] = [:]
-            var requests:[[String:Any]] = []
-            var request:[String:Any] = [:]
-            request["desc"] = descriptor
-            request["range"] = [Int(wallet.maxIndex) + 1, maxRange]
-            request["timestamp"] = "now"
-            request["next_index"] = Int(wallet.maxIndex) + 1
-            
-            if descriptor.contains(wallet.changeDescriptor) {
-                request["internal"] = true
-                
-            } else {
-                request["label"] = wallet.label
-            }
-            
-            requests = [request]
-            paramDict["requests"] = requests
-            let param:Import_Descriptors = .init(paramDict)
-            
-            importDesc(param: param) { [weak self] success in
-                if success {
-                    self?.importDescriptors(index: index + 1, maxRange: maxRange, descriptorsToImport: descriptorsToImport)
-                } else {
-                    self?.showError(error: "Error importing a descriptor.")
-                }
-            }
-        } else {
-            self.updateMaxIndex(max: maxRange)
-            promptToRescan()
-        }
-    }
-    
     private func promptToRescan() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -1132,33 +1060,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             self.present(alert, animated: true, completion: nil)
         }
     }
-    
-    private func importDesc(param: Import_Descriptors, completion: @escaping ((Bool)) -> Void) {
-        OnchainUtils.importDescriptors(param) { (imported, _) in
-            completion(imported)
-        }
-    }
-    
-    private func updateMaxIndex(max: Int) {
-        CoreDataService.update(id: walletId, keyToUpdate: "maxIndex", newValue: Int64(max), entity: .wallets) { [weak self] success in
-            if success {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.updateLocalWallet()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        self.detailTable.reloadSections(IndexSet(arrayLiteral: Section.maxIndex.rawValue), with: .none)
-                    }
-                }
-                
-                self?.spinner.dismiss()
-                showAlert(vc: self, title: "Success, you have imported up to \(max) public keys.", message: "Your wallet is now rescanning. In order to see balances for all your addresses you'll need to wait for the rescan to complete.")
-            } else {
-                self?.showError(error: "There was an error updating the wallets maximum index.")
-            }
-        }
-    }
-    
+        
     private func showError(error:String) {
         DispatchQueue.main.async { [weak self] in
             self?.spinner.dismiss()
@@ -1224,10 +1126,14 @@ extension WalletDetailViewController {
             return ("Receive descriptor - keypool", UIImage(systemName: "arrow.down.left")!)
         case .changeDesc:
             return ("Change descriptor - keypool", UIImage(systemName: "arrow.2.circlepath")!)
-        case .currentIndex:
-            return ("Current address index", UIImage(systemName: "number")!)
-        case .maxIndex:
-            return ("Range limit", UIImage(systemName: "exclamationmark.triangle")!)
+        case .nextIndexExternal:
+            return ("Next receive address index", UIImage(systemName: "number")!)
+        case .nextIndexInternal:
+            return ("Next change address index", UIImage(systemName: "number")!)
+        case .externalRange:
+            return ("Receive address range", UIImage(systemName: "list.number")!)
+        case .internalRange:
+            return ("Change address range", UIImage(systemName: "list.number")!)
         case .addressExplorer:
             return ("Address explorer", UIImage(systemName: "list.number")!)
         }
