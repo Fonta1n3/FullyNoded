@@ -32,6 +32,12 @@ class NodelessTableViewController: UITableViewController {
     func load() {
         spinner.show(vc: self, description: "Loading...")
         
+        guard let encryptedWords = signer.words else {
+            spinner.dismiss()
+            showAlert(vc: self, title: "", message: "For now the BIP39 words need to be present to use this feature. Watch-only nodeless functionality coming soon.")
+            return
+        }
+        
         guard var decryptedData = Crypto.decrypt(signer.words!) else {
             spinner.dismiss()
             return
