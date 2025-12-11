@@ -46,6 +46,8 @@ class QRDisplayerViewController: UIViewController {
         tapQRGesture = UITapGestureRecognizer(target: self, action: #selector(shareQRCode(_:)))
         imageView.addGestureRecognizer(tapQRGesture)
         
+        
+        
         #if DEBUG
         print("psbt: \(psbt)")
         print("text: \(text)")
@@ -133,12 +135,15 @@ class QRDisplayerViewController: UIViewController {
         var fileType: FileType = .unicodeText
         
         if psbt != "" {
-            data = Data(base64Encoded: string)!
+            data = Data(base64Encoded: string)
             fileType = .psbt
         }
         
         if txn != "" {
-            guard let hexData = hex_decode(string) else { return []}
+            guard let hexData = hex_decode(string) else {
+                spinner.dismiss()
+                return [string]
+            }
             data = Data(hexData)
             fileType = .transaction
         }
@@ -157,12 +162,19 @@ class QRDisplayerViewController: UIViewController {
             maxVersion: Version.v40
         )
         
-        guard let data = data else { return [] }
-
-        let split = try Split.tryFromData(bytes: data, fileType: fileType, options: options)
-        spinner.dismiss()
-
-        return split.parts()
+        guard let data = data else {
+            spinner.dismiss()
+            return [string]
+        }
+        
+        do {
+            let split = try Split.tryFromData(bytes: data, fileType: fileType, options: options)
+            spinner.dismiss()
+            return split.parts()
+        } catch {
+            spinner.dismiss()
+            return [string]
+        }
     }
     
     @IBAction func closeAction(_ sender: Any) {
@@ -172,7 +184,7 @@ class QRDisplayerViewController: UIViewController {
     }
     
     private func qR(text: String) -> UIImage {
-        qrGenerator.textInput = text
+        qrGenerator.qrText = text
         return qrGenerator.getQRCode()
     }
     
@@ -197,7 +209,7 @@ class QRDisplayerViewController: UIViewController {
     }
     
     private func showQR(_ string: String) {
-        qrGenerator.textInput = string
+        qrGenerator.qrText = string
         imageView.image = qrGenerator.getQRCode()
     }
     

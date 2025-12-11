@@ -269,9 +269,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         self.json = json
                         
                         let generator = QRGenerator()
-                        generator.textInput = self.json
                         self.backupText = self.json
-                        //self.backupQrImage = generator.getQRCode()
                         
                         guard self.wallet.receiveDescriptor != "" else {
                             showAlert(vc: self, title: "", message: "Unable to get receive descriptor.")
@@ -279,7 +277,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         }
                         
                         if !wallet.receiveDescriptor.contains("sortedmulti_a"), let urOutput = URHelper.descriptorToUrOutput(Descriptor(self.wallet.receiveDescriptor)) {
-                            generator.textInput = urOutput.uppercased()
+                            generator.qrText = urOutput.uppercased()
                             self.outputDescUr = urOutput.uppercased()
                             self.exportWalletImageCryptoOutput = generator.getQRCode()
                         }
@@ -323,11 +321,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         }
                         
                         urBytes = urBytesCheck.qrString
-                        generator.textInput = urBytes
+                        generator.qrText = urBytes
                         self.exportWalletImageURBytes = generator.getQRCode()
                         
                         bbqrText = wallet.receiveDescriptor
-                        generator.textInput = bbqrText
+                        generator.qrText = bbqrText
                         exportWalletImageBBQr = generator.getQRCode()
                         
                         DispatchQueue.main.async { [weak self] in
@@ -772,21 +770,21 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         
         if urBytesFormat {
             headerLabel.text = "UR Bytes"
-            subheaderLabel.text = "Passport, Keystone, Blue, Fully Noded and more."
+            subheaderLabel.text = ""
             imageView.image = exportWalletImageURBytes
             exportText = urBytes
         }
         
         if bbqrFormat {
             headerLabel.text = "BBQr"
-            subheaderLabel.text = "Coldcard, Fully Noded and more."
+            subheaderLabel.text = ""
             imageView.image = exportWalletImageBBQr
             exportText = bbqrText
         }
         
         if outputDescFormat {
             headerLabel.text = "UR Output Descriptor"
-            subheaderLabel.text = "Sparrow, Blue, Fully Noded and more."
+            subheaderLabel.text = ""
             imageView.image = exportWalletImageCryptoOutput
             exportText = outputDescUr
         }

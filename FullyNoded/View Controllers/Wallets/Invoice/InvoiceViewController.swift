@@ -245,10 +245,12 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     func generateQrCode(key: String) -> UIImage {
-        qrGenerator.textInput = key
+        qrGenerator.qrText = key
         let qr = qrGenerator.getQRCode()
         return qr
     }
+    
+    
     
     func updateQRImage() {
         var newImage = UIImage()
