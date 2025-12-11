@@ -152,6 +152,10 @@ class UTXOCell: UITableViewCell {
         txidLabel.text = utxo.txid
         voutLabel.text = "\(utxo.vout)"
         
+//        addressLabel.translatesAutoresizingMaskIntoConstraints = true
+//        addressLabel.sizeToFit()
+//        txidLabel.translatesAutoresizingMaskIntoConstraints = true
+//        txidLabel.sizeToFit()
         self.translatesAutoresizingMaskIntoConstraints = true
         self.sizeToFit()
     }
