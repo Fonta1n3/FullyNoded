@@ -23,6 +23,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     var fxRate: Double?
     
     @IBOutlet weak private var tableView: UITableView!
+    @IBOutlet weak private var lastSavedDateLabel: UILabel!
     
     
     override func viewDidLoad() {
@@ -35,6 +36,11 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         refresher.tintColor = UIColor.white
         refresher.addTarget(self, action: #selector(loadUnlockedUtxos), for: UIControl.Event.valueChanged)
         tableView.addSubview(refresher)
+        
+        if let displayedDate = displaySavedDate() {
+            lastSavedDateLabel.text = "Last updated: " + displayedDate
+        }
+        
         loadCachedUtxos()
     }
     
@@ -49,7 +55,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         addNavBarSpinner()
         unlockedUtxos.removeAll()
         
-        guard let _ = wallet else {
+        guard let wallet = wallet else {
             loadUtxos()
             return
         }
@@ -65,7 +71,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             for (i, utxo) in utxos.enumerated() {
                 let utxoStr = UTXO(from: utxo)
                 if let id = utxoStr.walletId {
-                    if utxoStr.id == id {
+                    if utxoStr.walletId == id {
                         unlockedUtxos.append(utxoStr)
                     }
                 }
@@ -99,19 +105,19 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 return
             }
             
+            saveLastSavedUtxosDate()
             unlockedUtxos.removeAll()
             unlockedUtxos = [UTXO].from(rawArray: utxos)
             unlockedUtxos.sort { ($0.confirmations) < ($1.confirmations) }
             reload()
             removeSpinner()
             
+            DispatchQueue.global(qos: .background).async { [weak self] in
             CoreDataService.deleteAllData(entity: .utxos) { [weak self] deleted in
                 guard let self = self else { return }
                 guard deleted else { return }
                 guard let walletId = wallet?.id else { return }
                 
-                DispatchQueue.global(qos: .background).async { [weak self] in
-                    guard let self = self else { return }
                     for unlockedUtxo in unlockedUtxos {
                         var dict: [String: Any] = [:]
                         dict["walletId"] = walletId
@@ -188,7 +194,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.tableView.isUserInteractionEnabled = true
             self.tableView.reloadData()
             self.tableView.setContentOffset(.zero, animated: true)
             self.removeSpinner()
@@ -201,11 +206,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.tableView.isUserInteractionEnabled = false
             self.addNavBarSpinner()
         }
         
-        loadUtxos()
+        loadCachedUtxos()
     }
     
     private func removeSpinner() {
@@ -322,6 +326,35 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         nav.modalTransitionStyle = .coverVertical
         
         present(nav, animated: true)
+    }
+    
+    func saveLastSavedUtxosDate() {
+        let now = Date()
+        UserDefaults.standard.set(now, forKey: "lastSavedUtxosDate")
+        
+        if let lastSaved = displaySavedDate() {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                lastSavedDateLabel.text = "Last updated: " + lastSaved
+            }
+        }
+    }
+
+    func displaySavedDate() -> String? {
+        guard let savedDate = UserDefaults.standard.object(forKey: "lastSavedUtxosDate") as? Date else {
+            return nil
+        }
+        
+        return formatDate(savedDate)
+    }
+
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.timeStyle = .medium
+        formatter.locale = Locale.current
+        return formatter.string(from: date)
     }
                 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

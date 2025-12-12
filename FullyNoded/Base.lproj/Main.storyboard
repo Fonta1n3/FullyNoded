@@ -2306,13 +2306,13 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                             <rect key="frame" x="0.0" y="0.0" width="353" height="120"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" editable="NO" text="change descriptor keypool" translatesAutoresizingMaskIntoConstraints="NO" id="ciz-jb-Q9k">
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" ambiguous="YES" editable="NO" text="change descriptor keypool" translatesAutoresizingMaskIntoConstraints="NO" id="ciz-jb-Q9k">
                                                     <rect key="frame" x="8" y="8" width="290" height="104"/>
                                                     <color key="textColor" systemColor="labelColor"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
-                                                <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tLH-RH-kL4">
+                                                <button opaque="NO" tag="2" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tLH-RH-kL4">
                                                     <rect key="frame" x="306" y="11" width="27" height="23"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="wM7-mS-yUI"/>
@@ -2338,7 +2338,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                             <rect key="frame" x="0.0" y="0.0" width="353" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textField opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="current index" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="eID-Ss-UxU">
+                                                <textField opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="current index" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="eID-Ss-UxU">
                                                     <rect key="frame" x="8" y="11" width="337" height="22"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits"/>
@@ -2359,7 +2359,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                             <rect key="frame" x="0.0" y="0.0" width="353" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textField opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="max index" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Fyo-az-58s">
+                                                <textField opaque="NO" tag="1" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="max index" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Fyo-az-58s">
                                                     <rect key="frame" x="8" y="11" width="77" height="22"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
@@ -2379,7 +2379,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                             <rect key="frame" x="0.0" y="0.0" width="353" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" editable="NO" text="signers" translatesAutoresizingMaskIntoConstraints="NO" id="iQl-LS-l1G">
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" ambiguous="YES" editable="NO" text="signers" translatesAutoresizingMaskIntoConstraints="NO" id="iQl-LS-l1G">
                                                     <rect key="frame" x="8" y="5" width="337" height="34"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="34" id="v2Y-XT-EL2"/>
@@ -2404,13 +2404,13 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                             <rect key="frame" x="0.0" y="0.0" width="353" height="120"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" editable="NO" text="watching descriptors" translatesAutoresizingMaskIntoConstraints="NO" id="lji-vC-2Q3">
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" ambiguous="YES" editable="NO" text="watching descriptors" translatesAutoresizingMaskIntoConstraints="NO" id="lji-vC-2Q3">
                                                     <rect key="frame" x="8" y="8" width="290" height="104"/>
                                                     <color key="textColor" systemColor="labelColor"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
-                                                <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KIX-z8-cn5">
+                                                <button opaque="NO" tag="2" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KIX-z8-cn5">
                                                     <rect key="frame" x="306" y="11" width="27" height="23"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="27" id="36L-5J-Tm6"/>
@@ -4520,17 +4520,25 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" allowsMultipleSelection="YES" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="CFb-Jk-h9Z">
-                                <rect key="frame" x="0.0" y="103" width="393" height="715"/>
+                                <rect key="frame" x="0.0" y="133.33333333333331" width="393" height="684.66666666666674"/>
                                 <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                             </tableView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="    " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vpW-Aj-QHT">
+                                <rect key="frame" x="8" y="111" width="14.333333333333336" height="14.333333333333329"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Qb7-Z6-hPP"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="CFb-Jk-h9Z" firstAttribute="trailing" secondItem="Qb7-Z6-hPP" secondAttribute="trailing" id="9GN-sW-P0U"/>
-                            <constraint firstItem="CFb-Jk-h9Z" firstAttribute="top" secondItem="Qb7-Z6-hPP" secondAttribute="top" id="EAl-HK-ePj"/>
+                            <constraint firstItem="vpW-Aj-QHT" firstAttribute="leading" secondItem="Qb7-Z6-hPP" secondAttribute="leading" constant="8" id="E0u-1e-zyz"/>
                             <constraint firstItem="CFb-Jk-h9Z" firstAttribute="bottom" secondItem="Qb7-Z6-hPP" secondAttribute="bottom" id="RP6-te-ZSq"/>
+                            <constraint firstItem="vpW-Aj-QHT" firstAttribute="top" secondItem="Qb7-Z6-hPP" secondAttribute="top" constant="8" id="axN-qg-Cae"/>
                             <constraint firstItem="CFb-Jk-h9Z" firstAttribute="leading" secondItem="Qb7-Z6-hPP" secondAttribute="leading" id="dRz-Hg-Ysz"/>
+                            <constraint firstItem="CFb-Jk-h9Z" firstAttribute="top" secondItem="vpW-Aj-QHT" secondAttribute="bottom" constant="8" symbolic="YES" id="p5P-5S-fBp"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="UTXO's" id="71V-ha-2e7">
@@ -4544,6 +4552,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                         </rightBarButtonItems>
                     </navigationItem>
                     <connections>
+                        <outlet property="lastSavedDateLabel" destination="vpW-Aj-QHT" id="Feu-2M-Cxh"/>
                         <outlet property="tableView" destination="CFb-Jk-h9Z" id="2QQ-Qg-zs6"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToGetAddressFromUtxos" id="2DM-Bo-8hK"/>
                         <segue destination="pUo-bf-sNm" kind="show" identifier="segueToSendFromUtxos" id="EZr-Ut-goC"/>
@@ -4899,10 +4908,10 @@ Fully Noded does its best to support as many hardware and software wallet option
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="lxJ-aO-sxw"/>
+        <segue reference="2DM-Bo-8hK"/>
         <segue reference="ods-Ql-GAw"/>
         <segue reference="veA-tY-zvZ"/>
-        <segue reference="7PS-EL-3d2"/>
+        <segue reference="BVG-ie-esh"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" systemColor="tintColor"/>
     <resources>
