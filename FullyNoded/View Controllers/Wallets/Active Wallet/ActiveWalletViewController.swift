@@ -10,10 +10,6 @@ import UIKit
 
 class ActiveWalletViewController: UIViewController {
     
-    private var unlockedUtxos: [UTXO] = []
-    private var walletInfo: WalletInfo?
-    private var existingWallet = ""
-    private var walletDisabled = Bool()
     private var onchainBalanceBtc = ""
     private var onchainBalanceFiat = ""
     private var sectionZeroLoaded = Bool()
@@ -23,14 +19,11 @@ class ActiveWalletViewController: UIViewController {
     private var walletLabel: String!
     private var wallet: Wallet?
     private var fxRate: Double?
-    private var alertStyle = UIAlertController.Style.alert
     private let barSpinner = UIActivityIndicatorView(style: .medium)
-    private let ud = UserDefaults.standard
     private let spinner = ConnectingView.shared
     private var hex = ""
     private var confs = 0
     private var txToEdit = ""
-    private var memoToEdit = ""
     private var labelToEdit = ""
     private var psbt = ""
     private var rawTx = ""
@@ -55,7 +48,6 @@ class ActiveWalletViewController: UIViewController {
         walletTable.clipsToBounds = true
         NotificationCenter.default.addObserver(self, selector: #selector(broadcast(_:)), name: .broadcastTxn, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(signPsbt(_:)), name: .signPsbt, object: nil)
-        existingWallet = ud.object(forKey: "walletName") as? String ?? ""
         if let savedRate = UserDefaults.standard.object(forKey: "fxRate") as? Double {
             fxRate = savedRate
         }
@@ -156,30 +148,6 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    @IBAction func getDetails(_ sender: Any) {
-        guard let wallet = wallet else {
-            if UserDefaults.standard.object(forKey: "walletName") != nil {
-                addNavBarSpinner()
-                MakeRPCCall.sharedInstance.executeRPCCommand(method: .getwalletinfo) { [weak self] (response, errorDesc) in
-                    guard let self = self else { return }
-                    
-                    removeSpinner()
-                    
-                    guard let response = response as? [String: Any] else {
-                        showAlert(vc: self, title: "", message: "You need to either activate a wallet or create a wallet first. You can do this by tapping the plus button and squares button in the top left of the view or on the bottom Advanced > Bitcoin Core Wallets.")
-                        return
-                    }
-                    
-                    showModal(data: response, title: "getwalletinfo")
-                }
-            }
-            return
-        }
-        
-        walletLabel = wallet.label
-        goToDetail()
-    }
-    
     private func showModal(data: [String: Any], title: String) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -274,10 +242,8 @@ class ActiveWalletViewController: UIViewController {
     private func loadTable() {
         addNavBarSpinner()
         sectionZeroLoaded = false
-        existingWallet = ""
         walletLabel = ""
         onchainTransactions?.transactions.removeAll()
-        //walletTable.reloadData()
         
         activeWallet { [weak self] wallet in
             guard let self = self else { return }
@@ -289,7 +255,6 @@ class ActiveWalletViewController: UIViewController {
                     return
                 }
                 
-                existingWallet = walletName
                 walletLabel = walletName
                 
                 DispatchQueue.main.async { [weak self] in
@@ -304,15 +269,7 @@ class ActiveWalletViewController: UIViewController {
             }
             
             self.wallet = wallet
-            existingWallet = wallet.name
             walletLabel = wallet.label
-            
-//            DispatchQueue.main.async { [weak self] in
-//                guard let self = self else { return }
-//                
-//                walletTable.reloadData()
-//            }
-            
             getWalletBalance()
         }
     }
@@ -323,7 +280,6 @@ class ActiveWalletViewController: UIViewController {
             
             getFxRate()
             walletTable.reloadData()
-            //removeSpinner()
         }
     }
     
@@ -367,7 +323,6 @@ class ActiveWalletViewController: UIViewController {
         spinner.show(vc: self, description: "getting raw transaction...")
         
         guard let intString = sender.restorationIdentifier, let int = Int(intString) else { return }
-        //let tx = transactionArray[int]
         guard let onchainTransactions = onchainTransactions else { return }
         let txid = onchainTransactions.transactions[int].txid
         let param:Get_Tx = .init(["txid": txid, "verbose": true])
@@ -538,13 +493,6 @@ class ActiveWalletViewController: UIViewController {
             }
             
             onchainTransactions = listTransactionsResponse
-            
-            if let scanning = walletInfo?.scanning {
-                if !scanning && onchainTransactions!.transactions.count == 0 {
-                    promptToRescan()
-                }
-            }
-            
             updateTransactionArray()
         }
     }
@@ -557,15 +505,6 @@ class ActiveWalletViewController: UIViewController {
     
     @objc func refreshWallet() {
         refreshAll()
-    }
-    
-    private func checkIfWalletsChanged() {
-        let walletName = ud.object(forKey: "walletName") as? String ?? ""
-        
-        if walletName != existingWallet {
-            existingWallet = walletName
-            reloadWalletData()
-        }
     }
     
     private func getFxRate() {
@@ -624,163 +563,9 @@ class ActiveWalletViewController: UIViewController {
                     
                     self.sectionZeroLoaded = true
                     self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                    self.getWalletInfo()
+                    self.loadTransactions()
                 }
             }
-        }
-    }
-    
-    private func getWalletInfo() {
-        OnchainUtils.getWalletInfo { [weak self] (walletInfo, message) in
-            guard let self = self else { return }
-            
-            guard let walletInfo = walletInfo else {
-                if let message = message {
-                    showAlert(vc: self, title: "", message: message)
-                    self.removeSpinner()
-                }
-                return
-            }
-            
-            self.walletInfo = walletInfo
-            self.loadTransactions()
-            
-            
-            guard let progress = walletInfo.progress else {
-                return
-            }
-            
-            showAlert(vc: self, title: "Wallet scanning \(Int(progress * 100))% complete", message: "Your wallet is currently rescanning the blockchain, you need to wait until it completes before you will see your balances and transactions.")
-        }
-    }
-    
-    private func promptToRescan() {
-        let hasPrompted = UserDefaults.standard.value(forKey: "hasPromptedToRescan") as? Bool ?? false
-        if !hasPrompted {
-            UserDefaults.standard.setValue(true, forKey: "hasPromptedToRescan")
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                let alert = UIAlertController(title: "No transactions found.", message: "Would you like to rescan the blockchain to search for transaction history and balances? Input the year you'd like to rescan from.", preferredStyle: self.alertStyle)
-                
-                let rescan = UIAlertAction(title: "Rescan", style: .default) { [weak self] (alertAction) in
-                    guard let self = self else { return }
-                    let textField = (alert.textFields![0] as UITextField)
-                    var blockheight = 0
-                    let currentYear = Int(Calendar.current.component(.year, from: .now))
-                    if let text = textField.text {
-                        var yearToScanFrom = Int(text) ?? 2009
-                        
-                        if yearToScanFrom <= currentYear {
-                            if yearToScanFrom < 2010 {
-                                yearToScanFrom = 2010
-                            }
-                            let yearsToScan = (currentYear - yearToScanFrom) + 1
-                            let blocksToScan = yearsToScan * 55000
-                            
-                            spinner.show(vc: self, description: "rescanning...")
-                            
-                            OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
-                                guard let self = self else { return }
-                                
-                                guard let blockchainInfo = blockchainInfo else {
-                                    spinner.dismiss()
-                                    showAlert(vc: self, title: "", message: message ?? "Unknown issue getblockchaininfo.")
-                                    return
-                                }
-                                
-                                if !blockchainInfo.initialblockdownload {
-                                    blockheight = blockchainInfo.blockheight - blocksToScan
-                                    
-                                    if blockchainInfo.pruned {
-                                        if blockheight < blockchainInfo.pruneheight {
-                                            blockheight = blockchainInfo.pruneheight
-                                        }
-                                    }
-                                    
-                                    OnchainUtils.rescanNow(from: blockheight) { [weak self] (started, message) in
-                                        guard let self = self else { return }
-                                        
-                                        guard started else {
-                                            spinner.dismiss()
-                                            showAlert(vc: self, title: "", message: message ?? "Unknown issue from rescan.")
-                                            return
-                                        }
-                                        
-                                        self.spinner.dismiss()
-                                        showAlert(vc: self, title: "", message: "Rescanning, you can refresh this page to see completion status.")
-                                    }
-                                } else {
-                                    spinner.dismiss()
-                                    showAlert(vc: self, title: "", message: "Wait till your node is done syncing before attempting to rescan or use wallets.")
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                alert.addTextField { (textField) in
-                    textField.placeholder = "From year"
-                    textField.keyboardAppearance = .dark
-                    textField.keyboardType = .numberPad
-                    textField.text = "2009"
-                }
-                
-                alert.addAction(rescan)
-                
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-                alert.popoverPresentationController?.sourceView = self.view
-                self.present(alert, animated: true, completion: nil)
-            }
-        }
-    }
-    
-    private func promptToCreateWallet() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let alert = UIAlertController(title: "Create a wallet.", message: "Or do it later by tapping the + button in the top left.", preferredStyle: self.alertStyle)
-            
-            alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { action in
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.tabBarController?.selectedIndex = 1
-                    self.performSegue(withIdentifier: "createFullyNodedWallet", sender: self)
-                }
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true, completion: nil)
-        }
-    }
-    
-    private func promptToChooseWallet() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            self.removeSpinner()
-            
-            let alert = UIAlertController(title: "None of your wallets seem to be toggled on, please choose which wallet you want to use.", message: "", preferredStyle: self.alertStyle)
-            
-            alert.addAction(UIAlertAction(title: "Activate a Fully Noded wallet", style: .default, handler: { action in
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.tabBarController?.selectedIndex = 1
-                    self.goChooseWallet()
-                }
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true, completion: nil)
-        }
-    }
-    
-    private func goChooseWallet() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToWallets", sender: vc)
         }
     }
     
@@ -819,7 +604,6 @@ class ActiveWalletViewController: UIViewController {
         sectionZeroLoaded = false
         wallet = nil
         walletLabel = nil
-        existingWallet = ""
         onchainBalanceFiat = ""
         onchainBalanceBtc = ""
         onchainTransactions?.transactions.removeAll()
@@ -838,14 +622,6 @@ class ActiveWalletViewController: UIViewController {
         refreshAll()
     }
     
-    private func goToDetail() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            performSegue(withIdentifier: "segueToActiveWalletDetail", sender: self)
-        }
-    }
-    
     private func reloadTable() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -858,7 +634,7 @@ class ActiveWalletViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Sort by", message: "", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "Sort by", message: "", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Amount", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
@@ -937,7 +713,6 @@ class ActiveWalletViewController: UIViewController {
             guard let vc = segue.destination as? UTXOViewController else { fallthrough }
             
             vc.fxRate = fxRate
-            vc.unlockedUtxos = unlockedUtxos
             vc.wallet = wallet
             
         case "segueToActiveWalletDetail":
