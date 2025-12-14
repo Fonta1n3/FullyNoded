@@ -84,7 +84,6 @@ class QuickConnect {
         newNode["rpcpassword"] = torNodeRPCPass
         newNode["uncleJim"] = false
         newNode["isActive"] = true
-        newNode["isLightning"] = false
         
         processNode(newNode, url, completion: completion)
     }

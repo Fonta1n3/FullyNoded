@@ -282,7 +282,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         if selectedNode == nil {
             newNode["id"] = UUID()
-            newNode["isLightning"] = false
             newNode["label"] = label
             newNode["onionAddress"] = encAddress
             newNode["rpcuser"] = encUser
