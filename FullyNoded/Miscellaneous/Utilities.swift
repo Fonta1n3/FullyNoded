@@ -18,7 +18,7 @@ import UIKit
 //        for (i, node) in nodes.enumerated() {
 //            let nodeStr = NodeStruct(dictionary: node)
 //            
-//            if nodeStr.isLightning && nodeStr.isActive {
+//            if nodeStr.isActive {
 //                if nodeStr.macaroon != nil {
 //                    isLnd = true
 //                }

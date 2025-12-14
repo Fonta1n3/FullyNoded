@@ -53,7 +53,6 @@ class QuickConnect {
         //
         //                    newNode["cert"] = encryptedCert
         //                    newNode["onionAddress"] = torNodeHost
-        //                    newNode["isLightning"] = false
         //                    newNode["isActive"] = true
         //                    newNode["uncleJim"] = false
         //                    newNode["label"] = "Join Market"

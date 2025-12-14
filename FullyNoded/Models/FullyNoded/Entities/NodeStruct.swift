@@ -17,7 +17,6 @@ public struct NodeStruct: CustomStringConvertible {
     let onionAddress:Data?
     let rpcpassword:Data?
     let rpcuser:Data?
-    let isLightning:Bool
     let uncleJim:Bool
     let macaroon:Data?
     let cert:Data?
@@ -35,7 +34,6 @@ public struct NodeStruct: CustomStringConvertible {
         onionAddress = dictionary["onionAddress"] as? Data
         rpcpassword = dictionary["rpcpassword"] as? Data
         rpcuser = dictionary["rpcuser"] as? Data
-        isLightning = dictionary["isLightning"] as? Bool ?? false
         uncleJim = dictionary["uncleJim"] as? Bool ?? false
         macaroon = dictionary["macaroon"] as? Data
         cert = dictionary["cert"] as? Data
