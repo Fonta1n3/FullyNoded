@@ -1432,7 +1432,7 @@
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNoded.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -1481,7 +1481,7 @@
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNodedRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;

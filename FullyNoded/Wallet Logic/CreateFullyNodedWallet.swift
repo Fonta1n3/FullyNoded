@@ -115,20 +115,17 @@ enum Keys {
         var addresses: [[String: Any]] = []
             
         guard let hdKey = try? HDKey(base58: accountPubkey) else {
-            print("can't get hdKey")
             completion((nil))
             return
         }
         
         for i in 0...999 {
             guard let path = try? BIP32Path(string: "/0/\(i)") else {
-                print("Can not convert string to bip32path.")
                 completion((nil))
                 return
             }
             
             guard let address = try? hdKey.derive(using: path).address(type: .payToWitnessPubKeyHash) else {
-                print("cant get address")
                 completion((nil))
                 return
             }
