@@ -102,13 +102,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let nodeStruct = NodeStruct(dictionary: nodeArray[indexPath.row])
         label.text = nodeStruct.label
                 
-        if nodeStruct.isLightning {
-            icon.image = UIImage(systemName: "bolt")
-            icon.tintColor = .systemOrange
-        } else {
-            icon.image = UIImage(systemName: "link")
-            icon.tintColor = .systemBlue
-        }
+        icon.image = UIImage(systemName: "link")
+        icon.tintColor = .systemBlue
         
         if !nodeStruct.isActive {
             label.textColor = .secondaryLabel
@@ -138,9 +133,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 guard let self = self else { return }
                 
                 if success {
-                    if !nodeStr.isLightning {
-                        self.ud.removeObject(forKey: "walletName")
-                    }
+                    self.ud.removeObject(forKey: "walletName")
                     
                     if self.nodeArray.count == 1 {
                         self.reloadTable()
@@ -185,12 +178,9 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 guard let self = self else { return }
                 
                 if success {
-                    if !nodeStr.isLightning {
-                        self.ud.removeObject(forKey: "walletName")
-                    }
-                    
+                    self.ud.removeObject(forKey: "walletName")
                     self.reloadTable()
-                    
+    
                 } else {
                     displayAlert(viewController: self, isError: true, message: "Error updating node.")
                 }
@@ -277,9 +267,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             CoreDataService.update(id: nodeStr.id!, keyToUpdate: "isActive", newValue: selectedSwitch.isOn, entity: .newNodes) { [unowned vc = self] success in
                 if success {
-                    if !nodeStr.isLightning && !nodeStr.isJoinMarket {
-                        vc.ud.removeObject(forKey: "walletName")
-                    }
+                    vc.ud.removeObject(forKey: "walletName")
                     
                     if vc.nodeArray.count == 1 {
                         vc.reloadTable()
@@ -314,10 +302,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                                     }
                                     vc.nodeTable.reloadData()
                                     
-                                    if !nodeStr.isLightning && !nodeStr.isJoinMarket {
-                                        if selectedSwitch.isOn {
-                                            NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
-                                        }
+                                    if selectedSwitch.isOn {
+                                        NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
                                     }
                                 }
                             }

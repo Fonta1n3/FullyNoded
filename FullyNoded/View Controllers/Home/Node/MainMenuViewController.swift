@@ -111,10 +111,6 @@ class MainMenuViewController: UIViewController {
                     if KeyChain.getData("UnlockPassword") != nil {
                         if isUnlocked {
                             mgr?.start(delegate: self)
-                            if self.activeNode != nil, self.activeNode!.isNostr {
-                                loadTable()
-                                removeTorStatus()
-                            }
                         }
                     } else {
                         mgr?.start(delegate: self)
