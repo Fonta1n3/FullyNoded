@@ -35,31 +35,11 @@ class QuickConnect {
             return
         }
         
-        
         guard let rpcPassword = URLComponents(string: url)?.password,
               let rpcUser = URLComponents(string: url)?.user else {
-            return }
-        //                    // try jm here.
-        //                    guard let certCheck = URL(string: url)?.value(for: "cert"),
-        //                          let certData = try? Data.decodeUrlSafeBase64(certCheck) else {
-        //                              completion((false, "cert missing."))
-        //                              return
-        //                          }
-        //
-        //                    guard let encryptedCert = Crypto.encrypt(certData) else {
-        //                            completion((false, "error encrypting your credentials"))
-        //                            return
-        //                    }
-        //
-        //                    newNode["cert"] = encryptedCert
-        //                    newNode["onionAddress"] = torNodeHost
-        //                    newNode["isActive"] = true
-        //                    newNode["uncleJim"] = false
-        //                    newNode["label"] = "Join Market"
-        //                    newNode["isJoinMarket"] = true
-        //                    processNode(newNode, url, completion: completion)
-        //                    return
-        //            }
+            completion((false, "Missing rpc credentials."))
+            return
+        }
         
         if let labelCheck = URL(string: url)?.value(for: "label") {
             label = labelCheck
@@ -81,7 +61,6 @@ class QuickConnect {
         newNode["label"] = label
         newNode["rpcuser"] = torNodeRPCUser
         newNode["rpcpassword"] = torNodeRPCPass
-        newNode["uncleJim"] = false
         newNode["isActive"] = true
         
         processNode(newNode, url, completion: completion)

@@ -267,9 +267,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             CoreDataService.update(id: nodeStr.id!, keyToUpdate: "isActive", newValue: selectedSwitch.isOn, entity: .newNodes) { [unowned vc = self] success in
                 if success {
-                    if !nodeStr.isJoinMarket {
-                        vc.ud.removeObject(forKey: "walletName")
-                    }
+                    vc.ud.removeObject(forKey: "walletName")
                     
                     if vc.nodeArray.count == 1 {
                         vc.reloadTable()
@@ -304,10 +302,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                                     }
                                     vc.nodeTable.reloadData()
                                     
-                                    if !nodeStr.isJoinMarket {
-                                        if selectedSwitch.isOn {
-                                            NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
-                                        }
+                                    if selectedSwitch.isOn {
+                                        NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
                                     }
                                 }
                             }
