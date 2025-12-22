@@ -69,6 +69,15 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
+    @IBAction func getWalletDetail(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            performSegue(withIdentifier: "segueToActiveWalletDetail", sender: self)
+        }
+    }
+    
+    
     private func hideData() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }

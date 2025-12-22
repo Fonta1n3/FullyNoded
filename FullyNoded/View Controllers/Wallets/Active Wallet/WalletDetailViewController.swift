@@ -904,7 +904,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         if let section = Section(rawValue: section) {
             switch section {
             case .walletExport:
-                textLabel.text = "This QR is for exporting your wallet to Hardware Wallets and Software wallets. Compatible with Sparrow, Blue Wallet, Passport, Coldcard and Fully Noded."
+                textLabel.text = "This QR is for exporting your wallet to other wallet apps and hardware wallets."
                                 
             default:
                 break
