@@ -102,7 +102,7 @@ public extension String {
     var addressExpanded: String {
         var addressExpanded = ""
         for (i, char) in self.enumerated() {
-            if i > 0 && i % 5 == 0 {
+            if i > 0 && i % 6 == 0 {
                 addressExpanded.append("-")
             }
             addressExpanded.append(char)
