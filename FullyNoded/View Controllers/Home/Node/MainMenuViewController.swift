@@ -400,8 +400,6 @@ class MainMenuViewController: UIViewController {
         case .blockchainInfo:
             guard let blockchainInfo = blockchainInfo else { return blankCell() }
             
-            
-            
             switch indexPath.row {
             case 0:
                 if blockchainInfo.progressString == "Fully verified" {

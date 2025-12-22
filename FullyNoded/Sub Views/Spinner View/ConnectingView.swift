@@ -51,31 +51,12 @@ final class ConnectingView {
             self?.animateOut(completion: completion)
         }
     }
-    
-    // MARK: - Private Setup
-    
+        
     private func setupViews(in viewController: UIViewController, description: String) {
-        // Remove any existing
         blurView.removeFromSuperview()
-        
-        // Find the best parent view: prefer window > navigationController > tabBarController > view
-//        let parentView: UIView = {
-//            if let window = viewController.view.window {
-//                return window
-//            } else if let nav = viewController.navigationController?.view {
-//                return nav
-//            } else if let tab = viewController.tabBarController?.view {
-//                return tab
-//            } else {
-//                return viewController.view
-//            }
-//        }()
-        
         blurView.translatesAutoresizingMaskIntoConstraints = false
-        viewController.view.addSubview(blurView)
         
-        // Ensure it's on top
-        viewController.view.bringSubviewToFront(blurView)
+        viewController.view.addSubview(blurView)
         
         // Activity Indicator
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
@@ -94,7 +75,6 @@ final class ConnectingView {
         blurView.contentView.addSubview(activityIndicator)
         blurView.contentView.addSubview(label)
         
-        // Constraints
         NSLayoutConstraint.activate([
             blurView.topAnchor.constraint(equalTo: viewController.view.topAnchor),
             blurView.leadingAnchor.constraint(equalTo: viewController.view.leadingAnchor),

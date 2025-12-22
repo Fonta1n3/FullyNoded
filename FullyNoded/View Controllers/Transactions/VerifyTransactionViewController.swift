@@ -60,6 +60,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     //var readerSession: NFCNDEFReaderSession?
     var exporting = false
     var passphrase: String?
+    private var initialLoad = true
     
     @IBOutlet weak private var verifyTable: UITableView!
     @IBOutlet weak private var exportButtonOutlet: UIButton!
@@ -88,19 +89,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         configureViews()
-        
-        if unsignedPsbt != "" || signedRawTx != "" {
-            enableExportButton()
-            
-            if unsignedPsbt != "" {
-                processPsbt(unsignedPsbt)
-            } else {
-                load()
-            }
-            
-        } else {
-            promptToAddTx()
-        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -109,6 +97,22 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         isPlainText = false
         qrCodeStringToExport = ""
         exporting = false
+        
+        if initialLoad {
+            if unsignedPsbt != "" || signedRawTx != "" {
+                enableExportButton()
+                
+                if unsignedPsbt != "" {
+                    processPsbt(unsignedPsbt)
+                } else {
+                    load()
+                }
+                
+            } else {
+                promptToAddTx()
+            }
+            initialLoad = false
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -831,7 +835,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func load() {
-        print("load()")
         spinner.show(vc: self, description: "loading...")
         
         inputArray.removeAll()
