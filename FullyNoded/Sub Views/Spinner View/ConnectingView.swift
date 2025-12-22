@@ -27,8 +27,10 @@ final class ConnectingView {
     
     // MARK: - Public Methods
     
-    func show(vc: UIViewController, description: String = "Connecting...") {
-        guard !isVisible else { return }
+    func show(vc: UIViewController, description: String = "") {
+        guard !isVisible else {
+            return
+        }
         isVisible = true
         
         DispatchQueue.main.async { [weak self] in
@@ -57,23 +59,23 @@ final class ConnectingView {
         blurView.removeFromSuperview()
         
         // Find the best parent view: prefer window > navigationController > tabBarController > view
-        let parentView: UIView = {
-            if let window = viewController.view.window {
-                return window
-            } else if let nav = viewController.navigationController?.view {
-                return nav
-            } else if let tab = viewController.tabBarController?.view {
-                return tab
-            } else {
-                return viewController.view
-            }
-        }()
+//        let parentView: UIView = {
+//            if let window = viewController.view.window {
+//                return window
+//            } else if let nav = viewController.navigationController?.view {
+//                return nav
+//            } else if let tab = viewController.tabBarController?.view {
+//                return tab
+//            } else {
+//                return viewController.view
+//            }
+//        }()
         
         blurView.translatesAutoresizingMaskIntoConstraints = false
-        parentView.addSubview(blurView)
+        viewController.view.addSubview(blurView)
         
         // Ensure it's on top
-        parentView.bringSubviewToFront(blurView)
+        viewController.view.bringSubviewToFront(blurView)
         
         // Activity Indicator
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
@@ -94,10 +96,10 @@ final class ConnectingView {
         
         // Constraints
         NSLayoutConstraint.activate([
-            blurView.topAnchor.constraint(equalTo: parentView.topAnchor),
-            blurView.leadingAnchor.constraint(equalTo: parentView.leadingAnchor),
-            blurView.trailingAnchor.constraint(equalTo: parentView.trailingAnchor),
-            blurView.bottomAnchor.constraint(equalTo: parentView.bottomAnchor),
+            blurView.topAnchor.constraint(equalTo: viewController.view.topAnchor),
+            blurView.leadingAnchor.constraint(equalTo: viewController.view.leadingAnchor),
+            blurView.trailingAnchor.constraint(equalTo: viewController.view.trailingAnchor),
+            blurView.bottomAnchor.constraint(equalTo: viewController.view.bottomAnchor),
             
             activityIndicator.centerXAnchor.constraint(equalTo: blurView.centerXAnchor),
             activityIndicator.centerYAnchor.constraint(equalTo: blurView.centerYAnchor, constant: -40),

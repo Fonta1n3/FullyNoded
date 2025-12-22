@@ -39,6 +39,7 @@ class MainMenuViewController: UIViewController {
     var showMiningInfoSpinner = false
     var showPeerInfoSpinner = false
     var showUpTimeSpinner = false
+    
     let sectionSpinner = UIActivityIndicatorView(style: .medium)
             
     @IBOutlet weak var torStatusLabel: UILabel!
@@ -59,6 +60,7 @@ class MainMenuViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         UserDefaults.standard.set(UIDevice.modelName, forKey: "modelName")
         UIApplication.shared.isIdleTimerDisabled = true
         torStatusLabel.alpha = 0
@@ -91,15 +93,9 @@ class MainMenuViewController: UIViewController {
         showUnlockScreen()
         setFeeTarget()
         NotificationCenter.default.addObserver(self, selector: #selector(refreshNode), name: .refreshNode, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(startTorFromAppDelegate), name: .startTorFromAppDelegate, object: nil)
         refreshControl.addTarget(self, action: #selector(refreshNode), for: UIControl.Event.valueChanged)
         mainMenu.addSubview(refreshControl)
-        blurView.clipsToBounds = true
-        blurView.layer.cornerRadius = 8
-        blurView.layer.zPosition = 1
-        torProgressLabel.text = "Tor bootstrapping 0%..."
-        torProgressLabel.layer.zPosition = 1
-        progressView.layer.zPosition = 1
-        progressView.setNeedsFocusUpdate()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -107,27 +103,7 @@ class MainMenuViewController: UIViewController {
             if !firstTimeHere() {
                 displayAlert(viewController: self, isError: true, message: "There was a critical error setting your devices encryption key, please delete and reinstall the app")
             } else {
-                if mgr?.state != .started && mgr?.state != .connected  {
-                    if KeyChain.getData("UnlockPassword") != nil {
-                        if isUnlocked {
-                            mgr?.start(delegate: self)
-                            if self.activeNode != nil, self.activeNode!.isNostr {
-                                loadTable()
-                                removeTorStatus()
-                            }
-                        }
-                    } else {
-                        mgr?.start(delegate: self)
-                        if activeNode != nil {
-                            refreshNode()
-                            loadTable()
-                            removeTorStatus()
-                        } else {
-                            removeLoader()
-                            alertToAddNode()
-                        }
-                    }
-                }
+                startTor()
             }
         } else {
             MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
@@ -144,6 +120,54 @@ class MainMenuViewController: UIViewController {
         
         updateTorStatus()
     }
+    
+    private func confirgureTorProgressView() {
+        blurView.layer.cornerRadius = 8
+        blurView.clipsToBounds = true
+        progressView.progressTintColor = UIColor.systemBlue
+        progressView.trackTintColor = UIColor.clear
+        blurView.layer.zPosition = 0
+        progressView.layer.zPosition = 3
+        torProgressLabel.layer.zPosition = 2
+        progressView.setNeedsDisplay()
+        progressView.setNeedsLayout()
+        progressView.layoutIfNeeded()
+        progressView.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            progressView.topAnchor.constraint(equalTo: torProgressLabel.bottomAnchor, constant: 12),
+            progressView.leadingAnchor.constraint(equalTo: blurView.contentView.leadingAnchor, constant: 30),
+            progressView.trailingAnchor.constraint(equalTo: blurView.contentView.trailingAnchor, constant: -30),
+            progressView.centerXAnchor.constraint(equalTo: blurView.contentView.centerXAnchor),
+            progressView.heightAnchor.constraint(equalToConstant: 3)
+        ])
+    }
+    
+    private func startTor() {
+        confirgureTorProgressView()
+        blurView.isHidden = false
+        torProgressLabel.isHidden = false
+        progressView.isHidden = false
+        
+        if mgr?.state != .started && mgr?.state != .connected  {
+            if KeyChain.getData("UnlockPassword") != nil {
+                if isUnlocked {
+                    mgr?.start(delegate: self)
+                }
+            } else {
+                mgr?.start(delegate: self)
+                if activeNode != nil {
+                    refreshNode()
+                    loadTable()
+                    removeTorStatus()
+                } else {
+                    removeLoader()
+                    alertToAddNode()
+                }
+            }
+        }
+    }
+    
     
     private func alertToAddNode() {
         showAlert(vc: self, title: "No active node.", message: "Navigate to Settings > Node Manager to add or activate a node.")
@@ -178,6 +202,10 @@ class MainMenuViewController: UIViewController {
             self.spinner.alpha = 1
             self.spinner.startAnimating()
         }
+    }
+    
+    @objc func startTorFromAppDelegate() {
+        startTor()
     }
     
     @objc func refreshNode() {
@@ -913,8 +941,9 @@ extension MainMenuViewController: OnionManagerDelegate {
     func torConnProgress(_ progress: Int) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            let progressFloat = Float(Double(progress) / 100.0)
+            progressView.setProgress(progressFloat, animated: true)
             torProgressLabel.text = "Tor bootstrapping \(progress)% complete"
-            progressView.setProgress(Float(Double(progress) / 100.0), animated: true)
         }
     }
     
@@ -927,7 +956,6 @@ extension MainMenuViewController: OnionManagerDelegate {
         
         removeTorStatus()
         updateTorStatus()
-        
         timeStamp()
     }
     
@@ -1142,7 +1170,6 @@ extension MainMenuViewController: UITableViewDelegate {
             iconButton.widthAnchor.constraint(equalToConstant: 30),
             iconButton.heightAnchor.constraint(equalToConstant: 30)
         ])
-        
         
         header.addSubview(sectionSpinner)
         return header

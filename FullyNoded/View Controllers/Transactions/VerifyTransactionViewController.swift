@@ -831,6 +831,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func load() {
+        print("load()")
         spinner.show(vc: self, description: "loading...")
         
         inputArray.removeAll()
@@ -2223,7 +2224,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     alreadySaved = true
                     self.id = txStruct.id!
                     self.labelText = txStruct.label
-                    //self.memoText = txStruct.memo
                 }
                 
                 if i + 1 == transactions.count && !alreadySaved {
@@ -2299,16 +2299,17 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         Broadcaster.sharedInstance.send(rawTx: self.signedRawTx) { [weak self] id in
             guard let self = self else { return }
+            spinner.dismiss()
             
             if id == self.txid {
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                    self.disableSendButton()
-                    self.spinner.dismiss()
+                    disableSendButton()
                     showAlert(vc: self, title: "", message: "Transaction sent ✓")
                 }
             } else {
-                self.showError(error: "Error broadcasting privately, try again and use your node instead. Error: \(id ?? "unknown")")
+                showError(error: "Error broadcasting privately, try again and use your node instead. Error: \(id ?? "unknown")")
             }
         }
     }

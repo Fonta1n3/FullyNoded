@@ -260,6 +260,7 @@ public extension Notification.Name {
     static let broadcastTxn = Notification.Name(rawValue: "broadcastTxn")
     static let signPsbt = Notification.Name(rawValue: "signPsbt")
     static let updateWalletLabel = Notification.Name(rawValue: "updateWalletLabel")
+    static let startTorFromAppDelegate = Notification.Name(rawValue: "startTorFromAppDelegate")
 }
 
 public extension Data {

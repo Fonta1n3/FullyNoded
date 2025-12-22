@@ -111,7 +111,8 @@ class TorClient: NSObject {
                 // Start a tor thread.
                 self.thread?.start()
                 
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+                    guard let self = self else { return }
                     // Connect Tor controller.
                     do {
                         if !(self.controller?.isConnected ?? false) {
@@ -127,30 +128,34 @@ class TorClient: NSObject {
                             options: NSData.ReadingOptions(rawValue: 0)
                         )
                         
-                        self.controller?.authenticate(with: cookie) { (success, error) in
+                        self.controller?.authenticate(with: cookie) { [weak self] (success, error) in
+                            guard let self = self else { return }
+                            
                             if let error = error {
                                 print("error = \(error.localizedDescription)")
                                 return
                             }
                             
                             var progressObs: Any? = nil
-                            progressObs = self.controller?.addObserver(forStatusEvents: {
+                            
+                            progressObs = self.controller?.addObserver(forStatusEvents: { [weak self]
                                 (type: String, severity: String, action: String, arguments: [String : String]?) -> Bool in
-                                if arguments != nil {
-                                    if arguments!["PROGRESS"] != nil {
-                                        let progress = Int(arguments!["PROGRESS"]!)!
-                                        weakDelegate?.torConnProgress(progress)
-                                        if progress >= 100 {
-                                            self.controller?.removeObserver(progressObs)
-                                        }
-                                        return true
-                                    }
+                                guard let self = self else { return false }
+                                
+                                guard let arguments = arguments, let progress = arguments["PROGRESS"], let progressInt = Int(progress) else { return false }
+                                
+                                weakDelegate?.torConnProgress(progressInt)
+                                
+                                if progressInt >= 100 {
+                                    self.controller?.removeObserver(progressObs)
                                 }
-                                return false
+                                
+                                return true
                             })
                             
                             var observer: Any? = nil
-                            observer = self.controller?.addObserver(forCircuitEstablished: { established in
+                            observer = self.controller?.addObserver(forCircuitEstablished: { [weak self] established in
+                                guard let self = self else { return }
                                 if established {
                                     self.state = .connected
                                     weakDelegate?.torConnFinished()
@@ -171,15 +176,6 @@ class TorClient: NSObject {
             }
         }
     }
-    
-//    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-//        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
-//           let trust = challenge.protectionSpace.serverTrust {
-//            completionHandler(.useCredential, URLCredential(trust: trust))
-//        } else {
-//            completionHandler(.performDefaultHandling, nil)
-//        }
-//    }
     
     func resign() {
         controller?.disconnect()
