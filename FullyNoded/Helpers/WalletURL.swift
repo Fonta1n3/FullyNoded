@@ -18,10 +18,8 @@ class WalletURL {
             var activeNode: [String:Any]?
             
             for node in nodes {
-                if let isActive = node["isActive"] as? Bool, let isLightning = node["isLightning"] as? Bool {
-                    if isActive, !isLightning {
-                        activeNode = node
-                    }
+                if let isActive = node["isActive"] as? Bool, isActive {
+                    activeNode = node
                 }
             }
             
