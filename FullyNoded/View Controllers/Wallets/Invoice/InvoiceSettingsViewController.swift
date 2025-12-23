@@ -9,6 +9,7 @@
 import Foundation
 import UIKit
 
+// Needs to be renamed.
 class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     @IBOutlet weak var table: UITableView!
