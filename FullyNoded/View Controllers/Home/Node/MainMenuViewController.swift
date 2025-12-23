@@ -144,6 +144,7 @@ class MainMenuViewController: UIViewController {
     }
     
     private func startTor() {
+        torProgressLabel.text = "Tor bootstrapping..."
         confirgureTorProgressView()
         blurView.isHidden = false
         torProgressLabel.isHidden = false
@@ -863,7 +864,7 @@ class MainMenuViewController: UIViewController {
         return FirstTime.firstTimeHere()
     }
     
-    @objc private func iconButtonTapped(_ sender: UIButton) {
+    @objc private func infoButtonTapped(_ sender: UIButton) {
         let section = sender.tag
         
         switch Section(rawValue: section) {
@@ -1049,7 +1050,7 @@ extension MainMenuViewController: UITableViewDelegate {
         iconButton.tintColor = .tertiaryLabel
         iconButton.backgroundColor = .clear
         iconButton.layer.cornerRadius = 20
-        iconButton.addTarget(self, action: #selector(iconButtonTapped(_:)), for: .touchUpInside)
+        iconButton.addTarget(self, action: #selector(infoButtonTapped(_:)), for: .touchUpInside)
         iconButton.tag = section
         
         switch section {
