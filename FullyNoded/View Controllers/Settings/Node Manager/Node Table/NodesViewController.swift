@@ -137,54 +137,55 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     
                     if self.nodeArray.count == 1 {
                         self.reloadTable()
+                    } else {
+                        if nodeArray.count > 1 {
+                            for (i, node) in nodeArray.enumerated() {
+                                //if i != indexPath.row {
+                                    if node.id != selectedNode.id {
+                                        CoreDataService.update(id: node.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                                    }
+                                    
+                                    if i + 1 == nodeArray.count {
+                                        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
+                                            guard let nodes = nodes else { return }
+                                            
+                                            DispatchQueue.main.async { [weak self] in
+                                                guard let self = self else { return }
+                                                
+                                                nodeArray.removeAll()
+                                                
+                                                for node in nodes {
+                                                    if node["id"] as? UUID != nil {
+                                                        nodeArray.append(NodeStruct(dictionary: node))
+                                                    }
+                                                }
+                                                nodeTable.reloadData()
+                                                showAlert(vc: self, title: "", message: "Tap the refresh button on the home view to show the current node.")
+                                            }
+                                        }
+                                    }
+                               // }
+                            }
+                        }
                     }
-                    
                 } else {
                     displayAlert(viewController: self, isError: true, message: "Error updating node.")
                 }
             }
             
-            if nodeArray.count > 1 {
-                for (i, node) in nodeArray.enumerated() {
-                    guard i != indexPath.row else { return }
-                    
-                    if node.id != selectedNode.id {
-                        CoreDataService.update(id: node.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
-                    }
-                    
-                    guard i + 1 == nodeArray.count else { return }
-                    
-                    CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
-                        guard let nodes = nodes else { return }
-                        
-                        DispatchQueue.main.async { [weak self] in
-                            guard let self = self else { return }
-                            
-                            nodeArray.removeAll()
-                            
-                            for node in nodes {
-                                if node["id"] as? UUID != nil {
-                                    nodeArray.append(NodeStruct(dictionary: node))
-                                }
-                            }
-                            nodeTable.reloadData()
-                            showAlert(vc: self, title: "", message: "Tap the refresh button on the home view to show the current node.")
-                        }
-                    }
-                }
-            }
+            
         } else {
-            CoreDataService.update(id: selectedNode.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { [weak self] success in
-                guard let self = self else { return }
-                
-                if success {
-                    self.ud.removeObject(forKey: "walletName")
-                    self.reloadTable()
-    
-                } else {
-                    displayAlert(viewController: self, isError: true, message: "Error updating node.")
-                }
-            }
+//            CoreDataService.update(id: selectedNode.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { [weak self] success in
+//                guard let self = self else { return }
+//                
+//                if success {
+//                    self.ud.removeObject(forKey: "walletName")
+//                    self.reloadTable()
+//    
+//                } else {
+//                    displayAlert(viewController: self, isError: true, message: "Error updating node.")
+//                }
+//            }
         }
         
         
