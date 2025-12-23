@@ -136,7 +136,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "addressCell", for: indexPath)
         let label = cell.viewWithTag(1) as! UILabel
-        label.text = "#\(indexPath.row + 1) " + addresses[indexPath.row]
+        label.text = "#\(indexPath.row + 1) " + addresses[indexPath.row].addressExpanded
         return cell
     }
     
