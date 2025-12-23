@@ -51,7 +51,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var bitcoinCoreWallets = [String()]
     var walletIndex = 0
     var qrCodeStringToExport = ""
-    var blind = false
     //var processedPsbt:String?
     var isBBQr = false
     var isUR = false
@@ -197,7 +196,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         bitcoinCoreWallets.removeAll()
         walletIndex = 0
         qrCodeStringToExport = ""
-        blind = false
     }
     
     private func processWithBDK(psbt: String) -> ((rawTx: String?, psbt: String?)) {
@@ -429,9 +427,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             enableExportButton()
             signedRawTx = processed
             load()
-        } else if processed.lowercased().hasPrefix("ur:bytes") {
-            self.blind = true
-            self.parseBlindPsbt(processed)
 //        } else if processed.count == 64 {
 //            fetchTxFromId(txid: processed)
         } else {
@@ -469,23 +464,17 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 return
             }
                         
-            if let text = data.utf8String, text.lowercased().hasPrefix("ur:bytes") {
+            if Keys.validPsbt(data.base64EncodedString()) {
+                unsignedPsbt = data.base64EncodedString()
                 self.reset()
-                self.blind = true
-                self.parseBlindPsbt(text)
+                processPsbt(unsignedPsbt)
+            } else if let psbtUtf8 = data.utf8String, Keys.validPsbt(psbtUtf8) {
+                unsignedPsbt = psbtUtf8
+                self.reset()
+                processPsbt(psbtUtf8)
             } else {
-                if Keys.validPsbt(data.base64EncodedString()) {
-                    unsignedPsbt = data.base64EncodedString()
-                    self.reset()
-                    processPsbt(unsignedPsbt)
-                } else if let psbtUtf8 = data.utf8String, Keys.validPsbt(psbtUtf8) {
-                    unsignedPsbt = psbtUtf8
-                    self.reset()
-                    processPsbt(psbtUtf8)
-                } else {
-                    spinner.dismiss()
-                    showAlert(vc: self, title: "Invalid format", message: "That is not a valid BIP174 format.")
-                }                
+                spinner.dismiss()
+                showAlert(vc: self, title: "Invalid format", message: "That is not a valid BIP174 format.")
             }
             
             return
@@ -534,17 +523,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
                     
     @IBAction func exportAction(_ sender: Any) {
-        if self.blind {
-            guard let data = Data(base64Encoded: self.unsignedPsbt),
-                  let encrypted = Crypto.blindPsbt(data),
-                  let ur = URHelper.dataToUrBytes(encrypted) else {
-                showAlert(vc: self, title: "", message: "Error converting to data or encrypting.")
-                return
-            }
-            
-            self.exportPsbt(blindedpsbt: ur.qrString, plainText: nil)
-            
-        } else if unsignedPsbt != "" {
+        if unsignedPsbt != "" {
             promptToExportPsbt()
         } else if signedRawTx != "" {
             exportTxn(txn: signedRawTx)
@@ -968,39 +947,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     func getInputInfo(index: Int) {
         let dict = inputArray[index]
         if let txid = dict["txid"] as? String, let vout = dict["vout"] as? Int {
-            if blind {
-                CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] utxos in
-                    guard let self = self else { return }
-                    
-                    if let utxos = utxos, utxos.count > 0 {
-                        var parseIt = false
-                        for (i, utxo) in utxos.enumerated() {
-                            let utxoStr = Utxo(utxo)
-                            
-                            // only parse inputs for utxos we own if dealing with blind psbt
-                            if utxoStr.txid == txid, utxoStr.vout == vout, (utxoStr.solvable ?? false) {
-                                parseIt = true
-                            }
-                            
-                            if i + 1 == utxos.count && parseIt {
-                                let param:Get_Tx = .init(["txid": txid, "verbose": true])
-                                self.parsePrevTx(method: .gettransaction(param), vout: vout, txid: txid)
-                            } else if i + 1 == utxos.count && !parseIt {
-                                
-                                if index + 1 < self.inputArray.count {
-                                    self.index += 1
-                                    self.getInputInfo(index: self.index)
-                                } else {
-                                    self.parsePrevTxOutput(outputs: [], vout: 0)
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                let param = Get_Tx(["txid": txid, "verbose": true])
-                parsePrevTx(method: .gettransaction(param), vout: vout, txid: txid)
-            }
+            let param = Get_Tx(["txid": txid, "verbose": true])
+            parsePrevTx(method: .gettransaction(param), vout: vout, txid: txid)
         } else if dict["txid"] as? String == "coinbase" {
             self.parsePrevTxOutput(outputs: [], vout: 0)
         }
@@ -2561,71 +2509,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
         }
     }
+        
     
-    private func prompToAddBlindPsbt(_ blindPsbt: Data) {
-        func loadNormally() {
-            guard let decryptedPsbt = Crypto.decryptPsbt(blindPsbt) else {
-                showAlert(vc: self, title: "", message: "Error decrypting psbt.")
-                return
-            }
-            
-            self.isSigning = false
-            self.unsignedPsbt = decryptedPsbt.base64EncodedString()
-            processPsbt(unsignedPsbt)
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let alert = UIAlertController(title: "Add inputs and outputs to the psbt?",
-                                          message: "Fully Noded will add inputs and outputs from your active wallet to this transaction. Everyones inputs and outputs will be shuffled. This helps to break common heuristics companies may use to track your utxos and/or payments.",
-                                          preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Join", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                self.spinner.label.text = "adding our inputs and outputs..."
-                self.addBlindPsbt(blindPsbt)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Not now", style: .default, handler: { action in
-                loadNormally()
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in
-                loadNormally()
-            }))
-            
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true) {}
-        }
-    }
-        
-    private func parseBlindPsbt(_ blindPsbt: String) {
-        spinner.show(vc: self, description: "")
-        
-        guard let ur = URHelper.ur(blindPsbt), let encryptedData = URHelper.bytesToData(ur) else {
-            spinner.dismiss()
-            showAlert(vc: self, title: "", message: "Error converting blind psbt to data.")
-            return
-        }
-        
-        prompToAddBlindPsbt(encryptedData)
-    }
     
-    private func addBlindPsbt(_ blindPsbt: Data) {
-        BlindPsbt.parseBlindPsbt(blindPsbt) { [weak self] (joinedPsbt, error) in
-            guard let self = self else { return }
-                        
-            guard let joinedPsbt = joinedPsbt else {
-                self.spinner.dismiss()
-                showAlert(vc: self, title: "Error getting joined psbt.", message: "\(error ?? "unknown error")")
-                return
-            }
-            
-            self.processPsbt(joinedPsbt)
-        }
-    }
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -2713,9 +2600,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         }
                         
                         guard let psbt = URHelper.bytesToData(ur) else {
-                            self.blind = true
-                            self.parseBlindPsbt(tx)
-                            
                             return
                         }
                         
