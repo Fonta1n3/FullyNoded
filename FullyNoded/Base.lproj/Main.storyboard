@@ -3098,7 +3098,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="13" translatesAutoresizingMaskIntoConstraints="NO" id="TQR-MC-WaO">
-                                <rect key="frame" x="8" y="102.99999999999997" width="377" height="438.33333333333326"/>
+                                <rect key="frame" x="8" y="102.99999999999997" width="377" height="394.33333333333326"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="bsU-SA-XTx">
                                         <rect key="frame" x="0.0" y="0.0" width="377" height="20.333333333333332"/>
@@ -3347,21 +3347,10 @@ Fully Noded does its best to support as many hardware and software wallet option
                                             </slider>
                                         </subviews>
                                     </stackView>
-                                    <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="Vac-p9-eJN">
-                                        <rect key="frame" x="0.0" y="407.33333333333331" width="377" height="32"/>
-                                        <segments>
-                                            <segment title="standard"/>
-                                            <segment title="blind"/>
-                                            <segment title="coinjoin"/>
-                                        </segments>
-                                        <connections>
-                                            <action selector="switchCoinSelectionAction:" destination="pUo-bf-sNm" eventType="valueChanged" id="dnf-UB-0u1"/>
-                                        </connections>
-                                    </segmentedControl>
                                 </subviews>
                             </stackView>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="jXp-xP-J4h">
-                                <rect key="frame" x="16" y="549.33333333333337" width="361" height="203.66666666666663"/>
+                                <rect key="frame" x="16" y="505.33333333333331" width="361" height="247.66666666666669"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="cell" textLabel="C0I-2Z-mCW" rowHeight="85" style="IBUITableViewCellStyleDefault" id="9QV-RF-yNq">
@@ -3444,7 +3433,6 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <outlet property="amountInput" destination="WBT-v4-ipz" id="4zO-8O-Q8c"/>
                         <outlet property="balanceLabel" destination="eF5-14-zcH" id="dhG-qG-6v7"/>
                         <outlet property="batchOutlet" destination="rOq-3M-0CP" id="TtL-GS-wFd"/>
-                        <outlet property="coinSelectionControl" destination="Vac-p9-eJN" id="WYP-k8-8ch"/>
                         <outlet property="createOutlet" destination="HBB-RM-j15" id="W8s-qa-IIK"/>
                         <outlet property="denominationImage" destination="cDK-QG-hoD" id="gXI-bz-daC"/>
                         <outlet property="feeRateInputField" destination="sbh-pS-EJp" id="oKd-NE-FHX"/>
@@ -4908,10 +4896,10 @@ Fully Noded does its best to support as many hardware and software wallet option
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="2DM-Bo-8hK"/>
+        <segue reference="CQp-9r-70w"/>
         <segue reference="ods-Ql-GAw"/>
         <segue reference="yAt-Ra-aPH"/>
-        <segue reference="AK4-4u-w1q"/>
+        <segue reference="7PS-EL-3d2"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" systemColor="tintColor"/>
     <resources>
