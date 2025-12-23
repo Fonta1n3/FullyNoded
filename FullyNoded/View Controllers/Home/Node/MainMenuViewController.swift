@@ -144,13 +144,13 @@ class MainMenuViewController: UIViewController {
     }
     
     private func startTor() {
-        torProgressLabel.text = "Tor bootstrapping..."
-        confirgureTorProgressView()
-        blurView.isHidden = false
-        torProgressLabel.isHidden = false
-        progressView.isHidden = false
-        
         if mgr?.state != .started && mgr?.state != .connected  {
+            torProgressLabel.text = "Tor bootstrapping..."
+            confirgureTorProgressView()
+            blurView.isHidden = false
+            torProgressLabel.isHidden = false
+            progressView.isHidden = false
+            
             if KeyChain.getData("UnlockPassword") != nil {
                 if isUnlocked {
                     mgr?.start(delegate: self)
@@ -168,7 +168,6 @@ class MainMenuViewController: UIViewController {
             }
         }
     }
-    
     
     private func alertToAddNode() {
         showAlert(vc: self, title: "No active node.", message: "Navigate to Settings > Node Manager to add or activate a node.")

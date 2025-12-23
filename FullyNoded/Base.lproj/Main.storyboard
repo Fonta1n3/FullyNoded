@@ -4377,7 +4377,13 @@ Fully Noded does its best to support as many hardware and software wallet option
                             <constraint firstItem="qBh-RP-hWz" firstAttribute="top" secondItem="uUf-aQ-0bN" secondAttribute="top" constant="8" id="l3f-Ew-U7p"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Node Credentials" id="J9p-j8-H8t"/>
+                    <navigationItem key="navigationItem" title="Node Credentials" id="J9p-j8-H8t">
+                        <barButtonItem key="rightBarButtonItem" image="questionmark.circle" catalog="system" id="EO6-MP-YF5">
+                            <connections>
+                                <action selector="showHelpAction:" destination="B99-yZ-naR" id="nBU-Wn-DjD"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="addressHeader" destination="1oS-WI-SUN" id="HzV-ar-yfP"/>
                         <outlet property="addressHeaderOutlet" destination="1oS-WI-SUN" id="Oiu-pO-bzi"/>
@@ -4931,6 +4937,7 @@ Fully Noded does its best to support as many hardware and software wallet option
         <image name="plus.rectangle" catalog="system" width="128" height="93"/>
         <image name="qrcode" catalog="system" width="128" height="114"/>
         <image name="qrcode.viewfinder" catalog="system" width="128" height="115"/>
+        <image name="questionmark.circle" catalog="system" width="128" height="123"/>
         <image name="signature" catalog="system" width="128" height="89"/>
         <image name="square.and.arrow.down" catalog="system" width="114" height="128"/>
         <image name="square.and.arrow.up" catalog="system" width="110" height="128"/>
