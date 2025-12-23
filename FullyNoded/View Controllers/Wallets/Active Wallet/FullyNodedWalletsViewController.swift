@@ -118,14 +118,9 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                     let walletStruct = Wallet(dictionary: wallet)
                     var isInternal = false
                     for (b, bitcoinCoreWallet) in self.bitcoinCoreWallets.enumerated() {
-                        if bitcoinCoreWallet == walletStruct.name && !walletStruct.isJm {
+                        if bitcoinCoreWallet == walletStruct.name {
                             isInternal = true
                             self.wallets.append(wallet)
-                        } else if bitcoinCoreWallet == walletStruct.name && walletStruct.isJm {
-                            isInternal = true
-                            var walletToAppend = wallet
-                            walletToAppend["label"] = walletStruct.name + ": " + walletStruct.jmWalletName
-                            self.wallets.append(walletToAppend)
                         }
 
                         if b + 1 == self.bitcoinCoreWallets.count && !isInternal {
