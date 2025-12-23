@@ -172,13 +172,14 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     
     private func destroy(completion: @escaping ((Bool)) -> Void) {
         
-        let entities:[ENTITY] = [.authKeys,
-                                 .newNodes,
-                                 .peers,
-                                 .signers,
-                                 .transactions,
-                                 .utxos,
-                                 .wallets]
+        let entities: [ENTITY] = [.signers,
+                                  .newNodes,
+                                  .wallets,
+                                  .utxos,
+                                  .usedAddresses,
+                                  .transactions,
+                                  .authKeys
+        ]
         
         for entity in entities {
             deleteEntity(entity: entity) { success in

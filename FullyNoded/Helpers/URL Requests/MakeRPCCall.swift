@@ -84,10 +84,10 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
             walletUrl = "https://\(rpcusername):\(rpcpassword)@\(onionAddress)"
         }
                         
-        var walletName = UserDefaults.standard.object(forKey: "walletName") as? String
-        let b = isWalletRPC(command: method)
-        if b, let walletName = walletName {
-                walletUrl += "/wallet/" + walletName
+        let walletName = UserDefaults.standard.object(forKey: "walletName") as? String
+        
+        if isWalletRPC(command: method), let walletName = walletName {
+            walletUrl += "/wallet/" + walletName
         }
         
         guard let url = URL(string: walletUrl) else {
@@ -102,8 +102,8 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         case .gettxoutsetinfo:
             timeout = 1000.0
             
-        case .importmulti, .deriveaddresses, .loadwallet:
-            timeout = 60.0
+        case .importdescriptors:
+            timeout = 180.0
             
         default:
             break

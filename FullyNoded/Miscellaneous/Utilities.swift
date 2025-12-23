@@ -9,28 +9,6 @@
 import Foundation
 import UIKit
 
-//public func isLndNode(completion: @escaping (Bool) -> Void) {
-//    CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
-//        guard let nodes = nodes, nodes.count > 0 else { completion(false); return }
-//        
-//        var isLnd = false
-//        
-//        for (i, node) in nodes.enumerated() {
-//            let nodeStr = NodeStruct(dictionary: node)
-//            
-//            if nodeStr.isLightning && nodeStr.isActive {
-//                if nodeStr.macaroon != nil {
-//                    isLnd = true
-//                }
-//            }
-//            
-//            if i + 1 == nodes.count {
-//                completion(isLnd)
-//            }
-//        }
-//    }
-//}
-
 public func decryptedValue(_ encryptedValue: Data) -> String {
     guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
     
@@ -216,23 +194,24 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
     var boolToReturn = Bool()
     
     switch command {
-    case .setlabel,
+    case .listdescriptors,
+            .setlabel,
             .listtransactions,
             .getbalance,
             .getnewaddress,
             .getwalletinfo,
-            .getrawchangeaddress,
+            //.getrawchangeaddress,
             .importmulti,
-            .importprivkey,
+            //.importprivkey,
             .rescanblockchain,
             .listunspent,
             .walletprocesspsbt,
             .gettransaction,
             .getaddressinfo,
             .bumpfee,
-            .listaddressgroupings,
-            .listlabels,
-            .getaddressesbylabel,
+            //.listaddressgroupings,
+            //.listlabels,
+            //.getaddressesbylabel,
             .listlockunspent,
             .lockunspent,
             .abortrescan,

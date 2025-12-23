@@ -12,9 +12,8 @@ import UniformTypeIdentifiers
 
 class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
-    let spinner = ConnectingView()
-    var selectedNode: [String:Any]?
-    var newNode = [String:Any]()
+    var selectedNode: NodeStruct?
+    //var newNode: NodeStruct?
     var isInitialLoad = Bool()
     var scanNow = false
     
@@ -76,8 +75,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     @IBAction func deleteCertAction(_ sender: Any) {
-        let n = NodeStruct(dictionary: selectedNode ?? newNode)
-        guard let id = n.id, let _ = n.cert else {
+        guard let node = selectedNode else { return }
+        
+        guard let id = node.id, let _ = node.cert else {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
@@ -245,7 +245,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 encryptedCert = encCert
             }
         } else {
-            if !address.contains(".onion") || !address.hasPrefix("localhost:") || !address.hasPrefix("127.0.0.1:") {
+            let isLocalOrOnion = address.contains(".onion") || address.hasPrefix("localhost:") || address.hasPrefix("127.0.0.1:")
+            if !isLocalOrOnion {
                 showAlert(vc: self, title: "Warning! ⚠️", message: "You are not using an onion address or localhost. Your RPC credentials could be compromised! This is intended for LAN usage or testing purposes only! To be safer consider adding a SSL cert.")
             }
         }
@@ -281,14 +282,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
         
         if selectedNode == nil {
-            newNode["id"] = UUID()
-            newNode["isLightning"] = false
-            newNode["label"] = label
-            newNode["onionAddress"] = encAddress
-            newNode["rpcuser"] = encUser
-            newNode["rpcpassword"] = encPass
-            newNode["cert"] = encryptedCert
-            saveNewNode()
+            var nodeToSave: [String: Any] = [:]
+            nodeToSave["id"] = UUID()
+            nodeToSave["label"] = label
+            nodeToSave["onionAddress"] = encAddress
+            nodeToSave["rpcuser"] = encUser
+            nodeToSave["rpcpassword"] = encPass
+            nodeToSave["cert"] = encryptedCert
+            saveNewNode(node: nodeToSave)
             
         } else {
             //updating
@@ -298,7 +299,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             // This check is for backwards compatibility where there was a bug from long ago where an ID did not exist.
-            guard let id = selectedNode["id"] as? UUID else {
+            guard let id = selectedNode.id else {
                 return
             }
             
@@ -371,7 +372,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
         
-    func saveNewNode() {
+    func saveNewNode(node: [String: Any]) {
+        var nodeToSave = node
         CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
             guard let self = self else { return }
             
@@ -380,14 +382,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 return
             }
             
-            newNode["isActive"] = (nodes.count == 0)
+            nodeToSave["isActive"] = (nodes.count == 0)
             
-            CoreDataService.saveEntity(dict: newNode, entityName: .newNodes) { [weak self] success in
+            CoreDataService.saveEntity(dict: nodeToSave, entityName: .newNodes) { [weak self] success in
                 guard let self = self else { return }
                 
                 if success {
-                    selectedNode = newNode
-                    newNode.removeAll()
+                    selectedNode = NodeStruct(dictionary: nodeToSave)
                     showAlert(vc: self, title: "", message: "Node saved ✓")
                 } else {
                     showAlert(vc: self, title: "Node not saved!", message: "Unable to save node to Core Data, please let us know about this.")
@@ -395,6 +396,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
         }
     }
+    
+    @IBAction func showHelpAction(_ sender: Any) {
+        showAlert(vc: self,
+                  title: "How to connect?",
+                  message: "Step 1: Add an rpc user, password (tap the refresh button to create a secure rpc password).\n\nStep 2: Add the address for your node (xxxx.onion:8332 or localhost:8332), tap save.\n\nStep 3: Export the rpc auth text to your bitcoin.conf, save your bitcoin.conf.\n\nStep 4: Restart your node.\n\nStep 5: Ensure the node is activated by tapping it on the Node Manager view. Navigate back to the home screen and tap refresh to connect to your node.")
+    }
+    
     
     func configureTapGesture() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard(_:)))
@@ -410,36 +418,39 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             return decrypted.utf8String ?? ""
         }
         
-        if selectedNode != nil {
-            let node = NodeStruct(dictionary: selectedNode!)
-            if node.id != nil {
+        if let selectedNode = selectedNode {
+            if selectedNode.id != nil {
                 
-                if node.label != "" {
-                    nodeLabel.text = node.label
+                if selectedNode.label != "" {
+                    nodeLabel.text = selectedNode.label
                 }
                 
-                if let user = node.rpcuser, let password = node.rpcpassword {
+                if let user = selectedNode.rpcuser, let password = selectedNode.rpcpassword {
                     rpcUserField.text = decryptedValue(user)
                     rpcPassword.text = decryptedValue(password)
+                    
+                    if rpcPassword.text == "xxx" {
+                        showAlert(vc: self, title: "Quick Connect", message: "Dummy rpc credentials detected:\n\nStep 1: Update the rpc user and password, tap save.\n\nStep 2: Export the rpc auth text to your bitcoin.conf, save your bitcoin.conf.\n\nStep 3: Restart your node.\n\nStep 4: Navigate back to the home screen and tap refresh to connect.")
+                    }
                     
                     if let auth = RPCAuth().generateCreds(username: rpcUserField.text!, password: rpcPassword.text!) {
                         rpcAuthLabel.text = auth.rpcAuth
                     }
                 }
                                 
-                if let enc = node.onionAddress {
+                if let enc = selectedNode.onionAddress {
                     let decrypted = decryptedValue(enc)
                     if onionAddressField != nil {
                         onionAddressField.text = decrypted
                     }
                     
-                    if !decrypted.contains(".onion") && node.cert == nil && !decrypted.hasPrefix("localhost:") && !decrypted.hasPrefix("127.0.0.1:") {
+                    if !decrypted.contains(".onion") && selectedNode.cert == nil && !decrypted.hasPrefix("localhost:") && !decrypted.hasPrefix("127.0.0.1:") {
                         showAlert(vc: self, title: "Warning!", message: "You are not using an onion address, your network traffic will not be routed over Tor! This is for connecting to nodes over localhost and LAN only, if using LAN https will be used and you must add the base64 SSL cert.")
                     }
                 }
                 
-                if node.cert != nil {
-                    if let decryptedCert = Crypto.decrypt(node.cert!) {
+                if selectedNode.cert != nil {
+                    if let decryptedCert = Crypto.decrypt(selectedNode.cert!) {
                         certField.text = decryptedCert.utf8String ?? ""
                     }
                 }

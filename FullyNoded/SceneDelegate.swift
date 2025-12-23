@@ -51,7 +51,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 //                MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in }
             })
             if !isBooting && mgr?.state != .started && mgr?.state != .connected  {
-                mgr?.start(delegate: nil)
+                //mgr?.start(delegate: nil)
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .startTorFromAppDelegate, object: nil, userInfo: nil)
+                }
             } else {
                 isBooting = false
             }
@@ -88,7 +91,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     //            })
                     
                     if !self.isBooting && self.mgr?.state != .started && self.mgr?.state != .connected  {
-                        self.mgr?.start(delegate: nil)
+                        //self.mgr?.start(delegate: nil)
+                        DispatchQueue.main.async {
+                            NotificationCenter.default.post(name: .startTorFromAppDelegate, object: nil, userInfo: nil)
+                        }
                     } else {
                         self.isBooting = false
                     }

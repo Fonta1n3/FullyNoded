@@ -10,8 +10,8 @@ import UIKit
 
 class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate {
     
-    var nodeArray = [[String:Any]]()
-    var selectedIndex = Int()
+    var nodeArray: [NodeStruct] = []
+    var selectedIndex: Int?
     let ud = UserDefaults.standard
     var addButton = UIBarButtonItem()
     var editButton = UIBarButtonItem()
@@ -54,7 +54,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             for node in nodes {
                 let nodeStr = NodeStruct(dictionary: node)
                 if nodeStr.id != nil {
-                    self.nodeArray.append(node)
+                    self.nodeArray.append(nodeStr)
                 }
             }
             
@@ -99,16 +99,11 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         button.restorationIdentifier = "\(indexPath.row)"
         button.addTarget(self, action: #selector(editNode(_:)), for: .touchUpInside)
         
-        let nodeStruct = NodeStruct(dictionary: nodeArray[indexPath.row])
+        let nodeStruct = nodeArray[indexPath.row]
         label.text = nodeStruct.label
                 
-        if nodeStruct.isLightning {
-            icon.image = UIImage(systemName: "bolt")
-            icon.tintColor = .systemOrange
-        } else {
-            icon.image = UIImage(systemName: "link")
-            icon.tintColor = .systemBlue
-        }
+        icon.image = UIImage(systemName: "link")
+        icon.tintColor = .systemBlue
         
         if !nodeStruct.isActive {
             label.textColor = .secondaryLabel
@@ -129,72 +124,68 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let nodeStr = NodeStruct(dictionary: nodeArray[indexPath.row])
+        let selectedNode = nodeArray[indexPath.row]
         
-        let isActive = nodeStr.isActive
+        let isActive = selectedNode.isActive
         
         if !isActive {
-            CoreDataService.update(id: nodeStr.id!, keyToUpdate: "isActive", newValue: true, entity: .newNodes) { [weak self] success in
+            CoreDataService.update(id: selectedNode.id!, keyToUpdate: "isActive", newValue: true, entity: .newNodes) { [weak self] success in
                 guard let self = self else { return }
                 
                 if success {
-                    if !nodeStr.isLightning {
-                        self.ud.removeObject(forKey: "walletName")
-                    }
+                    self.ud.removeObject(forKey: "walletName")
                     
                     if self.nodeArray.count == 1 {
                         self.reloadTable()
+                    } else {
+                        if nodeArray.count > 1 {
+                            for (i, node) in nodeArray.enumerated() {
+                                //if i != indexPath.row {
+                                    if node.id != selectedNode.id {
+                                        CoreDataService.update(id: node.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                                    }
+                                    
+                                    if i + 1 == nodeArray.count {
+                                        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
+                                            guard let nodes = nodes else { return }
+                                            
+                                            DispatchQueue.main.async { [weak self] in
+                                                guard let self = self else { return }
+                                                
+                                                nodeArray.removeAll()
+                                                
+                                                for node in nodes {
+                                                    if node["id"] as? UUID != nil {
+                                                        nodeArray.append(NodeStruct(dictionary: node))
+                                                    }
+                                                }
+                                                nodeTable.reloadData()
+                                                showAlert(vc: self, title: "", message: "Tap the refresh button on the home view to show the current node.")
+                                            }
+                                        }
+                                    }
+                               // }
+                            }
+                        }
                     }
-                    
                 } else {
                     displayAlert(viewController: self, isError: true, message: "Error updating node.")
                 }
             }
             
-            if nodeArray.count > 1 {
-                for (i, node) in nodeArray.enumerated() {
-                    if i != indexPath.row {
-                        let str = NodeStruct(dictionary: node)
-                        if str.id != nodeStr.id {
-                            CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
-                        }
-                    }
-                    
-                    if i + 1 == nodeArray.count {
-                        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
-                            if nodes != nil {
-                                DispatchQueue.main.async { [weak self] in
-                                    guard let self = self else { return }
-                                    nodeArray.removeAll()
-                                    for node in nodes! {
-                                        let str = NodeStruct(dictionary: node)
-                                        if str.id != nil {
-                                            nodeArray.append(node)
-                                        }
-                                    }
-                                    nodeTable.reloadData()
-                                    showAlert(vc: self, title: "", message: "Tap the refresh button on the home view to show the current node.")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            
         } else {
-            CoreDataService.update(id: nodeStr.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { [weak self] success in
-                guard let self = self else { return }
-                
-                if success {
-                    if !nodeStr.isLightning {
-                        self.ud.removeObject(forKey: "walletName")
-                    }
-                    
-                    self.reloadTable()
-                    
-                } else {
-                    displayAlert(viewController: self, isError: true, message: "Error updating node.")
-                }
-            }
+//            CoreDataService.update(id: selectedNode.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { [weak self] success in
+//                guard let self = self else { return }
+//                
+//                if success {
+//                    self.ud.removeObject(forKey: "walletName")
+//                    self.reloadTable()
+//    
+//                } else {
+//                    displayAlert(viewController: self, isError: true, message: "Error updating node.")
+//                }
+//            }
         }
         
         
@@ -253,7 +244,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == UITableViewCell.EditingStyle.delete {
-            let node = NodeStruct(dictionary: nodeArray[indexPath.row])
+            let node = nodeArray[indexPath.row]
             if node.id != nil {
                 deleteNode(nodeId: node.id!, indexPath: indexPath)
             }
@@ -271,15 +262,13 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         
         let selectedSwitch = selectedCell.viewWithTag(2) as! UISwitch
-        let nodeStr = NodeStruct(dictionary: nodeArray[index])
+        let nodeToActivate = nodeArray[index]
         
         if index < nodeArray.count {
             
-            CoreDataService.update(id: nodeStr.id!, keyToUpdate: "isActive", newValue: selectedSwitch.isOn, entity: .newNodes) { [unowned vc = self] success in
+            CoreDataService.update(id: nodeToActivate.id!, keyToUpdate: "isActive", newValue: selectedSwitch.isOn, entity: .newNodes) { [unowned vc = self] success in
                 if success {
-                    if !nodeStr.isLightning && !nodeStr.isJoinMarket {
-                        vc.ud.removeObject(forKey: "walletName")
-                    }
+                    vc.ud.removeObject(forKey: "walletName")
                     
                     if vc.nodeArray.count == 1 {
                         vc.reloadTable()
@@ -294,31 +283,27 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 for (i, node) in nodeArray.enumerated() {
                     
                     if i != index {
-                        let str = NodeStruct(dictionary: node)
-                        
-                        if str.id != nodeStr.id {
-                            CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                        if node.id != nodeToActivate.id {
+                            CoreDataService.update(id: nodeToActivate.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
                         }
                     }
                     
                     if i + 1 == nodeArray.count {
                         CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
-                            if nodes != nil {
-                                DispatchQueue.main.async { [unowned vc = self] in
-                                    vc.nodeArray.removeAll()
-                                    for node in nodes! {
-                                        let str = NodeStruct(dictionary: node)
-                                        if str.id != nil {
-                                            vc.nodeArray.append(node)
-                                        }
+                            guard let nodes = nodes else { return }
+                            
+                            DispatchQueue.main.async { [unowned vc = self] in
+                                vc.nodeArray.removeAll()
+                                
+                                for node in nodes {
+                                    if node["id"] as? UUID != nil {
+                                        vc.nodeArray.append(NodeStruct(dictionary: node))
                                     }
-                                    vc.nodeTable.reloadData()
-                                    
-                                    if !nodeStr.isLightning && !nodeStr.isJoinMarket {
-                                        if selectedSwitch.isOn {
-                                            NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
-                                        }
-                                    }
+                                }
+                                vc.nodeTable.reloadData()
+                                
+                                if selectedSwitch.isOn {
+                                    NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
                                 }
                             }
                         }
@@ -338,7 +323,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     for node in nodes! {
                         let ns = NodeStruct(dictionary: node)
                         if ns.id != nil {
-                            vc.nodeArray.append(node)
+                            vc.nodeArray.append(ns)
                         }
                     }
                     vc.nodeTable.reloadData()
@@ -408,11 +393,19 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     private func addBtcRpcQr(url: String) {
+        selectedIndex = nil
         QuickConnect.addNode(url: url) { [weak self] (success, errorMessage) in
             guard let self = self else { return }
             if success {
                 getNodes()
-                showAlert(vc: self, title: "Node added ✓", message: "The new node is automatically activated, you need to go home and tap the refresh button to try and connect.")
+//                showAlert(vc: self, title: "Node added ✓", message: "The new node is automatically activated, you need to go home and tap the refresh button to try and connect.")
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    performSegue(withIdentifier: "updateNode", sender: self)
+                }
+                
+                
             } else {
                 displayAlert(viewController: self, isError: true, message: "Error adding that node: \(errorMessage ?? "unknown")")
             }
@@ -423,6 +416,15 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         if segue.identifier == "updateNode" {
             if let vc = segue.destination as? NodeDetailViewController {
+                guard let selectedIndex = selectedIndex else {
+                    // If there is no selected node it can only be bc we just added it via scanning a QR in which case it will be the active node.
+                    for node in nodeArray {
+                        if node.isActive {
+                            vc.selectedNode = node
+                        }
+                    }
+                    return
+                }
                 vc.selectedNode = self.nodeArray[selectedIndex]
             }
         }

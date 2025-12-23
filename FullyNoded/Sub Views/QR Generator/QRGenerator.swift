@@ -11,13 +11,13 @@ import UIKit
 
 class QRGenerator: UIView {
     
-    var textInput = ""
+    var qrText = ""
     
     func getQRCode() -> UIImage {
         
         let imageToReturn = UIImage(systemName: "exclamationmark.triangle")!
         
-        let data = textInput.data(using: .ascii)
+        let data = qrText.data(using: .ascii)
         
         // Generate the code image with CIFilter
         guard let filter = CIFilter(name: "CIQRCodeGenerator") else { return imageToReturn }
@@ -57,3 +57,4 @@ class QRGenerator: UIView {
     }
     
 }
+

@@ -45,9 +45,7 @@ public struct Descriptor: CustomStringConvertible {
     
     init(_ descriptor: String) {
         string = descriptor
-        
-        print("descriptor: \(descriptor)")
-        
+                
         var dictionary = [String:Any]()
         
         if descriptor.contains("&") {
@@ -68,7 +66,6 @@ public struct Descriptor: CustomStringConvertible {
             
             let arr = descriptor.split(separator: "(")
             for (i, item) in arr.enumerated() {
-                print("item: \(item)")
                 if i == 0 {
                     
                     switch item {
@@ -392,7 +389,6 @@ public struct Descriptor: CustomStringConvertible {
                 let index = derivarr[derivarr.count - 1]
                 dictionary["index"] = Int(index)
                 dictionary["fingerprint"] = "\(derivarr[0])"
-                print("arr2: \(arr2)")
                 let extendedKeyWithPath = arr2[1]
                 let arr4 = extendedKeyWithPath.split(separator: "/")
                 let extendedKey = arr4[0]

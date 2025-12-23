@@ -9,19 +9,10 @@
         <attribute name="cert" optional="YES" attributeType="Binary"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="isActive" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
-        <attribute name="isJoinMarket" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
-        <attribute name="isLightning" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
-        <attribute name="isNostr" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="label" optional="YES" attributeType="String"/>
-        <attribute name="macaroon" optional="YES" attributeType="Binary"/>
-        <attribute name="nostrPrivkey" optional="YES" attributeType="Binary"/>
-        <attribute name="nostrPubkey" optional="YES" attributeType="Binary"/>
-        <attribute name="nostrWords" optional="YES" attributeType="Binary"/>
         <attribute name="onionAddress" optional="YES" attributeType="Binary"/>
         <attribute name="rpcpassword" optional="YES" attributeType="Binary"/>
         <attribute name="rpcuser" optional="YES" attributeType="Binary"/>
-        <attribute name="subscribeTo" optional="YES" attributeType="Binary"/>
-        <attribute name="uncleJim" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
     </entity>
     <entity name="Peers" representedClassName="Peers" syncable="YES" codeGenerationType="class">
         <attribute name="alias" optional="YES" attributeType="String"/>
@@ -37,6 +28,8 @@
         <attribute name="bip48xpub" optional="YES" attributeType="Binary"/>
         <attribute name="bip84tpub" optional="YES" attributeType="Binary"/>
         <attribute name="bip84xpub" optional="YES" attributeType="Binary"/>
+        <attribute name="bip86tpub" optional="YES" attributeType="Binary"/>
+        <attribute name="bip86xpub" optional="YES" attributeType="Binary"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="label" optional="YES" attributeType="String"/>
         <attribute name="passphrase" optional="YES" attributeType="Binary"/>
@@ -55,15 +48,20 @@
         <attribute name="txid" optional="YES" attributeType="String"/>
         <attribute name="walletId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
     </entity>
+    <entity name="UsedAddresses" representedClassName="UsedAddresses" syncable="YES" codeGenerationType="class">
+        <attribute name="address" optional="YES" attributeType="String"/>
+        <attribute name="balance" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+    </entity>
     <entity name="Utxos" representedClassName="Utxos" syncable="YES" codeGenerationType="class">
         <attribute name="address" optional="YES" attributeType="String"/>
         <attribute name="amount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="confirmations" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="confs" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="desc" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="label" optional="YES" attributeType="String"/>
-        <attribute name="safe" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="reused" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="scriptPubKey" optional="YES" attributeType="String"/>
         <attribute name="solvable" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="spendable" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="txid" optional="YES" attributeType="String"/>

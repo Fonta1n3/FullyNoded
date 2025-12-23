@@ -235,36 +235,36 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     }
         
     func executNodeCommand(method: BTC_CLI_COMMAND) {
-        let connectingView = ConnectingView()
-        connectingView.addConnectingView(vc: self, description: "")
+        let connectingView = ConnectingView.shared
+        connectingView.show(vc: self, description: "")
         MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             if errorMessage == nil {
                 switch method {
                 case .encryptwallet:
-                    connectingView.removeConnectingView()
+                    connectingView.dismiss()
                     if let result = response as? String {
                         showAlert(vc: self, title: "", message: result)
                     }
                     
                 case .walletlock:
                     showAlert(vc: self, title: "", message: "Wallet encrypted 🔐")
-                    connectingView.removeConnectingView()
+                    connectingView.dismiss()
                     
                 case .walletpassphrase:
                     showAlert(vc: self, title: "", message: "Wallet decrypted 🔓 for 10 minutes.")
-                    connectingView.removeConnectingView()
+                    connectingView.dismiss()
                     
                 case .walletpassphrasechange:
                     showAlert(vc: self, title: "", message: "Passphrase updated ✓")
-                    connectingView.removeConnectingView()
+                    connectingView.dismiss()
                     
                 default:
                     break
                 }
             } else {
-                connectingView.removeConnectingView()
+                connectingView.dismiss()
                 displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
             }
         }

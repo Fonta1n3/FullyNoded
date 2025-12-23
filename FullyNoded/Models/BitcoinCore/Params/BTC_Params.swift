@@ -316,11 +316,20 @@ public struct Get_New_Address: CustomStringConvertible {
      1. label           (string, optional, default="") The label name for the address to be linked to. It can also be set to the empty string "" to represent the default label. The label does not need to exist, it will be created if there is no label by the given name.
      2. address_type    (string, optional, default=set by -addresstype) The address type to use. Options are "legacy", "p2sh-segwit", "bech32", and "bech32m".
      */
-    let param:[String:Any]
+    var param: [String:Any]
+    
     init(_ dict: [String:Any]) {
         let label = dict["label"] as? String ?? ""
         let address_type = dict["address_type"] as? String ?? ""
-        param = ["label": label, "address_type": address_type]
+        param = [:]
+        
+        if address_type != "" {
+            param["address_type"] = address_type
+        }
+        
+        if label != "" {
+            param["label"] = label
+        }
     }
 }
 

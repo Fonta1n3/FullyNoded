@@ -56,6 +56,14 @@ class WalletLogic {
         )
     }
     
+    func persistor() -> Persister? {
+        try? securelyDeleteWallet(name: "temp_wallet")
+        
+        let tempDbURL = walletDatabaseURL(named: "temp_wallet")
+        
+        return try? Persister.newSqlite(path: tempDbURL)
+    }
+    
     /// Takes in watch-only receive and change descriptors as strings, a mnemonic and optional passphrase to create a BDKWallet which we can use for signing psbts.
     func wallet(passphrase: String?,
                 network: Network,
@@ -100,11 +108,11 @@ class WalletLogic {
                     return
                 }
                 
-                try? securelyDeleteWallet(name: "temp_wallet")
+                //try? securelyDeleteWallet(name: "temp_wallet")
                 
-                let tempDbURL = walletDatabaseURL(named: "temp_wallet")
+                //let tempDbURL = walletDatabaseURL(named: "temp_wallet")
                 
-                guard let database = try? Persister.newSqlite(path: tempDbURL) else {
+                guard let database = persistor() else {
                     //print("Unable to securely create temp_wallet.")
                     //completion((nil, "Unable to securely delete temp_wallet."))
                     return

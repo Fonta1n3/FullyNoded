@@ -12,7 +12,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     
     @IBOutlet var walletTable: UITableView!
     var didChange = Bool()
-    let connectingView = ConnectingView()
+    let connectingView = ConnectingView.shared
     var activeWallets = [String]()
     var inactiveWallets = [String]()
     var wallets = [[String:Any]]()
@@ -37,12 +37,12 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     @IBAction func unloadAction(_ sender: Any) {
-        connectingView.addConnectingView(vc: self, description: "getting all loaded wallets...")
+        connectingView.show(vc: self, description: "getting all loaded wallets...")
         OnchainUtils.listWallets { [weak self] (wallets, message) in
             guard let self = self else { return }
             
             guard let loadedWallets = wallets else {
-                self.connectingView.removeConnectingView()
+                self.connectingView.dismiss()
                 showAlert(vc: self, title: "Error", message: "There was an error getting your active wallets in order to deactivate them: \(message ?? "")")
                 return
             }
@@ -53,7 +53,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                 }
                 if i + 1 == loadedWallets.count {
                     guard self.walletsToUnload.count > 0 else {
-                        self.connectingView.removeConnectingView()
+                        self.connectingView.dismiss()
                         showAlert(vc: self, title: "Only the Default Wallet is loaded", message: "You can not unload the default wallet.")
                         return
                     }
@@ -67,7 +67,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     
     
     func refresh() {
-        connectingView.addConnectingView(vc: self, description: "getting wallets...")
+        connectingView.show(vc: self, description: "getting wallets...")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -82,7 +82,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                     DispatchQueue.main.async { [weak self] in
                          guard let self = self else { return }
                         
-                        self.connectingView.removeConnectingView()
+                        self.connectingView.dismiss()
                         displayAlert(viewController: self, isError: true, message: "error getting wallets: \(message ?? "")")
                     }
                     return
@@ -179,18 +179,18 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
 //    }
     
     private func getAllActiveWallets() {
-        connectingView.addConnectingView(vc: self, description: "getting all loaded wallets...")
+        connectingView.show(vc: self, description: "getting all loaded wallets...")
         OnchainUtils.listWallets { [weak self] (wallets, message) in
             guard let self = self else { return }
             
             guard let loadedWallets = wallets else {
-                self.connectingView.removeConnectingView()
+                self.connectingView.dismiss()
                 showAlert(vc: self, title: "Error", message: "There was an error getting your active wallets in order to deactivate them: \(message ?? "")")
                 return
             }
             
             guard loadedWallets.count > 1 else {
-                self.connectingView.removeConnectingView()
+                self.connectingView.dismiss()
                 return
             }
             
@@ -200,7 +200,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                 }
                 if i + 1 == loadedWallets.count {
                     guard self.walletsToUnload.count > 0 else {
-                        self.connectingView.removeConnectingView()
+                        self.connectingView.dismiss()
                         UserDefaults.standard.removeObject(forKey: "walletName")
                         return
                     }
@@ -218,7 +218,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     private func promptToUnloadWallets() {
-        connectingView.removeConnectingView()
+        connectingView.dismiss()
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -263,7 +263,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                     if activeIndex > 0 {
                         self.wallets.swapAt(0, activeIndex)
                     }
-                    self.connectingView.removeConnectingView()
+                    self.connectingView.dismiss()
                     self.walletTable.reloadData()
                     if self.didChange {
                         NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)

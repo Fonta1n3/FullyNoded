@@ -11,6 +11,8 @@ Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own 
 
 [Fully Noded App Store](https://apps.apple.com/us/app/fully-noded/id1436425586) 
 
+Want to run a node on your Mac? Download [Fully Noded Server](https://fullynoded.app/wp-content/uploads/2025/11/fullynoded-server-v0.2.1.zip), it installs and configures Bitcoin Core, Knots, Join Market and Tor to make getting Fully Noded a breeze.
+
 
 ## Build from source
 

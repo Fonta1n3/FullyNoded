@@ -27,16 +27,6 @@ enum Keys {
         return true
     }
     
-//    static func dataToSigner(_ data: Data) -> String? {
-//        return try? BIP39Mnemonic(entropy: BIP39Mnemonic.Entropy(data)).words.joined(separator: " ")
-//        //return try? WalletLogic.BDKMnemonic.fromEntropy(entropy: data).description
-//    }
-    
-//    static func wordsToEntropy(_ words: String) -> BIP39Mnemonic.Entropy? {
-//        return try? BIP39Mnemonic(words: words).entropy
-//        //return try? WalletLogic.BDKMnemonic.fromString(mnemonic: words).description.utf8
-//    }
-    
     // [bip84, bip86, segwitCosigner, trCosigner]
     static func descriptorsFromSigner(signer: String, passphrase: String?) -> (
         bip84: String?,
@@ -121,8 +111,34 @@ enum Keys {
         return address.description
     }
     
+    static func addresses(accountPubkey: String, accountPath: String, completion: @escaping (([[String:Any]]?)) -> Void) {
+        var addresses: [[String: Any]] = []
+            
+        guard let hdKey = try? HDKey(base58: accountPubkey) else {
+            completion((nil))
+            return
+        }
+        
+        for i in 0...999 {
+            guard let path = try? BIP32Path(string: "/0/\(i)") else {
+                completion((nil))
+                return
+            }
+            
+            guard let address = try? hdKey.derive(using: path).address(type: .payToWitnessPubKeyHash) else {
+                completion((nil))
+                return
+            }
+            
+            addresses.append(["address": address.description.addressExpanded, "used": false, "balance": 0.0, "derivation": "\(accountPath)/0/\(i)"])
+            
+            if i + 1 == 999 {
+                completion((addresses))
+            }
+        }
+    }
+    
     static func seed() -> String? {
-        var words: String?
         let bytesCount = 32
         var randomBytes = [UInt8](repeating: 0, count: bytesCount)
         let status = SecRandomCopyBytes(kSecRandomDefault, bytesCount, &randomBytes)
@@ -130,14 +146,10 @@ enum Keys {
         if status == errSecSuccess {
             var data = Crypto.sha256hash(Crypto.sha256hash(Crypto.sha256hash(Data(randomBytes))))
             data = data.subdata(in: Range(0...15))
-//            let entropy = BIP39Mnemonic.Entropy(data)
-//            if let mnemonic = try? BIP39Mnemonic(entropy: entropy) {
-//                words = mnemonic.description
-//            }
             return try? WalletLogic.BDKMnemonic.fromEntropy(entropy: data).description
+        } else {
+            return nil
         }
-        
-        return words
     }
     
     static func masterKey(words: String, coinType: String, passphrase: String) -> String? {
