@@ -137,32 +137,27 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 self.getAddress()
                 return
             }
-            if wallet.type == WalletType.descriptor.stringValue {
-                self.getReceieveAddressForFullyNodedWallet(wallet)
-            } else {
-                self.getAddress()
-            }
+            self.getReceieveAddressForFullyNodedWallet(wallet)
         }
     }
     
     private func getReceieveAddressForFullyNodedWallet(_ wallet: Wallet) {
-        let index = Int(wallet.index) + 1
+        spinner.show(vc: self, description: "getting address from \(wallet.label)...")
         
-        CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { success in
-            guard success else { return }
+        let addressType = Descriptor(wallet.receiveDescriptor).addressType
+        
+        let p = Get_New_Address(["address_type": addressType])
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getnewaddress(param: p)) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
             
-            let param: Derive_Addresses = .init(["descriptor":wallet.receiveDescriptor, "range":[index,index]])
+            spinner.dismiss()
             
-            MakeRPCCall.sharedInstance.executeRPCCommand(method: .deriveaddresses(param: param)) { [weak self] (response, errorMessage) in
-                guard let self = self else { return }
-                
-                guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
-                    showAlert(vc: self, title: "", message: errorMessage ?? "error getting multisig address")
-                    return
-                }
-                
-                self.showAddress(address: address)
+            guard let address = response as? String else {
+                showAlert(vc: self, title: "", message: errorDesc ?? "Unknown error fetching a new address.")
+                return
             }
+            
+            self.showAddress(address: address)
         }
     }
     
@@ -171,7 +166,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             guard let self = self else { return }
             
             self.addressOutlet.alpha = 1
-            self.addressOutlet.text = address
+            self.addressOutlet.text = address.addressExpanded
             self.addressString = address
             self.updateQRImage()
             self.spinner.dismiss()

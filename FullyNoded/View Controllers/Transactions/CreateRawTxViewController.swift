@@ -48,7 +48,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet weak private var receivingLabel: UILabel!
     @IBOutlet weak private var outputsTable: UITableView!
     @IBOutlet weak private var feeRateInputField: UITextField!
-    @IBOutlet weak private var coinSelectionControl: UISegmentedControl!
     
     let spinner = ConnectingView.shared
     var spendableBalance = Double()
@@ -154,23 +153,31 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    private func getAddressFromWallet(_ wallet: Wallet) {
-        spinner.show(vc: self, description: "getting address...")
+    private func getAddressFromWallet(_ walletToFetchFrom: Wallet) {
+        spinner.show(vc: self, description: "getting address from \(walletToFetchFrom.label)...")
         
-        func getFromFnWallet() {
-            let index = Int(wallet.index + 1)
-            let param:Derive_Addresses = .init(["descriptor": wallet.receiveDescriptor, "range": [index, index]])
-            OnchainUtils.deriveAddresses(param: param) { [weak self] (addresses, message) in
-                guard let self = self else { return }
-                self.spinner.dismiss()
-                guard let addresses = addresses, !addresses.isEmpty else {
-                    showAlert(vc: self, title: "There was an issue getting an address from that wallet...", message: message ?? "Unknown error.")
-                    return
-                }
-                self.addAddressNow(address: addresses[0], wallet: wallet)
+        guard let currentActiveWallet = UserDefaults.standard.object(forKey: "walletName") else { return }
+        
+        // Temporarily set the active wallet to the wallet we are deriving an address from.
+        UserDefaults.standard.set(walletToFetchFrom.name, forKey: "walletName")
+        
+        let addressType = Descriptor(walletToFetchFrom.receiveDescriptor).addressType        
+        
+        let p = Get_New_Address(["address_type": addressType])
+        
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getnewaddress(param: p)) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
+            
+            UserDefaults.standard.set(currentActiveWallet, forKey: "walletName")
+            spinner.dismiss()
+            
+            guard let response = response as? String else {
+                showAlert(vc: self, title: "", message: errorDesc ?? "Unknown error fetching a new address.")
+                return
             }
+            
+            addAddressNow(address: response, wallet: walletToFetchFrom)
         }
-        getFromFnWallet()
     }
     
     private func addAddressNow(address: String, wallet: Wallet) {
@@ -210,21 +217,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         present(nav, animated: true)
     }
     
-    
-    @IBAction func switchCoinSelectionAction(_ sender: Any) {
-        switch coinSelectionControl.selectedSegmentIndex {
-        case 0:
-            showAlert(vc: self, title: "Standard", message: "This defaults to Bitcoin Core coin selection.")
-        case 1:
-            showAlert(vc: self, title: "Blind", message: "Blind psbts are designed to be joined with another user before broadcasting. They may be useful to gain a bit more privacy for your day to day transactions.")
-        case 2:
-            showAlert(vc: self, title: "Coinjoin", message: "Coinjoin psbts are designed to be joined with other users. Export the psbt encrypted to allow others to easily join. Only one input and one output will be added at a time. The amount sent should match the amount of your utxo or this will fail, the easiet way to do this is by tapping the right arrow button on a utxo and then selecting the sweep option.")
-        default:
-            break
-        }
-    }
-    
-    
     @IBAction func closeFeeRate(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -261,8 +253,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            //self.rawTxSigned = ""
-            //self.rawTxUnsigned = ""
             self.amountInput.resignFirstResponder()
             self.addressInput.resignFirstResponder()
         }
@@ -272,55 +262,17 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             return
         }
         
-            guard let amount = convertedAmount() else {
-                if !self.outputs.isEmpty {
-                    tryRaw()
-                } else {
-                    spinner.dismiss()
-                    showAlert(vc: self, title: "", message: "No amount or address.")
-                }
-                return
-            }
-            
-            switch coinSelectionControl.selectedSegmentIndex {
-            case 0:
+        guard let amount = convertedAmount() else {
+            if !self.outputs.isEmpty {
                 tryRaw()
-                
-            case 1:
-                createBlindNow(amount: amount.doubleValue, recipient: addressInput, strict: false)
-                
-            case 2:
-                createBlindNow(amount: amount.doubleValue, recipient: addressInput, strict: true)
-                
-            default:
-                break
+            } else {
+                spinner.dismiss()
+                showAlert(vc: self, title: "", message: "No amount or address.")
             }
-    }
-    
-    private func createBlindNow(amount: Double, recipient: String, strict: Bool) {
-        var type = ""
-        
-        if strict {
-            type = "coinjoin"
-        } else {
-            type = "blind"
+            return
         }
         
-        spinner.show(vc: self, description: "creating \(type) psbt...")
-        
-        BlindPsbt.getInputs(amountBtc: amount, recipient: recipient, strict: strict, inputsToJoin: nil) { [weak self] (psbt, error) in
-            guard let self = self else { return }
-            
-            self.spinner.dismiss()
-            
-            if let error = error {
-                showAlert(vc: self, title: "There was an issue creating the \(type) psbt.", message: error)
-            } else if let psbt = psbt {
-                //self.rawTxUnsigned = psbt
-                self.psbt = psbt
-                self.showRaw()
-            }
-        }
+        tryRaw()
     }
         
     private func convertedAmount() -> String? {
@@ -370,13 +322,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             showAlert(vc: self, title: "Coin control ✓", message: "Only the utxo's you have just selected will be used in this transaction. You may send the total balance of the *selected utxo's* by tapping the \"Send all\" button or enter a custom amount as normal.")
         }
     }
-    
-//    override func viewWillDisappear(_ animated: Bool) {
-//        //amountInput.text = ""
-//        //addressInput.text = ""
-//        //outputs.removeAll()
-//        //inputs.removeAll()
-//    }
                 
     @IBAction func createPsbt(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
