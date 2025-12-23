@@ -189,15 +189,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             guard let self = self else { return }
             
             if success {
-                var type:WalletType
-                
-                if self.version >= 210100 {
-                    type = .descriptor
-                } else {
-                    type = .single
-                }
-                
-                self.saveWallet(type: type)
+                self.saveWallet()
             } else {
                 UserDefaults.standard.removeObject(forKey: "walletName")
                 self.showError(error: "Error creating wallet: \(error ?? "Unknown error.")")
@@ -285,7 +277,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                         [
                             "desc": self.primDesc,
                             "active": true,
-                            "range": [0,999],
+                            "range": [0,99],
                             "next_index": 0,
                             "timestamp": "now",
                             "internal": false
@@ -293,7 +285,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                         [
                             "desc": self.changeDesc,
                             "active": true,
-                            "range": [0,999],
+                            "range": [0,99],
                             "next_index": 0,
                             "timestamp": "now",
                             "internal": true
@@ -345,17 +337,13 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
     }
     
-    private func saveWallet(type: WalletType) {
+    private func saveWallet() {
         dict["id"] = UUID()
         dict["label"] = "Single sig"
         dict["changeDescriptor"] = changeDesc
         dict["receiveDescriptor"] = primDesc
-        dict["type"] = type.stringValue
         dict["name"] = name
-        dict["maxIndex"] = Int64(999)
-        dict["index"] = Int64(0)
         dict["blockheight"] = blockheight
-        dict["account"] = 0
         
         CoreDataService.saveEntity(dict: dict, entityName: .wallets) { [weak self] success in
             guard let self = self else { return }
