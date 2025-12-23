@@ -100,14 +100,33 @@ extension Array where Element == UInt8 {
 public extension String {
     
     var addressExpanded: String {
-        var addressExpanded = ""
-        for (i, char) in self.enumerated() {
-            if i > 0 && i % 7 == 0 {
-                addressExpanded.append("-")
-            }
-            addressExpanded.append(char)
+        // Keeps the prefix and checksum intact and tries to split middle by 5 chars each.
+        // Doesn't take into account all address types and networks, optimized for mainnet native segwit and taproot.
+        let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
+        let prefix = trimmed.prefix(4)
+        let suffix = trimmed.suffix(6)
+        
+        let middle = trimmed.dropFirst(4).dropLast(6)
+        
+        // If no middle, just join prefix and suffix
+        guard !middle.isEmpty else {
+            return "\(prefix)\(suffix)"
         }
-        return addressExpanded
+        
+        // Group middle into chunks of 5 with "-"
+        var groupedMiddle = ""
+        var index = middle.startIndex
+        while index < middle.endIndex {
+            let end = middle.index(index, offsetBy: 5, limitedBy: middle.endIndex) ?? middle.endIndex
+            let chunk = middle[index..<end]
+            if !groupedMiddle.isEmpty {
+                groupedMiddle += "-"
+            }
+            groupedMiddle += chunk
+            index = end
+        }
+        
+        return "\(prefix)-\(groupedMiddle)-\(suffix)"
     }
     
     /// Securely overwrites the string's memory with zeros and then clears it
@@ -261,6 +280,25 @@ public extension Notification.Name {
     static let signPsbt = Notification.Name(rawValue: "signPsbt")
     static let updateWalletLabel = Notification.Name(rawValue: "updateWalletLabel")
     static let startTorFromAppDelegate = Notification.Name(rawValue: "startTorFromAppDelegate")
+}
+
+public extension Descriptor {
+    var addressType: String {
+        var addressType = ""
+        switch self {
+        case _ where self.isP2TR:
+            addressType = "bech32m"
+        case _ where self.isP2WPKH:
+            addressType = "bech32"
+        case _ where self.isP2SHP2WPKH:
+            addressType = "p2sh-segwit"
+        case _ where self.isP2PKH:
+            addressType = "legacy"
+        default:
+            break
+        }
+        return addressType
+    }
 }
 
 public extension Data {
