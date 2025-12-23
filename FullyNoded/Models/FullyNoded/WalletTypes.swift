@@ -8,21 +8,21 @@
 
 import Foundation
 
-public enum WalletType: String {
-    case descriptor
-    case single
-    case multi
-    
-    var stringValue: String {
-        switch self {
-        case .descriptor:
-            return "Native-Descriptor"
-        case .single:
-            return "Single-Sig"
-        case .multi:
-            return "Multi-Sig"
-        }
-    }
-}
+//public enum WalletType: String {
+//    case descriptor
+//    case single
+//    case multi
+//    
+//    var stringValue: String {
+//        switch self {
+//        case .descriptor:
+//            return "Native-Descriptor"
+//        case .single:
+//            return "Single-Sig"
+//        case .multi:
+//            return "Multi-Sig"
+//        }
+//    }
+//}
 
 

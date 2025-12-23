@@ -11,9 +11,8 @@ import Foundation
 class ImportWallet {
     
     static var index = 0
-    static var processedWatching = [String]()
     static var isColdcard = false
-    static var version:Int = 0
+    static var version: Int = 0
     static var isHot = false
             
     class func accountMap(_ accountMap: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
@@ -26,13 +25,10 @@ class ImportWallet {
         var primDescriptor = accountMap["descriptor"] as! String
         let blockheight = accountMap["blockheight"] as? Int ?? 0
         let label = accountMap["label"] as! String
-        let watching = accountMap["watching"] as? [String] ?? []
         
         wallet["label"] = label
         wallet["id"] = UUID()
         wallet["blockheight"] = Int64(blockheight)
-        wallet["maxIndex"] = 999
-        wallet["index"] = 0
         
         var descStruct = Descriptor(primDescriptor)
         isHot = descStruct.isHot
@@ -44,10 +40,6 @@ class ImportWallet {
         }
         
         self.version = version
-        
-        if self.version >= 210100 {
-            wallet["type"] = "Native-Descriptor"
-        }
         
         primDescriptor = primDescriptor.replacingOccurrences(of: "'", with: "h")
         let arr = primDescriptor.split(separator: "#")
@@ -146,53 +138,7 @@ class ImportWallet {
                             return
                         }
                         
-                        if watching.count > 0 {
-                            self.processWatching(watching: watching) { (watchingArray, errorMessage) in
-                                guard let watchingArray = watchingArray, watchingArray.count > 0 else {
-                                    UserDefaults.standard.removeObject(forKey: "walletName")
-                                    completion((false, "Error processing watching descriptors: \(errorMessage ?? "unknown")"))
-                                    return
-                                }
-                                
-                                var params = ["requests":[]]
-                                
-                                for (i, watchingDesc) in watchingArray.enumerated() {
-                                    var ischange = false
-                                    
-                                    if watchingDesc.contains("/1/") {
-                                        ischange = true
-                                    }
-                                    
-                                    let param_dict = [
-                                        "desc": watchingDesc,
-                                        "active": false,
-                                        "range": [0,999],
-                                        "next_index": 0,
-                                        "timestamp": "now",
-                                        "internal": ischange
-                                    ]
-                                                                        
-                                    params["requests"]?.append(param_dict)
-                                                                        
-                                    if i + 1 == watchingArray.count {
-                                        let param:Import_Descriptors = .init(params)
-                                        self.importDescriptors(param) { (success, errorMessage) in
-                                            if success {
-                                                wallet["watching"] = watchingArray
-                                                //rescan(wallet: wallet, completion: completion)
-                                                saveLocally(wallet: wallet, completion: completion)
-                                            } else {
-                                                UserDefaults.standard.removeObject(forKey: "walletName")
-                                                completion((false, "Error importing watching descriptors: \(errorMessage ?? "unknown")"))
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            //rescan(wallet: wallet, completion: completion)
-                            saveLocally(wallet: wallet, completion: completion)
-                        }
+                        saveLocally(wallet: wallet, completion: completion)
                     }
                 } else {
                     completion((false, "Fully Noded works with Bitcoin Core 0.21 minimum."))
@@ -228,23 +174,7 @@ class ImportWallet {
                     wallet["name"] = existingWallet
                     UserDefaults.standard.set(wallet["name"] as! String, forKey: "walletName")
                     
-                    if watching.count > 0 {
-                        index = 0
-                        processedWatching.removeAll()
-                        
-                        processWatching(watching: watching) { (watchingArray, errorMessage) in
-                            guard let watchingArray = watchingArray else {
-                                UserDefaults.standard.removeObject(forKey: "walletName")
-                                completion((false, "error processing watching descriptors: \(errorMessage ?? "unknown error")"))
-                                return
-                            }
-                            
-                            wallet["watching"] = watchingArray
-                            saveLocally(wallet: wallet, completion: completion)
-                        }
-                    } else {
-                        saveLocally(wallet: wallet, completion: completion)
-                    }
+                    saveLocally(wallet: wallet, completion: completion)
                 }
             }
         }
@@ -258,32 +188,13 @@ class ImportWallet {
         wallet["label"] = "Coldcard"
         wallet["id"] = UUID()
         wallet["blockheight"] = 0
-        wallet["maxIndex"] = 999
-        wallet["index"] = 0
         
         let fingerprint = dict["xfp"] as! String
-        
-        let bip49 = dict["bip49"] as! NSDictionary
-        let bipr49deriv = (bip49["deriv"] as! String).replacingOccurrences(of: "m", with: fingerprint)
-        let bip49Xpub = (bip49["xpub"] as! String)
-        let bip49DescPrim = "sh(wpkh([\(bipr49deriv.replacingOccurrences(of: "'", with: "h"))]\(bip49Xpub)/0/*))"
-        let bip49DescChange = "sh(wpkh([\(bipr49deriv.replacingOccurrences(of: "'", with: "h"))]\(bip49Xpub)/1/*))"
-        
-        let bip44 = dict["bip44"] as! NSDictionary
-        let bipr44deriv = (bip44["deriv"] as! String).replacingOccurrences(of: "m", with: fingerprint)
-        let bip44Xpub = (bip44["xpub"] as! String)
-        let bip44DescPrim = "pkh([\(bipr44deriv.replacingOccurrences(of: "'", with: "h"))]\(bip44Xpub)/0/*)"
-        let bip44DescChange = "pkh([\(bipr44deriv.replacingOccurrences(of: "'", with: "h"))]\(bip44Xpub)/1/*)"
-        
         let bip84 = dict["bip84"] as! NSDictionary
         let bipr84deriv = (bip84["deriv"] as! String).replacingOccurrences(of: "m", with: fingerprint)
         let bip84Xpub = (bip84["xpub"] as! String)
         let bip84DescPrim = "wpkh([\(bipr84deriv.replacingOccurrences(of: "'", with: "h"))]\(bip84Xpub)/0/*)"
-        
-        let watching = [bip49DescPrim, bip49DescChange, bip44DescPrim, bip44DescChange]
         wallet["descriptor"] = bip84DescPrim
-        wallet["watching"] = watching
-        
         accountMap(wallet, completion: completion)
     }
     
@@ -332,7 +243,7 @@ class ImportWallet {
                 [
                     ["desc": recDesc,
                      "active": recDescIsActive,
-                     "range": [0,999],
+                     "range": [0,99],
                      "next_index": 0,
                      "timestamp": "now",
                      "internal": false
@@ -340,7 +251,7 @@ class ImportWallet {
                     [
                         "desc": changeDesc,
                         "active": changeDescIsActive,
-                        "range": [0,999],
+                        "range": [0,99],
                         "next_index": 0,
                         "timestamp": "now",
                         "internal": true
@@ -434,22 +345,4 @@ class ImportWallet {
             }
         }
     }
-    
-    class func processWatching(watching: [String], completion: @escaping ((watchingArray: [String]?, errorMessage: String?)) -> Void) {
-        if index < watching.count {
-            getDescriptorInfo(desc: watching[index]) { (desc, errMessage) in
-                guard let desc = desc else {
-                    completion((nil, errMessage))
-                    return
-                }
-                
-                processedWatching.append(desc)
-                index += 1
-                processWatching(watching: watching, completion: completion)
-            }
-        } else {
-            completion((processedWatching, nil))
-        }
-    }
-    
 }
