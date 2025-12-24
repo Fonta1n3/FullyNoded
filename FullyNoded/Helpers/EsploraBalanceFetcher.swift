@@ -10,76 +10,33 @@ import Foundation
 
 import Foundation
 
-class NodelessBalanceFetcher {
+class NodelessUtxoFetcher {
     
-    static let shared = NodelessBalanceFetcher()
+    static let shared = NodelessUtxoFetcher()
     
-    func fetchAddressBalance(
-        address: String,
-        isTestnet: Bool,
-        completion: @escaping (Result<Double, Error>) -> Void
-    ) {
-        let torSesh = TorClient.sharedInstance.session
-        let testnetUrl = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/testnet/api/"
-        let mainnetUrl = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/api/"
-        // Select base URL
-        let baseURL = isTestnet ? testnetUrl : mainnetUrl
+    private init() {}
+    
+    func fetchUtxos(for address: String, isTestnet: Bool = false) async throws -> [Esplora_Utxo] {
+        let baseUrl = isTestnet
+            ? "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/testnet/api/"
+            : "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/api/"
         
-        guard let url = URL(string: "\(baseURL)address/\(address)") else {
-            completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to create URL"])))
-            return
+        guard let url = URL(string: "\(baseUrl)/address/\(address)/utxo") else {
+            throw URLError(.badURL)
         }
         
-        print("url: \(url)")
+        let (data, response) = try await TorClient.sharedInstance.session.data(from: url)
         
-        let task = torSesh.dataTask(with: url) { data, response, error in
-            // Handle network errors
-            if let error = error {
-                DispatchQueue.main.async {
-                    completion(.failure(error))
-                }
-                return
-            }
-            
-            guard let data = data else {
-                DispatchQueue.main.async {
-                    completion(.failure(NSError(domain: "NoData", code: -2, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
-                }
-                return
-            }
-            
-            do {
-                // Decode JSON
-                let decoder = JSONDecoder()
-                let result = try decoder.decode(EsploraAddressResponse.self, from: data)
-                
-                // Calculate total balance: chain + mempool
-                let chainBalance = result.chain_stats.funded_txo_sum - result.chain_stats.spent_txo_sum
-                let mempoolBalance = result.mempool_stats.funded_txo_sum - result.mempool_stats.spent_txo_sum
-                let totalBalance = UInt64(chainBalance + mempoolBalance)
-                
-                DispatchQueue.main.async {
-                    completion(.success(Double(totalBalance) / 100_000_000.0))
-                }
-            } catch {
-                if let utf8 = data.utf8String {
-                    completion(.failure(NSError(domain: "", code: -2, userInfo: [NSLocalizedDescriptionKey: utf8])))
-                }
-            }
+        // Basic response validation
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 else {
+            throw URLError(.badServerResponse)
         }
         
-        task.resume()
-    }
-    
-    // MARK: - Supporting Structs for JSON Decoding
-    struct EsploraAddressResponse: Decodable {
-        let chain_stats: Stats
-        let mempool_stats: Stats
+        // Decode JSON array directly into [Utxo]
+        let utxos = try JSONDecoder().decode([Esplora_Utxo].self, from: data)
         
-        struct Stats: Decodable {
-            let funded_txo_sum: Int64
-            let spent_txo_sum: Int64
-        }
+        return utxos
     }
 }
 

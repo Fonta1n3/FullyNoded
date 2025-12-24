@@ -41,6 +41,7 @@
 		0A34073D2EC08A0B008576C7 /* ListUnspent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A34073C2EC08A0B008576C7 /* ListUnspent.swift */; };
 		0A40118D2ECA3A5F00FC9BA8 /* CurrenciesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A40118C2ECA3A5F00FC9BA8 /* CurrenciesTableViewController.swift */; };
 		0A40118F2ECB2F3400FC9BA8 /* FirstTimeHereViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A40118E2ECB2F3400FC9BA8 /* FirstTimeHereViewController.swift */; };
+		0A427FE12EFBF63000E73589 /* EsploraUtxo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A427FE02EFBF63000E73589 /* EsploraUtxo.swift */; };
 		0A590357269875CD00510626 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590356269875CB00510626 /* Extensions.swift */; };
 		0A64634428FDC01B0079C5DB /* NostrResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64634328FDC01B0079C5DB /* NostrResponse.swift */; };
 		0A64634628FDC06B0079C5DB /* NostrRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64634528FDC06B0079C5DB /* NostrRequest.swift */; };
@@ -220,6 +221,7 @@
 		0A34073C2EC08A0B008576C7 /* ListUnspent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListUnspent.swift; sourceTree = "<group>"; };
 		0A40118C2ECA3A5F00FC9BA8 /* CurrenciesTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrenciesTableViewController.swift; sourceTree = "<group>"; };
 		0A40118E2ECB2F3400FC9BA8 /* FirstTimeHereViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstTimeHereViewController.swift; sourceTree = "<group>"; };
+		0A427FE02EFBF63000E73589 /* EsploraUtxo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EsploraUtxo.swift; sourceTree = "<group>"; };
 		0A590356269875CB00510626 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		0A64634328FDC01B0079C5DB /* NostrResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrResponse.swift; sourceTree = "<group>"; };
 		0A64634528FDC06B0079C5DB /* NostrRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrRequest.swift; sourceTree = "<group>"; };
@@ -777,6 +779,7 @@
 				0A83EB412C4943E100502806 /* Coldcard */,
 				0A643A1C274A4B8F007F4F44 /* FullyNoded */,
 				0A643A1D274A4BDD007F4F44 /* BitcoinCore */,
+				0A427FE02EFBF63000E73589 /* EsploraUtxo.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1233,6 +1236,7 @@
 				0A2EBDEB2EBC62A400AF56CD /* DynamicFooterView.swift in Sources */,
 				0A6E59882C400728007750F2 /* RPCAuth.swift in Sources */,
 				0A212D8D26C66B1800BF6FD4 /* DescriptorInfo.swift in Sources */,
+				0A427FE12EFBF63000E73589 /* EsploraUtxo.swift in Sources */,
 				D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */,
 				D0E54DD525207A1C00BD859E /* UTXOs.swift in Sources */,
 				0A2D4F562EE442A000121667 /* AddressStruct.swift in Sources */,
