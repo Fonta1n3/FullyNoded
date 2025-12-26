@@ -10,14 +10,10 @@ import UIKit
 
 class LockedViewController: UIViewController {
     
-    private var lockedUtxos = [Utxo]()
+    private var lockedUtxos: [[String: Any]] = []
     let spinner = ConnectingView.shared
     var selectedVout = Int()
     var selectedTxid = ""
-    var fxRate:Double?
-    var isBtc = false
-    var isSats = false
-    var isFiat = false
     @IBOutlet var tableView: UITableView!
     
     override func viewDidLoad() {
@@ -67,8 +63,7 @@ class LockedViewController: UIViewController {
                     return
                 }
                 
-                let utxoStruct = Utxo(utxoDict)
-                self.lockedUtxos.append(utxoStruct)
+                self.lockedUtxos.append(utxoDict)
             }
             
             CoreDataService.retrieveEntity(entityName: .utxos) { savedLockedUtxos in
@@ -78,29 +73,27 @@ class LockedViewController: UIViewController {
                 }
                 
                 for savedLockedUtxo in savedLockedUtxos {
-                    let savedUtxoStruct = Utxo(savedLockedUtxo)
-                    let savedUtxoOutpoint = savedUtxoStruct.txid + "\(savedUtxoStruct.vout)"
+                    let savedUtxoOutpoint = savedLockedUtxo["txid"] as! String + "\(savedLockedUtxo["vout"] as! Int)"
                     var isSaved = false
                     
                     for (i, utxo) in self.lockedUtxos.enumerated() {
-                        let outpoint = utxo.txid + "\(utxo.vout)"
+                        let outpoint = utxo["txid"] as! String + "\(utxo["vout"] as! Int)"
                         isSaved = outpoint == savedUtxoOutpoint
                         
                         if isSaved {
-                            self.lockedUtxos[i] = savedUtxoStruct
+                            self.lockedUtxos[i] = utxo
                         }
                     }
                 }
                 
-                self.lockedUtxos = self.lockedUtxos.sorted { $0.confs ?? 0 < $1.confs ?? 0 }
                 self.finishedLoading()
             }
         }
     }
     
-    private func unlock(_ utxo: Utxo) {
+    private func unlock(_ utxo: [String: Any]) {
         spinner.show(vc: self, description: "unlocking...")
-        let param:Lock_Unspent = .init(["unlock": true, "transactions": [["txid":utxo.txid,"vout":utxo.vout]]])
+        let param:Lock_Unspent = .init(["unlock": true, "transactions": [["txid":utxo["txid"] as! String,"vout":utxo["vout"] as! Int]]])
         
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .lockunspent(param)) { (response, errorMessage) in
             guard let success = response as? Bool else {
@@ -173,11 +166,12 @@ extension LockedViewController: UITableViewDataSource {
         let utxo = lockedUtxos[indexPath.section]
         let voutLabel = cell.viewWithTag(2) as! UILabel
         let txid = cell.viewWithTag(3) as! UILabel
+        txid.lineBreakMode = .byTruncatingMiddle
         let unlockButton = cell.viewWithTag(4) as! UIButton
         unlockButton.restorationIdentifier = "\(indexPath.section)"
         unlockButton.addTarget(self, action: #selector(unlockUtxo(_:)), for: .touchUpInside)
-        voutLabel.text = "vout \(utxo.vout)"
-        txid.text = utxo.txid
+        voutLabel.text = "vout \(utxo["vout"] as! Int)"
+        txid.text = utxo["txid"] as? String ?? ""
         txid.translatesAutoresizingMaskIntoConstraints = true
         txid.sizeToFit()
         return cell

@@ -123,7 +123,7 @@ class UTXOCell: UITableViewCell {
             walletLabel = wallet.label
         }
                 
-        if utxo.solvable {
+        if let solvable = utxo.solvable {
             solvableLabel.text = "Owned by \(walletLabel)"
             isSolvableImageView.tintColor = .none
             isSolvableImageView.image = UIImage(systemName: "person.crop.circle.fill.badge.checkmark")
@@ -133,13 +133,16 @@ class UTXOCell: UITableViewCell {
             isSolvableImageView.image = UIImage(systemName: "person.crop.circle.badge.xmark")
         }
         
-        if Int(utxo.confirmations) == 0 {
-            confsIcon.tintColor = .systemRed
+        if let confirmations = utxo.confirmations {
+            confirmationsLabel.text = "\(confirmations) confirmations"
+            if Int(confirmations) == 0 {
+                confsIcon.tintColor = .systemRed
+            } else {
+                confsIcon.tintColor = .none
+            }
         } else {
-            confsIcon.tintColor = .none
+            confirmationsLabel.text = "? confirmations"
         }
-            
-        confirmationsLabel.text = "\(utxo.confirmations) confirmations"
         
         if let desc = utxo.desc {
             descriptorLabel.text = desc
