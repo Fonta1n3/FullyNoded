@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  BitSense
 //
-//  Created by Peter on 8/1/18.
+//  Created by Fontaine on 8/1/18.
 //  Copyright © 2018 Fontaine. All rights reserved.
 //
 

@@ -20,13 +20,14 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private var stringToExport = ""
     private var descriptionText = ""
     private var headerText = ""
-    private var accountPubkey = ""
-    private var accountBip84Pubkey = ""
-    private var accountBip86Pubkey = ""
-    private var accountPath = ""
-    private var bip86AccountPath = ""
-    private var bip84AccountPath = ""
+//    private var accountPubkey = ""
+//    private var accountBip84Pubkey = ""
+//    private var accountBip86Pubkey = ""
+//    private var accountPath = ""
+//    private var bip86AccountPath = ""
+//    private var bip84AccountPath = ""
     private var isBbqr = false
+    private var nodelessDescriptor = ""
     
     private enum Section: Int {
         case label
@@ -261,8 +262,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let decryptedbip84xpub = Crypto.decrypt(encryptedbip84xpub),
                     let xpub = decryptedbip84xpub.utf8String {
                     let descriptor = "wpkh([\(xfp)/84h/0h/0h]\(xpub)/0/*)"
-                    self.accountBip84Pubkey = xpub
-                    self.bip84AccountPath = "m/84h/0h/0h"
+                    //self.accountBip84Pubkey = xpub
+                    //self.bip84AccountPath = "m/84h/0h/0h"
                     self.tableDict[7]["text"] = descriptor
                     if let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) {
                         self.tableDict[7]["ur"] = singleSigCryptoAccount
@@ -273,8 +274,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let decryptedbip86xpub = Crypto.decrypt(encryptedbip86xpub),
                     let xpub = decryptedbip86xpub.utf8String {
                     let descriptor = "tr([\(xfp)/86h/0h/0h]\(xpub)/0/*)"
-                    self.accountBip86Pubkey = xpub
-                    self.bip86AccountPath = "m/86h/0h/0h"
+                    //self.accountBip86Pubkey = xpub
+                    //self.bip86AccountPath = "m/86h/0h/0h"
                     self.tableDict[8]["text"] = descriptor
                     if let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) {
                         self.tableDict[8]["ur"] = singleSigCryptoAccount
@@ -296,8 +297,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let decryptedbip84tpub = Crypto.decrypt(encryptedbip84tpub),
                     let tpub = decryptedbip84tpub.utf8String {
                     let descriptor = "wpkh([\(xfp)/84h/1h/0h]\(tpub)/0/*)"
-                    self.accountBip84Pubkey = tpub
-                    self.bip84AccountPath = "m/84h/1h/0h"
+                    //self.accountBip84Pubkey = tpub
+                    //self.bip84AccountPath = "m/84h/1h/0h"
                     self.tableDict[7]["text"] = descriptor
                     if let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) {
                         self.tableDict[7]["ur"] = singleSigCryptoAccount
@@ -308,8 +309,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let decryptedbip86tpub = Crypto.decrypt(encryptedbip86tpub),
                     let tpub = decryptedbip86tpub.utf8String {
                     let descriptor = "tr([\(xfp)/86h/1h/0h]\(tpub)/0/*)"
-                    self.accountBip86Pubkey = tpub
-                    self.bip86AccountPath = "m/86h/1h/0h"
+                    //self.accountBip86Pubkey = tpub
+                    //self.bip86AccountPath = "m/86h/1h/0h"
                     self.tableDict[8]["text"] = descriptor
                     if let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) {
                         self.tableDict[8]["ur"] = singleSigCryptoAccount
@@ -954,11 +955,13 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     @objc func nodeless(_ sender: UIButton) {
         switch sender.tag {
         case 7:
-            accountPubkey = accountBip84Pubkey
-            accountPath = bip84AccountPath
+//            accountPubkey = accountBip84Pubkey
+//            accountPath = bip84AccountPath
+            nodelessDescriptor = tableDict[7]["text"] as! String
         case 8:
-            accountPubkey = accountBip86Pubkey
-            accountPath = bip86AccountPath
+//            accountPubkey = accountBip86Pubkey
+//            accountPath = bip86AccountPath
+            nodelessDescriptor = tableDict[8]["text"] as! String
         default:
             break
             
@@ -1060,8 +1063,9 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             guard let vc = segue.destination as? NodelessTableViewController else { fallthrough }
             
             vc.signer = signer
-            vc.accountPubkey = accountPubkey
-            vc.accountPath = accountPath
+            vc.primaryDescriptor = nodelessDescriptor
+            //vc.accountPubkey = accountPubkey
+            //vc.accountPath = accountPath
             
             if segmentedControl.selectedSegmentIndex == 0 {
                 vc.network = .bitcoin

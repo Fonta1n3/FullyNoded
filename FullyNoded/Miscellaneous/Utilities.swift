@@ -2,7 +2,7 @@
 //  Utilities.swift
 //  BitSense
 //
-//  Created by Peter on 08/08/18.
+//  Created by Fontaine on 08/08/18.
 //  Copyright © 2018 Fontaine. All rights reserved.
 //
 

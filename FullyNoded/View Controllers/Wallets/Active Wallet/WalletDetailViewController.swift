@@ -381,6 +381,17 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func deleteNow() {
+        CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] utxos in
+            guard let self = self else { return }
+            guard let utxos = utxos else { return }
+            for utxo in utxos {
+                let utxoStr = UTXO(from: utxo)
+                if utxoStr.walletId == walletId, let utxoId = utxoStr.id {
+                    CoreDataService.deleteEntity(id: utxoId, entityName: .utxos) { deleted in }
+                }
+            }
+        }
+        
         CoreDataService.deleteEntity(id: walletId, entityName: .wallets) { [unowned vc = self] success in
             if success {
                 DispatchQueue.main.async { [unowned vc = self] in

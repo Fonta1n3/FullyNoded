@@ -13,110 +13,179 @@ class NodelessTableViewController: UITableViewController {
     var savedUtxos: [UTXO] = []
     var addresses: [AddressStruct] = []
     var signer: SignerStruct!
-    var accountPubkey: String!
-    var accountPath: String!
     var addressToExport = ""
     var derivationToExport = ""
     var network: WalletLogic.BDKNetwork!
     let spinner = ConnectingView.shared
+    var primaryDescriptor = ""
+    var watchOnlyBdkWallet: WalletLogic.BDKWallet?
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        CoreDataService.deleteAllData(entity: .usedAddresses) { deleted in
-            
-        }
+
         tableView.register(BitcoinAddressCell.self, forCellReuseIdentifier: "BitcoinCell")
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
         load()
+    }
+    
+    @IBAction func deleteCacheAction(_ sender: Any) {
+        Task {
+            await deleteItem()
+        }
+    }
+    
+    @MainActor
+    func deleteItem() async {
+        let confirmed = await confirmAction(
+            title: "Delete entire Utxo cache?",
+            message: "This action cannot be undone.",
+            confirmTitle: "Delete",
+            cancelTitle: "Cancel"
+        )
+        
+        if confirmed {
+            // Proceed with deletion
+            CoreDataService.deleteAllData(entity: .utxos) { [weak self] deleted in
+                guard let self = self else { return }
+                
+                guard deleted else {
+                    showAlert(vc: self, title: "", message: "Unable to delete all cached utxos...")
+                    return
+                }
+                
+                showAlert(vc: self, title: "", message: "All cached UTXO's deleted.")
+                load()
+            }
+        }
     }
     
     func load() {
         spinner.show(vc: self, description: "Loading...")
+        savedUtxos.removeAll()
+        addresses.removeAll()
         
-        guard let encryptedWords = signer.words else {
+        let descArr = primaryDescriptor.components(separatedBy: "#")
+        let changeDesc = "\(descArr[0])".replacingOccurrences(of: "/0/", with: "/1/")
+                
+        if network != .bitcoin {
+            network = .testnet
+        }
+        
+        guard let bdkPrimDesc = try? WalletLogic.BDKDescriptor(descriptor: primaryDescriptor, network: network) else {
             spinner.dismiss()
-            showAlert(vc: self, title: "", message: "For now the BIP39 words need to be present to use this feature. Watch-only nodeless functionality coming soon.")
+            showAlert(vc: self, title: "", message: "Unable to derive BDK primary descriptor.")
             return
         }
         
-        guard var decryptedData = Crypto.decrypt(signer.words!) else {
+        guard let bdkChangeDesc = try? WalletLogic.BDKDescriptor(descriptor: changeDesc, network: network) else {
             spinner.dismiss()
-            return
-        }
-        
-        var passphrase: String?
-        
-        if signer.passphrase != nil {
-            guard var decryptedPassphrase = Crypto.decrypt(signer.passphrase!) else {
-                spinner.dismiss()
-                return
-            }
-            
-            defer {
-                decryptedPassphrase.secureZero()
-            }
-            
-            passphrase = String(bytes: decryptedPassphrase, encoding: .utf8)
-        }
-        
-        if network == nil {
-            guard let networkCheck = WalletLogic.shared.bdkNetwork() else {
-                spinner.dismiss()
-                return
-            }
-            
-            network = networkCheck
-        }        
-        
-        guard var words = String(bytes: decryptedData, encoding: .utf8) else {
-            spinner.dismiss()
-            return
-        }
-        
-        guard let secretMasterKey = WalletLogic.shared.bdkMasterKey(network: network, mnemonic: words, passphrase: passphrase) else {
-            spinner.dismiss()
+            showAlert(vc: self, title: "", message: "Unable to derive BDK change descriptor.")
             return
         }
         
         guard let persister = WalletLogic.shared.persistor() else {
             spinner.dismiss()
+            showAlert(vc: self, title: "", message: "Unable to create persistor.")
             return
         }
         
-        defer {
-            words.secureWipe()
-            passphrase?.secureWipe()
-            decryptedData.secureZero()
-        }
-        
-        var recDesc: WalletLogic.BDKDescriptor!
-        var changeDesc: WalletLogic.BDKDescriptor!
-        
-        if accountPath.hasPrefix("m/86") {
-            recDesc = WalletLogic.BDKDescriptor.newBip86(secretKey: secretMasterKey, keychainKind: .external, network: network)
-            changeDesc = WalletLogic.BDKDescriptor.newBip86(secretKey: secretMasterKey, keychainKind: .internal, network: network)
-        }
-        
-        if accountPath.hasPrefix("m/84") {
-            recDesc = WalletLogic.BDKDescriptor.newBip84(secretKey: secretMasterKey, keychainKind: .external, network: network)
-            changeDesc = WalletLogic.BDKDescriptor.newBip84(secretKey: secretMasterKey, keychainKind: .internal, network: network)
-        }
-        
-        guard let bdkWallet = try? WalletLogic.BDKWallet(descriptor: recDesc, changeDescriptor: changeDesc, network: network, persister: persister) else {
+        guard let bdkWallet = try? WalletLogic.BDKWallet(descriptor: bdkPrimDesc, changeDescriptor: bdkChangeDesc, network: network, persister: persister) else {
             spinner.dismiss()
+            showAlert(vc: self, title: "", message: "Unable to derive BDK wallet.")
             return
         }
+        
+        watchOnlyBdkWallet = bdkWallet
+       
+        
+//        guard let encryptedWords = signer.words else {
+//            spinner.dismiss()
+//            showAlert(vc: self, title: "", message: "For now the BIP39 words need to be present to use this feature. Watch-only nodeless functionality coming soon.")
+//            return
+//        }
+//        
+//        guard var decryptedData = Crypto.decrypt(encryptedWords) else {
+//            spinner.dismiss()
+//            return
+//        }
+//        
+//        var passphrase: String?
+//        
+//        if signer.passphrase != nil {
+//            guard var decryptedPassphrase = Crypto.decrypt(signer.passphrase!) else {
+//                spinner.dismiss()
+//                return
+//            }
+//            
+//            defer {
+//                decryptedPassphrase.secureZero()
+//            }
+//            
+//            passphrase = String(bytes: decryptedPassphrase, encoding: .utf8)
+//        }
+//        
+//        if network == nil {
+//            guard let networkCheck = WalletLogic.shared.bdkNetwork() else {
+//                spinner.dismiss()
+//                return
+//            }
+//            
+//            network = networkCheck
+//        }        
+//        
+//        guard var words = String(bytes: decryptedData, encoding: .utf8) else {
+//            spinner.dismiss()
+//            return
+//        }
+//        
+//        guard let secretMasterKey = WalletLogic.shared.bdkMasterKey(network: network, mnemonic: words, passphrase: passphrase) else {
+//            spinner.dismiss()
+//            return
+//        }
+//        
+//        guard let persister = WalletLogic.shared.persistor() else {
+//            spinner.dismiss()
+//            return
+//        }
+//        
+//        defer {
+//            words.secureWipe()
+//            passphrase?.secureWipe()
+//            decryptedData.secureZero()
+//        }
+//        
+//        var recDesc: WalletLogic.BDKDescriptor!
+//        var changeDesc: WalletLogic.BDKDescriptor!
+//        
+//        if accountPath.hasPrefix("m/86") {
+//            recDesc = WalletLogic.BDKDescriptor.newBip86(secretKey: secretMasterKey, keychainKind: .external, network: network)
+//            changeDesc = WalletLogic.BDKDescriptor.newBip86(secretKey: secretMasterKey, keychainKind: .internal, network: network)
+//        }
+//        
+//        if accountPath.hasPrefix("m/84") {
+//            recDesc = WalletLogic.BDKDescriptor.newBip84(secretKey: secretMasterKey, keychainKind: .external, network: network)
+//            changeDesc = WalletLogic.BDKDescriptor.newBip84(secretKey: secretMasterKey, keychainKind: .internal, network: network)
+//        }
+//        
+//        guard let bdkWallet = try? WalletLogic.BDKWallet(descriptor: recDesc, changeDescriptor: changeDesc, network: network, persister: persister) else {
+//            spinner.dismiss()
+//            return
+//        }
+        
+        let path = Descriptor(primaryDescriptor).derivation
         
         DispatchQueue.global(qos: .background).async { [weak self] in
             guard let self = self else { return }
             for i in 0...999 {
-                print("i: \(i)")
                 let addressInfo = bdkWallet.peekAddress(keychain: .external, index: UInt32(i))
                 
                 let str = AddressStruct(dictionary: [
                     "address": addressInfo.address.description,
-                    "used": false,
                     "balance": 0.0,
-                    "derivation": "\(accountPath!)/0/\(i)"
+                    "derivation": "\(path)/0/\(i)",
+                    "utxos": []
                 ])
                 
                 addresses.append(str)
@@ -133,57 +202,48 @@ class NodelessTableViewController: UITableViewController {
             guard let self = self else { return }
             
             guard let utxos = utxos, utxos.count > 0 else {
-                checkUsedAddresses()
-                return
-            }
-            
-            DispatchQueue.global(qos: .background).async { [weak self] in
-                guard let self = self else { return }
-                for (u, utxo) in utxos.enumerated() {
-                    for (i, address) in addresses.enumerated() {
-                        if address.address == utxo["address"] as? String {
-                            saveUsedAddress(address: address.address, balance: utxo["amount"] as! Double)
-                        }
-                        if u + 1 == utxos.count && i + 1 == addresses.count {
-                            checkUsedAddresses()
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    func saveUsedAddress(address: String, balance: Double) {
-        let usedAddress: [String: Any] = [
-            "address": address,
-            "balance": balance,
-            "id": UUID()
-        ]
-        
-        CoreDataService.saveEntity(dict: usedAddress, entityName: .usedAddresses) { _ in }
-    }
-    
-    private func checkUsedAddresses() {
-        CoreDataService.retrieveEntity(entityName: .usedAddresses) { [weak self] usedAddresses in
-            guard let self = self else { return }
-            
-            guard let usedAddresses = usedAddresses, usedAddresses.count > 0 else {
-                spinner.dismiss()
                 reload()
                 return
             }
             
             DispatchQueue.global(qos: .background).async { [weak self] in
                 guard let self = self else { return }
-                for (u, usedAddresses) in usedAddresses.enumerated() {
+                for (u, utxo) in utxos.enumerated() {
+                    let utxoStruct = UTXO(from: utxo)
+                    savedUtxos.append(utxoStruct)
+                    
                     for (i, address) in addresses.enumerated() {
-                        if address.address == usedAddresses["address"] as? String {
-                            self.addresses[i].balance = usedAddresses["amount"] as! Double
-                            self.addresses[i].used = true
+                        if address.address == utxoStruct.address {
+                            if utxoStruct.amount > 0.0 {
+                                addresses[i].balance += utxoStruct.amount
+                            }
+                            
+                            let satsValue = Int64(utxoStruct.amount / 100000000)
+                            var confirmed = false
+                            
+                            if let confirmations = utxoStruct.confirmations {
+                                confirmed = (confirmations > 0)
+                            }
+                            
+                            let esploraUtxo = Esplora_Utxo(
+                                txid: utxoStruct.txid,
+                                vout: utxoStruct.vout,
+                                value: satsValue,
+                                status: Esplora_Utxo.Status(confirmed: confirmed,
+                                                            blockHeight: nil,
+                                                            blockHash: nil,
+                                                            blockTime: nil),
+                                address: address.address,
+                                lastUpdated: utxoStruct.lastUpdated,
+                                id: utxoStruct.id
+                            )
+                            
+                            addresses[i].utxos.append(esploraUtxo)
+                            addresses[i].confirmed = confirmed
                         }
-                        if u + 1 == usedAddresses.count && i + 1 == addresses.count {
-                            spinner.dismiss()
-                            self.reload()
+                        
+                        if i + 1 == addresses.count && u + 1 == utxos.count {
+                            reload()
                         }
                     }
                 }
@@ -196,6 +256,7 @@ class NodelessTableViewController: UITableViewController {
             guard let self = self else { return }
             
             tableView.reloadData()
+            spinner.dismiss()
         }
     }
 
@@ -217,7 +278,7 @@ class NodelessTableViewController: UITableViewController {
 
         cell.checkBalanceAction = { [weak self] in
             guard let self = self else { return }
-            checkBalance(address: addressStr.address)
+            checkBalance(address: addressStr.address, indexPath: indexPath, cell: cell)
         }
         
         cell.exportAction = { [weak self] in
@@ -230,65 +291,145 @@ class NodelessTableViewController: UITableViewController {
             copyAddress(address: addressStr.address)
         }
         
+//        cell.sweepAction = { [weak self] in
+//            guard let self = self else { return }
+//            createPsbt(addressStruct: addressStr)
+//        }
+        
         return cell
     }
     
-    private func checkBalance(address: String) {
-        ConnectingView.shared.show(vc: self, description: "")
-        let isMainnet = (network == .bitcoin)
-        NodelessBalanceFetcher.shared.fetchAddressBalance(address: address, isTestnet: !isMainnet) { [weak self] result in
-            guard let self = self else { return }
-            
-            switch result {
-            case .success(let balance):
-                if balance > 0 {
-                    updateUsedAddress(address: address, balance: balance)
-                } else {
-                    ConnectingView.shared.dismiss()
-                    showAlert(vc: self, title: "", message: "Balance for \(address.addressExpanded) is 0.")
+//    private func createPsbt(addressStruct: AddressStruct) {
+//        guard let watchOnlyBdkWallet = watchOnlyBdkWallet else {
+//            print("no wallet")
+//            return
+//        }
+//        
+//        var totalAmount: UInt64 = 0
+//        
+//        for utxo in addressStruct.utxos {
+//            totalAmount += UInt64(utxo.value)
+//        }
+//        
+//        do {
+//            let psbt = try WalletLogic.shared.createPsbtWithManualInputs(
+//                wallet: watchOnlyBdkWallet,
+//                utxos: addressStruct.utxos,
+//                outputs: [(address: "tb1q9956wfhq9jzqvhmlapz5849axc35s35q6uwc5a", amount: totalAmount)],
+//                network: network
+//            )
+//            print("psbt: \(psbt)")
+//        } catch {
+//            print(error.localizedDescription)
+//        }        
+//    }
+    
+    private func checkBalance(address: String, indexPath: IndexPath, cell: BitcoinAddressCell) {
+        let isTestnet = (network == .testnet)
+        Task {
+            do {
+                var utxos = try await NodelessUtxoFetcher.shared.fetchUtxos(for: address, isTestnet: isTestnet)
+                var confirmed = true
+                cell.hideBalanceLoading()
+                
+                for (i, utxo) in utxos.enumerated() {
+                    if !utxo.status.confirmed {
+                        confirmed = false
+                    }
+                    utxos[i].address = address
+                    utxos[i].lastUpdated = Date()
+                    saveUtxo(utxo: utxo, address: address)
                 }
-            case .failure(let error):
-                ConnectingView.shared.dismiss()
+                
+                let totalBalanceBTC = utxos.reduce(0.0) { $0 + Double($1.value) / 100_000_000.0 }
+                
+                addresses[indexPath.row].balance = totalBalanceBTC
+                addresses[indexPath.row].confirmed = confirmed
+                addresses[indexPath.row].utxos = utxos
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.tableView.reloadRows(at: [indexPath], with: .fade)
+                }
+                
+            } catch {
+                cell.hideBalanceLoading()
                 showAlert(vc: self, title: "", message: error.localizedDescription)
             }
         }
     }
     
-    private func updateUsedAddress(address: String, balance: Double) {
-        CoreDataService.retrieveEntity(entityName: .usedAddresses) { [weak self] usedAddresses in
-            guard let self = self else { return }
+    private func saveUtxo(utxo: Esplora_Utxo, address: String) {
+        let utxoAlreadySaved = savedUtxos.contains { savedUtxo in
+            savedUtxo.txid == utxo.txid && savedUtxo.vout == utxo.vout
+        }
+        print("utxoAlreadySaved: \(utxoAlreadySaved)")
+        var confirmed = 0
+        if utxo.status.confirmed {
+            confirmed = 1
+        }
+        
+        if !utxoAlreadySaved {
+            let dict: [String: Any] = [
+                "txid": utxo.txid,
+                "walletId": UUID(),
+                "vout": Int64(utxo.vout),
+                "address": address,
+                "amount": Double(utxo.value) / 100_000_000.0,
+                "confirmations": confirmed,
+                "lastUpdated": Date(),
+                "id": UUID()
+            ]
             
-            guard let usedAddresses = usedAddresses, usedAddresses.count > 0 else {
-                saveUsedAddress(address: address, balance: balance)
-                checkUsedAddresses()
-                return
+            CoreDataService.saveEntity(dict: dict, entityName: .utxos) { saved in
+                guard saved else { return }
+                #if DEBUG
+                print("utxo saved")
+                #endif
             }
-            
-            for (i, usedAddress) in usedAddresses.enumerated() {
-                if usedAddress["address"] as? String == address {
-                    let id = usedAddress["id"] as! UUID
-                    let balance = usedAddress["balance"] as! Double
-                    CoreDataService.update(id: id, keyToUpdate: "balance", newValue: balance, entity: .usedAddresses) { updated in
+        } else {
+        
+            for savedUtxo in savedUtxos {
+                if savedUtxo.txid == utxo.txid && savedUtxo.vout == utxo.vout {
+                    guard let id = savedUtxo.id else { return }
+                    CoreDataService.update(id: id, keyToUpdate: "lastUpdated", newValue: Date(), entity: .utxos) { updated in
                         guard updated else {
-                            print("error updating used address")
                             return
                         }
+                        #if DEBUG
+                        print("updated")
+                        #endif
+                        
+                        CoreDataService.update(id: id, keyToUpdate: "confirmations", newValue: confirmed, entity: .utxos) { updated in
+                            guard updated else {
+                                return
+                            }
+                            #if DEBUG
+                            print("updated")
+                            #endif
+                        }
                     }
-                }
-                
-                if i + 1 == usedAddresses.count {
-                    checkUsedAddresses()
                 }
             }
         }
     }
-    
+        
     private func copyAddress(address: String) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            UIPasteboard.general.string = address
-            showAlert(vc: self, title: "", message: "Address copied ✓")
+            let activityVC = UIActivityViewController(activityItems: [address], applicationActivities: nil)
+            
+            if let popover = activityVC.popoverPresentationController {
+                popover.sourceView = self.view
+                popover.sourceRect = CGRect(x: self.view.bounds.midX,
+                                            y: self.view.bounds.midY,
+                                            width: 0, height: 0)
+                popover.permittedArrowDirections = []
+            }
+            
+            self.present(activityVC, animated: true, completion: nil)
         }
     }
     

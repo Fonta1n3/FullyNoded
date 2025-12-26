@@ -2,16 +2,53 @@
 //  Extensions.swift
 //  FullyNoded
 //
-//  Created by Peter Denton on 7/9/21.
+//  Created by Fontaine on 7/9/21.
 //  Copyright © 2021 Fontaine. All rights reserved.
 //
 
 import Foundation
 import UIKit
 
-public extension Utxo {
+extension UTXO {
     var input: [String:Any] {
         return ["txid": self.txid, "vout": self.vout, "sequence": 1]
+    }
+}
+
+extension UIViewController {
+    /// Presents a "Are you sure?" alert and returns true if user confirms
+    /// - Parameters:
+    ///   - title: Optional title (default: "Are you sure?")
+    ///   - message: Optional message
+    ///   - confirmTitle: Title for confirm button (default: "Yes")
+    ///   - cancelTitle: Title for cancel button (default: "No")
+    /// - Returns: true if user taps confirm, false otherwise
+    func confirmAction(
+        title: String = "Are you sure?",
+        message: String? = nil,
+        confirmTitle: String = "Yes",
+        cancelTitle: String = "No"
+    ) async -> Bool {
+        return await withCheckedContinuation { continuation in
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let confirmAction = UIAlertAction(title: confirmTitle, style: .destructive) { _ in
+                continuation.resume(returning: true)
+            }
+            let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel) { _ in
+                continuation.resume(returning: false)
+            }
+            
+            alert.addAction(confirmAction)
+            alert.addAction(cancelAction)
+            
+            // Optional: make confirm button bold in iOS 15+
+            if #available(iOS 15.0, *) {
+                alert.preferredAction = confirmAction
+            }
+            
+            self.present(alert, animated: true)
+        }
     }
 }
 
@@ -24,6 +61,14 @@ public extension Date {
     
     var secondsSince: Int {
         return Int(Date().timeIntervalSince(self))
+    }
+    
+    var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .medium
+        formatter.locale = Locale.current
+        return formatter.string(from: self)
     }
     
 }
@@ -102,6 +147,9 @@ public extension String {
     var addressExpanded: String {
         // Keeps the prefix and checksum intact and tries to split middle by 5 chars each.
         // Doesn't take into account all address types and networks, optimized for mainnet native segwit and taproot.
+        if self == "Unknown address." {
+            return self
+        }
         let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
         let prefix = trimmed.prefix(4)
         let suffix = trimmed.suffix(6)

@@ -21,6 +21,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private var psbt: String?
     private var depositAddress: String?
     var fxRate: Double?
+    private var allCachedUtxos: [[String: Any]] = []
+    private var initialLoad = true
     
     @IBOutlet weak private var tableView: UITableView!
     @IBOutlet weak private var lastSavedDateLabel: UILabel!
@@ -41,7 +43,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             lastSavedDateLabel.text = "Last updated: " + displayedDate
         }
         
-        loadCachedUtxos()
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -49,35 +51,44 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
         amountTotal = 0.0
         inputArray.removeAll()
+        
+        if initialLoad {
+            loadCachedUtxos()
+        } else {
+            initialLoad = false
+        }
     }
     
     private func loadCachedUtxos() {
         addNavBarSpinner()
         unlockedUtxos.removeAll()
+        allCachedUtxos.removeAll()
         
-        guard let wallet = wallet else {
+        guard let _ = wallet else {
             loadUtxos()
             return
         }
         
         CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] utxos in
             guard let self = self else { return }
-            
+                        
             guard let utxos = utxos, utxos.count > 0 else {
                 loadUtxos()
                 return
             }
             
+            allCachedUtxos = utxos
+            
             for (i, utxo) in utxos.enumerated() {
                 let utxoStr = UTXO(from: utxo)
-                if let id = utxoStr.walletId {
-                    if utxoStr.walletId == id {
+                if let id = utxoStr.walletId, let walletId = wallet?.id {
+                    if id == walletId {
                         unlockedUtxos.append(utxoStr)
                     }
                 }
                 
                 if i + 1 == utxos.count {
-                    unlockedUtxos.sort { ($0.confirmations) < ($1.confirmations) }
+                    unlockedUtxos.sort { ($0.confirmations ?? 0) < ($1.confirmations ?? 0) }
                     reload()
                     loadUtxos()
                 }
@@ -93,53 +104,124 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
+    private func deleteThisWalletsCachedUtxos(completion: @escaping ((Bool) -> (Void))) {
+        guard allCachedUtxos.count > 0 else {
+            completion((true))
+            return
+        }
+        for (i, cachedUtxo) in allCachedUtxos.enumerated() {
+            let cachedUtxoStruct = UTXO(from: cachedUtxo)
+            guard let cachedUtxoWalletId = cachedUtxoStruct.walletId, let walletId = wallet?.id, cachedUtxoWalletId == walletId else {
+                if i + 1 == allCachedUtxos.count {
+                    completion((true))
+                }
+                return
+            }
+            
+            guard let id = cachedUtxoStruct.id else {
+                if i + 1 == allCachedUtxos.count {
+                    completion((true))
+                }
+                return
+            }
+            
+            CoreDataService.deleteEntity(id: id, entityName: .utxos) { [weak self] cachedUtxoDeleted in
+                guard let self = self else { return }
+                guard cachedUtxoDeleted else {
+                    showAlert(vc: self, title: "", message: "There was an error deleting a cached utxo.")
+                    if i + 1 == allCachedUtxos.count {
+                        completion((true))
+                    }
+                    return
+                }
+                if i + 1 == allCachedUtxos.count {
+                    completion((true))
+                }
+            }
+        }
+    }
+    
     private func loadUtxos() {
         let param: List_Unspent = .init(["minconf": 0])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .listunspent(param)) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
             
-            guard let utxos = response as? [[String: Any]], utxos.count > 0 else {
+            guard let utxos = response as? [[String: Any]] else {
                 removeSpinner()
                 
                 showAlert(vc: self, title: "", message: errorDesc ?? "Unable to fetch utxos from your node.")
                 return
             }
             
+            if utxos.count == 0 {
+                showAlert(vc: self, title: "", message: "No unlocked utxo's.")
+            }
+            
             saveLastSavedUtxosDate()
             unlockedUtxos.removeAll()
-            unlockedUtxos = [UTXO].from(rawArray: utxos)
-            unlockedUtxos.sort { ($0.confirmations) < ($1.confirmations) }
+            
+            for utxo in utxos {
+                var utxoStr = UTXO(from: utxo)
+                utxoStr.id = UUID()
+                unlockedUtxos.append(utxoStr)
+            }
+            
+            unlockedUtxos.sort { ($0.confirmations ?? 0) < ($1.confirmations ?? 0) }
             reload()
-            removeSpinner()
             
             DispatchQueue.global(qos: .background).async { [weak self] in
-            CoreDataService.deleteAllData(entity: .utxos) { [weak self] deleted in
                 guard let self = self else { return }
-                guard deleted else { return }
-                guard let walletId = wallet?.id else { return }
                 
-                    for unlockedUtxo in unlockedUtxos {
-                        var dict: [String: Any] = [:]
-                        dict["walletId"] = walletId
-                        dict["amount"] = unlockedUtxo.amount
-                        dict["address"] = unlockedUtxo.address ?? ""
-                        dict["txid"] = unlockedUtxo.txid
-                        dict["vout"] = unlockedUtxo.vout
-                        dict["label"] = unlockedUtxo.label ?? ""
-                        dict["desc"] = unlockedUtxo.desc ?? ""
-                        dict["confirmations"] = unlockedUtxo.confirmations
-                        dict["solvable"] = unlockedUtxo.solvable
-                        dict["spendable"] = unlockedUtxo.spendable
-                        if let reused = unlockedUtxo.reused {
-                            dict["reused"] = reused
-                        }
-                        
-                        CoreDataService.saveEntity(dict: dict, entityName: .utxos) { utxosSaved in
-                            guard utxosSaved else {
-                                return
-                            }
-                        }
+                deleteThisWalletsCachedUtxos { [weak self] deleted in
+                    guard let self = self else { return }
+                    guard deleted else {
+                        removeSpinner()
+                        return
                     }
+                    cacheUtxos()
+                }
+            }
+        }
+    }
+    
+    func cacheUtxos() {
+        guard let walletId = wallet?.id else {
+            removeSpinner()
+            return
+        }
+        
+        for (i, unlockedUtxo) in unlockedUtxos.enumerated() {
+            var dict: [String: Any] = [:]
+            dict["walletId"] = walletId
+            dict["amount"] = unlockedUtxo.amount
+            dict["address"] = unlockedUtxo.address ?? ""
+            dict["txid"] = unlockedUtxo.txid
+            dict["vout"] = unlockedUtxo.vout
+            dict["label"] = unlockedUtxo.label ?? ""
+            dict["desc"] = unlockedUtxo.desc ?? ""
+            dict["confirmations"] = unlockedUtxo.confirmations
+            dict["solvable"] = unlockedUtxo.solvable
+            dict["spendable"] = unlockedUtxo.spendable
+            dict["lastUpdated"] = Date()
+            dict["id"] = unlockedUtxo.id
+            dict["reused"] = unlockedUtxo.reused
+            
+            // Sync cached utxo ID, so we can delete it from the cache if user locks the utxo.
+            CoreDataService.saveEntity(dict: dict, entityName: .utxos) { [weak self] utxosSaved in
+                guard let self = self else { return }
+                
+                guard utxosSaved else {
+                    if i + 1 == unlockedUtxos.count {
+                        removeSpinner()
+                    }
+                    return
+                }
+                #if DEBUG
+                print("saved utxo: \(dict)")
+                #endif
+                
+                if i + 1 == unlockedUtxos.count {
+                    removeSpinner()
                 }
             }
         }
@@ -171,14 +253,22 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
             
             if success {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.loadUnlockedUtxos()
+                guard let id = utxo.id else {
+                    print("no id")
+                    return
                 }
                 
-                showAlert(vc: self, title: "UTXO Locked 🔐", message: "You can tap the locked button to see your locked utxo's and unlock them. Be aware if your node reboots all utxo's will be unlocked by default!")
-                
+                CoreDataService.deleteEntity(id: id, entityName: .utxos) { deleted in
+                    guard deleted else { return }
+                    
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.loadUnlockedUtxos()
+                    }
+                    
+                    showAlert(vc: self, title: "UTXO Locked 🔐", message: "You can tap the locked button to see your locked utxo's and unlock them. Be aware if your node reboots all utxo's will be unlocked by default!")
+                }
             } else {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
@@ -216,6 +306,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
+            ConnectingView.shared.dismiss()
             self.refresher.endRefreshing()
             self.spinner.stopAnimating()
             self.spinner.alpha = 0
@@ -346,24 +437,11 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             return nil
         }
         
-        return formatDate(savedDate)
-    }
-
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .long
-        formatter.timeStyle = .medium
-        formatter.locale = Locale.current
-        return formatter.string(from: date)
+        return savedDate.formattedDate
     }
                 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
-            
-        case "goToLocked":
-            guard let vc = segue.destination as? LockedViewController else { fallthrough }
-            
-            vc.fxRate = fxRate
             
         case "segueToSendFromUtxos":
             guard let vc = segue.destination as? CreateRawTxViewController else { fallthrough }

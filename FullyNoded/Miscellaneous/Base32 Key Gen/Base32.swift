@@ -2,7 +2,7 @@
 //  Base32.swift
 //  BitSense
 //
-//  Created by Peter on 24/10/19.
+//  Created by Fontaine on 24/10/19.
 //  Copyright © 2019 Fontaine. All rights reserved.
 //
 

@@ -34,22 +34,22 @@ import Foundation
                                   and are not eligible for spending by fundrawtransaction and sendtoaddress.
  */
 
-struct UTXO: Identifiable {
-    let id = UUID()
+struct UTXO {
+    var id: UUID?
     let address: String?
     let amount: Double
-    let confirmations: Int
+    let confirmations: Int?
     let desc: String?
     let label: String?
     let parentDescs: [String]?
     let reused: Bool?
     let scriptPubKey: String?
-    let solvable: Bool
+    let solvable: Bool?
     let spendable: Bool?
     let txid: String
     let vout: Int
+    let lastUpdated: Date?
     var walletId: UUID?
-    
     
     let rawData: [String: Any]
     
@@ -64,18 +64,20 @@ extension UTXO {
         self.rawData = raw
         
         address = raw["address"] as? String
-        confirmations = raw["confirmations"] as! Int
+        confirmations = raw["confirmations"] as? Int
         desc = raw["desc"] as? String
         label = raw["label"] as? String
         parentDescs = raw["parent_descs"] as? [String]
         reused = raw["reused"] as? Bool
         scriptPubKey = raw["scriptPubKey"] as? String
-        solvable = raw["solvable"] as! Bool
+        solvable = raw["solvable"] as? Bool
         spendable = raw["spendable"] as? Bool
         txid = raw["txid"] as! String
         vout = raw["vout"] as! Int
         amount = raw["amount"] as! Double
         walletId = raw["walletId"] as? UUID
+        lastUpdated = raw["lastUpdated"] as? Date
+        id = raw["id"] as? UUID
         
     }
 }

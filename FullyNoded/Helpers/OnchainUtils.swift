@@ -85,20 +85,6 @@ class OnchainUtils {
         }
     }
     
-//    static func importMulti(_ param: String, completion: @escaping ((imported: Bool, message: String?)) -> Void) {
-//        MakeRPCCall.sharedInstance.executeRPCCommand(method: .importmulti, param: param) { (response, errorDescription) in
-//            guard let result = response as? NSArray, result.count > 0,
-//                  let dict = result[0] as? NSDictionary,
-//                  let success = dict["success"] as? Bool,
-//                  success else {
-//                completion((false, errorDescription ?? "unknown error importing your keys"))
-//                return
-//            }
-//            
-//            completion((success, nil))
-//        }
-//    }
-    
     static func rescan(completion: @escaping ((started: Bool, message: String?)) -> Void) {
         OnchainUtils.getBlockchainInfo { (blockchainInfo, message) in
             guard let blockchainInfo = blockchainInfo else {
@@ -158,29 +144,6 @@ class OnchainUtils {
         }
     }
     
-    static func listUnspent(param: List_Unspent, completion: @escaping ((utxos: [Utxo]?, message: String?)) -> Void) {
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listunspent(param)) { (response, errorMessage) in
-            guard let response = response as? [[String:Any]] else {
-                completion((nil, errorMessage))
-                return
-            }
-            
-            guard response.count > 0 else {
-                completion(([], nil))
-                return
-            }
-            
-            var utxosToReturn: [Utxo] = []
-            
-            for (i, dict) in response.enumerated() {
-                utxosToReturn.append(Utxo(dict))
-                
-                if i + 1 == response.count {
-                    completion((utxosToReturn, nil))
-                }
-            }
-        }
-    }
     
     static func deriveAddresses(param: Derive_Addresses, completion: @escaping ((addresses: [String]?, message: String?)) -> Void) {        
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .deriveaddresses(param: param)) { (response, errorMessage) in

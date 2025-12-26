@@ -140,31 +140,29 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     } else {
                         if nodeArray.count > 1 {
                             for (i, node) in nodeArray.enumerated() {
-                                //if i != indexPath.row {
-                                    if node.id != selectedNode.id {
-                                        CoreDataService.update(id: node.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
-                                    }
-                                    
-                                    if i + 1 == nodeArray.count {
-                                        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
-                                            guard let nodes = nodes else { return }
+                                if node.id != selectedNode.id {
+                                    CoreDataService.update(id: node.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                                }
+                                
+                                if i + 1 == nodeArray.count {
+                                    CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
+                                        guard let nodes = nodes else { return }
+                                        
+                                        DispatchQueue.main.async { [weak self] in
+                                            guard let self = self else { return }
                                             
-                                            DispatchQueue.main.async { [weak self] in
-                                                guard let self = self else { return }
-                                                
-                                                nodeArray.removeAll()
-                                                
-                                                for node in nodes {
-                                                    if node["id"] as? UUID != nil {
-                                                        nodeArray.append(NodeStruct(dictionary: node))
-                                                    }
+                                            nodeArray.removeAll()
+                                            
+                                            for node in nodes {
+                                                if node["id"] as? UUID != nil {
+                                                    nodeArray.append(NodeStruct(dictionary: node))
                                                 }
-                                                nodeTable.reloadData()
-                                                showAlert(vc: self, title: "", message: "Tap the refresh button on the home view to show the current node.")
                                             }
+                                            nodeTable.reloadData()
+                                            showAlert(vc: self, title: "", message: "Tap the refresh button on the home view to show the current node.")
                                         }
                                     }
-                               // }
+                                }
                             }
                         }
                     }
@@ -172,23 +170,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     displayAlert(viewController: self, isError: true, message: "Error updating node.")
                 }
             }
-            
-            
-        } else {
-//            CoreDataService.update(id: selectedNode.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { [weak self] success in
-//                guard let self = self else { return }
-//                
-//                if success {
-//                    self.ud.removeObject(forKey: "walletName")
-//                    self.reloadTable()
-//    
-//                } else {
-//                    displayAlert(viewController: self, isError: true, message: "Error updating node.")
-//                }
-//            }
         }
-        
-        
     }
     
     @objc func editNode(_ sender: UIButton) {
@@ -265,7 +247,6 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let nodeToActivate = nodeArray[index]
         
         if index < nodeArray.count {
-            
             CoreDataService.update(id: nodeToActivate.id!, keyToUpdate: "isActive", newValue: selectedSwitch.isOn, entity: .newNodes) { [unowned vc = self] success in
                 if success {
                     vc.ud.removeObject(forKey: "walletName")
@@ -310,35 +291,30 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     }
                 }
             }
-        } else {
-            print("node count is wrong")
         }
     }
     
     func reloadTable() {
-        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
-            if nodes != nil {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.nodeArray.removeAll()
-                    for node in nodes! {
-                        let ns = NodeStruct(dictionary: node)
-                        if ns.id != nil {
-                            vc.nodeArray.append(ns)
-                        }
-                    }
-                    vc.nodeTable.reloadData()
-                }
-                
-            } else {
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "error getting nodes from core data")
-                
-            }
+        CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
+            guard let self = self else { return }
             
+            guard let nodes = nodes else {
+                showAlert(vc: self, title: "", message: "Error getting nodes from core data.")
+                return
+            }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                nodeArray.removeAll()
+                for node in nodes {
+                    let ns = NodeStruct(dictionary: node)
+                    if ns.id != nil {
+                        nodeArray.append(ns)
+                    }
+                }
+                nodeTable.reloadData()
+            }
         }
-        
     }
     
     private func reduced(label: String) -> String {

@@ -257,12 +257,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             self.addressInput.resignFirstResponder()
         }
         
-        guard let addressInput = addressInput.text?.replacingOccurrences(of: "-", with: "") else {
+        guard let _ = addressInput.text?.replacingOccurrences(of: "-", with: "") else {
             showAlert(vc: self, title: "", message: "Enter an address or invoice.")
             return
         }
         
-        guard let amount = convertedAmount() else {
+        guard let _ = convertedAmount() else {
             if !self.outputs.isEmpty {
                 tryRaw()
             } else {
@@ -489,14 +489,17 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     private func standardWalletSweep(_ receivingAddress: String) {
         let param: List_Unspent = .init(["minconf": 0])
-        OnchainUtils.listUnspent(param: param) { [weak self] (utxos, message) in
+        //OnchainUtils.listUnspent(param: param) { [weak self] (utxos, message) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listunspent(param)) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
             
-            guard let utxos = utxos else {
+            guard let response = response as? [[String: Any]] else {
                 self.spinner.dismiss()
-                displayAlert(viewController: self, isError: true, message: message ?? "error fetching utxo's")
+                displayAlert(viewController: self, isError: true, message: errorDesc ?? "error fetching utxo's")
                 return
             }
+            
+            let utxos = [UTXO].from(rawArray: response)
             
             var inputArray:[[String:Any]] = []
             var amount = Double()
@@ -507,9 +510,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     spendFromCold = true
                 }
                 
-                amount += utxo.amount!
+                amount += utxo.amount
                 
-                guard utxo.confs! > 0 else {
+                guard let confirmations = utxo.confirmations, confirmations > 0 else {
                     self.spinner.dismiss()
                     showAlert(vc: self, title: "", message: "You have unconfirmed utxo's, wait till they get a confirmation before trying to sweep them.")
                     return
