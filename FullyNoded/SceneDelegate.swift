@@ -2,7 +2,7 @@
 //  SceneDelegate.swift
 //  BitSense
 //
-//  Created by Peter on 03/02/20.
+//  Created by Fontaine on 03/02/20.
 //  Copyright © 2020 Fontaine. All rights reserved.
 //
 
