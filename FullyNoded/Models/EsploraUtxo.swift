@@ -14,6 +14,8 @@ struct Esplora_Utxo: Codable {
     let value: Int64 // satoshis
     let status: Status
     var address: String?
+    var lastUpdated: Date?
+    var id: UUID?
     
     struct Status: Codable {
         let confirmed: Bool

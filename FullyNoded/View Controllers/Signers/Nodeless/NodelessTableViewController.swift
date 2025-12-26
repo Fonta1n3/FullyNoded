@@ -13,8 +13,6 @@ class NodelessTableViewController: UITableViewController {
     var savedUtxos: [UTXO] = []
     var addresses: [AddressStruct] = []
     var signer: SignerStruct!
-    var accountPubkey: String!
-    var accountPath: String!
     var addressToExport = ""
     var derivationToExport = ""
     var network: WalletLogic.BDKNetwork!
@@ -24,16 +22,50 @@ class NodelessTableViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         tableView.register(BitcoinAddressCell.self, forCellReuseIdentifier: "BitcoinCell")
+        self.navigationController?.title = "Nodeless"
     }
     
     override func viewDidAppear(_ animated: Bool) {
         load()
     }
     
+    @IBAction func deleteCacheAction(_ sender: Any) {
+        Task {
+            await deleteItem()
+        }
+    }
+    
+    @MainActor
+    func deleteItem() async {
+        let confirmed = await confirmAction(
+            title: "Delete entire Utxo cache?",
+            message: "This action cannot be undone.",
+            confirmTitle: "Delete",
+            cancelTitle: "Cancel"
+        )
+        
+        if confirmed {
+            // Proceed with deletion
+            CoreDataService.deleteAllData(entity: .utxos) { [weak self] deleted in
+                guard let self = self else { return }
+                
+                guard deleted else {
+                    showAlert(vc: self, title: "", message: "Unable to delete all cached utxos...")
+                    return
+                }
+                
+                showAlert(vc: self, title: "", message: "All cached UTXO's deleted.")
+                load()
+            }
+        }
+    }
+    
     func load() {
         spinner.show(vc: self, description: "Loading...")
+        savedUtxos.removeAll()
+        addresses.removeAll()
         
         let descArr = primaryDescriptor.components(separatedBy: "#")
         let changeDesc = "\(descArr[0])".replacingOccurrences(of: "/0/", with: "/1/")
@@ -179,6 +211,8 @@ class NodelessTableViewController: UITableViewController {
                 guard let self = self else { return }
                 for (u, utxo) in utxos.enumerated() {
                     let utxoStruct = UTXO(from: utxo)
+                    savedUtxos.append(utxoStruct)
+                    
                     for (i, address) in addresses.enumerated() {
                         if address.address == utxoStruct.address {
                             if utxoStruct.amount > 0.0 {
@@ -186,17 +220,27 @@ class NodelessTableViewController: UITableViewController {
                             }
                             
                             let satsValue = Int64(utxoStruct.amount / 100000000)
-                            let confirmed = (utxoStruct.confirmations > 0)
+                            var confirmed = false
                             
-                            let esploraUtxo = Esplora_Utxo(txid: utxoStruct.txid,
-                                                           vout: utxoStruct.vout,
-                                                           value: satsValue,
-                                                           status: Esplora_Utxo.Status(confirmed: confirmed,
-                                                                                       blockHeight: nil,
-                                                                                       blockHash: nil,
-                                                                                       blockTime: nil),
-                                                           address: address.address)
+                            if let confirmations = utxoStruct.confirmations {
+                                confirmed = (confirmations > 0)
+                            }
+                            
+                            let esploraUtxo = Esplora_Utxo(
+                                txid: utxoStruct.txid,
+                                vout: utxoStruct.vout,
+                                value: satsValue,
+                                status: Esplora_Utxo.Status(confirmed: confirmed,
+                                                            blockHeight: nil,
+                                                            blockHash: nil,
+                                                            blockTime: nil),
+                                address: address.address,
+                                lastUpdated: utxoStruct.lastUpdated,
+                                id: utxoStruct.id
+                            )
+                            
                             addresses[i].utxos.append(esploraUtxo)
+                            addresses[i].confirmed = confirmed
                         }
                         
                         if i + 1 == addresses.count && u + 1 == utxos.count {
@@ -248,38 +292,38 @@ class NodelessTableViewController: UITableViewController {
             copyAddress(address: addressStr.address)
         }
         
-        cell.sweepAction = { [weak self] in
-            guard let self = self else { return }
-            createPsbt(addressStruct: addressStr)
-        }
+//        cell.sweepAction = { [weak self] in
+//            guard let self = self else { return }
+//            createPsbt(addressStruct: addressStr)
+//        }
         
         return cell
     }
     
-    private func createPsbt(addressStruct: AddressStruct) {
-        guard let watchOnlyBdkWallet = watchOnlyBdkWallet else {
-            print("no wallet")
-            return
-        }
-        
-        var totalAmount: UInt64 = 0
-        
-        for utxo in addressStruct.utxos {
-            totalAmount += UInt64(utxo.value)
-        }
-        
-        do {
-            let psbt = try WalletLogic.shared.createPsbtWithManualInputs(
-                wallet: watchOnlyBdkWallet,
-                utxos: addressStruct.utxos,
-                outputs: [(address: "tb1q9956wfhq9jzqvhmlapz5849axc35s35q6uwc5a", amount: totalAmount)],
-                network: network
-            )
-            print("psbt: \(psbt)")
-        } catch {
-            print(error.localizedDescription)
-        }        
-    }
+//    private func createPsbt(addressStruct: AddressStruct) {
+//        guard let watchOnlyBdkWallet = watchOnlyBdkWallet else {
+//            print("no wallet")
+//            return
+//        }
+//        
+//        var totalAmount: UInt64 = 0
+//        
+//        for utxo in addressStruct.utxos {
+//            totalAmount += UInt64(utxo.value)
+//        }
+//        
+//        do {
+//            let psbt = try WalletLogic.shared.createPsbtWithManualInputs(
+//                wallet: watchOnlyBdkWallet,
+//                utxos: addressStruct.utxos,
+//                outputs: [(address: "tb1q9956wfhq9jzqvhmlapz5849axc35s35q6uwc5a", amount: totalAmount)],
+//                network: network
+//            )
+//            print("psbt: \(psbt)")
+//        } catch {
+//            print(error.localizedDescription)
+//        }        
+//    }
     
     private func checkBalance(address: String, indexPath: IndexPath, cell: BitcoinAddressCell) {
         let isTestnet = (network == .testnet)
@@ -294,9 +338,11 @@ class NodelessTableViewController: UITableViewController {
                         confirmed = false
                     }
                     utxos[i].address = address
+                    utxos[i].lastUpdated = Date()
+                    saveUtxo(utxo: utxo, address: address)
                 }
                 
-                let totalBalanceBTC = utxos.reduce(0.0) { $0 + Double($1.value) / 100_000_000 }
+                let totalBalanceBTC = utxos.reduce(0.0) { $0 + Double($1.value) / 100_000_000.0 }
                 
                 addresses[indexPath.row].balance = totalBalanceBTC
                 addresses[indexPath.row].confirmed = confirmed
@@ -310,7 +356,62 @@ class NodelessTableViewController: UITableViewController {
                 
             } catch {
                 cell.hideBalanceLoading()
-                showAlert(vc: self, title: "", message: "Error fetching UTXOs: \(error)")
+                showAlert(vc: self, title: "", message: error.localizedDescription)
+            }
+        }
+    }
+    
+    private func saveUtxo(utxo: Esplora_Utxo, address: String) {
+        let utxoAlreadySaved = savedUtxos.contains { savedUtxo in
+            savedUtxo.txid == utxo.txid && savedUtxo.vout == utxo.vout
+        }
+        print("utxoAlreadySaved: \(utxoAlreadySaved)")
+        var confirmed = 0
+        if utxo.status.confirmed {
+            confirmed = 1
+        }
+        
+        if !utxoAlreadySaved {
+            let dict: [String: Any] = [
+                "txid": utxo.txid,
+                "walletId": UUID(),
+                "vout": Int64(utxo.vout),
+                "address": address,
+                "amount": Double(utxo.value) / 100_000_000.0,
+                "confirmations": confirmed,
+                "lastUpdated": Date(),
+                "id": UUID()
+            ]
+            
+            CoreDataService.saveEntity(dict: dict, entityName: .utxos) { saved in
+                guard saved else { return }
+                #if DEBUG
+                print("utxo saved")
+                #endif
+            }
+        } else {
+        
+            for savedUtxo in savedUtxos {
+                if savedUtxo.txid == utxo.txid && savedUtxo.vout == utxo.vout {
+                    guard let id = savedUtxo.id else { return }
+                    CoreDataService.update(id: id, keyToUpdate: "lastUpdated", newValue: Date(), entity: .utxos) { updated in
+                        guard updated else {
+                            return
+                        }
+                        #if DEBUG
+                        print("updated")
+                        #endif
+                        
+                        CoreDataService.update(id: id, keyToUpdate: "confirmations", newValue: confirmed, entity: .utxos) { updated in
+                            guard updated else {
+                                return
+                            }
+                            #if DEBUG
+                            print("updated")
+                            #endif
+                        }
+                    }
+                }
             }
         }
     }
