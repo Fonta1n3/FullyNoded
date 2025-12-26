@@ -1449,9 +1449,9 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
         <!--Nodeless-->
         <scene sceneID="wgv-RK-Dvs">
             <objects>
-                <tableViewController title="Nodeless" id="8y2-FD-bX6" customClass="NodelessTableViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController hidesBottomBarWhenPushed="YES" id="8y2-FD-bX6" customClass="NodelessTableViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="DZ6-zd-DKk">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="666"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="749"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <prototypes>
@@ -1494,14 +1494,14 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kT3-vW-HgJ">
-                                <rect key="frame" x="16" y="71" width="361" height="343"/>
+                                <rect key="frame" x="16" y="174" width="361" height="343"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="343" id="11T-Zr-4bL"/>
                                     <constraint firstAttribute="height" constant="343" id="lbF-go-rBu"/>
                                 </constraints>
                             </imageView>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="antenna.radiowaves.left.and.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="dfM-Fg-VDq">
-                                <rect key="frame" x="16" y="16.333333333333329" width="44" height="41.333333333333343"/>
+                                <rect key="frame" x="16" y="119.33333333333333" width="44" height="41.333333333333329"/>
                                 <color key="tintColor" systemColor="tintColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="ip8-ZB-8iJ"/>
@@ -1509,13 +1509,13 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                 </constraints>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Header" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cLD-vU-YX6">
-                                <rect key="frame" x="68" y="20.666666666666671" width="90" height="33"/>
+                                <rect key="frame" x="68" y="123.66666666666669" width="90" height="33"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="27"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
-                                <rect key="frame" x="16" y="422" width="361" height="410"/>
+                                <rect key="frame" x="16" y="525" width="361" height="273"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" systemColor="secondaryLabelColor"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
@@ -4910,7 +4910,7 @@ Fully Noded does its best to support as many hardware and software wallet option
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="A1b-Ed-DYW"/>
         <segue reference="CQp-9r-70w"/>
-        <segue reference="if0-NE-c9T"/>
+        <segue reference="uCn-2i-AB2"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="7PS-EL-3d2"/>
     </inferredMetricsTieBreakers>

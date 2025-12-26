@@ -24,7 +24,6 @@ class NodelessTableViewController: UITableViewController {
         super.viewDidLoad()
 
         tableView.register(BitcoinAddressCell.self, forCellReuseIdentifier: "BitcoinCell")
-        self.navigationController?.title = "Nodeless"
     }
     
     override func viewDidAppear(_ animated: Bool) {
