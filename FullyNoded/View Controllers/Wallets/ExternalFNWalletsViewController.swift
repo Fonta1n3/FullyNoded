@@ -82,6 +82,17 @@ class ExternalFNWalletsViewController: UIViewController {
     }
     
     private func deleteNow(_ wallet: Wallet, _ index: Int) {
+        CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] utxos in
+            guard let self = self else { return }
+            guard let utxos = utxos else { return }
+            for utxo in utxos {
+                let utxoStr = UTXO(from: utxo)
+                if utxoStr.walletId == wallet.id, let utxoId = utxoStr.id {
+                    CoreDataService.deleteEntity(id: utxoId, entityName: .utxos) { deleted in }
+                }
+            }
+        }
+        
         CoreDataService.deleteEntity(id: wallet.id, entityName: .wallets) { [weak self] deleted in
             guard let self = self else { return }
             
