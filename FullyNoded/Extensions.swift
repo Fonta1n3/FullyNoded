@@ -147,6 +147,9 @@ public extension String {
     var addressExpanded: String {
         // Keeps the prefix and checksum intact and tries to split middle by 5 chars each.
         // Doesn't take into account all address types and networks, optimized for mainnet native segwit and taproot.
+        if self == "Unknown address." {
+            return self
+        }
         let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
         let prefix = trimmed.prefix(4)
         let suffix = trimmed.suffix(6)
