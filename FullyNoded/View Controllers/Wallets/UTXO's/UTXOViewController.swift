@@ -109,20 +109,26 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             completion((true))
             return
         }
+        
         for (i, cachedUtxo) in allCachedUtxos.enumerated() {
             let cachedUtxoStruct = UTXO(from: cachedUtxo)
+            
             guard let cachedUtxoWalletId = cachedUtxoStruct.walletId, let walletId = wallet?.id, cachedUtxoWalletId == walletId else {
                 if i + 1 == allCachedUtxos.count {
                     completion((true))
+                    return
+                } else {
+                    continue
                 }
-                return
             }
             
             guard let id = cachedUtxoStruct.id else {
                 if i + 1 == allCachedUtxos.count {
                     completion((true))
+                    return
+                } else {
+                    continue
                 }
-                return
             }
             
             CoreDataService.deleteEntity(id: id, entityName: .utxos) { [weak self] cachedUtxoDeleted in
@@ -172,6 +178,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             DispatchQueue.global(qos: .background).async { [weak self] in
                 guard let self = self else { return }
                 
+                // Easier and lighter to simply overwrite all cached utxos for this wallet than it is to update existing utxos and delete spent utxos.
                 deleteThisWalletsCachedUtxos { [weak self] deleted in
                     guard let self = self else { return }
                     guard deleted else {
