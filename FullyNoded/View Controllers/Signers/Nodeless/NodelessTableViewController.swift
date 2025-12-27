@@ -8,6 +8,7 @@
 
 import UIKit
 
+
 class NodelessTableViewController: UITableViewController {
     
     var savedUtxos: [UTXO] = []
