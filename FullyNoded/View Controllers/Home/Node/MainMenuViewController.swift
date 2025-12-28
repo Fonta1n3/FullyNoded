@@ -521,14 +521,15 @@ class MainMenuViewController: UIViewController {
     }
     
     private func updateSection(section: Section.RawValue) {
-        if self.view.window != nil {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            if self.view.window != nil {
                 mainMenu.reloadSections(IndexSet(arrayLiteral: section), with: .none)
+                self.needsTableReload = false
+            } else {
+                self.needsTableReload = true
             }
-            self.needsTableReload = false
-        } else {
-            self.needsTableReload = true
         }
     }
         
