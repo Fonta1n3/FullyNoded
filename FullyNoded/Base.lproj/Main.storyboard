@@ -66,7 +66,6 @@
                     <connections>
                         <outlet property="table" destination="dgY-D7-U76" id="mhI-Nc-qFi"/>
                         <segue destination="Xxg-Pp-vvN" kind="show" identifier="getHDmusigAddress" id="mRa-gP-mZ0"/>
-                        <segue destination="hL3-4s-vl7" kind="show" identifier="segueToBitcoinCoreWallets" id="2cS-RS-Ttc"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Oke-B8-Go2" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -280,7 +279,7 @@
                                         <rect key="frame" x="0.0" y="637" width="377" height="50"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hgi-ZB-OoB">
-                                                <rect key="frame" x="0.0" y="0.0" width="88.333333333333329" height="50"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="120.33333333333333" height="50"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="50" id="mo2-Xs-kaJ"/>
                                                 </constraints>
@@ -297,7 +296,7 @@
                                                 </connections>
                                             </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sbB-NO-KJ2">
-                                                <rect key="frame" x="96.333333333333343" y="0.0" width="88.333333333333343" height="50"/>
+                                                <rect key="frame" x="128.33333333333334" y="0.0" width="120.33333333333334" height="50"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="50" id="Kzg-JU-JcC"/>
                                                 </constraints>
@@ -310,22 +309,8 @@
                                                     <action selector="goToUtxos:" destination="Dwu-lj-4IN" eventType="touchUpInside" id="zv4-2M-JYa"/>
                                                 </connections>
                                             </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4y9-S1-3Km">
-                                                <rect key="frame" x="192.66666666666666" y="0.0" width="87.999999999999972" height="50"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" constant="50" id="4Be-ld-CLZ"/>
-                                                </constraints>
-                                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                <state key="normal" title="advanced"/>
-                                                <buttonConfiguration key="configuration" style="gray" title="Advanced">
-                                                    <fontDescription key="titleFontDescription" type="system" pointSize="13"/>
-                                                </buttonConfiguration>
-                                                <connections>
-                                                    <action selector="advancedAction:" destination="Dwu-lj-4IN" eventType="touchUpInside" id="Zpy-ib-jo9"/>
-                                                </connections>
-                                            </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1rD-5C-VVj">
-                                                <rect key="frame" x="288.66666666666669" y="0.0" width="88.333333333333314" height="50"/>
+                                                <rect key="frame" x="256.66666666666669" y="0.0" width="120.33333333333331" height="50"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="50" id="9Rd-qg-C1k"/>
                                                 </constraints>
@@ -2532,7 +2517,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="6zG-h6-wiF">
-                                <rect key="frame" x="16" y="139.00000000000003" width="361" height="356.66666666666674"/>
+                                <rect key="frame" x="16" y="111" width="361" height="457"/>
                                 <subviews>
                                     <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GO8-o8-fXl">
                                         <rect key="frame" x="0.0" y="0.0" width="361" height="44"/>
@@ -2540,7 +2525,8 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="DY7-55-MO9"/>
                                         </constraints>
-                                        <state key="normal" title="Single-sig">
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <state key="normal" title="Create single-sig">
                                             <color key="titleColor" systemColor="tintColor"/>
                                         </state>
                                         <connections>
@@ -2549,7 +2535,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="d1Y-lU-km0">
                                         <rect key="frame" x="0.0" y="52" width="361" height="43"/>
-                                        <string key="text">Creates a new single signature wallet. Your node holds the public keys, Fully Noded holds the private keys encrypted on your device which can be deleted to make it watch-only.</string>
+                                        <string key="text">Creates a single sig wallet. Your node holds the public keys, Fully Noded holds the private keys encrypted on your device which can be deleted to make it watch-only.</string>
                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
@@ -2560,7 +2546,8 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="ozy-XE-8dP"/>
                                         </constraints>
-                                        <state key="normal" title="Multi-sig">
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <state key="normal" title="Create multi-sig">
                                             <color key="titleColor" systemColor="tintColor"/>
                                         </state>
                                         <connections>
@@ -2569,23 +2556,74 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ti9-Jn-c8c">
                                         <rect key="frame" x="0.0" y="155" width="361" height="43"/>
-                                        <string key="text">Add cosigners by scanning QR's, pasting text from other wallets or by deriving cosigners from existing signers stored on Fully Noded.</string>
+                                        <string key="text">This presents the multi-sig creator, where you can add cosigners from existing Signers, scanning QR codes or manually pasting the xpub and derivation info.</string>
                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                         <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="47C-HD-wcH">
-                                        <rect key="frame" x="0.0" y="206" width="361" height="150.66666666666663"/>
-                                        <string key="text">Already have a wallet or cosigner? 
-
-Use the buttons in the top right to import whatever you've got.  
-From left to right: paste text, upload file and scan QR. 
-
-Fully Noded does its best to support as many hardware and software wallet options as possible.</string>
-                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oy6-dL-aYy">
+                                        <rect key="frame" x="0.0" y="206" width="361" height="44"/>
+                                        <color key="backgroundColor" systemColor="systemFillColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="44" id="deP-5d-OSB"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <state key="normal" title="Bitcoin Core Wallets">
+                                            <color key="titleColor" systemColor="tintColor"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="syncCoreWalletAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="nnc-Z6-f1L"/>
+                                        </connections>
+                                    </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="e69-9h-da9">
+                                        <rect key="frame" x="0.0" y="258" width="361" height="43"/>
+                                        <string key="text">This action will activate any existing Bitcoin Core wallet, if the Core wallet is a descriptor wallet then it will be synced with Fully Noded and you will get the full set of FN features.</string>
+                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                        <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DCK-W8-EOP">
+                                        <rect key="frame" x="0.0" y="309" width="361" height="44"/>
+                                        <color key="backgroundColor" systemColor="systemFillColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="44" id="EAj-ar-3eK"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <state key="normal" title=" Import by pasting text" image="document.on.clipboard" catalog="system">
+                                            <color key="titleColor" systemColor="tintColor"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="pasteTextAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="ts3-fj-9gc"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9dS-cb-UlI">
+                                        <rect key="frame" x="0.0" y="361" width="361" height="44"/>
+                                        <color key="backgroundColor" systemColor="systemFillColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="44" id="sKf-3M-kXX"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <state key="normal" title=" Import a wallet file" image="folder.badge.plus" catalog="system">
+                                            <color key="titleColor" systemColor="tintColor"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="importFileAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="wRC-jd-68g"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mM2-q0-GaQ">
+                                        <rect key="frame" x="0.0" y="413" width="361" height="44"/>
+                                        <color key="backgroundColor" systemColor="systemFillColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="44" id="Xja-KJ-Vxe"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <state key="normal" title=" Import by scanning a QR code" image="qrcode.viewfinder" catalog="system">
+                                            <color key="titleColor" systemColor="tintColor"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="scanQrAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="8bK-Hp-G9V"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                             </stackView>
                         </subviews>
@@ -2593,39 +2631,23 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="6zG-h6-wiF" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="8UM-IY-OU4"/>
-                            <constraint firstItem="6zG-h6-wiF" firstAttribute="top" secondItem="V4I-Q6-GVc" secondAttribute="top" constant="36" id="BtF-fO-PUH"/>
+                            <constraint firstItem="6zG-h6-wiF" firstAttribute="top" secondItem="V4I-Q6-GVc" secondAttribute="top" constant="8" id="Zot-YB-VgH"/>
                             <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="6zG-h6-wiF" secondAttribute="trailing" constant="16" id="pph-He-lUp"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Create Wallet" id="5rs-4G-uHB">
-                        <rightBarButtonItems>
-                            <barButtonItem image="qrcode.viewfinder" catalog="system" id="kDw-94-ivS">
-                                <color key="tintColor" systemColor="tintColor"/>
-                                <connections>
-                                    <action selector="scanQrAction:" destination="0gR-Gj-FSR" id="Et8-Ih-pHL"/>
-                                </connections>
-                            </barButtonItem>
-                            <barButtonItem image="folder" catalog="system" id="KPq-qx-s5Y">
-                                <color key="tintColor" systemColor="tintColor"/>
-                                <connections>
-                                    <action selector="fileAction:" destination="0gR-Gj-FSR" id="ZYq-bO-VDV"/>
-                                </connections>
-                            </barButtonItem>
-                            <barButtonItem image="doc.on.clipboard" catalog="system" id="O6q-Km-Thf">
-                                <color key="tintColor" systemColor="tintColor"/>
-                                <connections>
-                                    <action selector="pasteAction:" destination="0gR-Gj-FSR" id="VYg-fG-GpG"/>
-                                </connections>
-                            </barButtonItem>
-                        </rightBarButtonItems>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" title="Create Wallet" id="5rs-4G-uHB"/>
                     <connections>
+                        <outlet property="coreWalletOutlet" destination="oy6-dL-aYy" id="d3O-hS-mV3"/>
+                        <outlet property="importFileOutlet" destination="9dS-cb-UlI" id="Z5k-6e-k17"/>
                         <outlet property="multiSigOutlet" destination="ewF-ze-dkg" id="EXb-It-bRN"/>
+                        <outlet property="pasteOutlet" destination="DCK-W8-EOP" id="5dU-wn-RVg"/>
+                        <outlet property="scanQrOutlet" destination="mM2-q0-GaQ" id="rVz-8a-UUc"/>
                         <outlet property="singleSigOutlet" destination="GO8-o8-fXl" id="6Gi-pM-wjc"/>
                         <segue destination="Yhd-sD-SB5" kind="show" identifier="segueToSeedWords" id="AJq-aA-dsj"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanner" id="1fQ-PG-chF"/>
                         <segue destination="00Y-n8-WfC" kind="show" identifier="segueToCreateMultiSig" id="ejH-sy-hlm"/>
                         <segue destination="fG5-85-vAV" kind="show" identifier="segueToImportDescriptor" id="LMu-1F-VvA"/>
+                        <segue destination="hL3-4s-vl7" kind="show" identifier="segueToSyncCoreWallet" id="WOD-hh-y1z"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aBB-kS-R85" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -3768,13 +3790,14 @@ Fully Noded does its best to support as many hardware and software wallet option
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="N0t-XW-74V">
-                                                    <rect key="frame" x="20.000000000000004" y="16.666666666666668" width="41.333333333333343" height="21.000000000000004"/>
+                                                    <rect key="frame" x="20" y="16.666666666666668" width="305" height="21.000000000000004"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                             </subviews>
                                             <constraints>
+                                                <constraint firstAttribute="trailingMargin" secondItem="N0t-XW-74V" secondAttribute="trailing" constant="8" id="1Bx-vj-NBP"/>
                                                 <constraint firstItem="N0t-XW-74V" firstAttribute="leading" secondItem="8vt-jV-ete" secondAttribute="leadingMargin" id="nV1-0b-E9I"/>
                                                 <constraint firstItem="N0t-XW-74V" firstAttribute="centerY" secondItem="8vt-jV-ete" secondAttribute="centerY" id="p9p-RG-bDe"/>
                                             </constraints>
@@ -3805,7 +3828,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                             <constraint firstItem="nDS-G3-KAB" firstAttribute="top" secondItem="QQa-Wb-bYJ" secondAttribute="top" constant="8" id="vYm-rq-qrj"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Wallet Manager" id="9U2-4Q-7li">
+                    <navigationItem key="navigationItem" title="Bitcoin Core Wallets" id="9U2-4Q-7li">
                         <barButtonItem key="rightBarButtonItem" image="tray.and.arrow.up" catalog="system" id="8DT-la-hes">
                             <color key="tintColor" systemColor="tintColor"/>
                             <connections>
@@ -3820,7 +3843,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="yxh-t3-ScK" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4640.4580152671751" y="375.35211267605638"/>
+            <point key="canvasLocation" x="-7796" y="1853"/>
         </scene>
         <!--Security-->
         <scene sceneID="PNj-5X-XaN">
@@ -4492,7 +4515,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="xUE-pm-qLc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4640" y="1180"/>
+            <point key="canvasLocation" x="-6848" y="1853"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="sfg-es-QcU">
@@ -4833,7 +4856,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </subviews>
                                     </stackView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Cosigners:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dXX-uE-f2N">
-                                        <rect key="frame" x="0.0" y="200.33333333333331" width="361" height="20.333333333333314"/>
+                                        <rect key="frame" x="0.0" y="200.33333333333331" width="361" height="20.333333333333343"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="highlightedColor"/>
                                     </label>
@@ -4900,19 +4923,19 @@ Fully Noded does its best to support as many hardware and software wallet option
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="5iI-Ra-crf"/>
+        <segue reference="ejH-sy-hlm"/>
         <segue reference="qed-hl-jG5"/>
         <segue reference="Fvb-gy-rb3"/>
-        <segue reference="4g3-DC-Q5z"/>
+        <segue reference="DLx-HT-rGm"/>
         <segue reference="Wy7-ur-TeS"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="A1b-Ed-DYW"/>
-        <segue reference="CQp-9r-70w"/>
+        <segue reference="1fQ-PG-chF"/>
         <segue reference="uCn-2i-AB2"/>
         <segue reference="yAt-Ra-aPH"/>
-        <segue reference="7PS-EL-3d2"/>
+        <segue reference="AK4-4u-w1q"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" systemColor="tintColor"/>
     <resources>
@@ -4960,46 +4983,46 @@ Fully Noded does its best to support as many hardware and software wallet option
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="linkColor">
-            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="secondaryLabelColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="secondarySystemBackgroundColor">
-            <color red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="secondarySystemFillColor">
-            <color red="0.47058823529999999" green="0.47058823529999999" blue="0.50196078430000002" alpha="0.16" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.47058823529411764" green="0.47058823529411764" blue="0.50196078431372548" alpha="0.16" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemBlueColor">
-            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemFillColor">
-            <color red="0.47058823529999999" green="0.47058823529999999" blue="0.50196078430000002" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.47058823529411764" green="0.47058823529411764" blue="0.50196078431372548" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGreenColor">
-            <color red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemPinkColor">
-            <color red="1" green="0.1764705882" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.17647058823529413" blue="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemRedColor">
-            <color red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.23137254901960785" blue="0.18823529411764706" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemTealColor">
-            <color red="0.18823529410000001" green="0.69019607839999997" blue="0.78039215689999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.18823529411764706" green="0.69019607843137254" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="tertiaryLabelColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29803921570000003" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29803921568627451" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="tertiarySystemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="tintColor">
-            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="viewFlipsideBackgroundColor">
             <color red="0.12156862745098039" green="0.12941176470588237" blue="0.14117647058823529" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

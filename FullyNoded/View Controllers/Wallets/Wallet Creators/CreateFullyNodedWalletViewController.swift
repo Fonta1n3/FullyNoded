@@ -13,6 +13,10 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     @IBOutlet weak var multiSigOutlet: UIButton!
     @IBOutlet weak var singleSigOutlet: UIButton!
+    @IBOutlet weak var coreWalletOutlet: UIButton!
+    @IBOutlet weak var pasteOutlet: UIButton!
+    @IBOutlet weak var importFileOutlet: UIButton!
+    @IBOutlet weak var scanQrOutlet: UIButton!
     
     var cosigner:Descriptor?
     var onDoneBlock:(((Bool)) -> Void)?
@@ -28,11 +32,20 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.delegate = self
+        coreWalletOutlet.clipsToBounds = true
+        pasteOutlet.clipsToBounds = true
+        importFileOutlet.clipsToBounds = true
+        scanQrOutlet.clipsToBounds = true
+        coreWalletOutlet.layer.cornerRadius = 8
+        pasteOutlet.layer.cornerRadius = 8
+        importFileOutlet.layer.cornerRadius = 8
+        scanQrOutlet.layer.cornerRadius = 8
         singleSigOutlet.layer.cornerRadius = 8
         multiSigOutlet.layer.cornerRadius = 8
+        
     }
     
-    @IBAction func pasteAction(_ sender: Any) {
+    @IBAction func pasteTextAction(_ sender: Any) {
         if let data = UIPasteboard.general.data(forPasteboardType: "com.apple.traditional-mac-plain-text") {
             guard let string = String(bytes: data, encoding: .utf8) else {
                 showAlert(vc: self, title: "", message: "Looks like you do not have valid text on your clipboard.")
@@ -93,7 +106,16 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         processImportedString(string)
     }
     
-    @IBAction func fileAction(_ sender: Any) {
+    @IBAction func syncCoreWalletAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+        
+            performSegue(withIdentifier: "segueToSyncCoreWallet", sender: self)
+        }
+    }
+    
+    
+    @IBAction func importFileAction(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
             let alert = UIAlertController(title: "Upload a file?", message: "Here you can upload files from your Hardware Wallets to easily create Fully Noded Wallet's", preferredStyle: .alert)
             

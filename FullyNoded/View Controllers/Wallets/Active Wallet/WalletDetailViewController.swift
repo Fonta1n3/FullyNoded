@@ -181,33 +181,18 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             do {
                 let jsonData = try JSONSerialization.data(withJSONObject: response, options: [])
                 let listDescriptorResponse = try JSONDecoder().decode(ListDescriptorsResponse.self, from: jsonData)
-                
-                if listDescriptorResponse.descriptors.count == 2 {
-                    guard let externalRange = listDescriptorResponse.descriptors[0].range else {
-                        showAlert(vc: self, title: "", message: "Failed parsing listdescriptor.")
-                        return
+                                    
+                for descriptor in listDescriptorResponse.descriptors {
+                    
+                    if descriptor.desc == wallet.receiveDescriptor, let range = descriptor.range, let nextExternal = descriptor.nextIndex {
+                        self.externalRange = range
+                        self.externalNextIndex = nextExternal
                     }
                     
-                    guard let internalRange = listDescriptorResponse.descriptors[1].range else {
-                        showAlert(vc: self, title: "", message: "Failed parsing listdescriptor.")
-                        return
+                    if descriptor.desc == wallet.changeDescriptor, let range = descriptor.range, let nextInternal = descriptor.nextIndex {
+                        self.internalRange = range
+                        self.internalNextIndex = nextInternal
                     }
-                    
-                    self.externalRange = externalRange
-                    self.internalRange = internalRange
-                    
-                    guard let nextExternal = listDescriptorResponse.descriptors[0].nextIndex else {
-                        showAlert(vc: self, title: "", message: "Failed parsing listdescriptor.")
-                        return
-                    }
-                    
-                    guard let nextInternal = listDescriptorResponse.descriptors[1].nextIndex else {
-                        showAlert(vc: self, title: "", message: "Failed parsing listdescriptor.")
-                        return
-                    }
-                    
-                    self.externalNextIndex = nextExternal
-                    self.internalNextIndex = nextInternal
                 }
                 
                 DispatchQueue.main.async { [weak self] in

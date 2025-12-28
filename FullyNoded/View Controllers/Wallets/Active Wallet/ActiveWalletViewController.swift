@@ -70,10 +70,14 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @IBAction func getWalletDetail(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            performSegue(withIdentifier: "segueToActiveWalletDetail", sender: self)
+        if let _ = wallet?.id {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                performSegue(withIdentifier: "segueToActiveWalletDetail", sender: self)
+            }
+        } else {
+            showAlert(vc: self, title: "", message: "Fully Noded can only show wallet details for wallets created or imported with Fully Noded. ")
         }
     }
     
@@ -728,7 +732,6 @@ class ActiveWalletViewController: UIViewController {
             guard let vc = segue.destination as? WalletDetailViewController else { fallthrough }
             
             guard let idDetail = self.wallet?.id else {
-                showAlert(vc: self, title: "", message: "Fully Noded can only show wallet details for wallets created with Fully Noded.")
                 return
             }
                         
