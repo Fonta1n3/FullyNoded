@@ -4440,7 +4440,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
             </objects>
             <point key="canvasLocation" x="3709" y="1181"/>
         </scene>
-        <!--Active Wallets View Controller-->
+        <!--Loaded Wallets-->
         <scene sceneID="cxp-Bp-OUI">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="q5n-LM-fBL" customClass="ActiveWalletsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -4508,7 +4508,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                             <constraint firstItem="3Ad-F4-vuw" firstAttribute="trailing" secondItem="U8O-yQ-otK" secondAttribute="trailing" constant="16" id="xN7-1N-ioC"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" id="u3X-pW-JgS"/>
+                    <navigationItem key="navigationItem" title="Loaded Wallets" id="u3X-pW-JgS"/>
                     <connections>
                         <outlet property="table" destination="U8O-yQ-otK" id="4gg-9c-Z7E"/>
                     </connections>
