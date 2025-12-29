@@ -955,12 +955,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     @objc func nodeless(_ sender: UIButton) {
         switch sender.tag {
         case 7:
-//            accountPubkey = accountBip84Pubkey
-//            accountPath = bip84AccountPath
             nodelessDescriptor = tableDict[7]["text"] as! String
         case 8:
-//            accountPubkey = accountBip86Pubkey
-//            accountPath = bip86AccountPath
             nodelessDescriptor = tableDict[8]["text"] as! String
         default:
             break
@@ -1191,9 +1187,8 @@ extension SignerDetailViewController: UITableViewDelegate {
                 textLabel.text = headerName(for: section)
                 
             case .words:
-                let deleteButtonSeed = deleteButton(exportQrButtonGeneric.frame.minX - 46)
+                let deleteButtonSeed = deleteButton(header.frame.maxX - 46)
                 deleteButtonSeed.addTarget(self, action: #selector(promptToDeleteSeed), for: .touchUpInside)
-                header.addSubview(exportQrButtonGeneric)
                 header.addSubview(deleteButtonSeed)
                 textLabel.text = "BIP39 Seed Words"
                 
