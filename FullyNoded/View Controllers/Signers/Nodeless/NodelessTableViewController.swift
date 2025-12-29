@@ -457,7 +457,7 @@ class NodelessTableViewController: UITableViewController {
             
             vc.headerText = "Address"
             vc.text = self.addressToExport
-            vc.descriptionText = self.derivationToExport
+            vc.descriptionText = self.derivationToExport + "\n\(self.addressToExport.addressExpanded)"
         default:
             break
         }

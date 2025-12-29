@@ -289,7 +289,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
         
         for (i, walletName) in wallets_.enumerated() {
             var isActive = false
-            var nameToDisplay = walletName
+            let nameToDisplay = walletName
             
             if nameToDisplay == activeWallet {
                 isActive = true

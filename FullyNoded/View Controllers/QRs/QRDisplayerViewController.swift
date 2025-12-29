@@ -15,8 +15,6 @@ class QRDisplayerViewController: UIViewController {
     var text = ""
     var psbt = ""
     var txn = ""
-    var tapQRGesture = UITapGestureRecognizer()
-    var tapTextViewGesture = UITapGestureRecognizer()
     var headerText = ""
     var descriptionText = ""
     var headerIcon: UIImage!
@@ -31,6 +29,12 @@ class QRDisplayerViewController: UIViewController {
     private var ur: UR!
     private var partIndex = 0
     
+    private var originalQrText = ""
+    
+    private var copyButton: UIButton!
+    private var shareButton: UIButton!
+    private var buttonsStackView: UIStackView!
+    
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var textView: UITextView!
     @IBOutlet weak var headerLabel: UILabel!
@@ -39,13 +43,12 @@ class QRDisplayerViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         headerLabel.text = headerText
         headerImage.image = headerIcon
         imageView.isUserInteractionEnabled = true
         textView.text = descriptionText
-        tapQRGesture = UITapGestureRecognizer(target: self, action: #selector(shareQRCode(_:)))
-        imageView.addGestureRecognizer(tapQRGesture)
-        
+        originalQrText = txn != "" ? txn : (text != "" ? text : psbt)
         
         
         #if DEBUG
@@ -114,6 +117,8 @@ class QRDisplayerViewController: UIViewController {
         } else if text != "" {
             imageView.image = qR(text: text)
         }
+        
+        createButtonsStackView()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -129,6 +134,66 @@ class QRDisplayerViewController: UIViewController {
         timer?.invalidate()
     }
     
+    private func createButtonsStackView() {
+        // Create the two buttons
+        copyButton = UIButton(type: .system)
+        copyButton.setTitle("Copy Text", for: .normal)
+        copyButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 17)
+        copyButton.backgroundColor = UIColor.systemBlue
+        copyButton.setTitleColor(.white, for: .normal)
+        copyButton.layer.cornerRadius = 10
+        copyButton.addTarget(self, action: #selector(copyQrTextToClipboard), for: .touchUpInside)
+        
+        shareButton = UIButton(type: .system)
+        shareButton.setTitle("Share QR", for: .normal)
+        shareButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 17)
+        shareButton.backgroundColor = UIColor.systemBlue
+        shareButton.setTitleColor(.white, for: .normal)
+        shareButton.layer.cornerRadius = 10
+        shareButton.addTarget(self, action: #selector(shareQRCode), for: .touchUpInside)
+        
+        // Create the stack view
+        buttonsStackView = UIStackView(arrangedSubviews: [copyButton, shareButton])
+        buttonsStackView.axis = .horizontal
+        buttonsStackView.distribution = .fillEqually
+        buttonsStackView.spacing = 20
+        buttonsStackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Add to view hierarchy
+        view.addSubview(buttonsStackView)
+        
+        // Constraints: place it below the QR image with safe margins
+        NSLayoutConstraint.activate([
+            buttonsStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            buttonsStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            buttonsStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            buttonsStackView.heightAnchor.constraint(equalToConstant: 56)
+        ])
+    }
+    
+    @objc private func copyQrTextToClipboard() {
+        UIPasteboard.general.string = originalQrText
+        
+        // Feedback
+        let alert = UIAlertController(title: "Copied!", message: "QR text copied to clipboard.", preferredStyle: .alert)
+        present(alert, animated: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            alert.dismiss(animated: true)
+        }
+    }
+    
+    @objc private func shareQRCode() {
+        guard let qrImage = imageView.image else { return }
+        
+        let activityController = UIActivityViewController(activityItems: [qrImage], applicationActivities: nil)
+        
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            activityController.popoverPresentationController?.sourceView = shareButton
+            activityController.popoverPresentationController?.sourceRect = shareButton.bounds
+        }
+        
+        present(activityController, animated: true)
+    }
     
     func split(string: String) throws -> [String] {
         var data: Data? = nil
@@ -186,16 +251,6 @@ class QRDisplayerViewController: UIViewController {
     private func qR(text: String) -> UIImage {
         qrGenerator.qrText = text
         return qrGenerator.getQRCode()
-    }
-    
-    @objc func shareQRCode(_ sender: UITapGestureRecognizer) {
-        let objectsToShare = [imageView.image]
-        let activityController = UIActivityViewController(activityItems: objectsToShare as [Any], applicationActivities: nil)
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            activityController.popoverPresentationController?.sourceView = self.view
-            activityController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
-        }
-        self.present(activityController, animated: true) {}
     }
     
     @objc func animate() {

@@ -3477,7 +3477,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
             </objects>
             <point key="canvasLocation" x="-6847" y="365"/>
         </scene>
-        <!--v2.3.0-->
+        <!--v2.3.1-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -3574,7 +3574,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v2.3.0" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v2.3.1" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
