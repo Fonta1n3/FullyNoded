@@ -26,10 +26,17 @@ class NodelessTableViewController: UITableViewController {
         super.viewDidLoad()
 
         tableView.register(BitcoinAddressCell.self, forCellReuseIdentifier: "BitcoinCell")
+        
+        let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        FiatConverter.sharedInstance.getFxRate(currency: currency) { fxRate in
+            UserDefaults.standard.set(fxRate, forKey: "fxRate")
+            
+            showAlert(title: "", message: "The exchange rate for \(currency) was updated, tap the refresh button in the top right to show updated \(currency) balances.")
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        load()
+        load()        
     }
     
     @IBAction func refreshAction(_ sender: Any) {
