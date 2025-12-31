@@ -73,6 +73,25 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         load()
     }
     
+    private func nodelessButton(_ x: CGFloat) -> UIButton {
+        let nodelessButton = UIButton()
+        nodelessButton.setTitle("Nodeless", for: .normal)
+        nodelessButton.tintColor = .tintColor
+        nodelessButton.configuration = .tinted()
+        nodelessButton.setTitleColor(.tintColor, for: .normal)
+        nodelessButton.frame = CGRect(x: x, y: 10, width: 100, height: 40)
+        nodelessButton.addTarget(self, action: #selector(nodeless(_:)), for: .touchUpInside)
+        return nodelessButton
+    }
+    
+    @objc func nodeless(_ sender: UIButton) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            performSegue(withIdentifier: "segueToNodelessFromWalletDetail", sender: self)
+        }
+    }
+    
     private func showModal(data: [String: Any], title: String) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -883,58 +902,14 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         }
     }
     
-    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        let footer = UIView()
-        footer.backgroundColor = UIColor.clear
-        footer.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 100)
-        
-        let textLabel = UILabel()
-        textLabel.textAlignment = .left
-        textLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-        textLabel.textColor = .lightGray
-        textLabel.numberOfLines = 0
-        textLabel.lineBreakMode = .byWordWrapping
-        textLabel.sizeToFit()
-        textLabel.frame = CGRect(x: 0, y: 0, width: footer.frame.width, height: 100)
-        
-        if let section = Section(rawValue: section) {
-            switch section {
-            case .walletExport:
-                textLabel.text = "This QR is for exporting your wallet to other wallet apps and hardware wallets."
-                                
-            default:
-                break
-            }
-        }
-        
-        footer.addSubview(textLabel)
-        
-        return footer
-    }
-    
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        if let section = Section(rawValue: section) {
-            switch section {
-            case .walletExport:
-                return 100
-            default:
-                return 10
-            }
-        } else {
-            return 10
-        }
+        return 10
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let header = UIView()
         header.backgroundColor = UIColor.clear
         header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 30)
-        
-//        let background = UIView()
-//        background.frame = CGRect(x: 0, y: header.frame.minY + 25, width: 35, height: 35)
-//        background.clipsToBounds = true
-//        background.layer.cornerRadius = 5
-//        background.center.y = header.center.y
         
         let icon = UIImageView()
         icon.frame = CGRect(x: 0, y: 0, width: 25, height: 25)
@@ -948,11 +923,20 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         textLabel.frame = CGRect(x: 33, y: 0, width: 300, height: 25)
         textLabel.center.y = icon.center.y
         
+        let nodelessButton = nodelessButton(header.frame.maxX - 108)
+        nodelessButton.tag = section
+        
         if let section = Section(rawValue: section) {
             let (text, image) = headerName(for: section)
             
             textLabel.text = text
             icon.image = image
+            
+            if section == .receiveDesc {
+                textLabel.frame = CGRect(x: 33, y: nodelessButton.frame.midY, width: 300, height: 25)
+                icon.frame = CGRect(x: 0, y: nodelessButton.frame.midY, width: 25, height: 25)
+                header.addSubview(nodelessButton)
+            }
         }
         
         header.addSubview(icon)
@@ -962,7 +946,13 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 30
+        let section = Section(rawValue: section)
+        switch section {
+        case .changeDesc, .receiveDesc:
+            return 60
+        default:
+            return 30
+        }
     }
     
     @objc func updateAddressExplorer(_ sender: UISegmentedControl) {
@@ -1069,33 +1059,39 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         // Pass the selected object to the new view controller.
         switch segue.identifier {
         case "segueToAccountMap":
-        if let vc = segue.destination as? QRDisplayerViewController {
-            vc.text = textToShow
-            
-            if bbqrFormat {
-                vc.headerText = "Wallet Export BBQr"
-                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                vc.descriptionText = "This QR code is best for exporting this wallet to Coldcard, also works with Fully Noded."
-                vc.isBbqr = true
-                vc.isUR = false
+            if let vc = segue.destination as? QRDisplayerViewController {
+                vc.text = textToShow
+                
+                if bbqrFormat {
+                    vc.headerText = "Wallet Export BBQr"
+                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                    vc.descriptionText = "This QR code is best for exporting this wallet to Coldcard, also works with Fully Noded."
+                    vc.isBbqr = true
+                    vc.isUR = false
+                }
+                
+                if outputDescFormat {
+                    vc.headerText = "Wallet Export Descriptor"
+                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                    vc.descriptionText = "This QR code is best for exporting this wallet to Sparrow, Passport, Blue Wallet and more, including Fully Noded."
+                    vc.isBbqr = false
+                    vc.isUR = true
+                }
+                
+                if urBytesFormat {
+                    vc.headerText = "Wallet Export UR Bytes"
+                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                    vc.descriptionText = "This QR code is best for exporting this wallet to Passport, Blue Wallet and others, including Fully Noded."
+                    vc.isUR = true
+                    vc.isBbqr = false
+                }
             }
+        case"segueToNodelessFromWalletDetail":
+            guard let vc = segue.destination as? NodelessTableViewController else { fallthrough }
             
-            if outputDescFormat {
-                vc.headerText = "Wallet Export Descriptor"
-                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                vc.descriptionText = "This QR code is best for exporting this wallet to Sparrow, Passport, Blue Wallet and more, including Fully Noded."
-                vc.isBbqr = false
-                vc.isUR = true
-            }
+            vc.primaryDescriptor = wallet.receiveDescriptor
+            vc.changeDescriptor = wallet.changeDescriptor
             
-            if urBytesFormat {
-                vc.headerText = "Wallet Export UR Bytes"
-                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                vc.descriptionText = "This QR code is best for exporting this wallet to Passport, Blue Wallet and others, including Fully Noded."
-                vc.isUR = true
-                vc.isBbqr = false
-            }
-        }
         default:
             break
         }

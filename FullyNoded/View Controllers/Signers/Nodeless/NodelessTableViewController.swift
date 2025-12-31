@@ -19,6 +19,7 @@ class NodelessTableViewController: UITableViewController {
     var network: WalletLogic.BDKNetwork!
     let spinner = ConnectingView.shared
     var primaryDescriptor = ""
+    var changeDescriptor: String?
     var watchOnlyBdkWallet: WalletLogic.BDKWallet?
 
     override func viewDidLoad() {
@@ -73,10 +74,16 @@ class NodelessTableViewController: UITableViewController {
         addresses.removeAll()
         
         let descArr = primaryDescriptor.components(separatedBy: "#")
-        let changeDesc = "\(descArr[0])".replacingOccurrences(of: "/0/", with: "/1/")
+        var changeDesc = ""
+        if let changeDescriptor = changeDescriptor {
+            changeDesc = changeDescriptor
+        } else {
+            changeDesc = "\(descArr[0])".replacingOccurrences(of: "/0/", with: "/1/")
+        }
         
         let fnDesc = Descriptor(primaryDescriptor)
         
+        // Esplora only works with main and test networks for now.
         if fnDesc.chain == "Mainnet" {
             network = .bitcoin
         } else {
