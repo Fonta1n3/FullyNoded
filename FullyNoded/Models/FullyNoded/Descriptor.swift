@@ -142,6 +142,13 @@ public struct Descriptor: CustomStringConvertible {
                                     for pathItem in pathArray {
                                         if pathItem.contains("xpub") || pathItem.contains("tpub") || pathItem.contains("xprv") || pathItem.contains("tprv") {
                                             keyArray.append("\(pathItem.replacingOccurrences(of: "))", with: ""))")
+                                            
+                                            if pathItem.hasPrefix("tpub") || pathItem.hasPrefix("tprv") {
+                                                dictionary["chain"] = "Testnet"
+                                            } else if pathItem.hasPrefix("xpub") || pathItem.hasPrefix("xprv") {
+                                                dictionary["chain"] = "Mainnet"
+                                            }
+                                            
                                         } else if pathItem.hasPrefix("0") {
                                             var pubkey = ""
                                             if pathItem.contains(")") {
@@ -181,9 +188,10 @@ public struct Descriptor: CustomStringConvertible {
                         dictionary["fingerprint"] = processed
                         
                         for deriv in derivationArray {
+                            dictionary["derivation"] = deriv
+                            
                             let withH = deriv.replacingOccurrences(of: "h", with: "'")
-                            switch withH {
-                                
+                            switch withH {                                
                             case "m/48'/0'/0'/3'", "m/48'/1'/0'/3'":
                                 dictionary["isBIP44"] = false
                                 dictionary["isP2PKH"] = false
@@ -258,6 +266,13 @@ public struct Descriptor: CustomStringConvertible {
                                 for pathItem in pathArray {
                                     if pathItem.contains("xpub") || pathItem.contains("tpub") || pathItem.contains("xprv") || pathItem.contains("tprv") {
                                         keyArray.append("\(pathItem.replacingOccurrences(of: "))", with: ""))")
+                                        
+                                        if pathItem.hasPrefix("tpub") || pathItem.hasPrefix("tprv") {
+                                            dictionary["chain"] = "Testnet"
+                                        } else if pathItem.hasPrefix("xpub") || pathItem.hasPrefix("xprv") {
+                                            dictionary["chain"] = "Mainnet"
+                                        }
+                                        
                                     } else if pathItem.hasPrefix("0") {
                                         var pubkey = ""
                                         if pathItem.contains(")") {
@@ -392,6 +407,13 @@ public struct Descriptor: CustomStringConvertible {
                 let extendedKeyWithPath = arr2[1]
                 let arr4 = extendedKeyWithPath.split(separator: "/")
                 let extendedKey = arr4[0]
+                
+                if extendedKey.hasPrefix("tpub") {
+                    dictionary["chain"] = "Testnet"
+                } else if extendedKey.hasPrefix("xpub") {
+                    dictionary["chain"] = "Mainnet"
+                }
+                
                 if extendedKey.contains("tpub") || extendedKey.contains("xpub") {
                     dictionary["accountXpub"] = "\(extendedKey.replacingOccurrences(of: ")", with: ""))"
                 } else if extendedKey.contains("tprv") || extendedKey.contains("xprv") {
