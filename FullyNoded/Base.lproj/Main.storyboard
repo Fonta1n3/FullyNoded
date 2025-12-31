@@ -1455,12 +1455,19 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="Nodeless" id="9kW-mf-LyE">
-                        <barButtonItem key="rightBarButtonItem" image="trash.circle" catalog="system" id="kRg-2T-jxj">
-                            <color key="tintColor" systemColor="systemPinkColor"/>
-                            <connections>
-                                <action selector="deleteCacheAction:" destination="8y2-FD-bX6" id="dfQ-mY-Sh5"/>
-                            </connections>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem image="trash.circle" catalog="system" id="kRg-2T-jxj">
+                                <color key="tintColor" systemColor="systemPinkColor"/>
+                                <connections>
+                                    <action selector="deleteCacheAction:" destination="8y2-FD-bX6" id="dfQ-mY-Sh5"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="arrow.clockwise" catalog="system" id="EIw-UX-eX4">
+                                <connections>
+                                    <action selector="refreshAction:" destination="8y2-FD-bX6" id="Mqb-HZ-274"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <connections>
                         <segue destination="GlR-4A-eAx" kind="show" identifier="segueToShowAddressQrFromNodeless" id="uCn-2i-AB2"/>
@@ -2502,6 +2509,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                     <connections>
                         <outlet property="detailTable" destination="hgF-Hw-8pz" id="I28-3h-wBF"/>
                         <segue destination="GlR-4A-eAx" kind="show" identifier="segueToAccountMap" id="zi9-mK-A5a"/>
+                        <segue destination="8y2-FD-bX6" kind="show" identifier="segueToNodelessFromWalletDetail" id="PBa-u8-HRU"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="y6X-dL-UYm" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -4933,7 +4941,8 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="A1b-Ed-DYW"/>
         <segue reference="1fQ-PG-chF"/>
-        <segue reference="uCn-2i-AB2"/>
+        <segue reference="zi9-mK-A5a"/>
+        <segue reference="PBa-u8-HRU"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="AK4-4u-w1q"/>
     </inferredMetricsTieBreakers>

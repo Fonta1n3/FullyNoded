@@ -60,6 +60,10 @@
 		0A9287F82EC99248002484C3 /* UserCertURLSessionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9287F72EC99248002484C3 /* UserCertURLSessionDelegate.swift */; };
 		0A9287FA2EC9930A002484C3 /* CertificateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9287F92EC9930A002484C3 /* CertificateManager.swift */; };
 		0AA6EFFC2C7E65F900503A39 /* URKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA6EFFB2C7E65F900503A39 /* URKit */; };
+		0ABEC1FD2F02743500092FCE /* NodelessTransactionCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABEC1FC2F02743500092FCE /* NodelessTransactionCreator.swift */; };
+		0ABEC1FF2F02857700092FCE /* NodelessTransactionAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABEC1FE2F02857700092FCE /* NodelessTransactionAnalyzer.swift */; };
+		0ABEC2012F03AAAA00092FCE /* UsedAddresses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABEC2002F03AAAA00092FCE /* UsedAddresses.swift */; };
+		0ABEC2032F03C47C00092FCE /* QRViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABEC2022F03C47C00092FCE /* QRViewController.swift */; };
 		0AD2023F2ECEDBF3006286DD /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0AD2023E2ECEDBF3006286DD /* BitcoinDevKit */; };
 		0AD202412ECEEAC0006286DD /* WalletLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD202402ECEEAC0006286DD /* WalletLogic.swift */; };
 		0AD8AD5029FF45B200F1ADD8 /* InvoiceSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD8AD4F29FF45B200F1ADD8 /* InvoiceSettingsViewController.swift */; };
@@ -239,6 +243,10 @@
 		0A9287F92EC9930A002484C3 /* CertificateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificateManager.swift; sourceTree = "<group>"; };
 		0A9834C526BC2E6700BAB74E /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		0AA43FCE2CCCCD840049D4AD /* FullyNoded-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FullyNoded-Bridging-Header.h"; sourceTree = "<group>"; };
+		0ABEC1FC2F02743500092FCE /* NodelessTransactionCreator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodelessTransactionCreator.swift; sourceTree = "<group>"; };
+		0ABEC1FE2F02857700092FCE /* NodelessTransactionAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodelessTransactionAnalyzer.swift; sourceTree = "<group>"; };
+		0ABEC2002F03AAAA00092FCE /* UsedAddresses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsedAddresses.swift; sourceTree = "<group>"; };
+		0ABEC2022F03C47C00092FCE /* QRViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRViewController.swift; sourceTree = "<group>"; };
 		0AD202402ECEEAC0006286DD /* WalletLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLogic.swift; sourceTree = "<group>"; };
 		0AD438842A41F7F90004F923 /* LibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LibWally.xcframework; sourceTree = "<group>"; };
 		0AD8AD4F29FF45B200F1ADD8 /* InvoiceSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceSettingsViewController.swift; sourceTree = "<group>"; };
@@ -424,6 +432,7 @@
 			children = (
 				D0F3919124BFEBBB00EA8A2A /* QRDisplayerViewController.swift */,
 				D0F3919324C0147400EA8A2A /* QRScannerViewController.swift */,
+				0ABEC2022F03C47C00092FCE /* QRViewController.swift */,
 			);
 			path = QRs;
 			sourceTree = "<group>";
@@ -453,6 +462,8 @@
 			children = (
 				0A2D4F4F2EE2F09C00121667 /* NodelessTableViewController.swift */,
 				0A2D4F512EE2F98500121667 /* AddressCell.swift */,
+				0ABEC1FC2F02743500092FCE /* NodelessTransactionCreator.swift */,
+				0ABEC1FE2F02857700092FCE /* NodelessTransactionAnalyzer.swift */,
 			);
 			path = Nodeless;
 			sourceTree = "<group>";
@@ -488,6 +499,7 @@
 				D09F9E4D24B06A63006B588C /* SignerStruct.swift */,
 				D0E54DD425207A1C00BD859E /* UTXOs.swift */,
 				D09A330424A8C4F6009FA0B2 /* Wallet.swift */,
+				0ABEC2002F03AAAA00092FCE /* UsedAddresses.swift */,
 			);
 			path = Entities;
 			sourceTree = "<group>";
@@ -1137,6 +1149,7 @@
 				D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */,
 				D07399D9245EEA5F00860B7E /* Broadcaster.swift in Sources */,
 				D02FE43323136A600048F8C4 /* NodeLogic.swift in Sources */,
+				0ABEC2032F03C47C00092FCE /* QRViewController.swift in Sources */,
 				D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */,
 				0A1F10E126A1A62B00BE2707 /* ChildIndexWildcard.swift in Sources */,
 				D09A330724A982F3009FA0B2 /* FullyNodedWalletsViewController.swift in Sources */,
@@ -1166,6 +1179,7 @@
 				0A34073D2EC08A0B008576C7 /* ListUnspent.swift in Sources */,
 				D00F851B24949691008D7CD3 /* AppPasswordViewController.swift in Sources */,
 				D03968B1246F6CBA0010D821 /* Crypto.swift in Sources */,
+				0ABEC1FD2F02743500092FCE /* NodelessTransactionCreator.swift in Sources */,
 				0A2B4D702716ABCB00B607EE /* WalletImport.swift in Sources */,
 				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
 				0A1F10DB26A1A58100BE2707 /* GeneralError.swift in Sources */,
@@ -1208,6 +1222,7 @@
 				D08A92B923403DB200409D6E /* NodesViewController.swift in Sources */,
 				0A2D4F502EE2F09C00121667 /* NodelessTableViewController.swift in Sources */,
 				D0384E31246AC4D8002FEE94 /* Base58.swift in Sources */,
+				0ABEC2012F03AAAA00092FCE /* UsedAddresses.swift in Sources */,
 				0A590357269875CD00510626 /* Extensions.swift in Sources */,
 				D09A32FF24A8419D009FA0B2 /* CreateFullyNodedWallet.swift in Sources */,
 				D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */,
@@ -1240,6 +1255,7 @@
 				D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */,
 				D0E54DD525207A1C00BD859E /* UTXOs.swift in Sources */,
 				0A2D4F562EE442A000121667 /* AddressStruct.swift in Sources */,
+				0ABEC1FF2F02857700092FCE /* NodelessTransactionAnalyzer.swift in Sources */,
 				D01EB4F325AD685700ADF6E4 /* TransactionLabelMemoViewController.swift in Sources */,
 				D0F3919224BFEBBB00EA8A2A /* QRDisplayerViewController.swift in Sources */,
 			);
