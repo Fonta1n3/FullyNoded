@@ -40,6 +40,10 @@
         <attribute name="txid" optional="YES" attributeType="String"/>
         <attribute name="walletId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
     </entity>
+    <entity name="UsedAddresses" representedClassName="UsedAddresses" syncable="YES" codeGenerationType="class">
+        <attribute name="address" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+    </entity>
     <entity name="Utxos" representedClassName="Utxos" syncable="YES" codeGenerationType="class">
         <attribute name="address" optional="YES" attributeType="String"/>
         <attribute name="amount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>

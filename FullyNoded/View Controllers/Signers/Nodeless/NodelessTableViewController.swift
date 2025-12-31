@@ -13,7 +13,7 @@ class NodelessTableViewController: UITableViewController {
     
     var savedUtxos: [UTXO] = []
     var addresses: [AddressStruct] = []
-    var signer: SignerStruct!
+    var signer: SignerStruct?
     var addressToExport = ""
     var derivationToExport = ""
     var network: WalletLogic.BDKNetwork!
@@ -30,6 +30,11 @@ class NodelessTableViewController: UITableViewController {
     override func viewDidAppear(_ animated: Bool) {
         load()
     }
+    
+    @IBAction func refreshAction(_ sender: Any) {
+        load()
+    }
+    
     
     @IBAction func deleteCacheAction(_ sender: Any) {
         Task {
@@ -69,11 +74,16 @@ class NodelessTableViewController: UITableViewController {
         
         let descArr = primaryDescriptor.components(separatedBy: "#")
         let changeDesc = "\(descArr[0])".replacingOccurrences(of: "/0/", with: "/1/")
-                
-        if network != .bitcoin {
+        
+        let fnDesc = Descriptor(primaryDescriptor)
+        
+        if fnDesc.chain == "Mainnet" {
+            network = .bitcoin
+        } else {
             network = .testnet
         }
-        
+        //network = WalletLogic.shared.bdkNetwork()
+                
         guard let bdkPrimDesc = try? WalletLogic.BDKDescriptor(descriptor: primaryDescriptor, network: network) else {
             spinner.dismiss()
             showAlert(vc: self, title: "", message: "Unable to derive BDK primary descriptor.")
@@ -176,6 +186,7 @@ class NodelessTableViewController: UITableViewController {
 //        }
         
         let path = Descriptor(primaryDescriptor).derivation
+        print("path: \(path)")
         
         DispatchQueue.global(qos: .background).async { [weak self] in
             guard let self = self else { return }
@@ -186,7 +197,8 @@ class NodelessTableViewController: UITableViewController {
                     "address": addressInfo.address.description,
                     "balance": 0.0,
                     "derivation": "\(path)/0/\(i)",
-                    "utxos": []
+                    "utxos": [],
+                    "used": false
                 ])
                 
                 addresses.append(str)
@@ -217,9 +229,10 @@ class NodelessTableViewController: UITableViewController {
                         if address.address == utxoStruct.address {
                             if utxoStruct.amount > 0.0 {
                                 addresses[i].balance += utxoStruct.amount
+                                saveUsedAddress(address: address.address)
                             }
                             
-                            let satsValue = Int64(utxoStruct.amount / 100000000)
+                            let satsValue = Int64(utxoStruct.amount * 100000000.0)
                             var confirmed = false
                             
                             if let confirmations = utxoStruct.confirmations {
@@ -244,9 +257,69 @@ class NodelessTableViewController: UITableViewController {
                         }
                         
                         if i + 1 == addresses.count && u + 1 == utxos.count {
-                            reload()
+                            checkUsedAddresses()
                         }
                     }
+                }
+            }
+        }
+    }
+    
+    private func checkUsedAddresses() {
+        CoreDataService.retrieveEntity(entityName: .usedAddresses) { [weak self] usedAddresses in
+            guard let self = self else { return }
+            
+            guard let usedAddresses = usedAddresses else {
+                reload()
+                return
+            }
+            
+            for (i, address) in self.addresses.enumerated() {
+                for (x, usedAddress) in usedAddresses.enumerated() {
+                    let usedAddressStr = UsedAddress(dictionary: usedAddress)
+                    if address.address == usedAddressStr.address {
+                        self.addresses[i].used = true
+                    }
+                    
+                    if i + 1 == addresses.count && x + 1 == usedAddress.count {
+                        reload()
+                    }
+                }                
+            }
+        }
+    }
+    
+    private func saveUsedAddress(address: String) {
+        CoreDataService.retrieveEntity(entityName: .usedAddresses) { usedAddresses in
+            guard let usedAddresses = usedAddresses else {
+                return
+            }
+            
+            var alreadySaved = false
+            
+            func saveNow() {
+                let dict: [String: Any] = ["address": address, "id": UUID()]
+                CoreDataService.saveEntity(dict: dict, entityName: .usedAddresses) { saved in
+                    guard saved else {
+                        showAlert(title: "", message: "Unable to save used address.")
+                        return
+                    }
+                }
+            }
+            
+            guard usedAddresses.count > 0 else {
+                saveNow()
+                return
+            }
+            
+            for (i, usedAddress) in usedAddresses.enumerated() {
+                let str = UsedAddress(dictionary: usedAddress)
+                if str.address == address {
+                    alreadySaved = true
+                }
+                
+                if i + 1 == usedAddresses.count, !alreadySaved {
+                    saveNow()
                 }
             }
         }
@@ -276,7 +349,7 @@ class NodelessTableViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "BitcoinCell", for: indexPath) as! BitcoinAddressCell
         let addressStr = addresses[indexPath.row]
         cell.configure(with: addressStr)
-
+        
         cell.checkBalanceAction = { [weak self] in
             guard let self = self else { return }
             checkBalance(address: addressStr.address, indexPath: indexPath, cell: cell)
@@ -292,38 +365,25 @@ class NodelessTableViewController: UITableViewController {
             copyAddress(address: addressStr.address)
         }
         
-//        cell.sweepAction = { [weak self] in
-//            guard let self = self else { return }
-//            createPsbt(addressStruct: addressStr)
-//        }
+        cell.sweepAction = { [weak self] in
+            guard let self = self else { return }
+            createPsbt(addressStruct: addressStr)
+        }
         
         return cell
     }
     
-//    private func createPsbt(addressStruct: AddressStruct) {
-//        guard let watchOnlyBdkWallet = watchOnlyBdkWallet else {
-//            print("no wallet")
-//            return
-//        }
-//        
-//        var totalAmount: UInt64 = 0
-//        
-//        for utxo in addressStruct.utxos {
-//            totalAmount += UInt64(utxo.value)
-//        }
-//        
-//        do {
-//            let psbt = try WalletLogic.shared.createPsbtWithManualInputs(
-//                wallet: watchOnlyBdkWallet,
-//                utxos: addressStruct.utxos,
-//                outputs: [(address: "tb1q9956wfhq9jzqvhmlapz5849axc35s35q6uwc5a", amount: totalAmount)],
-//                network: network
-//            )
-//            print("psbt: \(psbt)")
-//        } catch {
-//            print(error.localizedDescription)
-//        }        
-//    }
+    private func createPsbt(addressStruct: AddressStruct) {
+        guard let watchOnlyBdkWallet = watchOnlyBdkWallet else {
+            return
+        }
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let vc = SweepViewController(utxos: addressStruct.utxos, watchOnlyBdkWallet: watchOnlyBdkWallet, signer: signer, network: network)
+            navigationController?.pushViewController(vc, animated: true)
+        }
+    }
     
     private func checkBalance(address: String, indexPath: IndexPath, cell: BitcoinAddressCell) {
         let isTestnet = (network == .testnet)
@@ -332,6 +392,10 @@ class NodelessTableViewController: UITableViewController {
                 var utxos = try await NodelessUtxoFetcher.shared.fetchUtxos(for: address, isTestnet: isTestnet)
                 var confirmed = true
                 cell.hideBalanceLoading()
+                
+                if utxos.count == 0 {
+                    deleteUtxoFromCache(address: address)
+                }
                 
                 for (i, utxo) in utxos.enumerated() {
                     if !utxo.status.confirmed {
@@ -365,7 +429,6 @@ class NodelessTableViewController: UITableViewController {
         let utxoAlreadySaved = savedUtxos.contains { savedUtxo in
             savedUtxo.txid == utxo.txid && savedUtxo.vout == utxo.vout
         }
-        print("utxoAlreadySaved: \(utxoAlreadySaved)")
         var confirmed = 0
         if utxo.status.confirmed {
             confirmed = 1
@@ -410,6 +473,23 @@ class NodelessTableViewController: UITableViewController {
                             print("updated")
                             #endif
                         }
+                    }
+                }
+            }
+        }
+    }
+    
+    private func deleteUtxoFromCache(address: String) {
+        for savedUtxo in savedUtxos {
+            if savedUtxo.address == address {
+                guard let id = savedUtxo.id else {
+                    showAlert(title: "", message: "Cached utxo for \(address) was not deleted due to a missing UUID.")
+                    return
+                }
+                CoreDataService.deleteEntity(id: id, entityName: .utxos) { deleted in
+                    guard deleted else {
+                        showAlert(title: "", message: "Cached utxo for \(address) was not deleted due to an error.")
+                        return
                     }
                 }
             }
