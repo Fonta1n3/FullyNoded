@@ -528,22 +528,34 @@ public extension Double {
     }
     
     var fiatString: String {
-        let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        let currencyCode = UserDefaults.standard.string(forKey: "currency") ?? "USD"
         
-        var symbol = "$"
+        var symbol = currencyCode
         
-        for curr in currencies {
-            for (key, value) in curr {
-                if key == currency {
-                    symbol = value
-                }
+        for dict in currencies {
+            if let foundSymbol = dict[currencyCode] {
+                symbol = foundSymbol
+                break
             }
         }
         
-        if self < 1.0 {
-            return "\(symbol)\(self.avoidNotation)"
+        // Always format to 2 decimal places using NumberFormatter for reliability
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        formatter.roundingMode = .halfEven
+        
+        let formattedAmount = formatter.string(from: NSNumber(value: self)) ?? String(format: "%.2f", self)
+        
+        // Special case: some currencies have symbol AFTER the amount (rare, but e.g. CHF sometimes)
+        // You can customize this list if needed
+        let symbolAfter = ["CHF"]
+        
+        if symbolAfter.contains(currencyCode) {
+            return "\(formattedAmount) \(symbol)"
         } else {
-            return "\(symbol)\(Int(self).withCommas)"
+            return "\(symbol)\(formattedAmount)"
         }
     }
     
