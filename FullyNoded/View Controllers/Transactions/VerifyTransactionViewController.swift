@@ -2178,19 +2178,25 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     private func broadcastPrivately() {
         spinner.show(vc: self, description: "broadcasting...")
         
-        Broadcaster.sharedInstance.send(rawTx: self.signedRawTx) { [weak self] id in
+        let network = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
+        var networkString = "mainnet"
+        if network != "main" {
+            networkString = "testnet"
+        }
+        
+        Broadcaster.sharedInstance.broadcastRawTransaction(rawTx: signedRawTx, network: networkString) { [weak self] result in
             guard let self = self else { return }
             spinner.dismiss()
-            
-            if id == self.txid {
+            switch result {
+            case .success(let txid):
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     disableSendButton()
                     showAlert(vc: self, title: "", message: "Transaction sent ✓")
                 }
-            } else {
-                showError(error: "Error broadcasting privately, try again and use your node instead. Error: \(id ?? "unknown")")
+            case .failure(let message):
+                showError(error: "Error broadcasting privately. Error: \(message)")
             }
         }
     }

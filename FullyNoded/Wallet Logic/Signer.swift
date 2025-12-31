@@ -17,77 +17,93 @@ class Signer {
     func attemptToSignPsbt(fnWallet: Wallet,
                            psbt: String,
                            passphrase: String?,
-                           completion: @escaping ((psbt: String?, rawTx: String?, errorMessage: String?)) -> Void) {
-                
-        var psbtToReturn: String?
-        var rawTxToReturn: String?
-        var errorToReturn: String?
+                           completion: @escaping ((psbt: String?, rawTx: String?, errorMessage: String?)) -> Void) {        
         
         guard let bdkNetwork = WalletLogic.shared.bdkNetwork() else {
             completion((nil, nil, "Failed getting bdkNetwork."))
             return
         }
                 
-        CoreDataService.retrieveEntity(entityName: .signers) { signers in
+        CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
+            guard let self = self else { return }
+            
             guard let signers = signers, signers.count > 0 else {
                 completion((nil, nil, "No signers."))
                 return
             }
+            
+            var signerArray: [SignerStruct] = []
+            for signer in signers {
+                let signerStr = SignerStruct(dictionary: signer)
+                signerArray.append(signerStr)
+            }
+            
+            sign(fnWallet: fnWallet, psbt: psbt, passphrase: passphrase, signers: signerArray, network: bdkNetwork, completion: completion)
+        }
+    }
+    
+    func sign(fnWallet: Wallet,
+              psbt: String,
+              passphrase: String?,
+              signers: [SignerStruct],
+              network: WalletLogic.BDKNetwork,
+              completion: @escaping ((psbt: String?, rawTx: String?, errorMessage: String?)) -> Void) {
+        
+        var psbtToReturn: String?
+        var rawTxToReturn: String?
+        var errorToReturn: String?
+        
+        for (i, signerStruct) in signers.enumerated() {
                         
-            for (i, signer) in signers.enumerated() {
+            if var encryptedWords = signerStruct.words {
                 
-                let signerStruct = SignerStruct(dictionary: signer)
-                
-                if var encryptedWords = signerStruct.words {
-                    
-                    guard var decryptedData = Crypto.decrypt(encryptedWords) else {
-                        completion((nil, nil, "Unable to decrypt encrypted words."))
-                        return
-                    }
-                    
-                    guard var words = String(bytes: decryptedData, encoding: .utf8) else {
-                        completion((nil, nil, "No signers."))
-                        return
-                    }
-                    
-                    guard let bdkMnemonic = try? WalletLogic.BDKMnemonic.fromString(mnemonic: words) else {
-                        completion((nil, nil, "Failed converting words to BDKMnemonic."))
-                        return
-                    }
-                    
-                    defer {
-                        decryptedData.secureZero()
-                        words.secureWipe()
-                        encryptedWords.secureZero()
-                    }
-                    
-                    WalletLogic.shared.wallet(passphrase: passphrase,
-                                              network: bdkNetwork,
-                                              mnemonic: bdkMnemonic,
-                                              recDescStr: fnWallet.receiveDescriptor,
-                                              changeDesStr: fnWallet.changeDescriptor,
-                                              completion: { (bdkWallet, errorMessage) in
-                        
-                        guard let bdkWallet = bdkWallet else {
-                            // We let this fail silently otherwise user needs to decide which signer to use which may scare people.
-                            return
-                        }
-                        
-                        let (signedPsbt, signedRawTx, errorMessage) = WalletLogic.shared.signPsbt(wallet: bdkWallet, psbtBase64: psbt)
-                        
-                        if signedPsbt != nil {
-                            psbtToReturn = signedPsbt
-                        } else if signedRawTx != nil {
-                            rawTxToReturn = signedRawTx
-                        } else {
-                            errorToReturn = errorMessage
-                        }
-                    })
+                guard var decryptedData = Crypto.decrypt(encryptedWords) else {
+                    completion((nil, nil, "Unable to decrypt encrypted words."))
+                    return
                 }
                 
-                if i + 1 == signers.count {
-                    completion((psbtToReturn, rawTxToReturn, errorToReturn))
+                guard var words = String(bytes: decryptedData, encoding: .utf8) else {
+                    completion((nil, nil, "No signers."))
+                    return
                 }
+                
+                guard let bdkMnemonic = try? WalletLogic.BDKMnemonic.fromString(mnemonic: words) else {
+                    completion((nil, nil, "Failed converting words to BDKMnemonic."))
+                    return
+                }
+                
+                defer {
+                    decryptedData.secureZero()
+                    words.secureWipe()
+                    encryptedWords.secureZero()
+                }
+                
+                WalletLogic.shared.wallet(passphrase: passphrase,
+                                          network: network,
+                                          mnemonic: bdkMnemonic,
+                                          recDescStr: fnWallet.receiveDescriptor,
+                                          changeDesStr: fnWallet.changeDescriptor,
+                                          completion: { (bdkWallet, errorMessage) in
+                    
+                    guard let bdkWallet = bdkWallet else {
+                        // We let this fail silently otherwise user needs to decide which signer to use which may scare people.
+                        return
+                    }
+                    
+                    let (signedPsbt, signedRawTx, errorMessage) = WalletLogic.shared.signPsbt(wallet: bdkWallet, psbtBase64: psbt)
+                    
+                    if signedPsbt != nil {
+                        psbtToReturn = signedPsbt
+                    } else if signedRawTx != nil {
+                        rawTxToReturn = signedRawTx
+                    } else {
+                        errorToReturn = errorMessage
+                    }
+                })
+            }
+            
+            if i + 1 == signers.count {
+                completion((psbtToReturn, rawTxToReturn, errorToReturn))
             }
         }
     }

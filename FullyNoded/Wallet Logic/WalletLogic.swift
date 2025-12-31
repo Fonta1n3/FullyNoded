@@ -310,61 +310,73 @@ class WalletLogic {
         return checksumLessWatchOnlyDesc.replacingOccurrences(of: watchOnlyDescriptor.multiSigKeys[keyIndex], with: plainXprv)
     }
     
-//    func createPsbtWithManualInputs(
-//        wallet: BDKWallet,
-//        utxos: [Esplora_Utxo],
-//        outputs: [(address: String, amount: UInt64)],
-//        feeRate: Float? = nil,
-//        network: BDKNetwork
-//    ) throws -> String {
-//        var txBuilder = TxBuilder()
-//        var feeAmount = 0
-//        
-//        for utxo in utxos {
-//            let txid = try Txid.fromString(hex: utxo.txid)
-//            let outpoint = OutPoint(txid: txid, vout: UInt32(utxo.vout))
-//            let address = try Address(address: utxo.address!, network: network)
-//            let script = address.scriptPubkey()
-//            let amount = Amount.fromSat(satoshi: UInt64(utxo.value))
-//            let txOutput = TxOut(value: amount, scriptPubkey: script)
-//            wallet.insertTxout(outpoint: outpoint, txout: txOutput)
-//            txBuilder = txBuilder.addUtxo(outpoint: outpoint)
-//            feeAmount += 200
-//        }
-//        
-//        let fee = Amount.fromSat(satoshi: UInt64(feeAmount))
-//        
-//        do {
-//            let syncRequest = try wallet.startSyncWithRevealedSpks().build()
-//            let client = EsploraClient(url: "https://blockstream.info/testnet/api/", proxy: nil)
-//            //let client = EsploraClient(url: "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/testnet/api/", proxy: "socks5h://localhost:19050")
-//            let sync = try client.sync(request: syncRequest, parallelRequests: 4)
-//            try wallet.applyUpdate(update: sync)
-//            
-//            for output in outputs {
-//                let address = try Address(address: output.address, network: network)
-//                let script = address.scriptPubkey()
-//                let amount = Amount.fromSat(satoshi: output.amount - UInt64(feeAmount))
-//                txBuilder = txBuilder.addRecipient(script: script, amount: amount)
-//            }
-//            
-//            txBuilder = txBuilder.doNotSpendChange()
-//            txBuilder = txBuilder.manuallySelectedOnly()
-//            txBuilder = txBuilder.feeAbsolute(feeAmount: fee)
-//            
-//            let psbt = try txBuilder.finish(wallet: wallet)
-//            
-//            do {
-//                try WalletLogic.shared.securelyDeleteWallet(name: "temp_wallet")
-//            }
-//            
-//            return psbt.serialize()
-//            
-//        } catch {
-//            print("sync failed")
-//            print(error.localizedDescription)
-//            return ""
-//        }
-//    }
+    func createPsbtWithManualInputs(
+        wallet: BDKWallet,
+        utxos: [Esplora_Utxo],
+        outputs: [(address: String, amount: UInt64)],
+        feeRate: Float? = nil,
+        network: BDKNetwork
+    ) throws -> BitcoinDevKit.Psbt? {
+        var txBuilder = TxBuilder()
+        var feeAmount = 0
+        
+        for utxo in utxos {
+            let txid = try Txid.fromString(hex: utxo.txid)
+            let outpoint = OutPoint(txid: txid, vout: UInt32(utxo.vout))
+            let address = try Address(address: utxo.address!, network: network)
+            let script = address.scriptPubkey()
+            let amount = Amount.fromSat(satoshi: UInt64(utxo.value))
+            let txOutput = TxOut(value: amount, scriptPubkey: script)
+            wallet.insertTxout(outpoint: outpoint, txout: txOutput)
+            txBuilder = txBuilder.addUtxo(outpoint: outpoint)
+            feeAmount += 200
+        }
+        
+        let fee = Amount.fromSat(satoshi: UInt64(feeAmount))
+        
+        enum CustomError: Error {
+            case networkFailed(reason: String)
+        }
+        
+        do {
+            let syncRequest = try wallet.startSyncWithRevealedSpks().build()
+            var url = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion"
+            
+            if network == .testnet {
+                url += "/testnet/api/"
+            } else if network == .bitcoin {
+                url += "/api/"
+            } else {
+                throw CustomError.networkFailed(reason: "Nodeless transaction creation only works on mainnet and testnet for now.")
+            }
+            
+            let client = EsploraClient(url: url, proxy: "http://localhost:9080")
+            let sync = try client.sync(request: syncRequest, parallelRequests: 4)
+            try wallet.applyUpdate(update: sync)
+            
+            for output in outputs {
+                let address = try Address(address: output.address, network: network)
+                let script = address.scriptPubkey()
+                let amount = Amount.fromSat(satoshi: output.amount - UInt64(feeAmount))
+                txBuilder = txBuilder.addRecipient(script: script, amount: amount)
+            }
+            
+            txBuilder = txBuilder.doNotSpendChange()
+            txBuilder = txBuilder.manuallySelectedOnly()
+            txBuilder = txBuilder.feeAbsolute(feeAmount: fee)
+            
+            let psbt = try txBuilder.finish(wallet: wallet)
+            
+            do {
+                try WalletLogic.shared.securelyDeleteWallet(name: "temp_wallet")
+            }
+            
+            return psbt
+            
+        } catch {
+            print(error.localizedDescription)
+            return nil
+        }
+    }
 }
 

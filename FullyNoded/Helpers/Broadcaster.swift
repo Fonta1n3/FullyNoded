@@ -13,34 +13,58 @@ class Broadcaster {
     static let sharedInstance = Broadcaster()
     lazy var torClient = TorClient.sharedInstance
     
-    func send(rawTx: String, completion: @escaping ((String?)) -> Void) {
-        var blockstreamUrl = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/api/tx"
+    enum BroadcastResult {
+        case success(txid: String)
+        case failure(errorMessage: String)
+    }
+    
+    func broadcastRawTransaction(
+        rawTx: String,
+        network: String = "mainnet",
+        completion: @escaping (BroadcastResult) -> Void
+    ) {
+        let onionAddress = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion"
         
-        if (UserDefaults.standard.object(forKey: "chain") as! String) == "test" {
-            blockstreamUrl = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/testnet/api/tx"
-        }
+        let baseURL = network.lowercased() == "testnet" ? "\(onionAddress)/testnet" : onionAddress
         
-        guard let url = URL(string: blockstreamUrl) else {
-            completion((nil))
+        guard let url = URL(string: "\(baseURL)/api/tx") else {
+            completion(.failure(errorMessage: "Invalid URL"))
             return
         }
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-        request.httpBody = rawTx.data(using: .utf8)
+        request.httpBody = Data(rawTx.utf8)
         
-        let task = torClient.session.dataTask(with: request as URLRequest) { (data, response, error) in
-            if error != nil {
-                completion(nil)
-            } else {
-                if let urlContent = data {
-                    if let txid = String(bytes: urlContent, encoding: .utf8) {
-                        completion(txid)
-                    }
+        let task = torClient.session.dataTask(with: request) { data, response, error in
+            // Network-level error
+            if let error = error {
+                completion(.failure(errorMessage: "Network error: \(error.localizedDescription)"))
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                completion(.failure(errorMessage: "Invalid response"))
+                return
+            }
+            
+            // Parse response body as string (if available)
+            let responseString = data.flatMap { String(data: $0, encoding: .utf8) }?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "(no response body)"
+            
+            if httpResponse.statusCode == 200 {
+                // Success: response body is the txid
+                if responseString.isEmpty {
+                    completion(.failure(errorMessage: "Success status but empty txid"))
+                } else {
+                    completion(.success(txid: responseString))
                 }
+            } else {
+                // Failure: use the response body as error message (common errors like "sendrawtransaction RPC error", missing inputs, etc.)
+                completion(.failure(errorMessage: "HTTP \(httpResponse.statusCode): \(responseString)"))
             }
         }
+        
         task.resume()
-    }
+    }    
 }
