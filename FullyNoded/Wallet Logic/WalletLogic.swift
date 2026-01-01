@@ -23,6 +23,10 @@ class WalletLogic {
     typealias BDKMnemonic = BitcoinDevKit.Mnemonic
     typealias BDKDerivationPath = BitcoinDevKit.DerivationPath
     typealias BDKAddress = BitcoinDevKit.Address
+    typealias BDKTransaction = BitcoinDevKit.Transaction
+    typealias BDKTxInput = BitcoinDevKit.TxIn
+    typealias BDKPsbtInput = BitcoinDevKit.Input
+    
     
     func dummyKey() -> String? {
         let dummyMnemonic = BDKMnemonic(wordCount: .words12)
@@ -209,6 +213,7 @@ class WalletLogic {
         case "test": bdkNetwork = .testnet
         case "regtest": bdkNetwork = .regtest
         case "signet": bdkNetwork = .signet
+        case "testnet4": bdkNetwork = .testnet4
         default:
             break
         }
@@ -340,17 +345,19 @@ class WalletLogic {
         
         do {
             let syncRequest = try wallet.startSyncWithRevealedSpks().build()
-            var url = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion"
             
-            if network == .testnet {
-                url += "/testnet/api/"
-            } else if network == .bitcoin {
-                url += "/api/"
-            } else {
-                throw CustomError.networkFailed(reason: "Nodeless transaction creation only works on mainnet and testnet for now.")
+            let baseURL: String
+            switch network {
+            case .testnet: baseURL = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/testnet/api/"
+            case .testnet4: baseURL = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/testnet4/api/"
+            case .signet: baseURL = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/signet/api/"
+            case .regtest:
+                throw CustomError.networkFailed(reason: "Nodeless transaction creation does not work on regtest.")
+            default:
+                baseURL = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/api/"
             }
             
-            let client = EsploraClient(url: url, proxy: "http://localhost:9080")
+            let client = EsploraClient(url: baseURL, proxy: "http://localhost:9080")
             let sync = try client.sync(request: syncRequest, parallelRequests: 4)
             try wallet.applyUpdate(update: sync)
             

@@ -948,7 +948,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         let section = Section(rawValue: section)
         switch section {
-        case .changeDesc, .receiveDesc:
+        case .receiveDesc:
             return 60
         default:
             return 30

@@ -9,7 +9,7 @@
 import UIKit
 
 
-class NodelessTableViewController: UITableViewController {
+class NodelessTableViewController: UITableViewController, UIDocumentPickerDelegate {
     
     var savedUtxos: [UTXO] = []
     var addresses: [AddressStruct] = []
@@ -30,13 +30,200 @@ class NodelessTableViewController: UITableViewController {
         let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
         FiatConverter.sharedInstance.getFxRate(currency: currency) { fxRate in
             UserDefaults.standard.set(fxRate, forKey: "fxRate")
-            
-            showAlert(title: "", message: "The exchange rate for \(currency) was updated, tap the refresh button in the top right to show updated \(currency) balances.")
         }
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        load()        
+        load()
+    }
+    
+    @IBAction func importTransaction(_ sender: Any) {
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(title: "Import a transaction",
+                                          message: "You can import a transaction in a number of ways, Nodeless will analyze the transaction and allow you to sign, export and/or broadcast it. No node required.",
+                                          preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Upload File", style: .default, handler: { action in
+                self.presentUploader()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Paste Text", style: .default, handler: { action in
+                self.pasteAction()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "QR Code", style: .default, handler: { action in
+                self.scanQr()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true) {}
+        }
+        
+    }
+    
+    private func scanQr() {
+        presentQRScanner(fromSignAndVerify: true) { scannedResult in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                processString(string: scannedResult)
+            }
+        }
+    }
+    
+    private func pasteAction() {
+        if let data = UIPasteboard.general.data(forPasteboardType: "com.apple.traditional-mac-plain-text") {
+            guard let string = String(bytes: data, encoding: .utf8) else {
+                showAlert(vc: self, title: "Not a psbt?", message: "Looks like you do not have valid text on your clipboard")
+                return
+            }
+            
+            processString(string: string)
+        } else if let string = UIPasteboard.general.string {
+            
+            processString(string: string)
+        } else {
+            
+            showAlert(vc: self, title: "", message: "Not valid text. You can copy and paste the base64 text of a psbt or a signed raw transaction with this button.")
+        }
+    }
+    
+    private func processString(string: String) {
+        if let psbt = validPsbt(string: string) {
+            guard let tx = try? psbt.extractTx() else {
+                return
+            }
+            
+            let reviewVC = PsbtReviewViewController(
+                psbt: psbt,
+                rawTransaction: nil,
+                wallet: watchOnlyBdkWallet!,
+                signer: signer,
+                network: network,
+                inputs: fetchInputs(tx: tx),
+                fxRate: UserDefaults.standard.object(forKey: "fxRate") as? Double
+            )
+            
+            navigationController?.pushViewController(reviewVC, animated: true)
+            
+        } else if let tx = validTransaction(string: string) {
+            
+            let reviewVC = PsbtReviewViewController(
+                psbt: nil,
+                rawTransaction: tx,
+                wallet: watchOnlyBdkWallet!,
+                signer: signer,
+                network: network,
+                inputs: fetchInputs(tx: tx),
+                fxRate: UserDefaults.standard.object(forKey: "fxRate") as? Double
+            )
+            
+            navigationController?.pushViewController(reviewVC, animated: true)
+            
+        }
+    }
+    
+    private func fetchInputs(tx: WalletLogic.BDKTransaction) -> [Esplora_Utxo] {
+        var ourUtxos: [Esplora_Utxo] = []
+        for input in tx.input() {
+            let vout = input.previousOutput.vout
+            let txid = input.previousOutput.txid.description
+            
+            for savedUtxo in savedUtxos {
+                if savedUtxo.vout == vout && savedUtxo.txid == txid {
+                    var status = Esplora_Utxo.Status(confirmed: false, blockHeight: nil, blockHash: nil, blockTime: nil)
+                    
+                    if let confs = savedUtxo.confirmations {
+                        if confs > 0 {
+                            status = Esplora_Utxo.Status(confirmed: true, blockHeight: nil, blockHash: nil, blockTime: nil)
+                        }
+                    }
+                    
+                    let esplorUtxo = Esplora_Utxo(txid: savedUtxo.txid, vout: savedUtxo.vout, value: Int64(savedUtxo.amount / 100000000.0), status: status)
+                    ourUtxos.append(esplorUtxo)
+                }
+            }
+        }
+        return ourUtxos
+    }
+    
+    private func validPsbt(string: String) -> WalletLogic.BDKPsbt? {
+        return try? WalletLogic.BDKPsbt(psbtBase64: string)
+    }
+    
+    private func validTransaction(string: String) -> WalletLogic.BDKTransaction? {
+        guard let hexData = Data(hexString: string) else {
+            return nil
+        }
+        return try? WalletLogic.BDKTransaction(transactionBytes: hexData)
+    }
+    
+    private func presentQRScanner(
+        fromSignAndVerify: Bool = false,
+        isQuickConnect: Bool = false,
+        isScanningAddress: Bool = false,
+        completion: @escaping (String) -> Void
+    ) {
+        let scannerVC = ScanQRViewController()
+        
+        // Configure based on your use case
+        scannerVC.fromSignAndVerify = fromSignAndVerify
+        scannerVC.isQuickConnect = isQuickConnect
+        scannerVC.isScanningAddress = isScanningAddress
+        
+        // This is called when scanning completes successfully
+        scannerVC.onCompletion = { resultString in
+            // Handle the scanned result here (e.g., process PSBT, address, etc.)
+            completion(resultString)
+        }
+        
+        // Modal presentation style (full screen on iPhone, sheet on iPad)
+        scannerVC.modalPresentationStyle = .fullScreen
+        
+        // Present it
+        self.present(scannerVC, animated: true, completion: nil)
+    }
+    
+    private func presentUploader() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            var documentPicker:UIDocumentPickerViewController!
+            
+            if #available(iOS 14.0, *) {
+                documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
+            } else {
+                documentPicker = UIDocumentPickerViewController(documentTypes: ["public.item"], in: .import)
+            }
+            documentPicker.delegate = self
+            documentPicker.modalPresentationStyle = .formSheet
+            self.present(documentPicker, animated: true, completion: nil)
+        }
+    }
+    
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let text = try? String(contentsOf: urls[0].absoluteURL) else {
+            
+            guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
+                spinner.dismiss()
+                showAlert(vc: self, title: "Invalid File", message: "That is not a recognized format, generally it will be a .psbt or .txn file.")
+                return
+            }
+                        
+            if let _ = validPsbt(string: data.base64EncodedString()) {
+                processString(string: data.base64EncodedString())
+                
+            } else if let string = data.utf8String {
+                processString(string: string)
+            }
+            
+            return
+        }
+        
+        processString(string: text)
     }
     
     @IBAction func refreshAction(_ sender: Any) {
@@ -88,15 +275,7 @@ class NodelessTableViewController: UITableViewController {
             changeDesc = "\(descArr[0])".replacingOccurrences(of: "/0/", with: "/1/")
         }
         
-        let fnDesc = Descriptor(primaryDescriptor)
-        
-        // Esplora only works with main and test networks for now.
-        if fnDesc.chain == "Mainnet" {
-            network = .bitcoin
-        } else {
-            network = .testnet
-        }
-        //network = WalletLogic.shared.bdkNetwork()
+        network = WalletLogic.shared.bdkNetwork()
                 
         guard let bdkPrimDesc = try? WalletLogic.BDKDescriptor(descriptor: primaryDescriptor, network: network) else {
             spinner.dismiss()
@@ -200,7 +379,6 @@ class NodelessTableViewController: UITableViewController {
 //        }
         
         let path = Descriptor(primaryDescriptor).derivation
-        print("path: \(path)")
         
         DispatchQueue.global(qos: .background).async { [weak self] in
             guard let self = self else { return }
@@ -228,7 +406,12 @@ class NodelessTableViewController: UITableViewController {
         CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] utxos in
             guard let self = self else { return }
             
-            guard let utxos = utxos, utxos.count > 0 else {
+            guard let utxos = utxos else {
+                reload()
+                return
+            }
+            
+            guard utxos.count > 0 else {
                 reload()
                 return
             }
@@ -288,6 +471,11 @@ class NodelessTableViewController: UITableViewController {
                 return
             }
             
+            guard usedAddresses.count > 0 else {
+                reload()
+                return
+            }
+            
             for (i, address) in self.addresses.enumerated() {
                 for (x, usedAddress) in usedAddresses.enumerated() {
                     let usedAddressStr = UsedAddress(dictionary: usedAddress)
@@ -295,7 +483,7 @@ class NodelessTableViewController: UITableViewController {
                         self.addresses[i].used = true
                     }
                     
-                    if i + 1 == addresses.count && x + 1 == usedAddress.count {
+                    if i + 1 == addresses.count && x + 1 == usedAddresses.count {
                         reload()
                     }
                 }                
@@ -400,10 +588,11 @@ class NodelessTableViewController: UITableViewController {
     }
     
     private func checkBalance(address: String, indexPath: IndexPath, cell: BitcoinAddressCell) {
-        let isTestnet = (network == .testnet)
         Task {
-            do {
-                var utxos = try await NodelessUtxoFetcher.shared.fetchUtxos(for: address, isTestnet: isTestnet)
+            let result = try await NodelessUtxoFetcher.shared.fetchUtxos(for: address, network: network)
+            
+            switch result {
+            case .success(utxos: var utxos):
                 var confirmed = true
                 cell.hideBalanceLoading()
                 
@@ -432,9 +621,9 @@ class NodelessTableViewController: UITableViewController {
                     self.tableView.reloadRows(at: [indexPath], with: .fade)
                 }
                 
-            } catch {
+            case.failure(errorMessage: let msg):
                 cell.hideBalanceLoading()
-                showAlert(vc: self, title: "", message: error.localizedDescription)
+                showAlert(vc: self, title: "", message: msg)
             }
         }
     }

@@ -64,6 +64,7 @@
 		0ABEC1FF2F02857700092FCE /* NodelessTransactionAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABEC1FE2F02857700092FCE /* NodelessTransactionAnalyzer.swift */; };
 		0ABEC2012F03AAAA00092FCE /* UsedAddresses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABEC2002F03AAAA00092FCE /* UsedAddresses.swift */; };
 		0ABEC2032F03C47C00092FCE /* QRViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABEC2022F03C47C00092FCE /* QRViewController.swift */; };
+		0ABEC2052F05253500092FCE /* ScanQRViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABEC2042F05253500092FCE /* ScanQRViewController.swift */; };
 		0AD2023F2ECEDBF3006286DD /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0AD2023E2ECEDBF3006286DD /* BitcoinDevKit */; };
 		0AD202412ECEEAC0006286DD /* WalletLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD202402ECEEAC0006286DD /* WalletLogic.swift */; };
 		0AD8AD5029FF45B200F1ADD8 /* InvoiceSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD8AD4F29FF45B200F1ADD8 /* InvoiceSettingsViewController.swift */; };
@@ -247,6 +248,7 @@
 		0ABEC1FE2F02857700092FCE /* NodelessTransactionAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodelessTransactionAnalyzer.swift; sourceTree = "<group>"; };
 		0ABEC2002F03AAAA00092FCE /* UsedAddresses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsedAddresses.swift; sourceTree = "<group>"; };
 		0ABEC2022F03C47C00092FCE /* QRViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRViewController.swift; sourceTree = "<group>"; };
+		0ABEC2042F05253500092FCE /* ScanQRViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanQRViewController.swift; sourceTree = "<group>"; };
 		0AD202402ECEEAC0006286DD /* WalletLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLogic.swift; sourceTree = "<group>"; };
 		0AD438842A41F7F90004F923 /* LibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LibWally.xcframework; sourceTree = "<group>"; };
 		0AD8AD4F29FF45B200F1ADD8 /* InvoiceSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceSettingsViewController.swift; sourceTree = "<group>"; };
@@ -433,6 +435,7 @@
 				D0F3919124BFEBBB00EA8A2A /* QRDisplayerViewController.swift */,
 				D0F3919324C0147400EA8A2A /* QRScannerViewController.swift */,
 				0ABEC2022F03C47C00092FCE /* QRViewController.swift */,
+				0ABEC2042F05253500092FCE /* ScanQRViewController.swift */,
 			);
 			path = QRs;
 			sourceTree = "<group>";
@@ -1183,6 +1186,7 @@
 				0A2B4D702716ABCB00B607EE /* WalletImport.swift in Sources */,
 				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
 				0A1F10DB26A1A58100BE2707 /* GeneralError.swift in Sources */,
+				0ABEC2052F05253500092FCE /* ScanQRViewController.swift in Sources */,
 				0A2D4F582EE4705D00121667 /* EsploraBalanceFetcher.swift in Sources */,
 				D09A330324A86C7C009FA0B2 /* Signer.swift in Sources */,
 				0A64634828FDC0940079C5DB /* NostrFilter.swift in Sources */,

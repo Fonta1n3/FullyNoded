@@ -259,6 +259,7 @@ public struct Descriptor: CustomStringConvertible {
                                     }
                                 }
                                 derivationArray.append(deriv)
+                                dictionary["derivation"] = deriv
                                 
                                 let processedKey = arr[1]
                                 // it has a path

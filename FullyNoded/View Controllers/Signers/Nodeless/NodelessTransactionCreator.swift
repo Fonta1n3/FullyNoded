@@ -24,6 +24,7 @@ class SweepViewController: UIViewController {
     private let addressTextField = UITextField()
     private let scanButton = UIButton(type: .system)
     private let pasteButton = UIButton(type: .system)
+    private let noticeLabel = UILabel()
     private let createTxButton = UIButton(type: .system)
     let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double
     
@@ -123,6 +124,15 @@ class SweepViewController: UIViewController {
         createTxButton.addTarget(self, action: #selector(createTransactionPressed), for: .touchUpInside)
         view.addSubview(createTxButton)
         
+        // Notice label
+        noticeLabel.text = "This will present the transaction reviewer where you can review, sign, export and broadcast the transaction."
+        noticeLabel.font = UIFont.systemFont(ofSize: 12, weight: .regular)
+        noticeLabel.lineBreakMode = .byWordWrapping
+        noticeLabel.numberOfLines = 0
+        noticeLabel.textColor = .secondaryLabel
+        noticeLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(noticeLabel)
+        
         setupConstraints()
         
         // Observe text field changes
@@ -163,7 +173,7 @@ class SweepViewController: UIViewController {
             balanceLabel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -20),
             balanceLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            // Satoshi label
+            // Fiat label
             fiatLabel.topAnchor.constraint(equalTo: balanceLabel.bottomAnchor, constant: 8),
             fiatLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
@@ -193,7 +203,13 @@ class SweepViewController: UIViewController {
             createTxButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             createTxButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             createTxButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -30),
-            createTxButton.heightAnchor.constraint(equalToConstant: 60)
+            createTxButton.heightAnchor.constraint(equalToConstant: 60),
+            
+            // Notice label (on top of Create Transaction)
+            noticeLabel.topAnchor.constraint(equalTo: createTxButton.topAnchor, constant: -40),
+            noticeLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            noticeLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            noticeLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30)
         ])
     }
     
@@ -208,12 +224,39 @@ class SweepViewController: UIViewController {
     }
     
     @objc private func scanQRPressed() {
-        // You will present your existing QR scanner here
-        // Example:
-        // let scanner = YourQRScannerViewController()
-        // scanner.delegate = self
-        // present(scanner, animated: true)
-        print("Scan QR tapped – implement your scanner presentation")
+        presentQRScanner(isScanningAddress: true) { qrString in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                addressTextField.text = qrString
+                validateAndUpdateCreateButton()
+            }
+        }
+    }
+    
+    private func presentQRScanner(
+        fromSignAndVerify: Bool = false,
+        isQuickConnect: Bool = false,
+        isScanningAddress: Bool = false,
+        completion: @escaping (String) -> Void
+    ) {
+        let scannerVC = ScanQRViewController()
+        
+        // Configure based on your use case
+        scannerVC.fromSignAndVerify = fromSignAndVerify
+        scannerVC.isQuickConnect = isQuickConnect
+        scannerVC.isScanningAddress = isScanningAddress
+        
+        // This is called when scanning completes successfully
+        scannerVC.onCompletion = { resultString in
+            // Handle the scanned result here (e.g., process PSBT, address, etc.)
+            completion(resultString)
+        }
+        
+        // Modal presentation style (full screen on iPhone, sheet on iPad)
+        scannerVC.modalPresentationStyle = .fullScreen
+        
+        // Present it
+        self.present(scannerVC, animated: true, completion: nil)
     }
     
     @objc private func pastePressed() {
@@ -252,6 +295,7 @@ class SweepViewController: UIViewController {
     
     @objc private func createTransactionPressed() {
         ConnectingView.shared.show(vc: self, description: "Creating psbt...")
+        
         guard let destination = addressTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
               !destination.isEmpty else {
             ConnectingView.shared.dismiss()
@@ -285,6 +329,7 @@ class SweepViewController: UIViewController {
                     
                     let reviewVC = PsbtReviewViewController(
                         psbt: psbt,
+                        rawTransaction: nil,
                         wallet: watchOnlyBdkWallet,
                         signer: signer, // optional, pass nil if external signer
                         network: network,
@@ -292,8 +337,6 @@ class SweepViewController: UIViewController {
                         fxRate: fxRate
                     )
                     
-                    //reviewVC.modalPresentationStyle = .fullScreen
-                    //self.present(reviewVC, animated: true)
                     navigationController?.pushViewController(reviewVC, animated: true)
                 }
                 

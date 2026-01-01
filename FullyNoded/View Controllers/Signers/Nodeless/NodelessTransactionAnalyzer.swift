@@ -12,7 +12,8 @@ import BitcoinDevKit  // swift-bdk
 
 class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate {
     
-    private let psbt: BitcoinDevKit.Psbt
+    private let psbt: BitcoinDevKit.Psbt?
+    private let rawTransaction: BitcoinDevKit.Transaction?
     private let wallet: BitcoinDevKit.Wallet  // Your watch-only or signing wallet
     private let signer: SignerStruct?  // Optional signer (e.g., from seed)
     private let network: BitcoinDevKit.Network
@@ -53,8 +54,9 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         let amountBtc: Double
     }
     
-    init(psbt: BitcoinDevKit.Psbt, wallet: BitcoinDevKit.Wallet, signer: SignerStruct? = nil, network: BitcoinDevKit.Network, inputs: [Esplora_Utxo], fxRate: Double?) {
+    init(psbt: BitcoinDevKit.Psbt?, rawTransaction: BitcoinDevKit.Transaction?, wallet: BitcoinDevKit.Wallet, signer: SignerStruct? = nil, network: BitcoinDevKit.Network, inputs: [Esplora_Utxo], fxRate: Double?) {
         self.psbt = psbt
+        self.rawTransaction = rawTransaction
         self.wallet = wallet
         self.signer = signer
         self.network = network
@@ -71,7 +73,12 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         super.viewDidLoad()
         navigationController?.delegate = self
         setupUI()
-        analyzePsbt()
+        
+        if let psbt = psbt {
+            analyzePsbt(psbt: psbt)
+        } else if let tx = rawTransaction {
+            analyzeTx(tx: tx)
+        }
     }
     
     @objc private func dismissButtonTapped() {
@@ -182,7 +189,59 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         dismissButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
     }
     
-    private func analyzePsbt() {
+    private func analyzeTx(tx: Transaction) {
+        do {
+            self.signedRawTx = tx.serialize().hex
+            self.signButton.isHidden = true
+            self.broadcastButton.isHidden = false
+            self.exportButton.isHidden = true
+            var inputItems: [TxInOutItem] = []
+            var outputItems: [TxInOutItem] = []
+            
+            // Inputs
+            for input in inputs {
+                var fiatAmount: String?
+                let amountBtc = (input.value.doubleValue / 100000000.0)
+                if let fxRate = fxRate {
+                    fiatAmount = (amountBtc * fxRate).fiatString
+                }
+                inputItems.append(TxInOutItem(address: input.address, amountFiat: fiatAmount, amountBtc: amountBtc))
+            }
+            
+            // Outputs
+            for output in tx.output() {
+                let address = try Address.fromScript(script: output.scriptPubkey, network: network).description
+                let amountBtc = output.value.toBtc()
+                var fiatAmount: String?
+                if let fxRate = fxRate {
+                    fiatAmount = (amountBtc * fxRate).fiatString
+                }
+                outputItems.append(TxInOutItem(address: address, amountFiat: fiatAmount, amountBtc: amountBtc))
+            }
+            
+            sections = [
+                Section(type: .inputs, items: inputItems),
+                Section(type: .outputs, items: outputItems)
+            ]
+            
+            // Update fee label
+//            let btcFee = Double(fee) / 100_000_000.0
+//            if let fxRate = fxRate {
+//                let fiatAmount = (btcFee * fxRate).fiatString
+//                feeLabel.text = "Fee: \(btcFee.btcBalanceWithSpaces) / \(fiatAmount)"
+//            } else {
+//                feeLabel.text = "Fee: \(btcFee.btcBalanceWithSpaces)"
+//            }
+            
+            
+            tableView.reloadData()
+        } catch {
+            showAlert(title: "Failed analyzing", message: error.localizedDescription)
+        }
+        
+    }
+    
+    private func analyzePsbt(psbt: Psbt) {
         do {
             let tx = try psbt.extractTx()  // Final tx if fully signed, otherwise underlying tx
             let fee = try psbt.fee()
@@ -230,7 +289,6 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         } catch {
             showAlert(title: "Failed analyzing", message: error.localizedDescription)
         }
-        
     }
     
     @objc private func exportPsbtTapped() {
@@ -267,7 +325,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                     transactionToExport = signedPsbt
                     headerText = "Signed PSBT (needs more sigs)"
                     descriptionText = "Share or scan to sign elsewhere"
-                } else {
+                } else if let psbt = psbt {
                     transactionToExport = psbt.serialize()
                     headerText = "Unsigned PSBT"
                     descriptionText = "Share or scan to sign elsewhere"
@@ -343,17 +401,11 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         
         ConnectingView.shared.show(vc: self, description: "Broadcasting...")
         
-        var networkString = "mainnet"
-        if self.network != .bitcoin {
-            networkString = "testnet"
-        }
-        
-        Broadcaster.sharedInstance.broadcastRawTransaction(rawTx: rawTx, network: networkString) { [weak self] result in
-            guard let self = self else { return }
+        Task {
+            let result = try await Broadcaster.sharedInstance.broadcastRawTransaction(rawTx: rawTx, network: network)
             ConnectingView.shared.dismiss()
             switch result {
             case .success(let txid):
-                
                 saveNewUtxo(txid: txid)
                 deleteCachedUtxo()
                 
@@ -362,13 +414,13 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                     self.showTransactionSuccessAnimation(title: "Transaction broadcast successfully!", subtitle: "TxID: \(txid)")
                     self.broadcastButton.isHidden = true
                 }
-            case .failure(let message):
-                showAlert(title: "", message: "Broadcast failed: \(message)")
+            case .failure(let msg):
+                showAlert(title: "", message: "Broadcast failed: \(msg)")
             }
         }
     }
     
-    private func deleteCachedUtxo() {
+    private func deleteCachedUtxo() {        
         CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] savedUtxos in
             guard let self = self else { return }
             guard let savedUtxos = savedUtxos else { return }
@@ -392,7 +444,10 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     // Save it incase it was a self transfer.
     private func saveNewUtxo(txid: String) {
         do {
-            guard let tx = try? psbt.extractTx() else { return }
+            guard let signedTx = self.signedRawTx else { return }
+            guard let bytes = Data(hexString: signedTx) else { return }
+            guard let tx = try? Transaction(transactionBytes: bytes) else { return }
+            
             for (i, output) in tx.output().enumerated() {
                 let address = try Address.fromScript(script: output.scriptPubkey, network: network).description
                 
@@ -463,7 +518,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         // Run signing on background thread
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
-                
+            
             let walletDict: [String: Any] = [
                 "receiveDescriptor": wallet.publicDescriptor(keychain: .external),
                 "changeDescriptor": wallet.publicDescriptor(keychain: .internal),
@@ -475,45 +530,79 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
             
             let fnWallet = Wallet(dictionary: walletDict)
             
-            guard let signer = signer else { return }
-            
-            Signer.shared.sign(fnWallet: fnWallet, psbt: psbt.serialize(), passphrase: passphrase, signers: [signer], network: network) { (signedPsbt, rawTx, errorMessage) in
-                ConnectingView.shared.dismiss()
-                
-                if let rawTx = rawTx {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        self.signedRawTx = rawTx
-                        self.broadcastButton.isHidden = false
-                        self.signButton.isHidden = true
-                        self.exportButton.setTitle("Export Signed Transaction", for: .normal)
-                        self.showTransactionSuccessAnimation(title: "Transaction signed!", subtitle: "Ready to broadcast")
-                    }
-                } else if let signedPsbt = signedPsbt {
-                    guard let signedBdkPsbt = try? Psbt(psbtBase64: signedPsbt) else { return }
+            if let signer = signer {
+                attemptToSign(signers: [signer], passphrase: passphrase, fnWallet: fnWallet)
+            } else {
+                CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
+                    guard let self = self else { return }
                     
-                    
-                    var hasSigs = false
-                    for input in signedBdkPsbt.input() {
-                        if input.partialSigs.count > 0 {
-                            hasSigs = true
-                        }
+                    guard let signers = signers else {
+                        ConnectingView.shared.dismiss()
+                        showAlert(title: "", message: "No signers to sign with...")
+                        return
                     }
                     
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        if hasSigs {
-                            self.signedPsbt = signedPsbt
-                            self.showTransactionSuccessAnimation(title: "Transaction partially signed!", subtitle: "Ready to export to another signer")
-                        } else {
-                            showAlert(title: "Psbt is unsigned", message: "Sign it with another signer.")
-                        }
+                    guard !signers.isEmpty else {
+                        ConnectingView.shared.dismiss()
+                        showAlert(title: "", message: "No signers to sign with...")
+                        return
+                    }
+                                        
+                    var signerStructs: [SignerStruct] = []
+                    for signer in signers {
+                        let signerStr = SignerStruct(dictionary: signer)
+                        signerStructs.append(signerStr)
                     }
                     
-                } else {
-                    showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "Unknown error.")
+                    attemptToSign(signers: signerStructs, passphrase: passphrase, fnWallet: fnWallet)
                 }
+            }
+        }
+    }
+    
+    private func attemptToSign(signers: [SignerStruct], passphrase: String?, fnWallet: Wallet) {
+        guard let psbt = psbt else {
+            ConnectingView.shared.dismiss()
+            showAlert(title: "", message: "No psbt to sign...")
+            return
+        }
+        
+        Signer.shared.sign(fnWallet: fnWallet, psbt: psbt.serialize(), passphrase: passphrase, signers: signers, network: network) { (signedPsbt, rawTx, errorMessage) in
+            ConnectingView.shared.dismiss()
+            
+            if let rawTx = rawTx {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.signedRawTx = rawTx
+                    self.broadcastButton.isHidden = false
+                    self.signButton.isHidden = true
+                    self.exportButton.setTitle("Export Signed Transaction", for: .normal)
+                    self.showTransactionSuccessAnimation(title: "Transaction signed!", subtitle: "Ready to broadcast")
+                }
+            } else if let signedPsbt = signedPsbt {
+                guard let signedBdkPsbt = try? Psbt(psbtBase64: signedPsbt) else { return }
+                
+                
+                var hasSigs = false
+                for input in signedBdkPsbt.input() {
+                    if input.partialSigs.count > 0 {
+                        hasSigs = true
+                    }
+                }
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    if hasSigs {
+                        self.signedPsbt = signedPsbt
+                        self.showTransactionSuccessAnimation(title: "Transaction partially signed!", subtitle: "Ready to export to another signer")
+                    } else {
+                        showAlert(title: "Psbt is unsigned", message: "Sign it with another signer.")
+                    }
+                }
+                
+            } else {
+                showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "Unknown error.")
             }
         }
     }

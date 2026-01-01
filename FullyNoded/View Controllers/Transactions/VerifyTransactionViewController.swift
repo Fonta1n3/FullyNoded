@@ -2178,17 +2178,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     private func broadcastPrivately() {
         spinner.show(vc: self, description: "broadcasting...")
         
-        let network = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
-        var networkString = "mainnet"
-        if network != "main" {
-            networkString = "testnet"
-        }
-        
-        Broadcaster.sharedInstance.broadcastRawTransaction(rawTx: signedRawTx, network: networkString) { [weak self] result in
-            guard let self = self else { return }
+        Task {
+            let result = try await Broadcaster.sharedInstance.broadcastRawTransaction(rawTx: signedRawTx, network: WalletLogic.shared.bdkNetwork() ?? .bitcoin)
             spinner.dismiss()
             switch result {
-            case .success(let txid):
+            case .success(_):
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)

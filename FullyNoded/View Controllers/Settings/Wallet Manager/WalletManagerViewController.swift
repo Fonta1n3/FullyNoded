@@ -45,7 +45,9 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
         
         self.fnWallets.removeAll()
         
-        CoreDataService.retrieveEntity(entityName: .wallets) { fnWallets in
+        CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] fnWallets in
+            guard let self = self else { return }
+            
             if let fnWallets = fnWallets, fnWallets.count > 0 {
                 for fnWallet in fnWallets {
                     let w = Wallet(dictionary: fnWallet)
@@ -60,6 +62,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                 self.inactiveWallets.removeAll()
                 self.wallets.removeAll()
                 self.walletTable.reloadData()
+                
                 OnchainUtils.listWalletDir { [weak self] (walletDir, message) in
                     guard let self = self else { return }
                     
@@ -287,6 +290,11 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     func parseWallets(wallets_: [String]) {
         let activeWallet = UserDefaults.standard.object(forKey: "walletName") as? String ?? ""
         
+        guard wallets_.count > 0 else {
+            doneLoading()
+            return
+        }
+        
         for (i, walletName) in wallets_.enumerated() {
             var isActive = false
             let nameToDisplay = walletName
@@ -313,13 +321,17 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
             self.wallets.append(dict)
             
             if i + 1 == wallets_.count {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.connectingView.dismiss()
-                    self.walletTable.reloadData()
-                }
+                doneLoading()
             }
+        }
+    }
+    
+    private func doneLoading() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.connectingView.dismiss()
+            self.walletTable.reloadData()
         }
     }
     
