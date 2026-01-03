@@ -355,12 +355,16 @@ final class ScanQRViewController: UIViewController {
             let number = Float(bbqrParts.count) / Float(numberOfQrs)
             let percentageComplete = "\(Int(number * 100))% complete"
             updateProgress(text: percentageComplete, progress: number)
+            
+            if number == 1 {
+                guard let result = try? continousJoiner(parts: bbqrParts) else { return }
+            }
         }
         
-        guard let result = try? continousJoiner(parts: bbqrParts) else { return }
+        
         
         #if DEBUG
-        print("BBQr result: \(result)")
+        //print("BBQr result: \(result)")
         #endif
     }
     

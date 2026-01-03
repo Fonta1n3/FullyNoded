@@ -21,6 +21,7 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
     var primaryDescriptor = ""
     var changeDescriptor: String?
     var watchOnlyBdkWallet: WalletLogic.BDKWallet?
+    var initialLoad = true
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,7 +35,10 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        load()
+        if initialLoad {
+            load()
+            initialLoad = false
+        }
     }
     
     @IBAction func importTransaction(_ sender: Any) {
@@ -93,36 +97,30 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
     
     private func processString(string: String) {
         if let psbt = validPsbt(string: string) {
-            guard let tx = try? psbt.extractTx() else {
-                return
-            }
-            
             let reviewVC = PsbtReviewViewController(
                 psbt: psbt,
                 rawTransaction: nil,
                 wallet: watchOnlyBdkWallet!,
                 signer: signer,
                 network: network,
-                inputs: fetchInputs(tx: tx),
+                inputs: [],
                 fxRate: UserDefaults.standard.object(forKey: "fxRate") as? Double
             )
             
             navigationController?.pushViewController(reviewVC, animated: true)
             
         } else if let tx = validTransaction(string: string) {
-            
             let reviewVC = PsbtReviewViewController(
                 psbt: nil,
                 rawTransaction: tx,
                 wallet: watchOnlyBdkWallet!,
                 signer: signer,
                 network: network,
-                inputs: fetchInputs(tx: tx),
+                inputs: [],
                 fxRate: UserDefaults.standard.object(forKey: "fxRate") as? Double
             )
             
             navigationController?.pushViewController(reviewVC, animated: true)
-            
         }
     }
     
@@ -148,6 +146,38 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
             }
         }
         return ourUtxos
+    }
+    
+    private func fetchInputs(psbt: WalletLogic.BDKPsbt, completion: @escaping (([Esplora_Utxo])) -> Void) {
+        var ourUtxos: [Esplora_Utxo] = []
+        guard let tx = try? psbt.extractTx() else {
+            completion([])
+            return
+        }
+        
+        for input in tx.input() {
+            let vout = input.previousOutput.vout
+            let txid = input.previousOutput.txid.description
+            
+            for (i, savedUtxo) in savedUtxos.enumerated() {
+                if savedUtxo.vout == vout && savedUtxo.txid == txid {
+                    var status = Esplora_Utxo.Status(confirmed: false, blockHeight: nil, blockHash: nil, blockTime: nil)
+                    
+                    if let confs = savedUtxo.confirmations {
+                        if confs > 0 {
+                            status = Esplora_Utxo.Status(confirmed: true, blockHeight: nil, blockHash: nil, blockTime: nil)
+                        }
+                    }
+                    
+                    let esplorUtxo = Esplora_Utxo(txid: savedUtxo.txid, vout: savedUtxo.vout, value: Int64(savedUtxo.amount / 100000000.0), status: status)
+                    ourUtxos.append(esplorUtxo)
+                }
+                
+                if i + 1 == savedUtxos.count {
+                    completion((ourUtxos))
+                }
+            }
+        }
     }
     
     private func validPsbt(string: String) -> WalletLogic.BDKPsbt? {
@@ -241,7 +271,7 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
     func deleteItem() async {
         let confirmed = await confirmAction(
             title: "Delete entire Utxo cache?",
-            message: "This action cannot be undone.",
+            message: "This action cannot be undone. This will hide all balances, you will either need to use this wallet with a node and load your utxos or manually tap the check balance button.",
             confirmTitle: "Delete",
             cancelTitle: "Cancel"
         )

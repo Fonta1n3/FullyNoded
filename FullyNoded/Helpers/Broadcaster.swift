@@ -19,12 +19,13 @@ class Broadcaster {
     
     func broadcastRawTransaction(rawTx: String, network: WalletLogic.BDKNetwork) async throws -> BroadcastResult {
         let baseURL: String
+        let host = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion"
         switch network {
-        case .testnet:   baseURL = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/testnet"
-        case .testnet4:  baseURL = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/testnet4"
-        case .signet:    baseURL = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/signet"
+        case .testnet:   baseURL = "\(host)/testnet"
+        case .testnet4:  baseURL = "\(host)/testnet4"
+        case .signet:    baseURL = "\(host)/signet"
         default:
-            baseURL = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion"
+            baseURL = host
         }
         
         guard let url = URL(string: "\(baseURL)/api/tx") else {

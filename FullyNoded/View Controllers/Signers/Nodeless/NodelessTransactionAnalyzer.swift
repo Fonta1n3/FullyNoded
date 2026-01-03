@@ -27,6 +27,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     // UI Elements
     private let titleLabel = UILabel()
     private let tableView = UITableView()
+    private let txStatusLabel = UILabel()
     private let feeLabel = UILabel()
     private let buttonsStackView = UIStackView()
     
@@ -77,6 +78,10 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         if let psbt = psbt {
             analyzePsbt(psbt: psbt)
         } else if let tx = rawTransaction {
+            signedRawTx = tx.serialize().hex
+            broadcastButton.isHidden = false
+            signButton.isHidden = true
+            exportButton.setTitle("Export Signed Transaction", for: .normal)
             analyzeTx(tx: tx)
         }
     }
@@ -110,6 +115,11 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         tableView.estimatedRowHeight = 100
         tableView.backgroundColor = .clear
         
+        // Tx Status label
+        txStatusLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
+        txStatusLabel.textAlignment = .center
+        txStatusLabel.textColor = .label
+        
         // Fee label
         feeLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
         feeLabel.textAlignment = .center
@@ -130,6 +140,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         // Add everything to main stack
         mainStackView.addArrangedSubview(titleLabel)
         mainStackView.addArrangedSubview(tableView)
+        mainStackView.addArrangedSubview(txStatusLabel)
         mainStackView.addArrangedSubview(feeLabel)
         
         // Spacer to push buttons to bottom
@@ -190,28 +201,18 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     }
     
     private func analyzeTx(tx: Transaction) {
+                
         do {
-            self.signedRawTx = tx.serialize().hex
-            self.signButton.isHidden = true
-            self.broadcastButton.isHidden = false
-            self.exportButton.isHidden = true
             var inputItems: [TxInOutItem] = []
             var outputItems: [TxInOutItem] = []
             
-            // Inputs
-            for input in inputs {
-                var fiatAmount: String?
-                let amountBtc = (input.value.doubleValue / 100000000.0)
-                if let fxRate = fxRate {
-                    fiatAmount = (amountBtc * fxRate).fiatString
-                }
-                inputItems.append(TxInOutItem(address: input.address, amountFiat: fiatAmount, amountBtc: amountBtc))
-            }
+            var totalOutputAmount = 0.0
             
             // Outputs
             for output in tx.output() {
                 let address = try Address.fromScript(script: output.scriptPubkey, network: network).description
                 let amountBtc = output.value.toBtc()
+                totalOutputAmount += amountBtc
                 var fiatAmount: String?
                 if let fxRate = fxRate {
                     fiatAmount = (amountBtc * fxRate).fiatString
@@ -219,63 +220,151 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                 outputItems.append(TxInOutItem(address: address, amountFiat: fiatAmount, amountBtc: amountBtc))
             }
             
-            sections = [
-                Section(type: .inputs, items: inputItems),
-                Section(type: .outputs, items: outputItems)
-            ]
-            
-            // Update fee label
-//            let btcFee = Double(fee) / 100_000_000.0
-//            if let fxRate = fxRate {
-//                let fiatAmount = (btcFee * fxRate).fiatString
-//                feeLabel.text = "Fee: \(btcFee.btcBalanceWithSpaces) / \(fiatAmount)"
-//            } else {
-//                feeLabel.text = "Fee: \(btcFee.btcBalanceWithSpaces)"
-//            }
-            
-            
-            tableView.reloadData()
+            if self.inputs.count > 0 {
+                // These are the inputs we know we selected bc the transaction was created here.
+                for input in inputs {
+                    var fiatAmount: String?
+                    let amountBtc = (input.value.doubleValue / 100000000.0)
+                    if let fxRate = fxRate {
+                        fiatAmount = (amountBtc * fxRate).fiatString
+                    }
+                    
+                    inputItems.append(TxInOutItem(address: input.address, amountFiat: fiatAmount, amountBtc: amountBtc))
+                }
+                
+                sections = [
+                    Section(type: .inputs, items: inputItems),
+                    Section(type: .outputs, items: outputItems)
+                ]
+                
+                tableView.reloadData()
+                
+            } else {
+                let unknownInputs = tx.input()
+                // This psbt has been imported, we can check our saved utxos...
+                var totalInputAmount = 0.0
+                
+                
+                CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] savedUtxos in
+                    guard let self = self else { return }
+                    
+                    guard let savedUtxos = savedUtxos else { return }
+                    
+                    for (i, savedUtxo) in savedUtxos.enumerated() {
+                        let savedUtxoStr = UTXO(from: savedUtxo)
+                        
+                        var isOurs = false
+                        var allOurs = true
+                        
+                        for (u, unknownInput) in unknownInputs.enumerated() {
+                            
+                            if savedUtxoStr.txid == unknownInput.previousOutput.txid.description && savedUtxoStr.vout == unknownInput.previousOutput.vout {
+                                isOurs = true
+                                
+                                let containsItem = inputItems.contains(where: { txInItem in
+                                    savedUtxoStr.address == txInItem.address && savedUtxoStr.amount == txInItem.amountBtc
+                                })
+                                
+                                if !containsItem {
+                                    var fiatAmount: String?
+                                    let amountBtc = savedUtxoStr.amount
+                                    totalInputAmount += amountBtc
+                                    
+                                    if let fxRate = self.fxRate {
+                                        fiatAmount = (amountBtc * fxRate).fiatString
+                                    }
+                                    
+                                    inputItems.append(TxInOutItem(address: savedUtxoStr.address, amountFiat: fiatAmount, amountBtc: amountBtc))
+                                }
+                            }
+                            
+                            if i + 1 == savedUtxos.count {
+                                if !isOurs {
+                                    allOurs = false
+                                    inputItems.append(TxInOutItem(address: "Unknown address.", amountFiat: "?", amountBtc: 0.0))
+                                    
+                                    DispatchQueue.main.async { [weak self] in
+                                        guard let self = self else { return }
+                                        feeLabel.text = "Unable to determine fee."
+                                    }
+                                }
+                            }
+                            
+                            if i + 1 == savedUtxos.count && u + 1 == unknownInputs.count {
+                                sections = [
+                                    Section(type: .inputs, items: inputItems),
+                                    Section(type: .outputs, items: outputItems)
+                                ]
+                                
+                                DispatchQueue.main.async { [weak self] in
+                                    guard let self = self else { return }
+                                    print("allOurs: \(allOurs)")
+                                    if allOurs {
+                                        // we know all inputs are ours and can deduce the fee
+                                       
+                                        if feeLabel.text == nil {
+                                            let btcFee = totalInputAmount - totalOutputAmount
+                                            
+                                            if let fxRate = fxRate {
+                                                let fiatAmount = (btcFee * fxRate).fiatString
+                                                feeLabel.text = "Fee: \(btcFee.btcBalanceWithSpaces) / \(fiatAmount)"
+                                            } else {
+                                                feeLabel.text = "Fee: \(btcFee.btcBalanceWithSpaces)"
+                                            }
+                                        }
+                                    }
+                                    
+                                    tableView.reloadData()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         } catch {
             showAlert(title: "Failed analyzing", message: error.localizedDescription)
         }
-        
     }
     
     private func analyzePsbt(psbt: Psbt) {
         do {
             let tx = try psbt.extractTx()  // Final tx if fully signed, otherwise underlying tx
+            
+            var containsSigs = false
+            // Check if finalized
+            let finalized = psbt.finalize()
+            if !finalized.couldFinalize {
+                // check if contains partial sigs
+                for input in psbt.input() {
+                    if input.partialSigs.count > 0 {
+                        containsSigs = true
+                    }
+                }
+                if containsSigs {
+                    // update UI to show it is partially signed
+                    txStatusLabel.text = "Partially signed, needs more signatures."
+                    txStatusLabel.textColor = .systemOrange
+                } else {
+                    // no sigs
+                    txStatusLabel.text = "Unsigned, needs more signatures."
+                    txStatusLabel.textColor = .systemRed
+                }
+                analyzeTx(tx: tx)
+            } else {
+                let finalTx = try finalized.psbt.extractTx()
+                // fully signed
+                txStatusLabel.text = "Signatures complete, tap broadcast to send."
+                txStatusLabel.textColor = .systemGreen
+                signedRawTx = finalTx.serialize().hex
+                broadcastButton.isHidden = false
+                signButton.isHidden = true
+                exportButton.setTitle("Export Signed Transaction", for: .normal)
+                analyzeTx(tx: finalTx)
+            }
+            
+            
+            
             let fee = try psbt.fee()
-            
-            var inputItems: [TxInOutItem] = []
-            var outputItems: [TxInOutItem] = []
-            
-            // Inputs
-            for input in inputs {
-                var fiatAmount: String?
-                let amountBtc = (input.value.doubleValue / 100000000.0)
-                if let fxRate = fxRate {
-                    fiatAmount = (amountBtc * fxRate).fiatString
-                }
-                inputItems.append(TxInOutItem(address: input.address, amountFiat: fiatAmount, amountBtc: amountBtc))
-            }
-            
-            // Outputs
-            for output in tx.output() {
-                let address = try Address.fromScript(script: output.scriptPubkey, network: network).description
-                let amountBtc = output.value.toBtc()
-                var fiatAmount: String?
-                if let fxRate = fxRate {
-                    fiatAmount = (amountBtc * fxRate).fiatString
-                }
-                outputItems.append(TxInOutItem(address: address, amountFiat: fiatAmount, amountBtc: amountBtc))
-            }
-            
-            sections = [
-                Section(type: .inputs, items: inputItems),
-                Section(type: .outputs, items: outputItems)
-            ]
-            
-            // Update fee label
             let btcFee = Double(fee) / 100_000_000.0
             if let fxRate = fxRate {
                 let fiatAmount = (btcFee * fxRate).fiatString
@@ -284,8 +373,6 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                 feeLabel.text = "Fee: \(btcFee.btcBalanceWithSpaces)"
             }
             
-            
-            tableView.reloadData()
         } catch {
             showAlert(title: "Failed analyzing", message: error.localizedDescription)
         }
@@ -574,6 +661,8 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
+                    txStatusLabel.text = "Signatures complete, tap broadcast to send."
+                    txStatusLabel.textColor = .systemGreen
                     self.signedRawTx = rawTx
                     self.broadcastButton.isHidden = false
                     self.signButton.isHidden = true
@@ -582,7 +671,6 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                 }
             } else if let signedPsbt = signedPsbt {
                 guard let signedBdkPsbt = try? Psbt(psbtBase64: signedPsbt) else { return }
-                
                 
                 var hasSigs = false
                 for input in signedBdkPsbt.input() {
@@ -595,12 +683,15 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                     guard let self = self else { return }
                     if hasSigs {
                         self.signedPsbt = signedPsbt
+                        txStatusLabel.text = "Partially signed, needs more signatures."
+                        txStatusLabel.textColor = .systemOrange
                         self.showTransactionSuccessAnimation(title: "Transaction partially signed!", subtitle: "Ready to export to another signer")
                     } else {
+                        txStatusLabel.text = "Unsigned, needs signatures."
+                        txStatusLabel.textColor = .systemRed
                         showAlert(title: "Psbt is unsigned", message: "Sign it with another signer.")
                     }
                 }
-                
             } else {
                 showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "Unknown error.")
             }

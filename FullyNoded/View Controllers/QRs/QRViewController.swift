@@ -45,7 +45,7 @@ class QRViewController: UIViewController {
     private let textView: UITextView = {
         let tv = UITextView()
         tv.isEditable = false
-        tv.font = .systemFont(ofSize: 16)
+        tv.font = .systemFont(ofSize: 14)
         tv.textColor = .secondaryLabel
         tv.backgroundColor = .clear
         tv.textAlignment = .center
@@ -55,18 +55,11 @@ class QRViewController: UIViewController {
     
     private let headerLabel: UILabel = {
         let label = UILabel()
-        label.font = .boldSystemFont(ofSize: 20)
+        label.font = .boldSystemFont(ofSize: 17)
         label.textAlignment = .center
         label.textColor = .label
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
-    }()
-    
-    private let headerImageView: UIImageView = {
-        let iv = UIImageView()
-        iv.contentMode = .scaleAspectFit
-        iv.translatesAutoresizingMaskIntoConstraints = false
-        return iv
     }()
     
     private let closeButton: UIButton = {
@@ -131,7 +124,6 @@ class QRViewController: UIViewController {
     // MARK: - UI Setup
     private func setupUI() {
         // Add subviews
-        view.addSubview(headerImageView)
         view.addSubview(headerLabel)
         view.addSubview(imageView)
         view.addSubview(textView)
@@ -141,19 +133,14 @@ class QRViewController: UIViewController {
         NSLayoutConstraint.activate([
             closeButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
             closeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            closeButton.widthAnchor.constraint(equalToConstant: 44),
-            closeButton.heightAnchor.constraint(equalToConstant: 44),
+            closeButton.widthAnchor.constraint(equalToConstant: 35),
+            closeButton.heightAnchor.constraint(equalToConstant: 35),
             
-            headerImageView.topAnchor.constraint(equalTo: closeButton.bottomAnchor, constant: 10),
-            headerImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            headerImageView.widthAnchor.constraint(equalToConstant: 60),
-            headerImageView.heightAnchor.constraint(equalToConstant: 60),
-            
-            headerLabel.topAnchor.constraint(equalTo: headerImageView.bottomAnchor, constant: 10),
+            headerLabel.topAnchor.constraint(equalTo: closeButton.bottomAnchor, constant: 10),
             headerLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             headerLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             
-            imageView.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 30),
+            imageView.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 10),
             imageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
             imageView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
             imageView.heightAnchor.constraint(equalTo: imageView.widthAnchor),
@@ -169,7 +156,6 @@ class QRViewController: UIViewController {
     
     private func configureContent() {
         headerLabel.text = headerText
-        headerImageView.image = headerIcon
         textView.text = descriptionText
         originalQrText = txn.isEmpty ? (text.isEmpty ? psbt : text) : txn
     }
