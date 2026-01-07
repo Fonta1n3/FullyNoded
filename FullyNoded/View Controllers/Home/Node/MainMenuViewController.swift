@@ -23,7 +23,7 @@ class MainMenuViewController: UIViewController {
     var dataRefresher = UIBarButtonItem()
     var isUnlocked = false
     let refreshControl = UIRefreshControl()
-    private var needsTableReload = false
+    //private var needsTableReload = false
     
     var blockchainInfo: BlockchainInfo?
     var peerInfo: GetPeerInfoResponse?
@@ -188,11 +188,11 @@ class MainMenuViewController: UIViewController {
     }
         
     
-    @IBAction func showLightningNode(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            self?.performSegue(withIdentifier: "segueToLightningNode", sender: self)
-        }
-    }
+//    @IBAction func showLightningNode(_ sender: Any) {
+//        DispatchQueue.main.async { [weak self] in
+//            self?.performSegue(withIdentifier: "segueToLightningNode", sender: self)
+//        }
+//    }
     
     func addNavBarSpinner() {
         DispatchQueue.main.async { [weak self] in
@@ -523,25 +523,12 @@ class MainMenuViewController: UIViewController {
     private func updateSection(section: Section.RawValue) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
-            if self.view.window != nil {
-                mainMenu.reloadSections(IndexSet(arrayLiteral: section), with: .none)
-                self.needsTableReload = false
-            } else {
-                self.needsTableReload = true
-            }
+            mainMenu.reloadSections(IndexSet(arrayLiteral: section), with: .none)
         }
     }
         
     func loadTableData() {
         showBlockchainInfoSpinner = true
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            headerLabel.textColor = .secondaryLabel
-            updateSection(section: Section.blockchainInfo.rawValue)
-        }
         
         OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
             guard let self = self else { return }
@@ -549,7 +536,6 @@ class MainMenuViewController: UIViewController {
             guard let blockchainInfo = blockchainInfo else {
                 
                 showBlockchainInfoSpinner = false
-                updateSection(section: Section.blockchainInfo.rawValue)
                 
                 guard let message = message else {
                     showAlert(vc: self, title: "", message: "unknown error")
@@ -579,12 +565,6 @@ class MainMenuViewController: UIViewController {
     private func getPeerInfo() {
         showPeerInfoSpinner = true
         
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            updateSection(section: Section.peerInfo.rawValue)
-        }
-        
         NodeLogic.sharedInstance.getPeerInfo { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -607,8 +587,6 @@ class MainMenuViewController: UIViewController {
     
     private func getNetworkInfo() {
         showNetworkInfoSpinner = true
-        
-        updateSection(section: Section.networkInfo.rawValue)
         
         NodeLogic.sharedInstance.getNetworkInfo { [weak self] (response, errorMessage) in
             guard let self = self else { return }
@@ -633,8 +611,6 @@ class MainMenuViewController: UIViewController {
     private func getMiningInfo() {
         showMiningInfoSpinner = true
         
-        updateSection(section: Section.miningInfo.rawValue)
-        
         NodeLogic.sharedInstance.getMiningInfo { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -657,8 +633,6 @@ class MainMenuViewController: UIViewController {
     
     private func getUptime() {
         showUpTimeSpinner = true
-        
-        updateSection(section: Section.upTime.rawValue)
         
         NodeLogic.sharedInstance.getUptime { [weak self] (response, errorMessage) in
             guard let self = self else { return }
@@ -683,8 +657,6 @@ class MainMenuViewController: UIViewController {
     private func getMempoolInfo() {
         showMempoolInfoSpinner = true
         
-        updateSection(section: Section.mempoolInfo.rawValue)
-        
         NodeLogic.sharedInstance.getMempoolInfo { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -703,8 +675,6 @@ class MainMenuViewController: UIViewController {
     
     private func getFeeInfo() {
         showFeeInfoSpinner = true
-        
-        updateSection(section: Section.feeInfo.rawValue)
         
         NodeLogic.sharedInstance.estimateSmartFee { [weak self] (response, errorMessage) in
             guard let self = self else { return }
@@ -740,15 +710,7 @@ class MainMenuViewController: UIViewController {
     func reloadTable() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            if self.view.window != nil {
-                // Safe: we're on this tab right now
-                self.mainMenu.reloadData()
-                self.needsTableReload = false
-            } else {
-                // User is on another tab → defer the reload
-                self.needsTableReload = true
-            }
-            
+            self.mainMenu.reloadData()
         }
     }
     
