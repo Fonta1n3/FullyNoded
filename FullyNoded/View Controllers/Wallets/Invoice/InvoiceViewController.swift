@@ -166,11 +166,12 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             
             let addressInfo = AddressInfo(addressInfoResponse)
             
-            guard let pubkey = addressInfo.pubkey else {
-                spinner.dismiss()
-                showAlert(title: "", message: "There is no public key returned to create a timelock address with. If this wallet is multi-sig you may be seeing this error, multi-sig support is coming soon.")
-                return
-            }
+//            guard let pubkey = addressInfo.desc/*addressInfo.pubkey ?? addressInfo.witnessProgram */else {
+//                spinner.dismiss()
+//                showAlert(title: "", message: "There is no public key returned to create a timelock address with. If this wallet is multi-sig you may be seeing this error, multi-sig support is coming soon.")
+//                return
+//            }
+            
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -183,7 +184,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                     do {
                         // Add red warning label about this address being timelocked until xxx
                         
-                        let (timelockedAddress, descriptor) = try WalletLogic.shared.createTimelockedAddress(fnWallet: wallet, pubkey: pubkey, timelock: timestamp)
+                        let (timelockedAddress, descriptor) = try WalletLogic.shared.createTimelockedAddress(fnWallet: wallet, pubkey: addressInfo.pubkey, descriptor: addressInfo.desc, timelock: timestamp)
                         
                         let param = Get_Descriptor_Info(["descriptor": descriptor])
                         OnchainUtils.getDescriptorInfo(param) { [weak self] (descriptorInfo, message) in

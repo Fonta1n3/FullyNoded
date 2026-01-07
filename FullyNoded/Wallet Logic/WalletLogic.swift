@@ -391,6 +391,10 @@ class WalletLogic {
         case unableToCreatePersistor
     }
     
+    enum TimelockedAddressError: Error {
+        case unableToGenerateDummyPubkey
+    }
+    
     func bdkWalletFromDescriptors(recDesc: String, changeDesc: String) throws -> BDKWallet {
         guard let network = WalletLogic.shared.bdkNetwork() else {
             throw WalletCreateError.unableToGetNetwork
@@ -409,23 +413,76 @@ class WalletLogic {
         }
     }
     
-    func createTimelockedAddress(fnWallet: Wallet, pubkey: String, timelock: UInt32) throws -> (timelockedAddress: String, descriptor: String) {
+    func createTimelockedAddress(fnWallet: Wallet, pubkey: String?, descriptor: String?, timelock: UInt32) throws -> (timelockedAddress: String, descriptor: String) {
+        print("creatTimelockedAddress")
         do {
             let fnDesc = Descriptor(fnWallet.receiveDescriptor)
-            var prefix = "wsh"
-            if fnDesc.isP2TR {
-                prefix = "tr"
+            
+            if fnDesc.isMulti && fnDesc.isP2TR, let descriptor = descriptor {
+                print("descritpor multisig")
+                
+                let checksumless = "\(descriptor.components(separatedBy: "#")[0])"
+                let checksumlessDesc = Descriptor(checksumless)
+                print("scriptPath: \(checksumlessDesc.scriptPath)")
+                guard let dummyPubkey = try dummyPubKey() else { throw TimelockedAddressError.unableToGenerateDummyPubkey }
+                
+                let descriptorString = "tr(\(dummyPubkey),and_v(v:\(checksumlessDesc.scriptPath),after(\(timelock)))"
+                print("descriptorString: \(descriptorString)")
+                let wallet = try bdkWalletFromDescriptors(recDesc: descriptorString, changeDesc: fnWallet.changeDescriptor)
+                let addressInfo = wallet.peekAddress(keychain: .external, index: UInt32(0))
+                return ((addressInfo.address.description, descriptorString))
+                
+            } else if fnDesc.isP2TR, let descriptor = descriptor {
+                
+                let checksumless = "\(descriptor.components(separatedBy: "#")[0])"
+                let checksumlessDesc = Descriptor(checksumless)
+                // need a dummy pk
+                guard let dummyPubkey = try dummyPubKey() else { throw TimelockedAddressError.unableToGenerateDummyPubkey }
+                //guard let dummyXpub = dummyKey() else { throw TimelockedAddressError.unableToGenerateDummyPubkey }
+                
+                let pubkey = checksumlessDesc.pubkey
+                let descriptorString = "tr(\(dummyPubkey),and_v(v:pkh(\(pubkey)),after(\(timelock)))"
+                print("descriptorString: \(descriptorString)")
+
+                let wallet = try bdkWalletFromDescriptors(recDesc: descriptorString, changeDesc: fnWallet.changeDescriptor)
+                let addressInfo = wallet.peekAddress(keychain: .external, index: UInt32(0))
+                return (addressInfo.address.description, descriptorString)
+                
+            } else if fnDesc.isP2WPKH, let pubkey = pubkey {
+                let miniscript = "and_v(v:pk(\(pubkey)),after(\(timelock)))"
+                let descriptorString = "wsh(\(miniscript))"
+                let wallet = try bdkWalletFromDescriptors(recDesc: descriptorString, changeDesc: fnWallet.changeDescriptor)
+                let addressInfo = wallet.peekAddress(keychain: .external, index: UInt32(0))
+                return (addressInfo.address.description, descriptorString)
+                
+            } else {
+                return (("", ""))
+                //throw TimelockedAddressError.unableToGenerateDummyPubkey
             }
             // need to see how to create proper format for multisig... multisig getaddressinfo does not provide a single public key and the scriptPubKey does not seem to work.
-            let miniscript = "and_v(v:pk(\(pubkey)),after(\(timelock)))"
-            let descriptorString = "\(prefix)(\(miniscript))"
-            let wallet = try bdkWalletFromDescriptors(recDesc: descriptorString, changeDesc: fnWallet.changeDescriptor)
-            let addressInfo = wallet.peekAddress(keychain: .external, index: UInt32(0))
-            return (addressInfo.address.description, descriptorString)
+            
+            // for taproot:
+            //let desc = Descriptor(pubkey)
+            
+            
+           
             
         } catch {
+            print("error: \(error.localizedDescription)")
             throw error
         }
     }
+    
+    func dummyPubKey() throws -> String? {
+        guard let dummyXpub = dummyKey() else {
+            throw TimelockedAddressError.unableToGenerateDummyPubkey
+        }
+        
+        guard let pk = Keys.childPubkey(xpub: dummyXpub) else {
+            throw TimelockedAddressError.unableToGenerateDummyPubkey
+        }
+        return pk
+    }
+    
 }
 

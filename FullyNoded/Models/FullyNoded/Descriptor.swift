@@ -35,6 +35,7 @@ public struct Descriptor: CustomStringConvertible {
     let isSpecter:Bool
     let isHD:Bool
     let keysWithPath:[String]
+    let scriptPath: String
     let isAccount:Bool
     let fingerprint:String
     let prefix:String
@@ -94,9 +95,15 @@ public struct Descriptor: CustomStringConvertible {
                         dictionary["scriptType"] = "Taproot multi-sig"
                         
                         let mofnarray = (arr[2]).split(separator: ",")
+                        
+                        
                         let numberOfKeys = mofnarray.count - 1
                         dictionary["mOfNType"] = "\(mofnarray[0]) of \(numberOfKeys)"
                         dictionary["sigsRequired"] = UInt(mofnarray[0])
+                        
+                        
+                        print("mofnarray: \(mofnarray)")
+                        dictionary["scriptPath"] = "multi_a(\(mofnarray.joined(separator: ","))".replacingOccurrences(of: "))", with: ")")
                         
                         var keysWithPath = [String]()
                         for (i, item) in mofnarray.enumerated() {
@@ -424,6 +431,7 @@ public struct Descriptor: CustomStringConvertible {
                     }
                 } else {
                     let subarray = extendedKey.split(separator: "#")
+                    print("gtting here?")
                     if subarray.count == 2 {
                         dictionary["pubkey"] = "\("\(subarray[0])".replacingOccurrences(of: ")", with: ""))"
                     } else {
@@ -610,6 +618,7 @@ public struct Descriptor: CustomStringConvertible {
         prefix = dictionary["prefix"] as? String ?? ""
         pubkey = dictionary["pubkey"] as? String ?? ""
         index = dictionary["index"] as? Int
+        scriptPath = dictionary["scriptPath"] as? String ?? ""
     }
     
     public var description: String {

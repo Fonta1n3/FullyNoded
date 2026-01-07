@@ -38,6 +38,8 @@ public struct AddressInfo: CustomStringConvertible {
     let desc: String
     let pubkey: String?
     let scriptPubkey: String
+    let witnessProgram: String?
+    let parent_desc: String?
     let rawData: [String: Any]
     
     init(_ dictionary: [String: Any]) {
@@ -47,6 +49,8 @@ public struct AddressInfo: CustomStringConvertible {
         desc = dictionary["desc"] as? String ?? "descriptor unknown"
         pubkey = dictionary["pubkey"] as? String
         scriptPubkey = dictionary["scriptPubKey"] as! String
+        witnessProgram = dictionary["witness_program"] as? String
+        parent_desc = dictionary["parent_desc"] as? String
         rawData = dictionary
     }
     
