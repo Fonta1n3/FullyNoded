@@ -12,7 +12,7 @@ import Bbqr
 
 class QRViewController: UIViewController {
     
-    // MARK: - Public Configuration Properties
+    // MARK: - Public Configuration
     var text: String = ""
     var psbt: String = ""
     var txn: String = ""
@@ -30,47 +30,101 @@ class QRViewController: UIViewController {
     private var timer: Timer?
     private var parts: [String] = []
     private var partIndex: Int = 0
-    
     private var originalQrText: String = ""
     
-    // MARK: - UI Elements (programmatic)
+    // MARK: - UI Elements
+    private let containerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .secondarySystemBackground
+        view.layer.cornerRadius = 24
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowOpacity = 0.15
+        view.layer.shadowOffset = CGSize(width: 0, height: 8)
+        view.layer.shadowRadius = 20
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    private let qrBackgroundView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .systemBackground
+        view.layer.cornerRadius = 20
+        view.layer.borderWidth = 1
+        view.layer.borderColor = UIColor.separator.cgColor
+        
+        // Optional: subtle inner padding feel
+        view.clipsToBounds = false
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowOpacity = 0.08
+        view.layer.shadowOffset = CGSize(width: 0, height: 4)
+        view.layer.shadowRadius = 10
+        
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     private let imageView: UIImageView = {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFit
-        iv.isUserInteractionEnabled = true
+        iv.backgroundColor = .clear
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
     
-    private let textView: UITextView = {
-        let tv = UITextView()
-        tv.isEditable = false
-        tv.font = .systemFont(ofSize: 14)
-        tv.textColor = .secondaryLabel
-        tv.backgroundColor = .clear
-        tv.textAlignment = .center
-        tv.translatesAutoresizingMaskIntoConstraints = false
-        return tv
+    private let headerStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 12
+        stack.alignment = .center
+        return stack
+    }()
+    
+    private let headerIconView: UIImageView = {
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFit
+        iv.tintColor = .systemOrange
+        iv.isHidden = true
+        return iv
     }()
     
     private let headerLabel: UILabel = {
         let label = UILabel()
-        label.font = .boldSystemFont(ofSize: 17)
+        label.font = .systemFont(ofSize: 20, weight: .semibold)
         label.textAlignment = .center
         label.textColor = .label
-        label.translatesAutoresizingMaskIntoConstraints = false
+        label.numberOfLines = 0
+        return label
+    }()
+    
+    private let descriptionLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 16)
+        label.textAlignment = .center
+        label.textColor = .secondaryLabel
+        label.numberOfLines = 0
         return label
     }()
     
     private let closeButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setImage(UIImage(systemName: "xmark"), for: .normal)
-        button.tintColor = .label
+        let config = UIImage.SymbolConfiguration(pointSize: 24, weight: .medium)
+        button.setImage(UIImage(systemName: "xmark.circle.fill", withConfiguration: config), for: .normal)
+        button.tintColor = .secondaryLabel
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
-    private var buttonsStackView: UIStackView!
+    private lazy var copyButton = createActionButton(title: "Copy Text", systemImage: "doc.on.doc")
+    private lazy var shareButton = createActionButton(title: "Share QR", systemImage: "square.and.arrow.up")
+    
+    private lazy var buttonsStackView: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [copyButton, shareButton])
+        stack.axis = .horizontal
+        stack.spacing = 20
+        stack.distribution = .fillEqually
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
     
     // MARK: - Init
     convenience init(
@@ -97,10 +151,10 @@ class QRViewController: UIViewController {
     // MARK: - View Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.95)
         setupUI()
         configureContent()
-        setupButtons()
+        setupActions()
         startQRGeneration()
     }
     
@@ -123,78 +177,200 @@ class QRViewController: UIViewController {
     
     // MARK: - UI Setup
     private func setupUI() {
-        // Add subviews
-        view.addSubview(headerLabel)
-        view.addSubview(imageView)
-        view.addSubview(textView)
+        view.addSubview(containerView)
         view.addSubview(closeButton)
+        
+        // Close button
+        closeButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Create vertical stack for all content inside container
+        let contentStack = UIStackView()
+        contentStack.axis = .vertical
+        contentStack.spacing = 32
+        contentStack.alignment = .center
+        contentStack.translatesAutoresizingMaskIntoConstraints = false
+        
+        containerView.addSubview(contentStack)
+        
+        // QR section
+        qrBackgroundView.translatesAutoresizingMaskIntoConstraints = false
+        qrBackgroundView.addSubview(imageView)
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Header section
+        headerStackView.addArrangedSubview(headerIconView)
+        headerStackView.addArrangedSubview(headerLabel)
+        
+        // Add to content stack in order
+        contentStack.addArrangedSubview(headerStackView)
+        contentStack.addArrangedSubview(qrBackgroundView)
+        contentStack.addArrangedSubview(descriptionLabel)
+        contentStack.addArrangedSubview(buttonsStackView) // buttons last
         
         // Constraints
         NSLayoutConstraint.activate([
-            closeButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            // Close button
+            closeButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
             closeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            closeButton.widthAnchor.constraint(equalToConstant: 35),
-            closeButton.heightAnchor.constraint(equalToConstant: 35),
+            closeButton.widthAnchor.constraint(equalToConstant: 44),
+            closeButton.heightAnchor.constraint(equalToConstant: 44),
             
-            headerLabel.topAnchor.constraint(equalTo: closeButton.bottomAnchor, constant: 10),
-            headerLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            headerLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            // Container card
+            containerView.topAnchor.constraint(equalTo: closeButton.bottomAnchor, constant: 20),
+            containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            containerView.bottomAnchor.constraint(lessThanOrEqualTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
             
-            imageView.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 10),
-            imageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
-            imageView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
-            imageView.heightAnchor.constraint(equalTo: imageView.widthAnchor),
+            // Content stack fills container with padding
+            contentStack.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 40),
+            contentStack.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 40),
+            contentStack.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -40),
+            contentStack.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -40),
             
-            textView.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 20),
-            textView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
-            textView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            textView.heightAnchor.constraint(greaterThanOrEqualToConstant: 50)
-        ])
-        
-        closeButton.addTarget(self, action: #selector(closeAction), for: .touchUpInside)
-    }
-    
-    private func configureContent() {
-        headerLabel.text = headerText
-        textView.text = descriptionText
-        originalQrText = txn.isEmpty ? (text.isEmpty ? psbt : text) : txn
-    }
-    
-    private func setupButtons() {
-        let copyButton = UIButton(type: .system)
-        copyButton.setTitle("Copy Text", for: .normal)
-        copyButton.titleLabel?.font = .boldSystemFont(ofSize: 17)
-        copyButton.backgroundColor = .systemBlue
-        copyButton.setTitleColor(.white, for: .normal)
-        copyButton.layer.cornerRadius = 10
-        copyButton.addTarget(self, action: #selector(copyQrTextToClipboard), for: .touchUpInside)
-        
-        let shareButton = UIButton(type: .system)
-        shareButton.setTitle("Share QR", for: .normal)
-        shareButton.titleLabel?.font = .boldSystemFont(ofSize: 17)
-        shareButton.backgroundColor = .systemBlue
-        shareButton.setTitleColor(.white, for: .normal)
-        shareButton.layer.cornerRadius = 10
-        shareButton.addTarget(self, action: #selector(shareQRCode), for: .touchUpInside)
-        
-        buttonsStackView = UIStackView(arrangedSubviews: [copyButton, shareButton])
-        buttonsStackView.axis = .horizontal
-        buttonsStackView.distribution = .fillEqually
-        buttonsStackView.spacing = 20
-        buttonsStackView.translatesAutoresizingMaskIntoConstraints = false
-        
-        view.addSubview(buttonsStackView)
-        
-        NSLayoutConstraint.activate([
-            buttonsStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
-            buttonsStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            buttonsStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            // QR background size
+            qrBackgroundView.widthAnchor.constraint(equalTo: contentStack.widthAnchor, multiplier: 0.8),
+            qrBackgroundView.heightAnchor.constraint(equalTo: qrBackgroundView.widthAnchor),
+            
+            // Image inset inside QR background
+            imageView.topAnchor.constraint(equalTo: qrBackgroundView.topAnchor, constant: 16),
+            imageView.leadingAnchor.constraint(equalTo: qrBackgroundView.leadingAnchor, constant: 16),
+            imageView.trailingAnchor.constraint(equalTo: qrBackgroundView.trailingAnchor, constant: -16),
+            imageView.bottomAnchor.constraint(equalTo: qrBackgroundView.bottomAnchor, constant: -16),
+            
+            // Icon size
+            headerIconView.widthAnchor.constraint(equalToConstant: 32),
+            headerIconView.heightAnchor.constraint(equalToConstant: 32),
+            
+            // Buttons fixed height
             buttonsStackView.heightAnchor.constraint(equalToConstant: 56)
         ])
     }
     
-    // MARK: - QR Generation Logic
+    private func createActionButton(title: String, systemImage: String) -> UIButton {
+        let button = UIButton(type: .system)
+        var config = UIButton.Configuration.filled()
+        config.title = title
+        config.image = UIImage(systemName: systemImage)
+        config.imagePadding = 8
+        config.imagePlacement = .leading
+        config.baseBackgroundColor = .systemBlue
+        config.baseForegroundColor = .white
+        config.cornerStyle = .large
+        
+        button.configuration = config
+        button.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
+        return button
+    }
+    
+    private func configureContent() {
+        headerLabel.text = headerText.isEmpty ? "Scan QR Code" : headerText
+        descriptionLabel.text = descriptionText
+        
+        if let icon = headerIcon {
+            headerIconView.image = icon.withRenderingMode(.alwaysTemplate)
+            headerIconView.isHidden = false
+        } else if let systemName = getSystemIconForContent() {
+            headerIconView.image = UIImage(systemName: systemName)
+            headerIconView.isHidden = false
+        }
+        
+        originalQrText = txn.isEmpty ? (text.isEmpty ? psbt : text) : txn
+    }
+    
+    private func getSystemIconForContent() -> String? {
+        if !psbt.isEmpty { return "bitcoinsign.circle.fill" }
+        if !txn.isEmpty { return "bitcoinsign.circle.fill" }
+        if !text.isEmpty && text.lowercased().hasPrefix("bitcoin:") { return "bitcoinsign.circle.fill" }
+        return "qrcode"
+    }
+    
+    private func setupActions() {
+        closeButton.addTarget(self, action: #selector(closeAction), for: .touchUpInside)
+        copyButton.addTarget(self, action: #selector(copyQrTextToClipboard), for: .touchUpInside)
+        shareButton.addTarget(self, action: #selector(shareQRCode), for: .touchUpInside)
+    }
+    
+    private func split(string: String) throws -> [String] {
+        var data: Data? = nil
+        var fileType: FileType = .unicodeText
+        
+        if !psbt.isEmpty {
+            data = Data(base64Encoded: psbt)
+            fileType = .psbt
+        }
+        
+        if !txn.isEmpty {
+            if let hexData = Data(hexString: txn) {
+                data = hexData
+                fileType = .transaction
+            }
+        }
+        
+        if !text.isEmpty && data == nil {
+            data = Data(text.utf8)
+            fileType = .unicodeText
+        }
+        
+        guard let data = data else {
+            // Fallback: return single part if we can't determine type
+            return [string.uppercased()]
+        }
+        
+        let minSplitNumber = UInt16(max(1, ceil(Double(data.count) / 250.0)))
+        
+        let options = SplitOptions(
+            encoding: .zlib,
+            minSplitNumber: minSplitNumber,
+            minVersion: .v01,
+            maxVersion: .v40
+        )
+        
+        do {
+            let split = try Split.tryFromData(bytes: data, fileType: fileType, options: options)
+            return split.parts()
+        } catch {
+            print("BBQR split failed: \(error)")
+            // Fallback to single part
+            return [string.uppercased()]
+        }
+    }
+    
+    private func showBbqrParts(bbQrparts: [String]) {
+        parts = bbQrparts
+        partIndex = 0
+        spinner.dismiss()
+        
+        // Start animation timer
+        timer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
+            self?.animate()
+        }
+        
+        // Show first part immediately
+        animate()
+    }
+    
+    @objc private func animate() {
+        guard !parts.isEmpty else { return }
+        
+        let currentPart = parts[partIndex]
+        showQR(currentPart)
+        
+        partIndex = (partIndex + 1) % parts.count
+    }
+
+    private func showQR(_ string: String) {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let qrImage = self?.qR(text: string)
+            DispatchQueue.main.async {
+                self?.imageView.image = qrImage
+            }
+        }
+    }
+    
+    // MARK: - QR Generation & Actions (unchanged logic)
     private func startQRGeneration() {
+        // ... your existing startQRGeneration(), showStaticQR(), animateUr(), showBbqrParts(), etc.
+        // All logic remains exactly the same
         if isBbqr {
             spinner.show(vc: self, description: "")
             let input = txn.isEmpty ? (text.isEmpty ? psbt : text) : txn
@@ -204,7 +380,6 @@ class QRViewController: UIViewController {
                 spinner.dismiss()
                 showStaticQR(from: input)
             }
-            
         } else if isUR || psbt.lowercased().hasPrefix("ur:") || text.lowercased().hasPrefix("ur:") {
             spinner.show(vc: self, description: "loading...")
             let input = text.isEmpty ? psbt : text
@@ -214,147 +389,114 @@ class QRViewController: UIViewController {
                 spinner.dismiss()
                 showStaticQR(from: input)
             }
-            
-        } else if !txn.isEmpty {
-            showStaticQR(from: txn)
-        } else if !text.isEmpty {
-            showStaticQR(from: text)
-        } else if !psbt.isEmpty {
-            showStaticQR(from: psbt)
+        } else {
+            let content = txn.isEmpty ? (text.isEmpty ? psbt : text) : txn
+            showStaticQR(from: content)
         }
-    }
-    
-    private func showStaticQR(from string: String) {
-        imageView.image = qR(text: string)
-    }
-    
-    // MARK: - Actions
-    @objc private func closeAction() {
-        dismiss(animated: true, completion: nil)
-    }
-    
-    @objc private func copyQrTextToClipboard() {
-        UIPasteboard.general.string = originalQrText
-        
-        let alert = UIAlertController(title: "Copied!", message: "QR text copied to clipboard.", preferredStyle: .alert)
-        present(alert, animated: true)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            alert.dismiss(animated: true)
-        }
-    }
-    
-    @objc private func shareQRCode() {
-        guard let qrImage = imageView.image else { return }
-        
-        let activityVC = UIActivityViewController(activityItems: [qrImage], applicationActivities: nil)
-        
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            activityVC.popoverPresentationController?.sourceView = buttonsStackView.arrangedSubviews.last
-            activityVC.popoverPresentationController?.sourceRect = (buttonsStackView.arrangedSubviews.last?.bounds ?? .zero)
-        }
-        
-        present(activityVC, animated: true)
-    }
-    
-    // MARK: - QR Helpers (unchanged logic)
-    private func qR(text: String) -> UIImage {
-        qrGenerator.qrText = text
-        return qrGenerator.getQRCode()
-    }
-    
-    private func showQR(_ string: String) {
-        qrGenerator.qrText = string
-        imageView.image = qrGenerator.getQRCode()
-    }
-    
-    @objc private func animate() {
-        guard !parts.isEmpty else { return }
-        showQR(parts[partIndex])
-        partIndex = (partIndex + 1) % parts.count
     }
     
     private func animateUr(ur: UR) {
         encoder = UREncoder(ur, maxFragmentLen: 250)
-        guard let encoder = encoder else { return }
+        
+        guard let encoder = encoder else {
+            spinner.dismiss()
+            showStaticQR(from: originalQrText)
+            return
+        }
         
         if encoder.isSinglePart {
+            // Single part — show static QR
             spinner.dismiss()
-            showQR(ur.qrString)
+            showQR(ur.qrString.uppercased())
         } else {
+            // Multi-part — animate
             parts.removeAll()
             partIndex = 0
             
+            // Start timer to cycle through parts
             timer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
                 guard let self = self else { return }
+                
                 let part = encoder.nextPart().uppercased()
-                if encoder.seqNum == 1 { // first part
+                
+                // First part: dismiss spinner and start animation
+                if encoder.seqNum == 1 {
                     self.parts.append(part)
                     self.spinner.dismiss()
-                    self.animate()
+                    self.showQR(part)
                 } else if encoder.seqNum <= encoder.seqLen {
                     self.parts.append(part)
+                    self.showQR(part)
+                }
+                
+                // Loop back to first part when done
+                if encoder.seqNum == encoder.seqLen {
+                    // Reset for seamless loop
+                    self.encoder = UREncoder(ur, maxFragmentLen: 250)
                 }
             }
         }
     }
     
-    private func showBbqrParts(bbQrparts: [String]) {
-        parts = bbQrparts
-        partIndex = 0
-        spinner.dismiss()
-//        timer = Timer.scheduledTimer(timeInterval: 0.3, invocation: true) { [weak self] _ in
-//            self?.animate()
-//        }
-        timer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true, block: { [weak self] _ in
-            self?.animate()
-        })
+    private func showStaticQR(from string: String) {
+        DispatchQueue.global().async { [weak self] in
+            let qrImage = self?.qR(text: string)
+            DispatchQueue.main.async {
+                self?.imageView.image = qrImage
+            }
+        }
     }
     
-    // MARK: - Bbqr Split (unchanged)
-    private func split(string: String) throws -> [String] {
-        // ... (your existing split logic unchanged)
-        // Just keep it as-is
-        var data: Data? = nil
-        var fileType: FileType = .unicodeText
+    private func qR(text: String) -> UIImage {
+        qrGenerator.qrText = text
+        return qrGenerator.getQRCode()
+    }
+    
+    // Keep your existing animate(), animateUr(), showBbqrParts(), split(), etc.
+    
+    @objc private func closeAction() {
+        dismiss(animated: true)
+    }
+    
+    @objc private func copyQrTextToClipboard() {
+        UIPasteboard.general.string = originalQrText
+        let feedback = UINotificationFeedbackGenerator()
+        feedback.notificationOccurred(.success)
         
-        if !psbt.isEmpty {
-            data = Data(base64Encoded: string)
-            fileType = .psbt
-        }
+        // Optional: show subtle success
+        let label = UILabel()
+        label.text = "Copied!"
+        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.textColor = .systemGreen
+        label.alpha = 0
+        view.addSubview(label)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            label.bottomAnchor.constraint(equalTo: buttonsStackView.topAnchor, constant: -20)
+        ])
         
-        if !txn.isEmpty {
-            guard let hexData = hex_decode(string) else {
-                spinner.dismiss()
-                return [string]
+        UIView.animate(withDuration: 0.3, animations: {
+            label.alpha = 1
+        }) { _ in
+            UIView.animate(withDuration: 0.4, delay: 1.0, options: [], animations: {
+                label.alpha = 0
+            }) { _ in
+                label.removeFromSuperview()
             }
-            data = Data(hexData)
-            fileType = .transaction
+        }
+    }
+    
+    @objc private func shareQRCode() {
+        let item: Any = parts.count == 1 ? (imageView.image ?? "") : originalQrText
+        
+        let activityVC = UIActivityViewController(activityItems: [item], applicationActivities: nil)
+        
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            activityVC.popoverPresentationController?.sourceView = shareButton
+            activityVC.popoverPresentationController?.sourceRect = shareButton.bounds
         }
         
-        if !text.isEmpty {
-            data = Data(string.utf8)
-        }
-        
-        let minSplitNumber = UInt16(max(1, ceil(Double(string.count) / 250.0)))
-        
-        let options = SplitOptions(
-            encoding: .zlib,
-            minSplitNumber: minSplitNumber,
-            minVersion: .v01,
-            maxVersion: .v40
-        )
-        
-        guard let data = data else {
-            spinner.dismiss()
-            return [string]
-        }
-        
-        do {
-            let split = try Split.tryFromData(bytes: data, fileType: fileType, options: options)
-            return split.parts()
-        } catch {
-            spinner.dismiss()
-            return [string]
-        }
+        present(activityVC, animated: true)
     }
 }

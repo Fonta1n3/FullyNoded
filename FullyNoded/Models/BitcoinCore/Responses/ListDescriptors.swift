@@ -27,9 +27,10 @@ struct DescriptorItem: Codable {
     let range: [Int]?                  // Optional: only for ranged descriptors (two ints)
     let next: Int?                     // Optional: kept for compatibility
     let nextIndex: Int?                // Optional: the actual next index
+    let label: String?
     
     enum CodingKeys: String, CodingKey {
-        case desc, timestamp, active, range, next
+        case desc, timestamp, active, range, next, label
         case nextIndex = "next_index"
         case internal_ = "internal"
     }

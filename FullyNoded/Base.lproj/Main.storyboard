@@ -376,6 +376,11 @@
                                     <action selector="importTransaction:" destination="Dwu-lj-4IN" id="aW2-MS-heY"/>
                                 </connections>
                             </barButtonItem>
+                            <barButtonItem image="square.and.arrow.up" catalog="system" id="rqp-Cy-RLT">
+                                <connections>
+                                    <action selector="loadBackupTapped:" destination="Dwu-lj-4IN" id="fUi-Ca-QHB"/>
+                                </connections>
+                            </barButtonItem>
                         </rightBarButtonItems>
                     </navigationItem>
                     <connections>
@@ -3105,17 +3110,29 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                     <constraint firstItem="PBP-HA-t9R" firstAttribute="leading" secondItem="3Du-u4-MHg" secondAttribute="leading" id="udi-n6-Mee"/>
                                 </constraints>
                             </stackView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="M5K-HU-PtK">
+                                <rect key="frame" x="128" y="567" width="137" height="34.333333333333371"/>
+                                <color key="tintColor" systemColor="systemPinkColor"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="tinted" title="Add a timelock"/>
+                                <connections>
+                                    <action selector="addTimelockAction:" destination="Xxg-Pp-vvN" eventType="touchUpInside" id="ce2-9i-aw3"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="luY-Vj-OjD"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="luY-Vj-OjD" firstAttribute="trailing" secondItem="3Du-u4-MHg" secondAttribute="trailing" constant="16" id="3wh-BN-CfC"/>
+                            <constraint firstItem="M5K-HU-PtK" firstAttribute="top" secondItem="3Du-u4-MHg" secondAttribute="bottom" constant="8" symbolic="YES" id="U5M-05-T0Z"/>
                             <constraint firstItem="3Du-u4-MHg" firstAttribute="leading" secondItem="luY-Vj-OjD" secondAttribute="leading" constant="16" id="VHf-c0-Tzu"/>
+                            <constraint firstItem="M5K-HU-PtK" firstAttribute="centerX" secondItem="eUN-hK-8St" secondAttribute="centerX" id="gPd-bd-Pfo"/>
                             <constraint firstItem="3Du-u4-MHg" firstAttribute="top" secondItem="luY-Vj-OjD" secondAttribute="top" constant="8" id="v8w-id-l4c"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Invoice" id="fge-ux-yT6"/>
                     <connections>
+                        <outlet property="addTimelockOutlet" destination="M5K-HU-PtK" id="Clx-Ka-jNg"/>
                         <outlet property="addressBackground" destination="PBP-HA-t9R" id="Ugg-vl-MWp"/>
                         <outlet property="addressOutlet" destination="5Ca-4Z-dsq" id="jU0-vq-Na3"/>
                         <outlet property="amountField" destination="qFH-Vc-Ghn" id="hTO-DQ-Qnr"/>

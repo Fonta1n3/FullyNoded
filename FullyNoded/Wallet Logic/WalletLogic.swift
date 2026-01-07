@@ -385,5 +385,47 @@ class WalletLogic {
             return nil
         }
     }
+    
+    enum WalletCreateError: Error {
+        case unableToGetNetwork
+        case unableToCreatePersistor
+    }
+    
+    func bdkWalletFromDescriptors(recDesc: String, changeDesc: String) throws -> BDKWallet {
+        guard let network = WalletLogic.shared.bdkNetwork() else {
+            throw WalletCreateError.unableToGetNetwork
+        }
+        
+        guard let persister = WalletLogic.shared.persistor() else {
+            throw WalletCreateError.unableToCreatePersistor
+        }
+        
+        do {
+            let bdkPrimDesc = try WalletLogic.BDKDescriptor(descriptor: recDesc, network: network)
+            let bdkChangeDesc = try WalletLogic.BDKDescriptor(descriptor: changeDesc, network: network)
+            return try WalletLogic.BDKWallet(descriptor: bdkPrimDesc, changeDescriptor: bdkChangeDesc, network: network, persister: persister)
+        } catch {
+            throw error
+        }
+    }
+    
+    func createTimelockedAddress(fnWallet: Wallet, pubkey: String, timelock: UInt32) throws -> (timelockedAddress: String, descriptor: String) {
+        do {
+            let fnDesc = Descriptor(fnWallet.receiveDescriptor)
+            var prefix = "wsh"
+            if fnDesc.isP2TR {
+                prefix = "tr"
+            }
+            // need to see how to create proper format for multisig... multisig getaddressinfo does not provide a single public key and the scriptPubKey does not seem to work.
+            let miniscript = "and_v(v:pk(\(pubkey)),after(\(timelock)))"
+            let descriptorString = "\(prefix)(\(miniscript))"
+            let wallet = try bdkWalletFromDescriptors(recDesc: descriptorString, changeDesc: fnWallet.changeDescriptor)
+            let addressInfo = wallet.peekAddress(keychain: .external, index: UInt32(0))
+            return (addressInfo.address.description, descriptorString)
+            
+        } catch {
+            throw error
+        }
+    }
 }
 

@@ -11,6 +11,7 @@ import UIKit
 
 class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
+    var wallet: Wallet?
     var textToShareViaQRCode = ""
     var addressString = ""
     var qrCode = UIImage()
@@ -18,6 +19,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     let qrGenerator = QRGenerator()
     let ud = UserDefaults.standard
     
+    
+    @IBOutlet private weak var addTimelockOutlet: UIButton!
     @IBOutlet private weak var invoiceHeader: UILabel!
     @IBOutlet private weak var amountField: UITextField!
     @IBOutlet private weak var labelField: UITextField!
@@ -91,6 +94,10 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    @IBAction func addTimelockAction(_ sender: Any) {
+        getTimelockedAddress()
+    }
+    
     @IBAction func shareAddressAction(_ sender: Any) {
         shareText(addressString)
     }
@@ -130,17 +137,328 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
         addressOutlet.text = ""
         
-        activeWallet { [weak self] wallet in
+        guard let wallet = wallet else {
+            self.getAddress()
+            return
+        }
+        
+        self.wallet = wallet
+        
+        getReceieveAddressForFullyNodedWallet(wallet)
+    }
+    
+    private func getTimelockedAddress() {
+        spinner.show(vc: self)
+        
+        guard let wallet = self.wallet else {
+            spinner.dismiss()
+            return
+        }
+        
+        let p = Get_Address_Info(["address": addressString])
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: p)) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
             
-            guard let wallet = wallet else {
-                self.getAddress()
+            guard let addressInfoResponse = response as? [String: Any] else {
+                spinner.dismiss()
                 return
             }
-            self.getReceieveAddressForFullyNodedWallet(wallet)
+            
+            let addressInfo = AddressInfo(addressInfoResponse)
+            
+            guard let pubkey = addressInfo.pubkey else {
+                spinner.dismiss()
+                showAlert(title: "", message: "There is no public key returned to create a timelock address with. If this wallet is multi-sig you may be seeing this error, multi-sig support is coming soon.")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                let timelockVC = TimelockViewController()
+                
+                timelockVC.completion = { [weak self] (timestamp, afterFragment, displayDate) in
+                    guard let self = self else { return }
+                    
+                    do {
+                        // Add red warning label about this address being timelocked until xxx
+                        
+                        let (timelockedAddress, descriptor) = try WalletLogic.shared.createTimelockedAddress(fnWallet: wallet, pubkey: pubkey, timelock: timestamp)
+                        
+                        let param = Get_Descriptor_Info(["descriptor": descriptor])
+                        OnchainUtils.getDescriptorInfo(param) { [weak self] (descriptorInfo, message) in
+                            guard let self = self else { return }
+                            
+                            guard let descriptorInfo = descriptorInfo else {
+                                spinner.dismiss()
+                                showAlert(title: "", message: message ?? "Unknown arror getting descripr")
+                                return
+                            }
+                            
+                            let request = [
+                                "desc": descriptorInfo.descriptor,
+                                "timestamp": "now",
+                                "label": "Locked until \(displayDate)"
+                            ]
+                            
+                            let p = Import_Descriptors(["requests": [request]])
+                            MakeRPCCall.sharedInstance.executeRPCCommand(method: .importdescriptors(param: p)) { [weak self] (response, errorDesc) in
+                                guard let self = self else { return }
+                                
+                                guard let response = response as? [[String: Any]] else {
+                                    showAlert(title: "", message: errorDesc ?? "Unknown error importing descriptor: \(descriptor)")
+                                    return
+                                }
+                                
+                                DispatchQueue.main.async {
+                                    timelockVC.dismiss(animated: true) { [weak self] in
+                                        guard let self = self else { return }
+                                        
+                                        BackupWarningView.show { [weak self] in
+                                            guard let self = self else { return }
+                                            
+                                            self.addTimelockOutlet.isHidden = true
+                                            
+                                            for descriptor in response {
+                                                let importResponse = ImportDescriportsResponse(descriptor)
+                                                if importResponse.success {
+                                                    showAddress(address: timelockedAddress)
+                                                    
+                                                    let item = BackupItem(
+                                                        desc: descriptorInfo.descriptor,
+                                                        active: false,
+                                                        range: nil,
+                                                        nextIndex: 0,
+                                                        timestamp: .now,
+                                                        internal: false,
+                                                        label: "Locked until \(displayDate)"
+                                                    )
+                                                    
+                                                    backUpNow(item: item)
+                                                } else {
+                                                    spinner.dismiss()
+                                                    if let errorDesc = importResponse.error, let message = errorDesc["message"] as? String {
+                                                        showAlert(title: "", message: message)
+                                                    } else {
+                                                        showAlert(title: "", message: "Unknown error importing time lock address.")
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch {
+                        spinner.dismiss()
+                        showAlert(title: "", message: error.localizedDescription)
+                    }
+                }
+                present(timelockVC, animated: true)
+            }
         }
     }
     
+    func backUpNow(item: BackupItem) {
+        var descriptors: [BackupItem] = [item]
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
+            do {
+                guard let response = response else { return }
+                
+                let jsonData = try JSONSerialization.data(withJSONObject: response, options: [])
+                
+                let listDescriptorResponse = try JSONDecoder().decode(ListDescriptorsResponse.self, from: jsonData)
+                
+                for (i, descriptor) in listDescriptorResponse.descriptors.enumerated() {
+                    var rangeValue: RangeValue? = nil
+                    
+                    if let range = descriptor.range {
+                        rangeValue = .range(start: range.startIndex, end: range.endIndex)
+                    }
+                    
+                    var timestamp: Timestamp? = nil
+                    if let timestampt = descriptor.timestamp {
+                        timestamp = Timestamp.time(timestampt)
+                    } else {
+                        print("timestamp is nil")
+                    }
+                    
+                    let backupitem: BackupItem = .init(desc: descriptor.desc, active: descriptor.active, range: rangeValue, nextIndex: descriptor.nextIndex ?? 0, timestamp: timestamp, internal: descriptor.internal_, label: descriptor.label ?? wallet!.label)
+                    
+                    descriptors.append(backupitem)
+                    
+                    if i + 1 == listDescriptorResponse.descriptors.count {
+                        let backup = WalletBackup(
+                            lastUpdate: Date(),           // or just Date() for now
+                            descriptors: descriptors           // need to append existing descriptors
+                        )
+                        updateNow(backup: backup)
+                        
+                    }
+                }
+            } catch {
+                print("listdescritpors response logic failed: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func updateNow(backup: WalletBackup) {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .secondsSince1970  // optional, but matches our custom logic
+
+        do {
+            let jsonData = try encoder.encode(backup)
+            CoreDataService.update(id: wallet!.id, keyToUpdate: "walletBackup", newValue: jsonData, entity: .wallets) { walletBackupUpdated in
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    SuccessView.show(
+                        in: self,
+                        title: "Wallet backup updated!",
+                        subtitle: "You will be prompted to choose a format to export. You can export your backup anytime from the export button on the Active Wallet view (top right button with square and up arrow)."
+                    ) { [weak self] in
+                        guard let self = self else { return }
+                        self.promptForBackupExportFormat(backup: backup)
+                    }
+                }
+            }
+        } catch {
+            showAlert(title: "", message: "Updating failed: \(error.localizedDescription)")
+        }
+    }
+    
+    private func showQRBackup(backup: WalletBackup) {
+        do {
+            let qrVC = QRViewController(
+                text: try backup.jsonData().hex,
+                headerText: "\(wallet!.label) Backup",
+                descriptionText: "Last updated: " + backup.lastUpdate.formattedDate,
+                headerIcon: UIImage(systemName: "qrcode"),
+                isBbqr: true,
+                isUR: false
+            )
+
+            let nav = UINavigationController(rootViewController: qrVC)
+            nav.modalPresentationStyle = .fullScreen
+
+            self.present(nav, animated: true) { [weak self] in
+                guard let self = self else { return }
+                
+                spinner.dismiss()
+            }
+        } catch {
+            showAlert(title: "", message: error.localizedDescription)
+        }
+    }
+    
+    private func promptForBackupExportFormat(backup: WalletBackup) {
+        WalletExportFormatView.show(in: self) { [weak self] format in
+            guard let self = self else {
+                print("User canceled export")
+                return
+            }
+            
+            if let format = format {
+                switch format {
+                case .qr:
+                    self.showQRBackup(backup: backup)
+                case .file:
+                    self.exportAsFile(backup: backup)
+                case .text:
+                    self.copyAsText(backup: backup)
+                }
+            } else {
+                print("format is nil")
+            }
+        }
+    }
+    
+    private func copyAsText(backup: WalletBackup) {
+        do {
+            // Encode WalletBackup to JSON data
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.sortedKeys] // Optional: consistent ordering
+            encoder.dateEncodingStrategy = .secondsSince1970
+            
+            let jsonData = try encoder.encode(backup)
+            let hexString = jsonData.hexString
+            
+            // Copy hex to clipboard
+            UIPasteboard.general.string = hexString
+            
+            // Show success with explanation
+            let byteCount = jsonData.count
+            let charCount = hexString.count
+            
+            SuccessView.show(
+                in: self,
+                title: "Backup Copied as Hex",
+                subtitle: "Hex-encoded backup (\(byteCount) bytes → \(charCount) chars) is now in your clipboard.\n\nPaste it into a secure location."
+            ) {
+                print("User acknowledged hex backup copy")
+            }
+            
+            // Haptic feedback
+            let feedback = UIImpactFeedbackGenerator(style: .medium)
+            feedback.impactOccurred()
+            
+        } catch {
+            showAlert(title: "Encoding Failed", message: "Could not encode backup: \(error.localizedDescription)")
+        }
+    }
+    
+    private func exportAsFile(backup: WalletBackup) {
+        do {
+            // 2. Encode to pretty-printed JSON
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .prettyPrinted
+            encoder.dateEncodingStrategy = .secondsSince1970
+            
+            let jsonData = try encoder.encode(backup)
+                        
+            // 3. Create a temporary file URL
+            let fileName = "wallet-backup-\(Date().formatted(.iso8601)).json"
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+            
+            try jsonData.write(to: tempURL)
+            
+            // 4. Present UIActivityViewController (system share/export sheet)
+            let activityVC = UIActivityViewController(activityItems: [tempURL], applicationActivities: nil)
+            
+            // Optional: Exclude some activities if desired
+            activityVC.excludedActivityTypes = [
+                .addToReadingList,
+                .assignToContact,
+                .markupAsPDF
+            ]
+            
+            // On iPad/Mac, set popover source
+            if let popover = activityVC.popoverPresentationController {
+                popover.sourceView = self.view
+                popover.sourceRect = self.view.bounds
+                popover.permittedArrowDirections = []
+            }
+            
+            activityVC.completionWithItemsHandler = { [weak self] activityType, completed, items, error in
+                try? FileManager.default.removeItem(at: tempURL)
+                
+                if completed {
+                    SuccessView.show(in: self!, title: "Backup Exported", subtitle: "Your wallet backup has been saved.") { }
+                } else if let error = error {
+                    showAlert(title: "Export Failed", message: error.localizedDescription)
+                }
+            }
+            
+            present(activityVC, animated: true)
+            
+        } catch {
+            showAlert(title: "Error", message: "Failed to create backup file: \(error.localizedDescription)")
+        }
+    }
+
+        
     private func getReceieveAddressForFullyNodedWallet(_ wallet: Wallet) {
         spinner.show(vc: self, description: "getting address from \(wallet.label)...")
         
@@ -346,4 +664,14 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
 //         
 //    }
     
+}
+
+extension Date {
+    var unixTimestamp: Int {
+        return Int(self.timeIntervalSince1970)
+    }
+    
+    var unixTimestampUInt32: UInt32 {
+        return UInt32(self.timeIntervalSince1970)
+    }
 }

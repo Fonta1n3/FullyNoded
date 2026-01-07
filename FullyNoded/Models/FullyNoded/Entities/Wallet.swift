@@ -17,6 +17,7 @@ public struct Wallet: CustomStringConvertible {
     var name:String
     let blockheight:Int
     var dict: [String:Any]
+    let walletBackup: Data?
     
     init(dictionary: [String: Any]) {
         dict = dictionary
@@ -26,6 +27,8 @@ public struct Wallet: CustomStringConvertible {
         receiveDescriptor = dictionary["receiveDescriptor"] as? String ?? ""
         name = dictionary["name"] as? String ?? ""
         blockheight = Int(exactly: dictionary["blockheight"] as? Int64 ?? 0)!
+        // Encrypted model data of array of BackupItem
+        walletBackup = dictionary["walletBackup"] as? Data
     }
     
     public var description: String {

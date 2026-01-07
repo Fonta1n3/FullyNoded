@@ -36,6 +36,8 @@ public struct AddressInfo: CustomStringConvertible {
     let hdkeypath: String
     let solvable: Bool
     let desc: String
+    let pubkey: String?
+    let scriptPubkey: String
     let rawData: [String: Any]
     
     init(_ dictionary: [String: Any]) {
@@ -43,6 +45,8 @@ public struct AddressInfo: CustomStringConvertible {
         hdkeypath = dictionary["hdkeypath"] as? String ?? "derivation path unknown"
         solvable = dictionary["solvable"] as? Bool ?? false
         desc = dictionary["desc"] as? String ?? "descriptor unknown"
+        pubkey = dictionary["pubkey"] as? String
+        scriptPubkey = dictionary["scriptPubKey"] as! String
         rawData = dictionary
     }
     

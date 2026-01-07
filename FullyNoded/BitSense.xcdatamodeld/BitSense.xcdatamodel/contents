@@ -67,5 +67,6 @@
         <attribute name="label" optional="YES" attributeType="String"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="receiveDescriptor" optional="YES" attributeType="String"/>
+        <attribute name="walletBackup" optional="YES" attributeType="Binary"/>
     </entity>
 </model>

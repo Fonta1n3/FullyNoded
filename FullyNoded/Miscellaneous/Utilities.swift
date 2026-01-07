@@ -184,6 +184,7 @@ public var authTimeout: Int {
     return 360
 }
 
+
 public let currencies:[[String:String]] = [
     ["USD": "$"],
     ["GBP": "£"],

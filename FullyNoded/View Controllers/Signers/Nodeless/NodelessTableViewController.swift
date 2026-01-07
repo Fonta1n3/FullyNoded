@@ -662,10 +662,7 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
         let utxoAlreadySaved = savedUtxos.contains { savedUtxo in
             savedUtxo.txid == utxo.txid && savedUtxo.vout == utxo.vout
         }
-        var confirmed = 0
-        if utxo.status.confirmed {
-            confirmed = 1
-        }
+        let confirmed = utxo.status.confirmed.intValue
         
         if !utxoAlreadySaved {
             let dict: [String: Any] = [
@@ -674,7 +671,7 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
                 "vout": Int64(utxo.vout),
                 "address": address,
                 "amount": Double(utxo.value) / 100_000_000.0,
-                "confirmations": confirmed,
+                "confirmations": confirmed,//number of confs doesn't matter yet as long as its > 1.
                 "lastUpdated": Date(),
                 "id": UUID()
             ]

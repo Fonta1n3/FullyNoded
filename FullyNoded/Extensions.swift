@@ -313,6 +313,12 @@ public extension String {
     }
 }
 
+extension Bool {
+    var intValue: Int {
+        return self ? 1 : 0
+    }
+}
+
 public extension BlockchainInfo {
     var size: String {
         return "\(self.size_on_disk/1000000000) gb"

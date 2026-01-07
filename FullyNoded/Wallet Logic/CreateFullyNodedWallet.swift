@@ -111,6 +111,14 @@ enum Keys {
         return address.description
     }
     
+    static func childPubkey(xpub: String) -> String? {
+        guard let hdKey = try? HDKey(base58: xpub),
+            let path = try? BIP32Path(string: "0/0"),
+              let pubkey = try? hdKey.derive(using: path).pubKey.data.hex else { return nil }
+        
+        return pubkey
+    }
+    
     static func addresses(accountPubkey: String, accountPath: String, completion: @escaping (([[String:Any]]?)) -> Void) {
         var addresses: [[String: Any]] = []
             
