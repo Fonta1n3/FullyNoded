@@ -568,10 +568,101 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
+    private func decodeWalletBackup(from hexString: String) -> WalletBackup? {
+        guard let data = Data(hexString: hexString) else {
+            showAlert(title: "Invalid Format", message: "The text is not valid hex-encoded data.")
+            return nil
+        }
+        
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
+        
+        do {
+            let backup = try decoder.decode(WalletBackup.self, from: data)
+            return backup
+        } catch {
+            print("Decoding error: \(error)")
+            showAlert(title: "Decode Failed", message: "Could not parse backup data.\n\nError: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    private func promptToImport(backup: WalletBackup) {
+        let date = backup.lastUpdate.formatted(date: .abbreviated, time: .shortened)
+        let count = backup.descriptors.count
+        
+        let alert = UIAlertController(
+            title: "Recover Wallet Backup?",
+            message: """
+            Backup details:
+            • Last updated: \(date)
+            • Descriptors: \(count)
+            """,
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Create Wallet", style: .default) { [weak self] _ in
+            self?.performImport(backup: backup)
+        })
+        
+        present(alert, animated: true)
+    }
+
+    private func performImport(backup: WalletBackup) {
+        // Assuming you have a way to update the current wallet
+        //wallet?.walletBackup = try? backup.jsonData()  // or however you store it
+        var fnWalletToCreateDict: [String: Any] = [
+            "walletId": UUID(),
+            "walletBackup": backup,
+            "label": "Recovered wallet",
+            "blockheight": UInt64(0)
+            
+        ]
+        
+        for (i, descriptor) in backup.descriptors.enumerated() {
+            print("descriptor to recover: \(descriptor.desc)")
+            let fnDesc = Descriptor(descriptor.desc)
+            if fnDesc.isHD {
+                print("HD descriptor")
+                if !fnDesc.isInternal {
+                    print("primary descriptor")
+                    fnWalletToCreateDict["receiveDescriptor"] = descriptor.desc
+                    fnWalletToCreateDict["name"] = "FullyNoded-" + Crypto.sha256hash(descriptor.desc)
+                } else {
+                    print("change descriptor")
+                    fnWalletToCreateDict["changeDescriptor"] = descriptor.desc
+                }
+            }
+            
+            if i + 1 == backup.descriptors.count {
+                // ready to build the wallet.
+                
+            }
+        }
+        
+        
+        
+        
+        // Update UI, refresh wallets, etc.
+        SuccessView.show(
+            in: self,
+            title: "Backup Imported",
+            subtitle: "Your wallet descriptors have been restored from backup."
+        )
+        
+        // Optional: trigger rescan or refresh
+        //NotificationCenter.default.post(name: .walletDidUpdate, object: nil)
+    }
+    
     private func processImportedString(_ item: String) {
         let lowercased = item.lowercased()
-        
-        if self.isExtendedKey(lowercased) {
+                
+        if let walletBackup = decodeWalletBackup(from: item) {
+            print("its a wallet backup")
+            promptToImport(backup: walletBackup)
+            
+        } else if self.isExtendedKey(lowercased) {
             
             showAlert(vc: self, title: "Not supported.", message: "Xpub importing is not supported, you need to import an output descriptor.")
             

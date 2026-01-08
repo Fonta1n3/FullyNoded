@@ -36,12 +36,14 @@ public struct Descriptor: CustomStringConvertible {
     let isHD:Bool
     let keysWithPath:[String]
     let scriptPath: String
+    let internalKey: String
     let isAccount:Bool
     let fingerprint:String
     let prefix:String
     let pubkey:String
     let isTaproot:Bool
     let index: Int?
+    let isInternal: Bool
     let string: String
     
     init(_ descriptor: String) {
@@ -59,6 +61,12 @@ public struct Descriptor: CustomStringConvertible {
         
         isTaproot = descriptor.hasPrefix("tr(")
         isP2TR = isTaproot
+        
+        if descriptor.contains("/1/") {
+            dictionary["isInternal"] = true
+        } else if descriptor.contains("/0/") {
+            dictionary["isInternal"] = false
+        }
         
         if descriptor.contains("multi") {
             dictionary["isMulti"] = true
@@ -93,17 +101,20 @@ public struct Descriptor: CustomStringConvertible {
                     case "tr":
                         dictionary["format"] = "P2TR"
                         dictionary["scriptType"] = "Taproot multi-sig"
+                        print("arr[1]: \(arr[1])")
+                        let internalKeyAndPrefixArr = "\(arr[1])".split(separator: ",")
+                        let internalKey = "\(internalKeyAndPrefixArr[0])"
+                        dictionary["internalKey"] = internalKey
+                        let scriptType = "\(internalKeyAndPrefixArr[1])"
                         
                         let mofnarray = (arr[2]).split(separator: ",")
-                        
                         
                         let numberOfKeys = mofnarray.count - 1
                         dictionary["mOfNType"] = "\(mofnarray[0]) of \(numberOfKeys)"
                         dictionary["sigsRequired"] = UInt(mofnarray[0])
                         
                         
-                        print("mofnarray: \(mofnarray)")
-                        dictionary["scriptPath"] = "multi_a(\(mofnarray.joined(separator: ","))".replacingOccurrences(of: "))", with: ")")
+                        dictionary["scriptPath"] = "\(scriptType)(\(mofnarray.joined(separator: ","))".replacingOccurrences(of: "))", with: ")")
                         
                         var keysWithPath = [String]()
                         for (i, item) in mofnarray.enumerated() {
@@ -619,6 +630,8 @@ public struct Descriptor: CustomStringConvertible {
         pubkey = dictionary["pubkey"] as? String ?? ""
         index = dictionary["index"] as? Int
         scriptPath = dictionary["scriptPath"] as? String ?? ""
+        internalKey = dictionary["internalKey"] as? String ?? ""
+        isInternal = dictionary["isInternal"] as? Bool ?? false
     }
     
     public var description: String {

@@ -86,6 +86,8 @@ public extension Date {
     
 }
 
+
+
 public extension UITextView {
   func addHyperLinksToText(originalText: String, hyperLinks: [String: String]) {
     let style = NSMutableParagraphStyle()
@@ -665,16 +667,25 @@ public extension Int {
     
 }
 
-public extension Encodable {
-
-    /// Encode into JSON and return `Data`
-    func jsonData() throws -> Data {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        encoder.dateEncodingStrategy = .iso8601
-        return try encoder.encode(self)
-    }
-}
+ public extension Encodable {
+     func jsonData() throws -> Data {
+         let encoder = JSONEncoder()
+         encoder.outputFormatting = [.sortedKeys]
+         encoder.dateEncodingStrategy = .secondsSince1970
+         return try encoder.encode(self)
+     }
+ }
+ 
+//public extension Encodable {
+//
+//    /// Encode into JSON and return `Data`
+//    func jsonData() throws -> Data {
+//        let encoder = JSONEncoder()
+//        encoder.outputFormatting = .prettyPrinted
+//        encoder.dateEncodingStrategy = .iso8601
+//        return try encoder.encode(self)
+//    }
+//}
 
 public extension UIView {
     #if targetEnvironment(macCatalyst)

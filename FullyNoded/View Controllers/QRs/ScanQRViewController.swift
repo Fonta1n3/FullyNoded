@@ -357,7 +357,7 @@ final class ScanQRViewController: UIViewController {
             updateProgress(text: percentageComplete, progress: number)
             
             if number == 1 {
-                guard let result = try? continousJoiner(parts: bbqrParts) else { return }
+                guard let _ = try? continousJoiner(parts: bbqrParts) else { return }
             }
         }
         
