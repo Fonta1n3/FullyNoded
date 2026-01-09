@@ -166,12 +166,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             
             let addressInfo = AddressInfo(addressInfoResponse)
             
-//            guard let pubkey = addressInfo.desc/*addressInfo.pubkey ?? addressInfo.witnessProgram */else {
-//                spinner.dismiss()
-//                showAlert(title: "", message: "There is no public key returned to create a timelock address with. If this wallet is multi-sig you may be seeing this error, multi-sig support is coming soon.")
-//                return
-//            }
-            
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -230,7 +224,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                                                         active: false,
                                                         range: nil,
                                                         nextIndex: 0,
-                                                        timestamp: .now,
+                                                        timestamp: Date().unixTimestamp,
                                                         internal: false,
                                                         label: "Locked until \(displayDate)"
                                                     )
@@ -272,15 +266,20 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 let listDescriptorResponse = try JSONDecoder().decode(ListDescriptorsResponse.self, from: jsonData)
                 
                 for (i, descriptor) in listDescriptorResponse.descriptors.enumerated() {
-                    var rangeValue: RangeValue? = nil
+                    var rangeValue: [Int]? = nil
                     
                     if let range = descriptor.range {
-                        rangeValue = .range(start: range.startIndex, end: range.endIndex)
+                        if range.count == 2 {
+                            rangeValue = [range[0],range[1]]
+                        } else {
+                            rangeValue = [range[0]]
+                        }
+                        //.range(start: range.startIndex, end: range.endIndex)
                     }
                     
-                    var timestamp: Timestamp? = nil
+                    var timestamp: Int? = nil
                     if let timestampt = descriptor.timestamp {
-                        timestamp = Timestamp.time(timestampt)
+                        timestamp = timestampt
                     } else {
                         print("timestamp is nil")
                     }
@@ -318,10 +317,10 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                     SuccessView.show(
                         in: self,
                         title: "Wallet backup updated!",
-                        subtitle: "You will be prompted to choose a format to export. You can export your backup anytime from the export button on the Active Wallet view (top right button with square and up arrow)."
+                        subtitle: "You can export this backup by going back to the Wallet view and tapping the export button in the top right."
                     ) { [weak self] in
                         guard let self = self else { return }
-                        self.promptForBackupExportFormat(backup: backup)
+                        //self.promptForBackupExportFormat(backup: backup)
                     }
                 }
             }
@@ -329,136 +328,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             showAlert(title: "", message: "Updating failed: \(error.localizedDescription)")
         }
     }
-    
-    private func showQRBackup(backup: WalletBackup) {
-        do {
-            let qrVC = QRViewController(
-                text: try backup.jsonData().hex,
-                headerText: "\(wallet!.label) Backup",
-                descriptionText: "Last updated: " + backup.lastUpdate.formattedDate,
-                headerIcon: UIImage(systemName: "qrcode"),
-                isBbqr: true,
-                isUR: false
-            )
-
-            let nav = UINavigationController(rootViewController: qrVC)
-            nav.modalPresentationStyle = .fullScreen
-
-            self.present(nav, animated: true) { [weak self] in
-                guard let self = self else { return }
-                
-                spinner.dismiss()
-            }
-        } catch {
-            showAlert(title: "", message: error.localizedDescription)
-        }
-    }
-    
-    private func promptForBackupExportFormat(backup: WalletBackup) {
-        WalletExportFormatView.show(in: self) { [weak self] format in
-            guard let self = self else {
-                print("User canceled export")
-                return
-            }
-            
-            if let format = format {
-                switch format {
-                case .qr:
-                    self.showQRBackup(backup: backup)
-                case .file:
-                    self.exportAsFile(backup: backup)
-                case .text:
-                    self.copyAsText(backup: backup)
-                }
-            } else {
-                print("format is nil")
-            }
-        }
-    }
-    
-    private func copyAsText(backup: WalletBackup) {
-        do {
-            // Encode WalletBackup to JSON data
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.sortedKeys] // Optional: consistent ordering
-            encoder.dateEncodingStrategy = .secondsSince1970
-            
-            let jsonData = try encoder.encode(backup)
-            let hexString = jsonData.hexString
-            
-            // Copy hex to clipboard
-            UIPasteboard.general.string = hexString
-            
-            // Show success with explanation
-            let byteCount = jsonData.count
-            let charCount = hexString.count
-            
-            SuccessView.show(
-                in: self,
-                title: "Backup Copied as Hex",
-                subtitle: "Hex-encoded backup (\(byteCount) bytes → \(charCount) chars) is now in your clipboard.\n\nPaste it into a secure location."
-            ) {
-                print("User acknowledged hex backup copy")
-            }
-            
-            // Haptic feedback
-            let feedback = UIImpactFeedbackGenerator(style: .medium)
-            feedback.impactOccurred()
-            
-        } catch {
-            showAlert(title: "Encoding Failed", message: "Could not encode backup: \(error.localizedDescription)")
-        }
-    }
-    
-    private func exportAsFile(backup: WalletBackup) {
-        do {
-            // 2. Encode to pretty-printed JSON
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = .prettyPrinted
-            encoder.dateEncodingStrategy = .secondsSince1970
-            
-            let jsonData = try encoder.encode(backup)
-                        
-            // 3. Create a temporary file URL
-            let fileName = "wallet-backup-\(Date().formatted(.iso8601)).json"
-            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
-            
-            try jsonData.write(to: tempURL)
-            
-            // 4. Present UIActivityViewController (system share/export sheet)
-            let activityVC = UIActivityViewController(activityItems: [tempURL], applicationActivities: nil)
-            
-            // Optional: Exclude some activities if desired
-            activityVC.excludedActivityTypes = [
-                .addToReadingList,
-                .assignToContact,
-                .markupAsPDF
-            ]
-            
-            // On iPad/Mac, set popover source
-            if let popover = activityVC.popoverPresentationController {
-                popover.sourceView = self.view
-                popover.sourceRect = self.view.bounds
-                popover.permittedArrowDirections = []
-            }
-            
-            activityVC.completionWithItemsHandler = { [weak self] activityType, completed, items, error in
-                try? FileManager.default.removeItem(at: tempURL)
-                
-                if completed {
-                    SuccessView.show(in: self!, title: "Backup Exported", subtitle: "Your wallet backup has been saved.") { }
-                } else if let error = error {
-                    showAlert(title: "Export Failed", message: error.localizedDescription)
-                }
-            }
-            
-            present(activityVC, animated: true)
-            
-        } catch {
-            showAlert(title: "Error", message: "Failed to create backup file: \(error.localizedDescription)")
-        }
-    }
-
         
     private func getReceieveAddressForFullyNodedWallet(_ wallet: Wallet) {
         spinner.show(vc: self, description: "getting address from \(wallet.label)...")

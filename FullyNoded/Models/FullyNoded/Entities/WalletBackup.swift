@@ -10,71 +10,71 @@ import Foundation
 
 // MARK: - RangeValue
 
-enum RangeValue: Codable {
-    case single(Int)
-    case range(start: Int, end: Int)
-    
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let int = try? container.decode(Int.self) {
-            self = .single(int)
-        } else if let array = try? container.decode([Int].self) {
-            guard array.count == 2 else {
-                throw DecodingError.dataCorruptedError(in: container, debugDescription: "Range must be single Int or [Int, Int]")
-            }
-            self = .range(start: array[0], end: array[1])
-        } else {
-            throw DecodingError.typeMismatch(RangeValue.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Expected Int or [Int, Int]"))
-        }
-    }
-    
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .single(let value):
-            try container.encode(value)
-        case .range(let start, let end):
-            try container.encode([start, end])
-        }
-    }
-}
+//enum RangeValue: Codable {
+//    case single(Int)
+//    case range(start: Int, end: Int)
+//    
+//    init(from decoder: Decoder) throws {
+//        let container = try decoder.singleValueContainer()
+//        if let int = try? container.decode(Int.self) {
+//            self = .single(int)
+//        } else if let array = try? container.decode([Int].self) {
+//            guard array.count == 2 else {
+//                throw DecodingError.dataCorruptedError(in: container, debugDescription: "Range must be single Int or [Int, Int]")
+//            }
+//            self = .range(start: array[0], end: array[1])
+//        } else {
+//            throw DecodingError.typeMismatch(RangeValue.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Expected Int or [Int, Int]"))
+//        }
+//    }
+//    
+//    func encode(to encoder: Encoder) throws {
+//        var container = encoder.singleValueContainer()
+//        switch self {
+//        case .single(let value):
+//            try container.encode(value)
+//        case .range(let start, let end):
+//            try container.encode([start, end])
+//        }
+//    }
+//}
 
 // MARK: - Timestamp
 
-enum Timestamp: Codable {
-    case now
-    case time(Int)
-    
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let str = try? container.decode(String.self), str.lowercased() == "now" {
-            self = .now
-        } else if let int = try? container.decode(Int.self) {
-            self = .time(int)
-        } else {
-            throw DecodingError.typeMismatch(Timestamp.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Expected 'now' or Int"))
-        }
-    }
-    
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .now:
-            try container.encode("now")
-        case .time(let value):
-            try container.encode(value)
-        }
-    }
-}
+//enum Timestamp: Codable {
+//    case now
+//    case time(Int)
+//    
+//    init(from decoder: Decoder) throws {
+//        let container = try decoder.singleValueContainer()
+//        if let str = try? container.decode(String.self), str.lowercased() == "now" {
+//            self = .now
+//        } else if let int = try? container.decode(Int.self) {
+//            self = .time(int)
+//        } else {
+//            throw DecodingError.typeMismatch(Timestamp.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Expected 'now' or Int"))
+//        }
+//    }
+//    
+//    func encode(to encoder: Encoder) throws {
+//        var container = encoder.singleValueContainer()
+//        switch self {
+//        case .now:
+//            try container.encode("now")
+//        case .time(let value):
+//            try container.encode(value)
+//        }
+//    }
+//}
 
 // MARK: - BackupItem
 
 struct BackupItem: Codable {
     let desc: String
     var active: Bool
-    var range: RangeValue?
+    var range: [Int]?
     var nextIndex: Int?
-    let timestamp: Timestamp?
+    let timestamp: Int?
     var `internal`: Bool?
     var label: String
     
@@ -91,9 +91,9 @@ struct BackupItem: Codable {
     // Default values applied here
     init(desc: String,
          active: Bool,
-         range: RangeValue?,
+         range: [Int]?,
          nextIndex: Int,
-         timestamp: Timestamp?,
+         timestamp: Int?,
          internal: Bool?,
          label: String = "") {
         self.desc = desc

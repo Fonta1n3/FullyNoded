@@ -612,23 +612,58 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     private func performImport(backup: WalletBackup) {
         // Assuming you have a way to update the current wallet
         //wallet?.walletBackup = try? backup.jsonData()  // or however you store it
+        
+        guard let jsonData = try? backup.jsonData() else { return }
+        spinner.show(vc: self, description: "Recovering wallet...")
+        
         var fnWalletToCreateDict: [String: Any] = [
-            "walletId": UUID(),
-            "walletBackup": backup,
+            "walletBackup": jsonData,
             "label": "Recovered wallet",
-            "blockheight": UInt64(0)
-            
+            "blockheight": UInt64(0),
+            "id": UUID()
         ]
         
+        var descriptorDicts: [[String: Any]] = []
         for (i, descriptor) in backup.descriptors.enumerated() {
-            print("descriptor to recover: \(descriptor.desc)")
             let fnDesc = Descriptor(descriptor.desc)
+            var descriptorDict: [String: Any] = [
+                "internal": descriptor.internal ?? false,
+                "active": descriptor.active,
+                "desc": descriptor.desc
+            ]
+            
+            if let range = descriptor.range {
+                if range.count == 2 {
+                    descriptorDict["range"] = [range[0],range[1]]
+                } else if range.count == 1 {
+                    descriptorDict["range"] = [range[0]]
+                } else {
+                    descriptorDict["label"] = descriptor.label
+                }
+            } else {
+                descriptorDict["label"] = descriptor.label
+//                if descriptor.active {
+//                    descriptorDict["range"] = [0,0]
+//                }
+            }
+            
+            if let timestamp = descriptor.timestamp {
+                descriptorDict["timestamp"] = timestamp
+            }
+            
+            if let nextIndex = descriptor.nextIndex {
+                descriptorDict["next_index"] = nextIndex
+            }
+            
+            print("descriptorDict: \(descriptorDict)")
+            descriptorDicts.append(descriptorDict)
+            
             if fnDesc.isHD {
                 print("HD descriptor")
                 if !fnDesc.isInternal {
                     print("primary descriptor")
                     fnWalletToCreateDict["receiveDescriptor"] = descriptor.desc
-                    fnWalletToCreateDict["name"] = "FullyNoded-" + Crypto.sha256hash(descriptor.desc)
+                    fnWalletToCreateDict["name"] = "FullyNoded-" + Crypto.sha256hash("\(descriptor.desc.split(separator: "#")[0])")
                 } else {
                     print("change descriptor")
                     fnWalletToCreateDict["changeDescriptor"] = descriptor.desc
@@ -636,20 +671,111 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             }
             
             if i + 1 == backup.descriptors.count {
-                // ready to build the wallet.
                 
+                
+                func setActiveAndImport(name: String, exists: Bool) {
+                    UserDefaults.standard.set(name, forKey: "walletName")
+                    
+                    let p = Import_Descriptors(["requests": descriptorDicts])
+                    print("getting here?")
+                    
+                    OnchainUtils.importDescriptors(p) { [weak self] (imported, message) in
+                        guard let self = self else { return }
+                        guard imported else {
+                            spinner.dismiss()
+                            showAlert(title: "", message: message ?? "Unknown error importing descriptors.")
+                            return
+                        }
+                        
+                        print("imported")
+                        print("exists: \(exists)")
+                       
+                        if !exists {
+                            CoreDataService.saveEntity(dict: fnWalletToCreateDict, entityName: .wallets) { [weak self] walletRecovered in
+                                guard let self = self else { return }
+                                spinner.dismiss()
+                                guard walletRecovered else {
+                                    print("wallet not saved")
+                                   
+                                    return
+                                }
+                                print("wallet saved")
+                                // show success
+                                // Update UI, refresh wallets, etc.
+                                SuccessView.show(
+                                    in: self,
+                                    title: "Backup Recovered",
+                                    subtitle: "Your wallet has been recovered."
+                                )
+                            }
+                        } else {
+                            // Update it
+                            CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] fnWallets in
+                                guard let self = self else { return }
+                               
+                                guard let fnWallets = fnWallets else { print("no fnWallets"); return }
+                                for fnWallet in fnWallets {
+                                    let str = Wallet(dictionary: fnWallet)
+                                    if str.name == name {
+                                        print("reuse existing")
+                                        do {
+                                            let data = try backup.jsonData()
+                                            
+                                            CoreDataService.update(id: str.id, keyToUpdate: "walletBackup", newValue: data, entity: .wallets) { [weak self] backupUpdated in
+                                                guard let self = self else { return }
+                                                spinner.dismiss()
+                                                guard backupUpdated else {
+                                                    print("backup failed")
+                                                    return
+                                                }
+                                                
+                                                
+                                                SuccessView.show(
+                                                    in: self,
+                                                    title: "Backup Recovered",
+                                                    subtitle: "Your wallet has been recovered."
+                                                )
+                                            }
+                                        } catch {
+                                            spinner.dismiss()
+                                            print("can not convert backup to json data")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                let p = Create_Wallet_Param([
+                    "wallet_name": (fnWalletToCreateDict["name"] as! String),
+                    "disable_private_keys": true,
+                    "blank": true,
+                    "avoid_reuse": true,
+                    "descriptors": true,
+                    "load_on_startup": true
+                ])
+                
+                OnchainUtils.createWallet(param: p) { [weak self] (name, message) in
+                    guard let self = self else { return }
+                    guard let name = name else {
+                        if let message = message, message.contains("Database already exists") {
+                            setActiveAndImport(name: fnWalletToCreateDict["name"] as! String, exists: true)
+                        } else {
+                            spinner.dismiss()
+                            showAlert(title: "", message: message ?? "Unknown error creating wallet.")
+                        }
+                        return
+                    }
+                    setActiveAndImport(name: name, exists: false)
+                }
             }
         }
         
         
         
         
-        // Update UI, refresh wallets, etc.
-        SuccessView.show(
-            in: self,
-            title: "Backup Imported",
-            subtitle: "Your wallet descriptors have been restored from backup."
-        )
+        
         
         // Optional: trigger rescan or refresh
         //NotificationCenter.default.post(name: .walletDidUpdate, object: nil)

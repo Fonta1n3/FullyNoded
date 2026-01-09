@@ -69,6 +69,8 @@ class ActiveWalletViewController: UIViewController {
             initialLoad = false
             loadTable()
         }
+        
+        //backupWalletNow()
     }
     
     @IBAction func getWalletDetail(_ sender: Any) {
@@ -96,7 +98,13 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    @IBAction func importTransaction(_ sender: Any) {
+    
+    
+    
+    
+
+    
+    @objc func importTx() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -311,16 +319,26 @@ class ActiveWalletViewController: UIViewController {
                 
                 let listDescriptorResponse = try JSONDecoder().decode(ListDescriptorsResponse.self, from: jsonData)
                 
+                var backupItem: BackupItem? = nil
+                
                 for (i, descriptor) in listDescriptorResponse.descriptors.enumerated() {
-                    var rangeValue: RangeValue? = nil
+                    var rangeValue: [Int]? = nil
                     
                     if let range = descriptor.range {
-                        rangeValue = .range(start: range.startIndex, end: range.endIndex)
+                        //rangeValue = [r]
+                        print("range.count: \(range.count)")
+                        if range.count == 2 {
+                            rangeValue = [range[0],range[1]]
+                            backupItem?.range = rangeValue
+                        } else if range.count == 1 {
+                            rangeValue = [range[0]]
+                            backupItem?.range = rangeValue
+                        }
                     }
                     
-                    var timestamp: Timestamp? = nil
+                    var timestamp: Int? = nil
                     if let timestampt = descriptor.timestamp {
-                        timestamp = Timestamp.time(timestampt)
+                        timestamp = timestampt
                     }
                     
                     let backupitem: BackupItem = .init(desc: descriptor.desc, active: descriptor.active, range: rangeValue, nextIndex: descriptor.nextIndex ?? 0, timestamp: timestamp, internal: descriptor.internal_, label: descriptor.label ?? wallet!.label)
@@ -1019,6 +1037,13 @@ extension ActiveWalletViewController: UITableViewDelegate {
         sortButton.center.y = textLabel.center.y
         sortButton.addTarget(self, action: #selector(sortTxs(_:)), for: .touchUpInside)
         
+        let importButton = UIButton()
+        let importImage = UIImage(systemName: "square.and.arrow.down", withConfiguration: UIImage.SymbolConfiguration(scale: .large))
+        importButton.setImage(importImage, for: .normal)
+        importButton.frame = CGRect(x: header.frame.size.width - 108, y: 0, width: 50, height: 50)
+        importButton.center.y = textLabel.center.y
+        importButton.addTarget(self, action: #selector(importTx), for: .touchUpInside)
+        
         switch section {
         case 0:
             if walletLabel != "" && walletLabel != nil {
@@ -1030,6 +1055,7 @@ extension ActiveWalletViewController: UITableViewDelegate {
         case 1:
             textLabel.text = "Transactions"
             header.addSubview(sortButton)
+            header.addSubview(importButton)
             
         default:
             break

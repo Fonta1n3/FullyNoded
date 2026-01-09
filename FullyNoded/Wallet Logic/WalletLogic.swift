@@ -433,6 +433,12 @@ class WalletLogic {
                 let descriptorString = "wsh(\(miniscript))"
                 return try fetchTimelockAddressFromDescString(descriptorString: descriptorString, fnWallet: fnWallet)
                 
+            } else if fnDesc.isBIP48, let descriptor = descriptor {
+                let (dummyPubkey, checksumlessDesc) = try dummyPubkeyAndChecksumLessDesc(descriptor: descriptor)
+                var formatted = checksumlessDesc.string.replacingOccurrences(of: "wsh(multi", with: "multi_a")
+                formatted = formatted.replacingOccurrences(of: "))", with: ")")
+                let descriptorString = "tr(\(dummyPubkey),and_v(v:\(formatted),after(\(timelock))))"
+                return try fetchTimelockAddressFromDescString(descriptorString: descriptorString, fnWallet: fnWallet)
             } else {
                 throw TimelockedAddressError.unsupportedTimelockFormat
             }
@@ -444,8 +450,6 @@ class WalletLogic {
     func dummyPubkeyAndChecksumLessDesc(descriptor: String) throws -> (dummyPubkey: String, checksumlessDescriptor: Descriptor) {
         let checksumless = "\(descriptor.components(separatedBy: "#")[0])"
         let checksumlessDesc = Descriptor(checksumless)
-        print("internalKey: \(checksumlessDesc.internalKey)")
-        print("scriptPath: \(checksumlessDesc.scriptPath)")
         guard let dummy = try dummyPubKey() else { throw TimelockedAddressError.unableToGenerateDummyPubkey }
         return (dummy, checksumlessDesc)
     }

@@ -370,12 +370,6 @@
                         </leftBarButtonItems>
                         <rightBarButtonItems>
                             <barButtonItem title="    " id="ggk-Vy-0O7"/>
-                            <barButtonItem image="square.and.arrow.down" catalog="system" id="7bj-qG-8FW">
-                                <color key="tintColor" systemColor="tintColor"/>
-                                <connections>
-                                    <action selector="importTransaction:" destination="Dwu-lj-4IN" id="aW2-MS-heY"/>
-                                </connections>
-                            </barButtonItem>
                             <barButtonItem image="square.and.arrow.up" catalog="system" id="rqp-Cy-RLT">
                                 <connections>
                                     <action selector="loadBackupTapped:" destination="Dwu-lj-4IN" id="fUi-Ca-QHB"/>
@@ -2535,16 +2529,16 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="6zG-h6-wiF">
-                                <rect key="frame" x="16" y="111" width="361" height="457"/>
+                                <rect key="frame" x="16" y="110.99999999999997" width="361" height="485.33333333333326"/>
                                 <subviews>
-                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GO8-o8-fXl">
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GO8-o8-fXl">
                                         <rect key="frame" x="0.0" y="0.0" width="361" height="44"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="DY7-55-MO9"/>
                                         </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <state key="normal" title="Create single-sig">
+                                        <state key="normal" title=" Create single-sig">
                                             <color key="titleColor" systemColor="tintColor"/>
                                         </state>
                                         <connections>
@@ -2558,14 +2552,14 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ewF-ze-dkg">
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ewF-ze-dkg">
                                         <rect key="frame" x="0.0" y="103" width="361" height="44"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="ozy-XE-8dP"/>
                                         </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <state key="normal" title="Create multi-sig">
+                                        <state key="normal" title=" Create multi-sig">
                                             <color key="titleColor" systemColor="tintColor"/>
                                         </state>
                                         <connections>
@@ -2579,29 +2573,21 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                         <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oy6-dL-aYy">
-                                        <rect key="frame" x="0.0" y="206" width="361" height="44"/>
-                                        <color key="backgroundColor" systemColor="systemFillColor"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="44" id="deP-5d-OSB"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <state key="normal" title="Bitcoin Core Wallets">
-                                            <color key="titleColor" systemColor="tintColor"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="syncCoreWalletAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="nnc-Z6-f1L"/>
-                                        </connections>
-                                    </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="e69-9h-da9">
-                                        <rect key="frame" x="0.0" y="258" width="361" height="43"/>
+                                        <rect key="frame" x="0.0" y="206" width="361" height="43"/>
                                         <string key="text">This action will activate any existing Bitcoin Core wallet, if the Core wallet is a descriptor wallet then it will be synced with Fully Noded and you will get the full set of FN features.</string>
                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                         <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DCK-W8-EOP">
-                                        <rect key="frame" x="0.0" y="309" width="361" height="44"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Import / Recovery" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="797-0O-GyV">
+                                        <rect key="frame" x="0.0" y="257" width="361" height="20.333333333333314"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DCK-W8-EOP">
+                                        <rect key="frame" x="0.0" y="285.33333333333331" width="361" height="44"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="EAj-ar-3eK"/>
@@ -2614,8 +2600,8 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                             <action selector="pasteTextAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="ts3-fj-9gc"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9dS-cb-UlI">
-                                        <rect key="frame" x="0.0" y="361" width="361" height="44"/>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9dS-cb-UlI">
+                                        <rect key="frame" x="0.0" y="337.33333333333331" width="361" height="44"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="sKf-3M-kXX"/>
@@ -2628,8 +2614,8 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                             <action selector="importFileAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="wRC-jd-68g"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mM2-q0-GaQ">
-                                        <rect key="frame" x="0.0" y="413" width="361" height="44"/>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mM2-q0-GaQ">
+                                        <rect key="frame" x="0.0" y="389.33333333333331" width="361" height="44"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="Xja-KJ-Vxe"/>
@@ -2640,6 +2626,20 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                         </state>
                                         <connections>
                                             <action selector="scanQrAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="8bK-Hp-G9V"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oy6-dL-aYy">
+                                        <rect key="frame" x="0.0" y="441.33333333333337" width="361" height="44"/>
+                                        <color key="backgroundColor" systemColor="systemFillColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="44" id="deP-5d-OSB"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <state key="normal" title=" Bitcoin Core Wallets">
+                                            <color key="titleColor" systemColor="tintColor"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="syncCoreWalletAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="nnc-Z6-f1L"/>
                                         </connections>
                                     </button>
                                 </subviews>

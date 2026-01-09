@@ -21,7 +21,7 @@ public struct Wallet: CustomStringConvertible {
     
     init(dictionary: [String: Any]) {
         dict = dictionary
-        id = dictionary["id"] as! UUID
+        id = dictionary["id"] as? UUID ?? UUID()
         label = dictionary["label"] as? String ?? "Add label"
         changeDescriptor = dictionary["changeDescriptor"] as? String ?? ""
         receiveDescriptor = dictionary["receiveDescriptor"] as? String ?? ""
