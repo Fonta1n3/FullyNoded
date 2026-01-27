@@ -159,6 +159,11 @@ extension Array where Element == UInt8 {
 
 public extension String {
     
+    var isValidHex: Bool {
+        guard !isEmpty else { return false }
+        return allSatisfy { $0.isHexDigit }
+    }
+    
     var addressExpanded: String {
         // Keeps the prefix and checksum intact and tries to split middle by 5 chars each.
         // Doesn't take into account all address types and networks, optimized for mainnet native segwit and taproot.

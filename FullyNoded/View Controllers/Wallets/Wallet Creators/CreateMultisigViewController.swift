@@ -131,7 +131,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     
     @IBAction func refreshAction(_ sender: Any) {
         guard self.derivationField.text == "m/48'/\(self.coinType)'/0'/2'" || self.derivationField.text == "m/48h/\(self.coinType)h/0h/2h" || self.derivationField.text == "m/48’/1’/0’/2’" || self.derivationField.text == "m/48'/\(self.coinType)'/0'/3'" || self.derivationField.text == "m/48h/\(self.coinType)h/0h/3h" else {
-            showAlert(vc: self, title: "", message: "You can not use custom derivations when deriving a cosigner from an existing signer. Derivation must be set to m/48'/\(self.coinType)'/0'/2'")
+            showAlert(vc: self, title: "", message: "You can not use custom derivations when deriving a cosigner from an existing signer. Derivation must be set to m/48'/\(self.coinType)'/0'/2' or m/48'/\(self.coinType)'/0'/3'")
             return
         }
         
@@ -178,13 +178,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         let fingerprint = fingerprintField.text ?? ""
         
         guard fingerprint != "" else {
-            guard let fp = Keys.fingerprint(masterKey: xpub) else {
-                showAlert(vc: self, title: "Unable to derive fingerprint", message: "We had an issue deriving the fingerprint from that xpub, please reset and try again.")
-                
-                return
-            }
-            
-            addKeyStore(fp, xpub)
+            showAlert(title: "", message: "You must add the fingerprint of your master key.")
             
             return
         }
@@ -427,6 +421,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     }
     
     private func convertWords(_ words: String, _ passphrase: String) {
+        
         guard let mk = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase),
             let fingerprint = Keys.fingerprint(masterKey: mk) else {
                 clear()
@@ -682,7 +677,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             
             vc.signerSelected = { [weak self] signer in
                 guard let self = self, let encryptedWords = signer.words, let words = Crypto.decrypt(encryptedWords) else { return }
-                            
+                                            
                 guard let encryptedPassphrase = signer.passphrase else {
                     self.convertWords(words.utf8String ?? "", "")
                     return

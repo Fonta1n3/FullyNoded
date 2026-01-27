@@ -20,6 +20,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     let ud = UserDefaults.standard
     
     
+    @IBOutlet private weak var timelockWarningLabel: UILabel!
     @IBOutlet private weak var addTimelockOutlet: UIButton!
     @IBOutlet private weak var invoiceHeader: UILabel!
     @IBOutlet private weak var amountField: UITextField!
@@ -147,6 +148,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         getReceieveAddressForFullyNodedWallet(wallet)
     }
     
+   
+    
     private func getTimelockedAddress() {
         spinner.show(vc: self)
         
@@ -175,10 +178,20 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 timelockVC.completion = { [weak self] (timestamp, afterFragment, displayDate) in
                     guard let self = self else { return }
                     
-                    do {
-                        // Add red warning label about this address being timelocked until xxx
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
                         
-                        let (timelockedAddress, descriptor) = try WalletLogic.shared.createTimelockedAddress(fnWallet: wallet, pubkey: addressInfo.pubkey, descriptor: addressInfo.desc, timelock: timestamp)
+                        timelockWarningLabel.text = "⚠️ Timelocked until \(displayDate): FUNDS WILL NOT BE SPENDABLE UNTIL THIS DATE!"
+                        timelockWarningLabel.alpha = 1
+                    }
+                    
+                    var pubkey = addressInfo.pubkey
+                    if let _ = pubkey {
+                        pubkey = Descriptor(addressInfo.desc).pubkey
+                    }
+                    
+                    do {
+                        let (timelockedAddress, descriptor) = try WalletLogic.shared.createTimelockedAddress(fnWallet: wallet, pubkey: pubkey, descriptor: addressInfo.parent_desc, timelock: timestamp)
                         
                         let param = Get_Descriptor_Info(["descriptor": descriptor])
                         OnchainUtils.getDescriptorInfo(param) { [weak self] (descriptorInfo, message) in
@@ -318,10 +331,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                         in: self,
                         title: "Wallet backup updated!",
                         subtitle: "You can export this backup by going back to the Wallet view and tapping the export button in the top right."
-                    ) { [weak self] in
-                        guard let self = self else { return }
-                        //self.promptForBackupExportFormat(backup: backup)
-                    }
+                    ) { }
                 }
             }
         } catch {

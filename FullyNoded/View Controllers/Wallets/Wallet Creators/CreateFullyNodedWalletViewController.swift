@@ -569,8 +569,8 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func decodeWalletBackup(from hexString: String) -> WalletBackup? {
+        
         guard let data = Data(hexString: hexString) else {
-            showAlert(title: "Invalid Format", message: "The text is not valid hex-encoded data.")
             return nil
         }
         
@@ -581,7 +581,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             let backup = try decoder.decode(WalletBackup.self, from: data)
             return backup
         } catch {
-            print("Decoding error: \(error)")
             showAlert(title: "Decode Failed", message: "Could not parse backup data.\n\nError: \(error.localizedDescription)")
             return nil
         }
@@ -771,21 +770,12 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 }
             }
         }
-        
-        
-        
-        
-        
-        
-        // Optional: trigger rescan or refresh
-        //NotificationCenter.default.post(name: .walletDidUpdate, object: nil)
     }
     
     private func processImportedString(_ item: String) {
         let lowercased = item.lowercased()
                 
-        if let walletBackup = decodeWalletBackup(from: item) {
-            print("its a wallet backup")
+        if item.isValidHex, let walletBackup = decodeWalletBackup(from: item) {
             promptToImport(backup: walletBackup)
             
         } else if self.isExtendedKey(lowercased) {

@@ -14,7 +14,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     
     private let psbt: BitcoinDevKit.Psbt?
     private let rawTransaction: BitcoinDevKit.Transaction?
-    private let wallet: BitcoinDevKit.Wallet  // Your watch-only or signing wallet
+    private let wallet: BitcoinDevKit.Wallet?  // Your watch-only or signing wallet
     private let signer: SignerStruct?  // Optional signer (e.g., from seed)
     private let network: BitcoinDevKit.Network
     private let inputs: [Esplora_Utxo]
@@ -55,7 +55,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         let amountBtc: Double
     }
     
-    init(psbt: BitcoinDevKit.Psbt?, rawTransaction: BitcoinDevKit.Transaction?, wallet: BitcoinDevKit.Wallet, signer: SignerStruct? = nil, network: BitcoinDevKit.Network, inputs: [Esplora_Utxo], fxRate: Double?) {
+    init(psbt: BitcoinDevKit.Psbt?, rawTransaction: BitcoinDevKit.Transaction?, wallet: BitcoinDevKit.Wallet?, signer: SignerStruct? = nil, network: BitcoinDevKit.Network, inputs: [Esplora_Utxo], fxRate: Double?) {
         self.psbt = psbt
         self.rawTransaction = rawTransaction
         self.wallet = wallet
@@ -75,14 +75,14 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         navigationController?.delegate = self
         setupUI()
         
-        if let psbt = psbt {
-            analyzePsbt(psbt: psbt)
-        } else if let tx = rawTransaction {
+        if let tx = rawTransaction {
             signedRawTx = tx.serialize().hex
             broadcastButton.isHidden = false
             signButton.isHidden = true
             exportButton.setTitle("Export Signed Transaction", for: .normal)
             analyzeTx(tx: tx)
+        } else if let psbt = psbt {
+            analyzePsbt(psbt: psbt)
         }
     }
     
@@ -119,11 +119,13 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         txStatusLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
         txStatusLabel.textAlignment = .center
         txStatusLabel.textColor = .label
+        txStatusLabel.numberOfLines = 0
+        txStatusLabel.lineBreakMode = .byWordWrapping
         
         // Fee label
         feeLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
         feeLabel.textAlignment = .center
-        feeLabel.textColor = .systemRed
+        feeLabel.textColor = .systemOrange
         
         // Buttons setup
         setupButtons()
@@ -229,7 +231,13 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                         fiatAmount = (amountBtc * fxRate).fiatString
                     }
                     
-                    inputItems.append(TxInOutItem(address: input.address, amountFiat: fiatAmount, amountBtc: amountBtc))
+                    let containsItem = inputItems.contains(where: { txInItem in
+                        input.address == txInItem.address && amountBtc == txInItem.amountBtc
+                    })
+                    
+                    if !containsItem {
+                        inputItems.append(TxInOutItem(address: input.address, amountFiat: fiatAmount, amountBtc: amountBtc))
+                    }
                 }
                 
                 sections = [
@@ -298,7 +306,6 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                                 
                                 DispatchQueue.main.async { [weak self] in
                                     guard let self = self else { return }
-                                    print("allOurs: \(allOurs)")
                                     if allOurs {
                                         // we know all inputs are ours and can deduce the fee
                                        
@@ -343,11 +350,11 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                 if containsSigs {
                     // update UI to show it is partially signed
                     txStatusLabel.text = "Partially signed, needs more signatures."
-                    txStatusLabel.textColor = .systemOrange
+                    txStatusLabel.textColor = .systemGreen
                 } else {
                     // no sigs
                     txStatusLabel.text = "Unsigned, needs more signatures."
-                    txStatusLabel.textColor = .systemRed
+                    txStatusLabel.textColor = .systemOrange
                 }
                 analyzeTx(tx: tx)
             } else {
@@ -600,6 +607,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
 
     private func performSigning(with passphrase: String) {
         // Show loading spinner
+        guard let wallet = wallet else { return }
         ConnectingView.shared.show(vc: self, description: "Signing transaction...")
         
         // Run signing on background thread
@@ -654,7 +662,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
             return
         }
         
-        Signer.shared.sign(fnWallet: fnWallet, psbt: psbt.serialize(), passphrase: passphrase, signers: signers, network: network) { (signedPsbt, rawTx, errorMessage) in
+        Signer.shared.sign(fnWallet: fnWallet, psbt: psbt.serialize(), passphrase: passphrase, signers: signers, network: network, parentDesc: fnWallet.receiveDescriptor) { (signedPsbt, rawTx, errorMessage) in
             ConnectingView.shared.dismiss()
             
             if let rawTx = rawTx {
@@ -688,7 +696,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                         self.showTransactionSuccessAnimation(title: "Transaction partially signed!", subtitle: "Ready to export to another signer")
                     } else {
                         txStatusLabel.text = "Unsigned, needs signatures."
-                        txStatusLabel.textColor = .systemRed
+                        txStatusLabel.textColor = .systemOrange
                         showAlert(title: "Psbt is unsigned", message: "Sign it with another signer.")
                     }
                 }

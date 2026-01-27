@@ -81,44 +81,47 @@ class WalletLogic {
             mnemonic: mnemonic,
             password: passphrase ?? ""
         )
-                    
+                            
         hotDescriptor(watchOnlyDescriptor: Descriptor(recDescStr), masterKey: masterKey) { [weak self] hotRecDescString in
             guard let self = self else { return }
             
             guard var hotRecDescString = hotRecDescString else {
                 //print("Fetching hotRecDescString failed.")
-                //completion((nil, "Fetching hotRecDescString failed."))
                 return
             }
                         
             guard let hotReceiveBDKDescriptor = try? BDKDescriptor(descriptor: hotRecDescString, network: network) else {
                 //print("Could not convert hot receive descriptor string to BDKDescriptor.")
-                //completion((nil, "Could not convert hot receive descriptor string to BDKDescriptor."))
                 return
             }
+            
+            #if DEBUG
+            print("hotRecDescString: \(hotRecDescString)")
+            #endif
             
             hotDescriptor(watchOnlyDescriptor: Descriptor(changeDesStr), masterKey: masterKey) { [weak self] hotChangeDescString in
                 guard let self = self else { return }
                 
                 guard var hotChangeDescString = hotChangeDescString else {
-                    //print("Fetching hotChangeDescString failed.")
-                    //completion((nil, "Fetching hotChangeDescString failed."))
+                    #if DEBUG
+                    print("Fetching hotChangeDescString failed.")
+                    #endif
                     return
                 }
+                
+                #if DEBUG
+                print("hotChangeDescString: \(hotChangeDescString)")
+                #endif
                                 
                 guard let hotChangeBDKDescriptor = try? BDKDescriptor(descriptor: hotChangeDescString, network: network) else {
                     //print("Could not convert hot change descriptor string to BDKDescriptor.")
-                    //completion((nil, "Could not convert hot change descriptor string to BDKDescriptor."))
                     return
                 }
                 
-                //try? securelyDeleteWallet(name: "temp_wallet")
-                
-                //let tempDbURL = walletDatabaseURL(named: "temp_wallet")
-                
+                try? securelyDeleteWallet(name: "temp_wallet")
+                                
                 guard let database = persistor() else {
-                    //print("Unable to securely create temp_wallet.")
-                    //completion((nil, "Unable to securely delete temp_wallet."))
+                    completion((nil, "Unable to securely delete temp_wallet."))
                     return
                 }
                 
@@ -127,13 +130,21 @@ class WalletLogic {
                     hotChangeDescString.secureWipe()
                 }
                 
+                #if DEBUG
+                print("hotReceiveBDKDescriptor: \(hotReceiveBDKDescriptor.toStringWithSecret())")
+                print("watchOnlyReceiveDescriptor: \(hotReceiveBDKDescriptor.description)")
+                #endif
+                
                 do {
                     let bdkWallet = try BDKWallet(descriptor: hotReceiveBDKDescriptor, changeDescriptor: hotChangeBDKDescriptor, network: network, persister: database)
+                                        
                     completion((bdkWallet, nil))
                     
                 } catch {
-                    //print("error creating bdkwallet")
-                    //print(error.localizedDescription)
+                    #if DEBUG
+                    print("error creating bdkwallet")
+                    print(error.localizedDescription)
+                    #endif
                     completion((nil, error.localizedDescription))
                 }
             }
@@ -168,38 +179,30 @@ class WalletLogic {
         }
         
         let signOptions = SignOptions(
-            trustWitnessUtxo: false,
+            trustWitnessUtxo: true,
             assumeHeight: nil,
-            allowAllSighashes: false,
+            allowAllSighashes: true,
             tryFinalize: true,
             signWithTapInternalKey: true,
             allowGrinding: true
         )
         
-        guard let finalized = try? wallet.sign(psbt: psbt, signOptions: signOptions) else {
-            do {
-                try securelyDeleteWallet(name: "temp_wallet")
-            } catch {
-                return (nil, nil, error.localizedDescription)
-            }
-            return ((nil, nil, "Signing failed."))
-        }
-                
         do {
+            let finalized = try wallet.sign(psbt: psbt, signOptions: signOptions)
             try securelyDeleteWallet(name: "temp_wallet")
+            
+            if finalized {
+                guard let tx = try? psbt.extractTx() else {
+                    return (nil, nil, "Error extracting the raw transaction from the finalized psbt.")
+                }
+                return (nil, tx.serialize().hex, nil)
+                
+            } else {
+                let signedBase64 = psbt.serialize()
+                return (signedBase64, nil, nil)
+            }
         } catch {
             return (nil, nil, error.localizedDescription)
-        }
-                
-        if finalized {
-            guard let tx = try? psbt.extractTx() else {
-                return (nil, nil, "Error extracting the raw transaction from the finalized psbt.")
-            }
-            return (nil, tx.serialize().hex, nil)
-            
-        } else {
-            let signedBase64 = psbt.serialize()
-            return (signedBase64, nil, nil)
         }
     }
     
@@ -223,22 +226,51 @@ class WalletLogic {
     
     private func hotDescriptor(watchOnlyDescriptor: Descriptor, masterKey: DescriptorSecretKey, completion: @escaping((String?)) -> Void) {
         
-        if watchOnlyDescriptor.isMulti {
+        if watchOnlyDescriptor.isP2TR && watchOnlyDescriptor.isTimelocked, !watchOnlyDescriptor.isMulti {
+            
+            let derivation = watchOnlyDescriptor.derivation
+            
+            guard let path = try? BDKDerivationPath(path: derivation) else {
+                return
+            }
+            
+            guard let derivedKey = try? masterKey.derive(path: path) else {
+                return
+            }
+            
+            if derivedKey.asPublic().description.contains(watchOnlyDescriptor.accountXpub) {
+                
+                let derivedKeyStruct = Descriptor("tr(" + derivedKey.description + ")")
+                let checksumless = "\(watchOnlyDescriptor.string.components(separatedBy: "#")[0])"
+                
+                #if DEBUG
+                print("match here")
+                print("checksumless: \(checksumless)")
+                print("watchOnlyDescriptor.accountXpub: \(watchOnlyDescriptor.accountXpub)")
+                print("derivedKeyStruct.accountXprv: \(derivedKeyStruct.accountXprv)")
+                #endif
+                
+                let hotDescriptor = checksumless.replacingOccurrences(of: watchOnlyDescriptor.accountXpub, with: derivedKeyStruct.accountXprv)
+                #if DEBUG
+                print("hotDescriptor: \(hotDescriptor)")
+                #endif
+                completion((hotDescriptor))
+            }
+            
+        } else if watchOnlyDescriptor.isMulti {
             var hotDescriptor: String?
             
             defer {
                 hotDescriptor?.secureWipe()
             }
-            
+                        
             for (x, _) in watchOnlyDescriptor.multiSigKeys.enumerated() {
-                
+                                
                 guard let path = try? BDKDerivationPath(path: watchOnlyDescriptor.derivationArray[x]) else {
-                    //print("deriving path failed")
                     return
                 }
                 
                 guard let derivedKey = try? masterKey.derive(path: path) else {
-                    //print("deriving key failed")
                     return
                 }
                                 
@@ -264,10 +296,9 @@ class WalletLogic {
             var xprvString = derivedKey.asPublic().description
             
             guard derivedKey.asPublic().description.contains(watchOnlyDescriptor.accountXpub) else {
-                completion((nil))
                 return
             }
-
+            
             var processedHotDescriptor = processSingleSig(derivedKey: derivedKey, watchOnlyDescriptor: watchOnlyDescriptor)
             
             defer {
@@ -315,6 +346,10 @@ class WalletLogic {
         return checksumLessWatchOnlyDesc.replacingOccurrences(of: watchOnlyDescriptor.multiSigKeys[keyIndex], with: plainXprv)
     }
     
+    enum CustomError: Error {
+        case networkFailed(reason: String)
+    }
+    
     func createPsbtWithManualInputs(
         wallet: BDKWallet,
         utxos: [Esplora_Utxo],
@@ -323,8 +358,7 @@ class WalletLogic {
         network: BDKNetwork
     ) throws -> BitcoinDevKit.Psbt? {
         var txBuilder = TxBuilder()
-        var feeAmount = 0
-        
+               
         for utxo in utxos {
             let txid = try Txid.fromString(hex: utxo.txid)
             let outpoint = OutPoint(txid: txid, vout: UInt32(utxo.vout))
@@ -334,15 +368,8 @@ class WalletLogic {
             let txOutput = TxOut(value: amount, scriptPubkey: script)
             wallet.insertTxout(outpoint: outpoint, txout: txOutput)
             txBuilder = txBuilder.addUtxo(outpoint: outpoint)
-            feeAmount += 200
         }
-        
-        let fee = Amount.fromSat(satoshi: UInt64(feeAmount))
-        
-        enum CustomError: Error {
-            case networkFailed(reason: String)
-        }
-        
+                        
         do {
             let syncRequest = try wallet.startSyncWithRevealedSpks().build()
             let onionRoot = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion"
@@ -363,14 +390,41 @@ class WalletLogic {
             
             for output in outputs {
                 let address = try Address(address: output.address, network: network)
-                let script = address.scriptPubkey()
-                let amount = Amount.fromSat(satoshi: output.amount - UInt64(feeAmount))
-                txBuilder = txBuilder.addRecipient(script: script, amount: amount)
+                txBuilder = txBuilder.drainTo(script: address.scriptPubkey())
             }
             
+            let feeRate = try FeeRate.fromSatPerVb(satVb: UInt64(1))
             txBuilder = txBuilder.doNotSpendChange()
             txBuilder = txBuilder.manuallySelectedOnly()
-            txBuilder = txBuilder.feeAbsolute(feeAmount: fee)
+            txBuilder = txBuilder.feeRate(feeRate: feeRate)
+            txBuilder = txBuilder.drainWallet()
+            
+            
+            if let internalPolicies = try? wallet.policies(keychain: .internal) {
+                let (topID, subID, _, _) = extractTimelockPolicyValues(from: internalPolicies.asString(), hotXfp: nil)
+                
+                if let topID, let subID {
+                    let policyPath: [String: [UInt64]] = [
+                        topID: [1],      // choose the 2-of-2 branch
+                        subID: [0, 1]    // both hot sig + timelock
+                    ]
+                    
+                    txBuilder = txBuilder.policyPath(policyPath: policyPath, keychain: .internal)
+                }
+            }
+            
+            if let externalPolicies = try? wallet.policies(keychain: .external) {
+                let (topID, subID, _, _) = extractTimelockPolicyValues(from: externalPolicies.asString(), hotXfp: nil)
+                
+                if let topID, let subID {
+                    let policyPath: [String: [UInt64]] = [
+                        topID: [1],
+                        subID: [0, 1]
+                    ]
+                    
+                    txBuilder = txBuilder.policyPath(policyPath: policyPath, keychain: .external)
+                }
+            }
             
             let psbt = try txBuilder.finish(wallet: wallet)
             
@@ -393,6 +447,11 @@ class WalletLogic {
     enum TimelockedAddressError: Error {
         case unableToGenerateDummyPubkey
         case unsupportedTimelockFormat
+    }
+    
+    enum TimelockedSigningError: Error {
+        case didNotSign
+        case timelockNotMet
     }
     
     func bdkWalletFromDescriptors(recDesc: String, changeDesc: String) throws -> BDKWallet {
@@ -419,26 +478,31 @@ class WalletLogic {
             
             if fnDesc.isMulti && fnDesc.isP2TR, let descriptor = descriptor {
                 let (dummyPubkey, checksumlessDesc) = try dummyPubkeyAndChecksumLessDesc(descriptor: descriptor)
-                let descriptorString = "tr(\(dummyPubkey),and_v(v:\(checksumlessDesc.scriptPath),after(\(timelock))))"
+                let descriptorString = "tr(\(dummyPubkey),and_v(v:\(checksumlessDesc.scriptPath.replacingOccurrences(of: "*", with: "0")),after(\(timelock))))"
+                #if DEBUG
+                print("timelocked multisig descriptorString: \(descriptorString)")
+                #endif
                 return try fetchTimelockAddressFromDescString(descriptorString: descriptorString, fnWallet: fnWallet)
                 
             } else if fnDesc.isP2TR, let descriptor = descriptor {
-                let (dummyPubkey, checksumlessDesc) = try dummyPubkeyAndChecksumLessDesc(descriptor: descriptor)
-                let pubkey = checksumlessDesc.pubkey
-                let descriptorString = "tr(\(dummyPubkey),and_v(v:pkh(\(pubkey)),after(\(timelock))))"
+                let (dummyPubkey, checksumlessDesc) = try dummyPubkeyAndChecksumLessDesc(descriptor: descriptor.replacingOccurrences(of: "*", with: "0"))
+                let descriptorString = "tr(\(dummyPubkey),and_v(v:\(checksumlessDesc.string.replacingOccurrences(of: "tr(", with: "pk(")),after(\(timelock))))"
+                #if DEBUG
+                print("timelocked singlesig descriptorString: \(descriptorString)")
+                #endif
                 return try fetchTimelockAddressFromDescString(descriptorString: descriptorString, fnWallet: fnWallet)
                 
-            } else if fnDesc.isP2WPKH, let pubkey = pubkey {
+            /*} else if fnDesc.isP2WPKH, let pubkey = pubkey {
                 let miniscript = "and_v(v:pk(\(pubkey)),after(\(timelock)))"
                 let descriptorString = "wsh(\(miniscript))"
                 return try fetchTimelockAddressFromDescString(descriptorString: descriptorString, fnWallet: fnWallet)
                 
             } else if fnDesc.isBIP48, let descriptor = descriptor {
                 let (dummyPubkey, checksumlessDesc) = try dummyPubkeyAndChecksumLessDesc(descriptor: descriptor)
-                var formatted = checksumlessDesc.string.replacingOccurrences(of: "wsh(multi", with: "multi_a")
-                formatted = formatted.replacingOccurrences(of: "))", with: ")")
+                let formatted = checksumlessDesc.string.replacingOccurrences(of: "wsh(sortedmulti", with: "multi_a")
                 let descriptorString = "tr(\(dummyPubkey),and_v(v:\(formatted),after(\(timelock))))"
-                return try fetchTimelockAddressFromDescString(descriptorString: descriptorString, fnWallet: fnWallet)
+                
+                return try fetchTimelockAddressFromDescString(descriptorString: descriptorString, fnWallet: fnWallet)*/
             } else {
                 throw TimelockedAddressError.unsupportedTimelockFormat
             }
@@ -469,6 +533,270 @@ class WalletLogic {
             throw TimelockedAddressError.unableToGenerateDummyPubkey
         }
         return pk
+    }
+    
+    func createTimelockedTaprootWalletAndSign(mnemonic: BDKMnemonic, passphrase: String?, network: BDKNetwork, recipientAddress: String, utxo: UTXO) throws -> ((psbt: String, rawTx: String?)){
+                
+        let secretKey = DescriptorSecretKey(
+            network: .testnet4,
+            mnemonic: mnemonic,
+            password: passphrase ?? ""
+        )
+        
+        let parentDescStr = Descriptor(utxo.parentDescs![0])
+        
+        var formattedParentDesc = utxo.parentDescs![0].replacingOccurrences(of: "h/", with: "'/")
+        formattedParentDesc = formattedParentDesc.replacingOccurrences(of: "h]", with: "']")
+        
+        var primaryDesc = ""
+        var hotXfp: String?
+        
+        if !parentDescStr.isMulti {
+            // if single sig this will work
+            let derivation = parentDescStr.derivation
+            let derivationPath = try BDKDerivationPath(path: derivation)
+            let derivedKey = try secretKey.derive(path: derivationPath)
+            var xprvOnly = "\(derivedKey.description.split(separator: "]")[1])"
+            xprvOnly = "\(xprvOnly.split(separator: "/")[0])"
+            primaryDesc = "\(formattedParentDesc.replacingOccurrences(of: parentDescStr.accountXpub, with: xprvOnly).split(separator: "#")[0])"
+            hotXfp = parentDescStr.fingerprint
+        } else {
+            // its multi sig
+            let scriptPath = parentDescStr.scriptPath
+            // extract the multi_a descriptor
+            var multi_a = scriptPath.replacingOccurrences(of: "and_v(v:", with: "")
+            multi_a = "\(multi_a.split(separator: "#")[0])".replacingOccurrences(of: "))", with: ")")
+            multi_a = "\(multi_a.components(separatedBy: "),after(")[0])"
+            multi_a = multi_a.replacingOccurrences(of: "multi_a", with: "multi")
+            multi_a = "wsh(\(multi_a))"
+            
+            primaryDesc = formattedParentDesc
+            
+            let multi_a_desc = Descriptor(multi_a)
+            for (i, derivation) in multi_a_desc.derivationArray.enumerated() {
+                let derivation = parentDescStr.derivation
+                let derivationPath = try BDKDerivationPath(path: derivation)
+                let derivedKey = try secretKey.derive(path: derivationPath)
+                var xprvOnly = "\(derivedKey.description.split(separator: "]")[1])"
+                xprvOnly = "\(xprvOnly.split(separator: "/")[0])"
+                
+                if derivedKey.asPublic().description.contains(multi_a_desc.multiSigKeys[i]) {
+                    let hack = Descriptor("tr(\(multi_a_desc.keysWithPath[i]))")
+                    hotXfp = hack.fingerprint
+                    primaryDesc = primaryDesc.replacingOccurrences(of: multi_a_desc.multiSigKeys[i], with: xprvOnly)
+                }
+                
+            }
+            
+            primaryDesc = "\(primaryDesc.split(separator: "#")[0])"
+        }
+        
+        do {
+            var processedDescChangeDesc = primaryDesc.replacingOccurrences(of: "/*", with: "/1/*")
+            processedDescChangeDesc = primaryDesc.replacingOccurrences(of: "/0/0", with: "/1/0")
+            
+            let wallet = try BDKWallet(
+                descriptor: BDKDescriptor(descriptor: primaryDesc, network: network),
+                changeDescriptor: BDKDescriptor(descriptor: processedDescChangeDesc, network: network),
+                network: .testnet4,
+                persister: persistor()!
+            )
+                    
+            var txBuilder = TxBuilder()
+            
+            let txid = try Txid.fromString(hex: utxo.txid)
+            let outpoint = OutPoint(txid: txid, vout: UInt32(utxo.vout))
+            let addressInput = try Address(address: utxo.address!, network: network)
+            let script = addressInput.scriptPubkey()
+            let amount = try Amount.fromBtc(btc: utxo.amount)
+            let txOutput = TxOut(value: amount, scriptPubkey: script)
+            wallet.insertTxout(outpoint: outpoint, txout: txOutput)
+            txBuilder = txBuilder.addUtxo(outpoint: outpoint)
+            
+            let recipient = try Address(address: recipientAddress, network: network)
+            let feeRate = try FeeRate.fromSatPerVb(satVb: UInt64(1))
+            
+            let syncRequest = try wallet.startSyncWithRevealedSpks().build()
+            let onionRoot = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion"
+            let baseURL: String
+            
+            switch network {
+            case .testnet: baseURL = "\(onionRoot)/testnet/api/"
+            case .testnet4: baseURL = "\(onionRoot)/testnet4/api/"
+            case .signet: baseURL = "\(onionRoot)/signet/api/"
+            case .regtest:
+                throw CustomError.networkFailed(reason: "Nodeless transaction creation does not work on regtest.")
+            default:
+                baseURL = "\(onionRoot)/api/"
+            }
+            
+            let client = EsploraClient(url: baseURL, proxy: "http://localhost:9080")
+            let sync = try client.sync(request: syncRequest, parallelRequests: 4)
+            try wallet.applyUpdate(update: sync)
+            
+            txBuilder = txBuilder.feeRate(feeRate: feeRate)
+            txBuilder = txBuilder.drainTo(script: recipient.scriptPubkey())
+            txBuilder = txBuilder.manuallySelectedOnly()
+            
+            if let externalPolicies = try? wallet.policies(keychain: .external), let hotXfp = hotXfp {
+                let policyStr = externalPolicies.asString()
+                print("External policy: \(policyStr)")
+                
+                let (topID, subID, timelockTimestamp, _) = extractTimelockPolicyValues(from: policyStr, hotXfp: hotXfp)
+                
+                if let topID, let subID, let timelock = timelockTimestamp {
+                    let policyPath: [String: [UInt64]] = [
+                        topID: [1],
+                        subID: [0, 1]
+                    ]
+                    
+                    txBuilder = txBuilder.policyPath(policyPath: policyPath, keychain: .external)
+                                        
+                    let lockDate = Date(timeIntervalSince1970: TimeInterval(timelock))
+                    let now = Date()
+                    let formatter = DateFormatter()
+                    
+                    if now < lockDate {
+                        formatter.dateStyle = .medium
+                        formatter.timeStyle = .medium
+                        print("Timelock not yet satisfied — expires at \(formatter.string(from: lockDate))")
+                        throw TimelockedSigningError.timelockNotMet
+                    } else {
+                        #if DEBUG
+                        print("Timelock satisfied (expired at \(formatter.string(from: lockDate)))")
+                        #endif
+                    }
+                } else {
+                    #if DEBUG
+                    print("Could not parse policy IDs or timelock value for external keychain")
+                    #endif
+                }
+            }
+            
+            if let internalPolicies = try? wallet.policies(keychain: .internal), let hotXfp = hotXfp {
+                let (topID, subID, timelock, hotFP) = extractTimelockPolicyValues(from: internalPolicies.asString(), hotXfp: hotXfp)
+                
+                #if DEBUG
+                if let timelock {
+                    let date = Date(timeIntervalSince1970: TimeInterval(timelock))
+                    print("Timelock expires: \(date.formattedDate)")
+                }
+                #endif
+                
+                if let topID, let subID {
+                    let policyPath: [String: [UInt64]] = [
+                        topID: [1],
+                        subID: [0, 1]
+                    ]
+                    
+                    txBuilder = txBuilder.policyPath(policyPath: policyPath, keychain: .internal)
+                }
+            }
+            
+            var psbt = try txBuilder.finish(wallet: wallet)
+            
+            let signOptions = SignOptions(
+                trustWitnessUtxo: true,
+                assumeHeight: nil,
+                allowAllSighashes: true,
+                tryFinalize: true,
+                signWithTapInternalKey: false,
+                allowGrinding: true
+            )
+            
+            let didFinalize = try wallet.sign(psbt: psbt, signOptions: signOptions)
+            
+            if didFinalize {
+                let finalTx = try psbt.extractTx()
+                let txHex = finalTx.serialize()
+                return ((psbt: psbt.serialize(), rawTx: txHex.hex))
+                
+            } else {
+                return ((psbt: psbt.serialize(), rawTx: nil))
+            }
+        } catch {
+            #if DEBUG
+            print("catch: \(error.localizedDescription)")
+            #endif
+            throw error
+        }
+    }
+    
+    func extractTimelockPolicyValues(from policyString: String?, hotXfp: String?) -> (topID: String?, subID: String?, timelock: UInt64?, hotFingerprint: String?) {
+        guard let policyString,
+              let jsonStart = policyString.range(of: "{")?.lowerBound,
+              let jsonEnd = policyString.range(of: "}", options: .backwards)?.upperBound else {
+            return (nil, nil, nil, nil)
+        }
+        
+        let json = String(policyString[jsonStart..<jsonEnd])
+        guard let data = json.data(using: .utf8) else {
+            return (nil, nil, nil, nil)
+        }
+        
+        do {
+            guard let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                return (nil, nil, nil, nil)
+            }
+            
+            // Top-level THRESH (1-of-2 branches)
+            let topID = jsonObject["id"] as? String
+            
+            guard let items = jsonObject["items"] as? [[String: Any]],
+                  items.count == 2 else {
+                return (topID, nil, nil, nil)
+            }
+            
+            // Look for the inner THRESH (the one with MULTISIG + timelock)
+            var subID: String?
+            var timelockValue: UInt64?
+            var hotFingerprint: String?
+            
+            for item in items {
+                guard let itemType = item["type"] as? String,
+                      itemType == "THRESH",
+                      let itemID = item["id"] as? String,
+                      let itemThreshold = item["threshold"] as? Int,
+                      itemThreshold == 2,
+                      let subItems = item["items"] as? [[String: Any]],
+                      subItems.count == 2 else {
+                    continue
+                }
+                
+                subID = itemID
+                
+                // Now look inside this sub-THRESH's items
+                for sub in subItems {
+                    guard let subType = sub["type"] as? String else { continue }
+                    
+                    if subType == "MULTISIG",
+                       let keys = sub["keys"] as? [[String: Any]] {
+                        let fps = keys.compactMap({ $0["fingerprint"] as? String })
+                        if let hotXfp = hotXfp,
+                            fps.contains(hotXfp) {
+                            hotFingerprint = hotXfp
+                         }
+                    }
+                    else if subType == "ABSOLUTETIMELOCK",
+                            let val = sub["value"] as? UInt64 {
+                        timelockValue = val
+                    }
+                }
+                
+                // We found the interesting branch → can break early
+                if subID != nil && (timelockValue != nil || hotFingerprint != nil) {
+                    break
+                }
+            }
+            
+            return (topID, subID, timelockValue, hotFingerprint)
+            
+        } catch {
+            #if DEBUG
+            print("Policy JSON parse error: \(error)")
+            #endif
+            return (nil, nil, nil, nil)
+        }
     }
     
 }

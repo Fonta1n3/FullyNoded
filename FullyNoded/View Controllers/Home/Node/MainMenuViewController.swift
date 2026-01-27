@@ -97,6 +97,7 @@ class MainMenuViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(startTorFromAppDelegate), name: .startTorFromAppDelegate, object: nil)
         refreshControl.addTarget(self, action: #selector(refreshNode), for: UIControl.Event.valueChanged)
         mainMenu.addSubview(refreshControl)
+        ensureXfpSaved()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -120,6 +121,49 @@ class MainMenuViewController: UIViewController {
         }
         
         updateTorStatus()
+    }
+    
+    // If XFP was not saved (which seems to be possible currently) we need it to identify potential signers.
+    private func ensureXfpSaved() {
+        CoreDataService.retrieveEntity(entityName: .signers) { [weak self] encryptedSigners in
+            guard let self = self else { return }
+            
+            guard let encryptedSigners = encryptedSigners else { return }
+            
+            guard encryptedSigners.count > 0 else { return }
+            
+            for encryptedSigner in encryptedSigners {
+                let signerStruct = SignerStruct(dictionary: encryptedSigner)
+                
+                guard signerStruct.xfp == nil else { return }
+                
+                var passphrase = ""
+                
+                if let encryptedPassphrase = signerStruct.passphrase,
+                   let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase),
+                   let string = decryptedPassphrase.utf8String {
+                    passphrase = string
+                }
+                                
+                // Only fires off if account xpubs had not been saved before.
+                if var encryptedWords = signerStruct.words,
+                   var decryptedSigner = Crypto.decrypt(encryptedWords),
+                   var words = decryptedSigner.utf8String,
+                   let mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
+                   let xfp = Keys.fingerprint(masterKey: mkMain),
+                   let encryptedXfp = Crypto.encrypt(xfp.utf8) {
+                                        
+                    defer {
+                        encryptedWords.secureZero()
+                        decryptedSigner.secureZero()
+                        words.secureWipe()
+                        passphrase.secureWipe()
+                    }
+                    
+                    CoreDataService.update(id: signerStruct.id, keyToUpdate: "xfp", newValue: encryptedXfp, entity: .signers) { _ in }
+                }
+            }
+        }
     }
     
     private func confirgureTorProgressView() {

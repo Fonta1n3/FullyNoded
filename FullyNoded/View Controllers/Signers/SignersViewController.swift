@@ -63,7 +63,7 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
                                 
                 // Only fires off if account xpubs had not been saved before.
-                if signerStruct.bip86tpub == nil,
+                if signerStruct.xfp == nil,
                    var encryptedWords = signerStruct.words,
                    var decryptedSigner = Crypto.decrypt(encryptedWords),
                    var words = decryptedSigner.utf8String,

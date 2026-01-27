@@ -44,6 +44,7 @@ public struct Descriptor: CustomStringConvertible {
     let isTaproot:Bool
     let index: Int?
     let isInternal: Bool
+    let isTimelocked: Bool
     let string: String
     
     init(_ descriptor: String) {
@@ -61,6 +62,19 @@ public struct Descriptor: CustomStringConvertible {
         
         isTaproot = descriptor.hasPrefix("tr(")
         isP2TR = isTaproot
+        
+        if isP2TR {
+            let trArray = descriptor.split(separator: ",")
+            let internalKeyPath = "\(trArray[0])"
+            let scriptPath = trArray.dropFirst().joined(separator: ",").replacingOccurrences(of: "))", with: ")")
+            dictionary["internalKey"] = internalKeyPath
+            dictionary["scriptPath"] = scriptPath
+            //print("scriptPath: \(scriptPath)")
+        }
+        
+        if descriptor.contains(",after(") {
+            dictionary["isTimelocked"] = true
+        }
         
         if descriptor.contains("/1/") {
             dictionary["isInternal"] = true
@@ -101,7 +115,7 @@ public struct Descriptor: CustomStringConvertible {
                     case "tr":
                         dictionary["format"] = "P2TR"
                         dictionary["scriptType"] = "Taproot multi-sig"
-                        print("arr[1]: \(arr[1])")
+                        //print("arr[1]: \(arr[1])")
                         let internalKeyAndPrefixArr = "\(arr[1])".split(separator: ",")
                         let internalKey = "\(internalKeyAndPrefixArr[0])"
                         dictionary["internalKey"] = internalKey
@@ -113,19 +127,52 @@ public struct Descriptor: CustomStringConvertible {
                         dictionary["mOfNType"] = "\(mofnarray[0]) of \(numberOfKeys)"
                         dictionary["sigsRequired"] = UInt(mofnarray[0])
                         
+//                        let scriptPath = "\(scriptType)(\(mofnarray.joined(separator: ","))".replacingOccurrences(of: "))", with: ")")
+//                        dictionary["scriptPath"] = scriptPath
+//                        print("scriptPath: \(scriptPath)")
                         
-                        dictionary["scriptPath"] = "\(scriptType)(\(mofnarray.joined(separator: ","))".replacingOccurrences(of: "))", with: ")")
-                        
+                        let trArray = descriptor.split(separator: ",")
+                        let internalKeyPath = "\(trArray[0])"
+                        let scriptPath = trArray.dropFirst().joined(separator: ",")
+                        dictionary["internalKey"] = internalKeyPath
+                        //dictionary["scriptPath"] = scriptPath
+                        //print("scriptPath: \(scriptPath)")
+//                        let scriptPath = "\(trArray[1])"
                         var keysWithPath = [String]()
-                        for (i, item) in mofnarray.enumerated() {
-                            if i != 0 {
-                                keysWithPath.append("\(item.replacingOccurrences(of: ")", with: ""))")
+                        
+                        if scriptPath.contains("multi_a") {
+                            //print("its a multi_a")
+                            let processed = scriptPath.replacingOccurrences(of: "and_v(v:multi_a(", with: "")
+                            let processArr = processed.components(separatedBy: "),after")
+                            let plainMofN = "\(processArr[0])".split(separator: ",")
+                            //print("plainMofN: \(plainMofN)")
+                            for (i, item) in plainMofN.enumerated() {
+                                if i != 0 {
+                                    //print("append: \(item)")
+                                    keysWithPath.append("\(item.replacingOccurrences(of: ")", with: ""))")
+                                }
+                                if i + 1 == mofnarray.count {
+                                    dictionary["keysWithPath"] = keysWithPath
+                                }
                             }
-                            if i + 1 == mofnarray.count {
-                                dictionary["keysWithPath"] = keysWithPath
+                            
+                            // and_v(v:multi_a(2,[8084b36e/48h/1h/0h/2h/0/12]03864f2908573eaab8dc53f63406cbfa0aa0526bc9f410615575ff4cf597663edb,[a99c0f45/48h/1h/0h/2h/0/12]03f1fed95a4867e7eff12285fa244a4de0c7d3ec6c66018d168b535f7f3d4f0903),after(1767970400)))#zhsvtrd4
+                            
+                            // tr(0227caee8bea95a44d40f9d433d6707c8b63694b364109602d5804f8a3d2d0994c,and_v(v:multi_a(2,[8084b36e/48h/1h/0h/2h/0/12]03864f2908573eaab8dc53f63406cbfa0aa0526bc9f410615575ff4cf597663edb,[a99c0f45/48h/1h/0h/2h/0/12]03f1fed95a4867e7eff12285fa244a4de0c7d3ec6c66018d168b535f7f3d4f0903),after(1767970400)))#zhsvtrd4)
+                            
+                        } else {
+                            
+                            for (i, item) in mofnarray.enumerated() {
+                                if i != 0 {
+                                    keysWithPath.append("\(item.replacingOccurrences(of: ")", with: ""))")
+                                }
+                                if i + 1 == mofnarray.count {
+                                    dictionary["keysWithPath"] = keysWithPath
+                                }
                             }
                         }
                         
+                        //print("keyswithpath: \(keysWithPath)")
                         var fingerprints = [String]()
                         var keyArray = [String]()
                         var paths = [String]()
@@ -442,7 +489,8 @@ public struct Descriptor: CustomStringConvertible {
                     }
                 } else {
                     let subarray = extendedKey.split(separator: "#")
-                    print("gtting here?")
+                    //print("gtting here?")
+                    //print("subarray: \(subarray)")
                     if subarray.count == 2 {
                         dictionary["pubkey"] = "\("\(subarray[0])".replacingOccurrences(of: ")", with: ""))"
                     } else {
@@ -632,6 +680,7 @@ public struct Descriptor: CustomStringConvertible {
         scriptPath = dictionary["scriptPath"] as? String ?? ""
         internalKey = dictionary["internalKey"] as? String ?? ""
         isInternal = dictionary["isInternal"] as? Bool ?? false
+        isTimelocked = dictionary["isTimelocked"] as? Bool ?? false
     }
     
     public var description: String {

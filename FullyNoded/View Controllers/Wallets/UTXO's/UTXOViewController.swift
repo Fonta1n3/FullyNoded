@@ -7,9 +7,11 @@
 //
 
 import UIKit
+import BitcoinDevKit
 
-class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
+class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate, AddressInputViewControllerDelegate {
     
+    private var utxoToSweep: UTXO?
     private var dataRefresher = UIBarButtonItem()
     private var amountTotal: Double = 0.0
     private let refresher = UIRefreshControl()
@@ -467,12 +469,163 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             break
         }
     }
+    
+    func getAddress(utxo: UTXO) {
+        self.utxoToSweep = utxo
+        let addressVC = AddressInputViewController()
+        addressVC.delegate = self
+        addressVC.titleText = "Where should we send the funds?"
+        navigationController?.pushViewController(addressVC, animated: true)
+    }
+    
+    private func setPassphrase(completion: @escaping (String?) -> Void) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Passphrase Prompt"
+            let message = "Please enter the passphrase you want to use for signing this transaction."
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let set = UIAlertAction(title: "Sign now", style: .default) { alertAction in
+                completion((alert.textFields![0] as UITextField).text)
+            }
+            
+            alert.addTextField { textField in
+                textField.keyboardAppearance = .dark
+                textField.isSecureTextEntry = true
+                textField.autocorrectionType = .no
+                textField.spellCheckingType = .no
+            }
+            
+            alert.addAction(set)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { alertAction in }
+            alert.addAction(cancel)
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    func addressInputViewController(_ controller: AddressInputViewController, didConfirmAddress address: String) {
+        guard let utxo = self.utxoToSweep else { return }
+        
+        ConnectingView.shared.show(vc: self)
+        
+        setPassphrase { [weak self] passphrase in
+            guard let self = self else { return }
+            sweepUtxo(recipientAddress: address, passphrase: passphrase, utxo: utxo)
+        }
+    }
+    
+    private func sweepUtxo(recipientAddress: String, passphrase: String?, utxo: UTXO) {
+        CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
+            guard let self = self else { return }
+            
+            guard let signers = signers, signers.count > 0 else {
+                showAlert(title: "", message: "No signers present.")
+                ConnectingView.shared.dismiss()
+                return
+            }
+            
+            var signerToUse: SignerStruct? = nil
+            
+            for (i, signer) in signers.enumerated() {
+                let signerStruct = SignerStruct(dictionary: signer)
+                
+                if let encryptedXfp = signerStruct.xfp, let decryptedXfp = Crypto.decrypt(encryptedXfp), let utf8Xfp = decryptedXfp.utf8String, let parentDescs = utxo.parentDescs, !parentDescs.isEmpty {
+                    let desc = parentDescs[0]
+                    let fnDesc = Descriptor(desc)
+                    if fnDesc.fingerprint.contains(utf8Xfp), let _ = utxo.address, let _ = signerStruct.words {
+                        signerToUse = signerStruct
+                    }
+                }
+                
+                if i + 1 == signers.count, let signerToUse = signerToUse, let inputAddress = utxo.address, let encryptedWords = signerToUse.words {
+                    let esploraUtxo = Esplora_Utxo(
+                        txid: utxo.txid,
+                        vout: utxo.vout,
+                        value: Int64(utxo.amount * 100000000),
+                        status: .init(confirmed: true, blockHeight: nil, blockHash: nil, blockTime: nil),
+                        address: inputAddress
+                    )
+                    
+                    guard var decryptedMnemonic = Crypto.decrypt(encryptedWords), var words = decryptedMnemonic.utf8String else {
+                        ConnectingView.shared.dismiss()
+                        return
+                    }
+                    
+                    defer {
+                        decryptedMnemonic.secureZero()
+                        words.secureWipe()
+                    }
+                    
+                    do {
+                        var bdkMnemonic = try WalletLogic.BDKMnemonic.fromString(mnemonic: words)
+                        
+                        defer {
+                            bdkMnemonic = WalletLogic.BDKMnemonic(wordCount: .words12)
+                        }
+                        
+                        guard let network = WalletLogic.shared.bdkNetwork() else {
+                            ConnectingView.shared.dismiss()
+                            return
+                        }
+                        
+                        let (psbt, rawTx) = try WalletLogic.shared.createTimelockedTaprootWalletAndSign(mnemonic: bdkMnemonic, passphrase: nil, network: .testnet4, recipientAddress: recipientAddress, utxo: utxo)
+                        
+                        var tx: WalletLogic.BDKTransaction? = nil
+                        if let rawTx = rawTx, let data = Data(hexString: rawTx) {
+                            
+                            // present tx analyzer
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
+                                
+                                do {
+                                    tx = try WalletLogic.BDKTransaction(transactionBytes: data)
+                                    
+                                    ConnectingView.shared.dismiss()
+                                    
+                                    let reviewVC = PsbtReviewViewController(
+                                        psbt: try WalletLogic.BDKPsbt(psbtBase64: psbt),
+                                        rawTransaction: tx,
+                                        wallet: nil,
+                                        signer: nil,
+                                        network: WalletLogic.shared.bdkNetwork()!,
+                                        inputs: [esploraUtxo],
+                                        fxRate: fxRate
+                                    )
+                                    
+                                    navigationController?.pushViewController(reviewVC, animated: true)
+                                } catch {
+                                    showAlert(title: "Failed presenting review view.", message: error.localizedDescription)
+                                    ConnectingView.shared.dismiss()
+                                }
+                            }
+                        } else {
+                            showAlert(title: "", message: "Unable to finalize. Needs another signer.")
+                            ConnectingView.shared.dismiss()
+                        }
+                        
+                    } catch {
+                        showAlert(title: "Failed converting to bdkMnemonic", message: error.localizedDescription)
+                        ConnectingView.shared.dismiss()
+                    }
+                }
+            }
+        }
+    }
+    
 }
+
+
 
 
 // MARK: UTXOCellDelegate
 
 extension UTXOViewController: UTXOCellDelegate {
+    
+    
+    
     func showUtxoRawData(_ utxo: UTXO) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -542,15 +695,21 @@ extension UTXOViewController: UTXOCellDelegate {
         }
     }
     
+    
     func didTapToSpendUtxo(_ utxo: UTXO) {
-        amountTotal = utxo.amount
-        let input:[String:Any] = ["txid": utxo.txid, "vout": utxo.vout, "sequence": 1]
-        inputArray.append(input)
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
+        if let desc = utxo.desc, desc.contains(",after(") {
+            self.utxoToSweep = utxo
+            self.getAddress(utxo: utxo)
+        } else {
+            amountTotal = utxo.amount
+            let input:[String:Any] = ["txid": utxo.txid, "vout": utxo.vout, "sequence": 1]
+            inputArray.append(input)
             
-            self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
+            }
         }
     }
     

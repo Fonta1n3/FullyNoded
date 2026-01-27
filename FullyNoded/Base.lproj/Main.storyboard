@@ -814,11 +814,17 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                                     <color key="tintColor" systemColor="tintColor"/>
                                                     <state key="normal" image="info.circle" catalog="system"/>
                                                 </button>
+                                                <button opaque="NO" tag="22" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oan-Ej-gwL">
+                                                    <rect key="frame" x="206" y="11" width="99" height="34.333333333333336"/>
+                                                    <state key="normal" title="Button"/>
+                                                    <buttonConfiguration key="configuration" style="tinted" image="signature" catalog="system" title=" Sign"/>
+                                                </button>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="CJT-DR-Byx" firstAttribute="leading" secondItem="ghh-nT-jO0" secondAttribute="trailing" constant="8" symbolic="YES" id="7P5-Zq-R7P"/>
                                                 <constraint firstItem="Iu1-xw-WNL" firstAttribute="top" secondItem="5eO-hO-ldz" secondAttribute="top" id="9Ni-bL-ZY5"/>
                                                 <constraint firstItem="Iu1-xw-WNL" firstAttribute="top" secondItem="pfA-62-1DB" secondAttribute="top" id="Bqd-Dv-zmV"/>
+                                                <constraint firstAttribute="trailing" secondItem="oan-Ej-gwL" secondAttribute="trailing" constant="16" id="Dfi-cW-bJh"/>
                                                 <constraint firstItem="zdr-sc-HtB" firstAttribute="trailing" secondItem="7UM-gD-d6D" secondAttribute="trailingMargin" id="DuY-RF-xpy"/>
                                                 <constraint firstItem="ghh-nT-jO0" firstAttribute="top" secondItem="yRB-ph-qqb" secondAttribute="bottom" constant="8" symbolic="YES" id="HbF-l0-V12"/>
                                                 <constraint firstItem="cFk-CS-bV6" firstAttribute="centerY" secondItem="y7g-l6-0rb" secondAttribute="centerY" id="JJQ-qm-eGE"/>
@@ -843,6 +849,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                                 <constraint firstItem="crk-dT-SzH" firstAttribute="top" secondItem="7UM-gD-d6D" secondAttribute="topMargin" id="dto-JE-Kwg"/>
                                                 <constraint firstItem="7GL-jb-gFV" firstAttribute="leading" secondItem="JZg-8g-ofz" secondAttribute="trailing" constant="8" symbolic="YES" id="fIu-OI-Vif"/>
                                                 <constraint firstItem="JZg-8g-ofz" firstAttribute="top" secondItem="y7g-l6-0rb" secondAttribute="bottom" constant="8" symbolic="YES" id="fWD-0A-oWV"/>
+                                                <constraint firstItem="oan-Ej-gwL" firstAttribute="top" secondItem="7UM-gD-d6D" secondAttribute="top" constant="11" id="hJl-0O-Clw"/>
                                                 <constraint firstItem="f1u-KK-ct4" firstAttribute="leading" secondItem="7UM-gD-d6D" secondAttribute="leading" constant="16" id="ifJ-Jw-Z42"/>
                                                 <constraint firstItem="z4a-KS-xO4" firstAttribute="top" secondItem="WJr-rP-HgW" secondAttribute="top" id="jaI-tP-HcT"/>
                                                 <constraint firstItem="cFk-CS-bV6" firstAttribute="leading" secondItem="y7g-l6-0rb" secondAttribute="trailing" constant="8" symbolic="YES" id="k0g-Oh-XWU"/>
@@ -1485,11 +1492,11 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
         <scene sceneID="Uym-uj-rYU">
             <objects>
                 <viewController storyboardIdentifier="QRDisplayer" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" useStoryboardIdentifierAsRestorationIdentifier="YES" id="GlR-4A-eAx" customClass="QRDisplayerViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="1Ax-bN-O8E">
+                    <view key="view" contentMode="scaleToFill" ambiguous="YES" id="1Ax-bN-O8E">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="kT3-vW-HgJ">
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kT3-vW-HgJ">
                                 <rect key="frame" x="16" y="174" width="361" height="343"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="343" id="11T-Zr-4bL"/>
@@ -1510,7 +1517,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
                                 <rect key="frame" x="16" y="525" width="361" height="273"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" systemColor="secondaryLabelColor"/>
@@ -3119,11 +3126,22 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                     <action selector="addTimelockAction:" destination="Xxg-Pp-vvN" eventType="touchUpInside" id="ce2-9i-aw3"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" alpha="0.0" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Son-6i-6GA">
+                                <rect key="frame" x="16" y="567" width="361" height="20.333333333333371"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="361" id="mEP-kR-uZm"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" systemColor="systemPinkColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="luY-Vj-OjD"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="Son-6i-6GA" firstAttribute="top" secondItem="3Du-u4-MHg" secondAttribute="bottom" constant="8" symbolic="YES" id="2gT-yX-eRF"/>
                             <constraint firstItem="luY-Vj-OjD" firstAttribute="trailing" secondItem="3Du-u4-MHg" secondAttribute="trailing" constant="16" id="3wh-BN-CfC"/>
+                            <constraint firstItem="Son-6i-6GA" firstAttribute="leading" secondItem="luY-Vj-OjD" secondAttribute="leading" constant="16" id="Bd1-XL-rBl"/>
                             <constraint firstItem="M5K-HU-PtK" firstAttribute="top" secondItem="3Du-u4-MHg" secondAttribute="bottom" constant="8" symbolic="YES" id="U5M-05-T0Z"/>
                             <constraint firstItem="3Du-u4-MHg" firstAttribute="leading" secondItem="luY-Vj-OjD" secondAttribute="leading" constant="16" id="VHf-c0-Tzu"/>
                             <constraint firstItem="M5K-HU-PtK" firstAttribute="centerX" secondItem="eUN-hK-8St" secondAttribute="centerX" id="gPd-bd-Pfo"/>
@@ -3142,11 +3160,12 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                         <outlet property="labelField" destination="vqa-Nl-Pcv" id="5Oe-5Q-2WN"/>
                         <outlet property="messageField" destination="ykL-jw-dGh" id="E5w-Ys-thb"/>
                         <outlet property="qrView" destination="vte-Et-b1F" id="eYD-i1-TNK"/>
+                        <outlet property="timelockWarningLabel" destination="Son-6i-6GA" id="Cam-9d-R8S"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="e3g-lC-Q3f" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-8668" y="366.56671664167919"/>
+            <point key="canvasLocation" x="-8669.4656488549608" y="366.19718309859155"/>
         </scene>
         <!--Send-->
         <scene sceneID="nPC-E2-jSN">
@@ -4962,10 +4981,10 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="A1b-Ed-DYW"/>
-        <segue reference="1fQ-PG-chF"/>
-        <segue reference="uCn-2i-AB2"/>
+        <segue reference="BTh-Z9-jlD"/>
+        <segue reference="2dt-ER-scB"/>
         <segue reference="hLi-xy-fNZ"/>
-        <segue reference="yAt-Ra-aPH"/>
+        <segue reference="veA-tY-zvZ"/>
         <segue reference="AK4-4u-w1q"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" systemColor="tintColor"/>
