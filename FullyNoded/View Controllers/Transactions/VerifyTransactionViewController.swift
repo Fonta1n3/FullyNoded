@@ -12,13 +12,10 @@ import UIKit
 
 class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate {
     
-    //var isChannelFunding = false
-    //var voutChannelFunding:Int?
     var smartFee = Double()
     var txSize = Int()
     var rejectionMessage = ""
     var txValid: Bool?
-    //var memo = ""
     var txFee = Double()
     var fxRate: Double?
     var txid = ""
@@ -42,20 +39,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var alreadyBroadcast = false
     var confs = 0
     var labelText = "No label added."
-    //var memoText = "no memo added"
     var id: UUID!
     var hasSigned = false
     var isSigning = false
-    var wallet:Wallet?
+    var wallet: Wallet?
     var bitcoinCoreWallets = [String()]
     var walletIndex = 0
     var qrCodeStringToExport = ""
-    //var processedPsbt:String?
     var isBBQr = false
     var isUR = false
     var isPlainText = false
-    //var ndefMessage: NFCNDEFMessage?
-    //var readerSession: NFCNDEFReaderSession?
     var exporting = false
     var passphrase: String?
     private var initialLoad = true
@@ -63,12 +56,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     @IBOutlet weak private var verifyTable: UITableView!
     @IBOutlet weak private var exportButtonOutlet: UIButton!
     @IBOutlet weak private var bumpFeeOutlet: UIButton!
-    @IBOutlet weak private var signOutlet: UIButton!
     @IBOutlet weak private var sendOutlet: UIButton!
-    @IBOutlet weak private var exportBackgroundView: UIView!
-    @IBOutlet weak private var bumpFeeBackgroundView: UIView!
-    @IBOutlet weak private var signBackgroundView: UIView!
-    @IBOutlet weak private var sendBackgroundView: UIView!
     @IBOutlet weak private var buttonsBackgroundView: UIVisualEffectView!
     
     override func viewDidLoad() {
@@ -387,57 +375,31 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func enableSignAndLoad() {
-        enableSignButton()
         load()
     }
         
     private func enableExportButton() {
-        enableView(exportBackgroundView)
         enableButton(exportButtonOutlet)
     }
     
     private func enableBumpFeeButton() {
-        enableView(bumpFeeBackgroundView)
         enableButton(bumpFeeOutlet)
     }
     
-    private func enableSignButton() {
-        enableView(signBackgroundView)
-        enableButton(signOutlet)
-    }
-    
     private func enableSendButton() {
-        enableView(sendBackgroundView)
         enableButton(sendOutlet)
     }
     
     private func disableSendButton() {
-        disableView(sendBackgroundView)
         disableButton(sendOutlet)
-    }
-    
-    private func disableSignButton() {
-        disableView(signBackgroundView)
-        disableButton(signOutlet)
     }
     
     private func disableBumpButton() {
         disableButton(bumpFeeOutlet)
-        disableView(bumpFeeBackgroundView)
     }
     
     private func configureViews() {
-        disableSendButton()
         disableBumpButton()
-        disableSignButton()
-        
-        buttonsBackgroundView.clipsToBounds = true
-        buttonsBackgroundView.layer.cornerRadius = 8
-        
-        roundCorners(exportBackgroundView)
-        roundCorners(bumpFeeBackgroundView)
-        roundCorners(signBackgroundView)
-        roundCorners(sendBackgroundView)
         
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tap.cancelsTouchesInView = false
@@ -448,9 +410,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 enableBumpFeeButton()
             }
         } else {
-            if signedRawTx == "" && unsignedPsbt != "" && !hasSigned {
-                enableSignButton()
-            } else if signedRawTx != "" {
+            if signedRawTx != "" {
                 enableSendButton()
             }
         }
@@ -622,39 +582,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     @objc func tapToAdd(_ sender: UIButton) {
         promptToAddTx()
     }
-    
-    private func promptToExportPsbt() {
-        let alert = UIAlertController(title: "Export encrypted?",
-                                      message: "You can either export this psbt encrypted or in plain text.",
-                                      preferredStyle: .alert)
-        
-        alert.addAction(UIAlertAction(title: "Encrypted", style: .default, handler: { [weak self] action in
-            guard let self = self else { return }
-            
-            guard let data = Data(base64Encoded: self.unsignedPsbt),
-                  let encrypted = Crypto.blindPsbt(data),
-                  let ur = URHelper.dataToUrBytes(encrypted) else {
-                showAlert(vc: self, title: "", message: "Error converting to data or encrypting.")
-                return
-            }
-            
-            self.exportPsbt(blindedpsbt: ur.qrString, plainText: nil)
-        }))
-        
-        alert.addAction(UIAlertAction(title: "Unencrypted", style: .default, handler: { [weak self] action in
-            guard let self = self else { return }
-            
-            self.exportPsbt(blindedpsbt: nil, plainText: self.unsignedPsbt)
-        }))
-        
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-        alert.popoverPresentationController?.sourceView = self.view
-        self.present(alert, animated: true) {}
-    }
-                    
+                        
     @IBAction func exportAction(_ sender: Any) {
         if unsignedPsbt != "" {
-            promptToExportPsbt()
+            exportPsbt(plainText: unsignedPsbt)
         } else if signedRawTx != "" {
             exportTxn(txn: signedRawTx)
         }
@@ -749,7 +680,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     subtitle: "Ready for broadcasting. The view will reload to verify the signed transaction.",
                     onDismiss: { [weak self] in
                         guard let self = self else { return }
-                        disableSignButton()
                         unsignedPsbt = ""
                         reset()
                         signedRawTx = rawTx
@@ -859,7 +789,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     if rawTx != nil {
                         self.signedRawTx = rawTx!
                         self.enableSendButton()
-                        self.disableSignButton()
                         self.load()
                         showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "Tap the send button to broadcast the new transaction.")
                         
@@ -1211,7 +1140,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     let labels = dict["labels"] as? NSArray ?? ["no label"]
                     let desc = dict["desc"] as? String ?? "no descriptor"
                     if let parentDesc = dict["parent_desc"] as? String {
-                        let parentFnDesc = Descriptor(parentDesc)
+                        //let parentFnDesc = Descriptor(parentDesc)
                         self.inputTableArray[self.index]["parent_desc"] = parentDesc
                     }
                     var isChange = dict["ischange"] as? Bool ?? false
@@ -1395,7 +1324,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     
                     if allowed {
                         self.enableSendButton()
-                        self.disableSignButton()
                     }
                     
                     self.rejectionMessage = dict["reject-reason"] as? String ?? ""
@@ -2452,12 +2380,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
     }
     
-    //Need to export either as blinded or plain text.
-    private func exportPsbt(blindedpsbt: String?, plainText: String?) {
+    private func exportPsbt(plainText: String?) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
                         
-            //var tit = ""
             var itemToExport = ""
             
             if let plain = plainText {
@@ -2767,9 +2693,6 @@ extension VerifyTransactionViewController: UITableViewDelegate {
             
         case 4:
             return 522
-        
-//        case 1:
-//            return 150
             
         case 0, 1:
             return 50
@@ -2840,10 +2763,6 @@ extension VerifyTransactionViewController: UITableViewDelegate {
             case 0:
                 textLabel.text = "Label"
                 textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
-            
-//            case 1:
-//                textLabel.text = "Memo"
-//                textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
                 
             case 1:
                 if !alreadyBroadcast {

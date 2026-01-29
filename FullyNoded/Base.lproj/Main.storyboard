@@ -682,7 +682,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="JOf-3w-unO">
-                                <rect key="frame" x="16" y="103" width="361" height="607"/>
+                                <rect key="frame" x="16" y="103" width="361" height="649"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="inputCell" rowHeight="429" id="1Zh-DT-bup">
                                         <rect key="frame" x="20" y="55.333332061767578" width="321" height="429"/>
@@ -1189,140 +1189,77 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                     <outlet property="delegate" destination="XA2-Lt-01p" id="7dm-aW-Siu"/>
                                 </connections>
                             </tableView>
-                            <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="foy-yq-4sY">
-                                <rect key="frame" x="17" y="718" width="359" height="80"/>
-                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="EoW-rG-EwJ">
-                                    <rect key="frame" x="0.0" y="0.0" width="359" height="80"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                    <subviews>
-                                        <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="v9E-CR-yn5">
-                                            <rect key="frame" x="11" y="15" width="337" height="50"/>
-                                            <subviews>
-                                                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8y7-nk-cBS">
-                                                    <rect key="frame" x="0.0" y="0.0" width="73" height="50"/>
-                                                    <subviews>
-                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="STc-De-EFd">
-                                                            <rect key="frame" x="0.0" y="0.0" width="73" height="50"/>
-                                                            <color key="backgroundColor" systemColor="systemFillColor"/>
-                                                            <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                            <color key="tintColor" systemColor="tintColor"/>
-                                                            <state key="normal" title="export">
-                                                                <color key="titleColor" systemColor="tintColor"/>
-                                                            </state>
-                                                            <connections>
-                                                                <action selector="exportAction:" destination="XA2-Lt-01p" eventType="touchUpInside" id="6rq-wh-giv"/>
-                                                            </connections>
-                                                        </button>
-                                                    </subviews>
-                                                    <constraints>
-                                                        <constraint firstItem="STc-De-EFd" firstAttribute="leading" secondItem="8y7-nk-cBS" secondAttribute="leading" id="GBY-Mn-cgK"/>
-                                                        <constraint firstItem="STc-De-EFd" firstAttribute="top" secondItem="8y7-nk-cBS" secondAttribute="top" id="Nuc-Et-ESq"/>
-                                                        <constraint firstAttribute="width" constant="73" id="k6p-Hv-tKq"/>
-                                                        <constraint firstAttribute="height" constant="50" id="l14-6c-77e"/>
-                                                        <constraint firstAttribute="trailing" secondItem="STc-De-EFd" secondAttribute="trailing" id="vBF-TK-mZ7"/>
-                                                        <constraint firstAttribute="bottom" secondItem="STc-De-EFd" secondAttribute="bottom" id="wj2-xC-IpN"/>
-                                                    </constraints>
-                                                </view>
-                                                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="be3-Aa-q9k">
-                                                    <rect key="frame" x="88" y="0.0" width="73" height="50"/>
-                                                    <subviews>
-                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uoE-Vm-gb2">
-                                                            <rect key="frame" x="0.0" y="0.0" width="73" height="50"/>
-                                                            <color key="backgroundColor" systemColor="systemFillColor"/>
-                                                            <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                            <color key="tintColor" systemColor="tintColor"/>
-                                                            <state key="normal" title="bump fee">
-                                                                <color key="titleColor" systemColor="tintColor"/>
-                                                            </state>
-                                                            <connections>
-                                                                <action selector="bumpFeeAction:" destination="XA2-Lt-01p" eventType="touchUpInside" id="6jP-Ng-mTM"/>
-                                                            </connections>
-                                                        </button>
-                                                    </subviews>
-                                                    <constraints>
-                                                        <constraint firstAttribute="height" constant="50" id="2Op-w7-osa"/>
-                                                        <constraint firstItem="uoE-Vm-gb2" firstAttribute="leading" secondItem="be3-Aa-q9k" secondAttribute="leading" id="Cqz-so-IDd"/>
-                                                        <constraint firstAttribute="width" constant="73" id="UGA-JN-uO4"/>
-                                                        <constraint firstItem="uoE-Vm-gb2" firstAttribute="top" secondItem="be3-Aa-q9k" secondAttribute="top" id="WKb-xC-rsZ"/>
-                                                        <constraint firstAttribute="trailing" secondItem="uoE-Vm-gb2" secondAttribute="trailing" id="Zym-iJ-2h4"/>
-                                                        <constraint firstAttribute="bottom" secondItem="uoE-Vm-gb2" secondAttribute="bottom" id="bGQ-KI-HCS"/>
-                                                    </constraints>
-                                                </view>
-                                                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GcO-DT-YAr">
-                                                    <rect key="frame" x="176" y="0.0" width="73" height="50"/>
-                                                    <subviews>
-                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="avl-U2-g8j">
-                                                            <rect key="frame" x="0.0" y="0.0" width="73" height="50"/>
-                                                            <color key="backgroundColor" systemColor="systemFillColor"/>
-                                                            <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                            <color key="tintColor" systemColor="tintColor"/>
-                                                            <state key="normal" title="sign">
-                                                                <color key="titleColor" systemColor="tintColor"/>
-                                                            </state>
-                                                            <connections>
-                                                                <action selector="signAction:" destination="XA2-Lt-01p" eventType="touchUpInside" id="wuh-mS-HV8"/>
-                                                            </connections>
-                                                        </button>
-                                                    </subviews>
-                                                    <constraints>
-                                                        <constraint firstAttribute="bottom" secondItem="avl-U2-g8j" secondAttribute="bottom" id="1OU-EX-aR9"/>
-                                                        <constraint firstItem="avl-U2-g8j" firstAttribute="leading" secondItem="GcO-DT-YAr" secondAttribute="leading" id="StL-mI-mGT"/>
-                                                        <constraint firstAttribute="trailing" secondItem="avl-U2-g8j" secondAttribute="trailing" id="aqc-rE-kKr"/>
-                                                        <constraint firstItem="avl-U2-g8j" firstAttribute="top" secondItem="GcO-DT-YAr" secondAttribute="top" id="nRY-xn-0W8"/>
-                                                        <constraint firstAttribute="width" constant="73" id="pxd-Au-krQ"/>
-                                                        <constraint firstAttribute="height" constant="50" id="vmU-fp-UCu"/>
-                                                    </constraints>
-                                                </view>
-                                                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ihq-sB-rXR">
-                                                    <rect key="frame" x="264" y="0.0" width="73" height="50"/>
-                                                    <subviews>
-                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pPS-6j-crM">
-                                                            <rect key="frame" x="0.0" y="0.0" width="73" height="50"/>
-                                                            <color key="backgroundColor" systemColor="systemFillColor"/>
-                                                            <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                            <color key="tintColor" systemColor="tintColor"/>
-                                                            <state key="normal" title=" send">
-                                                                <color key="titleColor" systemColor="tintColor"/>
-                                                            </state>
-                                                            <connections>
-                                                                <action selector="sendAction:" destination="XA2-Lt-01p" eventType="touchUpInside" id="SQ5-ID-43G"/>
-                                                            </connections>
-                                                        </button>
-                                                    </subviews>
-                                                    <constraints>
-                                                        <constraint firstAttribute="height" constant="50" id="9GL-hK-fEu"/>
-                                                        <constraint firstAttribute="trailing" secondItem="pPS-6j-crM" secondAttribute="trailing" id="Gw6-FP-ELG"/>
-                                                        <constraint firstItem="pPS-6j-crM" firstAttribute="top" secondItem="ihq-sB-rXR" secondAttribute="top" id="JQJ-rE-9hO"/>
-                                                        <constraint firstAttribute="width" constant="73" id="P4f-HK-8qd"/>
-                                                        <constraint firstAttribute="bottom" secondItem="pPS-6j-crM" secondAttribute="bottom" id="n1m-oV-ZfS"/>
-                                                        <constraint firstItem="pPS-6j-crM" firstAttribute="leading" secondItem="ihq-sB-rXR" secondAttribute="leading" id="tU3-3a-wuD"/>
-                                                    </constraints>
-                                                </view>
-                                            </subviews>
-                                        </stackView>
-                                    </subviews>
-                                    <constraints>
-                                        <constraint firstItem="v9E-CR-yn5" firstAttribute="centerX" secondItem="EoW-rG-EwJ" secondAttribute="centerX" id="MmM-u0-j7U"/>
-                                        <constraint firstItem="v9E-CR-yn5" firstAttribute="centerY" secondItem="EoW-rG-EwJ" secondAttribute="centerY" id="sD5-Fl-PtX"/>
-                                    </constraints>
-                                </view>
-                                <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="359" id="MLY-ra-GMG"/>
-                                    <constraint firstAttribute="height" constant="80" id="l8M-Gy-GHP"/>
-                                </constraints>
-                                <blurEffect style="systemThinMaterial"/>
-                            </visualEffectView>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="xwU-kE-0kF">
+                                <rect key="frame" x="16" y="760" width="361" height="50"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="STc-De-EFd">
+                                        <rect key="frame" x="0.0" y="0.0" width="104.33333333333333" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="6LT-eD-rJH"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                        <color key="tintColor" systemColor="tintColor"/>
+                                        <state key="normal" title="export">
+                                            <color key="titleColor" systemColor="tintColor"/>
+                                        </state>
+                                        <buttonConfiguration key="configuration" style="tinted" title="export">
+                                            <fontDescription key="titleFontDescription" type="system" pointSize="13"/>
+                                            <color key="baseForegroundColor" systemColor="tintColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="exportAction:" destination="XA2-Lt-01p" eventType="touchUpInside" id="6rq-wh-giv"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uoE-Vm-gb2">
+                                        <rect key="frame" x="112.33333333333334" y="0.0" width="135" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="1if-L1-drZ"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                        <color key="tintColor" systemColor="tintColor"/>
+                                        <state key="normal" title="bump fee">
+                                            <color key="titleColor" systemColor="tintColor"/>
+                                        </state>
+                                        <buttonConfiguration key="configuration" style="tinted" title="bump fee">
+                                            <fontDescription key="titleFontDescription" type="system" pointSize="13"/>
+                                            <color key="baseForegroundColor" systemColor="tintColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="bumpFeeAction:" destination="XA2-Lt-01p" eventType="touchUpInside" id="6jP-Ng-mTM"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pPS-6j-crM">
+                                        <rect key="frame" x="255.33333333333329" y="0.0" width="105.66666666666666" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="mP3-A1-ZOs"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                        <color key="tintColor" systemColor="tintColor"/>
+                                        <state key="normal" title=" send">
+                                            <color key="titleColor" systemColor="tintColor"/>
+                                        </state>
+                                        <buttonConfiguration key="configuration" style="tinted" title=" send">
+                                            <fontDescription key="titleFontDescription" type="system" pointSize="13"/>
+                                            <color key="baseForegroundColor" systemColor="tintColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="sendAction:" destination="XA2-Lt-01p" eventType="touchUpInside" id="SQ5-ID-43G"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="c3Z-69-hpk"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="xwU-kE-0kF" firstAttribute="centerX" secondItem="LcI-eH-ZHh" secondAttribute="centerX" id="8Pd-z0-Yip"/>
+                            <constraint firstItem="xwU-kE-0kF" firstAttribute="leading" secondItem="c3Z-69-hpk" secondAttribute="leading" constant="16" id="Hsk-52-4L1"/>
                             <constraint firstItem="c3Z-69-hpk" firstAttribute="trailing" secondItem="JOf-3w-unO" secondAttribute="trailing" constant="16" id="Mld-TN-Uw1"/>
+                            <constraint firstItem="xwU-kE-0kF" firstAttribute="top" secondItem="JOf-3w-unO" secondAttribute="bottom" constant="8" symbolic="YES" id="SSC-Wh-V9d"/>
+                            <constraint firstItem="c3Z-69-hpk" firstAttribute="trailing" secondItem="xwU-kE-0kF" secondAttribute="trailing" constant="16" id="SUS-3N-JtI"/>
                             <constraint firstItem="JOf-3w-unO" firstAttribute="top" secondItem="c3Z-69-hpk" secondAttribute="top" id="WnU-pd-5MA"/>
-                            <constraint firstItem="foy-yq-4sY" firstAttribute="top" secondItem="JOf-3w-unO" secondAttribute="bottom" constant="8" symbolic="YES" id="a2R-d3-UHk"/>
-                            <constraint firstItem="c3Z-69-hpk" firstAttribute="bottom" secondItem="foy-yq-4sY" secondAttribute="bottom" constant="20" id="k9a-xR-1ki"/>
+                            <constraint firstItem="c3Z-69-hpk" firstAttribute="bottom" secondItem="xwU-kE-0kF" secondAttribute="bottom" constant="8" id="XhV-Ar-b8c"/>
                             <constraint firstItem="JOf-3w-unO" firstAttribute="leading" secondItem="c3Z-69-hpk" secondAttribute="leading" constant="16" id="mB5-ns-TvL"/>
-                            <constraint firstItem="foy-yq-4sY" firstAttribute="centerX" secondItem="LcI-eH-ZHh" secondAttribute="centerX" id="sN5-59-Bgx"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Transaction Detail" id="2eo-7r-TL3">
@@ -1341,15 +1278,9 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                         </rightBarButtonItems>
                     </navigationItem>
                     <connections>
-                        <outlet property="bumpFeeBackgroundView" destination="be3-Aa-q9k" id="abZ-j2-0HA"/>
                         <outlet property="bumpFeeOutlet" destination="uoE-Vm-gb2" id="yQN-Dn-eBD"/>
-                        <outlet property="buttonsBackgroundView" destination="foy-yq-4sY" id="ych-SU-5fR"/>
-                        <outlet property="exportBackgroundView" destination="8y7-nk-cBS" id="z4E-UB-VIk"/>
                         <outlet property="exportButtonOutlet" destination="STc-De-EFd" id="dcw-dp-OT2"/>
-                        <outlet property="sendBackgroundView" destination="ihq-sB-rXR" id="PHe-M0-iLS"/>
                         <outlet property="sendOutlet" destination="pPS-6j-crM" id="Dmr-QB-mFl"/>
-                        <outlet property="signBackgroundView" destination="GcO-DT-YAr" id="Qvk-TK-oaa"/>
-                        <outlet property="signOutlet" destination="avl-U2-g8j" id="HHH-0V-g9Z"/>
                         <outlet property="verifyTable" destination="JOf-3w-unO" id="2GY-ke-Z4R"/>
                         <segue destination="GlR-4A-eAx" kind="show" identifier="segueToExportPsbtAsQr" id="NFj-Y4-lQE"/>
                         <segue destination="4V7-jZ-58Y" kind="presentation" identifier="segueToTxLabelMemo" id="veA-tY-zvZ"/>
@@ -1359,7 +1290,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="qZa-gF-3f7" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-5914" y="365"/>
+            <point key="canvasLocation" x="-5915.2671755725187" y="364.78873239436621"/>
         </scene>
         <!--Transaction Label Memo View Controller-->
         <scene sceneID="JWQ-wN-sBD">
@@ -2536,10 +2467,16 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="6zG-h6-wiF">
-                                <rect key="frame" x="16" y="110.99999999999997" width="361" height="485.33333333333326"/>
+                                <rect key="frame" x="16" y="111" width="361" height="513.66666666666663"/>
                                 <subviews>
-                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GO8-o8-fXl">
-                                        <rect key="frame" x="0.0" y="0.0" width="361" height="44"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Create" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gKj-gN-DrS">
+                                        <rect key="frame" x="0.0" y="0.0" width="361" height="20.333333333333332"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GO8-o8-fXl">
+                                        <rect key="frame" x="0.0" y="28.333333333333343" width="361" height="44"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="DY7-55-MO9"/>
@@ -2553,14 +2490,14 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="d1Y-lU-km0">
-                                        <rect key="frame" x="0.0" y="52" width="361" height="43"/>
+                                        <rect key="frame" x="0.0" y="80.333333333333343" width="361" height="43"/>
                                         <string key="text">Creates a single sig wallet. Your node holds the public keys, Fully Noded holds the private keys encrypted on your device which can be deleted to make it watch-only.</string>
                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ewF-ze-dkg">
-                                        <rect key="frame" x="0.0" y="103" width="361" height="44"/>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ewF-ze-dkg">
+                                        <rect key="frame" x="0.0" y="131.33333333333334" width="361" height="44"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="ozy-XE-8dP"/>
@@ -2574,27 +2511,27 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ti9-Jn-c8c">
-                                        <rect key="frame" x="0.0" y="155" width="361" height="43"/>
+                                        <rect key="frame" x="0.0" y="183.33333333333331" width="361" height="43"/>
                                         <string key="text">This presents the multi-sig creator, where you can add cosigners from existing Signers, scanning QR codes or manually pasting the xpub and derivation info.</string>
                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                         <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="e69-9h-da9">
-                                        <rect key="frame" x="0.0" y="206" width="361" height="43"/>
+                                        <rect key="frame" x="0.0" y="234.33333333333331" width="361" height="43"/>
                                         <string key="text">This action will activate any existing Bitcoin Core wallet, if the Core wallet is a descriptor wallet then it will be synced with Fully Noded and you will get the full set of FN features.</string>
                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                         <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Import / Recovery" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="797-0O-GyV">
-                                        <rect key="frame" x="0.0" y="257" width="361" height="20.333333333333314"/>
+                                        <rect key="frame" x="0.0" y="285.33333333333331" width="361" height="20.333333333333314"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DCK-W8-EOP">
-                                        <rect key="frame" x="0.0" y="285.33333333333331" width="361" height="44"/>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DCK-W8-EOP">
+                                        <rect key="frame" x="0.0" y="313.66666666666669" width="361" height="44"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="EAj-ar-3eK"/>
@@ -2607,8 +2544,8 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                             <action selector="pasteTextAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="ts3-fj-9gc"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9dS-cb-UlI">
-                                        <rect key="frame" x="0.0" y="337.33333333333331" width="361" height="44"/>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9dS-cb-UlI">
+                                        <rect key="frame" x="0.0" y="365.66666666666669" width="361" height="44"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="sKf-3M-kXX"/>
@@ -2621,8 +2558,8 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                             <action selector="importFileAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="wRC-jd-68g"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mM2-q0-GaQ">
-                                        <rect key="frame" x="0.0" y="389.33333333333331" width="361" height="44"/>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mM2-q0-GaQ">
+                                        <rect key="frame" x="0.0" y="417.66666666666663" width="361" height="44"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="Xja-KJ-Vxe"/>
@@ -2635,8 +2572,8 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                             <action selector="scanQrAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="8bK-Hp-G9V"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oy6-dL-aYy">
-                                        <rect key="frame" x="0.0" y="441.33333333333337" width="361" height="44"/>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oy6-dL-aYy">
+                                        <rect key="frame" x="0.0" y="469.66666666666663" width="361" height="44"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="deP-5d-OSB"/>
@@ -3526,7 +3463,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
             </objects>
             <point key="canvasLocation" x="-6847" y="365"/>
         </scene>
-        <!--v2.3.1-->
+        <!--v2.3.2-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -3623,7 +3560,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v2.3.1" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v2.3.2" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -4972,7 +4909,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="5iI-Ra-crf"/>
+        <segue reference="ejH-sy-hlm"/>
         <segue reference="qed-hl-jG5"/>
         <segue reference="Fvb-gy-rb3"/>
         <segue reference="DLx-HT-rGm"/>
@@ -5033,46 +4970,46 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="linkColor">
-            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="secondaryLabelColor">
-            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="secondarySystemBackgroundColor">
-            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="secondarySystemFillColor">
-            <color red="0.47058823529411764" green="0.47058823529411764" blue="0.50196078431372548" alpha="0.16" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.47058823529999999" green="0.47058823529999999" blue="0.50196078430000002" alpha="0.16" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemBlueColor">
-            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemFillColor">
-            <color red="0.47058823529411764" green="0.47058823529411764" blue="0.50196078431372548" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.47058823529999999" green="0.47058823529999999" blue="0.50196078430000002" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGreenColor">
-            <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemPinkColor">
-            <color red="1" green="0.17647058823529413" blue="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.1764705882" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemRedColor">
-            <color red="1" green="0.23137254901960785" blue="0.18823529411764706" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemTealColor">
-            <color red="0.18823529411764706" green="0.69019607843137254" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.18823529410000001" green="0.69019607839999997" blue="0.78039215689999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="tertiaryLabelColor">
-            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29803921568627451" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29803921570000003" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="tertiarySystemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="tintColor">
-            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="viewFlipsideBackgroundColor">
             <color red="0.12156862745098039" green="0.12941176470588237" blue="0.14117647058823529" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
