@@ -46,6 +46,17 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         invoiceText.text = ""
         qrView.image = generateQrCode(key: "bitcoin:")
         generateOnchainInvoice()
+        
+        if let w = wallet {
+            let fnDesc = Descriptor(w.receiveDescriptor)
+            if fnDesc.isP2TR {
+                addTimelockOutlet.alpha = 1
+            } else {
+                addTimelockOutlet.alpha = 0
+            }
+        } else {
+            addTimelockOutlet.alpha = 0
+        }
     }
     
     private func setDelegates() {
@@ -158,97 +169,93 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             return
         }
         
-        let p = Get_Address_Info(["address": addressString])
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: p)) { [weak self] (response, errorDesc) in
-            guard let self = self else { return }
-            
-            guard let addressInfoResponse = response as? [String: Any] else {
-                spinner.dismiss()
-                return
-            }
-            
-            let addressInfo = AddressInfo(addressInfoResponse)
-            
-            
-            DispatchQueue.main.async { [weak self] in
+            let p = Get_Address_Info(["address": addressString])
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: p)) { [weak self] (response, errorDesc) in
                 guard let self = self else { return }
                 
-                let timelockVC = TimelockViewController()
+                guard let addressInfoResponse = response as? [String: Any] else {
+                    spinner.dismiss()
+                    return
+                }
                 
-                timelockVC.completion = { [weak self] (timestamp, afterFragment, displayDate) in
+                let addressInfo = AddressInfo(addressInfoResponse)
+                
+                
+                DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
-                    DispatchQueue.main.async { [weak self] in
+                    let timelockVC = TimelockViewController()
+                    
+                    timelockVC.completion = { [weak self] (timestamp, afterFragment, displayDate) in
                         guard let self = self else { return }
                         
-                        timelockWarningLabel.text = "⚠️ Timelocked until \(displayDate): FUNDS WILL NOT BE SPENDABLE UNTIL THIS DATE!"
-                        timelockWarningLabel.alpha = 1
-                    }
-                    
-                    var pubkey = addressInfo.pubkey
-                    if let _ = pubkey {
-                        pubkey = Descriptor(addressInfo.desc).pubkey
-                    }
-                    
-                    do {
-                        let (timelockedAddress, descriptor) = try WalletLogic.shared.createTimelockedAddress(fnWallet: wallet, pubkey: pubkey, descriptor: addressInfo.parent_desc, timelock: timestamp)
+                       
                         
-                        let param = Get_Descriptor_Info(["descriptor": descriptor])
-                        OnchainUtils.getDescriptorInfo(param) { [weak self] (descriptorInfo, message) in
-                            guard let self = self else { return }
+                        var pubkey = addressInfo.pubkey
+                        if let _ = pubkey {
+                            pubkey = Descriptor(addressInfo.desc).pubkey
+                        }
+                        
+                        do {
+                            let (timelockedAddress, descriptor) = try WalletLogic.shared.createTimelockedAddress(fnWallet: wallet, pubkey: pubkey, descriptor: addressInfo.parent_desc, timelock: timestamp)
                             
-                            guard let descriptorInfo = descriptorInfo else {
-                                spinner.dismiss()
-                                showAlert(title: "", message: message ?? "Unknown arror getting descripr")
-                                return
-                            }
-                            
-                            let request = [
-                                "desc": descriptorInfo.descriptor,
-                                "timestamp": "now",
-                                "label": "Locked until \(displayDate)"
-                            ]
-                            
-                            let p = Import_Descriptors(["requests": [request]])
-                            MakeRPCCall.sharedInstance.executeRPCCommand(method: .importdescriptors(param: p)) { [weak self] (response, errorDesc) in
+                            let param = Get_Descriptor_Info(["descriptor": descriptor])
+                            OnchainUtils.getDescriptorInfo(param) { [weak self] (descriptorInfo, message) in
                                 guard let self = self else { return }
                                 
-                                guard let response = response as? [[String: Any]] else {
-                                    showAlert(title: "", message: errorDesc ?? "Unknown error importing descriptor: \(descriptor)")
+                                guard let descriptorInfo = descriptorInfo else {
+                                    spinner.dismiss()
+                                    showAlert(title: "", message: message ?? "Unknown arror getting descripr")
                                     return
                                 }
                                 
-                                DispatchQueue.main.async {
-                                    timelockVC.dismiss(animated: true) { [weak self] in
-                                        guard let self = self else { return }
-                                        
-                                        BackupWarningView.show { [weak self] in
+                                let request = [
+                                    "desc": descriptorInfo.descriptor,
+                                    "timestamp": "now",
+                                    "label": "Locked until \(displayDate)"
+                                ]
+                                
+                                let p = Import_Descriptors(["requests": [request]])
+                                MakeRPCCall.sharedInstance.executeRPCCommand(method: .importdescriptors(param: p)) { [weak self] (response, errorDesc) in
+                                    guard let self = self else { return }
+                                    
+                                    guard let response = response as? [[String: Any]] else {
+                                        showAlert(title: "", message: errorDesc ?? "Unknown error importing descriptor: \(descriptor)")
+                                        return
+                                    }
+                                    
+                                    DispatchQueue.main.async {
+                                        timelockVC.dismiss(animated: true) { [weak self] in
                                             guard let self = self else { return }
                                             
-                                            self.addTimelockOutlet.isHidden = true
-                                            
-                                            for descriptor in response {
-                                                let importResponse = ImportDescriportsResponse(descriptor)
-                                                if importResponse.success {
-                                                    showAddress(address: timelockedAddress)
-                                                    
-                                                    let item = BackupItem(
-                                                        desc: descriptorInfo.descriptor,
-                                                        active: false,
-                                                        range: nil,
-                                                        nextIndex: 0,
-                                                        timestamp: Date().unixTimestamp,
-                                                        internal: false,
-                                                        label: "Locked until \(displayDate)"
-                                                    )
-                                                    
-                                                    backUpNow(item: item)
-                                                } else {
-                                                    spinner.dismiss()
-                                                    if let errorDesc = importResponse.error, let message = errorDesc["message"] as? String {
-                                                        showAlert(title: "", message: message)
+                                            BackupWarningView.show { [weak self] in
+                                                guard let self = self else { return }
+                                                
+                                                self.addTimelockOutlet.isHidden = true
+                                                
+                                                for descriptor in response {
+                                                    let importResponse = ImportDescriportsResponse(descriptor)
+                                                    if importResponse.success {
+                                                        showAddress(address: timelockedAddress)
+                                                        
+                                                        let item = BackupItem(
+                                                            desc: descriptorInfo.descriptor,
+                                                            active: false,
+                                                            range: nil,
+                                                            nextIndex: 0,
+                                                            timestamp: Date().unixTimestamp,
+                                                            internal: false,
+                                                            label: "Locked until \(displayDate)"
+                                                        )
+                                                        
+                                                        backUpNow(item: item, displayDate: displayDate)
                                                     } else {
-                                                        showAlert(title: "", message: "Unknown error importing time lock address.")
+                                                        spinner.dismiss()
+                                                        if let errorDesc = importResponse.error, let message = errorDesc["message"] as? String {
+                                                            showAlert(title: "", message: message)
+                                                        } else {
+                                                            showAlert(title: "", message: "Unknown error importing time lock address.")
+                                                        }
                                                     }
                                                 }
                                             }
@@ -256,18 +263,17 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                                     }
                                 }
                             }
+                        } catch {
+                            spinner.dismiss()
+                            showAlert(title: "", message: error.localizedDescription)
                         }
-                    } catch {
-                        spinner.dismiss()
-                        showAlert(title: "", message: error.localizedDescription)
                     }
+                    present(timelockVC, animated: true)
                 }
-                present(timelockVC, animated: true)
             }
-        }
     }
     
-    func backUpNow(item: BackupItem) {
+    func backUpNow(item: BackupItem, displayDate: String) {
         var descriptors: [BackupItem] = [item]
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
@@ -306,7 +312,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                             lastUpdate: Date(),           // or just Date() for now
                             descriptors: descriptors           // need to append existing descriptors
                         )
-                        updateNow(backup: backup)
+                        updateNow(backup: backup, displayDate: displayDate)
                         
                     }
                 }
@@ -316,7 +322,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    private func updateNow(backup: WalletBackup) {
+    private func updateNow(backup: WalletBackup, displayDate: String) {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970  // optional, but matches our custom logic
 
@@ -331,7 +337,14 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                         in: self,
                         title: "Wallet backup updated!",
                         subtitle: "You can export this backup by going back to the Wallet view and tapping the export button in the top right."
-                    ) { }
+                    ) {
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            timelockWarningLabel.text = "⚠️ Timelocked until \(displayDate): FUNDS WILL NOT BE SPENDABLE UNTIL THIS DATE!"
+                            timelockWarningLabel.alpha = 1
+                        }
+                    }
                 }
             }
         } catch {
