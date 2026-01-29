@@ -738,6 +738,11 @@ class ActiveWalletViewController: UIViewController {
             }
             
             onchainTransactions = listTransactionsResponse
+            
+            onchainTransactions?.transactions.removeAll { tx in
+                return tx.confirmations < 0
+            }
+
             updateTransactionArray()
         }
     }
@@ -958,6 +963,7 @@ class ActiveWalletViewController: UIViewController {
             vc.alreadyBroadcast = true
             vc.signedRawTx = hex
             vc.confs = confs
+            print("confs: \(confs)")
             
         case "segueToUtxos":
             guard let vc = segue.destination as? UTXOViewController else { fallthrough }
