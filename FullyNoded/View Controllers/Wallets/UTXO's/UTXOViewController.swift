@@ -25,6 +25,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     var fxRate: Double?
     private var allCachedUtxos: [[String: Any]] = []
     private var initialLoad = true
+    var signedRawTx: String?
     
     @IBOutlet weak private var tableView: UITableView!
     @IBOutlet weak private var lastSavedDateLabel: UILabel!
@@ -464,6 +465,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             guard let vc = segue.destination as? VerifyTransactionViewController, let psbt = psbt else { fallthrough }
             
             vc.unsignedPsbt = psbt
+            if let signedRawTx = signedRawTx {
+                vc.signedRawTx = signedRawTx
+            }
+            
             
         default:
             break
@@ -518,6 +523,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     private func sweepUtxo(recipientAddress: String, passphrase: String?, utxo: UTXO) {
+        ConnectingView.shared.show(vc: self)
         CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
             guard let self = self else { return }
             
@@ -573,37 +579,24 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                         
                         let (psbt, rawTx) = try WalletLogic.shared.createTimelockedTaprootWalletAndSign(mnemonic: bdkMnemonic, passphrase: nil, network: .testnet4, recipientAddress: recipientAddress, utxo: utxo)
                         
-                        var tx: WalletLogic.BDKTransaction? = nil
+                        ConnectingView.shared.dismiss()
+                        
+                        //var tx: WalletLogic.BDKTransaction? = nil
                         if let rawTx = rawTx, let data = Data(hexString: rawTx) {
-                            
                             // present tx analyzer
                             DispatchQueue.main.async { [weak self] in
                                 guard let self = self else { return }
                                 
-                                do {
-                                    tx = try WalletLogic.BDKTransaction(transactionBytes: data)
-                                    
-                                    ConnectingView.shared.dismiss()
-                                    
-                                    let reviewVC = PsbtReviewViewController(
-                                        psbt: try WalletLogic.BDKPsbt(psbtBase64: psbt),
-                                        rawTransaction: tx,
-                                        wallet: nil,
-                                        signer: nil,
-                                        network: WalletLogic.shared.bdkNetwork()!,
-                                        inputs: [esploraUtxo],
-                                        fxRate: fxRate
-                                    )
-                                    
-                                    navigationController?.pushViewController(reviewVC, animated: true)
-                                } catch {
-                                    showAlert(title: "Failed presenting review view.", message: error.localizedDescription)
-                                    ConnectingView.shared.dismiss()
-                                }
+                                signedRawTx = rawTx
+                                performSegue(withIdentifier: "segueToBroadcasterFromUtxo", sender: self)
                             }
                         } else {
-                            showAlert(title: "", message: "Unable to finalize. Needs another signer.")
-                            ConnectingView.shared.dismiss()
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
+                                
+                                self.psbt = psbt
+                                performSegue(withIdentifier: "segueToBroadcasterFromUtxo", sender: self)
+                            }
                         }
                         
                     } catch {
@@ -619,12 +612,56 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
 
 
 
-
 // MARK: UTXOCellDelegate
 
 extension UTXOViewController: UTXOCellDelegate {
     
+    private func getDescriptorInfo(descriptor: String) {
+        let p: Get_Descriptor_Info = .init(["descriptor": descriptor])
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getdescriptorinfo(param: p)) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
+            removeSpinner()
+            guard let response = response as? [String: Any] else {
+                showAlert(vc: self, title: "", message: errorDesc ?? "No response.")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                showModal(data: response, title: "Parent Descriptor Info")
+            }
+        }
+    }
     
+    func copyParentDesc(_ utxo: UTXO) {
+        if let parentDescs = utxo.parentDescs {
+            UIPasteboard.general.string = "\(parentDescs)"
+            showAlert(vc: self, title: "", message: "Parent descriptor copied ✓")
+        }
+    }
+    
+    func didTapParentDescInfoButton(_ utxo: UTXO) {
+        addNavBarSpinner()
+        guard let parentDescs = utxo.parentDescs else {
+            showAlert(vc: self, title: "", message: "No descriptor associated with this UTXO.")
+            return
+        }
+        let descriptor = "\(parentDescs[0])"
+        let p: Get_Descriptor_Info = .init(["descriptor": descriptor])
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getdescriptorinfo(param: p)) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
+            removeSpinner()
+            guard let response = response as? [String: Any] else {
+                showAlert(vc: self, title: "", message: errorDesc ?? "No response.")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                showModal(data: response, title: "Parent Descriptor Info")
+            }
+        }
+    }
     
     func showUtxoRawData(_ utxo: UTXO) {
         DispatchQueue.main.async { [weak self] in
