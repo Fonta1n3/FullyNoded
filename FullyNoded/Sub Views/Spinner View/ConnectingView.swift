@@ -23,15 +23,16 @@ final class ConnectingView {
     private let activityIndicator = UIActivityIndicatorView(style: .large)
     let label = UILabel()
     
-    private var isVisible = false
+    //private var isVisible = false
     
     // MARK: - Public Methods
     
     func show(vc: UIViewController, description: String = "") {
-        guard !isVisible else {
-            return
-        }
-        isVisible = true
+//        guard !isVisible else {
+//            print("isVisible: \(isVisible)")
+//            return
+//        }
+//        isVisible = true
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -41,11 +42,11 @@ final class ConnectingView {
     }
     
     func dismiss(completion: (() -> Void)? = nil) {
-        guard isVisible else {
-            completion?()
-            return
-        }
-        isVisible = false
+//        guard isVisible else {
+//            completion?()
+//            return
+//        }
+//        isVisible = false
         
         DispatchQueue.main.async { [weak self] in
             self?.animateOut(completion: completion)

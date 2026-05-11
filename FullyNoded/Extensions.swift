@@ -50,6 +50,19 @@ extension UIViewController {
             self.present(alert, animated: true)
         }
     }
+    
+    func topMostViewController() -> UIViewController {
+        if let presented = self.presentedViewController {
+            return presented.topMostViewController()
+        }
+        if let nav = self as? UINavigationController {
+            return nav.visibleViewController?.topMostViewController() ?? nav
+        }
+        if let tab = self as? UITabBarController {
+            return tab.selectedViewController?.topMostViewController() ?? tab
+        }
+        return self
+    }
 }
 
 public extension Date {
@@ -72,6 +85,8 @@ public extension Date {
     }
     
 }
+
+
 
 public extension UITextView {
   func addHyperLinksToText(originalText: String, hyperLinks: [String: String]) {
@@ -143,6 +158,11 @@ extension Array where Element == UInt8 {
 }
 
 public extension String {
+    
+    var isValidHex: Bool {
+        guard !isEmpty else { return false }
+        return allSatisfy { $0.isHexDigit }
+    }
     
     var addressExpanded: String {
         // Keeps the prefix and checksum intact and tries to split middle by 5 chars each.
@@ -297,6 +317,12 @@ public extension String {
     
     var btcToSats: String {
         return (Int(self.doubleValue * 100000000.0)).avoidNotation
+    }
+}
+
+extension Bool {
+    var intValue: Int {
+        return self ? 1 : 0
     }
 }
 
@@ -515,22 +541,34 @@ public extension Double {
     }
     
     var fiatString: String {
-        let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        let currencyCode = UserDefaults.standard.string(forKey: "currency") ?? "USD"
         
-        var symbol = "$"
+        var symbol = currencyCode
         
-        for curr in currencies {
-            for (key, value) in curr {
-                if key == currency {
-                    symbol = value
-                }
+        for dict in currencies {
+            if let foundSymbol = dict[currencyCode] {
+                symbol = foundSymbol
+                break
             }
         }
         
-        if self < 1.0 {
-            return "\(symbol)\(self.avoidNotation)"
+        // Always format to 2 decimal places using NumberFormatter for reliability
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        formatter.roundingMode = .halfEven
+        
+        let formattedAmount = formatter.string(from: NSNumber(value: self)) ?? String(format: "%.2f", self)
+        
+        // Special case: some currencies have symbol AFTER the amount (rare, but e.g. CHF sometimes)
+        // You can customize this list if needed
+        let symbolAfter = ["CHF"]
+        
+        if symbolAfter.contains(currencyCode) {
+            return "\(formattedAmount) \(symbol)"
         } else {
-            return "\(symbol)\(Int(self).withCommas)"
+            return "\(symbol)\(formattedAmount)"
         }
     }
     
@@ -634,16 +672,25 @@ public extension Int {
     
 }
 
-public extension Encodable {
-
-    /// Encode into JSON and return `Data`
-    func jsonData() throws -> Data {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        encoder.dateEncodingStrategy = .iso8601
-        return try encoder.encode(self)
-    }
-}
+ public extension Encodable {
+     func jsonData() throws -> Data {
+         let encoder = JSONEncoder()
+         encoder.outputFormatting = [.sortedKeys]
+         encoder.dateEncodingStrategy = .secondsSince1970
+         return try encoder.encode(self)
+     }
+ }
+ 
+//public extension Encodable {
+//
+//    /// Encode into JSON and return `Data`
+//    func jsonData() throws -> Data {
+//        let encoder = JSONEncoder()
+//        encoder.outputFormatting = .prettyPrinted
+//        encoder.dateEncodingStrategy = .iso8601
+//        return try encoder.encode(self)
+//    }
+//}
 
 public extension UIView {
     #if targetEnvironment(macCatalyst)

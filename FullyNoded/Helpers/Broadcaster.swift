@@ -11,18 +11,25 @@ import Foundation
 class Broadcaster {
     
     static let sharedInstance = Broadcaster()
-    lazy var torClient = TorClient.sharedInstance
     
-    func send(rawTx: String, completion: @escaping ((String?)) -> Void) {
-        var blockstreamUrl = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/api/tx"
-        
-        if (UserDefaults.standard.object(forKey: "chain") as! String) == "test" {
-            blockstreamUrl = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/testnet/api/tx"
+    enum BroadcastResult {
+        case success(txid: String)
+        case failure(errorMessage: String)
+    }
+    
+    func broadcastRawTransaction(rawTx: String, network: WalletLogic.BDKNetwork) async throws -> BroadcastResult {
+        let baseURL: String
+        let host = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion"
+        switch network {
+        case .testnet:   baseURL = "\(host)/testnet"
+        case .testnet4:  baseURL = "\(host)/testnet4"
+        case .signet:    baseURL = "\(host)/signet"
+        default:
+            baseURL = host
         }
         
-        guard let url = URL(string: blockstreamUrl) else {
-            completion((nil))
-            return
+        guard let url = URL(string: "\(baseURL)/api/tx") else {
+            return .failure(errorMessage: "Invalid URL")
         }
         
         var request = URLRequest(url: url)
@@ -30,17 +37,25 @@ class Broadcaster {
         request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
         request.httpBody = rawTx.data(using: .utf8)
         
-        let task = torClient.session.dataTask(with: request as URLRequest) { (data, response, error) in
-            if error != nil {
-                completion(nil)
-            } else {
-                if let urlContent = data {
-                    if let txid = String(bytes: urlContent, encoding: .utf8) {
-                        completion(txid)
-                    }
-                }
+        do {
+            let (data, response) = try await TorClient.sharedInstance.session.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                return .failure(errorMessage: "Invalid response")
             }
+            
+            if httpResponse.statusCode == 200,
+               let txid = String(data: data, encoding: .utf8)?
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+               !txid.isEmpty {
+                return .success(txid: txid)
+            }
+            
+            let errorMsg = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Unknown error"
+            return .failure(errorMessage: errorMsg)
+            
+        } catch {
+            return .failure(errorMessage: error.localizedDescription)
         }
-        task.resume()
     }
 }

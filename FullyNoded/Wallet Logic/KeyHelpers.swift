@@ -2,7 +2,7 @@
 //  CreateFullyNodedWallet.swift
 //  BitSense
 //
-//  Created by Peter on 28/06/20.
+//  Created by F on 28/06/20.
 //  Copyright © 2020 Fontaine. All rights reserved.
 //
 
@@ -11,6 +11,8 @@ import LibWally
 
 enum Keys {
         
+    // TODO:  Remove Libwally as much as possible.
+    
     static func validMnemonic(_ words: String) -> Bool {
         guard let _ = try? WalletLogic.BDKMnemonic.fromString(mnemonic: words) else {
             return false
@@ -109,6 +111,14 @@ enum Keys {
               let address = try? hdKey.derive(using: path).address(type: .payToWitnessPubKeyHash) else { return nil }
         
         return address.description
+    }
+    
+    static func childPubkey(xpub: String) -> String? {
+        guard let hdKey = try? HDKey(base58: xpub),
+            let path = try? BIP32Path(string: "0/0"),
+              let pubkey = try? hdKey.derive(using: path).pubKey.data.hex else { return nil }
+        
+        return pubkey
     }
     
     static func addresses(accountPubkey: String, accountPath: String, completion: @escaping (([[String:Any]]?)) -> Void) {
@@ -394,39 +404,28 @@ enum Keys {
             }
             
             for (i, wallet) in wallets.enumerated() {
-                if wallet["id"] != nil {
-                    let localWalletStruct = Wallet(dictionary: wallet)
-                    let localWalletRecDesc = localWalletStruct.receiveDescriptor
-                    let localWalletChangeDesc = localWalletStruct.changeDescriptor
-                    let outputParentDescStr = Descriptor(parentDesc)
-                    
-                    #if DEBUG
-                    print("localWalletRecDesc: \(localWalletRecDesc)")
-                    print("localWalletChangeDesc: \(localWalletChangeDesc)")
-                    print("outputParentDescStr: \(outputParentDescStr.string)")
-                    #endif
-                    
-                    if localWalletRecDesc == outputParentDescStr.string || localWalletChangeDesc == outputParentDescStr.string {
-                        isOurs = true
-                        walletLabel = localWalletStruct.label
-                    }
-                    
-                    if i + 1 == wallets.count {
-                        addressSignable(parentDesc: parentDesc, passphrase: passphrase) { (isSignable, signerLabel) in
-                            if isSignable {
-                                signable = true
-                            }
-                            
-                            if signerLabel != nil {
-                                signer = signerLabel
-                            }
-                            
-                            completion((isOurs, walletLabel, signable, signer))
+                let localWalletStruct = Wallet(dictionary: wallet)
+                let localWalletRecDesc = localWalletStruct.receiveDescriptor
+                let localWalletChangeDesc = localWalletStruct.changeDescriptor
+                let outputParentDescStr = Descriptor(parentDesc)
+                
+                if localWalletRecDesc == outputParentDescStr.string || localWalletChangeDesc == outputParentDescStr.string {
+                    isOurs = true
+                    walletLabel = localWalletStruct.label
+                }
+                
+                if i + 1 == wallets.count {
+                    addressSignable(parentDesc: parentDesc, passphrase: passphrase) { (isSignable, signerLabel) in
+                        if isSignable {
+                            signable = true
                         }
+                        
+                        if signerLabel != nil {
+                            signer = signerLabel
+                        }
+                        
+                        completion((isOurs, walletLabel, signable, signer))
                     }
-                } else if i + 1 == wallets.count {
-                    // TODO: DELETE GHOST WALLET
-                    print("bad luck...")
                 }
             }
         }

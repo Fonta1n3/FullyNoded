@@ -19,6 +19,8 @@ protocol UTXOCellDelegate: AnyObject {
     func getTxInfo(_ utxo: UTXO)
     func getDescriptorInfo(_ utxo: UTXO)
     func showUtxoRawData(_ utxo: UTXO)
+    func copyParentDesc(_ utxo: UTXO)
+    func didTapParentDescInfoButton(_ utxo: UTXO)
 }
 
 class UTXOCell: UITableViewCell {
@@ -49,6 +51,7 @@ class UTXOCell: UITableViewCell {
     @IBOutlet weak var isDustImageView: UIImageView!
     @IBOutlet weak var isSolvableImageView: UIImageView!
     @IBOutlet weak var fiatAmount: UILabel!
+    @IBOutlet weak var parentDescLabel: UILabel!
     
     
     
@@ -83,6 +86,10 @@ class UTXOCell: UITableViewCell {
             }
         } else {
             reusedImageView.image = UIImage(systemName: "questionmark")
+        }
+        
+        if let parentDescs = utxo.parentDescs {
+            parentDescLabel.text = "\(parentDescs)"
         }
         
         if let desc = utxo.desc {
@@ -154,15 +161,18 @@ class UTXOCell: UITableViewCell {
         
         txidLabel.text = utxo.txid
         voutLabel.text = "\(utxo.vout)"
-        
-//        addressLabel.translatesAutoresizingMaskIntoConstraints = true
-//        addressLabel.sizeToFit()
-//        txidLabel.translatesAutoresizingMaskIntoConstraints = true
-//        txidLabel.sizeToFit()
         self.translatesAutoresizingMaskIntoConstraints = true
         self.sizeToFit()
     }
+    
+    @IBAction func didTapCopyParentDescButton(_ sender: Any) {
+        delegate.copyParentDesc(utxo)
+    }
             
+    @IBAction func parentDescInfoButtonTapped(_ sender: Any) {
+        delegate.didTapParentDescInfoButton(utxo)
+    }
+    
     @IBAction func lockButtonTapped(_ sender: Any) {
         delegate.didTapToLock(utxo)
     }

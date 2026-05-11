@@ -14,6 +14,7 @@ struct AddressStruct: CustomStringConvertible {
     var balance: Double
     var utxos: [Esplora_Utxo] = []
     var confirmed: Bool?
+    var used: Bool?
     
     init(dictionary: [String: Any]) {
         address = dictionary["address"] as! String
@@ -21,6 +22,7 @@ struct AddressStruct: CustomStringConvertible {
         balance = dictionary["balance"] as! Double
         utxos = dictionary["utxos"] as! [Esplora_Utxo]
         confirmed = dictionary["confirmed"] as? Bool
+        used = dictionary["used"] as? Bool
     }
     
     var description: String {

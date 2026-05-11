@@ -92,7 +92,8 @@ class TorClient: NSObject {
                     "LongLivedPorts": "80,443",
                     "NumCPUs": "2",
                     "DisableDebuggerAttachment": "1",
-                    "SafeLogging": "1"
+                    "SafeLogging": "1",
+                    "HTTPTunnelPort": "9080"
                     //"ExcludeExitNodes": "1",
                     //"StrictNodes": "1"
                 ]

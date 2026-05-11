@@ -8,27 +8,258 @@
 
 import UIKit
 
-class NodelessTableViewController: UITableViewController {
+
+class NodelessTableViewController: UITableViewController, UIDocumentPickerDelegate {
     
     var savedUtxos: [UTXO] = []
     var addresses: [AddressStruct] = []
-    var signer: SignerStruct!
+    var signer: SignerStruct?
     var addressToExport = ""
     var derivationToExport = ""
     var network: WalletLogic.BDKNetwork!
     let spinner = ConnectingView.shared
     var primaryDescriptor = ""
+    var changeDescriptor: String?
     var watchOnlyBdkWallet: WalletLogic.BDKWallet?
+    var initialLoad = true
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         tableView.register(BitcoinAddressCell.self, forCellReuseIdentifier: "BitcoinCell")
+        
+        let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        FiatConverter.sharedInstance.getFxRate(currency: currency) { fxRate in
+            UserDefaults.standard.set(fxRate, forKey: "fxRate")
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        if initialLoad {
+            load()
+            initialLoad = false
+        }
+    }
+    
+    @IBAction func importTransaction(_ sender: Any) {
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(title: "Import a transaction",
+                                          message: "You can import a transaction in a number of ways, Nodeless will analyze the transaction and allow you to sign, export and/or broadcast it. No node required.",
+                                          preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Upload File", style: .default, handler: { action in
+                self.presentUploader()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Paste Text", style: .default, handler: { action in
+                self.pasteAction()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "QR Code", style: .default, handler: { action in
+                self.scanQr()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true) {}
+        }
+        
+    }
+    
+    private func scanQr() {
+        presentQRScanner(fromSignAndVerify: true) { scannedResult in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                processString(string: scannedResult)
+            }
+        }
+    }
+    
+    private func pasteAction() {
+        if let data = UIPasteboard.general.data(forPasteboardType: "com.apple.traditional-mac-plain-text") {
+            guard let string = String(bytes: data, encoding: .utf8) else {
+                showAlert(vc: self, title: "Not a psbt?", message: "Looks like you do not have valid text on your clipboard")
+                return
+            }
+            
+            processString(string: string)
+        } else if let string = UIPasteboard.general.string {
+            
+            processString(string: string)
+        } else {
+            
+            showAlert(vc: self, title: "", message: "Not valid text. You can copy and paste the base64 text of a psbt or a signed raw transaction with this button.")
+        }
+    }
+    
+    private func processString(string: String) {
+        if let psbt = validPsbt(string: string) {
+            let reviewVC = PsbtReviewViewController(
+                psbt: psbt,
+                rawTransaction: nil,
+                wallet: watchOnlyBdkWallet!,
+                signer: signer,
+                network: network,
+                inputs: [],
+                fxRate: UserDefaults.standard.object(forKey: "fxRate") as? Double
+            )
+            
+            navigationController?.pushViewController(reviewVC, animated: true)
+            
+        } else if let tx = validTransaction(string: string) {
+            let reviewVC = PsbtReviewViewController(
+                psbt: nil,
+                rawTransaction: tx,
+                wallet: watchOnlyBdkWallet!,
+                signer: signer,
+                network: network,
+                inputs: [],
+                fxRate: UserDefaults.standard.object(forKey: "fxRate") as? Double
+            )
+            
+            navigationController?.pushViewController(reviewVC, animated: true)
+        }
+    }
+    
+    private func fetchInputs(tx: WalletLogic.BDKTransaction) -> [Esplora_Utxo] {
+        var ourUtxos: [Esplora_Utxo] = []
+        for input in tx.input() {
+            let vout = input.previousOutput.vout
+            let txid = input.previousOutput.txid.description
+            
+            for savedUtxo in savedUtxos {
+                if savedUtxo.vout == vout && savedUtxo.txid == txid {
+                    var status = Esplora_Utxo.Status(confirmed: false, blockHeight: nil, blockHash: nil, blockTime: nil)
+                    
+                    if let confs = savedUtxo.confirmations {
+                        if confs > 0 {
+                            status = Esplora_Utxo.Status(confirmed: true, blockHeight: nil, blockHash: nil, blockTime: nil)
+                        }
+                    }
+                    
+                    let esplorUtxo = Esplora_Utxo(txid: savedUtxo.txid, vout: savedUtxo.vout, value: Int64(savedUtxo.amount / 100000000.0), status: status)
+                    ourUtxos.append(esplorUtxo)
+                }
+            }
+        }
+        return ourUtxos
+    }
+    
+    private func fetchInputs(psbt: WalletLogic.BDKPsbt, completion: @escaping (([Esplora_Utxo])) -> Void) {
+        var ourUtxos: [Esplora_Utxo] = []
+        guard let tx = try? psbt.extractTx() else {
+            completion([])
+            return
+        }
+        
+        for input in tx.input() {
+            let vout = input.previousOutput.vout
+            let txid = input.previousOutput.txid.description
+            
+            for (i, savedUtxo) in savedUtxos.enumerated() {
+                if savedUtxo.vout == vout && savedUtxo.txid == txid {
+                    var status = Esplora_Utxo.Status(confirmed: false, blockHeight: nil, blockHash: nil, blockTime: nil)
+                    
+                    if let confs = savedUtxo.confirmations {
+                        if confs > 0 {
+                            status = Esplora_Utxo.Status(confirmed: true, blockHeight: nil, blockHash: nil, blockTime: nil)
+                        }
+                    }
+                    
+                    let esplorUtxo = Esplora_Utxo(txid: savedUtxo.txid, vout: savedUtxo.vout, value: Int64(savedUtxo.amount / 100000000.0), status: status)
+                    ourUtxos.append(esplorUtxo)
+                }
+                
+                if i + 1 == savedUtxos.count {
+                    completion((ourUtxos))
+                }
+            }
+        }
+    }
+    
+    private func validPsbt(string: String) -> WalletLogic.BDKPsbt? {
+        return try? WalletLogic.BDKPsbt(psbtBase64: string)
+    }
+    
+    private func validTransaction(string: String) -> WalletLogic.BDKTransaction? {
+        guard let hexData = Data(hexString: string) else {
+            return nil
+        }
+        return try? WalletLogic.BDKTransaction(transactionBytes: hexData)
+    }
+    
+    private func presentQRScanner(
+        fromSignAndVerify: Bool = false,
+        isQuickConnect: Bool = false,
+        isScanningAddress: Bool = false,
+        completion: @escaping (String) -> Void
+    ) {
+        let scannerVC = ScanQRViewController()
+        
+        // Configure based on your use case
+        scannerVC.fromSignAndVerify = fromSignAndVerify
+        scannerVC.isQuickConnect = isQuickConnect
+        scannerVC.isScanningAddress = isScanningAddress
+        
+        // This is called when scanning completes successfully
+        scannerVC.onCompletion = { resultString in
+            // Handle the scanned result here (e.g., process PSBT, address, etc.)
+            completion(resultString)
+        }
+        
+        // Modal presentation style (full screen on iPhone, sheet on iPad)
+        scannerVC.modalPresentationStyle = .fullScreen
+        
+        // Present it
+        self.present(scannerVC, animated: true, completion: nil)
+    }
+    
+    private func presentUploader() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            var documentPicker:UIDocumentPickerViewController!
+            
+            if #available(iOS 14.0, *) {
+                documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
+            } else {
+                documentPicker = UIDocumentPickerViewController(documentTypes: ["public.item"], in: .import)
+            }
+            documentPicker.delegate = self
+            documentPicker.modalPresentationStyle = .formSheet
+            self.present(documentPicker, animated: true, completion: nil)
+        }
+    }
+    
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let text = try? String(contentsOf: urls[0].absoluteURL) else {
+            
+            guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
+                spinner.dismiss()
+                showAlert(vc: self, title: "Invalid File", message: "That is not a recognized format, generally it will be a .psbt or .txn file.")
+                return
+            }
+                        
+            if let _ = validPsbt(string: data.base64EncodedString()) {
+                processString(string: data.base64EncodedString())
+                
+            } else if let string = data.utf8String {
+                processString(string: string)
+            }
+            
+            return
+        }
+        
+        processString(string: text)
+    }
+    
+    @IBAction func refreshAction(_ sender: Any) {
         load()
     }
+    
     
     @IBAction func deleteCacheAction(_ sender: Any) {
         Task {
@@ -40,7 +271,7 @@ class NodelessTableViewController: UITableViewController {
     func deleteItem() async {
         let confirmed = await confirmAction(
             title: "Delete entire Utxo cache?",
-            message: "This action cannot be undone.",
+            message: "This action cannot be undone. This will hide all balances, you will either need to use this wallet with a node and load your utxos or manually tap the check balance button.",
             confirmTitle: "Delete",
             cancelTitle: "Cancel"
         )
@@ -67,12 +298,15 @@ class NodelessTableViewController: UITableViewController {
         addresses.removeAll()
         
         let descArr = primaryDescriptor.components(separatedBy: "#")
-        let changeDesc = "\(descArr[0])".replacingOccurrences(of: "/0/", with: "/1/")
-                
-        if network != .bitcoin {
-            network = .testnet
+        var changeDesc = ""
+        if let changeDescriptor = changeDescriptor {
+            changeDesc = changeDescriptor
+        } else {
+            changeDesc = "\(descArr[0])".replacingOccurrences(of: "/0/", with: "/1/")
         }
         
+        network = WalletLogic.shared.bdkNetwork()
+                
         guard let bdkPrimDesc = try? WalletLogic.BDKDescriptor(descriptor: primaryDescriptor, network: network) else {
             spinner.dismiss()
             showAlert(vc: self, title: "", message: "Unable to derive BDK primary descriptor.")
@@ -185,7 +419,8 @@ class NodelessTableViewController: UITableViewController {
                     "address": addressInfo.address.description,
                     "balance": 0.0,
                     "derivation": "\(path)/0/\(i)",
-                    "utxos": []
+                    "utxos": [],
+                    "used": false
                 ])
                 
                 addresses.append(str)
@@ -201,7 +436,12 @@ class NodelessTableViewController: UITableViewController {
         CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] utxos in
             guard let self = self else { return }
             
-            guard let utxos = utxos, utxos.count > 0 else {
+            guard let utxos = utxos else {
+                reload()
+                return
+            }
+            
+            guard utxos.count > 0 else {
                 reload()
                 return
             }
@@ -216,9 +456,10 @@ class NodelessTableViewController: UITableViewController {
                         if address.address == utxoStruct.address {
                             if utxoStruct.amount > 0.0 {
                                 addresses[i].balance += utxoStruct.amount
+                                saveUsedAddress(address: address.address)
                             }
                             
-                            let satsValue = Int64(utxoStruct.amount / 100000000)
+                            let satsValue = Int64(utxoStruct.amount * 100000000.0)
                             var confirmed = false
                             
                             if let confirmations = utxoStruct.confirmations {
@@ -243,9 +484,74 @@ class NodelessTableViewController: UITableViewController {
                         }
                         
                         if i + 1 == addresses.count && u + 1 == utxos.count {
-                            reload()
+                            checkUsedAddresses()
                         }
                     }
+                }
+            }
+        }
+    }
+    
+    private func checkUsedAddresses() {
+        CoreDataService.retrieveEntity(entityName: .usedAddresses) { [weak self] usedAddresses in
+            guard let self = self else { return }
+            
+            guard let usedAddresses = usedAddresses else {
+                reload()
+                return
+            }
+            
+            guard usedAddresses.count > 0 else {
+                reload()
+                return
+            }
+            
+            for (i, address) in self.addresses.enumerated() {
+                for (x, usedAddress) in usedAddresses.enumerated() {
+                    let usedAddressStr = UsedAddress(dictionary: usedAddress)
+                    if address.address == usedAddressStr.address {
+                        self.addresses[i].used = true
+                    }
+                    
+                    if i + 1 == addresses.count && x + 1 == usedAddresses.count {
+                        reload()
+                    }
+                }                
+            }
+        }
+    }
+    
+    private func saveUsedAddress(address: String) {
+        CoreDataService.retrieveEntity(entityName: .usedAddresses) { usedAddresses in
+            guard let usedAddresses = usedAddresses else {
+                return
+            }
+            
+            var alreadySaved = false
+            
+            func saveNow() {
+                let dict: [String: Any] = ["address": address, "id": UUID()]
+                CoreDataService.saveEntity(dict: dict, entityName: .usedAddresses) { saved in
+                    guard saved else {
+                        showAlert(title: "", message: "Unable to save used address.")
+                        return
+                    }
+                }
+            }
+            
+            guard usedAddresses.count > 0 else {
+                saveNow()
+                return
+            }
+            
+            for (i, usedAddress) in usedAddresses.enumerated() {
+                let str = UsedAddress(dictionary: usedAddress)
+                if str.address == address {
+                    alreadySaved = true
+                }
+                
+                if i + 1 == usedAddresses.count, !alreadySaved {
+                    saveNow()
                 }
             }
         }
@@ -275,7 +581,7 @@ class NodelessTableViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "BitcoinCell", for: indexPath) as! BitcoinAddressCell
         let addressStr = addresses[indexPath.row]
         cell.configure(with: addressStr)
-
+        
         cell.checkBalanceAction = { [weak self] in
             guard let self = self else { return }
             checkBalance(address: addressStr.address, indexPath: indexPath, cell: cell)
@@ -291,46 +597,38 @@ class NodelessTableViewController: UITableViewController {
             copyAddress(address: addressStr.address)
         }
         
-//        cell.sweepAction = { [weak self] in
-//            guard let self = self else { return }
-//            createPsbt(addressStruct: addressStr)
-//        }
+        cell.sweepAction = { [weak self] in
+            guard let self = self else { return }
+            createPsbt(addressStruct: addressStr)
+        }
         
         return cell
     }
     
-//    private func createPsbt(addressStruct: AddressStruct) {
-//        guard let watchOnlyBdkWallet = watchOnlyBdkWallet else {
-//            print("no wallet")
-//            return
-//        }
-//        
-//        var totalAmount: UInt64 = 0
-//        
-//        for utxo in addressStruct.utxos {
-//            totalAmount += UInt64(utxo.value)
-//        }
-//        
-//        do {
-//            let psbt = try WalletLogic.shared.createPsbtWithManualInputs(
-//                wallet: watchOnlyBdkWallet,
-//                utxos: addressStruct.utxos,
-//                outputs: [(address: "tb1q9956wfhq9jzqvhmlapz5849axc35s35q6uwc5a", amount: totalAmount)],
-//                network: network
-//            )
-//            print("psbt: \(psbt)")
-//        } catch {
-//            print(error.localizedDescription)
-//        }        
-//    }
+    private func createPsbt(addressStruct: AddressStruct) {
+        guard let watchOnlyBdkWallet = watchOnlyBdkWallet else {
+            return
+        }
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let vc = SweepViewController(utxos: addressStruct.utxos, watchOnlyBdkWallet: watchOnlyBdkWallet, signer: signer, network: network)
+            navigationController?.pushViewController(vc, animated: true)
+        }
+    }
     
     private func checkBalance(address: String, indexPath: IndexPath, cell: BitcoinAddressCell) {
-        let isTestnet = (network == .testnet)
         Task {
-            do {
-                var utxos = try await NodelessUtxoFetcher.shared.fetchUtxos(for: address, isTestnet: isTestnet)
+            let result = try await NodelessUtxoFetcher.shared.fetchUtxos(for: address, network: network)
+            
+            switch result {
+            case .success(utxos: var utxos):
                 var confirmed = true
                 cell.hideBalanceLoading()
+                
+                if utxos.count == 0 {
+                    deleteUtxoFromCache(address: address)
+                }
                 
                 for (i, utxo) in utxos.enumerated() {
                     if !utxo.status.confirmed {
@@ -353,9 +651,9 @@ class NodelessTableViewController: UITableViewController {
                     self.tableView.reloadRows(at: [indexPath], with: .fade)
                 }
                 
-            } catch {
+            case.failure(errorMessage: let msg):
                 cell.hideBalanceLoading()
-                showAlert(vc: self, title: "", message: error.localizedDescription)
+                showAlert(vc: self, title: "", message: msg)
             }
         }
     }
@@ -364,11 +662,7 @@ class NodelessTableViewController: UITableViewController {
         let utxoAlreadySaved = savedUtxos.contains { savedUtxo in
             savedUtxo.txid == utxo.txid && savedUtxo.vout == utxo.vout
         }
-        print("utxoAlreadySaved: \(utxoAlreadySaved)")
-        var confirmed = 0
-        if utxo.status.confirmed {
-            confirmed = 1
-        }
+        let confirmed = utxo.status.confirmed.intValue
         
         if !utxoAlreadySaved {
             let dict: [String: Any] = [
@@ -377,7 +671,7 @@ class NodelessTableViewController: UITableViewController {
                 "vout": Int64(utxo.vout),
                 "address": address,
                 "amount": Double(utxo.value) / 100_000_000.0,
-                "confirmations": confirmed,
+                "confirmations": confirmed,//number of confs doesn't matter yet as long as its > 1.
                 "lastUpdated": Date(),
                 "id": UUID()
             ]
@@ -409,6 +703,23 @@ class NodelessTableViewController: UITableViewController {
                             print("updated")
                             #endif
                         }
+                    }
+                }
+            }
+        }
+    }
+    
+    private func deleteUtxoFromCache(address: String) {
+        for savedUtxo in savedUtxos {
+            if savedUtxo.address == address {
+                guard let id = savedUtxo.id else {
+                    showAlert(title: "", message: "Cached utxo for \(address) was not deleted due to a missing UUID.")
+                    return
+                }
+                CoreDataService.deleteEntity(id: id, entityName: .utxos) { deleted in
+                    guard deleted else {
+                        showAlert(title: "", message: "Cached utxo for \(address) was not deleted due to an error.")
+                        return
                     }
                 }
             }
@@ -456,7 +767,7 @@ class NodelessTableViewController: UITableViewController {
             
             vc.headerText = "Address"
             vc.text = self.addressToExport
-            vc.descriptionText = self.derivationToExport
+            vc.descriptionText = self.derivationToExport + "\n\(self.addressToExport.addressExpanded)"
         default:
             break
         }

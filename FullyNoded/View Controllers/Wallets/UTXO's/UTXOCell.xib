@@ -12,15 +12,15 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="UTXOCell" rowHeight="541" id="KGk-i7-Jjw" customClass="UTXOCell" customModule="FullyNoded" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="320" height="527"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="UTXOCell" rowHeight="577" id="KGk-i7-Jjw" customClass="UTXOCell" customModule="FullyNoded" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="563"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
-                <rect key="frame" x="0.0" y="0.0" width="320" height="527"/>
+                <rect key="frame" x="0.0" y="0.0" width="320" height="563"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="F64-us-7JM">
-                        <rect key="frame" x="8" y="8" width="304" height="478.5"/>
+                        <rect key="frame" x="8" y="8" width="304" height="514.5"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="Ve0-ya-z95">
                                 <rect key="frame" x="0.0" y="0.0" width="296" height="25"/>
@@ -97,16 +97,16 @@
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="kzJ-O2-sB3">
-                                <rect key="frame" x="0.0" y="33" width="76" height="24"/>
+                                <rect key="frame" x="0.0" y="33" width="76" height="19"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yFz-nh-wnf">
-                                        <rect key="frame" x="0.0" y="0.0" width="48" height="24"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="48" height="19"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cKf-vk-4Fk">
-                                        <rect key="frame" x="56" y="0.0" width="20" height="24"/>
+                                        <rect key="frame" x="56" y="0.0" width="20" height="19"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                         <state key="normal" image="pencil.circle" catalog="system">
@@ -119,16 +119,16 @@
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="LHo-ho-Yov">
-                                <rect key="frame" x="0.0" y="65" width="127" height="20.5"/>
+                                <rect key="frame" x="0.0" y="60" width="127" height="20"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bitcoinsign" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="jVe-mJ-1BA">
-                                        <rect key="frame" x="0.0" y="-0.5" width="24" height="21.5"/>
+                                        <rect key="frame" x="0.0" y="-0.5" width="24" height="21"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="24" id="swY-Ld-Aij"/>
                                         </constraints>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" tag="4" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0.00047656" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1zU-in-w9s">
-                                        <rect key="frame" x="32" y="0.0" width="95" height="20.5"/>
+                                        <rect key="frame" x="32" y="0.0" width="95" height="20"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
@@ -136,16 +136,16 @@
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Tfl-S4-OUT">
-                                <rect key="frame" x="0.0" y="93.5" width="127" height="20.5"/>
+                                <rect key="frame" x="0.0" y="88" width="127" height="20"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dollarsign.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="DEq-C7-dpl">
-                                        <rect key="frame" x="0.0" y="0.5" width="24" height="19.5"/>
+                                        <rect key="frame" x="0.0" y="0.5" width="24" height="19"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="24" id="dPG-Tm-Gyh"/>
                                         </constraints>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" tag="4" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0.00047656" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oYm-1a-Oxv">
-                                        <rect key="frame" x="32" y="0.0" width="95" height="20.5"/>
+                                        <rect key="frame" x="32" y="0.0" width="95" height="20"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
@@ -153,87 +153,87 @@
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Dcr-kD-S6P">
-                                <rect key="frame" x="0.0" y="122" width="70.5" height="20.5"/>
+                                <rect key="frame" x="0.0" y="116" width="70.5" height="20"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="square.stack" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="W60-Q9-t2d">
-                                        <rect key="frame" x="0.0" y="-1" width="24" height="23.5"/>
+                                        <rect key="frame" x="0.0" y="-1" width="24" height="23"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="24" id="YZ3-Gp-soV"/>
                                         </constraints>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" tag="8" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="1600" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Y2N-Mq-EK6">
-                                        <rect key="frame" x="32" y="0.0" width="38.5" height="20.5"/>
+                                        <rect key="frame" x="32" y="0.0" width="38.5" height="20"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Irx-v8-8tj">
-                                <rect key="frame" x="0.0" y="150.5" width="68" height="20.5"/>
+                                <rect key="frame" x="0.0" y="144" width="68" height="20"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="exclamationmark.triangle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Htb-h1-62A">
-                                        <rect key="frame" x="0.0" y="1" width="24" height="18.5"/>
+                                        <rect key="frame" x="0.0" y="1" width="24" height="18"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="24" id="qQo-CH-YAT"/>
                                         </constraints>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Dust" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uHe-ib-FEV">
-                                        <rect key="frame" x="32" y="0.0" width="36" height="20.5"/>
+                                        <rect key="frame" x="32" y="0.0" width="36" height="20"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="KRl-NM-duA">
-                                <rect key="frame" x="0.0" y="179" width="89" height="20.5"/>
+                                <rect key="frame" x="0.0" y="172" width="89" height="20"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="shield.slash" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="tce-QW-MDj">
-                                        <rect key="frame" x="-1" y="-1" width="25" height="22"/>
+                                        <rect key="frame" x="-1" y="-1" width="25" height="21.5"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="24" id="kF2-Sh-Fk5"/>
                                         </constraints>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Reused" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qeG-pB-jXf">
-                                        <rect key="frame" x="32" y="0.0" width="57" height="20.5"/>
+                                        <rect key="frame" x="32" y="0.0" width="57" height="20"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="wlC-1r-BNk">
-                                <rect key="frame" x="0.0" y="207.5" width="96.5" height="20.5"/>
+                                <rect key="frame" x="0.0" y="200" width="96.5" height="20"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="person.crop.circle.badge.checkmark" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="pey-jI-MkB">
-                                        <rect key="frame" x="-3" y="0.0" width="27" height="21"/>
+                                        <rect key="frame" x="-3" y="0.0" width="27" height="20.5"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="24" id="mcN-Dp-k8k"/>
                                         </constraints>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" tag="7" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Solvable" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YnX-hr-prN">
-                                        <rect key="frame" x="32" y="0.0" width="64.5" height="20.5"/>
+                                        <rect key="frame" x="32" y="0.0" width="64.5" height="20"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="agW-41-2Y8">
-                                <rect key="frame" x="0.0" y="236" width="91" height="20.5"/>
+                                <rect key="frame" x="0.0" y="228" width="91" height="20"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="arrow.triangle.2.circlepath" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="6k0-Vs-kGa">
-                                        <rect key="frame" x="-0.5" y="0.5" width="25" height="19.5"/>
+                                        <rect key="frame" x="-0.5" y="0.5" width="25" height="19"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="24" id="BRS-e4-bIG"/>
                                         </constraints>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Change" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="38v-IK-oIe">
-                                        <rect key="frame" x="32" y="0.0" width="59" height="20.5"/>
+                                        <rect key="frame" x="32" y="0.0" width="59" height="20"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="qRy-6m-OPJ">
-                                <rect key="frame" x="0.0" y="264.5" width="83.5" height="20.5"/>
+                                <rect key="frame" x="0.0" y="256" width="83.5" height="20.5"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="v.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="xxP-ES-Euc">
                                         <rect key="frame" x="0.0" y="0.5" width="24" height="19.5"/>
@@ -255,7 +255,7 @@
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Nng-sj-9eA">
-                                <rect key="frame" x="0.0" y="293" width="296" height="25"/>
+                                <rect key="frame" x="0.0" y="284.5" width="296" height="25"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="person.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="cfh-cT-qQu">
                                         <rect key="frame" x="0.0" y="0.5" width="24" height="24"/>
@@ -265,19 +265,19 @@
                                         </constraints>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tmv-Kw-dxm">
-                                        <rect key="frame" x="32" y="0.0" width="192" height="25"/>
+                                        <rect key="frame" x="32" y="0.0" width="162" height="25"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" systemColor="secondaryLabelColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="NFO-Pe-1Cl">
-                                        <rect key="frame" x="232" y="0.0" width="30" height="25"/>
+                                        <rect key="frame" x="202" y="0.0" width="60" height="25"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="30" id="unQ-6w-DD9"/>
+                                            <constraint firstAttribute="width" constant="60" id="7pS-cl-Eoq"/>
                                         </constraints>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="plain">
-                                            <imageReference key="image" image="info.circle" catalog="system" symbolScale="medium"/>
+                                            <imageReference key="image" image="info.circle" catalog="system" symbolScale="default"/>
                                         </buttonConfiguration>
                                         <connections>
                                             <action selector="getAddressInfoTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="cLS-yt-ZTq"/>
@@ -290,7 +290,7 @@
                                         </constraints>
                                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                         <state key="normal">
-                                            <imageReference key="image" image="doc.on.doc" catalog="system" symbolScale="small"/>
+                                            <imageReference key="image" image="doc.on.doc" catalog="system" symbolScale="default"/>
                                         </state>
                                         <connections>
                                             <action selector="copyAddressTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="VZY-Fa-c98"/>
@@ -298,13 +298,13 @@
                                     </button>
                                 </subviews>
                             </stackView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="tb1xxxxx" lineBreakMode="characterWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yGO-CI-BUB">
-                                <rect key="frame" x="0.0" y="326" width="65.5" height="20.5"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="tb1xxxxx" lineBreakMode="characterWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yGO-CI-BUB">
+                                <rect key="frame" x="0.0" y="317.5" width="65.5" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="vyy-1X-9V0">
-                                <rect key="frame" x="0.0" y="354.5" width="296" height="25"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" distribution="fillProportionally" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="vyy-1X-9V0">
+                                <rect key="frame" x="0.0" y="346" width="296" height="25"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="person.text.rectangle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="ejG-M4-SZN">
                                         <rect key="frame" x="0.0" y="1" width="24" height="22.5"/>
@@ -314,19 +314,19 @@
                                         </constraints>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transaction ID" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zAx-Db-aUr">
-                                        <rect key="frame" x="32" y="0.0" width="192" height="25"/>
+                                        <rect key="frame" x="32" y="0.0" width="162" height="25"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" systemColor="secondaryLabelColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GjO-Kf-EYI">
-                                        <rect key="frame" x="232" y="0.0" width="30" height="25"/>
+                                        <rect key="frame" x="202" y="0.0" width="60" height="25"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="30" id="LPI-Vm-I7R"/>
+                                            <constraint firstAttribute="width" constant="60" id="Yyg-fO-vco"/>
                                         </constraints>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="plain">
-                                            <imageReference key="image" image="info.circle" catalog="system" symbolScale="medium"/>
+                                            <imageReference key="image" image="info.circle" catalog="system" symbolScale="default"/>
                                         </buttonConfiguration>
                                         <connections>
                                             <action selector="getTxInfoTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="A2t-EW-AlW"/>
@@ -339,7 +339,7 @@
                                         </constraints>
                                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                         <state key="normal">
-                                            <imageReference key="image" image="doc.on.doc" catalog="system" symbolScale="small"/>
+                                            <imageReference key="image" image="doc.on.doc" catalog="system" symbolScale="default"/>
                                         </state>
                                         <connections>
                                             <action selector="copyTxidTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="Nsi-f2-fYH"/>
@@ -347,48 +347,48 @@
                                     </button>
                                 </subviews>
                             </stackView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="txid" lineBreakMode="characterWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EgQ-fg-Xvv">
-                                <rect key="frame" x="0.0" y="387.5" width="28.5" height="20.5"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="txid" lineBreakMode="characterWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EgQ-fg-Xvv">
+                                <rect key="frame" x="0.0" y="379" width="28.5" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="voy-5R-mrp">
-                                <rect key="frame" x="0.0" y="416" width="296" height="34"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" distribution="fillProportionally" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="voy-5R-mrp">
+                                <rect key="frame" x="0.0" y="407.5" width="296" height="23"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="point.filled.topleft.down.curvedto.point.bottomright.up" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="eNr-QG-Bo5">
-                                        <rect key="frame" x="0.0" y="0.0" width="24" height="34"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="24" height="23"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="24" id="rLs-IL-zBj"/>
                                         </constraints>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Descriptor" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ybL-N4-9A7">
-                                        <rect key="frame" x="32" y="0.0" width="192" height="34"/>
+                                        <rect key="frame" x="32" y="0.0" width="162" height="23"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" systemColor="secondaryLabelColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iqB-Le-V0J">
-                                        <rect key="frame" x="232" y="0.0" width="30" height="34"/>
+                                        <rect key="frame" x="202" y="0.0" width="60" height="23"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="30" id="vN5-r6-dmn"/>
+                                            <constraint firstAttribute="width" constant="60" id="YaT-vo-lBD"/>
                                         </constraints>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="plain">
-                                            <imageReference key="image" image="info.circle" catalog="system" symbolScale="medium"/>
+                                            <imageReference key="image" image="info.circle" catalog="system" symbolScale="default"/>
                                         </buttonConfiguration>
                                         <connections>
                                             <action selector="getDescInfoTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="yK1-5H-Vrw"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5Rt-fT-fXO">
-                                        <rect key="frame" x="270" y="0.0" width="26" height="34"/>
+                                        <rect key="frame" x="270" y="0.0" width="26" height="23"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="26" id="5OW-v7-Tv2"/>
                                         </constraints>
                                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                         <state key="normal">
-                                            <imageReference key="image" image="doc.on.doc" catalog="system" symbolScale="small"/>
+                                            <imageReference key="image" image="doc.on.doc" catalog="system" symbolScale="default"/>
                                         </state>
                                         <connections>
                                             <action selector="copyDescTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="tGL-Zk-rpJ"/>
@@ -397,8 +397,57 @@
                                     </button>
                                 </subviews>
                             </stackView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="descriptor" lineBreakMode="characterWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Iap-7b-LmT">
-                                <rect key="frame" x="0.0" y="458" width="78" height="20.5"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="descriptor" lineBreakMode="characterWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Iap-7b-LmT">
+                                <rect key="frame" x="0.0" y="438.5" width="78" height="20.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" distribution="fillProportionally" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="oP4-yU-Tvf">
+                                <rect key="frame" x="0.0" y="467" width="299.5" height="23"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="point.topleft.down.to.point.bottomright.filled.curvepath" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="ZkH-bg-DIv">
+                                        <rect key="frame" x="0.0" y="0.0" width="24" height="23"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="24" id="XBl-rg-GNf"/>
+                                        </constraints>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Parent Descriptor" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cRA-k1-3Gg">
+                                        <rect key="frame" x="32" y="0.0" width="165.5" height="23"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WrV-ig-DhS">
+                                        <rect key="frame" x="205.5" y="0.0" width="60" height="23"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="60" id="aNv-Mh-HVR"/>
+                                        </constraints>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain">
+                                            <imageReference key="image" image="info.circle" catalog="system" symbolScale="default"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="parentDescInfoButtonTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="8lw-d5-3I2"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="C2Z-uh-Gsa">
+                                        <rect key="frame" x="273.5" y="0.0" width="26" height="23"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="26" id="dI3-bS-hRW"/>
+                                        </constraints>
+                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                        <state key="normal">
+                                            <imageReference key="image" image="doc.on.doc" catalog="system" symbolScale="default"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="didTapCopyParentDescButton:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="c2V-Qr-hCR"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="descriptor" lineBreakMode="characterWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BXH-9g-5GM">
+                                <rect key="frame" x="0.0" y="498" width="78" height="16.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -407,6 +456,7 @@
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="voy-5R-mrp" secondAttribute="trailing" constant="8" id="d5a-fh-APv"/>
                             <constraint firstAttribute="trailing" secondItem="Ve0-ya-z95" secondAttribute="trailing" constant="8" id="rRS-n8-2QV"/>
+                            <constraint firstAttribute="trailing" secondItem="oP4-yU-Tvf" secondAttribute="trailing" constant="4.5" id="xI1-GY-6Le"/>
                             <constraint firstAttribute="trailing" secondItem="Nng-sj-9eA" secondAttribute="trailing" constant="8" id="xSs-zY-WyF"/>
                             <constraint firstAttribute="trailing" secondItem="vyy-1X-9V0" secondAttribute="trailing" constant="8" id="yk6-Sz-RtN"/>
                         </constraints>
@@ -434,6 +484,7 @@
                 <outlet property="isSolvableImageView" destination="pey-jI-MkB" id="Ljd-aL-zov"/>
                 <outlet property="labelOutlet" destination="yFz-nh-wnf" id="k6d-gt-EWu"/>
                 <outlet property="lockButtonOutlet" destination="lOQ-5R-kEw" id="d49-jd-uUK"/>
+                <outlet property="parentDescLabel" destination="BXH-9g-5GM" id="Wuc-XO-NeI"/>
                 <outlet property="reusedImageView" destination="tce-QW-MDj" id="QjY-SY-1vZ"/>
                 <outlet property="reusedLabel" destination="qeG-pB-jXf" id="ztH-Hn-0eE"/>
                 <outlet property="solvableLabel" destination="YnX-hr-prN" id="az3-F4-Wje"/>
@@ -441,7 +492,7 @@
                 <outlet property="txidLabel" destination="EgQ-fg-Xvv" id="T3B-Xz-JX0"/>
                 <outlet property="voutLabel" destination="KnC-BQ-hw9" id="aMz-k7-IgV"/>
             </connections>
-            <point key="canvasLocation" x="166.66666666666669" y="451.00446428571428"/>
+            <point key="canvasLocation" x="166.66666666666669" y="463.05803571428567"/>
         </tableViewCell>
     </objects>
     <resources>
@@ -458,6 +509,7 @@
         <image name="person.crop.circle.badge.checkmark" catalog="system" width="128" height="114"/>
         <image name="person.text.rectangle" catalog="system" width="128" height="93"/>
         <image name="point.filled.topleft.down.curvedto.point.bottomright.up" catalog="system" width="119" height="128"/>
+        <image name="point.topleft.down.to.point.bottomright.filled.curvepath" catalog="system" width="119" height="128"/>
         <image name="shield.slash" catalog="system" width="116" height="128"/>
         <image name="square.stack" catalog="system" width="105" height="128"/>
         <image name="v.circle" catalog="system" width="128" height="123"/>

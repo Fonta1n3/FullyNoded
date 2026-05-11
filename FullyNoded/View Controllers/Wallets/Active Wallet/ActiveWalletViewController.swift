@@ -54,6 +54,8 @@ class ActiveWalletViewController: UIViewController {
         setNotifications()
         sectionZeroLoaded = false
         addNavBarSpinner()
+        
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -67,13 +69,19 @@ class ActiveWalletViewController: UIViewController {
             initialLoad = false
             loadTable()
         }
+        
+        //backupWalletNow()
     }
     
     @IBAction func getWalletDetail(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            performSegue(withIdentifier: "segueToActiveWalletDetail", sender: self)
+        if let _ = wallet?.id {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                performSegue(withIdentifier: "segueToActiveWalletDetail", sender: self)
+            }
+        } else {
+            showAlert(vc: self, title: "", message: "Fully Noded can only show wallet details for wallets created or imported with Fully Noded. ")
         }
     }
     
@@ -90,19 +98,17 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    @IBAction func importTransaction(_ sender: Any) {
+    
+    
+    
+    
+
+    
+    @objc func importTx() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
-        }
-    }
-    
-    @IBAction func advancedAction(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self .performSegue(withIdentifier: "goToInvoiceSetting", sender: nil)
         }
     }
     
@@ -280,6 +286,236 @@ class ActiveWalletViewController: UIViewController {
             self.wallet = wallet
             walletLabel = wallet.label
             getWalletBalance()
+            
+            guard let backup = wallet.walletBackup else {
+                backupWalletNow()
+                return
+            }
+            
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .secondsSince1970
+
+            do {
+                let loadedBackup = try decoder.decode(WalletBackup.self, from: backup)
+                
+                if isMoreThanOneMonthAgo(loadedBackup.lastUpdate) {
+                    backupWalletNow()
+                }
+            } catch {
+                print(error.localizedDescription)
+            }
+        }
+    }
+    
+    private func backupWalletNow() {
+        var descriptors: [BackupItem] = []
+        
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
+            do {
+                guard let response = response else { return }
+                
+                let jsonData = try JSONSerialization.data(withJSONObject: response, options: [])
+                
+                let listDescriptorResponse = try JSONDecoder().decode(ListDescriptorsResponse.self, from: jsonData)
+                
+                var backupItem: BackupItem? = nil
+                
+                for (i, descriptor) in listDescriptorResponse.descriptors.enumerated() {
+                    var rangeValue: [Int]? = nil
+                    
+                    if let range = descriptor.range {
+                        //rangeValue = [r]
+                        print("range.count: \(range.count)")
+                        if range.count == 2 {
+                            rangeValue = [range[0],range[1]]
+                            backupItem?.range = rangeValue
+                        } else if range.count == 1 {
+                            rangeValue = [range[0]]
+                            backupItem?.range = rangeValue
+                        }
+                    }
+                    
+                    var timestamp: Int? = nil
+                    if let timestampt = descriptor.timestamp {
+                        timestamp = timestampt
+                    }
+                    
+                    let backupitem: BackupItem = .init(desc: descriptor.desc, active: descriptor.active, range: rangeValue, nextIndex: descriptor.nextIndex ?? 0, timestamp: timestamp, internal: descriptor.internal_, label: descriptor.label ?? wallet!.label)
+                    
+                    descriptors.append(backupitem)
+                    
+                    if i + 1 == listDescriptorResponse.descriptors.count {
+                        let backup = WalletBackup(
+                            lastUpdate: Date(),
+                            descriptors: descriptors
+                        )
+                        updateNow(backup: backup)
+                    }
+                }
+            } catch {
+                print("listdescritpors response logic failed: \(error.localizedDescription)")
+            }
+        }
+        return
+    }
+    
+    @IBAction func loadBackupTapped(_ sender: Any) {
+        exportBackup()
+    }
+    
+    func isMoreThanOneMonthAgo(_ date: Date) -> Bool {
+        let calendar = Calendar.current
+        let now = Date()
+        guard let oneMonthAgo = calendar.date(byAdding: .month, value: -1, to: now) else {
+            return false // Safety fallback
+        }
+        return date < oneMonthAgo
+    }
+    
+    private func exportBackup() {
+        guard let backup = wallet?.walletBackup else {
+            // this shouldnt happen as we are creating it automatically.
+            return
+        }
+        
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
+
+        do {
+            let loadedBackup = try decoder.decode(WalletBackup.self, from: backup)
+            promptForBackupExportFormat(backup: loadedBackup)
+        } catch {
+            print("Decoding failed: \(error)")
+        }
+    }
+    
+    private func promptForBackupExportFormat(backup: WalletBackup) {
+        WalletExportFormatView.show(in: self) { [weak self] format in
+            guard let self = self, let format = format else { return }
+            
+            do {
+                switch format {
+                case .qr:
+                    let qrVC = QRViewController(
+                        text: try backup.jsonData().hex,
+                        headerText: "\(wallet!.label) Backup",
+                        descriptionText: "Last updated: " + backup.lastUpdate.formattedDate,
+                        headerIcon: UIImage(systemName: "qrcode"),
+                        isBbqr: true,
+                        isUR: false
+                    )
+                    
+                    let nav = UINavigationController(rootViewController: qrVC)
+                    nav.modalPresentationStyle = .fullScreen
+                    
+                    present(nav, animated: true)
+                    
+                case .file:
+                    self.exportAsFile(backup: backup)
+                case .text:
+                    self.copyAsText(backup: backup)
+                }
+                
+            } catch {
+                print("error completing export format: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func copyAsText(backup: WalletBackup) {
+        do {
+            // Encode WalletBackup to JSON data
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.sortedKeys] // Optional: consistent ordering
+            encoder.dateEncodingStrategy = .secondsSince1970
+            
+            let jsonData = try encoder.encode(backup)
+            let hexString = jsonData.hexString
+            UIPasteboard.general.string = hexString
+            
+            // Show success with explanation
+            let byteCount = jsonData.count
+            let charCount = hexString.count
+            
+            SuccessView.show(
+                in: self,
+                title: "Backup Copied as Hex",
+                subtitle: "Hex-encoded backup (\(byteCount) bytes → \(charCount) chars) is now in your clipboard.\n\nPaste it into a secure location."
+            ) {
+                print("User acknowledged hex backup copy")
+            }
+            
+            // Haptic feedback
+            let feedback = UIImpactFeedbackGenerator(style: .medium)
+            feedback.impactOccurred()
+            
+        } catch {
+            showAlert(title: "Encoding Failed", message: "Could not encode backup: \(error.localizedDescription)")
+        }
+    }
+    
+    private func exportAsFile(backup: WalletBackup) {
+        print("exportAsFile: \(backup.descriptors.count)")
+        
+        do {
+            // 2. Encode to pretty-printed JSON
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .prettyPrinted
+            encoder.dateEncodingStrategy = .secondsSince1970
+            
+            let jsonData = try encoder.encode(backup).hex.utf8
+            let fileName = "\(backup.lastUpdate.formattedDate).txt"
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+            try jsonData.write(to: tempURL)
+            
+            let activityVC = UIActivityViewController(activityItems: [tempURL], applicationActivities: nil)
+            
+            activityVC.excludedActivityTypes = [
+                .addToReadingList,
+                .assignToContact,
+                .markupAsPDF
+            ]
+            
+            if let popover = activityVC.popoverPresentationController {
+                popover.sourceView = self.view
+                popover.sourceRect = self.view.bounds
+                popover.permittedArrowDirections = []
+            }
+            
+            // Not sure this fires off...
+            activityVC.completionWithItemsHandler = { [weak self] activityType, completed, items, error in
+                try? FileManager.default.removeItem(at: tempURL)
+                
+                if completed {
+                    SuccessView.show(in: self!, title: "Backup Exported", subtitle: "Your wallet backup has been saved.") { }
+                } else if let error = error {
+                    showAlert(title: "Export Failed", message: error.localizedDescription)
+                }
+            }
+            
+            present(activityVC, animated: true)
+            
+        } catch {
+            showAlert(title: "Error", message: "Failed to create backup file: \(error.localizedDescription)")
+        }
+    }
+    
+    private func updateNow(backup: WalletBackup) {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .secondsSince1970  // optional, but matches our custom logic
+
+        do {
+            let jsonData = try encoder.encode(backup)
+            CoreDataService.update(id: wallet!.id, keyToUpdate: "walletBackup", newValue: jsonData, entity: .wallets) { walletBackupUpdated in
+                guard walletBackupUpdated else {
+                    showAlert(title: "", message: "Updating wallet backup failed.")
+                    return
+                }
+            }
+            
+        } catch {
+            showAlert(title: "", message: "Updating failed: \(error.localizedDescription)")
         }
     }
     
@@ -502,6 +738,11 @@ class ActiveWalletViewController: UIViewController {
             }
             
             onchainTransactions = listTransactionsResponse
+            
+            onchainTransactions?.transactions.removeAll { tx in
+                return tx.confirmations < 0
+            }
+
             updateTransactionArray()
         }
     }
@@ -685,6 +926,11 @@ class ActiveWalletViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
             
+        case "segueToInvoice":
+            guard let vc = segue.destination as? InvoiceViewController else { fallthrough }
+            
+            vc.wallet = wallet
+            
         case "spendFromWallet":
             guard let vc = segue.destination as? CreateRawTxViewController else { fallthrough }
             
@@ -717,6 +963,7 @@ class ActiveWalletViewController: UIViewController {
             vc.alreadyBroadcast = true
             vc.signedRawTx = hex
             vc.confs = confs
+            print("confs: \(confs)")
             
         case "segueToUtxos":
             guard let vc = segue.destination as? UTXOViewController else { fallthrough }
@@ -728,7 +975,6 @@ class ActiveWalletViewController: UIViewController {
             guard let vc = segue.destination as? WalletDetailViewController else { fallthrough }
             
             guard let idDetail = self.wallet?.id else {
-                showAlert(vc: self, title: "", message: "Fully Noded can only show wallet details for wallets created with Fully Noded.")
                 return
             }
                         
@@ -797,6 +1043,13 @@ extension ActiveWalletViewController: UITableViewDelegate {
         sortButton.center.y = textLabel.center.y
         sortButton.addTarget(self, action: #selector(sortTxs(_:)), for: .touchUpInside)
         
+        let importButton = UIButton()
+        let importImage = UIImage(systemName: "square.and.arrow.down", withConfiguration: UIImage.SymbolConfiguration(scale: .large))
+        importButton.setImage(importImage, for: .normal)
+        importButton.frame = CGRect(x: header.frame.size.width - 108, y: 0, width: 50, height: 50)
+        importButton.center.y = textLabel.center.y
+        importButton.addTarget(self, action: #selector(importTx), for: .touchUpInside)
+        
         switch section {
         case 0:
             if walletLabel != "" && walletLabel != nil {
@@ -808,6 +1061,7 @@ extension ActiveWalletViewController: UITableViewDelegate {
         case 1:
             textLabel.text = "Transactions"
             header.addSubview(sortButton)
+            header.addSubview(importButton)
             
         default:
             break

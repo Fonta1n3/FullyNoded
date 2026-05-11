@@ -142,7 +142,8 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                 }
                 
-                showAlert(vc: self, title: "Success ✓", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!\n\nFully Noded encrypts and stores your signer, you can access it and delete it in the Signer view, if you delete the signer Fully Noded will not be able to sign transactions.")
+               // showAlert(vc: self, title: "Success ✓", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!\n\nFully Noded encrypts and stores your signer, you can access it and delete it in the Signer view, if you delete the signer Fully Noded will not be able to sign transactions.")
+                SuccessView.show(in: self, title: "Wallet created")
             } else {
                 UserDefaults.standard.removeObject(forKey: "walletName")
                 self.showError(error: "Error creating wallet: \(errorDescription ?? "Unknown error.")")
@@ -355,7 +356,8 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                 }
                 
-                showAlert(vc: self, title: "Success ✓", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!")
+                //showAlert(vc: self, title: "Success ✓", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!")
+                SuccessView.show(in: self, title: "Wallet created")
                 
             } else {
                 UserDefaults.standard.removeObject(forKey: "walletName")

@@ -52,6 +52,24 @@ class BitcoinAddressCell: UITableViewCell {
         return label
     }()
     
+    let usedLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 17)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = .systemFont(ofSize: 12, weight: .regular)
+        label.textColor = .systemPink
+        label.textAlignment = .center
+        label.text = "Used"
+        label.backgroundColor = UIColor.systemPink.withAlphaComponent(0.2)
+        label.layer.cornerRadius = 4
+        label.layer.masksToBounds = true
+        label.sizeToFit()
+        let padding = UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8)
+        label.frame.size.width += padding.left + padding.right
+        label.frame.size.height += padding.top + padding.bottom
+        return label
+    }()
+    
     let derivationLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 17)
@@ -86,13 +104,13 @@ class BitcoinAddressCell: UITableViewCell {
         return button
     }()
     
-//    let sweepButton: UIButton = {
-//        let button = UIButton(type: .system)
-//        button.setTitle("Send All", for: .normal)
-//        button.configuration = .tinted()
-//        button.translatesAutoresizingMaskIntoConstraints = false
-//        return button
-//    }()
+    let sweepButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Send All", for: .normal)
+        button.configuration = .tinted()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
     
     // Spinner for balance loading
     private let balanceSpinner: UIActivityIndicatorView = {
@@ -106,7 +124,7 @@ class BitcoinAddressCell: UITableViewCell {
     var checkBalanceAction: (() -> Void)?
     var exportAction: (() -> Void)?
     var copyAction: (() -> Void)?
-    //var sweepAction: (() -> Void)?
+    var sweepAction: (() -> Void)?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -136,6 +154,7 @@ class BitcoinAddressCell: UITableViewCell {
         ])
         
         let mainStack = UIStackView(arrangedSubviews: [
+            usedLabel,
             derivationLabel,
             addressLabel,
             balanceContainer,  // Uses container instead of direct balanceLabel
@@ -163,7 +182,7 @@ class BitcoinAddressCell: UITableViewCell {
     
     private func createButtonStack() -> UIStackView {
         // Horizontal stack for buttons
-        let buttonStack = UIStackView(arrangedSubviews: [checkBalanceButton, exportButton, copyButton/*, sweepButton*/])
+        let buttonStack = UIStackView(arrangedSubviews: [checkBalanceButton, exportButton, copyButton, sweepButton])
         buttonStack.axis = .horizontal
         buttonStack.spacing = 16
         buttonStack.distribution = .fillEqually
@@ -174,7 +193,7 @@ class BitcoinAddressCell: UITableViewCell {
         checkBalanceButton.addTarget(self, action: #selector(checkBalanceTapped), for: .touchUpInside)
         exportButton.addTarget(self, action: #selector(exportTapped), for: .touchUpInside)
         copyButton.addTarget(self, action: #selector(copyButtonTapped), for: .touchUpInside)
-        //sweepButton.addTarget(self, action: #selector(sendAllTapped), for: .touchUpInside)
+        sweepButton.addTarget(self, action: #selector(sendAllTapped), for: .touchUpInside)
     }
     
     /// Call this when starting balance check
@@ -204,14 +223,15 @@ class BitcoinAddressCell: UITableViewCell {
         copyAction?()
     }
     
-//    @objc private func sendAllTapped() {
-//        sweepAction?()
-//    }
+    @objc private func sendAllTapped() {
+        sweepAction?()
+    }
     
     // Function to configure the cell with data (call this in cellForRowAt)
     func configure(with addressStr: AddressStruct) {
         self.selectionStyle = .none
         addressLabel.text = addressStr.address.addressExpanded
+        
         if let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double {
             balanceLabel.text = addressStr.balance.btcBalanceWithSpaces + " btc / " + (addressStr.balance * fxRate).fiatString
         } else {
@@ -225,6 +245,9 @@ class BitcoinAddressCell: UITableViewCell {
             } else {
                 balanceLabel.textColor = .systemRed
                 balanceLabel.backgroundColor = UIColor.systemRed.withAlphaComponent(0.2)
+                if balanceLabel.text != nil {
+                    balanceLabel.text! += " unconfirmed"
+                }
             }
         } else {
             balanceLabel.textColor = .secondaryLabel
@@ -237,6 +260,15 @@ class BitcoinAddressCell: UITableViewCell {
             lastUpdatedLabel.text = ""
         }
         
+        if let used = addressStr.used {
+            if used {
+                usedLabel.isHidden = false
+            } else {
+                usedLabel.isHidden = true
+            }
+        } else {
+            usedLabel.isHidden = true
+        }
             
         derivationLabel.text = addressStr.derivation
         hideBalanceLoading()

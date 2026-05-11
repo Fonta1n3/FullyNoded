@@ -755,11 +755,11 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         }
     }
     
-    private func setClipBoard(_ string: String) {
-        let clipBoard = UIPasteboard.general
-        clipBoard.string = string
-        showAlert(vc: self, title: "", message: "Copied to clipboard ✓")
-    }
+//    private func setClipBoard(_ string: String) {
+//        let clipBoard = UIPasteboard.general
+//        clipBoard.string = string
+//        showAlert(vc: self, title: "", message: "Copied to clipboard ✓")
+//    }
     
     private func importAccountMap(_ descriptor: String, _ label: String, _ password: String) {
         spinner.show(vc: self, description: "creating wallet...")
@@ -955,12 +955,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     @objc func nodeless(_ sender: UIButton) {
         switch sender.tag {
         case 7:
-//            accountPubkey = accountBip84Pubkey
-//            accountPath = bip84AccountPath
             nodelessDescriptor = tableDict[7]["text"] as! String
         case 8:
-//            accountPubkey = accountBip86Pubkey
-//            accountPath = bip86AccountPath
             nodelessDescriptor = tableDict[8]["text"] as! String
         default:
             break
@@ -1064,8 +1060,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             
             vc.signer = signer
             vc.primaryDescriptor = nodelessDescriptor
-            //vc.accountPubkey = accountPubkey
-            //vc.accountPath = accountPath
             
             if segmentedControl.selectedSegmentIndex == 0 {
                 vc.network = .bitcoin
@@ -1093,14 +1087,14 @@ extension SignerDetailViewController: UITableViewDelegate {
         case 0:
             editLabel(dict["text"] as? String ?? "")
             
-        case 2:
-            setClipBoard(dict["text"] as? String ?? "")
+//        case 2:
+//            setClipBoard(dict["text"] as? String ?? "")
         
         case 3:
             promptToEditPassphrase()
             
-        case 6, 7:
-            setClipBoard(dict["text"] as? String ?? "")
+//        case 6, 7:
+//            setClipBoard(dict["text"] as? String ?? "")
             
         default:
             break
@@ -1130,7 +1124,6 @@ extension SignerDetailViewController: UITableViewDelegate {
         defer {
             dict.removeAll()
         }
-        
         
         switch Section(rawValue: indexPath.section) {
         case .label:
@@ -1175,7 +1168,7 @@ extension SignerDetailViewController: UITableViewDelegate {
         let textLabel = UILabel()
         textLabel.textAlignment = .left
         textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
-        textLabel.textColor = .white
+        textLabel.textColor = .label
         textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
                         
         let exportQrButtonGeneric = exportQrButton(header.frame.maxX - 46)
@@ -1191,9 +1184,8 @@ extension SignerDetailViewController: UITableViewDelegate {
                 textLabel.text = headerName(for: section)
                 
             case .words:
-                let deleteButtonSeed = deleteButton(exportQrButtonGeneric.frame.minX - 46)
+                let deleteButtonSeed = deleteButton(header.frame.maxX - 46)
                 deleteButtonSeed.addTarget(self, action: #selector(promptToDeleteSeed), for: .touchUpInside)
-                header.addSubview(exportQrButtonGeneric)
                 header.addSubview(deleteButtonSeed)
                 textLabel.text = "BIP39 Seed Words"
                 

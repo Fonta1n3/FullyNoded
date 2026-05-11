@@ -143,22 +143,19 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         var sesh = URLSession(configuration: .default)
         
         if onionAddress.contains("onion") {
-            //attempts = 0
             sesh = self.torClient.session
             
         } else {
-            guard let cert = cert else {
-                return
+            if let cert = cert {
+                delegate.cert = cert
+                
+                delegate.onTrustError = { errorMessage in
+                    completion((nil, "SSL error:\(errorMessage)"))
+                    return
+                }
+                
+                sesh = URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: .main)
             }
-            
-            delegate.cert = cert
-            
-            delegate.onTrustError = { errorMessage in
-                completion((nil, "SSL error:\(errorMessage)"))
-                return
-            }
-            
-            sesh = URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: .main)
         }
         
         let task = sesh.dataTask(with: request as URLRequest) { [weak self] (data, response, error) in

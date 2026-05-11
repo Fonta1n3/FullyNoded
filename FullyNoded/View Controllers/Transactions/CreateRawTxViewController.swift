@@ -104,25 +104,22 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 showAlert(vc: self, title: "No wallets...", message: "")
                 return
             }
-            
             var walletsToSendTo:[Wallet] = []
             
             let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
             
             for (i, wallet) in wallets.enumerated() {
-                if wallet["id"] != nil {
-                    let walletStruct = Wallet(dictionary: wallet)
-                    let desc = Descriptor(walletStruct.receiveDescriptor)
-                    
-                    if chain == "main" && desc.chain == "Mainnet" {
-                        walletsToSendTo.append(walletStruct)
-                    } else if chain != "main" && desc.chain != "Mainnet" {
-                        walletsToSendTo.append(walletStruct)
-                    }
-                                        
-                    if i + 1 == wallets.count {
-                        self.selectWalletRecipient(walletsToSendTo)
-                    }
+                let walletStruct = Wallet(dictionary: wallet)
+                let desc = Descriptor(walletStruct.receiveDescriptor)
+                
+                if chain == "main" && desc.chain == "Mainnet" {
+                    walletsToSendTo.append(walletStruct)
+                } else if chain != "main" && desc.chain != "Mainnet" {
+                    walletsToSendTo.append(walletStruct)
+                }
+                
+                if i + 1 == wallets.count {
+                    self.selectWalletRecipient(walletsToSendTo)
                 }
             }
         }

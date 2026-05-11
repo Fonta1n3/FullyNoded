@@ -14,14 +14,6 @@
         <attribute name="rpcpassword" optional="YES" attributeType="Binary"/>
         <attribute name="rpcuser" optional="YES" attributeType="Binary"/>
     </entity>
-    <entity name="Peers" representedClassName="Peers" syncable="YES" codeGenerationType="class">
-        <attribute name="alias" optional="YES" attributeType="String"/>
-        <attribute name="color" optional="YES" attributeType="String"/>
-        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="label" optional="YES" attributeType="String"/>
-        <attribute name="pubkey" optional="YES" attributeType="String"/>
-        <attribute name="uri" optional="YES" attributeType="String"/>
-    </entity>
     <entity name="Signers" representedClassName="Signers" syncable="YES" codeGenerationType="class">
         <attribute name="added" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="bip48tpub" optional="YES" attributeType="Binary"/>
@@ -50,7 +42,6 @@
     </entity>
     <entity name="UsedAddresses" representedClassName="UsedAddresses" syncable="YES" codeGenerationType="class">
         <attribute name="address" optional="YES" attributeType="String"/>
-        <attribute name="balance" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
     </entity>
     <entity name="Utxos" representedClassName="Utxos" syncable="YES" codeGenerationType="class">
@@ -60,6 +51,7 @@
         <attribute name="desc" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="label" optional="YES" attributeType="String"/>
+        <attribute name="lastUpdated" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="reused" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="scriptPubKey" optional="YES" attributeType="String"/>
         <attribute name="solvable" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
@@ -69,21 +61,12 @@
         <attribute name="walletId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
     </entity>
     <entity name="Wallets" representedClassName="Wallets" syncable="YES" codeGenerationType="class">
-        <attribute name="account" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="blockheight" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="changeDescriptor" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="index" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="isJm" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
-        <attribute name="jmWalletId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="jmWalletName" optional="YES" attributeType="String"/>
         <attribute name="label" optional="YES" attributeType="String"/>
-        <attribute name="maxIndex" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>
-        <attribute name="password" optional="YES" attributeType="Binary"/>
         <attribute name="receiveDescriptor" optional="YES" attributeType="String"/>
-        <attribute name="token" optional="YES" attributeType="Binary"/>
-        <attribute name="type" optional="YES" attributeType="String"/>
-        <attribute name="watching" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData"/>
+        <attribute name="walletBackup" optional="YES" attributeType="Binary"/>
     </entity>
 </model>

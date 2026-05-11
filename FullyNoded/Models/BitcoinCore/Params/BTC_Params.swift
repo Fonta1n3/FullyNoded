@@ -145,46 +145,49 @@ public struct Import_Descriptors: CustomStringConvertible {
             ...
           ]
      */
-    let param:[String:Any]
+    let param: [String:Any]
+    
     init(_ dict: [String:Any]) {
+        
         let requests = dict["requests"] as! [[String:Any]]
-        var parts:[[String:Any]] = []
-        for request in requests {
-            let desc = request["desc"] as? String ?? ""
-            let active = request["active"] as? Bool ?? false
-            let range = request["range"] as? [Int] ?? []
-            let next_index = request["next_index"] as? Int ?? 0
-            let timestamp = request["timestamp"] as? String ?? "now"
-            let internal_ = request["internal"] as? Bool ?? false
-            let label = request["label"] as? String ?? ""
-            
-            if range.count > 0 {
-                let part = [
-                    "desc":desc,
-                    "active":active,
-                    "range":range,
-                    "next_index":next_index,
-                    "timestamp":timestamp,
-                    "internal":internal_,
-                ] as [String:Any]
-                
-                parts.append(part)
-            } else {
-                let part = [
-                    "desc":desc,
-                    "active":active,
-                    "range":range,
-                    "next_index":next_index,
-                    "timestamp":timestamp,
-                    "internal":internal_,
-                    "label": label
-                ] as [String:Any]
-                
-                parts.append(part)
-            }
-        }
+        
+        //var parts:[[String:Any]] = []
+//        for request in requests {
+//            let desc = request["desc"] as? String ?? ""
+//            let active = request["active"] as? Bool ?? false
+//            let range = request["range"] as? [Int]
+//            let next_index = request["next_index"] as? Int
+//            let timestamp = request["timestamp"] as? String ?? "now"
+//            let internal_ = request["internal"] as? Bool
+//            let label = request["label"] as? String ?? ""
+//            
+//            if range.count > 0 {
+//                let part = [
+//                    "desc":desc,
+//                    "active":active,
+//                    "range":range,
+//                    "next_index":next_index,
+//                    "timestamp":timestamp,
+//                    "internal":internal_,
+//                ] as [String:Any]
+//                
+//                parts.append(part)
+//            } else {
+//                let part = [
+//                    "desc":desc,
+//                    "active":active,
+//                    "range":range,
+//                    "next_index":next_index,
+//                    "timestamp":timestamp,
+//                    "internal":internal_,
+//                    "label": label
+//                ] as [String:Any]
+//                
+//                parts.append(part)
+//            }
+//        }
         param = [
-            "requests": parts
+            "requests": requests
         ]
     }
 }

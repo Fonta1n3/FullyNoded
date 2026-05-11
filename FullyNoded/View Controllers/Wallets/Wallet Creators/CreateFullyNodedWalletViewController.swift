@@ -13,6 +13,10 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     @IBOutlet weak var multiSigOutlet: UIButton!
     @IBOutlet weak var singleSigOutlet: UIButton!
+    @IBOutlet weak var coreWalletOutlet: UIButton!
+    @IBOutlet weak var pasteOutlet: UIButton!
+    @IBOutlet weak var importFileOutlet: UIButton!
+    @IBOutlet weak var scanQrOutlet: UIButton!
     
     var cosigner:Descriptor?
     var onDoneBlock:(((Bool)) -> Void)?
@@ -28,11 +32,20 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.delegate = self
+        coreWalletOutlet.clipsToBounds = true
+        pasteOutlet.clipsToBounds = true
+        importFileOutlet.clipsToBounds = true
+        scanQrOutlet.clipsToBounds = true
+        coreWalletOutlet.layer.cornerRadius = 8
+        pasteOutlet.layer.cornerRadius = 8
+        importFileOutlet.layer.cornerRadius = 8
+        scanQrOutlet.layer.cornerRadius = 8
         singleSigOutlet.layer.cornerRadius = 8
         multiSigOutlet.layer.cornerRadius = 8
+        
     }
     
-    @IBAction func pasteAction(_ sender: Any) {
+    @IBAction func pasteTextAction(_ sender: Any) {
         if let data = UIPasteboard.general.data(forPasteboardType: "com.apple.traditional-mac-plain-text") {
             guard let string = String(bytes: data, encoding: .utf8) else {
                 showAlert(vc: self, title: "", message: "Looks like you do not have valid text on your clipboard.")
@@ -93,7 +106,16 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         processImportedString(string)
     }
     
-    @IBAction func fileAction(_ sender: Any) {
+    @IBAction func syncCoreWalletAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+        
+            performSegue(withIdentifier: "segueToSyncCoreWallet", sender: self)
+        }
+    }
+    
+    
+    @IBAction func importFileAction(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
             let alert = UIAlertController(title: "Upload a file?", message: "Here you can upload files from your Hardware Wallets to easily create Fully Noded Wallet's", preferredStyle: .alert)
             
@@ -546,10 +568,216 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
+    private func decodeWalletBackup(from hexString: String) -> WalletBackup? {
+        
+        guard let data = Data(hexString: hexString) else {
+            return nil
+        }
+        
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
+        
+        do {
+            let backup = try decoder.decode(WalletBackup.self, from: data)
+            return backup
+        } catch {
+            showAlert(title: "Decode Failed", message: "Could not parse backup data.\n\nError: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    private func promptToImport(backup: WalletBackup) {
+        let date = backup.lastUpdate.formatted(date: .abbreviated, time: .shortened)
+        let count = backup.descriptors.count
+        
+        let alert = UIAlertController(
+            title: "Recover Wallet Backup?",
+            message: """
+            Backup details:
+            • Last updated: \(date)
+            • Descriptors: \(count)
+            """,
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Create Wallet", style: .default) { [weak self] _ in
+            self?.performImport(backup: backup)
+        })
+        
+        present(alert, animated: true)
+    }
+
+    private func performImport(backup: WalletBackup) {
+        // Assuming you have a way to update the current wallet
+        //wallet?.walletBackup = try? backup.jsonData()  // or however you store it
+        
+        guard let jsonData = try? backup.jsonData() else { return }
+        spinner.show(vc: self, description: "Recovering wallet...")
+        
+        var fnWalletToCreateDict: [String: Any] = [
+            "walletBackup": jsonData,
+            "label": "Recovered wallet",
+            "blockheight": UInt64(0),
+            "id": UUID()
+        ]
+        
+        var descriptorDicts: [[String: Any]] = []
+        for (i, descriptor) in backup.descriptors.enumerated() {
+            let fnDesc = Descriptor(descriptor.desc)
+            var descriptorDict: [String: Any] = [
+                "internal": descriptor.internal ?? false,
+                "active": descriptor.active,
+                "desc": descriptor.desc
+            ]
+            
+            if let range = descriptor.range {
+                if range.count == 2 {
+                    descriptorDict["range"] = [range[0],range[1]]
+                } else if range.count == 1 {
+                    descriptorDict["range"] = [range[0]]
+                } else if let _internal = descriptor.internal, !_internal {
+                    descriptorDict["label"] = descriptor.label
+                }
+            } else if let _internal = descriptor.internal, !_internal  {
+                descriptorDict["label"] = descriptor.label
+            } else if descriptor.internal == nil {
+                descriptorDict["label"] = descriptor.label
+            }
+            
+            if let timestamp = descriptor.timestamp {
+                descriptorDict["timestamp"] = timestamp
+            }
+            
+            if let nextIndex = descriptor.nextIndex {
+                descriptorDict["next_index"] = nextIndex
+            }
+            
+            print("descriptorDict: \(descriptorDict)")
+            descriptorDicts.append(descriptorDict)
+            
+            if fnDesc.isHD {
+                print("HD descriptor")
+                if !fnDesc.isInternal {
+                    print("primary descriptor")
+                    fnWalletToCreateDict["receiveDescriptor"] = descriptor.desc
+                    fnWalletToCreateDict["name"] = "FullyNoded-" + Crypto.sha256hash("\(descriptor.desc.split(separator: "#")[0])")
+                } else {
+                    print("change descriptor")
+                    fnWalletToCreateDict["changeDescriptor"] = descriptor.desc
+                }
+            }
+            
+            if i + 1 == backup.descriptors.count {
+                
+                
+                func setActiveAndImport(name: String, exists: Bool) {
+                    UserDefaults.standard.set(name, forKey: "walletName")
+                    
+                    let p = Import_Descriptors(["requests": descriptorDicts])
+                    print("getting here?")
+                    
+                    OnchainUtils.importDescriptors(p) { [weak self] (imported, message) in
+                        guard let self = self else { return }
+                        guard imported else {
+                            spinner.dismiss()
+                            showAlert(title: "", message: message ?? "Unknown error importing descriptors.")
+                            return
+                        }
+                        
+                        print("imported")
+                        print("exists: \(exists)")
+                       
+                        if !exists {
+                            CoreDataService.saveEntity(dict: fnWalletToCreateDict, entityName: .wallets) { [weak self] walletRecovered in
+                                guard let self = self else { return }
+                                spinner.dismiss()
+                                guard walletRecovered else {
+                                    print("wallet not saved")
+                                   
+                                    return
+                                }
+                                print("wallet saved")
+                                // show success
+                                // Update UI, refresh wallets, etc.
+                                SuccessView.show(
+                                    in: self,
+                                    title: "Backup Recovered",
+                                    subtitle: "Your wallet has been recovered."
+                                )
+                            }
+                        } else {
+                            // Update it
+                            CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] fnWallets in
+                                guard let self = self else { return }
+                               
+                                guard let fnWallets = fnWallets else { print("no fnWallets"); return }
+                                for fnWallet in fnWallets {
+                                    let str = Wallet(dictionary: fnWallet)
+                                    if str.name == name {
+                                        print("reuse existing")
+                                        do {
+                                            let data = try backup.jsonData()
+                                            
+                                            CoreDataService.update(id: str.id, keyToUpdate: "walletBackup", newValue: data, entity: .wallets) { [weak self] backupUpdated in
+                                                guard let self = self else { return }
+                                                spinner.dismiss()
+                                                guard backupUpdated else {
+                                                    print("backup failed")
+                                                    return
+                                                }
+                                                
+                                                
+                                                SuccessView.show(
+                                                    in: self,
+                                                    title: "Backup Recovered",
+                                                    subtitle: "Your wallet has been recovered."
+                                                )
+                                            }
+                                        } catch {
+                                            spinner.dismiss()
+                                            print("can not convert backup to json data")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                let p = Create_Wallet_Param([
+                    "wallet_name": (fnWalletToCreateDict["name"] as! String),
+                    "disable_private_keys": true,
+                    "blank": true,
+                    "avoid_reuse": true,
+                    "descriptors": true,
+                    "load_on_startup": true
+                ])
+                
+                OnchainUtils.createWallet(param: p) { [weak self] (name, message) in
+                    guard let self = self else { return }
+                    guard let name = name else {
+                        if let message = message, message.contains("Database already exists") {
+                            setActiveAndImport(name: fnWalletToCreateDict["name"] as! String, exists: true)
+                        } else {
+                            spinner.dismiss()
+                            showAlert(title: "", message: message ?? "Unknown error creating wallet.")
+                        }
+                        return
+                    }
+                    setActiveAndImport(name: name, exists: false)
+                }
+            }
+        }
+    }
+    
     private func processImportedString(_ item: String) {
         let lowercased = item.lowercased()
-        
-        if self.isExtendedKey(lowercased) {
+                
+        if item.isValidHex, let walletBackup = decodeWalletBackup(from: item) {
+            promptToImport(backup: walletBackup)
+            
+        } else if self.isExtendedKey(lowercased) {
             
             showAlert(vc: self, title: "Not supported.", message: "Xpub importing is not supported, you need to import an output descriptor.")
             

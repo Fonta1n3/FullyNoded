@@ -66,7 +66,6 @@
                     <connections>
                         <outlet property="table" destination="dgY-D7-U76" id="mhI-Nc-qFi"/>
                         <segue destination="Xxg-Pp-vvN" kind="show" identifier="getHDmusigAddress" id="mRa-gP-mZ0"/>
-                        <segue destination="hL3-4s-vl7" kind="show" identifier="segueToBitcoinCoreWallets" id="2cS-RS-Ttc"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Oke-B8-Go2" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -280,7 +279,7 @@
                                         <rect key="frame" x="0.0" y="637" width="377" height="50"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hgi-ZB-OoB">
-                                                <rect key="frame" x="0.0" y="0.0" width="88.333333333333329" height="50"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="120.33333333333333" height="50"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="50" id="mo2-Xs-kaJ"/>
                                                 </constraints>
@@ -288,7 +287,7 @@
                                                 <state key="normal" title=" invoice" image="arrow.down.left" catalog="system">
                                                     <color key="titleColor" systemColor="tintColor"/>
                                                 </state>
-                                                <buttonConfiguration key="configuration" style="gray" title="Invoice">
+                                                <buttonConfiguration key="configuration" style="tinted" title="Invoice">
                                                     <fontDescription key="titleFontDescription" type="system" pointSize="13"/>
                                                     <color key="baseForegroundColor" systemColor="tintColor"/>
                                                 </buttonConfiguration>
@@ -297,35 +296,21 @@
                                                 </connections>
                                             </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sbB-NO-KJ2">
-                                                <rect key="frame" x="96.333333333333343" y="0.0" width="88.333333333333343" height="50"/>
+                                                <rect key="frame" x="128.33333333333334" y="0.0" width="120.33333333333334" height="50"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="50" id="Kzg-JU-JcC"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                 <state key="normal" title="utxo's"/>
-                                                <buttonConfiguration key="configuration" style="gray" title="UTXO's">
+                                                <buttonConfiguration key="configuration" style="tinted" title="UTXO's">
                                                     <fontDescription key="titleFontDescription" type="system" pointSize="13"/>
                                                 </buttonConfiguration>
                                                 <connections>
                                                     <action selector="goToUtxos:" destination="Dwu-lj-4IN" eventType="touchUpInside" id="zv4-2M-JYa"/>
                                                 </connections>
                                             </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4y9-S1-3Km">
-                                                <rect key="frame" x="192.66666666666666" y="0.0" width="87.999999999999972" height="50"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" constant="50" id="4Be-ld-CLZ"/>
-                                                </constraints>
-                                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                <state key="normal" title="advanced"/>
-                                                <buttonConfiguration key="configuration" style="gray" title="Advanced">
-                                                    <fontDescription key="titleFontDescription" type="system" pointSize="13"/>
-                                                </buttonConfiguration>
-                                                <connections>
-                                                    <action selector="advancedAction:" destination="Dwu-lj-4IN" eventType="touchUpInside" id="Zpy-ib-jo9"/>
-                                                </connections>
-                                            </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1rD-5C-VVj">
-                                                <rect key="frame" x="288.66666666666669" y="0.0" width="88.333333333333314" height="50"/>
+                                                <rect key="frame" x="256.66666666666669" y="0.0" width="120.33333333333331" height="50"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="50" id="9Rd-qg-C1k"/>
                                                 </constraints>
@@ -333,7 +318,7 @@
                                                 <state key="normal" title=" send" image="arrow.up.right" catalog="system">
                                                     <color key="titleColor" systemColor="tintColor"/>
                                                 </state>
-                                                <buttonConfiguration key="configuration" style="gray" title="Send">
+                                                <buttonConfiguration key="configuration" style="tinted" title="Send">
                                                     <fontDescription key="titleFontDescription" type="system" pointSize="13"/>
                                                     <color key="baseForegroundColor" systemColor="tintColor"/>
                                                 </buttonConfiguration>
@@ -385,10 +370,9 @@
                         </leftBarButtonItems>
                         <rightBarButtonItems>
                             <barButtonItem title="    " id="ggk-Vy-0O7"/>
-                            <barButtonItem image="square.and.arrow.down" catalog="system" id="7bj-qG-8FW">
-                                <color key="tintColor" systemColor="tintColor"/>
+                            <barButtonItem image="square.and.arrow.up" catalog="system" id="rqp-Cy-RLT">
                                 <connections>
-                                    <action selector="importTransaction:" destination="Dwu-lj-4IN" id="aW2-MS-heY"/>
+                                    <action selector="loadBackupTapped:" destination="Dwu-lj-4IN" id="fUi-Ca-QHB"/>
                                 </connections>
                             </barButtonItem>
                         </rightBarButtonItems>
@@ -698,7 +682,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="JOf-3w-unO">
-                                <rect key="frame" x="16" y="103" width="361" height="607"/>
+                                <rect key="frame" x="16" y="103" width="361" height="649"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="inputCell" rowHeight="429" id="1Zh-DT-bup">
                                         <rect key="frame" x="20" y="55.333332061767578" width="321" height="429"/>
@@ -830,11 +814,17 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                                     <color key="tintColor" systemColor="tintColor"/>
                                                     <state key="normal" image="info.circle" catalog="system"/>
                                                 </button>
+                                                <button opaque="NO" tag="22" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oan-Ej-gwL">
+                                                    <rect key="frame" x="206" y="11" width="99" height="34.333333333333336"/>
+                                                    <state key="normal" title="Button"/>
+                                                    <buttonConfiguration key="configuration" style="tinted" image="signature" catalog="system" title=" Sign"/>
+                                                </button>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="CJT-DR-Byx" firstAttribute="leading" secondItem="ghh-nT-jO0" secondAttribute="trailing" constant="8" symbolic="YES" id="7P5-Zq-R7P"/>
                                                 <constraint firstItem="Iu1-xw-WNL" firstAttribute="top" secondItem="5eO-hO-ldz" secondAttribute="top" id="9Ni-bL-ZY5"/>
                                                 <constraint firstItem="Iu1-xw-WNL" firstAttribute="top" secondItem="pfA-62-1DB" secondAttribute="top" id="Bqd-Dv-zmV"/>
+                                                <constraint firstAttribute="trailing" secondItem="oan-Ej-gwL" secondAttribute="trailing" constant="16" id="Dfi-cW-bJh"/>
                                                 <constraint firstItem="zdr-sc-HtB" firstAttribute="trailing" secondItem="7UM-gD-d6D" secondAttribute="trailingMargin" id="DuY-RF-xpy"/>
                                                 <constraint firstItem="ghh-nT-jO0" firstAttribute="top" secondItem="yRB-ph-qqb" secondAttribute="bottom" constant="8" symbolic="YES" id="HbF-l0-V12"/>
                                                 <constraint firstItem="cFk-CS-bV6" firstAttribute="centerY" secondItem="y7g-l6-0rb" secondAttribute="centerY" id="JJQ-qm-eGE"/>
@@ -859,6 +849,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                                 <constraint firstItem="crk-dT-SzH" firstAttribute="top" secondItem="7UM-gD-d6D" secondAttribute="topMargin" id="dto-JE-Kwg"/>
                                                 <constraint firstItem="7GL-jb-gFV" firstAttribute="leading" secondItem="JZg-8g-ofz" secondAttribute="trailing" constant="8" symbolic="YES" id="fIu-OI-Vif"/>
                                                 <constraint firstItem="JZg-8g-ofz" firstAttribute="top" secondItem="y7g-l6-0rb" secondAttribute="bottom" constant="8" symbolic="YES" id="fWD-0A-oWV"/>
+                                                <constraint firstItem="oan-Ej-gwL" firstAttribute="top" secondItem="7UM-gD-d6D" secondAttribute="top" constant="11" id="hJl-0O-Clw"/>
                                                 <constraint firstItem="f1u-KK-ct4" firstAttribute="leading" secondItem="7UM-gD-d6D" secondAttribute="leading" constant="16" id="ifJ-Jw-Z42"/>
                                                 <constraint firstItem="z4a-KS-xO4" firstAttribute="top" secondItem="WJr-rP-HgW" secondAttribute="top" id="jaI-tP-HcT"/>
                                                 <constraint firstItem="cFk-CS-bV6" firstAttribute="leading" secondItem="y7g-l6-0rb" secondAttribute="trailing" constant="8" symbolic="YES" id="k0g-Oh-XWU"/>
@@ -1198,140 +1189,77 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                     <outlet property="delegate" destination="XA2-Lt-01p" id="7dm-aW-Siu"/>
                                 </connections>
                             </tableView>
-                            <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="foy-yq-4sY">
-                                <rect key="frame" x="17" y="718" width="359" height="80"/>
-                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="EoW-rG-EwJ">
-                                    <rect key="frame" x="0.0" y="0.0" width="359" height="80"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                    <subviews>
-                                        <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="v9E-CR-yn5">
-                                            <rect key="frame" x="11" y="15" width="337" height="50"/>
-                                            <subviews>
-                                                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8y7-nk-cBS">
-                                                    <rect key="frame" x="0.0" y="0.0" width="73" height="50"/>
-                                                    <subviews>
-                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="STc-De-EFd">
-                                                            <rect key="frame" x="0.0" y="0.0" width="73" height="50"/>
-                                                            <color key="backgroundColor" systemColor="systemFillColor"/>
-                                                            <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                            <color key="tintColor" systemColor="tintColor"/>
-                                                            <state key="normal" title="export">
-                                                                <color key="titleColor" systemColor="tintColor"/>
-                                                            </state>
-                                                            <connections>
-                                                                <action selector="exportAction:" destination="XA2-Lt-01p" eventType="touchUpInside" id="6rq-wh-giv"/>
-                                                            </connections>
-                                                        </button>
-                                                    </subviews>
-                                                    <constraints>
-                                                        <constraint firstItem="STc-De-EFd" firstAttribute="leading" secondItem="8y7-nk-cBS" secondAttribute="leading" id="GBY-Mn-cgK"/>
-                                                        <constraint firstItem="STc-De-EFd" firstAttribute="top" secondItem="8y7-nk-cBS" secondAttribute="top" id="Nuc-Et-ESq"/>
-                                                        <constraint firstAttribute="width" constant="73" id="k6p-Hv-tKq"/>
-                                                        <constraint firstAttribute="height" constant="50" id="l14-6c-77e"/>
-                                                        <constraint firstAttribute="trailing" secondItem="STc-De-EFd" secondAttribute="trailing" id="vBF-TK-mZ7"/>
-                                                        <constraint firstAttribute="bottom" secondItem="STc-De-EFd" secondAttribute="bottom" id="wj2-xC-IpN"/>
-                                                    </constraints>
-                                                </view>
-                                                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="be3-Aa-q9k">
-                                                    <rect key="frame" x="88" y="0.0" width="73" height="50"/>
-                                                    <subviews>
-                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uoE-Vm-gb2">
-                                                            <rect key="frame" x="0.0" y="0.0" width="73" height="50"/>
-                                                            <color key="backgroundColor" systemColor="systemFillColor"/>
-                                                            <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                            <color key="tintColor" systemColor="tintColor"/>
-                                                            <state key="normal" title="bump fee">
-                                                                <color key="titleColor" systemColor="tintColor"/>
-                                                            </state>
-                                                            <connections>
-                                                                <action selector="bumpFeeAction:" destination="XA2-Lt-01p" eventType="touchUpInside" id="6jP-Ng-mTM"/>
-                                                            </connections>
-                                                        </button>
-                                                    </subviews>
-                                                    <constraints>
-                                                        <constraint firstAttribute="height" constant="50" id="2Op-w7-osa"/>
-                                                        <constraint firstItem="uoE-Vm-gb2" firstAttribute="leading" secondItem="be3-Aa-q9k" secondAttribute="leading" id="Cqz-so-IDd"/>
-                                                        <constraint firstAttribute="width" constant="73" id="UGA-JN-uO4"/>
-                                                        <constraint firstItem="uoE-Vm-gb2" firstAttribute="top" secondItem="be3-Aa-q9k" secondAttribute="top" id="WKb-xC-rsZ"/>
-                                                        <constraint firstAttribute="trailing" secondItem="uoE-Vm-gb2" secondAttribute="trailing" id="Zym-iJ-2h4"/>
-                                                        <constraint firstAttribute="bottom" secondItem="uoE-Vm-gb2" secondAttribute="bottom" id="bGQ-KI-HCS"/>
-                                                    </constraints>
-                                                </view>
-                                                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GcO-DT-YAr">
-                                                    <rect key="frame" x="176" y="0.0" width="73" height="50"/>
-                                                    <subviews>
-                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="avl-U2-g8j">
-                                                            <rect key="frame" x="0.0" y="0.0" width="73" height="50"/>
-                                                            <color key="backgroundColor" systemColor="systemFillColor"/>
-                                                            <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                            <color key="tintColor" systemColor="tintColor"/>
-                                                            <state key="normal" title="sign">
-                                                                <color key="titleColor" systemColor="tintColor"/>
-                                                            </state>
-                                                            <connections>
-                                                                <action selector="signAction:" destination="XA2-Lt-01p" eventType="touchUpInside" id="wuh-mS-HV8"/>
-                                                            </connections>
-                                                        </button>
-                                                    </subviews>
-                                                    <constraints>
-                                                        <constraint firstAttribute="bottom" secondItem="avl-U2-g8j" secondAttribute="bottom" id="1OU-EX-aR9"/>
-                                                        <constraint firstItem="avl-U2-g8j" firstAttribute="leading" secondItem="GcO-DT-YAr" secondAttribute="leading" id="StL-mI-mGT"/>
-                                                        <constraint firstAttribute="trailing" secondItem="avl-U2-g8j" secondAttribute="trailing" id="aqc-rE-kKr"/>
-                                                        <constraint firstItem="avl-U2-g8j" firstAttribute="top" secondItem="GcO-DT-YAr" secondAttribute="top" id="nRY-xn-0W8"/>
-                                                        <constraint firstAttribute="width" constant="73" id="pxd-Au-krQ"/>
-                                                        <constraint firstAttribute="height" constant="50" id="vmU-fp-UCu"/>
-                                                    </constraints>
-                                                </view>
-                                                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ihq-sB-rXR">
-                                                    <rect key="frame" x="264" y="0.0" width="73" height="50"/>
-                                                    <subviews>
-                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pPS-6j-crM">
-                                                            <rect key="frame" x="0.0" y="0.0" width="73" height="50"/>
-                                                            <color key="backgroundColor" systemColor="systemFillColor"/>
-                                                            <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                            <color key="tintColor" systemColor="tintColor"/>
-                                                            <state key="normal" title=" send">
-                                                                <color key="titleColor" systemColor="tintColor"/>
-                                                            </state>
-                                                            <connections>
-                                                                <action selector="sendAction:" destination="XA2-Lt-01p" eventType="touchUpInside" id="SQ5-ID-43G"/>
-                                                            </connections>
-                                                        </button>
-                                                    </subviews>
-                                                    <constraints>
-                                                        <constraint firstAttribute="height" constant="50" id="9GL-hK-fEu"/>
-                                                        <constraint firstAttribute="trailing" secondItem="pPS-6j-crM" secondAttribute="trailing" id="Gw6-FP-ELG"/>
-                                                        <constraint firstItem="pPS-6j-crM" firstAttribute="top" secondItem="ihq-sB-rXR" secondAttribute="top" id="JQJ-rE-9hO"/>
-                                                        <constraint firstAttribute="width" constant="73" id="P4f-HK-8qd"/>
-                                                        <constraint firstAttribute="bottom" secondItem="pPS-6j-crM" secondAttribute="bottom" id="n1m-oV-ZfS"/>
-                                                        <constraint firstItem="pPS-6j-crM" firstAttribute="leading" secondItem="ihq-sB-rXR" secondAttribute="leading" id="tU3-3a-wuD"/>
-                                                    </constraints>
-                                                </view>
-                                            </subviews>
-                                        </stackView>
-                                    </subviews>
-                                    <constraints>
-                                        <constraint firstItem="v9E-CR-yn5" firstAttribute="centerX" secondItem="EoW-rG-EwJ" secondAttribute="centerX" id="MmM-u0-j7U"/>
-                                        <constraint firstItem="v9E-CR-yn5" firstAttribute="centerY" secondItem="EoW-rG-EwJ" secondAttribute="centerY" id="sD5-Fl-PtX"/>
-                                    </constraints>
-                                </view>
-                                <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="359" id="MLY-ra-GMG"/>
-                                    <constraint firstAttribute="height" constant="80" id="l8M-Gy-GHP"/>
-                                </constraints>
-                                <blurEffect style="systemThinMaterial"/>
-                            </visualEffectView>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="xwU-kE-0kF">
+                                <rect key="frame" x="16" y="760" width="361" height="50"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="STc-De-EFd">
+                                        <rect key="frame" x="0.0" y="0.0" width="104.33333333333333" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="6LT-eD-rJH"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                        <color key="tintColor" systemColor="tintColor"/>
+                                        <state key="normal" title="export">
+                                            <color key="titleColor" systemColor="tintColor"/>
+                                        </state>
+                                        <buttonConfiguration key="configuration" style="tinted" title="export">
+                                            <fontDescription key="titleFontDescription" type="system" pointSize="13"/>
+                                            <color key="baseForegroundColor" systemColor="tintColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="exportAction:" destination="XA2-Lt-01p" eventType="touchUpInside" id="6rq-wh-giv"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uoE-Vm-gb2">
+                                        <rect key="frame" x="112.33333333333334" y="0.0" width="135" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="1if-L1-drZ"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                        <color key="tintColor" systemColor="tintColor"/>
+                                        <state key="normal" title="bump fee">
+                                            <color key="titleColor" systemColor="tintColor"/>
+                                        </state>
+                                        <buttonConfiguration key="configuration" style="tinted" title="bump fee">
+                                            <fontDescription key="titleFontDescription" type="system" pointSize="13"/>
+                                            <color key="baseForegroundColor" systemColor="tintColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="bumpFeeAction:" destination="XA2-Lt-01p" eventType="touchUpInside" id="6jP-Ng-mTM"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pPS-6j-crM">
+                                        <rect key="frame" x="255.33333333333329" y="0.0" width="105.66666666666666" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="mP3-A1-ZOs"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                        <color key="tintColor" systemColor="tintColor"/>
+                                        <state key="normal" title=" send">
+                                            <color key="titleColor" systemColor="tintColor"/>
+                                        </state>
+                                        <buttonConfiguration key="configuration" style="tinted" title=" send">
+                                            <fontDescription key="titleFontDescription" type="system" pointSize="13"/>
+                                            <color key="baseForegroundColor" systemColor="tintColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="sendAction:" destination="XA2-Lt-01p" eventType="touchUpInside" id="SQ5-ID-43G"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="c3Z-69-hpk"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="xwU-kE-0kF" firstAttribute="centerX" secondItem="LcI-eH-ZHh" secondAttribute="centerX" id="8Pd-z0-Yip"/>
+                            <constraint firstItem="xwU-kE-0kF" firstAttribute="leading" secondItem="c3Z-69-hpk" secondAttribute="leading" constant="16" id="Hsk-52-4L1"/>
                             <constraint firstItem="c3Z-69-hpk" firstAttribute="trailing" secondItem="JOf-3w-unO" secondAttribute="trailing" constant="16" id="Mld-TN-Uw1"/>
+                            <constraint firstItem="xwU-kE-0kF" firstAttribute="top" secondItem="JOf-3w-unO" secondAttribute="bottom" constant="8" symbolic="YES" id="SSC-Wh-V9d"/>
+                            <constraint firstItem="c3Z-69-hpk" firstAttribute="trailing" secondItem="xwU-kE-0kF" secondAttribute="trailing" constant="16" id="SUS-3N-JtI"/>
                             <constraint firstItem="JOf-3w-unO" firstAttribute="top" secondItem="c3Z-69-hpk" secondAttribute="top" id="WnU-pd-5MA"/>
-                            <constraint firstItem="foy-yq-4sY" firstAttribute="top" secondItem="JOf-3w-unO" secondAttribute="bottom" constant="8" symbolic="YES" id="a2R-d3-UHk"/>
-                            <constraint firstItem="c3Z-69-hpk" firstAttribute="bottom" secondItem="foy-yq-4sY" secondAttribute="bottom" constant="20" id="k9a-xR-1ki"/>
+                            <constraint firstItem="c3Z-69-hpk" firstAttribute="bottom" secondItem="xwU-kE-0kF" secondAttribute="bottom" constant="8" id="XhV-Ar-b8c"/>
                             <constraint firstItem="JOf-3w-unO" firstAttribute="leading" secondItem="c3Z-69-hpk" secondAttribute="leading" constant="16" id="mB5-ns-TvL"/>
-                            <constraint firstItem="foy-yq-4sY" firstAttribute="centerX" secondItem="LcI-eH-ZHh" secondAttribute="centerX" id="sN5-59-Bgx"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Transaction Detail" id="2eo-7r-TL3">
@@ -1350,15 +1278,9 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                         </rightBarButtonItems>
                     </navigationItem>
                     <connections>
-                        <outlet property="bumpFeeBackgroundView" destination="be3-Aa-q9k" id="abZ-j2-0HA"/>
                         <outlet property="bumpFeeOutlet" destination="uoE-Vm-gb2" id="yQN-Dn-eBD"/>
-                        <outlet property="buttonsBackgroundView" destination="foy-yq-4sY" id="ych-SU-5fR"/>
-                        <outlet property="exportBackgroundView" destination="8y7-nk-cBS" id="z4E-UB-VIk"/>
                         <outlet property="exportButtonOutlet" destination="STc-De-EFd" id="dcw-dp-OT2"/>
-                        <outlet property="sendBackgroundView" destination="ihq-sB-rXR" id="PHe-M0-iLS"/>
                         <outlet property="sendOutlet" destination="pPS-6j-crM" id="Dmr-QB-mFl"/>
-                        <outlet property="signBackgroundView" destination="GcO-DT-YAr" id="Qvk-TK-oaa"/>
-                        <outlet property="signOutlet" destination="avl-U2-g8j" id="HHH-0V-g9Z"/>
                         <outlet property="verifyTable" destination="JOf-3w-unO" id="2GY-ke-Z4R"/>
                         <segue destination="GlR-4A-eAx" kind="show" identifier="segueToExportPsbtAsQr" id="NFj-Y4-lQE"/>
                         <segue destination="4V7-jZ-58Y" kind="presentation" identifier="segueToTxLabelMemo" id="veA-tY-zvZ"/>
@@ -1368,7 +1290,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="qZa-gF-3f7" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-5914" y="365"/>
+            <point key="canvasLocation" x="-5915.2671755725187" y="364.78873239436621"/>
         </scene>
         <!--Transaction Label Memo View Controller-->
         <scene sceneID="JWQ-wN-sBD">
@@ -1470,12 +1392,24 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="Nodeless" id="9kW-mf-LyE">
-                        <barButtonItem key="rightBarButtonItem" image="trash.circle" catalog="system" id="kRg-2T-jxj">
-                            <color key="tintColor" systemColor="systemPinkColor"/>
-                            <connections>
-                                <action selector="deleteCacheAction:" destination="8y2-FD-bX6" id="dfQ-mY-Sh5"/>
-                            </connections>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem image="arrow.clockwise" catalog="system" id="EIw-UX-eX4">
+                                <connections>
+                                    <action selector="refreshAction:" destination="8y2-FD-bX6" id="Mqb-HZ-274"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem title="Import " image="square.and.arrow.down" catalog="system" id="lja-DE-LKI">
+                                <connections>
+                                    <action selector="importTransaction:" destination="8y2-FD-bX6" id="N36-7m-7re"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="trash.circle" catalog="system" id="kRg-2T-jxj">
+                                <color key="tintColor" systemColor="systemPinkColor"/>
+                                <connections>
+                                    <action selector="deleteCacheAction:" destination="8y2-FD-bX6" id="dfQ-mY-Sh5"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <connections>
                         <segue destination="GlR-4A-eAx" kind="show" identifier="segueToShowAddressQrFromNodeless" id="uCn-2i-AB2"/>
@@ -2517,6 +2451,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                     <connections>
                         <outlet property="detailTable" destination="hgF-Hw-8pz" id="I28-3h-wBF"/>
                         <segue destination="GlR-4A-eAx" kind="show" identifier="segueToAccountMap" id="zi9-mK-A5a"/>
+                        <segue destination="8y2-FD-bX6" kind="show" identifier="segueToNodelessFromWalletDetail" id="PBa-u8-HRU"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="y6X-dL-UYm" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -2532,15 +2467,22 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="6zG-h6-wiF">
-                                <rect key="frame" x="16" y="139.00000000000003" width="361" height="356.66666666666674"/>
+                                <rect key="frame" x="16" y="111" width="361" height="513.66666666666663"/>
                                 <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Create" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gKj-gN-DrS">
+                                        <rect key="frame" x="0.0" y="0.0" width="361" height="20.333333333333332"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                     <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GO8-o8-fXl">
-                                        <rect key="frame" x="0.0" y="0.0" width="361" height="44"/>
+                                        <rect key="frame" x="0.0" y="28.333333333333343" width="361" height="44"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="DY7-55-MO9"/>
                                         </constraints>
-                                        <state key="normal" title="Single-sig">
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <state key="normal" title=" Create single-sig">
                                             <color key="titleColor" systemColor="tintColor"/>
                                         </state>
                                         <connections>
@@ -2548,19 +2490,20 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="d1Y-lU-km0">
-                                        <rect key="frame" x="0.0" y="52" width="361" height="43"/>
-                                        <string key="text">Creates a new single signature wallet. Your node holds the public keys, Fully Noded holds the private keys encrypted on your device which can be deleted to make it watch-only.</string>
+                                        <rect key="frame" x="0.0" y="80.333333333333343" width="361" height="43"/>
+                                        <string key="text">Creates a single sig wallet. Your node holds the public keys, Fully Noded holds the private keys encrypted on your device which can be deleted to make it watch-only.</string>
                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ewF-ze-dkg">
-                                        <rect key="frame" x="0.0" y="103" width="361" height="44"/>
+                                        <rect key="frame" x="0.0" y="131.33333333333334" width="361" height="44"/>
                                         <color key="backgroundColor" systemColor="systemFillColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="ozy-XE-8dP"/>
                                         </constraints>
-                                        <state key="normal" title="Multi-sig">
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <state key="normal" title=" Create multi-sig">
                                             <color key="titleColor" systemColor="tintColor"/>
                                         </state>
                                         <connections>
@@ -2568,24 +2511,81 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ti9-Jn-c8c">
-                                        <rect key="frame" x="0.0" y="155" width="361" height="43"/>
-                                        <string key="text">Add cosigners by scanning QR's, pasting text from other wallets or by deriving cosigners from existing signers stored on Fully Noded.</string>
+                                        <rect key="frame" x="0.0" y="183.33333333333331" width="361" height="43"/>
+                                        <string key="text">This presents the multi-sig creator, where you can add cosigners from existing Signers, scanning QR codes or manually pasting the xpub and derivation info.</string>
                                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                         <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="47C-HD-wcH">
-                                        <rect key="frame" x="0.0" y="206" width="361" height="150.66666666666663"/>
-                                        <string key="text">Already have a wallet or cosigner? 
-
-Use the buttons in the top right to import whatever you've got.  
-From left to right: paste text, upload file and scan QR. 
-
-Fully Noded does its best to support as many hardware and software wallet options as possible.</string>
-                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="e69-9h-da9">
+                                        <rect key="frame" x="0.0" y="234.33333333333331" width="361" height="43"/>
+                                        <string key="text">This action will activate any existing Bitcoin Core wallet, if the Core wallet is a descriptor wallet then it will be synced with Fully Noded and you will get the full set of FN features.</string>
+                                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                        <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Import / Recovery" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="797-0O-GyV">
+                                        <rect key="frame" x="0.0" y="285.33333333333331" width="361" height="20.333333333333314"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DCK-W8-EOP">
+                                        <rect key="frame" x="0.0" y="313.66666666666669" width="361" height="44"/>
+                                        <color key="backgroundColor" systemColor="systemFillColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="44" id="EAj-ar-3eK"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <state key="normal" title=" Import by pasting text" image="document.on.clipboard" catalog="system">
+                                            <color key="titleColor" systemColor="tintColor"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="pasteTextAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="ts3-fj-9gc"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9dS-cb-UlI">
+                                        <rect key="frame" x="0.0" y="365.66666666666669" width="361" height="44"/>
+                                        <color key="backgroundColor" systemColor="systemFillColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="44" id="sKf-3M-kXX"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <state key="normal" title=" Import a wallet file" image="folder.badge.plus" catalog="system">
+                                            <color key="titleColor" systemColor="tintColor"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="importFileAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="wRC-jd-68g"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mM2-q0-GaQ">
+                                        <rect key="frame" x="0.0" y="417.66666666666663" width="361" height="44"/>
+                                        <color key="backgroundColor" systemColor="systemFillColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="44" id="Xja-KJ-Vxe"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <state key="normal" title=" Import by scanning a QR code" image="qrcode.viewfinder" catalog="system">
+                                            <color key="titleColor" systemColor="tintColor"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="scanQrAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="8bK-Hp-G9V"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oy6-dL-aYy">
+                                        <rect key="frame" x="0.0" y="469.66666666666663" width="361" height="44"/>
+                                        <color key="backgroundColor" systemColor="systemFillColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="44" id="deP-5d-OSB"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <state key="normal" title=" Bitcoin Core Wallets">
+                                            <color key="titleColor" systemColor="tintColor"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="syncCoreWalletAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="nnc-Z6-f1L"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                             </stackView>
                         </subviews>
@@ -2593,39 +2593,23 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="6zG-h6-wiF" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="8UM-IY-OU4"/>
-                            <constraint firstItem="6zG-h6-wiF" firstAttribute="top" secondItem="V4I-Q6-GVc" secondAttribute="top" constant="36" id="BtF-fO-PUH"/>
+                            <constraint firstItem="6zG-h6-wiF" firstAttribute="top" secondItem="V4I-Q6-GVc" secondAttribute="top" constant="8" id="Zot-YB-VgH"/>
                             <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="6zG-h6-wiF" secondAttribute="trailing" constant="16" id="pph-He-lUp"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Create Wallet" id="5rs-4G-uHB">
-                        <rightBarButtonItems>
-                            <barButtonItem image="qrcode.viewfinder" catalog="system" id="kDw-94-ivS">
-                                <color key="tintColor" systemColor="tintColor"/>
-                                <connections>
-                                    <action selector="scanQrAction:" destination="0gR-Gj-FSR" id="Et8-Ih-pHL"/>
-                                </connections>
-                            </barButtonItem>
-                            <barButtonItem image="folder" catalog="system" id="KPq-qx-s5Y">
-                                <color key="tintColor" systemColor="tintColor"/>
-                                <connections>
-                                    <action selector="fileAction:" destination="0gR-Gj-FSR" id="ZYq-bO-VDV"/>
-                                </connections>
-                            </barButtonItem>
-                            <barButtonItem image="doc.on.clipboard" catalog="system" id="O6q-Km-Thf">
-                                <color key="tintColor" systemColor="tintColor"/>
-                                <connections>
-                                    <action selector="pasteAction:" destination="0gR-Gj-FSR" id="VYg-fG-GpG"/>
-                                </connections>
-                            </barButtonItem>
-                        </rightBarButtonItems>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" title="Create Wallet" id="5rs-4G-uHB"/>
                     <connections>
+                        <outlet property="coreWalletOutlet" destination="oy6-dL-aYy" id="d3O-hS-mV3"/>
+                        <outlet property="importFileOutlet" destination="9dS-cb-UlI" id="Z5k-6e-k17"/>
                         <outlet property="multiSigOutlet" destination="ewF-ze-dkg" id="EXb-It-bRN"/>
+                        <outlet property="pasteOutlet" destination="DCK-W8-EOP" id="5dU-wn-RVg"/>
+                        <outlet property="scanQrOutlet" destination="mM2-q0-GaQ" id="rVz-8a-UUc"/>
                         <outlet property="singleSigOutlet" destination="GO8-o8-fXl" id="6Gi-pM-wjc"/>
                         <segue destination="Yhd-sD-SB5" kind="show" identifier="segueToSeedWords" id="AJq-aA-dsj"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanner" id="1fQ-PG-chF"/>
                         <segue destination="00Y-n8-WfC" kind="show" identifier="segueToCreateMultiSig" id="ejH-sy-hlm"/>
                         <segue destination="fG5-85-vAV" kind="show" identifier="segueToImportDescriptor" id="LMu-1F-VvA"/>
+                        <segue destination="hL3-4s-vl7" kind="show" identifier="segueToSyncCoreWallet" id="WOD-hh-y1z"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aBB-kS-R85" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -3070,17 +3054,40 @@ Fully Noded does its best to support as many hardware and software wallet option
                                     <constraint firstItem="PBP-HA-t9R" firstAttribute="leading" secondItem="3Du-u4-MHg" secondAttribute="leading" id="udi-n6-Mee"/>
                                 </constraints>
                             </stackView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="M5K-HU-PtK">
+                                <rect key="frame" x="128" y="567" width="137" height="34.333333333333371"/>
+                                <color key="tintColor" systemColor="systemPinkColor"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="tinted" title="Add a timelock"/>
+                                <connections>
+                                    <action selector="addTimelockAction:" destination="Xxg-Pp-vvN" eventType="touchUpInside" id="ce2-9i-aw3"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" alpha="0.0" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Son-6i-6GA">
+                                <rect key="frame" x="16" y="567" width="361" height="20.333333333333371"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="361" id="mEP-kR-uZm"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" systemColor="systemPinkColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="luY-Vj-OjD"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="Son-6i-6GA" firstAttribute="top" secondItem="3Du-u4-MHg" secondAttribute="bottom" constant="8" symbolic="YES" id="2gT-yX-eRF"/>
                             <constraint firstItem="luY-Vj-OjD" firstAttribute="trailing" secondItem="3Du-u4-MHg" secondAttribute="trailing" constant="16" id="3wh-BN-CfC"/>
+                            <constraint firstItem="Son-6i-6GA" firstAttribute="leading" secondItem="luY-Vj-OjD" secondAttribute="leading" constant="16" id="Bd1-XL-rBl"/>
+                            <constraint firstItem="M5K-HU-PtK" firstAttribute="top" secondItem="3Du-u4-MHg" secondAttribute="bottom" constant="8" symbolic="YES" id="U5M-05-T0Z"/>
                             <constraint firstItem="3Du-u4-MHg" firstAttribute="leading" secondItem="luY-Vj-OjD" secondAttribute="leading" constant="16" id="VHf-c0-Tzu"/>
+                            <constraint firstItem="M5K-HU-PtK" firstAttribute="centerX" secondItem="eUN-hK-8St" secondAttribute="centerX" id="gPd-bd-Pfo"/>
                             <constraint firstItem="3Du-u4-MHg" firstAttribute="top" secondItem="luY-Vj-OjD" secondAttribute="top" constant="8" id="v8w-id-l4c"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Invoice" id="fge-ux-yT6"/>
                     <connections>
+                        <outlet property="addTimelockOutlet" destination="M5K-HU-PtK" id="Clx-Ka-jNg"/>
                         <outlet property="addressBackground" destination="PBP-HA-t9R" id="Ugg-vl-MWp"/>
                         <outlet property="addressOutlet" destination="5Ca-4Z-dsq" id="jU0-vq-Na3"/>
                         <outlet property="amountField" destination="qFH-Vc-Ghn" id="hTO-DQ-Qnr"/>
@@ -3090,11 +3097,12 @@ Fully Noded does its best to support as many hardware and software wallet option
                         <outlet property="labelField" destination="vqa-Nl-Pcv" id="5Oe-5Q-2WN"/>
                         <outlet property="messageField" destination="ykL-jw-dGh" id="E5w-Ys-thb"/>
                         <outlet property="qrView" destination="vte-Et-b1F" id="eYD-i1-TNK"/>
+                        <outlet property="timelockWarningLabel" destination="Son-6i-6GA" id="Cam-9d-R8S"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="e3g-lC-Q3f" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-8668" y="366.56671664167919"/>
+            <point key="canvasLocation" x="-8669.4656488549608" y="366.19718309859155"/>
         </scene>
         <!--Send-->
         <scene sceneID="nPC-E2-jSN">
@@ -3455,7 +3463,7 @@ Fully Noded does its best to support as many hardware and software wallet option
             </objects>
             <point key="canvasLocation" x="-6847" y="365"/>
         </scene>
-        <!--v2.3.0-->
+        <!--v2.3.2-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -3552,7 +3560,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v2.3.0" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v2.3.2" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -3768,13 +3776,14 @@ Fully Noded does its best to support as many hardware and software wallet option
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="N0t-XW-74V">
-                                                    <rect key="frame" x="20.000000000000004" y="16.666666666666668" width="41.333333333333343" height="21.000000000000004"/>
+                                                    <rect key="frame" x="20" y="16.666666666666668" width="305" height="21.000000000000004"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                             </subviews>
                                             <constraints>
+                                                <constraint firstAttribute="trailingMargin" secondItem="N0t-XW-74V" secondAttribute="trailing" constant="8" id="1Bx-vj-NBP"/>
                                                 <constraint firstItem="N0t-XW-74V" firstAttribute="leading" secondItem="8vt-jV-ete" secondAttribute="leadingMargin" id="nV1-0b-E9I"/>
                                                 <constraint firstItem="N0t-XW-74V" firstAttribute="centerY" secondItem="8vt-jV-ete" secondAttribute="centerY" id="p9p-RG-bDe"/>
                                             </constraints>
@@ -3805,7 +3814,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                             <constraint firstItem="nDS-G3-KAB" firstAttribute="top" secondItem="QQa-Wb-bYJ" secondAttribute="top" constant="8" id="vYm-rq-qrj"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Wallet Manager" id="9U2-4Q-7li">
+                    <navigationItem key="navigationItem" title="Bitcoin Core Wallets" id="9U2-4Q-7li">
                         <barButtonItem key="rightBarButtonItem" image="tray.and.arrow.up" catalog="system" id="8DT-la-hes">
                             <color key="tintColor" systemColor="tintColor"/>
                             <connections>
@@ -3820,7 +3829,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="yxh-t3-ScK" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4640.4580152671751" y="375.35211267605638"/>
+            <point key="canvasLocation" x="-7796" y="1853"/>
         </scene>
         <!--Security-->
         <scene sceneID="PNj-5X-XaN">
@@ -4417,7 +4426,7 @@ Fully Noded does its best to support as many hardware and software wallet option
             </objects>
             <point key="canvasLocation" x="3709" y="1181"/>
         </scene>
-        <!--Active Wallets View Controller-->
+        <!--Loaded Wallets-->
         <scene sceneID="cxp-Bp-OUI">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="q5n-LM-fBL" customClass="ActiveWalletsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -4485,14 +4494,14 @@ Fully Noded does its best to support as many hardware and software wallet option
                             <constraint firstItem="3Ad-F4-vuw" firstAttribute="trailing" secondItem="U8O-yQ-otK" secondAttribute="trailing" constant="16" id="xN7-1N-ioC"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" id="u3X-pW-JgS"/>
+                    <navigationItem key="navigationItem" title="Loaded Wallets" id="u3X-pW-JgS"/>
                     <connections>
                         <outlet property="table" destination="U8O-yQ-otK" id="4gg-9c-Z7E"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="xUE-pm-qLc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4640" y="1180"/>
+            <point key="canvasLocation" x="-6848" y="1853"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="sfg-es-QcU">
@@ -4833,7 +4842,7 @@ Fully Noded does its best to support as many hardware and software wallet option
                                         </subviews>
                                     </stackView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Cosigners:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dXX-uE-f2N">
-                                        <rect key="frame" x="0.0" y="200.33333333333331" width="361" height="20.333333333333314"/>
+                                        <rect key="frame" x="0.0" y="200.33333333333331" width="361" height="20.333333333333343"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="highlightedColor"/>
                                     </label>
@@ -4900,19 +4909,20 @@ Fully Noded does its best to support as many hardware and software wallet option
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="5iI-Ra-crf"/>
+        <segue reference="ejH-sy-hlm"/>
         <segue reference="qed-hl-jG5"/>
         <segue reference="Fvb-gy-rb3"/>
-        <segue reference="4g3-DC-Q5z"/>
+        <segue reference="DLx-HT-rGm"/>
         <segue reference="Wy7-ur-TeS"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="A1b-Ed-DYW"/>
-        <segue reference="CQp-9r-70w"/>
-        <segue reference="uCn-2i-AB2"/>
-        <segue reference="yAt-Ra-aPH"/>
-        <segue reference="7PS-EL-3d2"/>
+        <segue reference="BTh-Z9-jlD"/>
+        <segue reference="2dt-ER-scB"/>
+        <segue reference="hLi-xy-fNZ"/>
+        <segue reference="veA-tY-zvZ"/>
+        <segue reference="AK4-4u-w1q"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" systemColor="tintColor"/>
     <resources>

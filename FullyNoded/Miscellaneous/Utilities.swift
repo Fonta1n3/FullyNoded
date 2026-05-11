@@ -45,14 +45,34 @@ public func activeWallet(completion: @escaping ((Wallet?)) -> Void) {
     }
 }
 
-public func showAlert(vc: UIViewController?, title: String, message: String) {
-    if let vc = vc {
-        DispatchQueue.main.async {
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true, completion: nil)
+public func showAlert(vc: UIViewController? = nil, title: String, message: String) {
+    DispatchQueue.main.async {
+        let presentingVC: UIViewController
+        
+        if let vc = vc, vc.isViewLoaded, vc.view.window != nil {
+            presentingVC = vc
+        } else {
+            // Fallback to current top-most
+            guard let rootVC = UIApplication.shared.connectedScenes
+                    .compactMap({ ($0 as? UIWindowScene)?.windows.first { $0.isKeyWindow } })
+                    .first?.rootViewController else {
+                return
+            }
+            presentingVC = rootVC.topMostViewController() // You can add the extension below
         }
+        
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        
+        if let popover = alert.popoverPresentationController {
+            popover.sourceView = presentingVC.view
+            popover.sourceRect = CGRect(x: presentingVC.view.bounds.midX,
+                                        y: presentingVC.view.bounds.midY,
+                                        width: 0, height: 0)
+            popover.permittedArrowDirections = []
+        }
+        
+        presentingVC.present(alert, animated: true)
     }
 }
 
@@ -163,6 +183,7 @@ public func currentDate() -> String {
 public var authTimeout: Int {
     return 360
 }
+
 
 public let currencies:[[String:String]] = [
     ["USD": "$"],
