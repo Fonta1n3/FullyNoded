@@ -177,6 +177,8 @@ final class AddressInputViewController: UIViewController {
         guard let address = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
               !address.isEmpty else { return }
         
+        ConnectingView.shared.show(vc: self, description: "Building psbt and signing, you will be able to verify before broadcasting...")
+        
         delegate?.addressInputViewController(self, didConfirmAddress: address)
         dismiss(animated: true)
     }

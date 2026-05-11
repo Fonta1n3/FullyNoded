@@ -636,14 +636,13 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                     descriptorDict["range"] = [range[0],range[1]]
                 } else if range.count == 1 {
                     descriptorDict["range"] = [range[0]]
-                } else {
+                } else if let _internal = descriptor.internal, !_internal {
                     descriptorDict["label"] = descriptor.label
                 }
-            } else {
+            } else if let _internal = descriptor.internal, !_internal  {
                 descriptorDict["label"] = descriptor.label
-//                if descriptor.active {
-//                    descriptorDict["range"] = [0,0]
-//                }
+            } else if descriptor.internal == nil {
+                descriptorDict["label"] = descriptor.label
             }
             
             if let timestamp = descriptor.timestamp {

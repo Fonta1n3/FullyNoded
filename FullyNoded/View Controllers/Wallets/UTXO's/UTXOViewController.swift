@@ -462,11 +462,12 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             vc.fxRate = fxRate
             
         case "segueToBroadcasterFromUtxo":
-            guard let vc = segue.destination as? VerifyTransactionViewController, let psbt = psbt else { fallthrough }
+            guard let vc = segue.destination as? VerifyTransactionViewController else { fallthrough }
             
-            vc.unsignedPsbt = psbt
             if let signedRawTx = signedRawTx {
                 vc.signedRawTx = signedRawTx
+            } else if let psbt = psbt {
+                vc.unsignedPsbt = psbt
             }
             
             
@@ -514,8 +515,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     func addressInputViewController(_ controller: AddressInputViewController, didConfirmAddress address: String) {
         guard let utxo = self.utxoToSweep else { return }
         
-        ConnectingView.shared.show(vc: self)
-        
         setPassphrase { [weak self] passphrase in
             guard let self = self else { return }
             sweepUtxo(recipientAddress: address, passphrase: passphrase, utxo: utxo)
@@ -523,7 +522,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     private func sweepUtxo(recipientAddress: String, passphrase: String?, utxo: UTXO) {
-        ConnectingView.shared.show(vc: self)
+        //ConnectingView.shared.show(vc: self)
+        
         CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
             guard let self = self else { return }
             
@@ -546,14 +546,14 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                     }
                 }
                 
-                if i + 1 == signers.count, let signerToUse = signerToUse, let inputAddress = utxo.address, let encryptedWords = signerToUse.words {
-                    let esploraUtxo = Esplora_Utxo(
-                        txid: utxo.txid,
-                        vout: utxo.vout,
-                        value: Int64(utxo.amount * 100000000),
-                        status: .init(confirmed: true, blockHeight: nil, blockHash: nil, blockTime: nil),
-                        address: inputAddress
-                    )
+                if i + 1 == signers.count, let signerToUse = signerToUse,/* let inputAddress = utxo.address,*/ let encryptedWords = signerToUse.words {
+//                    let esploraUtxo = Esplora_Utxo(
+//                        txid: utxo.txid,
+//                        vout: utxo.vout,
+//                        value: Int64(utxo.amount * 100000000),
+//                        status: .init(confirmed: true, blockHeight: nil, blockHash: nil, blockTime: nil),
+//                        address: inputAddress
+//                    )
                     
                     guard var decryptedMnemonic = Crypto.decrypt(encryptedWords), var words = decryptedMnemonic.utf8String else {
                         ConnectingView.shared.dismiss()
@@ -577,13 +577,18 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                             return
                         }
                         
-                        let (psbt, rawTx) = try WalletLogic.shared.createTimelockedTaprootWalletAndSign(mnemonic: bdkMnemonic, passphrase: nil, network: .testnet4, recipientAddress: recipientAddress, utxo: utxo)
+                        let (psbt, rawTx) = try WalletLogic.shared.createTimelockedTaprootWalletAndSign(
+                            mnemonic: bdkMnemonic,
+                            passphrase: passphrase,
+                            network: network,
+                            recipientAddress: recipientAddress,
+                            utxo: utxo
+                        )
                         
                         ConnectingView.shared.dismiss()
                         
-                        //var tx: WalletLogic.BDKTransaction? = nil
-                        if let rawTx = rawTx, let data = Data(hexString: rawTx) {
-                            // present tx analyzer
+                        // present tx verifier, if no node show nodeless one
+                        if let rawTx = rawTx, let _ = Data(hexString: rawTx) {
                             DispatchQueue.main.async { [weak self] in
                                 guard let self = self else { return }
                                 

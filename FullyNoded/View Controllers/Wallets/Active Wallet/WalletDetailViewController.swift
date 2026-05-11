@@ -202,7 +202,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                 let listDescriptorResponse = try JSONDecoder().decode(ListDescriptorsResponse.self, from: jsonData)
                                     
                 for descriptor in listDescriptorResponse.descriptors {
-                    
                     if descriptor.desc == wallet.receiveDescriptor, let range = descriptor.range, let nextExternal = descriptor.nextIndex {
                         self.externalRange = range
                         self.externalNextIndex = nextExternal
