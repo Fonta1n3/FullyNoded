@@ -26,6 +26,8 @@ class WalletLogic {
     typealias BDKTransaction = BitcoinDevKit.Transaction
     typealias BDKTxInput = BitcoinDevKit.TxIn
     typealias BDKPsbtInput = BitcoinDevKit.Input
+    typealias BDKKeyChain = BitcoinDevKit.KeychainKind
+    
     
     
     func dummyKey() -> String? {

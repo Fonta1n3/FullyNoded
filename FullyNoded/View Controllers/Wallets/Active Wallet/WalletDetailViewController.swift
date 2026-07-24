@@ -60,7 +60,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        spinner.show(vc: self, description: "loading")
+        //spinner.show(vc: self, description: "loading")
         navigationController?.delegate = self
         detailTable.delegate = self
         detailTable.dataSource = self
@@ -146,7 +146,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func getAddresses() {
-        spinner.dismiss()
+        //spinner.dismiss()
         listDescriptors()
     }
     
@@ -922,8 +922,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         textLabel.frame = CGRect(x: 33, y: 0, width: 300, height: 25)
         textLabel.center.y = icon.center.y
         
-        let nodelessButton = nodelessButton(header.frame.maxX - 108)
-        nodelessButton.tag = section
+        let nodelessButtonRec = nodelessButton(header.frame.maxX - 108)
+        nodelessButtonRec.tag = section
         
         if let section = Section(rawValue: section) {
             let (text, image) = headerName(for: section)
@@ -932,9 +932,9 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             icon.image = image
             
             if section == .receiveDesc {
-                textLabel.frame = CGRect(x: 33, y: nodelessButton.frame.midY, width: 300, height: 25)
-                icon.frame = CGRect(x: 0, y: nodelessButton.frame.midY, width: 25, height: 25)
-                header.addSubview(nodelessButton)
+                textLabel.frame = CGRect(x: 33, y: nodelessButtonRec.frame.midY, width: 300, height: 25)
+                icon.frame = CGRect(x: 0, y: nodelessButtonRec.frame.midY, width: 25, height: 25)
+                header.addSubview(nodelessButtonRec)
             }
         }
         

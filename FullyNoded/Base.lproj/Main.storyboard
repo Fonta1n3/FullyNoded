@@ -3911,6 +3911,55 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
             </objects>
             <point key="canvasLocation" x="5564" y="372.86356821589209"/>
         </scene>
+        <!--Wallets-->
+        <scene sceneID="wjo-Ym-ZXf">
+            <objects>
+                <tableViewController id="yDs-lz-Znl" customClass="NodelessWalletsTableViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="TNd-H4-1Oj">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="666"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="vGm-t6-nq8">
+                                <rect key="frame" x="0.0" y="50" width="393" height="43.666667938232422"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="vGm-t6-nq8" id="xua-GU-hXd">
+                                    <rect key="frame" x="0.0" y="0.0" width="393" height="43.666667938232422"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="yDs-lz-Znl" id="ySa-p1-yyT"/>
+                            <outlet property="delegate" destination="yDs-lz-Znl" id="UKJ-5e-2P5"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Wallets" id="sKb-aB-uCw"/>
+                    <connections>
+                        <segue destination="8y2-FD-bX6" kind="show" identifier="segueFromWalletsToNodeless" id="G2V-bc-D0X"/>
+                    </connections>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="7RU-Be-b2J" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="8433" y="-445"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="hB4-Hu-QrU">
+            <objects>
+                <navigationController extendedLayoutIncludesOpaqueBars="YES" id="Uiw-so-xo3" sceneMemberID="viewController">
+                    <tabBarItem key="tabBarItem" title="" image="square.stack" catalog="system" id="lKs-Iy-gSn"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="nH9-0Z-iPv">
+                        <rect key="frame" x="0.0" y="59" width="393" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="yDs-lz-Znl" kind="relationship" relationship="rootViewController" id="gh9-qE-4tE"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="o2m-qU-fIW" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="8434" y="-1219"/>
+        </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="T9u-Zb-e9t">
             <objects>
@@ -3924,6 +3973,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                         <segue destination="eoA-7K-rj7" kind="relationship" relationship="viewControllers" id="aDk-1f-Tjn"/>
                         <segue destination="2Yw-iO-uuQ" kind="relationship" relationship="viewControllers" id="Eho-HI-qLj"/>
                         <segue destination="Tb8-sX-niL" kind="relationship" relationship="viewControllers" id="qrC-Lc-Ohx"/>
+                        <segue destination="Uiw-so-xo3" kind="relationship" relationship="viewControllers" id="Oop-hj-Ioo"/>
                     </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bp7-AV-uP3" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -4910,17 +4960,17 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="ejH-sy-hlm"/>
-        <segue reference="qed-hl-jG5"/>
-        <segue reference="Fvb-gy-rb3"/>
-        <segue reference="DLx-HT-rGm"/>
+        <segue reference="ckQ-WD-ole"/>
+        <segue reference="PqA-D7-XxX"/>
+        <segue reference="gF6-29-ZCL"/>
         <segue reference="Wy7-ur-TeS"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="A1b-Ed-DYW"/>
-        <segue reference="BTh-Z9-jlD"/>
-        <segue reference="2dt-ER-scB"/>
-        <segue reference="hLi-xy-fNZ"/>
+        <segue reference="07E-4w-Zh7"/>
+        <segue reference="8MS-xS-DMP"/>
+        <segue reference="G2V-bc-D0X"/>
         <segue reference="veA-tY-zvZ"/>
         <segue reference="AK4-4u-w1q"/>
     </inferredMetricsTieBreakers>
@@ -4958,6 +5008,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
         <image name="signature" catalog="system" width="128" height="89"/>
         <image name="square.and.arrow.down" catalog="system" width="114" height="128"/>
         <image name="square.and.arrow.up" catalog="system" width="110" height="128"/>
+        <image name="square.stack" catalog="system" width="105" height="128"/>
         <image name="square.stack.3d.down.right" catalog="system" width="105" height="128"/>
         <image name="timer" catalog="system" width="128" height="123"/>
         <image name="trash" catalog="system" width="117" height="128"/>
@@ -4970,46 +5021,46 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="linkColor">
-            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="secondaryLabelColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="secondarySystemBackgroundColor">
-            <color red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="secondarySystemFillColor">
-            <color red="0.47058823529999999" green="0.47058823529999999" blue="0.50196078430000002" alpha="0.16" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.47058823529411764" green="0.47058823529411764" blue="0.50196078431372548" alpha="0.16" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemBlueColor">
-            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemFillColor">
-            <color red="0.47058823529999999" green="0.47058823529999999" blue="0.50196078430000002" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.47058823529411764" green="0.47058823529411764" blue="0.50196078431372548" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGreenColor">
-            <color red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemPinkColor">
-            <color red="1" green="0.1764705882" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.17647058823529413" blue="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemRedColor">
-            <color red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.23137254901960785" blue="0.18823529411764706" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemTealColor">
-            <color red="0.18823529410000001" green="0.69019607839999997" blue="0.78039215689999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.18823529411764706" green="0.69019607843137254" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="tertiaryLabelColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.29803921570000003" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29803921568627451" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="tertiarySystemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="tintColor">
-            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="viewFlipsideBackgroundColor">
             <color red="0.12156862745098039" green="0.12941176470588237" blue="0.14117647058823529" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
