@@ -169,37 +169,43 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             return
         }
         
-            let p = Get_Address_Info(["address": addressString])
-            MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: p)) { [weak self] (response, errorDesc) in
+        let p = Get_Address_Info(["address": addressString])
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: p)) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
+            
+            guard let addressInfoResponse = response as? [String: Any] else {
+                spinner.dismiss()
+                return
+            }
+            
+            let addressInfo = AddressInfo(addressInfoResponse)
+            
+            DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
-                guard let addressInfoResponse = response as? [String: Any] else {
-                    spinner.dismiss()
-                    return
-                }
+                let timelockVC = TimelockViewController()
                 
-                let addressInfo = AddressInfo(addressInfoResponse)
-                
-                
-                DispatchQueue.main.async { [weak self] in
+                timelockVC.completion = { [weak self] (timestamp, afterFragment, displayDate) in
                     guard let self = self else { return }
                     
-                    let timelockVC = TimelockViewController()
+                    var pubkey = addressInfo.pubkey
+                    if let _ = pubkey {
+                        pubkey = Descriptor(addressInfo.desc).pubkey
+                    }
                     
-                    timelockVC.completion = { [weak self] (timestamp, afterFragment, displayDate) in
-                        guard let self = self else { return }
+                    do {
+                        let (timelockedAddress, descriptor) = try WalletLogic.shared.createTimelockedAddress(fnWallet: wallet, pubkey: pubkey, descriptor: addressInfo.parent_desc, timelock: timestamp)
                         
-                       
+                        var dict: [String: Any] = ["descriptor": descriptor]
+                        let param = Get_Descriptor_Info(dict)
+                        dict["id"] = UUID()
                         
-                        var pubkey = addressInfo.pubkey
-                        if let _ = pubkey {
-                            pubkey = Descriptor(addressInfo.desc).pubkey
-                        }
-                        
-                        do {
-                            let (timelockedAddress, descriptor) = try WalletLogic.shared.createTimelockedAddress(fnWallet: wallet, pubkey: pubkey, descriptor: addressInfo.parent_desc, timelock: timestamp)
+                        CoreDataService.saveEntity(dict: dict, entityName: .timelocks) { saved in
+                            guard saved else {
+                                showAlert(title: "Timelock not saved.", message: "Please let us know about this bug asap. Contact us at dentondevelopment@protonmail.com, X, Telegram ot Github.")
+                                return
+                            }
                             
-                            let param = Get_Descriptor_Info(["descriptor": descriptor])
                             OnchainUtils.getDescriptorInfo(param) { [weak self] (descriptorInfo, message) in
                                 guard let self = self else { return }
                                 
@@ -263,14 +269,17 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                                     }
                                 }
                             }
-                        } catch {
-                            spinner.dismiss()
-                            showAlert(title: "", message: error.localizedDescription)
                         }
+                        
+                       
+                    } catch {
+                        spinner.dismiss()
+                        showAlert(title: "", message: error.localizedDescription)
                     }
-                    present(timelockVC, animated: true)
                 }
+                present(timelockVC, animated: true)
             }
+        }
     }
     
     func backUpNow(item: BackupItem, displayDate: String) {
@@ -293,14 +302,13 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                         } else {
                             rangeValue = [range[0]]
                         }
-                        //.range(start: range.startIndex, end: range.endIndex)
                     }
                     
                     var timestamp: Int? = nil
                     if let timestampt = descriptor.timestamp {
                         timestamp = timestampt
                     } else {
-                        print("timestamp is nil")
+                        showAlert(title: "", message: "Timestamp is nil. Please contact support!")
                     }
                     
                     let backupitem: BackupItem = .init(desc: descriptor.desc, active: descriptor.active, range: rangeValue, nextIndex: descriptor.nextIndex ?? 0, timestamp: timestamp, internal: descriptor.internal_, label: descriptor.label ?? wallet!.label)
@@ -309,22 +317,22 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                     
                     if i + 1 == listDescriptorResponse.descriptors.count {
                         let backup = WalletBackup(
-                            lastUpdate: Date(),           // or just Date() for now
-                            descriptors: descriptors           // need to append existing descriptors
+                            lastUpdate: Date(),
+                            descriptors: descriptors
                         )
                         updateNow(backup: backup, displayDate: displayDate)
                         
                     }
                 }
             } catch {
-                print("listdescritpors response logic failed: \(error.localizedDescription)")
+                showAlert(title: "", message: "listdescritpors response logic failed: \(error.localizedDescription)")
             }
         }
     }
     
     private func updateNow(backup: WalletBackup, displayDate: String) {
         let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .secondsSince1970  // optional, but matches our custom logic
+        encoder.dateEncodingStrategy = .secondsSince1970
 
         do {
             let jsonData = try encoder.encode(backup)
@@ -336,13 +344,15 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                     SuccessView.show(
                         in: self,
                         title: "Wallet backup updated!",
-                        subtitle: "You can export this backup by going back to the Wallet view and tapping the export button in the top right."
+                        subtitle: "You can export this backup by going back to the Active Wallet view and tapping the export button in the top right."
                     ) {
                         DispatchQueue.main.async { [weak self] in
                             guard let self = self else { return }
                             
                             timelockWarningLabel.text = "⚠️ Timelocked until \(displayDate): FUNDS WILL NOT BE SPENDABLE UNTIL THIS DATE!"
                             timelockWarningLabel.alpha = 1
+                            
+                            NotificationCenter.default.post(name: .refreshWallet, object: nil)
                         }
                     }
                 }

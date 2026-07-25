@@ -86,6 +86,7 @@
 		0AFD7CF32C7E5FB100C46E36 /* Bbqr in Frameworks */ = {isa = PBXBuildFile; productRef = 0AFD7CF22C7E5FB100C46E36 /* Bbqr */; };
 		5939EEDF2FB3698400F73D8E /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5939EEDE2FB3698400F73D8E /* BitcoinDevKit */; };
 		59A81B173011F7620027AE96 /* NodelessWalletsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59A81B163011F7620027AE96 /* NodelessWalletsTableViewController.swift */; };
+		59DEFD92301497230021F041 /* Timelocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59DEFD91301497230021F041 /* Timelocks.swift */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
 		D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00B9A272111427200E8B95A /* AppDelegate.swift */; };
 		D00B9A2D2111427200E8B95A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D00B9A2B2111427200E8B95A /* Main.storyboard */; };
@@ -278,6 +279,7 @@
 		0AF7324F291DDFC4009F6296 /* BTC_Params.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTC_Params.swift; sourceTree = "<group>"; };
 		55FF5DCF6C4B0C2309EC4BF2 /* Pods-FullyNoded.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FullyNoded.debug.xcconfig"; path = "Target Support Files/Pods-FullyNoded/Pods-FullyNoded.debug.xcconfig"; sourceTree = "<group>"; };
 		59A81B163011F7620027AE96 /* NodelessWalletsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodelessWalletsTableViewController.swift; sourceTree = "<group>"; };
+		59DEFD91301497230021F041 /* Timelocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Timelocks.swift; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
 		899ECC6727CAAA7F913D0DA1 /* Pods-FullyNoded.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FullyNoded.release.xcconfig"; path = "Target Support Files/Pods-FullyNoded/Pods-FullyNoded.release.xcconfig"; sourceTree = "<group>"; };
 		A084FD782359F7B700DA63CF /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
@@ -523,6 +525,7 @@
 				D09A330424A8C4F6009FA0B2 /* Wallet.swift */,
 				0ABEC2002F03AAAA00092FCE /* UsedAddresses.swift */,
 				0ABEC2102F0D421100092FCE /* WalletBackup.swift */,
+				59DEFD91301497230021F041 /* Timelocks.swift */,
 			);
 			path = Entities;
 			sourceTree = "<group>";
@@ -1191,6 +1194,7 @@
 				0A1F110726A2783000BE2707 /* KeyType.swift in Sources */,
 				0A212D8B26C66A9600BF6FD4 /* OnchainUtils.swift in Sources */,
 				D02094F3225936D2002E8E7A /* ConnectingView.swift in Sources */,
+				59DEFD92301497230021F041 /* Timelocks.swift in Sources */,
 				D09F9E5224B1F8DE006B588C /* AddSignerViewController.swift in Sources */,
 				D09F9E4C24B0673C006B588C /* SignersViewController.swift in Sources */,
 				D0E2A1052496EE9400AE0C04 /* ActiveWalletViewController.swift in Sources */,

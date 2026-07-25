@@ -23,9 +23,31 @@ class NodelessWalletsTableViewController: UITableViewController {
             guard let self = self else { return }
             guard let wallets = wallets else { return }
             self.wallets = wallets.compactMap { Wallet(dictionary: $0) }
-            DispatchQueue.main.async { [weak self] in
-                self?.tableView.reloadData()
+            
+            CoreDataService.retrieveEntity(entityName: .timelocks) { [weak self] timelocks in
+                guard let timelocks = timelocks, timelocks.count > 0 else {
+                    self?.reloadData()
+                    return
+                }
+                
+                for timelock in timelocks {
+                    let timelockStr = Timelock(dictionary: timelock)                    
+                    let dummyWallet = Wallet(dictionary: [
+                        "receiveDescriptor": timelockStr.descriptor,
+                        "label": "Timelock",
+                        "id": timelockStr.id,
+                    ])
+                    
+                    self?.wallets.append(dummyWallet)
+                }
+                self?.reloadData()
             }
+        }
+    }
+    
+    private func reloadData() {
+        DispatchQueue.main.async { [weak self] in
+            self?.tableView.reloadData()
         }
     }
 
@@ -123,6 +145,18 @@ class WalletCell: UITableViewCell {
     }()
     
     private let statusBadge: UIButton = {
+        var config = UIButton.Configuration.plain()
+        config.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10)
+        config.cornerStyle = .medium
+        
+        let button = UIButton(configuration: config)
+        button.isUserInteractionEnabled = false
+        button.setContentHuggingPriority(.required, for: .horizontal)
+        button.setContentCompressionResistancePriority(.required, for: .horizontal)
+        return button
+    }()
+    
+    private let expiryBadge: UIButton = {
         var config = UIButton.Configuration.plain()
         config.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10)
         config.cornerStyle = .medium
@@ -248,6 +282,7 @@ class WalletCell: UITableViewCell {
         // Build stacks
         statusStack.addArrangedSubview(statusBadge)
         statusStack.addArrangedSubview(networkLabel)
+        statusStack.addArrangedSubview(expiryBadge)
         
         detailsStack.addArrangedSubview(typeLabel)
         detailsStack.addArrangedSubview(formatLabel)
@@ -312,6 +347,24 @@ class WalletCell: UITableViewCell {
             policyLabel.text = "POLICY  \(parsed.mOfNType)"
         } else {
             policyLabel.text = "POLICY  Single Sig"
+        }
+        
+        if parsed.isTimelocked {
+            var expiryConfig = expiryBadge.configuration ?? .plain()
+            expiryConfig.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+                var outgoing = incoming
+                outgoing.font = .systemFont(ofSize: 11, weight: .bold)
+                return outgoing
+            }
+            expiryConfig.title = "Timelocked until \(parsed.expiry)"
+            expiryConfig.baseForegroundColor = .systemPink
+            expiryConfig.background.backgroundColor = UIColor.systemPink.withAlphaComponent(0.18)
+            expiryBadge.configuration = expiryConfig
+            expiryBadge.alpha = 1
+            nodelessButton.alpha = 0
+        } else {
+            nodelessButton.alpha = 1
+            expiryBadge.alpha = 0
         }
         
         fingerprintLabel.text = "FINGERPRINT  \(parsed.fingerprint)"
@@ -380,6 +433,8 @@ class WalletCell: UITableViewCell {
         }
 
         networkLabel.configuration = networkConfig
+        
+        
     }
         
     @objc private func goNodeless() {

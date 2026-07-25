@@ -46,6 +46,7 @@ public struct Descriptor: CustomStringConvertible {
     let isInternal: Bool
     let isTimelocked: Bool
     let string: String
+    let expiry:String
     
     init(_ descriptor: String) {
         string = descriptor
@@ -69,11 +70,15 @@ public struct Descriptor: CustomStringConvertible {
             let scriptPath = trArray.dropFirst().joined(separator: ",").replacingOccurrences(of: "))", with: ")")
             dictionary["internalKey"] = internalKeyPath
             dictionary["scriptPath"] = scriptPath
-            //print("scriptPath: \(scriptPath)")
         }
         
         if descriptor.contains(",after(") {
             dictionary["isTimelocked"] = true
+            let arr = descriptor.components(separatedBy: ",after(")
+            let arr2 = "\(arr[1])".components(separatedBy: ")")
+            let expiryRaw = "\(arr2[0])"
+            let formattedExpiry = expiryRaw.unixTimestampToDateString()
+            dictionary["expiry"] = formattedExpiry
         }
         
         if descriptor.contains("/1/") {
@@ -119,7 +124,7 @@ public struct Descriptor: CustomStringConvertible {
                         let internalKeyAndPrefixArr = "\(arr[1])".split(separator: ",")
                         let internalKey = "\(internalKeyAndPrefixArr[0])"
                         dictionary["internalKey"] = internalKey
-                        let scriptType = "\(internalKeyAndPrefixArr[1])"
+                        //let scriptType = "\(internalKeyAndPrefixArr[1])"
                         
                         let mofnarray = (arr[2]).split(separator: ",")
                         
@@ -681,11 +686,27 @@ public struct Descriptor: CustomStringConvertible {
         internalKey = dictionary["internalKey"] as? String ?? ""
         isInternal = dictionary["isInternal"] as? Bool ?? false
         isTimelocked = dictionary["isTimelocked"] as? Bool ?? false
+        expiry = dictionary["expiry"] as? String ?? ""
     }
     
     public var description: String {
         return ""
     }
     
+}
+
+extension String {
+    func unixTimestampToDateString() -> String? {
+        guard let timestamp = Double(self) else { return nil }
+        let date = Date(timeIntervalSince1970: timestamp)
+        
+        return date.formatted(
+            .dateTime
+            .month(.abbreviated)
+            .day()
+            .year()
+            .hour().minute()
+        )
+    }
 }
 
