@@ -574,7 +574,7 @@ class WalletLogic {
             primaryDesc = formattedParentDesc
             
             let multi_a_desc = Descriptor(multi_a)
-            for (i, derivation) in multi_a_desc.derivationArray.enumerated() {
+            for (i, multi_aDerivation) in multi_a_desc.derivationArray.enumerated() {
                 let derivation = parentDescStr.derivation
                 let derivationPath = try BDKDerivationPath(path: derivation)
                 let derivedKey = try secretKey.derive(path: derivationPath)
@@ -675,7 +675,7 @@ class WalletLogic {
             }
             
             if let internalPolicies = try? wallet.policies(keychain: .internal), let hotXfp = hotXfp {
-                let (topID, subID, timelock, hotFP) = extractTimelockPolicyValues(from: internalPolicies.asString(), hotXfp: hotXfp)
+                let (topID, subID, timelock, _) = extractTimelockPolicyValues(from: internalPolicies.asString(), hotXfp: hotXfp)
                 
                 #if DEBUG
                 if let timelock {
@@ -694,7 +694,7 @@ class WalletLogic {
                 }
             }
             
-            var psbt = try txBuilder.finish(wallet: wallet)
+            let psbt = try txBuilder.finish(wallet: wallet)
             
             let signOptions = SignOptions(
                 trustWitnessUtxo: true,

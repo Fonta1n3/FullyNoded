@@ -244,17 +244,17 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                                                     if importResponse.success {
                                                         showAddress(address: timelockedAddress)
                                                         
-                                                        let item = BackupItem(
-                                                            desc: descriptorInfo.descriptor,
-                                                            active: false,
-                                                            range: nil,
-                                                            nextIndex: 0,
-                                                            timestamp: Date().unixTimestamp,
-                                                            internal: false,
-                                                            label: "Locked until \(displayDate)"
-                                                        )
+//                                                        let item = BackupItem(
+//                                                            desc: descriptorInfo.descriptor,
+//                                                            active: false,
+//                                                            range: nil,
+//                                                            nextIndex: 0,
+//                                                            timestamp: Date().unixTimestamp,
+//                                                            internal: false,
+//                                                            label: "Locked until \(displayDate)"
+//                                                        )
                                                         
-                                                        backUpNow(item: item, displayDate: displayDate)
+                                                        backUpNow(displayDate: displayDate)
                                                     } else {
                                                         spinner.dismiss()
                                                         if let errorDesc = importResponse.error, let message = errorDesc["message"] as? String {
@@ -282,8 +282,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    func backUpNow(item: BackupItem, displayDate: String) {
-        var descriptors: [BackupItem] = [item]
+    func backUpNow(displayDate: String) {
+        var descriptors: [BackupItem] = []
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
             do {
@@ -311,7 +311,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                         showAlert(title: "", message: "Timestamp is nil. Please contact support!")
                     }
                     
-                    let backupitem: BackupItem = .init(desc: descriptor.desc, active: descriptor.active, range: rangeValue, nextIndex: descriptor.nextIndex ?? 0, timestamp: timestamp, internal: descriptor.internal_, label: descriptor.label ?? wallet!.label)
+                    let backupitem: BackupItem = .init(desc: descriptor.desc, active: descriptor.active, range: rangeValue, nextIndex: descriptor.nextIndex ?? 0, timestamp: timestamp, internal: descriptor.internal_, label: descriptor.label)
                     
                     descriptors.append(backupitem)
                     

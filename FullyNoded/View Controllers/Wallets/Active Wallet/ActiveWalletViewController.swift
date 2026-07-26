@@ -69,8 +69,6 @@ class ActiveWalletViewController: UIViewController {
             initialLoad = false
             loadTable()
         }
-        
-        //backupWalletNow()
     }
     
     @IBAction func getWalletDetail(_ sender: Any) {
@@ -282,7 +280,7 @@ class ActiveWalletViewController: UIViewController {
                 
                 return
             }
-            
+                                    
             self.wallet = wallet
             walletLabel = wallet.label
             getWalletBalance()
@@ -318,21 +316,15 @@ class ActiveWalletViewController: UIViewController {
                 let jsonData = try JSONSerialization.data(withJSONObject: response, options: [])
                 
                 let listDescriptorResponse = try JSONDecoder().decode(ListDescriptorsResponse.self, from: jsonData)
-                
-                var backupItem: BackupItem? = nil
-                
+                                
                 for (i, descriptor) in listDescriptorResponse.descriptors.enumerated() {
                     var rangeValue: [Int]? = nil
                     
                     if let range = descriptor.range {
-                        //rangeValue = [r]
-                        print("range.count: \(range.count)")
                         if range.count == 2 {
                             rangeValue = [range[0],range[1]]
-                            backupItem?.range = rangeValue
                         } else if range.count == 1 {
                             rangeValue = [range[0]]
-                            backupItem?.range = rangeValue
                         }
                     }
                     
@@ -341,10 +333,10 @@ class ActiveWalletViewController: UIViewController {
                         timestamp = timestampt
                     }
                     
-                    let backupitem: BackupItem = .init(desc: descriptor.desc, active: descriptor.active, range: rangeValue, nextIndex: descriptor.nextIndex ?? 0, timestamp: timestamp, internal: descriptor.internal_, label: descriptor.label ?? wallet!.label)
+                    let backupitem: BackupItem = .init(desc: descriptor.desc, active: descriptor.active, range: rangeValue, nextIndex: descriptor.nextIndex ?? 0, timestamp: timestamp, internal: descriptor.internal_, label: descriptor.label)
                     
                     descriptors.append(backupitem)
-                    
+                                        
                     if i + 1 == listDescriptorResponse.descriptors.count {
                         let backup = WalletBackup(
                             lastUpdate: Date(),

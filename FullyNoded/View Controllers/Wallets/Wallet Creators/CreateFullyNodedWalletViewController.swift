@@ -589,7 +589,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     private func promptToImport(backup: WalletBackup) {
         let date = backup.lastUpdate.formatted(date: .abbreviated, time: .shortened)
         let count = backup.descriptors.count
-        
+                
         let alert = UIAlertController(
             title: "Recover Wallet Backup?",
             message: """
@@ -609,16 +609,13 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
 
     private func performImport(backup: WalletBackup) {
-        // Assuming you have a way to update the current wallet
-        //wallet?.walletBackup = try? backup.jsonData()  // or however you store it
-        
         guard let jsonData = try? backup.jsonData() else { return }
         spinner.show(vc: self, description: "Recovering wallet...")
         
         var fnWalletToCreateDict: [String: Any] = [
             "walletBackup": jsonData,
             "label": "Recovered wallet",
-            "blockheight": UInt64(0),
+            "blockheight": UInt64(0),// fix this
             "id": UUID()
         ]
         
@@ -653,29 +650,23 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 descriptorDict["next_index"] = nextIndex
             }
             
-            print("descriptorDict: \(descriptorDict)")
             descriptorDicts.append(descriptorDict)
             
             if fnDesc.isHD {
-                print("HD descriptor")
                 if !fnDesc.isInternal {
-                    print("primary descriptor")
                     fnWalletToCreateDict["receiveDescriptor"] = descriptor.desc
                     fnWalletToCreateDict["name"] = "FullyNoded-" + Crypto.sha256hash("\(descriptor.desc.split(separator: "#")[0])")
                 } else {
-                    print("change descriptor")
                     fnWalletToCreateDict["changeDescriptor"] = descriptor.desc
                 }
             }
             
             if i + 1 == backup.descriptors.count {
                 
-                
                 func setActiveAndImport(name: String, exists: Bool) {
                     UserDefaults.standard.set(name, forKey: "walletName")
                     
                     let p = Import_Descriptors(["requests": descriptorDicts])
-                    print("getting here?")
                     
                     OnchainUtils.importDescriptors(p) { [weak self] (imported, message) in
                         guard let self = self else { return }
@@ -685,19 +676,14 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                             return
                         }
                         
-                        print("imported")
-                        print("exists: \(exists)")
-                       
                         if !exists {
                             CoreDataService.saveEntity(dict: fnWalletToCreateDict, entityName: .wallets) { [weak self] walletRecovered in
                                 guard let self = self else { return }
                                 spinner.dismiss()
                                 guard walletRecovered else {
-                                    print("wallet not saved")
-                                   
+                                    showAlert(title: "Wallet not recovered!", message: "Please contact as asap and let us know about this bug.")
                                     return
                                 }
-                                print("wallet saved")
                                 // show success
                                 // Update UI, refresh wallets, etc.
                                 SuccessView.show(
@@ -715,7 +701,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                                 for fnWallet in fnWallets {
                                     let str = Wallet(dictionary: fnWallet)
                                     if str.name == name {
-                                        print("reuse existing")
                                         do {
                                             let data = try backup.jsonData()
                                             
@@ -723,10 +708,9 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                                                 guard let self = self else { return }
                                                 spinner.dismiss()
                                                 guard backupUpdated else {
-                                                    print("backup failed")
+                                                    showAlert(title: "Backup failed!", message: "Please contact as asap and let us know about this bug.")
                                                     return
                                                 }
-                                                
                                                 
                                                 SuccessView.show(
                                                     in: self,
@@ -736,7 +720,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                                             }
                                         } catch {
                                             spinner.dismiss()
-                                            print("can not convert backup to json data")
+                                            showAlert(title: "Can not convert backup to json data", message: "Please contact as asap and let us know about this bug.")
                                         }
                                     }
                                 }
