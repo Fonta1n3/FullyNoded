@@ -27,8 +27,7 @@ class WalletLogic {
     typealias BDKTxInput = BitcoinDevKit.TxIn
     typealias BDKPsbtInput = BitcoinDevKit.Input
     typealias BDKKeyChain = BitcoinDevKit.KeychainKind
-    
-    
+       
     
     func dummyKey() -> String? {
         let dummyMnemonic = BDKMnemonic(wordCount: .words12)

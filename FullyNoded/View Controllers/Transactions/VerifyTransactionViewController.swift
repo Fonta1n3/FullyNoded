@@ -836,6 +836,87 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         view.endEditing(true)
     }
     
+    func sigsNeeded(from inputDict: [String: Any]) -> (present: Int, required: Int, needed: Int) {
+        
+        var present = 0
+        var required = 0
+        
+        // ---------- Present signatures ----------
+        if let sigs = inputDict["taproot_script_path_sigs"] as? [[String: Any]] {
+            present = sigs.count
+        }
+        else if inputDict["taproot_key_path_sig"] != nil {
+            present = 1
+        }
+        else if let partial = inputDict["partial_signatures"] as? [String: Any] {
+            present = partial.count
+        }
+        
+        // ---------- Required threshold (always try to extract) ----------
+        
+        // 1. Taproot script-path
+        if let scripts = inputDict["taproot_scripts"] as? [[String: Any]],
+           let first = scripts.first,
+           let scriptHex = first["script"] as? String {
+            required = extractThreshold(fromHex: scriptHex)
+        }
+        
+        // 2. Native SegWit / legacy
+        else if let witnessScript = inputDict["witness_script"] as? [String: Any],
+                let hex = witnessScript["hex"] as? String {
+            required = extractThreshold(fromHex: hex)
+        }
+        else if let redeemScript = inputDict["redeem_script"] as? [String: Any],
+                let hex = redeemScript["hex"] as? String {
+            required = extractThreshold(fromHex: hex)
+        }
+        
+        // 3. Pure single-sig fallback
+        if required == 0 {
+            if inputDict["taproot_internal_key"] != nil ||
+               inputDict["taproot_key_path_sig"] != nil ||
+               inputDict["partial_signatures"] != nil {
+                required = 1
+            }
+        }
+        
+        let needed = max(0, required - present)
+        return (present, required, needed)
+    }
+
+    /// Parses both classic and Taproot-style multisig scripts
+    func extractThreshold(fromHex hex: String) -> Int {
+        guard let script = Data(hexString: hex) else { return 0 }
+        
+        var i = 0
+        var numbers: [Int] = []
+        
+        while i < script.count {
+            let op = script[i]
+            
+            if (1...75).contains(op) {
+                i += 1 + Int(op)
+            }
+            else if op == 0x51 { numbers.append(1); i += 1 }  // OP_1
+            else if op == 0x52 { numbers.append(2); i += 1 }  // OP_2
+            else if op == 0x53 { numbers.append(3); i += 1 }  // OP_3
+            else if (0x54...0x60).contains(op) {              // OP_4 … OP_16
+                numbers.append(Int(op) - 0x50)
+                i += 1
+            }
+            else if op == 0xae {
+                return numbers.first ?? 0
+            }
+            else if op == 0x9c {
+                return numbers.last ?? 0
+            }
+            else {
+                i += 1
+            }
+        }
+        return numbers.last ?? 0
+    }
+    
     private func decodePsbt(param: Decode_Psbt) {
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .decodepsbt(param: param)) { [weak self] (object, errorDesc) in
             guard let self = self else { return }
@@ -851,7 +932,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             if let inputs = dict["inputs"] as? NSArray, inputs.count > 0 {
                 for (i, input) in inputs.enumerated() {
                     var isSigned = false
+                    var sigsRequired = 0
+                    var sigsPresent = 0
+                    var sigsRemaining = 0
+                    
                     if let inputDict = input as? NSDictionary {
+                        let status = sigsNeeded(from: inputDict as! [String : Any])
+                        sigsPresent = status.present
+                        sigsRequired = status.required
+                        sigsRemaining = status.needed
+                        
                         if let signatures = inputDict["partial_signatures"] as? NSDictionary {
                             for (key, value) in signatures {
                                 self.signatures.append(["\(key)":(value as? String ?? "")])
@@ -869,18 +959,21 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                                 }
                             }
                         }
+                        
+                        let tableInputDict:[String:Any] = [
+                            "index": i + 1,
+                            "amount": "Unknown.",
+                            "address": "Unknown.",
+                            "isOurs": false,// Hardcode at this stage and update before displaying
+                            "isDust": true,
+                            "isSigned": isSigned,
+                            "sigsRequired": sigsRequired,
+                            "sigsPresent": sigsPresent,
+                            "sigsRemaining": sigsRemaining
+                        ]
+                        
+                        self.inputTableArray.append(tableInputDict)
                     }
-                    
-                    let inputDict:[String:Any] = [
-                        "index": i + 1,
-                        "amount": "Unknown.",
-                        "address": "Unknown.",
-                        "isOurs": false,// Hardcode at this stage and update before displaying
-                        "isDust": true,
-                        "isSigned": isSigned
-                    ]
-                    
-                    self.inputTableArray.append(inputDict)
                 }
             }
             
@@ -1392,34 +1485,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
         }
         
-//        func checkEsplora(txid: String) {
-//            guard let useEsplora = UserDefaults.standard.object(forKey: "useEsplora") as? Bool, useEsplora else {
-//                if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraAlert") == nil {
-//                    showAlert(vc: self, title: "Unable to fetch input.", message: "Pruned nodes can not lookup input details for inputs that are associated with transactions which are not owned by the active wallet. In order to see inputs in detail you can enable Esplora (Blockstream's block explorer) over Tor in \"Settings\".")
-//
-//                    UserDefaults.standard.setValue(true, forKey: "useEsploraAlert")
-//                }
-//
-//                self.parsePrevTxOutput(outputs: [], vout: 0)
-//                return
-//            }
-//
-//            self.updateLabel("fetching inputs previous output with Esplora...")
-//
-//            let fetcher = GetTx.sharedInstance
-//            fetcher.fetch(txid: txid) { [weak self] rawHex in
-//                guard let self = self else { return }
-//
-//                guard let rawHex = rawHex else {
-//                    // Esplora must be down, pass an empty array instead
-//                    self.parsePrevTxOutput(outputs: [], vout: 0)
-//                    return
-//                }
-//                let param_decode_raw:Decode_Raw_Tx = .init(["hexstring":rawHex])
-//                self.parsePrevTx(method: .decoderawtransaction(param: param_decode_raw), vout: vout, txid: txid)
-//            }
-//            return
-//        }
         
         func getRawTx() {
             updateLabel("fetching inputs previous output...")
@@ -1490,6 +1555,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         label.text = "\(confs) confirmations"
         label.textColor = .label
         
+        disableSendButton()
+        
         if confs > 0 {
             imageView.tintColor = .systemGreen
             imageView.image = UIImage(systemName: "checkmark.seal")
@@ -1513,17 +1580,21 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 label.text = "Mempool acception verified ✓"
                 imageView.tintColor = .systemGreen
                 imageView.image = UIImage(systemName: "checkmark.seal")
+                enableSendButton()
             } else {
                 label.text = "Transaction invalid! Reason: \(rejectionMessage)."
                 imageView.tintColor = .systemRed
                 imageView.image = UIImage(systemName: "exclamationmark.triangle")
+                disableSendButton()
             }
         } else {
             if unsignedPsbt != "" {
                 label.text = "Transaction incomplete."
+                disableSendButton()
             } else {
                 if signedRawTx != "" {
                     label.text = "Transaction complete."
+                    enableSendButton()
                 } else {
                     let version = UserDefaults.standard.object(forKey: "version") as? String ?? "0.20"
                     
@@ -1607,6 +1678,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             let hasSigned = input["isSigned"] as! Bool
             let parentDesc = input["parent_desc"] as? String
             
+            let sigsRequired = input["sigsRequired"] as? Int ?? 0
+            let sigsPresent = input["sigsPresent"] as? Int ?? 0
+            let sigsRemaining = input["sigsRemaining"] as? Int ?? 0
+            
             if signedRawTx == "" {
                 if let parentDesc = parentDesc {
                     if let _ = input["signatures"] as? String {
@@ -1648,45 +1723,43 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             getAddressInfoButton.addTarget(self, action: #selector(showAddressInfo(_:)), for: .touchUpInside)
             signButton.addTarget(self, action: #selector(signInputAction(_:)), for:     .touchUpInside)
             
-            signaturesLabel.text = signatureStatus
-            
-            if signatureStatus == "Signatures complete" || hasSigned {
-                //sigsBackgroundView.backgroundColor = .systemGreen
+            //"signatures"] = "Signatures complete"
+            if signatureStatus == "Signatures complete" {
                 signaturesLabel.text = "Signatures complete."
                 sigsImageView.tintColor = .green
-            } else if self.signatures.count > 0 {
-                //sigsBackgroundView.backgroundColor = .systemOrange
-                signaturesLabel.text = "Signed."
-                sigsImageView.tintColor = .systemGreen
+                
             } else {
-                //sigsBackgroundView.backgroundColor = .systemRed
-                sigsImageView.tintColor = .systemOrange
+                signaturesLabel.text = "\(sigsPresent)/\(sigsRequired) signatures → \(sigsRemaining) more needed"
+                
+                if sigsRemaining == 0 {
+                    signaturesLabel.text = "Signatures complete."
+                    sigsImageView.tintColor = .green
+                } else if sigsPresent < sigsRequired {
+                    sigsImageView.tintColor = .systemOrange
+                } else {
+                    sigsImageView.tintColor = .systemRed
+                }
             }
             
             if isDust {
                 isDustImageView.image = UIImage(systemName: "exclamationmark.circle")
                 isDustImageView.tintColor = .systemRed
-                //backgroundView3.backgroundColor = .systemRed
             } else {
                 isDustImageView.image = UIImage(systemName: "checkmark.circle")
                 isDustImageView.tintColor = .tintColor
-                //backgroundView3.backgroundColor = .systemGreen
             }
             
             if isChange {
                 isChangeImageView.image = UIImage(systemName: "arrow.triangle.2.circlepath")
-               // backgroundView2.backgroundColor = .systemPurple
                 isChangeImageView.tintColor = .systemPurple
                 inputTypeLabel.text = "Change input"
             } else {
                 isChangeImageView.image = UIImage(systemName: "arrow.down.left")
-                //backgroundView2.backgroundColor = .systemBlue
                 isChangeImageView.tintColor = .tintColor
                 inputTypeLabel.text = "Receive input"
             }
             
             if isOurs {
-                //backgroundView1.backgroundColor = .systemGreen
                 inputIsOursImage.image = UIImage(systemName: "checkmark.circle")
                 inputIsOursImage.tintColor = .tintColor
                 
