@@ -36,12 +36,13 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     var internalRange: [Int] = []
     var externalNextIndex: Int?
     var internalNextIndex: Int?
+    var listdescriptorsResponse: String?
     var alertStyle = UIAlertController.Style.actionSheet
     private var labelField: UITextField!
     private var labelButton: UIButton!
     private var cellHeights = [IndexPath: CGFloat]()
     
-    private enum Section: Int {
+    private enum Section: Int, CaseIterable {
         case label
         case backupText
         case walletExport
@@ -49,6 +50,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         case filename
         case receiveDesc
         case changeDesc
+        case listdescriptors
         case nextIndexExternal
         case nextIndexInternal
         case externalRange
@@ -188,6 +190,17 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         }
     }
     
+    private func prettyPrintedJSON(from data: Data) -> String? {
+        guard let jsonObject = try? JSONSerialization.jsonObject(with: data),
+                let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted, .sortedKeys]),
+              var prettyString = String(data: prettyData, encoding: .utf8) else {
+            return nil
+        }
+        prettyString = prettyString.replacingOccurrences(of: "\\/", with: "/")
+        return prettyString
+    }
+    
+    
     private func listDescriptors() {
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
@@ -200,6 +213,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             do {
                 let jsonData = try JSONSerialization.data(withJSONObject: response, options: [])
                 let listDescriptorResponse = try JSONDecoder().decode(ListDescriptorsResponse.self, from: jsonData)
+                
+                self.listdescriptorsResponse = prettyPrintedJSON(from: jsonData)
                                     
                 for descriptor in listDescriptorResponse.descriptors {
                     if descriptor.desc == wallet.receiveDescriptor, let range = descriptor.range, let nextExternal = descriptor.nextIndex {
@@ -219,6 +234,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                     detailTable.reloadSections(IndexSet(arrayLiteral: Section.internalRange.rawValue), with: .none)
                     detailTable.reloadSections(IndexSet(arrayLiteral: Section.nextIndexExternal.rawValue), with: .none)
                     detailTable.reloadSections(IndexSet(arrayLiteral: Section.nextIndexInternal.rawValue), with: .none)
+                    detailTable.reloadSections(IndexSet(arrayLiteral: Section.listdescriptors.rawValue), with: .none)
                 }
                 
             } catch {
@@ -564,6 +580,9 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         case .filename:
             exportItem(wallet.name)
             
+        case .listdescriptors:
+            exportItem(listdescriptorsResponse as Any)
+            
         case .walletExport:
             if outputDescFormat {
                 exportItem(exportWalletImageCryptoOutput as Any)
@@ -624,6 +643,27 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
 
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         return cellHeights[indexPath] ?? UITableView.automaticDimension
+    }
+    
+    private func listDescriptorsCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailAdressesCell", for: indexPath)
+        configureCell(cell)
+        
+        let textView = cell.viewWithTag(1) as! UITextView
+        
+        if let listdescriptorsRespone = listdescriptorsResponse {
+            textView.text = listdescriptorsResponse
+        } else {
+            textView.text = "fetching addresses from your node..."
+        }
+        
+        let exportButton = cell.viewWithTag(2) as! UIButton
+        configureExportButton(exportButton, indexPath: indexPath)
+        
+        let segmentedControl = cell.viewWithTag(3) as! UISegmentedControl
+        segmentedControl.alpha = 0
+        
+        return cell
     }
     
     private func labelCell(_ indexPath: IndexPath) -> UITableViewCell {
@@ -820,7 +860,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 13
+        return Section.allCases.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -871,6 +911,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             return recDescCell(indexPath)
         case .changeDesc:
             return changeDescCell(indexPath)
+        case .listdescriptors:
+            return listDescriptorsCell(indexPath)
         case .externalRange:
             return externalRangeCell(indexPath)
         case .internalRange:
@@ -888,6 +930,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch Section(rawValue: indexPath.section) {
+        case .listdescriptors:
+            return 360
         case .backupText, .addressExplorer:
             return 180
         case .walletExport:
@@ -1115,6 +1159,8 @@ extension WalletDetailViewController {
             return ("Receive descriptor - keypool", UIImage(systemName: "arrow.down.left")!)
         case .changeDesc:
             return ("Change descriptor - keypool", UIImage(systemName: "arrow.2.circlepath")!)
+        case .listdescriptors:
+            return ("All descriptors", UIImage(systemName: "list.number")!)
         case .nextIndexExternal:
             return ("Next receive address index", UIImage(systemName: "number")!)
         case .nextIndexInternal:

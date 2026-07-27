@@ -508,6 +508,7 @@ class WalletLogic {
                 throw TimelockedAddressError.unsupportedTimelockFormat
             }
         } catch {
+            print("cath here: \(error.localizedDescription)")
             throw error
         }
     }
@@ -539,7 +540,7 @@ class WalletLogic {
     func createTimelockedTaprootWalletAndSign(mnemonic: BDKMnemonic, passphrase: String?, network: BDKNetwork, recipientAddress: String, utxo: UTXO) throws -> ((psbt: String, rawTx: String?)){
                 
         let secretKey = DescriptorSecretKey(
-            network: .testnet4,
+            network: network,
             mnemonic: mnemonic,
             password: passphrase ?? ""
         )
@@ -563,6 +564,7 @@ class WalletLogic {
             hotXfp = parentDescStr.fingerprint
         } else {
             // its multi sig
+            print("its multi sig")
             let scriptPath = parentDescStr.scriptPath
             // extract the multi_a descriptor
             var multi_a = scriptPath.replacingOccurrences(of: "and_v(v:", with: "")
@@ -574,7 +576,7 @@ class WalletLogic {
             primaryDesc = formattedParentDesc
             
             let multi_a_desc = Descriptor(multi_a)
-            for (i, multi_aDerivation) in multi_a_desc.derivationArray.enumerated() {
+            for (i, _) in multi_a_desc.derivationArray.enumerated() {
                 let derivation = parentDescStr.derivation
                 let derivationPath = try BDKDerivationPath(path: derivation)
                 let derivedKey = try secretKey.derive(path: derivationPath)
@@ -599,7 +601,7 @@ class WalletLogic {
             let wallet = try BDKWallet(
                 descriptor: BDKDescriptor(descriptor: primaryDesc, network: network),
                 changeDescriptor: BDKDescriptor(descriptor: processedDescChangeDesc, network: network),
-                network: .testnet4,
+                network: network,
                 persister: persistor()!
             )
                     

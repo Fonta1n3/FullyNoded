@@ -18,6 +18,10 @@ class NodelessWalletsTableViewController: UITableViewController {
 
         tableView.register(WalletCell.self, forCellReuseIdentifier: WalletCell.reuseIdentifier)
         setupTableHeader()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        self.wallets.removeAll()
         
         CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] wallets in
             guard let self = self else { return }
@@ -31,7 +35,7 @@ class NodelessWalletsTableViewController: UITableViewController {
                 }
                 
                 for timelock in timelocks {
-                    let timelockStr = Timelock(dictionary: timelock)                    
+                    let timelockStr = Timelock(dictionary: timelock)
                     let dummyWallet = Wallet(dictionary: [
                         "receiveDescriptor": timelockStr.descriptor,
                         "label": "Timelock",
