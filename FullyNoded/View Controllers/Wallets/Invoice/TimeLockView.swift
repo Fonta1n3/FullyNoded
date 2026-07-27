@@ -45,6 +45,7 @@ final class TimelockViewController: UIViewController {
         picker.datePickerMode = .date
         picker.preferredDatePickerStyle = .wheels
         picker.minimumDate = Date() // Only future dates
+        picker.maximumDate = Calendar.current.date(from: DateComponents(year: 2105, month: 12, day: 31))
         picker.translatesAutoresizingMaskIntoConstraints = false
         return picker
     }()
