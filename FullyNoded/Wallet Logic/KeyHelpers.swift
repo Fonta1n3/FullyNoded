@@ -148,18 +148,10 @@ enum Keys {
         }
     }
     
-    static func seed() -> String? {
-        let bytesCount = 32
-        var randomBytes = [UInt8](repeating: 0, count: bytesCount)
-        let status = SecRandomCopyBytes(kSecRandomDefault, bytesCount, &randomBytes)
+    static func seedWords() -> String? {
+        guard let entropy = Crypto.secret() else { return nil }
         
-        if status == errSecSuccess {
-            var data = Crypto.sha256hash(Crypto.sha256hash(Crypto.sha256hash(Data(randomBytes))))
-            data = data.subdata(in: Range(0...15))
-            return try? WalletLogic.BDKMnemonic.fromEntropy(entropy: data).description
-        } else {
-            return nil
-        }
+        return try? WalletLogic.BDKMnemonic.fromEntropy(entropy: entropy).description
     }
     
     static func masterKey(words: String, coinType: String, passphrase: String) -> String? {
