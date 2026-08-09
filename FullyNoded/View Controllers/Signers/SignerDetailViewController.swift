@@ -20,14 +20,9 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private var stringToExport = ""
     private var descriptionText = ""
     private var headerText = ""
-//    private var accountPubkey = ""
-//    private var accountBip84Pubkey = ""
-//    private var accountBip86Pubkey = ""
-//    private var accountPath = ""
-//    private var bip86AccountPath = ""
-//    private var bip84AccountPath = ""
     private var isBbqr = false
     private var nodelessDescriptor = ""
+    private var showWords = false
     
     private enum Section: Int {
         case label
@@ -156,8 +151,10 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
                         
-                        self.tableDict[1]["censoredText"] = self.tableDict[1]["text"] as? String ?? "no seed words"
-                        self.tableView.reloadSections(IndexSet(arrayLiteral: 1), with: .fade)
+                        //self.tableDict[1]["censoredText"] = self.tableDict[1]["text"] as? String ?? "no seed words"
+                        //tableDict.removeAll()
+                        showWords = true
+                        getData()
                     }
                 } else {
                     guard let error = evaluateError else { return }
@@ -354,12 +351,20 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     words.secureWipe()
                     encryptedWords.secureZero()
                 }
-                                                
-                self.tableDict[1]["text"] = words
+                    
+                if showWords {
+                    let plainArr = words.split(separator: " ")
+                    var toDisplay = ""
+                    for (i, word) in plainArr.enumerated() {
+                        toDisplay += "\(i + 1): \(word)   "
+                    }
+                    self.tableDict[1]["text"] = toDisplay
+                } else {
+                    self.tableDict[1]["text"] = "Deleted."
+                }
                 self.setWallets(masterKey)
-            } else {
-                self.reloadTable()
             }
+            self.reloadTable()
         }
     }
     
@@ -1130,7 +1135,11 @@ extension SignerDetailViewController: UITableViewDelegate {
             cell.textLabel?.text = dict["text"] as? String ?? "no label"
             
         case .words:
-            cell.textLabel?.text = dict["censoredText"] as? String ?? "no seed words"
+            if showWords {
+                cell.textLabel?.text = dict["text"] as? String ?? "no seed words"
+            } else {
+                cell.textLabel?.text = dict["censoredText"] as? String ?? "no seed words"
+            }
             
         case .masterKeyFingerprint:
             cell.textLabel?.text = dict["text"] as? String ?? "no fingerprint"
