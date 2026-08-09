@@ -22,7 +22,7 @@ final class SuccessView: UIView {
     private let cardView: UIView = {
         let view = UIView()
         view.backgroundColor = .systemBackground
-        view.layer.cornerRadius = 20
+        view.layer.cornerRadius = 18
         view.clipsToBounds = true
         return view
     }()
@@ -38,7 +38,7 @@ final class SuccessView: UIView {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = .boldSystemFont(ofSize: 24)
+        label.font = .boldSystemFont(ofSize: 20)
         label.textAlignment = .center
         label.textColor = .label
         label.numberOfLines = 0
@@ -47,7 +47,7 @@ final class SuccessView: UIView {
     
     private let subtitleLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 18)
+        label.font = .systemFont(ofSize: 16)
         label.textAlignment = .center
         label.textColor = .secondaryLabel
         label.numberOfLines = 0
@@ -59,10 +59,10 @@ final class SuccessView: UIView {
         config.title = "Done"
         config.baseBackgroundColor = .systemBlue
         config.baseForegroundColor = .white
-        config.cornerStyle = .large
+        config.cornerStyle = .medium
         
         let button = UIButton(configuration: config)
-        button.titleLabel?.font = .boldSystemFont(ofSize: 18)
+        button.titleLabel?.font = .boldSystemFont(ofSize: 15)
         button.addTarget(self, action: #selector(doneButtonTapped), for: .touchUpInside)
         return button
     }()
