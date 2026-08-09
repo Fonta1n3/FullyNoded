@@ -45,6 +45,7 @@ The maintainer will acknowledge valid reports, coordinate fixes, and credit repo
 - Randomness source is `SecRandomCopyBytes`.
 - Bitcoin Dev Kit handles BIP39, HD derivation, and PSBT signing.
 - Duress PIN will erase all of the apps data but will still function normally.
+- Anywhere private keys or seeds are handled we do our best to wipe memory using the extensions `secureZero()` and `secureWipe()` found in `Extensions.swift`.
 
 ### Network & Node Communication
 - Preferred path: Tor hidden service (onion) to the user’s Bitcoin Core RPC.
