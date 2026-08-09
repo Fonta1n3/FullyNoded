@@ -389,12 +389,16 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
             }
         }
         
+        //print("changeDescriptor: \(changeDescriptor)")
+        
         let descArr = primaryDescriptor.components(separatedBy: "#")
         var changeDesc = ""
-        if let changeDescriptor = changeDescriptor {
+        if let changeDescriptor = changeDescriptor, changeDescriptor != "" {
             changeDesc = changeDescriptor
         } else {
+            print("descArr[0]: \(descArr[0])")
             changeDesc = "\(descArr[0])".replacingOccurrences(of: "/0/", with: "/1/")
+            print("changeDesc: \(changeDesc)")
         }
         
         if parsedDesc.chain == "Mainnet" {
@@ -431,26 +435,41 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
         
         let path = Descriptor(primaryDescriptor).derivation
         
-        DispatchQueue.global(qos: .background).async { [weak self] in
-            guard let self = self else { return }
-            for i in 0...999 {
-                let addressInfo = bdkWallet.peekAddress(keychain: keychain, index: UInt32(i))
-                
-                let str = AddressStruct(dictionary: [
-                    "address": addressInfo.address.description,
-                    "balance": 0.0,
-                    "derivation": "\(path)/0/\(i)",
-                    "utxos": [],
-                    "used": false
-                ])
-                
-                addresses.append(str)
-                
-                if i == 999 {
-                    checkSavedUtxos()
+        if parsedDesc.hasRange {
+            DispatchQueue.global(qos: .background).async { [weak self] in
+                guard let self = self else { return }
+                for i in 0...999 {
+                    let addressInfo = bdkWallet.peekAddress(keychain: keychain, index: UInt32(i))
+                    
+                    let str = AddressStruct(dictionary: [
+                        "address": addressInfo.address.description,
+                        "balance": 0.0,
+                        "derivation": "\(path)/0/\(i)",
+                        "utxos": [],
+                        "used": false
+                    ])
+                    
+                    addresses.append(str)
+                    
+                    if i == 999 {
+                        checkSavedUtxos()
+                    }
                 }
             }
+        } else {
+            let addressInfo = bdkWallet.revealNextAddress(keychain: keychain)
+            let str = AddressStruct(dictionary: [
+                "address": addressInfo.address.description,
+                "balance": 0.0,
+                "derivation": "\(path)",
+                "utxos": [],
+                "used": false
+            ])
+            addresses.append(str)
+            checkSavedUtxos()
         }
+        
+        
     }
     
     func checkSavedUtxos() {

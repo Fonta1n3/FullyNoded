@@ -365,9 +365,9 @@ class WalletCell: UITableViewCell {
             expiryConfig.background.backgroundColor = UIColor.systemPink.withAlphaComponent(0.18)
             expiryBadge.configuration = expiryConfig
             expiryBadge.alpha = 1
-            nodelessButton.alpha = 0
+            //nodelessButton.alpha = 0
         } else {
-            nodelessButton.alpha = 1
+            //nodelessButton.alpha = 1
             expiryBadge.alpha = 0
         }
         

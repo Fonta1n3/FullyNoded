@@ -9,56 +9,62 @@ import LibWally
 
 public struct Descriptor: CustomStringConvertible {
     
-    let isCosigner:Bool
-    let scriptType:String
-    let format:String
-    let isHot:Bool
-    let mOfNType:String
-    let chain:String
-    let isMulti:Bool
-    let isBIP67:Bool
-    let isBIP49:Bool
-    let isBIP84:Bool
-    let isBIP48:Bool
-    let isBIP44:Bool
-    let isP2WPKH:Bool
-    let isP2PKH:Bool
-    let isP2SHP2WPKH:Bool
-    let isP2TR:Bool
-    let multiSigKeys:[String]
-    let multiSigPaths:[String]
-    let sigsRequired:UInt
+    let isCosigner: Bool
+    let scriptType: String
+    let format: String
+    let isHot: Bool
+    let mOfNType: String
+    let chain: String
+    let isMulti: Bool
+    let isBIP67: Bool
+    let isBIP49: Bool
+    let isBIP84: Bool
+    let isBIP48: Bool
+    let isBIP44: Bool
+    let isP2WPKH: Bool
+    let isP2PKH: Bool
+    let isP2SHP2WPKH: Bool
+    let isP2TR: Bool
+    let multiSigKeys: [String]
+    let multiSigPaths: [String]
+    let sigsRequired: UInt
     let accountXpub: String
     let accountXprv: String
-    let derivation:String
-    let derivationArray:[String]
-    let isSpecter:Bool
-    let isHD:Bool
-    let keysWithPath:[String]
+    let derivation: String
+    let derivationArray: [String]
+    let isSpecter: Bool
+    let isHD: Bool
+    let keysWithPath: [String]
     let scriptPath: String
     let internalKey: String
-    let isAccount:Bool
-    let fingerprint:String
-    let prefix:String
-    let pubkey:String
-    let isTaproot:Bool
+    let isAccount: Bool
+    let fingerprint: String
+    let prefix: String
+    let pubkey: String
+    let isTaproot: Bool
     let index: Int?
     let isInternal: Bool
     let isTimelocked: Bool
     let string: String
-    let expiry:String
+    let expiry: String
+    let hasRange: Bool
     
     init(_ descriptor: String) {
         string = descriptor
                 
         var dictionary = [String:Any]()
         
+        if descriptor.contains("/*,") || descriptor.contains("/*)") {
+            dictionary["hasRange"] = true
+        } else {
+            dictionary["hasRange"] = false
+        }
+        
         if descriptor.contains("&") {
             dictionary["isSpecter"] = true
             
         } else {
             dictionary["isSpecter"] = false
-            
         }
         
         isTaproot = descriptor.hasPrefix("tr(")
@@ -260,10 +266,8 @@ public struct Descriptor: CustomStringConvertible {
                                 
                             default:
                                 break
-                                
                             }
                         }
-                        
                     default:
                         break
                     }
@@ -369,8 +373,6 @@ public struct Descriptor: CustomStringConvertible {
                     for deriv in derivationArray {
                         let withH = deriv.replacingOccurrences(of: "h", with: "'")
                         switch withH {
-                            
-                        
                         
                         case "m/48'/0'/0'/1'", "m/48'/1'/0'/1'":
                             dictionary["isBIP44"] = false
@@ -432,13 +434,9 @@ public struct Descriptor: CustomStringConvertible {
                             dictionary["isAccount"] = true
                             
                         default:
-                            
                             break
-                            
                         }
-                        
                     }
-                    
                 default:
                     break
                 }
@@ -669,6 +667,7 @@ public struct Descriptor: CustomStringConvertible {
         isInternal = dictionary["isInternal"] as? Bool ?? false
         isTimelocked = dictionary["isTimelocked"] as? Bool ?? false
         expiry = dictionary["expiry"] as? String ?? ""
+        hasRange = dictionary["hasRange"] as? Bool ?? false
     }
     
     public var description: String {

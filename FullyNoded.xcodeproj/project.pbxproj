@@ -435,7 +435,6 @@
 				D09F9E4B24B0673C006B588C /* SignersViewController.swift */,
 				D09F9E4F24B1BAC3006B588C /* SignerDetailViewController.swift */,
 				D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */,
-				0A2D4F592EE54CB700121667 /* Nodeless */,
 			);
 			path = Signers;
 			sourceTree = "<group>";
@@ -486,6 +485,7 @@
 		0A2D4F592EE54CB700121667 /* Nodeless */ = {
 			isa = PBXGroup;
 			children = (
+				59A81B163011F7620027AE96 /* NodelessWalletsTableViewController.swift */,
 				0A2D4F4F2EE2F09C00121667 /* NodelessTableViewController.swift */,
 				0A2D4F512EE2F98500121667 /* AddressCell.swift */,
 				0ABEC1FC2F02743500092FCE /* NodelessTransactionCreator.swift */,
@@ -783,8 +783,8 @@
 				0A2D4F4A2EE2EF5D00121667 /* Signers */,
 				0A2D4F4C2EE2EF9000121667 /* QRs */,
 				0A2D4F4D2EE2EFA100121667 /* Transactions */,
+				0A2D4F592EE54CB700121667 /* Nodeless */,
 				0A0ABC342EBE07F6000329E0 /* TextModalViewController.swift */,
-				59A81B163011F7620027AE96 /* NodelessWalletsTableViewController.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
