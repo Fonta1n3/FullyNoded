@@ -434,7 +434,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     private func promptToImportColdcardMsig(_ desc: Descriptor) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Create a multisig with your Coldcard?", message: "You have uploaded a Coldcard multisig file, this action allows you to easily create a wallet with your Coldcard and Fully Noded.", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Create a multisig?", message: "You have uploaded a multisig file.", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { action in
                 DispatchQueue.main.async { [unowned vc = self] in
@@ -451,7 +451,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     private func promptToImportColdcardSingleSig(_ coldcard: [String:Any]) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Create a single sig with your Coldcard?", message: "You have uploaded a Coldcard single sig file, this action will recreate your Coldcard wallet on Fully Noded using its xpubs.", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Create a single sig?", message: "You have uploaded a single sig file.", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { action in
                 DispatchQueue.main.async {
