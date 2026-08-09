@@ -14,7 +14,6 @@ class MainMenuViewController: UIViewController {
     weak var mgr = TorClient.sharedInstance
     let ud = UserDefaults.standard
     @IBOutlet var mainMenu: UITableView!
-    var nodes = [[String:Any]]()
     var activeNode: NodeStruct?
     var existingNodeID: UUID!
     var initialLoad = false
@@ -66,15 +65,19 @@ class MainMenuViewController: UIViewController {
         UIApplication.shared.isIdleTimerDisabled = true
         torStatusLabel.alpha = 0
         addNavBarSpinner()
+        
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
             guard let node = node  else {
+                guard  UserDefaults.standard.value(forKey: "beenHere") == nil else { return }
+                
                 CoreDataService.retrieveEntity(entityName: .newNodes) { savedNodes in
                     if savedNodes == nil || savedNodes?.count == 0 {
                         DispatchQueue.main.async { [weak self] in
                             guard let self = self else { return }
                             removeLoader()
                             performSegue(withIdentifier: "segueToFirstTimeHere", sender: self)
+                            UserDefaults.standard.set(true, forKey: "beenHere")
                         }
                     }
                 }
@@ -563,13 +566,6 @@ class MainMenuViewController: UIViewController {
             self?.performSegue(withIdentifier: "showDetailSegue", sender: self)
         }
     }
-    
-    private func updateSection(section: Section.RawValue) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            mainMenu.reloadSections(IndexSet(arrayLiteral: section), with: .none)
-        }
-    }
         
     func loadTableData() {
         showBlockchainInfoSpinner = true
@@ -600,7 +596,7 @@ class MainMenuViewController: UIViewController {
                 headerLabel.textColor = .none
                 self.blockchainInfo = blockchainInfo
                 showBlockchainInfoSpinner = false
-                updateSection(section: Section.blockchainInfo.rawValue)
+                reloadTable()
                 getNetworkInfo()
             }
         }
@@ -623,7 +619,7 @@ class MainMenuViewController: UIViewController {
                 
                 peerInfo = response
                 showPeerInfoSpinner = false
-                updateSection(section: Section.peerInfo.rawValue)
+                reloadTable()
                 getMiningInfo()
             }
         }
@@ -646,7 +642,7 @@ class MainMenuViewController: UIViewController {
                 
                 networkInfo = NetworkInfo(dictionary: response)
                 showNetworkInfoSpinner = false
-                updateSection(section: Section.networkInfo.rawValue)
+                reloadTable()
                 getPeerInfo()
             }
         }
@@ -669,7 +665,7 @@ class MainMenuViewController: UIViewController {
                 
                 self.miningInfo = MiningInfo(dictionary: response)
                 showMiningInfoSpinner = false
-                updateSection(section: Section.miningInfo.rawValue)
+                reloadTable()
                 self.getUptime()
             }
         }
@@ -692,7 +688,7 @@ class MainMenuViewController: UIViewController {
                 
                 self.uptimeInfo = Uptime(dictionary: response)
                 showUpTimeSpinner = false
-                updateSection(section: Section.upTime.rawValue)
+                reloadTable()
                 self.getMempoolInfo()
             }
         }
@@ -712,7 +708,7 @@ class MainMenuViewController: UIViewController {
             
             self.mempoolInfo = MempoolInfo(dictionary: response)
             showMempoolInfoSpinner = false
-            updateSection(section: Section.mempoolInfo.rawValue)
+            reloadTable()
             self.getFeeInfo()
         }
     }
@@ -731,7 +727,7 @@ class MainMenuViewController: UIViewController {
             
             self.feeInfo = FeeInfo(dictionary: response)
             showFeeInfoSpinner = false
-            updateSection(section: Section.feeInfo.rawValue)
+            reloadTable()
             self.removeLoader()
         }
     }
@@ -758,17 +754,17 @@ class MainMenuViewController: UIViewController {
         }
     }
     
-    func getNodes(completion: @escaping (([[String:Any]]?)) -> Void) {
-        nodes.removeAll()
-        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
-            if nodes != nil {
-                completion(nodes!)
-            } else {
-                displayAlert(viewController: self, isError: true, message: "error getting nodes from coredata")
-                completion(nil)
-            }
-        }
-    }
+//    func getNodes(completion: @escaping (([[String:Any]]?)) -> Void) {
+//        nodes.removeAll()
+//        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
+//            if nodes != nil {
+//                completion(nodes!)
+//            } else {
+//                displayAlert(viewController: self, isError: true, message: "error getting nodes from coredata")
+//                completion(nil)
+//            }
+//        }
+//    }
     
     private func setFeeTarget() {
         if ud.object(forKey: "feeTarget") == nil {
