@@ -120,40 +120,27 @@ public struct Descriptor: CustomStringConvertible {
                     case "tr":
                         dictionary["format"] = "P2TR"
                         dictionary["scriptType"] = "Taproot multi-sig"
-                        //print("arr[1]: \(arr[1])")
                         let internalKeyAndPrefixArr = "\(arr[1])".split(separator: ",")
                         let internalKey = "\(internalKeyAndPrefixArr[0])"
                         dictionary["internalKey"] = internalKey
-                        //let scriptType = "\(internalKeyAndPrefixArr[1])"
                         
                         let mofnarray = (arr[2]).split(separator: ",")
-                        
                         let numberOfKeys = mofnarray.count - 1
                         dictionary["mOfNType"] = "\(mofnarray[0]) of \(numberOfKeys)"
                         dictionary["sigsRequired"] = UInt(mofnarray[0])
-                        
-//                        let scriptPath = "\(scriptType)(\(mofnarray.joined(separator: ","))".replacingOccurrences(of: "))", with: ")")
-//                        dictionary["scriptPath"] = scriptPath
-//                        print("scriptPath: \(scriptPath)")
                         
                         let trArray = descriptor.split(separator: ",")
                         let internalKeyPath = "\(trArray[0])"
                         let scriptPath = trArray.dropFirst().joined(separator: ",")
                         dictionary["internalKey"] = internalKeyPath
-                        //dictionary["scriptPath"] = scriptPath
-                        //print("scriptPath: \(scriptPath)")
-//                        let scriptPath = "\(trArray[1])"
                         var keysWithPath = [String]()
                         
                         if scriptPath.contains("multi_a") {
-                            //print("its a multi_a")
                             let processed = scriptPath.replacingOccurrences(of: "and_v(v:multi_a(", with: "")
                             let processArr = processed.components(separatedBy: "),after")
                             let plainMofN = "\(processArr[0])".split(separator: ",")
-                            //print("plainMofN: \(plainMofN)")
                             for (i, item) in plainMofN.enumerated() {
                                 if i != 0 {
-                                    //print("append: \(item)")
                                     keysWithPath.append("\(item.replacingOccurrences(of: ")", with: ""))")
                                 }
                                 if i + 1 == mofnarray.count {
@@ -161,9 +148,9 @@ public struct Descriptor: CustomStringConvertible {
                                 }
                             }
                             
-                            // and_v(v:multi_a(2,[8084b36e/48h/1h/0h/2h/0/12]03864f2908573eaab8dc53f63406cbfa0aa0526bc9f410615575ff4cf597663edb,[a99c0f45/48h/1h/0h/2h/0/12]03f1fed95a4867e7eff12285fa244a4de0c7d3ec6c66018d168b535f7f3d4f0903),after(1767970400)))#zhsvtrd4
-                            
-                            // tr(0227caee8bea95a44d40f9d433d6707c8b63694b364109602d5804f8a3d2d0994c,and_v(v:multi_a(2,[8084b36e/48h/1h/0h/2h/0/12]03864f2908573eaab8dc53f63406cbfa0aa0526bc9f410615575ff4cf597663edb,[a99c0f45/48h/1h/0h/2h/0/12]03f1fed95a4867e7eff12285fa244a4de0c7d3ec6c66018d168b535f7f3d4f0903),after(1767970400)))#zhsvtrd4)
+                            let numberOfKeys = plainMofN.count - 1
+                            dictionary["mOfNType"] = "\(plainMofN[0]) of \(numberOfKeys)"
+                            dictionary["sigsRequired"] = UInt(plainMofN[0])
                             
                         } else {
                             
@@ -177,7 +164,6 @@ public struct Descriptor: CustomStringConvertible {
                             }
                         }
                         
-                        //print("keyswithpath: \(keysWithPath)")
                         var fingerprints = [String]()
                         var keyArray = [String]()
                         var paths = [String]()
@@ -271,8 +257,6 @@ public struct Descriptor: CustomStringConvertible {
                                 dictionary["isP2SHP2WPKH"] = false
                                 dictionary["isBIP48"] = true
                                 dictionary["isAccount"] = true
-                                //dictionary["scriptType"] = "Taproot - multi-sig"
-                                //dictionary["format"] = "P2TR"
                                 
                             default:
                                 break
@@ -494,8 +478,6 @@ public struct Descriptor: CustomStringConvertible {
                     }
                 } else {
                     let subarray = extendedKey.split(separator: "#")
-                    //print("gtting here?")
-                    //print("subarray: \(subarray)")
                     if subarray.count == 2 {
                         dictionary["pubkey"] = "\("\(subarray[0])".replacingOccurrences(of: ")", with: ""))"
                     } else {
