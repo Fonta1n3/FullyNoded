@@ -1108,15 +1108,13 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                 if bbqrFormat {
                     vc.headerText = "Wallet Export BBQr"
                     vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                    vc.descriptionText = "This QR code is best for exporting this wallet to Coldcard, also works with Fully Noded."
                     vc.isBbqr = true
                     vc.isUR = false
                 }
                 
                 if outputDescFormat {
-                    vc.headerText = "Wallet Export Descriptor"
+                    vc.headerText = "UR Wallet Export Descriptor"
                     vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                    vc.descriptionText = "This QR code is best for exporting this wallet to Sparrow, Passport, Blue Wallet and more, including Fully Noded."
                     vc.isBbqr = false
                     vc.isUR = true
                 }
@@ -1124,7 +1122,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                 if urBytesFormat {
                     vc.headerText = "Wallet Export UR Bytes"
                     vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                    vc.descriptionText = "This QR code is best for exporting this wallet to Passport, Blue Wallet and others, including Fully Noded."
                     vc.isUR = true
                     vc.isBbqr = false
                 }

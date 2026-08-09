@@ -332,7 +332,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             }
             var text = ""
             
-                message = "Export the wallet as a text file (compatible with Coldcard) or QR code (compatible with Passport, Sparrow, Blue Wallet and more)."
+                message = "Export the wallet as a text file or QR code (compatible with Passport, Sparrow, Blue Wallet and more)."
                 
                 text = """
                 Name: Fully Noded
@@ -355,7 +355,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             
             let alert = UIAlertController(title: "\(mofn) successfully created ✓", message: message, preferredStyle: alertStyle)
             
-            alert.addAction(UIAlertAction(title: "Export Text File (Coldcard)", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "Export Text File", style: .default, handler: { action in
                 self.export(text: text)
             }))
             
@@ -452,7 +452,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             guard let self = self else { return }
             
             let fileManager = FileManager.default
-            let fileURL = fileManager.temporaryDirectory.appendingPathComponent("Coldcard-Import.txt")
+            let fileURL = fileManager.temporaryDirectory.appendingPathComponent("Import.txt")
             
             try? text.dataUsingUTF8StringEncoding.write(to: fileURL)
             
