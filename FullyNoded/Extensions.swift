@@ -790,9 +790,6 @@ public extension Data {
         // Force deallocation if possible
         self = Data()
     }
-//    @inlinable var bytesNostr: [UInt8] {
-//        withUnsafeBytes { bytesPtr in Array(bytesPtr) }
-//    }
 
     func copyToUnsafeMutableBytes<T>(of value: inout T) {
         _ = Swift.withUnsafeMutableBytes(of: &value) { ptr in

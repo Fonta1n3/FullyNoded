@@ -51,7 +51,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     }
     
     @IBAction func generateSignerAction(_ sender: Any) {
-        guard var words = Keys.seed() else { return }
+        guard var words = Keys.seedWords() else { return }
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }

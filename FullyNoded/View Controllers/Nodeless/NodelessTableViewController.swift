@@ -334,7 +334,6 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
         load()
     }
     
-    
     @IBAction func deleteCacheAction(_ sender: Any) {
         Task {
             await deleteItem()
@@ -389,16 +388,12 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
             }
         }
         
-        //print("changeDescriptor: \(changeDescriptor)")
-        
         let descArr = primaryDescriptor.components(separatedBy: "#")
         var changeDesc = ""
         if let changeDescriptor = changeDescriptor, changeDescriptor != "" {
             changeDesc = changeDescriptor
         } else {
-            print("descArr[0]: \(descArr[0])")
             changeDesc = "\(descArr[0])".replacingOccurrences(of: "/0/", with: "/1/")
-            print("changeDesc: \(changeDesc)")
         }
         
         if parsedDesc.chain == "Mainnet" {
@@ -468,8 +463,6 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
             addresses.append(str)
             checkSavedUtxos()
         }
-        
-        
     }
     
     func checkSavedUtxos() {

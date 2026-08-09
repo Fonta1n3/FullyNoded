@@ -86,9 +86,7 @@ class MainMenuViewController: UIViewController {
             activeNode = node
         }
         
-        if !Crypto.setupinit() {
-            showAlert(vc: self, title: "", message: "There was an error setupinit.")
-        }
+       
         mainMenu.delegate = self
         mainMenu.tableFooterView = UIView(frame: .zero)
         mainMenu.layer.cornerRadius = 8
@@ -129,7 +127,7 @@ class MainMenuViewController: UIViewController {
     // If XFP was not saved (which seems to be possible currently) we need it to identify potential signers.
     private func ensureXfpSaved() {
         CoreDataService.retrieveEntity(entityName: .signers) { [weak self] encryptedSigners in
-            guard let self = self else { return }
+            guard let _ = self else { return }
             
             guard let encryptedSigners = encryptedSigners else { return }
             
