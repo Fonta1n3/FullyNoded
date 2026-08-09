@@ -11,57 +11,163 @@ import MobileCoreServices
 import UniformTypeIdentifiers
 
 class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
-    
+            
     var selectedNode: NodeStruct?
-    //var newNode: NodeStruct?
-    var isInitialLoad = Bool()
-    var scanNow = false
     
-    @IBOutlet weak var rpcAuthCopyButton: UIButton!
-    @IBOutlet weak var createPasswordButton: UIButton!
-    @IBOutlet weak var rpcAuthExportButton: UIButton!
-    @IBOutlet weak var rpcAuthLabel: UILabel!
-    @IBOutlet weak var rpcAuthHeader: UILabel!
-    @IBOutlet weak var masterStackView: UIStackView!
-    @IBOutlet weak var addressHeader: UILabel!
-    @IBOutlet weak var certHeader: UILabel!
-    @IBOutlet weak var certField: UITextField!
-    @IBOutlet weak var passwordHeader: UILabel!
-    @IBOutlet weak var usernameHeader: UILabel!
-    @IBOutlet weak var scanQROutlet: UIBarButtonItem!
-    @IBOutlet weak var header: UILabel!
-    @IBOutlet weak var nodeLabel: UITextField!
-    @IBOutlet weak var rpcUserField: UITextField!
-    @IBOutlet weak var rpcPassword: UITextField!
-    @IBOutlet weak var rpcLabel: UILabel!
-    @IBOutlet weak var saveButton: UIButton!
-    @IBOutlet weak var onionAddressField: UITextField!
-    @IBOutlet weak var addressHeaderOutlet: UILabel!
+    private let scrollView = UIScrollView()
+    private let masterStackView = UIStackView()
+    private let header = UILabel()
+    private let nodeLabel = UITextField()
+    private let addressHeader = UILabel()
+    private let onionAddressField = UITextField()
+    private let usernameHeader = UILabel()
+    private let rpcUserField = UITextField()
+    private let passwordHeader = UILabel()
+    private let rpcPassword = UITextField()
+    private let createPasswordButton = UIButton(type: .system)
+    private let certHeader = UILabel()
+    private let certField = UITextField()
+    private let rpcAuthHeader = UILabel()
+    private let rpcAuthLabel = UILabel()
+    private let saveButton = UIButton(type: .system)
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        view.backgroundColor = .systemBackground
         navigationController?.delegate = self
+        
+        setupUI()
         configureTapGesture()
-        nodeLabel.delegate = self
-        rpcPassword.delegate = self
-        rpcUserField.delegate = self
-        onionAddressField.delegate = self
-        certField.delegate = self
-               
+        
+        [nodeLabel, rpcPassword, rpcUserField, onionAddressField, certField].forEach {
+            $0.delegate = self
+            $0.textColor = .lightGray
+        }
+        
         rpcPassword.isSecureTextEntry = true
         onionAddressField.isSecureTextEntry = false
-        saveButton.clipsToBounds = true
-        saveButton.layer.cornerRadius = 8
-     
-        navigationController?.delegate = self
-        rpcPassword.addTarget(self, action: #selector(self.textFieldDidChange(_:)), for: .editingChanged)
-        rpcUserField.addTarget(self, action: #selector(self.textFieldDidChange(_:)), for: .editingChanged)
         
-        rpcAuthLabel.numberOfLines = 0
-        rpcAuthLabel.sizeToFit()
-        rpcAuthLabel.translatesAutoresizingMaskIntoConstraints = false
+        rpcPassword.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        rpcUserField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
         
         loadValues()
+    }
+    
+    private func setupUI() {
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.alwaysBounceVertical = true
+        scrollView.keyboardDismissMode = .interactive
+        view.addSubview(scrollView)
+        
+        masterStackView.axis = .vertical
+        masterStackView.spacing = 8
+        masterStackView.alignment = .fill
+        masterStackView.distribution = .fill
+        masterStackView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(masterStackView)
+        
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            
+            masterStackView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 20),
+            masterStackView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: 20),
+            masterStackView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -20),
+            masterStackView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -40),
+            masterStackView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -40)
+        ])
+                
+        addSection(title: "Label", field: nodeLabel, placeholder: "My Node")
+        
+        addSection(title: "Address (host:port)", field: onionAddressField, placeholder: "xxxx.onion:8332")
+        
+        addSection(title: "RPC Username", field: rpcUserField, placeholder: "FullyNoded")
+        
+        passwordHeader.text = "RPC Password"
+        passwordHeader.font = .preferredFont(forTextStyle: .headline)
+        passwordHeader.textColor = .systemGreen
+        masterStackView.addArrangedSubview(passwordHeader)
+        
+        let passwordRow = UIStackView(arrangedSubviews: [rpcPassword, createPasswordButton])
+        passwordRow.axis = .vertical
+        passwordRow.spacing = 8
+        passwordRow.alignment = .center
+        rpcPassword.placeholder = "Password"
+        rpcPassword.borderStyle = .roundedRect
+        createPasswordButton.setTitle("Generate secure password", for: .normal)
+        createPasswordButton.addTarget(self, action: #selector(createRpcPass(_:)), for: .touchUpInside)
+        masterStackView.addArrangedSubview(passwordRow)
+        
+        let copyRpcAuthButton =  makeButton(title: "Copy", action: #selector(copyRpcAuthAction(_:)))
+        let exportRpcAuthButton = makeButton(title: "Export", action: #selector(exportRpcAuth(_:)))
+        rpcAuthHeader.text = "RPC Auth (for bitcoin.conf)"
+        rpcAuthHeader.font = .preferredFont(forTextStyle: .headline)
+        rpcAuthHeader.textColor = .systemGreen
+        masterStackView.addArrangedSubview(rpcAuthHeader)
+        
+        rpcAuthLabel.numberOfLines = 0
+        rpcAuthLabel.font = .preferredFont(forTextStyle: .footnote)
+        rpcAuthLabel.textColor = .label
+        masterStackView.addArrangedSubview(rpcAuthLabel)
+        
+        let infoBtn = makeButton(title: "RPC Auth?", action: #selector(showRpcAuthInfoAction(_:)))
+        let authButtons = UIStackView(arrangedSubviews: [copyRpcAuthButton, exportRpcAuthButton, infoBtn])
+        authButtons.axis = .horizontal
+        authButtons.spacing = 8
+        authButtons.distribution = .fillEqually
+        
+        masterStackView.addArrangedSubview(authButtons)
+        
+        addSection(title: "SSL Certificate (Tor not used!)", field: certField, placeholder: "Paste or import .pem/.cer/text")
+        
+        let certButtons = UIStackView()
+        certButtons.axis = .horizontal
+        certButtons.spacing = 8
+        certButtons.distribution = .fillEqually
+        
+        let pasteBtn = makeButton(title: "Paste", action: #selector(pasteCertAction(_:)))
+        let deleteBtn = makeButton(title: "Delete", action: #selector(deleteCertAction(_:)))
+        let fileBtn = makeButton(title: "Import File", action: #selector(showFilePickerAction(_:)))
+        
+        certButtons.addArrangedSubview(pasteBtn)
+        certButtons.addArrangedSubview(deleteBtn)
+        certButtons.addArrangedSubview(fileBtn)
+        masterStackView.addArrangedSubview(certButtons)
+
+        saveButton.setTitle("Save Node", for: .normal)
+        saveButton.titleLabel?.font = .preferredFont(forTextStyle: .headline)
+        saveButton.configuration = .tinted()
+        saveButton.setTitleColor(.tintColor, for: .normal)
+        saveButton.layer.cornerRadius = 15
+        saveButton.addTarget(self, action: #selector(save(_:)), for: .touchUpInside)
+        masterStackView.addArrangedSubview(saveButton)
+        
+        masterStackView.addArrangedSubview(UIView())
+    }
+    
+    private func addSection(title: String, field: UITextField, placeholder: String) {
+        let label = UILabel()
+        label.text = title
+        label.font = .preferredFont(forTextStyle: .headline)
+        label.textColor = .systemGreen
+        masterStackView.addArrangedSubview(label)
+        
+        field.placeholder = placeholder
+        field.borderStyle = .roundedRect
+        field.autocapitalizationType = .none
+        field.autocorrectionType = .no
+        field.clearButtonMode = .whileEditing
+        masterStackView.addArrangedSubview(field)
+    }
+    
+    private func makeButton(title: String, action: Selector) -> UIButton {
+        let btn = UIButton(type: .system)
+        btn.setTitle(title, for: .normal)
+        btn.addTarget(self, action: action, for: .touchUpInside)
+        return btn
     }
     
     @IBAction func pasteCertAction(_ sender: Any) {
@@ -140,6 +246,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             guard let auth = RPCAuth().generateCreds(username: rpcUserField.text ?? "FullyNoded-OG", password: data.hex) else { return }
             
             rpcAuthLabel.text = auth.rpcAuth
+            
+            showAlert(title: "", message: "A secure RPC password was created ✓")
         }
     }
     
@@ -210,165 +318,140 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     @IBAction func save(_ sender: Any) {
-        var encryptedCert: Data?
-        
-        guard let address = onionAddressField.text, address != "" else {
-            showAlert(vc: self, title: "", message: "You need to add an address first.")
-            return
-        }
-        
-        guard let user = rpcUserField.text, user != "" else {
-            showAlert(vc: self, title: "", message: "You need to add a rpc user first.")
-            return
-        }
-        
-        guard let pass = rpcPassword.text, pass != "" else {
-            showAlert(vc: self, title: "", message: "You need to add an rpc password first.")
-            return
-        }
-        
-        guard let label = nodeLabel.text, label != "" else {
-            showAlert(vc: self, title: "", message: "You need to add a label first.")
-            return
-        }
-        
-        let arr = address.split(separator: ":")
-        let addressData = address.utf8
-    
-        guard arr.count == 2 else {
-            showAlert(vc: self, title: "Not updated, port missing...", message: "Please make sure you add the port at the end of your hostname, such as xxxx.onion:8332.\n\n8332 for mainnet, 18332 for testnet, 38332 for signet or 18443 for regtest.")
-            return
-        }
-            
-        if let cert = certField.text, cert != "" {
-            if let encCert = encryptedValue(certField.text!.condenseWhitespace().utf8) {
-                encryptedCert = encCert
+        Task { @MainActor in
+            // 1. Validate required fields
+            guard let address = onionAddressField.text?.trimmingCharacters(in: .whitespacesAndNewlines), !address.isEmpty else {
+                showAlert(vc: self, title: "", message: "You need to add an address first.")
+                return
             }
-        } else {
-            let isLocalOrOnion = address.contains(".onion") || address.hasPrefix("localhost:") || address.hasPrefix("127.0.0.1:")
-            if !isLocalOrOnion {
-                showAlert(vc: self, title: "Warning! ⚠️", message: "You are not using an onion address or localhost. Your RPC credentials could be compromised! This is intended for LAN usage or testing purposes only! To be safer consider adding a SSL cert.")
+            
+            guard let user = rpcUserField.text?.trimmingCharacters(in: .whitespacesAndNewlines), !user.isEmpty else {
+                showAlert(vc: self, title: "", message: "You need to add a rpc user first.")
+                return
             }
-        }
             
-        func encryptedValue(_ decryptedValue: Data) -> Data? {
-            return Crypto.encrypt(decryptedValue)
-        }
-        
-        guard let encAddress = encryptedValue(addressData)  else {
-            showAlert(vc: self, title: "", message: "Error encrypting the address.")
-            return
-        }
-        
-        guard let encUser = encryptedValue(user.utf8) else {
-            showAlert(vc: self, title: "", message: "Error encrypting the rpc user.")
-            return
-        }
-        
-        guard let encPass = encryptedValue(pass.utf8) else {
-            showAlert(vc: self, title: "", message: "Error encrypting the rpc password.")
-            return
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
+            guard let pass = rpcPassword.text, !pass.isEmpty else {
+                showAlert(vc: self, title: "", message: "You need to add an rpc password first.")
+                return
+            }
             
+            guard let label = nodeLabel.text?.trimmingCharacters(in: .whitespacesAndNewlines), !label.isEmpty else {
+                showAlert(vc: self, title: "", message: "You need to add a label first.")
+                return
+            }
+            
+            // 2. Validate host:port format
+            let components = address.split(separator: ":")
+            guard components.count == 2 else {
+                showAlert(
+                    vc: self,
+                    title: "Not updated, port missing...",
+                    message: "Please make sure you add the port at the end of your hostname, such as xxxx.onion:8332.\n\n8332 for mainnet, 18332 for testnet, 38332 for signet or 18443 for regtest."
+                )
+                return
+            }
+            
+            // 3. Encrypt values
+            guard let encAddress = Crypto.encrypt(Data(address.utf8)) else {
+                showAlert(vc: self, title: "", message: "Error encrypting the address.")
+                return
+            }
+            
+            guard let encUser = Crypto.encrypt(Data(user.utf8)) else {
+                showAlert(vc: self, title: "", message: "Error encrypting the rpc user.")
+                return
+            }
+            
+            guard let encPass = Crypto.encrypt(Data(pass.utf8)) else {
+                showAlert(vc: self, title: "", message: "Error encrypting the rpc password.")
+                return
+            }
+            
+            // 4. Optional certificate
+            var encryptedCert: Data?
+            if let certText = certField.text?.condenseWhitespace(), !certText.isEmpty {
+                encryptedCert = Crypto.encrypt(Data(certText.utf8))
+            } else {
+                let isLocalOrOnion = address.contains(".onion") ||
+                address.hasPrefix("localhost:") ||
+                address.hasPrefix("127.0.0.1:")
+                
+                if !isLocalOrOnion {
+                    showAlert(
+                        vc: self,
+                        title: "Warning! ⚠️",
+                        message: "You are not using an onion address or localhost. Your RPC credentials could be compromised! This is intended for LAN usage or testing purposes only! To be safer consider adding a SSL cert."
+                    )
+                }
+            }
+            
+            // 5. Generate RPC auth string (already on MainActor)
             guard let auth = RPCAuth().generateCreds(username: user, password: pass) else {
                 showAlert(vc: self, title: "Node not saved.", message: "Unable to create an rpc auth string. Please let us know about this!")
                 return
             }
-            
             rpcAuthLabel.text = auth.rpcAuth
-        }
-        
-        if selectedNode == nil {
-            var nodeToSave: [String: Any] = [:]
-            nodeToSave["id"] = UUID()
-            nodeToSave["label"] = label
-            nodeToSave["onionAddress"] = encAddress
-            nodeToSave["rpcuser"] = encUser
-            nodeToSave["rpcpassword"] = encPass
-            nodeToSave["cert"] = encryptedCert
-            saveNewNode(node: nodeToSave)
             
-        } else {
-            //updating
-            guard let selectedNode = selectedNode else {
+            // 6. Create or update
+            if let selectedNode, let id = selectedNode.id {
+                // Update existing node
+                await updateNodeValues(
+                    id: id,
+                    label: label,
+                    encUser: encUser,
+                    encPass: encPass,
+                    encAddress: encAddress,
+                    encCert: encryptedCert
+                )
+            } else if selectedNode == nil {
+                // Create new node
+                let nodeToSave: [String: Any] = [
+                    "id": UUID(),
+                    "label": label,
+                    "onionAddress": encAddress,
+                    "rpcuser": encUser,
+                    "rpcpassword": encPass,
+                    "cert": encryptedCert as Any
+                ]
+                saveNewNode(node: nodeToSave)
+            } else {
+                // selectedNode exists but has no id (legacy bug)
                 showAlert(vc: self, title: "", message: "Selected node does not exist.")
-                return
-            }
-            
-            // This check is for backwards compatibility where there was a bug from long ago where an ID did not exist.
-            guard let id = selectedNode.id else {
-                return
-            }
-            
-            updateNodeValues(id: id, label: label, encUser: encUser, encPass: encPass, encAddress: encAddress, encCert: encryptedCert)
-        }
-    }
-    
-    func updateNodeValues(id: UUID, label: String, encUser: Data, encPass: Data, encAddress: Data, encCert: Data?) {
-        
-        updateNodeValue(id: id, keyToUpdate: "label", newValue: label) { [weak self] (updated, errorMessage) in
-            guard let self = self else { return }
-            
-            guard updated else {
-                showAlert(vc: self, title: "", message: errorMessage!)
-                return
-            }
-            
-            updateNodeValue(id: id, keyToUpdate: "rpcuser", newValue: encUser) { [weak self] (rpcUserUpdated, errorMessage) in
-                guard let self = self else { return }
-                
-                guard rpcUserUpdated else {
-                    showAlert(vc: self, title: "", message: errorMessage!)
-                    return
-                }
-                
-                updateNodeValue(id: id, keyToUpdate: "rpcpassword", newValue: encPass) { [weak self] (rpcPassUpdated, errorMessage) in
-                    guard let self = self else { return }
-                    
-                    guard rpcPassUpdated else {
-                        showAlert(vc: self, title: "", message: errorMessage!)
-                        return
-                    }
-                    
-                    updateNodeValue(id: id, keyToUpdate: "onionAddress", newValue: encAddress) { [weak self] (addressUpdated, errorMessage) in
-                        guard let self = self else { return }
-                        
-                        guard addressUpdated else {
-                            showAlert(vc: self, title: "", message: errorMessage!)
-                            return
-                        }
-                        
-                        guard let encCert = encCert else {
-                            showAlert(vc: self, title: "", message: "Node updated ✓")
-                            return
-                        }
-                        
-                        updateNodeValue(id: id, keyToUpdate: "cert", newValue: encCert) { [weak self] (certUpdated, errorMessage) in
-                            guard let self = self else { return }
-                            
-                            guard updated else {
-                                showAlert(vc: self, title: "", message: errorMessage!)
-                                return
-                            }
-                            
-                            showAlert(vc: self, title: "", message: "Node updated ✓")
-                        }
-                    }
-                }
             }
         }
     }
     
-    func updateNodeValue(id: UUID, keyToUpdate: String, newValue: Any, completion: @escaping ((updated: Bool, errorMessage: String?)) -> Void) {
-        CoreDataService.update(id: id, keyToUpdate: keyToUpdate, newValue: newValue, entity: .newNodes) { success in
-            guard success else {
-                completion((false, "There was an error updating \(keyToUpdate). Please let us know about it!"))
-                return
+    @MainActor
+    func updateNodeValues(id: UUID, label: String, encUser: Data, encPass: Data, encAddress: Data, encCert: Data?) async {
+        do {
+            try await updateNodeValue(id: id, keyToUpdate: "label", newValue: label)
+            try await updateNodeValue(id: id, keyToUpdate: "rpcuser", newValue: encUser)
+            try await updateNodeValue(id: id, keyToUpdate: "rpcpassword", newValue: encPass)
+            try await updateNodeValue(id: id, keyToUpdate: "onionAddress", newValue: encAddress)
+            
+            if let encCert {
+                try await updateNodeValue(id: id, keyToUpdate: "cert", newValue: encCert)
             }
-            completion((success, nil))
+            
+            SuccessView.show(in: self, title: "Node updated")
+        } catch {
+            showAlert(vc: self, title: "", message: error.localizedDescription)
+        }
+    }
+
+    func updateNodeValue(id: UUID, keyToUpdate: String, newValue: Any) async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            CoreDataService.update(id: id, keyToUpdate: keyToUpdate, newValue: newValue, entity: .newNodes) { success in
+                if success {
+                    continuation.resume()
+                } else {
+                    continuation.resume(throwing: NSError(
+                        domain: "",
+                        code: 0,
+                        userInfo: [NSLocalizedDescriptionKey: "There was an error updating \(keyToUpdate). Please let us know about it!"]
+                    ))
+                }
+            }
         }
     }
         
@@ -389,7 +472,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 
                 if success {
                     selectedNode = NodeStruct(dictionary: nodeToSave)
-                    showAlert(vc: self, title: "", message: "Node saved ✓")
+                    SuccessView.show(in: self, title: "Node saved")
                 } else {
                     showAlert(vc: self, title: "Node not saved!", message: "Unable to save node to Core Data, please let us know about this.")
                 }
@@ -409,62 +492,71 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         tapGesture.numberOfTapsRequired = 1
         view.addGestureRecognizer(tapGesture)
     }
-    
+        
     func loadValues() {
         
-        func decryptedValue(_ encryptedValue: Data) -> String {
-            guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
-            
-            return decrypted.utf8String ?? ""
+        // Helper for decryption
+        func decrypted(_ data: Data?) -> String {
+            guard let data,
+                  let decryptedData = Crypto.decrypt(data),
+                  let string = decryptedData.utf8String else {
+                return ""
+            }
+            return string
         }
         
-        if let selectedNode = selectedNode {
-            if selectedNode.id != nil {
-                
-                if selectedNode.label != "" {
-                    nodeLabel.text = selectedNode.label
-                }
-                
-                if let user = selectedNode.rpcuser, let password = selectedNode.rpcpassword {
-                    rpcUserField.text = decryptedValue(user)
-                    rpcPassword.text = decryptedValue(password)
-                    
-                    if rpcPassword.text == "xxx" {
-                        showAlert(vc: self, title: "Quick Connect", message: "Dummy rpc credentials detected:\n\nStep 1: Update the rpc user and password, tap save.\n\nStep 2: Export the rpc auth text to your bitcoin.conf, save your bitcoin.conf.\n\nStep 3: Restart your node.\n\nStep 4: Navigate back to the home screen and tap refresh to connect.")
-                    }
-                    
-                    if let auth = RPCAuth().generateCreds(username: rpcUserField.text!, password: rpcPassword.text!) {
-                        rpcAuthLabel.text = auth.rpcAuth
-                    }
-                }
-                                
-                if let enc = selectedNode.onionAddress {
-                    let decrypted = decryptedValue(enc)
-                    if onionAddressField != nil {
-                        onionAddressField.text = decrypted
-                    }
-                    
-                    if !decrypted.contains(".onion") && selectedNode.cert == nil && !decrypted.hasPrefix("localhost:") && !decrypted.hasPrefix("127.0.0.1:") {
-                        showAlert(vc: self, title: "Warning!", message: "You are not using an onion address, your network traffic will not be routed over Tor! This is for connecting to nodes over localhost and LAN only, if using LAN https will be used and you must add the base64 SSL cert.")
-                    }
-                }
-                
-                if selectedNode.cert != nil {
-                    if let decryptedCert = Crypto.decrypt(selectedNode.cert!) {
-                        certField.text = decryptedCert.utf8String ?? ""
-                    }
-                }
-            }
-        } else {
+        guard let node = selectedNode, node.id != nil else {
+            // New node – generate default credentials
             rpcUserField.text = "FullyNoded"
             rpcPassword.text = Crypto.privateKey().hex
             
-            if let auth = RPCAuth().generateCreds(username: rpcUserField.text!, password: rpcPassword.text!) {
+            if let auth = RPCAuth().generateCreds(username: "FullyNoded",
+                                                  password: rpcPassword.text ?? "") {
                 rpcAuthLabel.text = auth.rpcAuth
             }
             
-            showAlert(vc: self, title: "RPC credentials created ✓", message: "Fully Noded creates an rpc password for you by default, export the rpc auth text to your bitcoin.conf, save it and restart your node to connect.")
+            showAlert(vc: self,
+                      title: "RPC credentials created ✓",
+                      message: "Fully Noded creates an rpc password for you by default, export the rpc auth text to your bitcoin.conf, save it and restart your node to connect. To add your own, just edit the text field.")
+            return
         }
+        
+        // Existing node
+        nodeLabel.text = node.label.isEmpty ? nil : node.label
+        
+        // Credentials
+        let user = decrypted(node.rpcuser)
+        let password = decrypted(node.rpcpassword)
+        
+        rpcUserField.text = user
+        rpcPassword.text = password
+        
+        if password == "xxx" {
+            showAlert(vc: self,
+                      title: "Quick Connect",
+                      message: "Dummy rpc credentials detected:\n\nStep 1: Update the rpc user and password, tap save.\n\nStep 2: Export the rpc auth text to your bitcoin.conf, save your bitcoin.conf.\n\nStep 3: Restart your node.\n\nStep 4: Navigate back to the home screen and tap refresh to connect.")
+        }
+        
+        if let auth = RPCAuth().generateCreds(username: user, password: password) {
+            rpcAuthLabel.text = auth.rpcAuth
+        }
+        
+        // Address
+        let address = decrypted(node.onionAddress)
+        onionAddressField.text = address
+        
+        let isLocalOrOnion = address.contains(".onion") ||
+                             address.hasPrefix("localhost:") ||
+                             address.hasPrefix("127.0.0.1:")
+        
+        if !isLocalOrOnion && node.cert == nil {
+            showAlert(vc: self,
+                      title: "Warning!",
+                      message: "You are not using an onion address, your network traffic will not be routed over Tor! This is for connecting to nodes over localhost and LAN only, if using LAN https will be used and you must add the base64 SSL cert.")
+        }
+        
+        // Certificate
+        certField.text = decrypted(node.cert)
     }
     
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
