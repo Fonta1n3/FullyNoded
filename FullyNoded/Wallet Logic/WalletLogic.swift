@@ -29,12 +29,17 @@ class WalletLogic {
     typealias BDKKeyChain = BitcoinDevKit.KeychainKind
        
     
+    // TODO: Improve this so we use a random NUMS instead of a dummy key.
     func dummyKey() -> String? {
-        let dummyMnemonic = BDKMnemonic(wordCount: .words12)
+        guard var secretDataForDummyMnemonic = Crypto.secret() else { return nil }
+        
+        guard let dummyMnemonic = try? BDKMnemonic.fromEntropy(entropy: secretDataForDummyMnemonic) else { return nil }
+        
         guard let network = bdkNetwork() else {
             return nil
         }
-        guard let randomData = Crypto.secret() else { return nil }
+        
+        guard var randomData = Crypto.secret() else { return nil }
         
         // Include random passphrase to add entropy to dummy master key.
         let hash = Crypto.sha256hash(Crypto.sha256hash(Crypto.sha256hash(randomData))).hex
@@ -42,7 +47,13 @@ class WalletLogic {
         guard let dummyMk = bdkMasterKey(network: network, mnemonic: dummyMnemonic.description, passphrase: hash) else {
             return nil
         }
+        
         let arr = dummyMk.asPublic().description.components(separatedBy: "/")
+        
+        defer {
+            randomData.secureZero()
+            secretDataForDummyMnemonic.secureZero()
+        }
         
         return "\(arr[0])"
     }
