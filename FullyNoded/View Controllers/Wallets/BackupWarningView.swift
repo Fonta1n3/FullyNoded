@@ -51,9 +51,9 @@ final class BackupWarningView: UIView {
     private let messageLabel: UILabel = {
         let label = UILabel()
         label.text = "A new timelocked descriptor has been added to your wallet.\n\n"
-                   + "Your previous backup no longer includes these funds.\n\n"
+                   + "Your physical backup no longer includes these funds.\n\n"
                    + "If you lose access and only have an old backup, these funds will be permanently lost.\n\n"
-                   + "Please update your wallet backup now."
+                   + "Please update your physical wallet backup now."
         label.font = UIFont.systemFont(ofSize: 17)
         label.textColor = .secondaryLabel
         label.textAlignment = .center
