@@ -191,9 +191,9 @@ class WalletLogic {
         }
         
         let signOptions = SignOptions(
-            trustWitnessUtxo: true,
+            trustWitnessUtxo: false,
             assumeHeight: nil,
-            allowAllSighashes: true,
+            allowAllSighashes: false,
             tryFinalize: true,
             signWithTapInternalKey: true,
             allowGrinding: true
@@ -362,6 +362,7 @@ class WalletLogic {
         case networkFailed(reason: String)
     }
     
+    // Only used for sweeping a single utxo.
     func createPsbtWithManualInputs(
         wallet: BDKWallet,
         utxos: [Esplora_Utxo],
@@ -406,37 +407,39 @@ class WalletLogic {
             }
             
             let feeRate = try FeeRate.fromSatPerVb(satVb: UInt64(1))
-            txBuilder = txBuilder.doNotSpendChange()
             txBuilder = txBuilder.manuallySelectedOnly()
             txBuilder = txBuilder.feeRate(feeRate: feeRate)
             txBuilder = txBuilder.drainWallet()
             
-            
-            if let internalPolicies = try? wallet.policies(keychain: .internal) {
-                let (topID, subID, _, _) = extractTimelockPolicyValues(from: internalPolicies.asString(), hotXfp: nil)
-                
-                if let topID, let subID {
-                    let policyPath: [String: [UInt64]] = [
-                        topID: [1],      // choose the 2-of-2 branch
-                        subID: [0, 1]    // both hot sig + timelock
-                    ]
-                    
-                    txBuilder = txBuilder.policyPath(policyPath: policyPath, keychain: .internal)
-                }
-            }
-            
-            if let externalPolicies = try? wallet.policies(keychain: .external) {
-                let (topID, subID, _, _) = extractTimelockPolicyValues(from: externalPolicies.asString(), hotXfp: nil)
-                
-                if let topID, let subID {
-                    let policyPath: [String: [UInt64]] = [
-                        topID: [1],
-                        subID: [0, 1]
-                    ]
-                    
-                    txBuilder = txBuilder.policyPath(policyPath: policyPath, keychain: .external)
-                }
-            }
+//            if let internalPolicies = try? wallet.policies(keychain: .internal) {
+//                if  internalPolicies.requiresPath() {
+//                    let (topID, subID, _, _) = extractTimelockPolicyValues(from: internalPolicies.asString(), hotXfp: nil)
+//                    
+//                    if let topID, let subID {
+//                        let policyPath: [String: [UInt64]] = [
+//                            topID: [1],
+//                            subID: [0, 1]
+//                        ]
+//                        
+//                        txBuilder = txBuilder.policyPath(policyPath: policyPath, keychain: .internal)
+//                    }
+//                }
+//            }
+//           
+//            if let externalPolicies = try? wallet.policies(keychain: .external) {
+//                if externalPolicies.requiresPath() {
+//                    let (topID, subID, _, _) = extractTimelockPolicyValues(from: externalPolicies.asString(), hotXfp: nil)
+//                    
+//                    if let topID, let subID {
+//                        let policyPath: [String: [UInt64]] = [
+//                            topID: [1],
+//                            subID: [0, 1]
+//                        ]
+//                        
+//                        txBuilder = txBuilder.policyPath(policyPath: policyPath, keychain: .external)
+//                    }
+//                }
+//            }
             
             let psbt = try txBuilder.finish(wallet: wallet)
             
@@ -490,42 +493,77 @@ class WalletLogic {
             
             if fnDesc.isMulti && fnDesc.isP2TR, let descriptor = descriptor {
                 let (dummyPubkey, checksumlessDesc) = try dummyPubkeyAndChecksumLessDesc(descriptor: descriptor)
-                let descriptorString = "tr(\(dummyPubkey),and_v(v:\(checksumlessDesc.scriptPath.replacingOccurrences(of: "*", with: "0")),after(\(timelock))))"
+                let nonRanged = nonRanged(desc: checksumlessDesc.string)
+                let descriptorString = "tr(\(dummyPubkey),and_v(v:\(nonRanged),after(\(timelock))))"
                 #if DEBUG
-                print("timelocked multisig descriptorString: \(descriptorString)")
+                print("timelocked multisig taproot descriptorString: \(descriptorString)")
                 #endif
                 return try fetchTimelockAddressFromDescString(descriptorString: descriptorString, fnWallet: fnWallet)
                 
             } else if fnDesc.isP2TR, let descriptor = descriptor {
-                let (dummyPubkey, checksumlessDesc) = try dummyPubkeyAndChecksumLessDesc(descriptor: descriptor.replacingOccurrences(of: "*", with: "0"))
-                let descriptorString = "tr(\(dummyPubkey),and_v(v:\(checksumlessDesc.string.replacingOccurrences(of: "tr(", with: "pk(")),after(\(timelock))))"
+                let nonRanged = descriptor.replacingOccurrences(of: "*", with: "0")
+                let (dummyPubkey, checksumlessDesc) = try dummyPubkeyAndChecksumLessDesc(descriptor: nonRanged)
+                let trPrefixDesc = checksumlessDesc.string.replacingOccurrences(of: "tr(", with: "pk(")
+                let descriptorString = "tr(\(dummyPubkey),and_v(v:\(trPrefixDesc),after(\(timelock))))"
                 #if DEBUG
-                print("timelocked singlesig descriptorString: \(descriptorString)")
+                print("timelocked single sig taproot descriptorString: \(descriptorString)")
                 #endif
                 return try fetchTimelockAddressFromDescString(descriptorString: descriptorString, fnWallet: fnWallet)
                 
-            /*} else if fnDesc.isP2WPKH, let pubkey = pubkey {
-                let miniscript = "and_v(v:pk(\(pubkey)),after(\(timelock)))"
+            } else if fnDesc.isP2WPKH && !fnDesc.isMulti, let descriptor = descriptor {
+                let processed = processSegwitSingleSigDescForMiniScript(desc: descriptor)
+                let miniscript = "and_v(v:\(processed),after(\(timelock)))"
                 let descriptorString = "wsh(\(miniscript))"
+                #if DEBUG
+                print("timelocked single sig segwit descriptorString: \(descriptorString)")
+                #endif
                 return try fetchTimelockAddressFromDescString(descriptorString: descriptorString, fnWallet: fnWallet)
                 
-            } else if fnDesc.isBIP48, let descriptor = descriptor {
-                let (dummyPubkey, checksumlessDesc) = try dummyPubkeyAndChecksumLessDesc(descriptor: descriptor)
-                let formatted = checksumlessDesc.string.replacingOccurrences(of: "wsh(sortedmulti", with: "multi_a")
-                let descriptorString = "tr(\(dummyPubkey),and_v(v:\(formatted),after(\(timelock))))"
+            } else if fnDesc.isMulti && fnDesc.isP2WPKH, let descriptor = descriptor {
+                let processed = processSegwitMultisigDescForMiniScript(desc: descriptor)
+                let miniScript = "and_v(v:\(processed),after(\(timelock)))"
+                let descriptorString = "wsh(\(miniScript))"
+                #if DEBUG
+                print("timelocked multi sig segwit descriptorString: \(descriptorString)")
+                #endif
+                return try fetchTimelockAddressFromDescString(descriptorString: descriptorString, fnWallet: fnWallet)
                 
-                return try fetchTimelockAddressFromDescString(descriptorString: descriptorString, fnWallet: fnWallet)*/
             } else {
                 throw TimelockedAddressError.unsupportedTimelockFormat
             }
         } catch {
+            #if DEBUG
             print("cath here: \(error.localizedDescription)")
+            #endif
             throw error
         }
     }
     
-    func dummyPubkeyAndChecksumLessDesc(descriptor: String) throws -> (dummyPubkey: String, checksumlessDescriptor: Descriptor) {
-        let checksumless = "\(descriptor.components(separatedBy: "#")[0])"
+    private func checkSumless(desc: String) -> String {
+        return "\(desc.components(separatedBy: "#")[0])"
+    }
+    
+    private func nonRanged(desc: String) -> String {
+        return desc.replacingOccurrences(of: "*", with: "0")
+    }
+    
+    private func processSegwitSingleSigDescForMiniScript(desc: String) -> String {
+        let checksumless = checkSumless(desc: desc)
+        let nonRanged = nonRanged(desc: checksumless)
+        let correctedNestedPrefix = nonRanged.replacingOccurrences(of: "wpkh(", with: "pk(")
+        return correctedNestedPrefix
+    }
+    
+    private func processSegwitMultisigDescForMiniScript(desc: String) -> String {
+        let checksumless = checkSumless(desc: desc)
+        let nonRanged = nonRanged(desc: checksumless)
+        let removedNestedWsh = nonRanged.replacingOccurrences(of: "wsh(", with: "").replacingOccurrences(of: "))", with: ")")
+        let multi = removedNestedWsh.replacingOccurrences(of: "sortedmulti", with: "multi")
+        return multi
+    }
+    
+   private func dummyPubkeyAndChecksumLessDesc(descriptor: String) throws -> (dummyPubkey: String, checksumlessDescriptor: Descriptor) {
+        let checksumless = checkSumless(desc: descriptor)
         let checksumlessDesc = Descriptor(checksumless)
         guard let dummy = try dummyPubKey() else { throw TimelockedAddressError.unableToGenerateDummyPubkey }
         return (dummy, checksumlessDesc)
@@ -548,270 +586,83 @@ class WalletLogic {
         return pk
     }
     
-    func createTimelockedTaprootWalletAndSign(mnemonic: BDKMnemonic, passphrase: String?, network: BDKNetwork, recipientAddress: String, utxo: UTXO) throws -> ((psbt: String, rawTx: String?)){
-                
-        let secretKey = DescriptorSecretKey(
-            network: network,
-            mnemonic: mnemonic,
-            password: passphrase ?? ""
-        )
-        
-        let parentDescStr = Descriptor(utxo.parentDescs![0])
-        
-        var formattedParentDesc = utxo.parentDescs![0].replacingOccurrences(of: "h/", with: "'/")
-        formattedParentDesc = formattedParentDesc.replacingOccurrences(of: "h]", with: "']")
-        
-        var primaryDesc = ""
-        var hotXfp: String?
-        
-        if !parentDescStr.isMulti {
-            // if single sig this will work
-            let derivation = parentDescStr.derivation
-            let derivationPath = try BDKDerivationPath(path: derivation)
-            let derivedKey = try secretKey.derive(path: derivationPath)
-            var xprvOnly = "\(derivedKey.description.split(separator: "]")[1])"
-            xprvOnly = "\(xprvOnly.split(separator: "/")[0])"
-            primaryDesc = "\(formattedParentDesc.replacingOccurrences(of: parentDescStr.accountXpub, with: xprvOnly).split(separator: "#")[0])"
-            hotXfp = parentDescStr.fingerprint
-        } else {
-            // its multi sig
-            print("its multi sig")
-            let scriptPath = parentDescStr.scriptPath
-            // extract the multi_a descriptor
-            var multi_a = scriptPath.replacingOccurrences(of: "and_v(v:", with: "")
-            multi_a = "\(multi_a.split(separator: "#")[0])".replacingOccurrences(of: "))", with: ")")
-            multi_a = "\(multi_a.components(separatedBy: "),after(")[0])"
-            multi_a = multi_a.replacingOccurrences(of: "multi_a", with: "multi")
-            multi_a = "wsh(\(multi_a))"
-            
-            primaryDesc = formattedParentDesc
-            
-            let multi_a_desc = Descriptor(multi_a)
-            for (i, _) in multi_a_desc.derivationArray.enumerated() {
-                let derivation = parentDescStr.derivation
-                let derivationPath = try BDKDerivationPath(path: derivation)
-                let derivedKey = try secretKey.derive(path: derivationPath)
-                var xprvOnly = "\(derivedKey.description.split(separator: "]")[1])"
-                xprvOnly = "\(xprvOnly.split(separator: "/")[0])"
-                
-                if derivedKey.asPublic().description.contains(multi_a_desc.multiSigKeys[i]) {
-                    let hack = Descriptor("tr(\(multi_a_desc.keysWithPath[i]))")
-                    hotXfp = hack.fingerprint
-                    primaryDesc = primaryDesc.replacingOccurrences(of: multi_a_desc.multiSigKeys[i], with: xprvOnly)
-                }
-                
-            }
-            
-            primaryDesc = "\(primaryDesc.split(separator: "#")[0])"
-        }
-        
-        do {
-            var processedDescChangeDesc = primaryDesc.replacingOccurrences(of: "/*", with: "/1/*")
-            processedDescChangeDesc = primaryDesc.replacingOccurrences(of: "/0/0", with: "/1/0")
-            
-            let wallet = try BDKWallet(
-                descriptor: BDKDescriptor(descriptor: primaryDesc, network: network),
-                changeDescriptor: BDKDescriptor(descriptor: processedDescChangeDesc, network: network),
-                network: network,
-                persister: persistor()!
-            )
-                    
-            var txBuilder = TxBuilder()
-            
-            let txid = try Txid.fromString(hex: utxo.txid)
-            let outpoint = OutPoint(txid: txid, vout: UInt32(utxo.vout))
-            let addressInput = try Address(address: utxo.address!, network: network)
-            let script = addressInput.scriptPubkey()
-            let amount = try Amount.fromBtc(btc: utxo.amount)
-            let txOutput = TxOut(value: amount, scriptPubkey: script)
-            wallet.insertTxout(outpoint: outpoint, txout: txOutput)
-            txBuilder = txBuilder.addUtxo(outpoint: outpoint)
-            
-            let recipient = try Address(address: recipientAddress, network: network)
-            let feeRate = try FeeRate.fromSatPerVb(satVb: UInt64(1))
-            
-            let syncRequest = try wallet.startSyncWithRevealedSpks().build()
-            let onionRoot = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion"
-            let baseURL: String
-            
-            switch network {
-            case .testnet: baseURL = "\(onionRoot)/testnet/api/"
-            case .testnet4: baseURL = "\(onionRoot)/testnet4/api/"
-            case .signet: baseURL = "\(onionRoot)/signet/api/"
-            case .regtest:
-                throw CustomError.networkFailed(reason: "Nodeless transaction creation does not work on regtest.")
-            default:
-                baseURL = "\(onionRoot)/api/"
-            }
-            
-            let client = EsploraClient(url: baseURL, proxy: "http://localhost:9080")
-            let sync = try client.sync(request: syncRequest, parallelRequests: 4)
-            try wallet.applyUpdate(update: sync)
-            
-            txBuilder = txBuilder.feeRate(feeRate: feeRate)
-            txBuilder = txBuilder.drainTo(script: recipient.scriptPubkey())
-            txBuilder = txBuilder.manuallySelectedOnly()
-            
-            if let externalPolicies = try? wallet.policies(keychain: .external), let hotXfp = hotXfp {
-                let policyStr = externalPolicies.asString()
-                print("External policy: \(policyStr)")
-                
-                let (topID, subID, timelockTimestamp, _) = extractTimelockPolicyValues(from: policyStr, hotXfp: hotXfp)
-                
-                if let topID, let subID, let timelock = timelockTimestamp {
-                    let policyPath: [String: [UInt64]] = [
-                        topID: [1],
-                        subID: [0, 1]
-                    ]
-                    
-                    txBuilder = txBuilder.policyPath(policyPath: policyPath, keychain: .external)
-                                        
-                    let lockDate = Date(timeIntervalSince1970: TimeInterval(timelock))
-                    let now = Date()
-                    let formatter = DateFormatter()
-                    
-                    if now < lockDate {
-                        formatter.dateStyle = .medium
-                        formatter.timeStyle = .medium
-                        print("Timelock not yet satisfied — expires at \(formatter.string(from: lockDate))")
-                        throw TimelockedSigningError.timelockNotMet
-                    } else {
-                        #if DEBUG
-                        print("Timelock satisfied (expired at \(formatter.string(from: lockDate)))")
-                        #endif
-                    }
-                } else {
-                    #if DEBUG
-                    print("Could not parse policy IDs or timelock value for external keychain")
-                    #endif
-                }
-            }
-            
-            if let internalPolicies = try? wallet.policies(keychain: .internal), let hotXfp = hotXfp {
-                let (topID, subID, timelock, _) = extractTimelockPolicyValues(from: internalPolicies.asString(), hotXfp: hotXfp)
-                
-                #if DEBUG
-                if let timelock {
-                    let date = Date(timeIntervalSince1970: TimeInterval(timelock))
-                    print("Timelock expires: \(date.formattedDate)")
-                }
-                #endif
-                
-                if let topID, let subID {
-                    let policyPath: [String: [UInt64]] = [
-                        topID: [1],
-                        subID: [0, 1]
-                    ]
-                    
-                    txBuilder = txBuilder.policyPath(policyPath: policyPath, keychain: .internal)
-                }
-            }
-            
-            let psbt = try txBuilder.finish(wallet: wallet)
-            
-            let signOptions = SignOptions(
-                trustWitnessUtxo: true,
-                assumeHeight: nil,
-                allowAllSighashes: true,
-                tryFinalize: true,
-                signWithTapInternalKey: false,
-                allowGrinding: true
-            )
-            
-            let didFinalize = try wallet.sign(psbt: psbt, signOptions: signOptions)
-            
-            if didFinalize {
-                let finalTx = try psbt.extractTx()
-                let txHex = finalTx.serialize()
-                return ((psbt: psbt.serialize(), rawTx: txHex.hex))
-                
-            } else {
-                return ((psbt: psbt.serialize(), rawTx: nil))
-            }
-        } catch {
-            #if DEBUG
-            print("catch: \(error.localizedDescription)")
-            #endif
-            throw error
-        }
-    }
     
-    func extractTimelockPolicyValues(from policyString: String?, hotXfp: String?) -> (topID: String?, subID: String?, timelock: UInt64?, hotFingerprint: String?) {
-        guard let policyString,
-              let jsonStart = policyString.range(of: "{")?.lowerBound,
-              let jsonEnd = policyString.range(of: "}", options: .backwards)?.upperBound else {
-            return (nil, nil, nil, nil)
-        }
-        
-        let json = String(policyString[jsonStart..<jsonEnd])
-        guard let data = json.data(using: .utf8) else {
-            return (nil, nil, nil, nil)
-        }
-        
-        do {
-            guard let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                return (nil, nil, nil, nil)
-            }
-            
-            // Top-level THRESH (1-of-2 branches)
-            let topID = jsonObject["id"] as? String
-            
-            guard let items = jsonObject["items"] as? [[String: Any]],
-                  items.count == 2 else {
-                return (topID, nil, nil, nil)
-            }
-            
-            // Look for the inner THRESH (the one with MULTISIG + timelock)
-            var subID: String?
-            var timelockValue: UInt64?
-            var hotFingerprint: String?
-            
-            for item in items {
-                guard let itemType = item["type"] as? String,
-                      itemType == "THRESH",
-                      let itemID = item["id"] as? String,
-                      let itemThreshold = item["threshold"] as? Int,
-                      itemThreshold == 2,
-                      let subItems = item["items"] as? [[String: Any]],
-                      subItems.count == 2 else {
-                    continue
-                }
-                
-                subID = itemID
-                
-                // Now look inside this sub-THRESH's items
-                for sub in subItems {
-                    guard let subType = sub["type"] as? String else { continue }
-                    
-                    if subType == "MULTISIG",
-                       let keys = sub["keys"] as? [[String: Any]] {
-                        let fps = keys.compactMap({ $0["fingerprint"] as? String })
-                        if let hotXfp = hotXfp,
-                            fps.contains(hotXfp) {
-                            hotFingerprint = hotXfp
-                         }
-                    }
-                    else if subType == "ABSOLUTETIMELOCK",
-                            let val = sub["value"] as? UInt64 {
-                        timelockValue = val
-                    }
-                }
-                
-                // We found the interesting branch → can break early
-                if subID != nil && (timelockValue != nil || hotFingerprint != nil) {
-                    break
-                }
-            }
-            
-            return (topID, subID, timelockValue, hotFingerprint)
-            
-        } catch {
-            #if DEBUG
-            print("Policy JSON parse error: \(error)")
-            #endif
-            return (nil, nil, nil, nil)
-        }
-    }
+//    func extractTimelockPolicyValues(from policyString: String?, hotXfp: String?) -> (topID: String?, subID: String?, timelock: UInt64?, hotFingerprint: String?) {
+//        guard let policyString,
+//              let jsonStart = policyString.range(of: "{")?.lowerBound,
+//              let jsonEnd = policyString.range(of: "}", options: .backwards)?.upperBound else {
+//            return (nil, nil, nil, nil)
+//        }
+//        
+//        let json = String(policyString[jsonStart..<jsonEnd])
+//        guard let data = json.data(using: .utf8) else {
+//            return (nil, nil, nil, nil)
+//        }
+//        
+//        do {
+//            guard let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+//                return (nil, nil, nil, nil)
+//            }
+//            
+//            // Top-level THRESH (1-of-2 branches)
+//            let topID = jsonObject["id"] as? String
+//            
+//            guard let items = jsonObject["items"] as? [[String: Any]],
+//                  items.count == 2 else {
+//                return (topID, nil, nil, nil)
+//            }
+//            
+//            // Look for the inner THRESH (the one with MULTISIG + timelock)
+//            var subID: String?
+//            var timelockValue: UInt64?
+//            var hotFingerprint: String?
+//            
+//            for item in items {
+//                guard let itemType = item["type"] as? String,
+//                      itemType == "THRESH",
+//                      let itemID = item["id"] as? String,
+//                      let itemThreshold = item["threshold"] as? Int,
+//                      itemThreshold == 2,
+//                      let subItems = item["items"] as? [[String: Any]],
+//                      subItems.count == 2 else {
+//                    continue
+//                }
+//                
+//                subID = itemID
+//                
+//                // Now look inside this sub-THRESH's items
+//                for sub in subItems {
+//                    guard let subType = sub["type"] as? String else { continue }
+//                    
+//                    if subType == "MULTISIG",
+//                       let keys = sub["keys"] as? [[String: Any]] {
+//                        let fps = keys.compactMap({ $0["fingerprint"] as? String })
+//                        if let hotXfp = hotXfp,
+//                            fps.contains(hotXfp) {
+//                            hotFingerprint = hotXfp
+//                         }
+//                    }
+//                    else if subType == "ABSOLUTETIMELOCK",
+//                            let val = sub["value"] as? UInt64 {
+//                        timelockValue = val
+//                    }
+//                }
+//                
+//                // We found the interesting branch → can break early
+//                if subID != nil && (timelockValue != nil || hotFingerprint != nil) {
+//                    break
+//                }
+//            }
+//            
+//            return (topID, subID, timelockValue, hotFingerprint)
+//            
+//        } catch {
+//            #if DEBUG
+//            print("Policy JSON parse error: \(error)")
+//            #endif
+//            return (nil, nil, nil, nil)
+//        }
+//    }
     
 }
 

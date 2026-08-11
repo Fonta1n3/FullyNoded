@@ -49,7 +49,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
         if let w = wallet {
             let fnDesc = Descriptor(w.receiveDescriptor)
-            if fnDesc.isP2TR {
+            if fnDesc.isP2TR || fnDesc.isP2WPKH {
                 addTimelockOutlet.alpha = 1
             } else {
                 addTimelockOutlet.alpha = 0
