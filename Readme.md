@@ -44,7 +44,7 @@ Want to run a node on your Mac? Download [Fully Noded Server](https://fullynoded
 
 ## PGP
 
-* 297D 3AA6 F231 4CD0 E023  CD9B 7C85 7452 1475 38F5
+* 9E3F 8A38 C100 8D95 FEB9  1D08 0BF9 9EAD 77F9 FFAA
 
 ## License
 
@@ -58,6 +58,7 @@ please contact me at [dentondevelopment@protonmail.com](mailto:dentondevelopment
 The following dependencies are bundled with the Fully Noded®, but are under
 terms of a separate license:
 
+* [bdk-swift](https://github.com/bitcoindevkit/bdk-swift) replacing Libwally for signing PSBTs, local psbt creation/parsing, bip32 key derivation, mini-script functionality, BIP39 mnemonics.
 * [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
 * [Libwally-Swift](https://github.com/Fonta1n3/libwally-swift) which relies on [Libwally-Core v0.7.7](https://github.com/Fonta1n3/libwally-swift/tree/master/CLibWally/libwally-core) for converting cryptographically secure entropy to BIP39 words, deriving HD keys and most importantly signing psbt's.
 * [Base32](https://github.com/norio-nomura/Base32/blob/master/Sources/Base32) built by [@norio-nomura](https://github.com/norio-nomura) - for Tor V3 authentication key encoding which is licensed under The MIT License (MIT).
