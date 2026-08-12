@@ -65,11 +65,20 @@ class WalletLogic {
     func bdkMasterKey(network: BDKNetwork, mnemonic: String, passphrase: String?) -> DescriptorSecretKey? {
         guard let bdkMnemonic = try? Mnemonic.fromString(mnemonic: mnemonic) else { return nil }
         
+        
         return DescriptorSecretKey(
-            network: network,
+            networkKind: networkKind(network: network),
             mnemonic: bdkMnemonic,
             password: passphrase ?? ""
         )
+    }
+    
+    func networkKind(network: Network) -> NetworkKind {
+        switch network {
+        case .bitcoin: return .main
+        default:
+            return .test
+        }
     }
     
     func persistor() -> Persister? {
@@ -89,7 +98,7 @@ class WalletLogic {
                 completion: @escaping ((bdkWallet: BDKWallet?, errorMessage: String?)) -> Void) {
         
         let masterKey = DescriptorSecretKey(
-            network: network,
+            networkKind: networkKind(network: network),
             mnemonic: mnemonic,
             password: passphrase ?? ""
         )
@@ -102,7 +111,7 @@ class WalletLogic {
                 return
             }
                         
-            guard let hotReceiveBDKDescriptor = try? BDKDescriptor(descriptor: hotRecDescString, network: network) else {
+            guard let hotReceiveBDKDescriptor = try? BDKDescriptor(descriptor: hotRecDescString, networkKind: networkKind(network: network)) else {
                 //print("Could not convert hot receive descriptor string to BDKDescriptor.")
                 return
             }
@@ -125,7 +134,7 @@ class WalletLogic {
                 print("hotChangeDescString: \(hotChangeDescString)")
                 #endif
                                 
-                guard let hotChangeBDKDescriptor = try? BDKDescriptor(descriptor: hotChangeDescString, network: network) else {
+                guard let hotChangeBDKDescriptor = try? BDKDescriptor(descriptor: hotChangeDescString, networkKind: networkKind(network: network)) else {
                     //print("Could not convert hot change descriptor string to BDKDescriptor.")
                     return
                 }
@@ -479,8 +488,8 @@ class WalletLogic {
         }
         
         do {
-            let bdkPrimDesc = try WalletLogic.BDKDescriptor(descriptor: recDesc, network: network)
-            let bdkChangeDesc = try WalletLogic.BDKDescriptor(descriptor: changeDesc, network: network)
+            let bdkPrimDesc = try WalletLogic.BDKDescriptor(descriptor: recDesc, networkKind: networkKind(network: network))
+            let bdkChangeDesc = try WalletLogic.BDKDescriptor(descriptor: changeDesc, networkKind: networkKind(network: network))
             return try WalletLogic.BDKWallet(descriptor: bdkPrimDesc, changeDescriptor: bdkChangeDesc, network: network, persister: persister)
         } catch {
             throw error

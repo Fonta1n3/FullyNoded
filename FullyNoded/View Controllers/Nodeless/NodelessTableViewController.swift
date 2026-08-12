@@ -402,13 +402,13 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
             network = .testnet
         }
                 
-        guard let bdkPrimDesc = try? WalletLogic.BDKDescriptor(descriptor: primaryDescriptor, network: network) else {
+        guard let bdkPrimDesc = try? WalletLogic.BDKDescriptor(descriptor: primaryDescriptor, networkKind: WalletLogic.shared.networkKind(network: network)) else {
             spinner.dismiss()
             showAlert(vc: self, title: "", message: "Unable to derive BDK primary descriptor.")
             return
         }
         
-        guard let bdkChangeDesc = try? WalletLogic.BDKDescriptor(descriptor: changeDesc, network: network) else {
+        guard let bdkChangeDesc = try? WalletLogic.BDKDescriptor(descriptor: changeDesc, networkKind: WalletLogic.shared.networkKind(network: network)) else {
             spinner.dismiss()
             showAlert(vc: self, title: "", message: "Unable to derive BDK change descriptor.")
             return
