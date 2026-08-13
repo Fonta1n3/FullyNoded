@@ -19,13 +19,9 @@ class ImportWallet {
         let password = accountMap["password"] as? String ?? ""
         var wallet = [String:Any]()
         var prefix = "FullyNoded"
-        if isColdcard {
-            prefix = "Coldcard"
-        }
         var primDescriptor = accountMap["descriptor"] as! String
         let blockheight = accountMap["blockheight"] as? Int ?? 0
         let label = accountMap["label"] as! String
-        
         wallet["label"] = label
         wallet["id"] = UUID()
         wallet["blockheight"] = Int64(blockheight)
