@@ -24,7 +24,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     var backupFileText = ""
     var exportText = ""
     var textToShow = ""
-    var json = ""
     var showReceive = 0
     var outputDescUr = ""
     var urBytes = ""
@@ -62,7 +61,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //spinner.show(vc: self, description: "loading")
         navigationController?.delegate = self
         detailTable.delegate = self
         detailTable.dataSource = self
@@ -129,26 +127,53 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
         
     private func exportJson() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
+        guard let backup = wallet.walletBackup else { return }
+        do {
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .secondsSince1970
+            let backup = try decoder.decode(WalletBackup.self, from: backup)
             
-            let fileManager = FileManager.default
-            let fileURL = fileManager.temporaryDirectory.appendingPathComponent("\(self.wallet.label).wallet")
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .prettyPrinted
+            encoder.dateEncodingStrategy = .secondsSince1970
             
-            try? self.json.dataUsingUTF8StringEncoding.write(to: fileURL)
+            let jsonData = try encoder.encode(backup).hex.utf8
+            let fileName = "\(backup.lastUpdate.formattedDate).txt"
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+            try jsonData.write(to: tempURL)
             
-            if #available(iOS 14, *) {
-                let controller = UIDocumentPickerViewController(forExporting: [fileURL]) // 5
-                self.present(controller, animated: true)
-            } else {
-                let controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
-                self.present(controller, animated: true)
+            let activityVC = UIActivityViewController(activityItems: [tempURL], applicationActivities: nil)
+            
+            activityVC.excludedActivityTypes = [
+                .addToReadingList,
+                .assignToContact,
+                .markupAsPDF
+            ]
+            
+            if let popover = activityVC.popoverPresentationController {
+                popover.sourceView = self.view
+                popover.sourceRect = self.view.bounds
+                popover.permittedArrowDirections = []
             }
+            
+            activityVC.completionWithItemsHandler = { [weak self] activityType, completed, items, error in
+                try? FileManager.default.removeItem(at: tempURL)
+                
+                if completed {
+                    SuccessView.show(in: self!, title: "Backup Exported", subtitle: "Your wallet backup has been saved.") { }
+                } else if let error = error {
+                    showAlert(title: "Export Failed", message: error.localizedDescription)
+                }
+            }
+            
+            present(activityVC, animated: true)
+            
+        } catch {
+            showAlert(title: "Error", message: "Failed to create backup file: \(error.localizedDescription)")
         }
     }
     
     private func getAddresses() {
-        //spinner.dismiss()
         listDescriptors()
     }
     
@@ -280,15 +305,17 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                             self.coinType = "1"
                         }
                         
-                        guard let json = CreateAccountMap.create(wallet: self.wallet) else {
-                            showAlert(vc: self, title: "", message: "Unable to derive account map.")
-                            return
-                        }
-                        
-                        self.json = json
-                        
                         let generator = QRGenerator()
-                        self.backupText = self.json
+                        guard let backup = wallet.walletBackup else { return }
+                        let encoder = JSONEncoder()
+                        encoder.outputFormatting = [.sortedKeys] // Optional: consistent ordering
+                        encoder.dateEncodingStrategy = .secondsSince1970
+                        do {
+                            let jsonData = try encoder.encode(backup)
+                            self.backupText = jsonData.hexString
+                        } catch {
+                            showAlert(title: " ", message: "Unable to encode backup.")
+                        }
                         
                         guard self.wallet.receiveDescriptor != "" else {
                             showAlert(vc: self, title: "", message: "Unable to get receive descriptor.")
@@ -851,7 +878,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         configureCell(cell)
         
         let textView = cell.viewWithTag(1) as! UITextView
-        textView.text = json
+        textView.text = backupText
         
         let exportButton = cell.viewWithTag(2) as! UIButton
         configureExportButton(exportButton, indexPath: indexPath)
