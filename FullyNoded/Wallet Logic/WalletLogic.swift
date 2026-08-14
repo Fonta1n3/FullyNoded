@@ -510,7 +510,7 @@ class WalletLogic {
                 return try fetchTimelockAddressFromDescString(descriptorString: descriptorString, fnWallet: fnWallet)
                 
             } else if fnDesc.isP2TR, let descriptor = descriptor {
-                let nonRanged = descriptor.replacingOccurrences(of: "*", with: "0")
+                let nonRanged = nonRanged(desc: descriptor)
                 let (dummyPubkey, checksumlessDesc) = try dummyPubkeyAndChecksumLessDesc(descriptor: nonRanged)
                 let trPrefixDesc = checksumlessDesc.string.replacingOccurrences(of: "tr(", with: "pk(")
                 let descriptorString = "tr(\(dummyPubkey),and_v(v:\(trPrefixDesc),after(\(timelock))))"

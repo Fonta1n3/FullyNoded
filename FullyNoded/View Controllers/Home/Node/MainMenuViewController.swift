@@ -790,11 +790,11 @@ class MainMenuViewController: UIViewController {
             guard let self = self else { return }
             
             if mgr?.state == .connected {
-                torStatusLabel.text = "Tor v0.4.8.21 connected ✓"
+                torStatusLabel.text = "Tor v0.4.9.11 connected ✓"
                 torStatusLabel.textColor = .green
                 torStatusLabel.alpha = 1.0
             } else if mgr?.state == .stopped {
-                torStatusLabel.text = "Tor v0.4.8.21 disconnected"
+                torStatusLabel.text = "Tor v0.4.9.11 disconnected"
                 torStatusLabel.textColor = .label
                 torStatusLabel.alpha = 1.0
             }

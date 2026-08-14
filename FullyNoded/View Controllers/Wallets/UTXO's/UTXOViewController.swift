@@ -80,13 +80,14 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 loadUtxos()
                 return
             }
-            
+                        
             allCachedUtxos = utxos
             
             for (i, utxo) in utxos.enumerated() {
                 let utxoStr = UTXO(from: utxo)
                 if let id = utxoStr.walletId, let walletId = wallet?.id {
                     if id == walletId {
+                        // TODO: wallet IDs can change, lets use the descriptors instead.
                         unlockedUtxos.append(utxoStr)
                     }
                 }
