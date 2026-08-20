@@ -556,8 +556,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         
             if Keys.validPsbt(data.base64EncodedString()) {
                 unsignedPsbt = data.base64EncodedString()
+                processPsbt(data.base64EncodedString())
                 self.reset()
-                processPsbt(unsignedPsbt)
             } else if let psbtUtf8 = data.utf8String, Keys.validPsbt(psbtUtf8) {
                 unsignedPsbt = psbtUtf8
                 self.reset()
