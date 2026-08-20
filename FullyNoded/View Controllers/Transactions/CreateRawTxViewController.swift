@@ -69,13 +69,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         } else {
             balanceLabel.text = balance + " btc"
         }
-       
+        
         addTapGesture()
-                
+        
         slider.addTarget(self, action: #selector(setFee), for: .allEvents)
         slider.maximumValue = 2 * -1
         slider.minimumValue = 432 * -1
-                
+        
         if ud.object(forKey: "feeTarget") != nil {
             let numberOfBlocks = ud.object(forKey: "feeTarget") as! Int
             slider.value = Float(numberOfBlocks) * -1
@@ -85,7 +85,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             slider.value = 432 * -1
             ud.set(432, forKey: "feeTarget")
         }
-         
+        
         showFeeSetting()
         
         slider.addTarget(self, action: #selector(didFinishSliding(_:)), for: .valueChanged)
@@ -93,7 +93,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         amountInput.text = ""
         if address != "" {
             addAddress(address)
-        }        
+        }
     }
     
     @IBAction func sendToWalletAction(_ sender: Any) {
@@ -158,7 +158,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         // Temporarily set the active wallet to the wallet we are deriving an address from.
         UserDefaults.standard.set(walletToFetchFrom.name, forKey: "walletName")
         
-        let addressType = Descriptor(walletToFetchFrom.receiveDescriptor).addressType        
+        let addressType = Descriptor(walletToFetchFrom.receiveDescriptor).addressType
         
         let p = Get_New_Address(["address_type": addressType])
         
@@ -271,7 +271,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
         tryRaw()
     }
-        
+    
     private func convertedAmount() -> String? {
         guard let amount = amountInput.text, amount != "" else { return nil }
         
@@ -293,7 +293,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                       message: "You need to fill out a recipient and amount first then tap this button, this button is used for adding multiple recipients aka \"batching\".")
             return
         }
-                
+        
         outputs.append([address.replacingOccurrences(of: "-", with: ""):amount])
         
         DispatchQueue.main.async { [weak self] in
@@ -309,7 +309,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     override func viewDidAppear(_ animated: Bool) {
         if inputs.count > 0 {
-                        
+            
             if let fxRate = fxRate {
                 balanceLabel.text = utxoTotal.btcBalanceWithSpaces + " / " + (fxRate * utxoTotal).fiatString
             } else {
@@ -319,7 +319,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             showAlert(vc: self, title: "Coin control ✓", message: "Only the utxo's you have just selected will be used in this transaction. You may send the total balance of the *selected utxo's* by tapping the \"Send all\" button or enter a custom amount as normal.")
         }
     }
-                
+    
     @IBAction func createPsbt(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "segueToCreatePsbt", sender: vc)
@@ -402,7 +402,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 cell.textLabel?.textColor = .lightGray
             }
         } else {
-           cell.textLabel?.text = ""
+            cell.textLabel?.text = ""
         }
         return cell
     }
@@ -449,7 +449,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         paramDict["outputs"] = [[receivingAddress: "\(utxoTotal)"]]
         paramDict["bip32derivs"] = true
         
-        if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {            
+        if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
             paramDict["options"] = ["includeWatching": true, "replaceable": true, "fee_rate": feeRate, "subtractFeeFromOutputs": [0], "changeAddress": receivingAddress]
         } else {
             paramDict["options"] = ["includeWatching": true, "replaceable": true, "conf_target": ud.object(forKey: "feeTarget") as? Int ?? 432, "subtractFeeFromOutputs": [0], "changeAddress": receivingAddress]
@@ -481,7 +481,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func sweepWallet(_ receivingAddress: String) {
-       standardWalletSweep(receivingAddress)
+        standardWalletSweep(receivingAddress)
     }
     
     private func standardWalletSweep(_ receivingAddress: String) {
@@ -538,7 +538,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             paramDict["options"] = options
             
             let param:Wallet_Create_Funded_Psbt = .init(paramDict)
-                        
+            
             MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletcreatefundedpsbt(param: param)) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
@@ -572,9 +572,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     private func sweep() {
         guard let receivingAddress = addressInput.text,
               receivingAddress != "" else {
-                  showAlert(vc: self, title: "Add an address first", message: "")
-                  return
-              }
+            showAlert(vc: self, title: "Add an address first", message: "")
+            return
+        }
         
         if inputs.count > 0 {
             spinner.show(vc: self, description: "sweeping selected utxo's...")
@@ -629,7 +629,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         addressInput.resignFirstResponder()
         feeRateInputField.resignFirstResponder()
     }
-        
+    
     //MARK: Textfield methods
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
@@ -763,32 +763,28 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     func getRawTx() {
-        
-        func createNow() {
-            CreatePSBT.create(inputs: self.inputs, outputs: self.outputs) { [weak self] (psbt, rawTx, errorMessage) in
-                guard let self = self else { return }
+        CreatePSBT.create(inputs: self.inputs, outputs: self.outputs) { [weak self] (psbt, rawTx, errorMessage) in
+            guard let self = self else { return }
+            
+            self.spinner.dismiss()
+            
+            if let rawTx = rawTx {
+                self.rawTx = rawTx
+                self.showRaw()
                 
-                self.spinner.dismiss()
+            } else if let psbt = psbt {
+                self.psbt = psbt
+                self.showRaw()
                 
-                if let rawTx = rawTx {
-                    self.rawTx = rawTx
-                    self.showRaw()
-                
-                } else if let psbt = psbt {
-                    self.psbt = psbt
-                    self.showRaw()
-                                    
-                } else {
-                    self.outputs.removeAll()
-                    DispatchQueue.main.async {
-                        self.outputsTable.reloadData()
-                    }
-                    
-                    showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error creating transaction")
+            } else {
+                self.outputs.removeAll()
+                DispatchQueue.main.async {
+                    self.outputsTable.reloadData()
                 }
+                
+                showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error creating transaction")
             }
         }
-        createNow()
     }
     
     @IBAction func pasteAddressAction(_ sender: Any) {
