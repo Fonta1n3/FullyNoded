@@ -628,7 +628,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 "active": descriptor.active,
                 "desc": descriptor.desc
             ]
-            
+                        
             if let range = descriptor.range {
                 if range.count == 2 {
                     descriptorDict["range"] = [range[0],range[1]]
@@ -645,6 +645,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             
             if let timestamp = descriptor.timestamp {
                 descriptorDict["timestamp"] = timestamp
+                fnWalletToCreateDict["blockheight"] = approximateHeight(for: Int64(timestamp))
             }
             
             if let nextIndex = descriptor.nextIndex {
@@ -653,7 +654,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             
             descriptorDicts.append(descriptorDict)
             
-            if fnDesc.isHD {
+            if fnDesc.isHD, descriptor.active {
                 if !fnDesc.isInternal {
                     fnWalletToCreateDict["receiveDescriptor"] = descriptor.desc
                     fnWalletToCreateDict["name"] = "FullyNoded-" + Crypto.sha256hash("\(descriptor.desc.split(separator: "#")[0])")
@@ -687,10 +688,10 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 if let descriptorTimestamp = descriptorDict["timestamp"] as? Int,
                    let pruneHeight = pruneHeight {
                     
-                    if !checkPrunehieghtAndTimestamp(descriptorTimestamp: descriptorTimestamp, pruneHeight: pruneHeight) {
+                    if !checkPruneHeightAndTimestamp(descriptorTimestamp: descriptorTimestamp, pruneHeight: pruneHeight) {
                         // Update timestamp to pruneHeight
-                        let estimatedTimetamp = approximateTimestamp(for: pruneHeight)
-                        descriptorDict["timestamp"] = estimatedTimetamp
+                        let estimatedTimestamp = approximateTimestamp(for: pruneHeight)
+                        descriptorDict["timestamp"] = estimatedTimestamp
                         showUpdatedTimestampAlert = true
                     }
                 }
@@ -715,13 +716,13 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
-    func checkPrunehieghtAndTimestamp(descriptorTimestamp: Int, pruneHeight: Int) -> Bool {
+    func checkPruneHeightAndTimestamp(descriptorTimestamp: Int, pruneHeight: Int) -> Bool {
         let target = Int64(descriptorTimestamp - 7_200)
         let estimatedHeight = approximateHeight(for: target)
-        if estimatedHeight < pruneHeight {
-            return false
-        } else {
+        if pruneHeight <= estimatedHeight {
             return true
+        } else {
+            return false
         }
     }
 
