@@ -670,7 +670,8 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func setActiveAndImport(name: String, exists: Bool, backup: WalletBackup, descriptorDicts: [[String: Any]], fnWalletToCreateDict: [String: Any]) {
-       var descriptorDicts_ = descriptorDicts
+        UserDefaults.standard.set(name, forKey: "walletName")
+        var descriptorDicts_ = descriptorDicts
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .getblockchaininfo) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
             guard let response = response as? [String: Any] else { return }
@@ -702,7 +703,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             if exists {
                 processWalletThatExistsOnNode(name: name, exists: exists, backup: backup, descriptorDicts: descriptorDicts_, fnWalletToCreateDict: fnWalletToCreateDict, pruneHeight: pruneHeight, showUpdatedTimestampAlert: showUpdatedTimestampAlert)
             } else {
-                UserDefaults.standard.set(name, forKey: "walletName")
                 // save the local wallet and import the descriptors.
                 CoreDataService.saveEntity(dict: fnWalletToCreateDict, entityName: .wallets) { [weak self] walletRecovered in
                     guard let self = self else { return }
