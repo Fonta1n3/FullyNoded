@@ -246,7 +246,7 @@ class WalletLogic {
     }
     
     private func hotDescriptor(watchOnlyDescriptor: Descriptor, masterKey: DescriptorSecretKey, completion: @escaping((String?)) -> Void) {
-        
+                
         if watchOnlyDescriptor.isP2TR && watchOnlyDescriptor.isTimelocked, !watchOnlyDescriptor.isMulti {
             
             let derivation = watchOnlyDescriptor.derivation
@@ -284,9 +284,8 @@ class WalletLogic {
             defer {
                 hotDescriptor?.secureWipe()
             }
-                        
+                                    
             for (x, _) in watchOnlyDescriptor.multiSigKeys.enumerated() {
-                                
                 guard let path = try? BDKDerivationPath(path: watchOnlyDescriptor.derivationArray[x]) else {
                     return
                 }
