@@ -8,18 +8,19 @@
 
 import UIKit
 
-class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UINavigationControllerDelegate {
+final class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UINavigationControllerDelegate {
     
-    @IBOutlet weak var detailTable: UITableView!
-    var walletId:UUID!
-    var wallet:Wallet!
+    private let detailTable = UITableView(frame: .zero, style: .grouped)
+    
+    var walletId: UUID!
+    var wallet: Wallet!
+    
     let spinner = ConnectingView.shared
     var coinType = "0"
     var addresses = ""
     var originalLabel = ""
     var exportWalletImageCryptoOutput: UIImage!
     var exportWalletImageURBytes: UIImage!
-    var exportWalletImageBBQr: UIImage!
     var backupText = ""
     var backupFileText = ""
     var exportText = ""
@@ -27,16 +28,19 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     var showReceive = 0
     var outputDescUr = ""
     var urBytes = ""
-    var bbqrText = ""
     var outputDescFormat = false
-    var urBytesFormat = false
-    var bbqrFormat = true
+    var urBytesFormat = true
     var externalRange: [Int] = []
     var internalRange: [Int] = []
     var externalNextIndex: Int?
     var internalNextIndex: Int?
     var listdescriptorsResponse: String?
     var alertStyle = UIAlertController.Style.actionSheet
+    var receiveDescActive = false
+    var changeDescActive = false
+    var receiveDescTimestamp: Any = "now"
+    var changeDescTimestamp: Any = "now"
+    
     private var labelField: UITextField!
     private var labelButton: UIButton!
     private var cellHeights = [IndexPath: CGFloat]()
@@ -57,45 +61,133 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         case addressExplorer
     }
     
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = Cypher.bg
+        navigationController?.navigationBar.barStyle = .black
+        navigationController?.navigationBar.tintColor = Cypher.green
+        navigationController?.navigationBar.titleTextAttributes = [
+            .foregroundColor: Cypher.green,
+            .font: Cypher.mono(17, weight: .semibold)
+        ]
+        
+        detailTable.backgroundColor = Cypher.bg
+        detailTable.separatorStyle = .none
+        detailTable.indicatorStyle = .white
+        
+        view.backgroundColor = .systemBackground
+        title = "Wallet"
         
         navigationController?.delegate = self
-        detailTable.delegate = self
-        detailTable.dataSource = self
-        addTapGesture()
-                
-        if (UIDevice.current.userInterfaceIdiom == .pad) {
-          alertStyle = UIAlertController.Style.alert
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            alertStyle = .alert
         }
         
+        configureNavigation()
+        configureTable()
+        addTapGesture()
         load()
     }
     
-    private func nodelessButton(_ x: CGFloat) -> UIButton {
-        let nodelessButton = UIButton()
-        nodelessButton.setTitle("Nodeless", for: .normal)
-        nodelessButton.tintColor = .tintColor
-        nodelessButton.configuration = .tinted()
-        nodelessButton.setTitleColor(.tintColor, for: .normal)
-        nodelessButton.frame = CGRect(x: x, y: 10, width: 100, height: 40)
-        nodelessButton.addTarget(self, action: #selector(nodeless(_:)), for: .touchUpInside)
-        return nodelessButton
+    private func configureNavigation() {
+        let info = UIBarButtonItem(image: UIImage(systemName: "info.circle"), style: .plain, target: self, action: #selector(showGetWalletInfoAction))
+        info.tintColor = Cypher.green
+
+        let delete = UIBarButtonItem(image: UIImage(systemName: "trash"), style: .plain, target: self, action: #selector(deleteWallet))
+        delete.tintColor = Cypher.danger
+
+        let rescan = UIBarButtonItem(title: "RESCAN", style: .plain, target: self, action: #selector(rescanAction))
+        rescan.tintColor = Cypher.green
+        rescan.setTitleTextAttributes([.font: Cypher.mono(13, weight: .semibold)], for: .normal)
+
+        navigationItem.rightBarButtonItems = [delete, rescan, info]
     }
     
-    @objc func nodeless(_ sender: UIButton) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            performSegue(withIdentifier: "segueToNodelessFromWalletDetail", sender: self)
-        }
+    private func configureTable() {
+        detailTable.rowHeight = UITableView.automaticDimension
+        detailTable.estimatedRowHeight = 160
+        detailTable.translatesAutoresizingMaskIntoConstraints = false
+        detailTable.delegate = self
+        detailTable.dataSource = self
+        detailTable.separatorStyle = .none
+        detailTable.register(UITableViewCell.self, forCellReuseIdentifier: "plain")
+        view.addSubview(detailTable)
+        
+        NSLayoutConstraint.activate([
+            detailTable.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            detailTable.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            detailTable.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            detailTable.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+    }
+    
+    // MARK: - Helpers
+
+    private func styledCard(_ views: [UIView], height: CGFloat? = nil) -> UIView {
+        let card = UIView()
+        card.backgroundColor = Cypher.card
+        card.layer.cornerRadius = 2
+        card.layer.borderWidth = 1
+        card.layer.borderColor = Cypher.line.cgColor
+
+        let stack = UIStackView(arrangedSubviews: views)
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 8
+        card.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.topAnchor.constraint(equalTo: card.topAnchor, constant: 8),
+            stack.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 8),
+            stack.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -8),
+            stack.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -8)
+        ])
+        return card
+    }
+    
+    private func makeTextView(_ text: String, editable: Bool = false) -> UITextView {
+        let tv = UITextView()
+        tv.isEditable = editable
+        tv.font = Cypher.mono(12)
+        tv.textColor = Cypher.text
+        tv.backgroundColor = .clear
+        tv.tintColor = Cypher.green
+        tv.text = text
+        return tv
+    }
+
+    private func makeExportButton() -> UIButton {
+        let button = UIButton(type: .system)
+        button.setTitle("EXPORT", for: .normal)
+        button.titleLabel?.font = Cypher.mono(12, weight: .semibold)
+        button.setTitleColor(Cypher.bg, for: .normal)
+        button.backgroundColor = Cypher.green
+        button.layer.cornerRadius = 2
+        button.addTarget(self, action: #selector(exportButtonAction(_:)), for: .touchUpInside)
+        return button
+    }
+    
+    private func nodelessButton() -> UIButton {
+        let button = UIButton(type: .system)
+        button.setTitle("Nodeless", for: .normal)
+        button.tintColor = .tintColor
+        button.configuration = .tinted()
+        button.setTitleColor(.tintColor, for: .normal)
+        button.addTarget(self, action: #selector(nodeless(_:)), for: .touchUpInside)
+        return button
+    }
+    
+    @objc private func nodeless(_ sender: UIButton) {
+        let vc = NodelessTableViewController()
+        vc.primaryDescriptor = wallet.receiveDescriptor
+        vc.changeDescriptor = wallet.changeDescriptor
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     private func showModal(data: [String: Any], title: String) {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
+            guard let self else { return }
             let modalVC = TextModalViewController(data: data, viewTitle: title)
             let nav = UINavigationController(rootViewController: modalVC)
             nav.modalPresentationStyle = .fullScreen
@@ -104,70 +196,75 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         }
     }
     
-    @IBAction func showGetWalletInfoAction(_ sender: Any) {
+    @objc func showGetWalletInfoAction() {
         spinner.show(vc: self, description: "Getting wallet info...")
-        
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getwalletinfo) { [weak self] (response, errorDesc) in
-            guard let self = self else { return }
-            
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getwalletinfo) { [weak self] response, errorDesc in
+            guard let self else { return }
             spinner.dismiss()
-            
             guard let response = response as? [String: Any] else {
                 showAlert(vc: self, title: "", message: "No response from getwalletinfo.")
                 return
             }
-            
             showModal(data: response, title: "getwalletinfo")
         }
-        
     }
     
-    @IBAction func rescanAction(_ sender: Any) {
+    @objc func rescanAction() {
         promptToRescan()
     }
-        
+    
     private func exportJson() {
-        guard let backup = wallet.walletBackup else { return }
+        guard !backupText.isEmpty else {
+            showAlert(title: "Error", message: "No backup data to export.")
+            return
+        }
+
+        let rawName = wallet.label.isEmpty ? wallet.name : wallet.label
+        let safeName = rawName
+            .replacingOccurrences(of: "/", with: "-")
+            .replacingOccurrences(of: ":", with: "-")
+            .replacingOccurrences(of: " ", with: "-")
+        let fileName = "\(safeName)-wallet-backup.txt"
+
+        let dir = FileManager.default.temporaryDirectory
+        let tempURL = dir.appendingPathComponent(fileName, isDirectory: false)
+
         do {
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .secondsSince1970
-            let backup = try decoder.decode(WalletBackup.self, from: backup)
-            
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = .prettyPrinted
-            encoder.dateEncodingStrategy = .secondsSince1970
-            
-            let jsonData = try encoder.encode(backup).hex.utf8
-            let fileName = "\(backup.lastUpdate.formattedDate).txt"
-            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
-            try jsonData.write(to: tempURL)
-            
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            if FileManager.default.fileExists(atPath: tempURL.path) {
+                try FileManager.default.removeItem(at: tempURL)
+            }
+
+            guard let data = backupText.data(using: .utf8) else {
+                showAlert(title: "Error", message: "Failed to encode backup hex.")
+                return
+            }
+
+            try data.write(to: tempURL, options: .atomic)
+
             let activityVC = UIActivityViewController(activityItems: [tempURL], applicationActivities: nil)
-            
             activityVC.excludedActivityTypes = [
                 .addToReadingList,
                 .assignToContact,
                 .markupAsPDF
             ]
-            
+
             if let popover = activityVC.popoverPresentationController {
-                popover.sourceView = self.view
-                popover.sourceRect = self.view.bounds
+                popover.sourceView = view
+                popover.sourceRect = view.bounds
                 popover.permittedArrowDirections = []
             }
-            
-            activityVC.completionWithItemsHandler = { [weak self] activityType, completed, items, error in
+
+            activityVC.completionWithItemsHandler = { [weak self] _, completed, _, error in
                 try? FileManager.default.removeItem(at: tempURL)
-                
                 if completed {
                     SuccessView.show(in: self!, title: "Backup Exported", subtitle: "Your wallet backup has been saved.") { }
-                } else if let error = error {
+                } else if let error {
                     showAlert(title: "Export Failed", message: error.localizedDescription)
                 }
             }
-            
+
             present(activityVC, animated: true)
-            
         } catch {
             showAlert(title: "Error", message: "Failed to create backup file: \(error.localizedDescription)")
         }
@@ -178,33 +275,29 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func deriveAddresses(_ descriptor: String) {
-        let p:Get_Descriptor_Info = .init(["descriptor": descriptor])
-        OnchainUtils.getDescriptorInfo(p) { [weak self] (descriptorInfo, message) in
-            guard let self = self else { return }
-            
-            guard let descriptorInfo = descriptorInfo else {
+        let p: Get_Descriptor_Info = .init(["descriptor": descriptor])
+        OnchainUtils.getDescriptorInfo(p) { [weak self] descriptorInfo, message in
+            guard let self else { return }
+            guard let descriptorInfo else {
                 spinner.dismiss()
                 showAlert(vc: self, title: "", message: message ?? "Can not get descriptorinfo.")
                 return
             }
-            
             let desc = descriptorInfo.descriptor
-            var range = self.externalRange
-            
+            var range = externalRange
             if descriptor == wallet.changeDescriptor {
-                range = self.internalRange
+                range = internalRange
             }
-            
             let param: Derive_Addresses = .init(["descriptor": desc, "range": range])
-            OnchainUtils.deriveAddresses(param: param) { [weak self] (response, message) in
-                guard let self = self else { return }
+            OnchainUtils.deriveAddresses(param: param) { [weak self] response, message in
+                guard let self else { return }
                 spinner.dismiss()
                 if let addr = response as? NSArray {
                     for (i, address) in addr.enumerated() {
-                        self.addresses += "#\(i): \(address)\n\n"
+                        addresses += "#\(i): \(address)\n\n"
                         if i + 1 == addr.count {
-                            DispatchQueue.main.async { [weak self] in
-                                self?.detailTable.reloadSections(IndexSet(arrayLiteral: Section.addressExplorer.rawValue), with: .none)
+                            DispatchQueue.main.async {
+                                self.detailTable.reloadSections(IndexSet(integer: Section.addressExplorer.rawValue), with: .none)
                             }
                         }
                     }
@@ -217,307 +310,237 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private func prettyPrintedJSON(from data: Data) -> String? {
         guard let jsonObject = try? JSONSerialization.jsonObject(with: data),
-                let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted, .sortedKeys]),
-              var prettyString = String(data: prettyData, encoding: .utf8) else {
+              let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted, .sortedKeys]),
+              let prettyString = String(data: prettyData, encoding: .utf8) else {
             return nil
         }
-        prettyString = prettyString.replacingOccurrences(of: "\\/", with: "/")
-        return prettyString
+        return prettyString.replacingOccurrences(of: "\\/", with: "/")
     }
     
-    
     private func listDescriptors() {
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors) { [weak self] (response, errorDesc) in
-            guard let self = self else { return }
-            
-            guard let response = response else {
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors) { [weak self] response, errorDesc in
+            guard let self else { return }
+            guard let response else {
                 showAlert(vc: self, title: "", message: errorDesc ?? "No response from listdescriptors.")
                 return
             }
-                        
             do {
                 let jsonData = try JSONSerialization.data(withJSONObject: response, options: [])
                 let listDescriptorResponse = try JSONDecoder().decode(ListDescriptorsResponse.self, from: jsonData)
+                listdescriptorsResponse = prettyPrintedJSON(from: jsonData)
                 
-                self.listdescriptorsResponse = prettyPrintedJSON(from: jsonData)
-                                    
                 for descriptor in listDescriptorResponse.descriptors {
                     if descriptor.desc == wallet.receiveDescriptor, let range = descriptor.range, let nextExternal = descriptor.nextIndex {
-                        self.externalRange = range
-                        self.externalNextIndex = nextExternal
+                        externalRange = range
+                        externalNextIndex = nextExternal
+                        receiveDescActive = descriptor.active
+                        receiveDescTimestamp = descriptor.timestamp ?? "now"
                     }
-                    
                     if descriptor.desc == wallet.changeDescriptor, let range = descriptor.range, let nextInternal = descriptor.nextIndex {
-                        self.internalRange = range
-                        self.internalNextIndex = nextInternal
+                        internalRange = range
+                        internalNextIndex = nextInternal
+                        changeDescActive = descriptor.active
+                        changeDescTimestamp = descriptor.timestamp ?? "now"
                     }
                 }
                 
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    detailTable.reloadSections(IndexSet(arrayLiteral: Section.externalRange.rawValue), with: .none)
-                    detailTable.reloadSections(IndexSet(arrayLiteral: Section.internalRange.rawValue), with: .none)
-                    detailTable.reloadSections(IndexSet(arrayLiteral: Section.nextIndexExternal.rawValue), with: .none)
-                    detailTable.reloadSections(IndexSet(arrayLiteral: Section.nextIndexInternal.rawValue), with: .none)
-                    detailTable.reloadSections(IndexSet(arrayLiteral: Section.listdescriptors.rawValue), with: .none)
+                DispatchQueue.main.async {
+                    let sections: [Section] = [.externalRange, .internalRange, .nextIndexExternal, .nextIndexInternal, .listdescriptors]
+                    self.detailTable.reloadSections(IndexSet(sections.map(\.rawValue)), with: .none)
                 }
-                
             } catch {
                 showAlert(vc: self, title: "", message: error.localizedDescription)
             }
-            
             deriveAddresses(wallet.receiveDescriptor)
         }
     }
     
     private func addTapGesture() {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
-        tapGesture.numberOfTapsRequired = 1
-        self.view.addGestureRecognizer(tapGesture)
-        self.detailTable.addGestureRecognizer(tapGesture)
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard(_:)))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
-        if sender.state == .ended {
-            view.endEditing(true)
-        }
-        
-        sender.cancelsTouchesInView = false
+        view.endEditing(true)
     }
     
-    @IBAction func deleteWallet(_ sender: Any) {
+    @objc func deleteWallet() {
         promptToDeleteWallet()
     }
-    
+        
     private func load() {
         CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] wallets in
-            guard let self = self, let wallets = wallets, wallets.count > 0 else { return }
-            
+            guard let self, let wallets else { return }
+
             for w in wallets {
-                if w["id"] != nil {
-                    let walletStruct = Wallet(dictionary: w)
-                    if walletStruct.id == self.walletId {
-                        self.wallet = walletStruct
-                        
-                        if self.wallet.receiveDescriptor.contains("xpub") || self.wallet.receiveDescriptor.contains("xprv") {
-                            self.coinType = "0"
-                        } else {
-                            self.coinType = "1"
-                        }
-                        
-                        let generator = QRGenerator()
-                        guard let backup = wallet.walletBackup else { return }
-                        let encoder = JSONEncoder()
-                        encoder.outputFormatting = [.sortedKeys] // Optional: consistent ordering
-                        encoder.dateEncodingStrategy = .secondsSince1970
-                        do {
-                            let jsonData = try encoder.encode(backup)
-                            self.backupText = jsonData.hexString
-                        } catch {
-                            showAlert(title: " ", message: "Unable to encode backup.")
-                        }
-                        
-                        guard self.wallet.receiveDescriptor != "" else {
-                            showAlert(vc: self, title: "", message: "Unable to get receive descriptor.")
-                            return
-                        }
-                        
-                        if !wallet.receiveDescriptor.contains("sortedmulti_a"), let urOutput = URHelper.descriptorToUrOutput(Descriptor(self.wallet.receiveDescriptor)) {
-                            generator.qrText = urOutput.uppercased()
-                            self.outputDescUr = urOutput.uppercased()
-                            self.exportWalletImageCryptoOutput = generator.getQRCode()
-                        }
-                                                
-                        let receiveDescriptor = Descriptor(walletStruct.receiveDescriptor)
-                        var keysText = ""
-                        var deriv = ""
-                        
-                        if receiveDescriptor.isMulti {
-                            let xfpArray = xfpArray(xfpString: receiveDescriptor.fingerprint)
-                            
-                            for (i, key) in receiveDescriptor.multiSigKeys.enumerated() {
-                                keysText += "\(xfpArray[i].condenseWhitespace()):\(key)\n\n"
-                            }
-                            
-                            let multisigDervArr = receiveDescriptor.derivationArray
-                            let allItemsEqual = multisigDervArr.dropLast().allSatisfy { $0 == multisigDervArr.last }
-                            
-                            if allItemsEqual {
-                                deriv = multisigDervArr[0]
-                            } else {
-                                deriv = "Multiple derivations!"
-                            }
-                        } else {
-                            keysText = receiveDescriptor.fingerprint + ":" + receiveDescriptor.accountXpub
-                            deriv = receiveDescriptor.derivation
-                        }
-                        
-                        backupFileText = """
-                        Name: \(wallet.label)
-                        Policy: \(receiveDescriptor.mOfNType)
-                        Derivation: \(deriv)
-                        Format: \(receiveDescriptor.format)
-                        
-                        \(keysText)
-                        """
-                        
-                        guard let urBytesCheck = URHelper.dataToUrBytes(backupFileText.utf8) else {
-                            showAlert(vc: self, title: "Error", message: "Unable to convert the text into a UR.")
-                            return
-                        }
-                        
-                        urBytes = urBytesCheck.qrString
-                        generator.qrText = urBytes
-                        self.exportWalletImageURBytes = generator.getQRCode()
-                        
-                        bbqrText = wallet.receiveDescriptor
-                        generator.qrText = bbqrText
-                        exportWalletImageBBQr = generator.getQRCode()
-                        
-                        DispatchQueue.main.async { [weak self] in
-                            guard let self = self else {
-                                return
-                            }
-                            
-                            detailTable.reloadData()
-                        }
-                        
-                        self.getAddresses()
-                    }
+                guard w["id"] != nil else { continue }
+                let walletStruct = Wallet(dictionary: w)
+                guard walletStruct.id == walletId else { continue }
+
+                applyLocalWallet(walletStruct)
+
+                DispatchQueue.main.async {
+                    self.detailTable.reloadData()
                 }
+
+                self.getAddresses()
+                return
             }
         }
     }
     
-    private func xfpArray(xfpString: String) -> [String] {
-        var fingerprintsString = xfpString
-        fingerprintsString = fingerprintsString.replacingOccurrences(of: "[", with: "")
-        fingerprintsString = fingerprintsString.replacingOccurrences(of: "]", with: "")
-        return fingerprintsString.components(separatedBy: ",")
+    private func applyLocalWallet(_ walletStruct: Wallet) {
+        wallet = walletStruct
+        originalLabel = wallet.label
+
+        coinType = (wallet.receiveDescriptor.contains("xpub") || wallet.receiveDescriptor.contains("xprv")) ? "0" : "1"
+
+        if let backup = wallet.walletBackup {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.sortedKeys]
+            encoder.dateEncodingStrategy = .secondsSince1970
+            if let jsonData = try? encoder.encode(backup) {
+                backupText = jsonData.hexString
+            }
+        }
+
+        let receiveDescriptor = Descriptor(walletStruct.receiveDescriptor)
+        var keysText = ""
+        var deriv = ""
+
+        if receiveDescriptor.isMulti {
+            let xfpArr = xfpArray(xfpString: receiveDescriptor.fingerprint)
+            for (i, key) in receiveDescriptor.multiSigKeys.enumerated() {
+                keysText += "\(xfpArr[i].condenseWhitespace()):\(key)\n\n"
+            }
+            let dervs = receiveDescriptor.derivationArray
+            let allEqual = dervs.dropLast().allSatisfy { $0 == dervs.last }
+            deriv = allEqual ? (dervs.first ?? "") : "Multiple derivations!"
+        } else if !wallet.receiveDescriptor.isEmpty {
+            keysText = receiveDescriptor.fingerprint + ":" + receiveDescriptor.accountXpub
+            deriv = receiveDescriptor.derivation
+        }
+
+        backupFileText = """
+        Name: \(wallet.label)
+        Policy: \(receiveDescriptor.mOfNType)
+        Derivation: \(deriv)
+        Format: \(receiveDescriptor.format)
+
+        \(keysText)
+        """
+
+        let generator = QRGenerator()
+
+        if !wallet.receiveDescriptor.contains("sortedmulti_a"),
+           let urOutput = URHelper.descriptorToUrOutput(Descriptor(wallet.receiveDescriptor)) {
+            outputDescUr = urOutput.uppercased()
+            generator.qrText = outputDescUr
+            exportWalletImageCryptoOutput = generator.getQRCode()
+        }
+
+        if let urBytesCheck = URHelper.dataToUrBytes(backupFileText.utf8) {
+            urBytes = urBytesCheck.qrString
+            generator.qrText = urBytes
+            exportWalletImageURBytes = generator.getQRCode()
+        }
     }
     
-    private func accountXpub() -> String {
-        if wallet.receiveDescriptor != "" {
-            let desc = wallet.receiveDescriptor
-            let arr = desc.split(separator: "]")
-            let xpubWithPath = "\(arr[1])"
-            let arr2 = xpubWithPath.split(separator: "/")
-            return "\(arr2[0])"
-        } else {
-            return ""
-        }
+    private func xfpArray(xfpString: String) -> [String] {
+        xfpString
+            .replacingOccurrences(of: "[", with: "")
+            .replacingOccurrences(of: "]", with: "")
+            .components(separatedBy: ",")
     }
     
     private func promptToDeleteWallet() {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
+            guard let self else { return }
             let message = "Removing the wallet hides it from your \"Fully Noded Wallets\". The wallet will still exist on your node and be accessed via the \"Wallet Manager\" or via bitcoin-cli and bitcoin-qt. In order to completely delete the wallet you need to find the \"Filename\" as listed above on your nodes machine in the .bitcoin directory and manually delete it there."
-            
-            let alert = UIAlertController(title: "Remove this wallet?", message: message, preferredStyle: self.alertStyle)
-            
-            alert.addAction(UIAlertAction(title: "Remove", style: .destructive, handler: { [weak self] action in
+            let alert = UIAlertController(title: "Remove this wallet?", message: message, preferredStyle: alertStyle)
+            alert.addAction(UIAlertAction(title: "Remove", style: .destructive) { [weak self] _ in
                 self?.deleteNow()
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true, completion: nil)
+            })
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            alert.popoverPresentationController?.sourceView = view
+            present(alert, animated: true)
         }
     }
     
     private func deleteNow() {
         CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] utxos in
-            guard let self = self else { return }
-            guard let utxos = utxos else { return }
+            guard let self, let utxos else { return }
             for utxo in utxos {
                 let utxoStr = UTXO(from: utxo)
                 if utxoStr.walletId == walletId, let utxoId = utxoStr.id {
-                    CoreDataService.deleteEntity(id: utxoId, entityName: .utxos) { deleted in }
+                    CoreDataService.deleteEntity(id: utxoId, entityName: .utxos) { _ in }
                 }
             }
         }
-        
-        CoreDataService.deleteEntity(id: walletId, entityName: .wallets) { [unowned vc = self] success in
+        CoreDataService.deleteEntity(id: walletId, entityName: .wallets) { [weak self] success in
+            guard let self else { return }
             if success {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.walletDeleted()
-                    if vc.wallet.name == UserDefaults.standard.object(forKey: "walletName") as? String {
+                DispatchQueue.main.async {
+                    self.walletDeleted()
+                    if self.wallet.name == UserDefaults.standard.object(forKey: "walletName") as? String {
                         UserDefaults.standard.removeObject(forKey: "walletName")
-                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                        NotificationCenter.default.post(name: .refreshWallet, object: nil)
                     }
                 }
             } else {
-                showAlert(vc: vc, title: "Error", message: "We had an error deleting your wallet.")
+                showAlert(vc: self, title: "Error", message: "We had an error deleting your wallet.")
             }
         }
     }
     
     private func walletDeleted() {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let alert = UIAlertController(title: "Fully Noded wallet removed", message: "It will no longer appear in your list of \"Fully Noded Wallets\".", preferredStyle: self.alertStyle)
-            
-            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
-                DispatchQueue.main.async { [weak self] in
-                    self?.navigationController?.popToRootViewController(animated: true)
-                }
-            }))
-            
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true, completion: nil)
+            guard let self else { return }
+            let alert = UIAlertController(title: "Fully Noded wallet removed", message: "It will no longer appear in your list of \"Fully Noded Wallets\".", preferredStyle: alertStyle)
+            alert.addAction(UIAlertAction(title: "Done", style: .cancel) { [weak self] _ in
+                self?.navigationController?.popToRootViewController(animated: true)
+            })
+            alert.popoverPresentationController?.sourceView = view
+            present(alert, animated: true)
         }
     }
     
     private func updateLabel(_ newLabel: String) {
         CoreDataService.update(id: walletId, keyToUpdate: "label", newValue: newLabel, entity: .wallets) { [weak self] success in
-            guard let self = self else { return }
-            
+            guard let self else { return }
             guard success else {
                 showAlert(vc: self, title: "", message: "There was an error saving your new wallet label.")
                 return
             }
-            
-            if UserDefaults.standard.object(forKey: "walletName") as? String == self.wallet.name {
+            if UserDefaults.standard.object(forKey: "walletName") as? String == wallet.name {
                 activeWallet { wallet in
-                    guard let wallet = wallet else { return }
-                    
+                    guard let wallet else { return }
                     self.wallet = wallet
                 }
-                
                 DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .updateWalletLabel, object: nil, userInfo: nil)
+                    NotificationCenter.default.post(name: .updateWalletLabel, object: nil)
                 }
             } else {
-                // its not the current active wallet
-                self.updateLocalWallet()
+                updateLocalWallet()
             }
-            
             showAlert(vc: self, title: "", message: "Wallet label updated ✓")
         }
     }
     
     private func updateLocalWallet() {
         CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] wallets in
-            guard let self = self, let wallets = wallets, wallets.count > 0 else { return }
-            
-            for w in wallets {
-                if w["id"] != nil {
-                    let str = Wallet(dictionary: w)
-                    if str.id == self.walletId {
-                        self.wallet = str
-                    }
-                }
+            guard let self, let wallets else { return }
+            for w in wallets where w["id"] != nil {
+                let str = Wallet(dictionary: w)
+                if str.id == walletId { wallet = str }
             }
         }
     }
     
     @objc func updateLabelAction() {
         disableLabelField()
-        
         guard let newLabel = labelField.text, newLabel != "" else { return }
-        
         updateLabel(newLabel)
     }
     
@@ -543,120 +566,61 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private func exportItem(_ item: Any) {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let activityViewController = UIActivityViewController(activityItems: [item], applicationActivities: nil)
-            
+            guard let self else { return }
+            let activity = UIActivityViewController(activityItems: [item], applicationActivities: nil)
             if UIDevice.current.userInterfaceIdiom == .pad {
-                activityViewController.popoverPresentationController?.sourceView = self.view
-                activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+                activity.popoverPresentationController?.sourceView = view
+                activity.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
             }
-            
-            self.present(activityViewController, animated: true) {}
+            present(activity, animated: true)
         }
     }
     
     @objc func chooseExportFormatButtonAction(_ sender: UIButton) {
-        guard let sectionString = sender.restorationIdentifier, let section = Int(sectionString) else { return }
-        
-        switch Section(rawValue: section) {
-        case .walletExport:
-            if outputDescFormat {
-                outputDescFormat = false
-                bbqrFormat = false
-                urBytesFormat = true
-            } else if urBytesFormat {
-                urBytesFormat = false
-                bbqrFormat = true
-                outputDescFormat = false
-            } else {
-                outputDescFormat = true
-                bbqrFormat = false
-                urBytesFormat = false
-            }
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                detailTable.reloadSections(IndexSet(integer: Section.walletExport.rawValue), with: .fade)
-            }
-            
-        default:
-            break
+        urBytesFormat.toggle()
+        outputDescFormat = !urBytesFormat
+
+        DispatchQueue.main.async {
+            self.detailTable.reloadSections(IndexSet(integer: Section.walletExport.rawValue), with: .fade)
         }
     }
     
     @objc func enlargeButtonAction(_ sender: UIButton) {
-        guard let sectionString = sender.restorationIdentifier, let section = Int(sectionString) else { return }
-        
-        switch Section(rawValue: section) {
-        case .walletExport:
-            textToShow = exportText
-            showQr()
-            
-        default:
-            break
-        }
+        textToShow = exportText
+        showQr()
     }
     
-    
     @objc func exportButtonAction(_ sender: UIButton) {
-        guard let sectionString = sender.restorationIdentifier, let section = Int(sectionString) else { return }
-        
-        switch Section(rawValue: section) {
-        case .filename:
-            exportItem(wallet.name)
-            
-        case .listdescriptors:
-            exportItem(listdescriptorsResponse as Any)
-            
+        guard let section = Section(rawValue: sender.tag) else { return }
+        switch section {
+        case .backupText: exportItem(backupFileText)
+        case .filename: exportItem(wallet.name)
+        case .listdescriptors: exportItem(listdescriptorsResponse as Any)
         case .walletExport:
             if outputDescFormat {
                 exportItem(exportWalletImageCryptoOutput as Any)
-            }
-            
-            if urBytesFormat {
+            } else {
                 exportItem(exportWalletImageURBytes as Any)
             }
-            
-            if bbqrFormat {
-                exportItem(exportWalletImageBBQr as Any)
-            }
-            
-        case .exportFile:
-            exportJson()
-            
-        case .receiveDesc:
-            exportItem(wallet.receiveDescriptor)
-            
-        case .changeDesc:
-            exportItem(wallet.changeDescriptor)
-            
-        case .addressExplorer:
-            exportItem(addresses)
-            
-        default:
-            break
+        case .exportFile: exportJson()
+        case .receiveDesc: exportItem(wallet.receiveDescriptor)
+        case .changeDesc: exportItem(wallet.changeDescriptor)
+        case .addressExplorer: exportItem(addresses)
+        default: break
         }
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
-        
-        guard let sectionString = textField.restorationIdentifier, let section = Int(sectionString) else { return true }
-        
-        switch Section(rawValue: section) {
-        case .label:
-            updateLabelAction()
-            
-        default:
-            break
-        }
-        
+        if textField === labelField { updateLabelAction() }
         return true
     }
     
     private func showQr() {
+        //let vc = QRDisplayerViewController()
+        
+        //navigationController?.pushViewController(vc, animated: true)
+        
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -664,371 +628,584 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         }
     }
     
+    // MARK: - Table
+    
+    func numberOfSections(in tableView: UITableView) -> Int { Section.allCases.count }
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { 1 }
+    
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         cellHeights[indexPath] = cell.frame.size.height
     }
-
+    
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-        return cellHeights[indexPath] ?? UITableView.automaticDimension
-    }
-    
-    private func listDescriptorsCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailAdressesCell", for: indexPath)
-        configureCell(cell)
-        
-        let textView = cell.viewWithTag(1) as! UITextView
-        
-        if let listdescriptorsRespone = listdescriptorsResponse {
-            textView.text = listdescriptorsResponse
-        } else {
-            textView.text = "fetching addresses from your node..."
-        }
-        
-        let exportButton = cell.viewWithTag(2) as! UIButton
-        configureExportButton(exportButton, indexPath: indexPath)
-        
-        let segmentedControl = cell.viewWithTag(3) as! UISegmentedControl
-        segmentedControl.alpha = 0
-        
-        return cell
-    }
-    
-    private func labelCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailLabelCell", for: indexPath)
-        configureCell(cell)
-        
-        labelField = (cell.viewWithTag(1) as! UITextField)
-        labelField.layer.borderColor = UIColor.clear.cgColor
-        labelField.text = wallet.label
-        labelField.isUserInteractionEnabled = false
-        labelField.returnKeyType = .done
-        labelField.delegate = self
-        labelField.restorationIdentifier = "\(indexPath.section)"
-        
-        labelButton = (cell.viewWithTag(2) as! UIButton)
-        labelButton.addTarget(self, action: #selector(startEditingLabel), for: .touchUpInside)
-        
-        return cell
-    }
-    
-    private func backupTextCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = detailTable.dequeueReusableCell(withIdentifier: "backupTextCell", for: indexPath)
-        configureCell(cell)
-        
-        let textView = cell.viewWithTag(1) as! UITextView
-        textView.text = backupFileText
-        
-        return cell
-    }
-    
-    private func filenameCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailFilenameCell", for: indexPath)
-        configureCell(cell)
-        
-        let label = cell.viewWithTag(1) as! UILabel
-        label.text = "  " + wallet.name + ".dat"
-        
-        let exportButton = cell.viewWithTag(2) as! UIButton
-        configureExportButton(exportButton, indexPath: indexPath)
-        
-        return cell
-    }
-    
-    private func recDescCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailReceiveDescCell", for: indexPath)
-        configureCell(cell)
-        
-        let textView = cell.viewWithTag(1) as! UITextView
-        textView.text = wallet.receiveDescriptor
-        
-        let exportButton = cell.viewWithTag(2) as! UIButton
-        configureExportButton(exportButton, indexPath: indexPath)
-        
-        return cell
-    }
-    
-    private func changeDescCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailChangeDescCell", for: indexPath)
-        configureCell(cell)
-        
-        let textView = cell.viewWithTag(1) as! UITextView
-        textView.text = wallet.changeDescriptor
-        
-        let exportButton = cell.viewWithTag(2) as! UIButton
-        configureExportButton(exportButton, indexPath: indexPath)
-        
-        return cell
-    }
-    
-    private func externalRangeCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailCurrentIndexCell", for: indexPath)
-        configureCell(cell)
-        
-        let field = cell.viewWithTag(1) as! UITextField
-        field.text = "\(externalRange)"
-        field.layer.borderColor = UIColor.clear.cgColor
-        
-        return cell
-    }
-    
-    private func internalRangeCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailCurrentIndexCell", for: indexPath)
-        configureCell(cell)
-        
-        let field = cell.viewWithTag(1) as! UITextField
-        field.text = "\(internalRange)"
-        field.layer.borderColor = UIColor.clear.cgColor
-        
-        return cell
-    }
-    
-    private func nextExternalIndexCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailMaxIndexCell", for: indexPath)
-        configureCell(cell)
-        
-        let field = cell.viewWithTag(1) as! UITextField
-        if let externalNextIndex = self.externalNextIndex {
-            field.text = "\(externalNextIndex)"
-        }
-        field.isUserInteractionEnabled = false
-        field.layer.borderColor = UIColor.clear.cgColor
-        
-        return cell
-    }
-    
-    private func nextInternalIndexCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailMaxIndexCell", for: indexPath)
-        configureCell(cell)
-        
-        let field = cell.viewWithTag(1) as! UITextField
-        if let internalNextIndex = self.internalNextIndex {
-            field.text = "\(internalNextIndex)"
-        }
-        field.isUserInteractionEnabled = false
-        field.layer.borderColor = UIColor.clear.cgColor
-        
-        return cell
-    }
-    
-    private func addressesCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletDetailAdressesCell", for: indexPath)
-        configureCell(cell)
-        
-        let textView = cell.viewWithTag(1) as! UITextView
-        
-        if addresses == "" {
-            textView.text = "fetching addresses from your node..."
-        } else {
-            textView.text = addresses
-        }
-        
-        let exportButton = cell.viewWithTag(2) as! UIButton
-        configureExportButton(exportButton, indexPath: indexPath)
-        
-        let segmentedControl = cell.viewWithTag(3) as! UISegmentedControl
-        segmentedControl.selectedSegmentIndex = showReceive
-        segmentedControl.addTarget(self, action: #selector(updateAddressExplorer(_:)), for: .valueChanged)
-        
-        return cell
-    }
-    
-    private func exportWalletCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletExportQrCell", for: indexPath)
-        configureCell(cell)
-        
-        let imageView = cell.viewWithTag(1) as! UIImageView
-        let exportButton = cell.viewWithTag(2) as! UIButton
-        configureExportButton(exportButton, indexPath: indexPath)
-        
-        let chooseFormatButton = cell.viewWithTag(3) as! UIButton
-        configureChooseExportFormatButton(chooseFormatButton, indexPath: indexPath)
-        
-        let headerLabel = cell.viewWithTag(4) as! UILabel
-        let subheaderLabel = cell.viewWithTag(5) as! UILabel
-        
-        let enlargeButton = cell.viewWithTag(6) as! UIButton
-        configureEnlargeButton(enlargeButton, indexPath: indexPath)
-        
-        if urBytesFormat {
-            headerLabel.text = "UR Bytes"
-            subheaderLabel.text = ""
-            imageView.image = exportWalletImageURBytes
-            exportText = urBytes
-        }
-        
-        if bbqrFormat {
-            headerLabel.text = "BBQr"
-            subheaderLabel.text = ""
-            imageView.image = exportWalletImageBBQr
-            exportText = bbqrText
-        }
-        
-        if outputDescFormat {
-            headerLabel.text = "UR Output Descriptor"
-            subheaderLabel.text = ""
-            imageView.image = exportWalletImageCryptoOutput
-            exportText = outputDescUr
-        }
-        
-        return cell
-    }
-        
-    private func exportFileCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletExportFileCell", for: indexPath)
-        configureCell(cell)
-        
-        let textView = cell.viewWithTag(1) as! UITextView
-        textView.text = backupText
-        
-        let exportButton = cell.viewWithTag(2) as! UIButton
-        configureExportButton(exportButton, indexPath: indexPath)
-        
-        return cell
-    }
-    
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return Section.allCases.count
-    }
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
-    }
-    
-    private func configureExportButton(_ button: UIButton, indexPath: IndexPath) {
-        button.restorationIdentifier = "\(indexPath.section)"
-        button.addTarget(self, action: #selector(exportButtonAction(_:)), for: .touchUpInside)
-    }
-    
-    private func configureChooseExportFormatButton(_ button: UIButton, indexPath: IndexPath) {
-        button.restorationIdentifier = "\(indexPath.section)"
-        button.addTarget(self, action: #selector(chooseExportFormatButtonAction(_:)), for: .touchUpInside)
-    }
-    
-    private func configureEnlargeButton(_ button: UIButton, indexPath: IndexPath) {
-        button.restorationIdentifier = "\(indexPath.section)"
-        button.addTarget(self, action: #selector(enlargeButtonAction(_:)), for: .touchUpInside)
-    }
-    
-    private func configureCell(_ cell: UITableViewCell) {
-        cell.selectionStyle = .none
-        cell.layer.cornerRadius = 8
-        cell.layer.borderWidth = 0.5
-        cell.layer.borderColor = UIColor.darkGray.cgColor
+        cellHeights[indexPath] ?? UITableView.automaticDimension
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard self.wallet != nil else {
-            return UITableViewCell()
+        guard wallet != nil else {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "plain")
+            ?? UITableViewCell(style: .default, reuseIdentifier: "plain")
+            cell.textLabel?.textColor = Cypher.dim
+            return cell
         }
         
         originalLabel = wallet.label
         
+        let cell = tableView.dequeueReusableCell(withIdentifier: "plain", for: indexPath)
+        cell.selectionStyle = .none
+        cell.backgroundColor = .clear
+        cell.contentView.subviews.forEach { $0.removeFromSuperview() }
+        
+        let content: UIView
         switch Section(rawValue: indexPath.section) {
-        case .backupText:
-            return backupTextCell(indexPath)
-        case .label:
-            return labelCell(indexPath)
-        case .walletExport:
-            return exportWalletCell(indexPath)
-        case .exportFile:
-            return exportFileCell(indexPath)
-        case .filename:
-            return filenameCell(indexPath)
-        case .receiveDesc:
-            return recDescCell(indexPath)
-        case .changeDesc:
-            return changeDescCell(indexPath)
-        case .listdescriptors:
-            return listDescriptorsCell(indexPath)
-        case .externalRange:
-            return externalRangeCell(indexPath)
-        case .internalRange:
-            return internalRangeCell(indexPath)
-        case .nextIndexExternal:
-            return nextExternalIndexCell(indexPath)
-        case .nextIndexInternal:
-            return nextInternalIndexCell(indexPath)
-        case .addressExplorer:
-            return addressesCell(indexPath)
-        default:
-            return UITableViewCell()
+        case .label: content = labelContent()
+        case .backupText: content = walletInfoContent()
+        case .walletExport: content = exportWalletContent()
+        case .exportFile: content = backupFileExportContent()
+        case .filename: content = filenameContent()
+        case .receiveDesc: content = descriptorContent(wallet.receiveDescriptor, section: .receiveDesc, isActive: receiveDescActive)
+        case .changeDesc: content = descriptorContent(wallet.changeDescriptor, section: .changeDesc, isActive: changeDescActive)
+        case .listdescriptors: content = listDescriptorsContent()
+        case .externalRange: content = valueFieldContent("\(externalRange)")
+        case .internalRange: content = valueFieldContent("\(internalRange)")
+        case .nextIndexExternal: content = valueFieldContent(externalNextIndex.map(String.init) ?? "")
+        case .nextIndexInternal: content = valueFieldContent(internalNextIndex.map(String.init) ?? "")
+        case .addressExplorer: content = addressesContent()
+        default: content = UIView()
         }
+        
+        content.translatesAutoresizingMaskIntoConstraints = false
+        cell.contentView.addSubview(content)
+        NSLayoutConstraint.activate([
+            content.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 4),
+            content.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 16),
+            content.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -16),
+            content.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -4)
+        ])
+        return cell
+    }
+    
+    private func labelContent() -> UIView {
+        let field = UITextField()
+        field.text = wallet.label
+        field.textColor = Cypher.text
+        field.isUserInteractionEnabled = false
+        field.returnKeyType = .done
+        field.delegate = self
+        field.borderStyle = .none
+        labelField = field
+        
+        let button = UIButton(type: .system)
+        button.setTitle("edit", for: .normal)
+        button.addTarget(self, action: #selector(startEditingLabel), for: .touchUpInside)
+        labelButton = button
+        
+        let row = UIStackView(arrangedSubviews: [field, button])
+        row.axis = .horizontal
+        row.spacing = 8
+        button.setContentHuggingPriority(.required, for: .horizontal)
+        return styledCard([row])
+    }
+    
+    private func walletInfoContent() -> UIView {
+        let tv = makeTextView(backupFileText)
+        tv.isScrollEnabled = false
+        tv.textContainerInset = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
+        tv.setContentCompressionResistancePriority(.required, for: .vertical)
+
+        let export = makeExportButton()
+        export.tag = Section.backupText.rawValue
+        export.setContentHuggingPriority(.required, for: .horizontal)
+
+        let exportRow = UIStackView(arrangedSubviews: [UIView(), export])
+        exportRow.axis = .horizontal
+        exportRow.alignment = .center
+
+        let stack = UIStackView(arrangedSubviews: [tv, exportRow])
+        stack.axis = .vertical
+        stack.spacing = 8
+        stack.alignment = .fill
+
+        return styledCard([stack])
+    }
+    
+    private func backupFileExportContent() -> UIView {
+        let label = UILabel()
+        label.text = "This wallet backup file export is for Fully Noded usage only. It is your wallet's descriptors in JSON data format, encoded as a hex string."
+        label.numberOfLines = 0
+        //label.font = .systemFont(ofSize: 15)
+        label.font = Cypher.mono(13)
+        label.textColor = Cypher.text//.label
+
+        let export = makeExportButton()
+        export.tag = Section.exportFile.rawValue
+        export.setContentHuggingPriority(.required, for: .horizontal)
+
+        let exportRow = UIStackView(arrangedSubviews: [UIView(), export])
+        exportRow.axis = .horizontal
+        exportRow.alignment = .center
+
+        let stack = UIStackView(arrangedSubviews: [label, exportRow])
+        stack.axis = .vertical
+        stack.spacing = 8
+        stack.alignment = .fill
+
+        return styledCard([stack])
+    }
+    
+    private func filenameContent() -> UIView {
+        let label = UILabel()
+        label.text = wallet.name + ".dat"
+        //label.tintColor = Cypher.text
+        label.textColor = Cypher.text
+        label.numberOfLines = 0
+        label.lineBreakMode = .byWordWrapping
+        label.setContentCompressionResistancePriority(.required, for: .vertical)
+
+        let export = makeExportButton()
+        export.tag = Section.filename.rawValue
+        export.setContentHuggingPriority(.required, for: .horizontal)
+
+        let exportRow = UIStackView(arrangedSubviews: [UIView(), export])
+        exportRow.axis = .horizontal
+        exportRow.alignment = .center
+
+        let stack = UIStackView(arrangedSubviews: [label, exportRow])
+        stack.axis = .vertical
+        stack.spacing = 8
+        stack.alignment = .fill
+
+        return styledCard([stack])
+    }
+    
+    private func listDescriptorsContent() -> UIView {
+        let tv = makeTextView(listdescriptorsResponse ?? "fetching addresses from your node...")
+        tv.isScrollEnabled = true
+        tv.isEditable = false
+        tv.showsVerticalScrollIndicator = true
+        tv.textContainerInset = UIEdgeInsets(top: 4, left: 0, bottom: 4, right: 0)
+        tv.textContainer.lineFragmentPadding = 0
+
+        let textHeight = tv.heightAnchor.constraint(equalToConstant: 280)
+        textHeight.priority = .required
+        textHeight.isActive = true
+
+        let export = makeExportButton()
+        export.tag = Section.listdescriptors.rawValue
+        export.setContentHuggingPriority(.required, for: .horizontal)
+        export.setContentCompressionResistancePriority(.required, for: .vertical)
+
+        let exportRow = UIStackView(arrangedSubviews: [UIView(), export])
+        exportRow.axis = .horizontal
+        exportRow.alignment = .center
+
+        let stack = UIStackView(arrangedSubviews: [tv, exportRow])
+        stack.axis = .vertical
+        stack.spacing = 8
+        stack.alignment = .fill
+        stack.isLayoutMarginsRelativeArrangement = true
+        stack.layoutMargins = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+
+        return styledCard([stack])
+    }
+    
+    private func addressesContent() -> UIView {
+        let tv = makeTextView(addresses.isEmpty ? "fetching addresses from your node..." : addresses)
+        tv.isScrollEnabled = true
+        tv.isEditable = false
+        tv.showsVerticalScrollIndicator = true
+        tv.textContainerInset = UIEdgeInsets(top: 4, left: 0, bottom: 4, right: 0)
+        tv.textContainer.lineFragmentPadding = 0
+        tv.heightAnchor.constraint(equalToConstant: 440).isActive = true
+
+        let control = UISegmentedControl(items: ["Receive", "Change"])
+        control.backgroundColor = Cypher.card
+        control.selectedSegmentTintColor = Cypher.green
+        control.selectedSegmentIndex = showReceive
+        control.addTarget(self, action: #selector(updateAddressExplorer(_:)), for: .valueChanged)
+        control.heightAnchor.constraint(equalToConstant: 32).isActive = true
+        control.setContentCompressionResistancePriority(.required, for: .vertical)
+        control.setTitleTextAttributes([.font: Cypher.mono(12), .foregroundColor: Cypher.dim], for: .normal)
+        control.setTitleTextAttributes([.font: Cypher.mono(12, weight: .semibold), .foregroundColor: Cypher.bg], for: .selected)
+
+        let export = makeExportButton()
+        export.tag = Section.addressExplorer.rawValue
+        export.setContentHuggingPriority(.required, for: .horizontal)
+        export.setContentCompressionResistancePriority(.required, for: .vertical)
+        export.widthAnchor.constraint(equalToConstant: 88).isActive = true
+
+        let exportRow = UIStackView(arrangedSubviews: [UIView(), export])
+        exportRow.axis = .horizontal
+        exportRow.alignment = .center
+
+        let stack = UIStackView(arrangedSubviews: [tv, control, exportRow])
+        stack.axis = .vertical
+        stack.spacing = 10
+        stack.alignment = .fill
+        stack.isLayoutMarginsRelativeArrangement = true
+        stack.layoutMargins = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+
+        return styledCard([stack])
+    }
+    
+    private func valueFieldContent(_ text: String) -> UIView {
+        let field = UITextField()
+        field.text = text
+        field.textColor = Cypher.text
+        field.isUserInteractionEnabled = false
+        field.borderStyle = .none
+        return styledCard([field])
+    }
+    
+    private func textExportContent(_ text: String, section: Section, showExport: Bool) -> UIView {
+        let tv = makeTextView(text)
+        tv.isScrollEnabled = false
+        tv.textContainerInset = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
+        tv.setContentCompressionResistancePriority(.required, for: .vertical)
+
+        var views: [UIView] = [tv]
+        if showExport {
+            let export = makeExportButton()
+            export.tag = section.rawValue
+            export.setContentHuggingPriority(.required, for: .horizontal)
+
+            let exportRow = UIStackView(arrangedSubviews: [UIView(), export])
+            exportRow.axis = .horizontal
+            exportRow.alignment = .center
+            views.append(exportRow)
+        }
+
+        let stack = UIStackView(arrangedSubviews: views)
+        stack.axis = .vertical
+        stack.spacing = 8
+        stack.alignment = .fill
+
+        return styledCard([stack])
+    }
+    
+    private func descriptorContent(_ text: String, section: Section, isActive: Bool) -> UIView {
+        let status = UILabel()
+        //status.font = .systemFont(ofSize: 15, weight: .medium)
+        //status.text = isActive ? "Active" : "Inactive"
+        //status.textColor = isActive ? Cypher.text : .secondaryLabel
+        status.setContentCompressionResistancePriority(.required, for: .vertical)
+        status.font = Cypher.mono(13, weight: .semibold)
+        status.text = isActive ? "ACTIVE" : "INACTIVE"
+        status.textColor = isActive ? Cypher.green : Cypher.dim
+
+        let toggle = UISwitch()
+        toggle.isOn = isActive
+        toggle.onTintColor = Cypher.green
+        toggle.isEnabled = !isActive
+        toggle.tag = section.rawValue
+        toggle.addTarget(self, action: #selector(activeToggleChanged(_:)), for: .valueChanged)
+        toggle.setContentHuggingPriority(.required, for: .horizontal)
+        toggle.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        let activeRow = UIStackView(arrangedSubviews: [status, UIView(), toggle])
+        activeRow.axis = .horizontal
+        activeRow.alignment = .center
+        activeRow.spacing = 8
+
+        let tv = makeTextView(text)
+        tv.isScrollEnabled = false
+        tv.isEditable = false
+        tv.textColor = isActive ? Cypher.text : Cypher.dim
+        tv.alpha = isActive ? 1 : 0.7
+        tv.textContainerInset = UIEdgeInsets(top: 4, left: 0, bottom: 4, right: 0)
+        tv.textContainer.lineFragmentPadding = 0
+        tv.setContentCompressionResistancePriority(.required, for: .vertical)
+        tv.setContentHuggingPriority(.defaultLow, for: .vertical)
+
+        let export = makeExportButton()
+        export.tag = section.rawValue
+        export.setContentHuggingPriority(.required, for: .horizontal)
+        export.setContentCompressionResistancePriority(.required, for: .vertical)
+
+        let exportRow = UIStackView(arrangedSubviews: [UIView(), export])
+        exportRow.axis = .horizontal
+        exportRow.alignment = .center
+
+        let stack = UIStackView(arrangedSubviews: [activeRow, tv, exportRow])
+        stack.axis = .vertical
+        stack.spacing = 8
+        stack.alignment = .fill
+        stack.isLayoutMarginsRelativeArrangement = true
+        stack.layoutMargins = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+
+        return styledCard([stack])
+    }
+    
+    private func exportWalletContent() -> UIView {
+        let header = UILabel()
+        header.font = .systemFont(ofSize: 17, weight: .semibold)
+        header.textAlignment = .center
+
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        imageView.heightAnchor.constraint(equalToConstant: 160).isActive = true
+
+        if outputDescFormat {
+            header.text = "UR Output Descriptor"
+            imageView.image = exportWalletImageCryptoOutput
+            exportText = outputDescUr
+        } else {
+            header.text = "UR Bytes"
+            imageView.image = exportWalletImageURBytes
+            exportText = urBytes
+            urBytesFormat = true
+            outputDescFormat = false
+        }
+
+        let format = UIButton(type: .system)
+        format.setTitle("Format", for: .normal)
+        format.addTarget(self, action: #selector(chooseExportFormatButtonAction(_:)), for: .touchUpInside)
+
+        let enlarge = UIButton(type: .system)
+        enlarge.setTitle("Enlarge", for: .normal)
+        enlarge.addTarget(self, action: #selector(enlargeButtonAction(_:)), for: .touchUpInside)
+
+        let controls = UIStackView(arrangedSubviews: [format, enlarge])
+        controls.axis = .horizontal
+        controls.alignment = .center
+        controls.spacing = 16
+        controls.distribution = .equalSpacing
+        controls.translatesAutoresizingMaskIntoConstraints = false
+
+        let controlsHost = UIView()
+        controlsHost.addSubview(controls)
+        NSLayoutConstraint.activate([
+            controls.centerXAnchor.constraint(equalTo: controlsHost.centerXAnchor),
+            controls.topAnchor.constraint(equalTo: controlsHost.topAnchor),
+            controls.bottomAnchor.constraint(equalTo: controlsHost.bottomAnchor),
+            controls.leadingAnchor.constraint(greaterThanOrEqualTo: controlsHost.leadingAnchor),
+            controls.trailingAnchor.constraint(lessThanOrEqualTo: controlsHost.trailingAnchor)
+        ])
+
+        let export = makeExportButton()
+        export.tag = Section.walletExport.rawValue
+        export.setContentHuggingPriority(.required, for: .horizontal)
+
+        let exportRow = UIStackView(arrangedSubviews: [UIView(), export])
+        exportRow.axis = .horizontal
+        exportRow.alignment = .center
+
+        return styledCard([header, imageView, controlsHost, exportRow])
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch Section(rawValue: indexPath.section) {
-        case .listdescriptors:
-            return 360
-        case .backupText, .addressExplorer:
-            return 180
-        case .walletExport:
-            return 270
-        case .exportFile, .receiveDesc, .changeDesc:
-            return 120
-        case .nextIndexExternal, .nextIndexInternal, .label, .filename, .externalRange, .internalRange:
-            return 50
-        default:
-            return 0
+        case .nextIndexExternal, .nextIndexInternal, .label, .externalRange, .internalRange: return 50
+        case .filename, .exportFile, .backupText, .walletExport, .receiveDesc, .changeDesc, .listdescriptors, .addressExplorer:
+            return UITableView.automaticDimension
+        default: return 0
         }
     }
     
-    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return 10
-    }
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat { 10 }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        guard let sectionKind = Section(rawValue: section) else { return nil }
         let header = UIView()
-        header.backgroundColor = UIColor.clear
-        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 30)
+        header.backgroundColor = .clear
         
         let icon = UIImageView()
-        icon.frame = CGRect(x: 0, y: 0, width: 25, height: 25)
-        icon.tintColor = .tintColor
+        icon.translatesAutoresizingMaskIntoConstraints = false
         icon.contentMode = .scaleAspectFit
         
         let textLabel = UILabel()
-        textLabel.textAlignment = .left
-        textLabel.font = UIFont.systemFont(ofSize: 17, weight: .regular)
-        textLabel.textColor = .secondaryLabel
-        textLabel.frame = CGRect(x: 33, y: 0, width: 300, height: 25)
-        textLabel.center.y = icon.center.y
+        textLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        let nodelessButtonRec = nodelessButton(header.frame.maxX - 108)
-        nodelessButtonRec.tag = section
+        textLabel.font = Cypher.mono(13, weight: .medium)
+        textLabel.textColor = Cypher.dim
+        icon.tintColor = Cypher.green
+        header.backgroundColor = .clear
         
-        if let section = Section(rawValue: section) {
-            let (text, image) = headerName(for: section)
-            
-            textLabel.text = text
-            icon.image = image
-            
-            if section == .receiveDesc {
-                textLabel.frame = CGRect(x: 33, y: nodelessButtonRec.frame.midY, width: 300, height: 25)
-                icon.frame = CGRect(x: 0, y: nodelessButtonRec.frame.midY, width: 25, height: 25)
-                header.addSubview(nodelessButtonRec)
-            }
-        }
+        let (text, image) = headerName(for: sectionKind)
+        textLabel.text = text
+        icon.image = image
         
         header.addSubview(icon)
         header.addSubview(textLabel)
         
+        var constraints = [
+            icon.leadingAnchor.constraint(equalTo: header.leadingAnchor, constant: 16),
+            icon.centerYAnchor.constraint(equalTo: header.centerYAnchor),
+            icon.widthAnchor.constraint(equalToConstant: 25),
+            icon.heightAnchor.constraint(equalToConstant: 25),
+            textLabel.leadingAnchor.constraint(equalTo: icon.trailingAnchor, constant: 8),
+            textLabel.centerYAnchor.constraint(equalTo: icon.centerYAnchor)
+        ]
+        
+        if sectionKind == .receiveDesc {
+            let button = nodelessButton()
+            button.translatesAutoresizingMaskIntoConstraints = false
+            header.addSubview(button)
+            constraints.append(contentsOf: [
+                button.trailingAnchor.constraint(equalTo: header.trailingAnchor, constant: -16),
+                button.centerYAnchor.constraint(equalTo: header.centerYAnchor),
+                button.widthAnchor.constraint(equalToConstant: 100),
+                button.heightAnchor.constraint(equalToConstant: 40)
+            ])
+        }
+        
+        NSLayoutConstraint.activate(constraints)
         return header
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        let section = Section(rawValue: section)
-        switch section {
-        case .receiveDesc:
-            return 60
-        default:
-            return 30
+        Section(rawValue: section) == .receiveDesc ? 60 : 30
+    }
+    
+    @objc private func activeToggleChanged(_ sender: UISwitch) {
+        guard let section = Section(rawValue: sender.tag) else { return }
+        
+        let alreadyActive = (section == .receiveDesc && receiveDescActive) || (section == .changeDesc && changeDescActive)
+        
+        if alreadyActive {
+            sender.setOn(true, animated: false)
+            sender.isEnabled = false
+            return
+        }
+
+        if let cell = sender.ancestor(ofType: UITableViewCell.self) {
+            applyActiveStyle(in: cell, isActive: sender.isOn)
+        }
+        
+        if section == .receiveDesc { receiveDescActive = sender.isOn }
+        if section == .changeDesc { changeDescActive = sender.isOn }
+        
+        guard sender.isOn else { return }
+
+        let isChange = section == .changeDesc
+        let desc = isChange ? wallet.changeDescriptor : wallet.receiveDescriptor
+        let range = isChange ? internalRange : externalRange
+        let next = isChange ? internalNextIndex : externalNextIndex
+        let existingTimestamp = isChange ? changeDescTimestamp : receiveDescTimestamp
+
+        pruneSafeTimestamp(existing: existingTimestamp) { [weak self] safeTimestamp in
+            guard let self else { return }
+            
+            guard !desc.isEmpty else {
+                sender.setOn(false, animated: true)
+                showAlert(vc: self, title: "", message: "Missing descriptor.")
+                return
+            }
+
+            var request: [String: Any] = [
+                "desc": desc,
+                "active": true,
+                "internal": isChange,
+                "timestamp": safeTimestamp
+            ]
+
+            if range.count == 2 {
+                request["range"] = range
+            }
+            if let next {
+                request["next_index"] = next
+            }
+
+            spinner.show(vc: self, description: "Setting descriptor active...")
+
+            let param: Import_Descriptors = .init(["requests": [request]])
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .importdescriptors(param: param)) { [weak self] response, errorDesc in
+                guard let self else { return }
+                spinner.dismiss()
+
+                if let errorDesc, !errorDesc.isEmpty {
+                    sender.setOn(false, animated: true)
+                    showAlert(vc: self, title: "importdescriptors failed", message: errorDesc)
+                    return
+                }
+
+                if let arr = response as? [[String: Any]],
+                   arr.contains(where: { ($0["success"] as? Bool) != true }) {
+                    let msg = (arr.first?["error"] as? [String: Any])?["message"] as? String
+                    sender.setOn(false, animated: true)
+                    showAlert(vc: self, title: "importdescriptors failed", message: msg ?? "Unknown error.")
+                    return
+                }
+
+                if isChange {
+                    changeDescActive = true
+                } else {
+                    receiveDescActive = true
+                }
+
+                DispatchQueue.main.async {
+                    self.addresses = ""
+                    self.load()
+                    showAlert(vc: self, title: "", message: "Descriptor set to active.")
+                }
+            }
+        }
+    }
+    
+    private func applyActiveStyle(in cell: UITableViewCell, isActive: Bool) {
+        func walk(_ view: UIView) {
+            if let label = view as? UILabel, label.text == "Active" || label.text == "Inactive" {
+                label.text = isActive ? "Active" : "Inactive"
+                label.textColor = isActive ? Cypher.text : Cypher.dim
+            }
+            if let tv = view as? UITextView {
+                tv.textColor = isActive ? Cypher.text : Cypher.dim
+                tv.alpha = isActive ? 1.0 : 0.7
+            }
+            view.subviews.forEach(walk)
+        }
+        walk(cell.contentView)
+    }
+    
+    private func pruneSafeTimestamp(existing: Any, completion: @escaping (Any) -> Void) {
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getblockchaininfo) { response, _ in
+            guard let info = response as? [String: Any],
+                  info["pruned"] as? Bool == true,
+                  let pruneHeight = info["pruneheight"] as? Int else {
+                completion(existing)
+                return
+            }
+
+            let ts: Int
+            if let n = existing as? Int {
+                ts = n
+            } else if let n = existing as? Int64 {
+                ts = Int(n)
+            } else if let s = existing as? String, s != "now", let n = Int(s) {
+                ts = n
+            } else {
+                completion(existing)
+                return
+            }
+
+            let hashParam: Get_Block_Hash = .init(["height": pruneHeight])
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .getblockhash(hashParam)) { hashResponse, _ in
+                let hash: String?
+                if let s = hashResponse as? String {
+                    hash = s
+                } else if let dict = hashResponse as? [String: Any] {
+                    hash = dict["result"] as? String
+                } else {
+                    hash = nil
+                }
+
+                guard let hash else {
+                    completion("now")
+                    return
+                }
+
+                let blockParam: Get_Block = .init(["blockhash": hash])
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .getblock(blockParam)) { blockResponse, _ in
+                    let pruneTime = (blockResponse as? [String: Any])?["time"] as? Int ?? 0
+                    completion(ts < pruneTime ? "now" : existing)
+                }
+            }
         }
     }
     
     @objc func updateAddressExplorer(_ sender: UISegmentedControl) {
         showReceive = sender.selectedSegmentIndex
         addresses = ""
-        
         if showReceive == 0 {
             spinner.show(vc: self, description: "deriving receive addresses...")
             deriveAddresses(wallet.receiveDescriptor)
@@ -1040,54 +1217,39 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private func promptToRescan() {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
+            guard let self else { return }
             let alert = UIAlertController(title: "Rescan?", message: "Input the year you'd like to rescan from.", preferredStyle: .alert)
-            
-            let rescan = UIAlertAction(title: "Rescan", style: .default) { [weak self] (alertAction) in
-                guard let self = self else { return }
-                let textField = (alert.textFields![0] as UITextField)
+            let rescan = UIAlertAction(title: "Rescan", style: .default) { [weak self] _ in
+                guard let self else { return }
+                let textField = alert.textFields![0]
                 var blockheight = 0
                 let currentYear = Int(Calendar.current.component(.year, from: .now))
                 if let text = textField.text {
                     var yearToScanFrom = Int(text) ?? 2009
-                    
                     if yearToScanFrom <= currentYear {
-                        if yearToScanFrom < 2010 {
-                            yearToScanFrom = 2010
-                        }
+                        if yearToScanFrom < 2010 { yearToScanFrom = 2010 }
                         let yearsToScan = (currentYear - yearToScanFrom) + 1
                         let blocksToScan = yearsToScan * 55000
-                        
                         spinner.show(vc: self, description: "rescanning...")
-                        
-                        OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
-                            guard let self = self else { return }
-                            
-                            guard let blockchainInfo = blockchainInfo else {
+                        OnchainUtils.getBlockchainInfo { [weak self] blockchainInfo, message in
+                            guard let self else { return }
+                            guard let blockchainInfo else {
                                 spinner.dismiss()
                                 showAlert(vc: self, title: "", message: message ?? "Unknown issue getblockchaininfo.")
                                 return
                             }
-                            
                             if !blockchainInfo.initialblockdownload {
                                 blockheight = blockchainInfo.blockheight - blocksToScan
-                                
-                                if blockchainInfo.pruned {
-                                    if blockheight < blockchainInfo.pruneheight {
-                                        blockheight = blockchainInfo.pruneheight
-                                    }
+                                if blockchainInfo.pruned, blockheight < blockchainInfo.pruneheight {
+                                    blockheight = blockchainInfo.pruneheight
                                 }
-                                
-                                OnchainUtils.rescanNow(from: blockheight) { [weak self] (started, message) in
-                                    guard let self = self else { return }
-                                    
+                                OnchainUtils.rescanNow(from: blockheight) { [weak self] started, message in
+                                    guard let self else { return }
                                     guard started else {
                                         spinner.dismiss()
                                         showAlert(vc: self, title: "", message: message ?? "Unknown issue from rescan.")
                                         return
                                     }
-                                    
                                     self.spinner.dismiss()
                                     showAlert(vc: self, title: "", message: "Rescanning, you can refresh this page to see completion status.")
                                 }
@@ -1099,31 +1261,37 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                     }
                 }
             }
-            
-            alert.addTextField { (textField) in
-                textField.placeholder = "From year"
-                textField.keyboardAppearance = .dark
-                textField.keyboardType = .numberPad
-                textField.text = "2009"
+            alert.addTextField { field in
+                field.placeholder = "From year"
+                field.keyboardAppearance = .dark
+                field.keyboardType = .numberPad
+                field.text = "2009"
             }
-            
             alert.addAction(rescan)
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true, completion: nil)
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            alert.popoverPresentationController?.sourceView = view
+            present(alert, animated: true)
         }
     }
-        
-    private func showError(error:String) {
-        DispatchQueue.main.async { [weak self] in
-            self?.spinner.dismiss()
-            showAlert(vc: self, title: "Error", message: error)
+    
+    private func headerName(for section: Section) -> (text: String, icon: UIImage) {
+        switch section {
+        case .backupText: return ("Wallet Info", UIImage(systemName: "info.circle")!)
+        case .label: return ("Label", UIImage(systemName: "rectangle.and.paperclip")!)
+        case .walletExport: return ("Wallet export", UIImage(systemName: "square.and.arrow.up")!)
+        case .exportFile: return ("Backup file", UIImage(systemName: "folder")!)
+        case .filename: return ("Bitcoin Core filename", UIImage(systemName: "rectangle.and.paperclip")!)
+        case .receiveDesc: return ("Receive descriptor - keypool", UIImage(systemName: "arrow.down.left")!)
+        case .changeDesc: return ("Change descriptor - keypool", UIImage(systemName: "arrow.2.circlepath")!)
+        case .listdescriptors: return ("All descriptors", UIImage(systemName: "list.number")!)
+        case .nextIndexExternal: return ("Next receive address index", UIImage(systemName: "number")!)
+        case .nextIndexInternal: return ("Next change address index", UIImage(systemName: "number")!)
+        case .externalRange: return ("Receive address range", UIImage(systemName: "list.number")!)
+        case .internalRange: return ("Change address range", UIImage(systemName: "list.number")!)
+        case .addressExplorer: return ("Address explorer", UIImage(systemName: "list.number")!)
         }
     }
-
-    // MARK: - Navigation
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
@@ -1132,17 +1300,9 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             if let vc = segue.destination as? QRDisplayerViewController {
                 vc.text = textToShow
                 
-                if bbqrFormat {
-                    vc.headerText = "Wallet Export BBQr"
-                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                    vc.isBbqr = true
-                    vc.isUR = false
-                }
-                
                 if outputDescFormat {
                     vc.headerText = "UR Wallet Export Descriptor"
                     vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                    vc.isBbqr = false
                     vc.isUR = true
                 }
                 
@@ -1150,7 +1310,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                     vc.headerText = "Wallet Export UR Bytes"
                     vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
                     vc.isUR = true
-                    vc.isBbqr = false
                 }
             }
         case"segueToNodelessFromWalletDetail":
@@ -1165,37 +1324,27 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
 }
 
-extension WalletDetailViewController {
-    
-    private func headerName(for section: Section) -> (text: String, icon: UIImage) {
-        switch section {
-        case .backupText:
-            return ("Wallet Info", UIImage(systemName: "info.circle")!)
-        case .label:
-            return ("Label", UIImage(systemName: "rectangle.and.paperclip")!)
-        case .walletExport:
-            return ("Wallet export", UIImage(systemName: "square.and.arrow.up")!)
-        case .exportFile:
-            return ("Backup file", UIImage(systemName: "folder")!)
-        case .filename:
-            return ("Bitcoin Core filename", UIImage(systemName: "rectangle.and.paperclip")!)
-        case .receiveDesc:
-            return ("Receive descriptor - keypool", UIImage(systemName: "arrow.down.left")!)
-        case .changeDesc:
-            return ("Change descriptor - keypool", UIImage(systemName: "arrow.2.circlepath")!)
-        case .listdescriptors:
-            return ("All descriptors", UIImage(systemName: "list.number")!)
-        case .nextIndexExternal:
-            return ("Next receive address index", UIImage(systemName: "number")!)
-        case .nextIndexInternal:
-            return ("Next change address index", UIImage(systemName: "number")!)
-        case .externalRange:
-            return ("Receive address range", UIImage(systemName: "list.number")!)
-        case .internalRange:
-            return ("Change address range", UIImage(systemName: "list.number")!)
-        case .addressExplorer:
-            return ("Address explorer", UIImage(systemName: "list.number")!)
+extension UIView {
+    func ancestor<T: UIView>(ofType type: T.Type) -> T? {
+        var view: UIView? = self
+        while let current = view {
+            if let match = current as? T { return match }
+            view = current.superview
         }
+        return nil
     }
-    
+}
+
+private enum Cypher {
+    static let bg = UIColor.black
+    static let card = UIColor(white: 0.06, alpha: 1)
+    static let line = UIColor(red: 0.2, green: 1.0, blue: 0.45, alpha: 0.55)
+    static let green = UIColor(red: 0.25, green: 1.0, blue: 0.48, alpha: 1)
+    static let dim = UIColor(red: 0.35, green: 0.7, blue: 0.45, alpha: 1)
+    static let text = UIColor(red: 0.75, green: 1.0, blue: 0.82, alpha: 1)
+    static let danger = UIColor(red: 1.0, green: 0.28, blue: 0.32, alpha: 1)
+
+    static func mono(_ size: CGFloat, weight: UIFont.Weight = .regular) -> UIFont {
+        UIFont.monospacedSystemFont(ofSize: size, weight: weight)
+    }
 }
