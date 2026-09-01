@@ -24,7 +24,7 @@ class Signer {
             completion((nil, nil, "Failed getting bdkNetwork."))
             return
         }
-                
+                        
         CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
             guard let self = self else { return }
             
@@ -37,7 +37,9 @@ class Signer {
             print("utxoParentDesc: \(utxoParentDesc)")
             #endif
             
+            let fnDesc = Descriptor(utxoParentDesc)
             var signerArray: [SignerStruct] = []
+            
             for (i, signer) in signers.enumerated() {
                 let signerStr = SignerStruct(dictionary: signer)
                 if var encryptedWords = signerStr.words {
@@ -49,7 +51,6 @@ class Signer {
                         }
                         CoreDataService.update(id: signerStr.id, keyToUpdate: "xfp", newValue: encryptedXfp, entity: .signers) { _ in }
                         
-                        let fnDesc = Descriptor(utxoParentDesc)
                         if fnDesc.fingerprint.contains(xfp) {
                             signerArray.append(signerStr)
                         }
@@ -76,7 +77,6 @@ class Signer {
         }
     }
     
-    // need to create individual BDKWallets using the timelocked descriptor
     func sign(fnWallet: Wallet,
               psbt: String,
               passphrase: String?,
@@ -134,13 +134,12 @@ class Signer {
                         print("bdkWallet creation failed")
                         #endif
                         return
-                    }                    
-                    
+                    }
+                                        
                     let (signedPsbt, signedRawTx, errorMessage) = WalletLogic.shared.signPsbt(wallet: bdkWallet, psbtBase64: psbt)
                     #if DEBUG
                     print("rawTx: \(signedRawTx ?? "")")
                     #endif
-                    
                     
                     if signedRawTx != nil {
                         rawTxToReturn = signedRawTx
