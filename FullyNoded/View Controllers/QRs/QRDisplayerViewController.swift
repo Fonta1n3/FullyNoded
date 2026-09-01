@@ -8,7 +8,7 @@
 
 import UIKit
 import URKit
-import Bbqr
+//import Bbqr
 
 class QRDisplayerViewController: UIViewController {
     
@@ -20,7 +20,7 @@ class QRDisplayerViewController: UIViewController {
     var headerIcon: UIImage!
     let spinner = ConnectingView.shared
     let qrGenerator = QRGenerator()
-    var isBbqr = false
+    //var isBbqr = false
     var isUR = false
     
     private var encoder:UREncoder!
@@ -58,7 +58,7 @@ class QRDisplayerViewController: UIViewController {
         #endif
         
         
-        if isBbqr {
+        /*if isBbqr {
             spinner.show(vc: self, description: "")
             
             var parts: [String]? = []
@@ -79,7 +79,7 @@ class QRDisplayerViewController: UIViewController {
                 showBbqrParts(bbQrparts: parts)
             }
             
-        } else if isUR {
+        } else */if isUR {
             spinner.show(vc: self, description: "loading...")
             
             if psbt != "" {
@@ -125,7 +125,7 @@ class QRDisplayerViewController: UIViewController {
         text = ""
         psbt = ""
         txn = ""
-        isBbqr = false
+        //isBbqr = false
         isUR = false
         partIndex = 0
         parts.removeAll()
@@ -195,52 +195,52 @@ class QRDisplayerViewController: UIViewController {
         present(activityController, animated: true)
     }
     
-    func split(string: String) throws -> [String] {
-        var data: Data? = nil
-        var fileType: FileType = .unicodeText
-        
-        if psbt != "" {
-            data = Data(base64Encoded: string)
-            fileType = .psbt
-        }
-        
-        if txn != "" {
-            guard let hexData = hex_decode(string) else {
-                spinner.dismiss()
-                return [string]
-            }
-            data = Data(hexData)
-            fileType = .transaction
-        }
-        
-        if text != "" {
-            data = Data(string.utf8)
-        }
-        
-        var minSplitNumber: UInt16 = 1
-        minSplitNumber = UInt16((Double(string.count) / 250.0))
-        
-        let options = SplitOptions(
-            encoding: Encoding.zlib,
-            minSplitNumber: minSplitNumber,
-            minVersion: Version.v01,
-            maxVersion: Version.v40
-        )
-        
-        guard let data = data else {
-            spinner.dismiss()
-            return [string]
-        }
-        
-        do {
-            let split = try Split.tryFromData(bytes: data, fileType: fileType, options: options)
-            spinner.dismiss()
-            return split.parts()
-        } catch {
-            spinner.dismiss()
-            return [string]
-        }
-    }
+//    func split(string: String) throws -> [String] {
+//        var data: Data? = nil
+//        var fileType: FileType = .unicodeText
+//        
+//        if psbt != "" {
+//            data = Data(base64Encoded: string)
+//            fileType = .psbt
+//        }
+//        
+//        if txn != "" {
+//            guard let hexData = hex_decode(string) else {
+//                spinner.dismiss()
+//                return [string]
+//            }
+//            data = Data(hexData)
+//            fileType = .transaction
+//        }
+//        
+//        if text != "" {
+//            data = Data(string.utf8)
+//        }
+//        
+//        var minSplitNumber: UInt16 = 1
+//        minSplitNumber = UInt16((Double(string.count) / 250.0))
+//        
+//        let options = SplitOptions(
+//            encoding: Encoding.zlib,
+//            minSplitNumber: minSplitNumber,
+//            minVersion: Version.v01,
+//            maxVersion: Version.v40
+//        )
+//        
+//        guard let data = data else {
+//            spinner.dismiss()
+//            return [string]
+//        }
+//        
+//        do {
+//            let split = try Split.tryFromData(bytes: data, fileType: fileType, options: options)
+//            spinner.dismiss()
+//            return split.parts()
+//        } catch {
+//            spinner.dismiss()
+//            return [string]
+//        }
+//    }
     
     @IBAction func closeAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in

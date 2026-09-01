@@ -23,7 +23,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     var alertStyle = UIAlertController.Style.alert
     var multiSigAccountDesc = ""
     var qrToExport = ""
-    var isBbqr = false
     let jsonDecoder = JSONDecoder()
     @IBOutlet weak var scriptSegmentedControl: UISegmentedControl!
     
@@ -374,17 +373,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 }
             }))
             
-            alert.addAction(UIAlertAction(title: "Export BBQr", style: .default, handler: { action in
-                self.qrToExport = text
-                self.isBbqr = true
-                
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.performSegue(withIdentifier: "segueToExportMsig", sender: self)
-                }
-            }))
-            
             alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { action in
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
@@ -693,14 +681,8 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             guard let vc = segue.destination as? QRDisplayerViewController else { return }
             
             vc.text = self.qrToExport
-            vc.isBbqr = self.isBbqr
             vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-            
-            if isBbqr {
-                vc.headerText = "Multisig Wallet BBQr"
-            } else {
-                vc.headerText = "Multisig Wallet UR Bytes"
-            }
+            vc.headerText = "Multisig Wallet UR Bytes"
          
         default:
             break

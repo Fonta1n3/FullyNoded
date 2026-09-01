@@ -20,7 +20,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private var stringToExport = ""
     private var descriptionText = ""
     private var headerText = ""
-    private var isBbqr = false
     private var nodelessDescriptor = ""
     private var showWords = false
     
@@ -981,21 +980,19 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             preferredStyle: .alert
         )
         
-        alert.addAction(UIAlertAction(title: "BBQR", style: .default) { [weak self] _ in
-            guard let self = self else { return }
-            self.isBbqr = true
-            exportQr(isBbqr: true, plainText: false, section: sender.tag)
-        })
+//        alert.addAction(UIAlertAction(title: "BBQR", style: .default) { [weak self] _ in
+//            guard let self = self else { return }
+//            self.isBbqr = true
+//            exportQr(isBbqr: true, plainText: false, section: sender.tag)
+//        })
         
         alert.addAction(UIAlertAction(title: "UR", style: .default) { [weak self] _ in
             guard let self = self else { return }
-            self.isBbqr = false
             exportQr(isBbqr: false, plainText: false, section: sender.tag)
         })
         
         alert.addAction(UIAlertAction(title: "Plain text", style: .default) { [weak self] _ in
             guard let self = self else { return }
-            self.isBbqr = false
             exportQr(isBbqr: false, plainText: true, section: sender.tag)
         })
         
@@ -1058,7 +1055,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
             vc.headerText = headerText
             vc.text = stringToExport
-            vc.isBbqr = self.isBbqr
             
         case "segueToNodeless":
             guard let vc = segue.destination as? NodelessTableViewController else { fallthrough }
