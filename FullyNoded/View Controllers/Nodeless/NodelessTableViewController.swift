@@ -24,6 +24,7 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
     var initialLoad = true
     var walletName: String?
     var keychain: WalletLogic.BDKKeyChain = .external
+    var savedUtxoParentDesc = ""
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -207,6 +208,7 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
             for savedUtxo in savedUtxos {
                 if savedUtxo.vout == vout && savedUtxo.txid == txid {
                     var status = Esplora_Utxo.Status(confirmed: false, blockHeight: nil, blockHash: nil, blockTime: nil)
+                    savedUtxoParentDesc = savedUtxo.parentDescs![0]
                     
                     if let confs = savedUtxo.confirmations {
                         if confs > 0 {

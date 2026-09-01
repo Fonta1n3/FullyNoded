@@ -217,6 +217,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             dict["lastUpdated"] = Date()
             dict["id"] = unlockedUtxo.id
             dict["reused"] = unlockedUtxo.reused
+            if let witnessScript = unlockedUtxo.witnessScript {
+                dict["witnessScript"] = witnessScript
+            }
             
             // Sync cached utxo ID, so we can delete it from the cache if user locks the utxo.
             CoreDataService.saveEntity(dict: dict, entityName: .utxos) { [weak self] utxosSaved in
@@ -462,6 +465,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             vc.utxoTotal = amountTotal
             vc.address = depositAddress ?? ""
             vc.fxRate = fxRate
+            vc.utxoToSweep = utxoToSweep
             
         case "segueToBroadcasterFromUtxo":
             guard let vc = segue.destination as? VerifyTransactionViewController else { fallthrough }
@@ -517,7 +521,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                     }
                     
                     do {
-                        let wallet = try WalletLogic.shared.bdkWalletFromDescriptors(recDesc: wallet.receiveDescriptor, changeDesc: wallet.changeDescriptor)
+                        let wallet = try WalletLogic.shared.bdkWalletFromDescriptors(recDesc: utxo.parentDescs![0], changeDesc: wallet.changeDescriptor)
+                        
+                        print("utxo.parentDescs![0]: \(utxo.parentDescs![0])")
                         
                         DispatchQueue.main.async { [weak self] in
                             guard let self = self else { return }
@@ -666,6 +672,7 @@ extension UTXOViewController: UTXOCellDelegate {
         amountTotal = utxo.amount
         let input:[String:Any] = ["txid": utxo.txid, "vout": utxo.vout, "sequence": 1]
         inputArray.append(input)
+        self.utxoToSweep = utxo
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }

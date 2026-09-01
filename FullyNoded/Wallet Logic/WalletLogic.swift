@@ -200,7 +200,7 @@ class WalletLogic {
         }
         
         let signOptions = SignOptions(
-            trustWitnessUtxo: false,
+            trustWitnessUtxo: true,
             assumeHeight: nil,
             allowAllSighashes: false,
             tryFinalize: true,
@@ -370,7 +370,6 @@ class WalletLogic {
         case networkFailed(reason: String)
     }
     
-    // Only used for sweeping a single utxo.
     func createPsbtWithManualInputs(
         wallet: BDKWallet,
         utxos: [Esplora_Utxo],
@@ -378,90 +377,249 @@ class WalletLogic {
         feeRate: Float? = nil,
         network: BDKNetwork
     ) throws -> BitcoinDevKit.Psbt? {
+        
+        var cachedUtxos: [[String: Any]] = []
+        let group = DispatchGroup()
+        group.enter()
+        CoreDataService.retrieveEntity(entityName: .utxos) { result in
+            cachedUtxos = result ?? []
+            group.leave()
+        }
+        group.wait()
+        
+        let onionRoot = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion"
+        let baseURL: String
+        switch network {
+        case .testnet: baseURL = "\(onionRoot)/testnet/api/"
+        case .testnet4: baseURL = "\(onionRoot)/testnet4/api/"
+        case .signet: baseURL = "\(onionRoot)/signet/api/"
+        case .regtest:
+            throw CustomError.networkFailed(reason: "Nodeless transaction creation does not work on regtest.")
+        default:
+            baseURL = "\(onionRoot)/api/"
+        }
+        
+        // Reveal the exact SPK so BDK treats the coin as local.
+        for utxo in utxos {
+            guard let addrStr = utxo.address else { continue }
+            let target = try Address(address: addrStr, network: network)
+            let targetSpk = target.scriptPubkey()
+            
+            var found = false
+            for _ in 0..<1000 {
+                let next = wallet.revealNextAddress(keychain: .external)
+                if next.address.scriptPubkey().toBytes() == targetSpk.toBytes() {
+                    found = true
+                    break
+                }
+            }
+            if !found {
+                print("Address \(addrStr) is not in this wallet descriptor. addUtxo will always fail.")
+                throw CustomError.networkFailed(
+                    reason: "Address \(addrStr) is not in this wallet descriptor. addUtxo will always fail."
+                )
+            }
+        }
+        
+        let syncRequest = try wallet.startSyncWithRevealedSpks().build()
+        let client = EsploraClient(url: baseURL, proxy: "http://localhost:9080")
+        let sync = try client.sync(request: syncRequest, parallelRequests: 4)
+        try wallet.applyUpdate(update: sync)
+        
         var txBuilder = TxBuilder()
-               
+        var appliedLocktime: UInt32?
+        
         for utxo in utxos {
             let txid = try Txid.fromString(hex: utxo.txid)
             let outpoint = OutPoint(txid: txid, vout: UInt32(utxo.vout))
             let address = try Address(address: utxo.address!, network: network)
-            let script = address.scriptPubkey()
             let amount = Amount.fromSat(satoshi: UInt64(utxo.value))
-            let txOutput = TxOut(value: amount, scriptPubkey: script)
-            wallet.insertTxout(outpoint: outpoint, txout: txOutput)
+            let txout = TxOut(value: amount, scriptPubkey: address.scriptPubkey())
+            
+            // After sync, re-insert so the graph still has this prevout.
+            wallet.insertTxout(outpoint: outpoint, txout: txout)
             txBuilder = txBuilder.addUtxo(outpoint: outpoint)
+            
+            for cachedUtxo in cachedUtxos {
+                let cached = UTXO(from: cachedUtxo)
+                guard cached.txid.lowercased() == utxo.txid.lowercased(),
+                      Int(cached.vout) == Int(utxo.vout),
+                      let hex = cached.witnessScript else { continue }
+                
+                if let locktime = extractCLTV(fromWitnessScript: hex) ?? extractCLTVFromAsmOrHex(hex) {
+                    appliedLocktime = locktime
+                }
+            }
         }
-                        
-        do {
-            let syncRequest = try wallet.startSyncWithRevealedSpks().build()
-            let onionRoot = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion"
-            let baseURL: String
-            switch network {
-            case .testnet: baseURL = "\(onionRoot)/testnet/api/"
-            case .testnet4: baseURL = "\(onionRoot)/testnet4/api/"
-            case .signet: baseURL = "\(onionRoot)/signet/api/"
-            case .regtest:
-                throw CustomError.networkFailed(reason: "Nodeless transaction creation does not work on regtest.")
-            default:
-                baseURL = "\(onionRoot)/api/"
+        if appliedLocktime == nil {
+            if let external = try? wallet.policies(keychain: .external) {
+                appliedLocktime = extractAfterLocktime(from: wallet.publicDescriptor(keychain: .external).description)
             }
-            
-            let client = EsploraClient(url: baseURL, proxy: "http://localhost:9080")
-            let sync = try client.sync(request: syncRequest, parallelRequests: 4)
-            try wallet.applyUpdate(update: sync)
-            
-            for output in outputs {
-                let address = try Address(address: output.address, network: network)
-                txBuilder = txBuilder.drainTo(script: address.scriptPubkey())
+            if appliedLocktime == nil, let internalP = try? wallet.policies(keychain: .internal) {
+                appliedLocktime = extractAfterLocktime(from: wallet.publicDescriptor(keychain: .internal).description)
             }
-            
-            let feeRate = try FeeRate.fromSatPerVb(satVb: UInt64(1))
-            txBuilder = txBuilder.manuallySelectedOnly()
-            txBuilder = txBuilder.feeRate(feeRate: feeRate)
-            txBuilder = txBuilder.drainWallet()
-            
-//            if let internalPolicies = try? wallet.policies(keychain: .internal) {
-//                if  internalPolicies.requiresPath() {
-//                    let (topID, subID, _, _) = extractTimelockPolicyValues(from: internalPolicies.asString(), hotXfp: nil)
-//                    
-//                    if let topID, let subID {
-//                        let policyPath: [String: [UInt64]] = [
-//                            topID: [1],
-//                            subID: [0, 1]
-//                        ]
-//                        
-//                        txBuilder = txBuilder.policyPath(policyPath: policyPath, keychain: .internal)
-//                    }
-//                }
-//            }
-//           
-//            if let externalPolicies = try? wallet.policies(keychain: .external) {
-//                if externalPolicies.requiresPath() {
-//                    let (topID, subID, _, _) = extractTimelockPolicyValues(from: externalPolicies.asString(), hotXfp: nil)
-//                    
-//                    if let topID, let subID {
-//                        let policyPath: [String: [UInt64]] = [
-//                            topID: [1],
-//                            subID: [0, 1]
-//                        ]
-//                        
-//                        txBuilder = txBuilder.policyPath(policyPath: policyPath, keychain: .external)
-//                    }
-//                }
-//            }
-            
-            let psbt = try txBuilder.finish(wallet: wallet)
-            
-            do {
-                try WalletLogic.shared.securelyDeleteWallet(name: "temp_wallet")
-            }
-            
-            return psbt
-            
-        } catch {
-            throw error
         }
+        
+        if let appliedLocktime {
+            if appliedLocktime >= 500_000_000 {
+                txBuilder = txBuilder.nlocktime(locktime: .seconds(consensusTime: appliedLocktime))
+            } else {
+                txBuilder = txBuilder.nlocktime(locktime: .blocks(height: appliedLocktime))
+            }
+        }
+        
+        if let appliedLocktime {
+            txBuilder = txBuilder.nlocktime(locktime: .seconds(consensusTime: appliedLocktime))
+        }
+        
+        for output in outputs {
+            let address = try Address(address: output.address, network: network)
+            txBuilder = txBuilder.drainTo(script: address.scriptPubkey())
+        }
+        
+        let satVb = UInt64(max(1, feeRate ?? 1))
+        txBuilder = txBuilder
+            .onlyWitnessUtxo()
+            .manuallySelectedOnly()
+            .feeRate(feeRate: try FeeRate.fromSatPerVb(satVb: satVb))
+        
+        if let policies = try? wallet.policies(keychain: .external), policies.requiresPath() {
+            let (topID, subID, _, _) = extractTimelockPolicyValues(from: policies.asString(), hotXfp: nil)
+            if let topID, let subID {
+                txBuilder = txBuilder.policyPath(
+                    policyPath: [topID: [1], subID: [0, 1]],
+                    keychain: .external
+                )
+            }
+        }
+        
+        let psbt = try txBuilder.finish(wallet: wallet)
+        try? WalletLogic.shared.securelyDeleteWallet(name: "temp_wallet")
+        return psbt
     }
     
+
+    func extractAfterLocktime(from text: String) -> UInt32? {
+        let pattern = #"after\((\d+)\)"#
+        if let regex = try? NSRegularExpression(pattern: pattern),
+           let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+           let range = Range(match.range(at: 1), in: text),
+           let value = UInt32(text[range]) {
+            return value
+        }
+        
+        // 2. Policy JSON from policies.asString()
+        guard let data = text.data(using: .utf8),
+              let json = try? JSONSerialization.jsonObject(with: data) else {
+            return nil
+        }
+        return findLocktime(in: json)
+    }
+
+    private func findLocktime(in json: Any) -> UInt32? {
+        if let dict = json as? [String: Any] {
+            let type = (dict["type"] as? String)?.uppercased() ?? ""
+            
+            let isLock =
+                type == "AFTER" ||
+                type == "TIMELOCK" ||
+                type == "ABSOLUTELOCKTIME" ||
+                type == "CHECKLOCKTIME" ||
+                type.contains("LOCKTIME")
+            
+            if isLock {
+                if let n = dict["value"] as? UInt32 { return n }
+                if let n = dict["locktime"] as? UInt32 { return n }
+                if let n = dict["timestamp"] as? UInt32 { return n }
+                if let n = dict["value"] as? Int { return UInt32(n) }
+                if let s = dict["value"] as? String, let n = UInt32(s) { return n }
+            }
+            
+            for value in dict.values {
+                if let found = findLocktime(in: value) {
+                    return found
+                }
+            }
+        } else if let array = json as? [Any] {
+            for item in array {
+                if let found = findLocktime(in: item) {
+                    return found
+                }
+            }
+        }
+        return nil
+    }
+
+    private func extractCLTVFromAsmOrHex(_ script: String) -> UInt32? {
+        if let fromExisting = extractCLTV(fromWitnessScript: script) {
+            return fromExisting
+        }
+        
+        // ASM: "... 1787666681 OP_CHECKLOCKTIMEVERIFY"
+        let parts = script.split(whereSeparator: { $0.isWhitespace })
+        if let cltvIndex = parts.firstIndex(where: { $0.uppercased().contains("CHECKLOCKTIMEVERIFY") }),
+           cltvIndex > parts.startIndex {
+            let prev = String(parts[parts.index(before: cltvIndex)])
+            if let value = UInt32(prev) {
+                return value
+            }
+        }
+        
+        // Hex: ... <push locktime> b1
+        guard let data = Data(hexString: script) else { return nil }
+        var i = 0
+        while i < data.count {
+            let op = data[i]
+            if (1...75).contains(op) {
+                let len = Int(op)
+                let start = i + 1
+                let end = start + len
+                guard end <= data.count else { return nil }
+                let payload = data[start..<end]
+                let next = end < data.count ? data[end] : 0
+                if next == 0xb1 { // OP_CHECKLOCKTIMEVERIFY
+                    var value: UInt64 = 0
+                    for (idx, byte) in payload.enumerated() {
+                        value |= UInt64(byte) << (8 * idx)
+                    }
+                    return UInt32(value)
+                }
+                i = end
+                continue
+            }
+            i += 1
+        }
+        return nil
+    }
+    
+    func extractCLTV(fromWitnessScript hex: String) -> UInt32? {
+        guard let data = Data(hexString: hex) else { return nil }
+        var i = 0
+        while i < data.count {
+            let op = data[i]
+            i += 1
+            
+            // data push (OP_PUSHDATA not handled for brevity – add if needed)
+            if op > 0 && op <= 75 {
+                let len = Int(op)
+                guard i + len <= data.count else { return nil }
+                let push = data[i ..< i+len]
+                i += len
+                
+                // next byte is OP_CHECKLOCKTIMEVERIFY?
+                if i < data.count && data[i] == 0xb1 {
+                    // interpret push as little-endian script number
+                    var value: UInt32 = 0
+                    for (idx, byte) in push.enumerated() {
+                        value |= UInt32(byte) << (8 * idx)
+                    }
+                    return value
+                }
+            }
+        }
+        return nil
+    }
+        
     enum WalletCreateError: Error {
         case unableToGetNetwork
         case unableToCreatePersistor
@@ -501,7 +659,8 @@ class WalletLogic {
             
             if fnDesc.isMulti && fnDesc.isP2TR, let descriptor = descriptor {
                 let (dummyPubkey, checksumlessDesc) = try dummyPubkeyAndChecksumLessDesc(descriptor: descriptor)
-                let nonRanged = nonRanged(desc: checksumlessDesc.string)
+                print("checksumlessDesc: \(checksumlessDesc.scriptPath)")
+                let nonRanged = nonRanged(desc: checksumlessDesc.scriptPath)//.replacingOccurrences(of: "tr(", with: "multi_a(")
                 let descriptorString = "tr(\(dummyPubkey),and_v(v:\(nonRanged),after(\(timelock))))"
                 #if DEBUG
                 print("timelocked multisig taproot descriptorString: \(descriptorString)")
@@ -595,82 +754,82 @@ class WalletLogic {
     }
     
     
-//    func extractTimelockPolicyValues(from policyString: String?, hotXfp: String?) -> (topID: String?, subID: String?, timelock: UInt64?, hotFingerprint: String?) {
-//        guard let policyString,
-//              let jsonStart = policyString.range(of: "{")?.lowerBound,
-//              let jsonEnd = policyString.range(of: "}", options: .backwards)?.upperBound else {
-//            return (nil, nil, nil, nil)
-//        }
-//        
-//        let json = String(policyString[jsonStart..<jsonEnd])
-//        guard let data = json.data(using: .utf8) else {
-//            return (nil, nil, nil, nil)
-//        }
-//        
-//        do {
-//            guard let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-//                return (nil, nil, nil, nil)
-//            }
-//            
-//            // Top-level THRESH (1-of-2 branches)
-//            let topID = jsonObject["id"] as? String
-//            
-//            guard let items = jsonObject["items"] as? [[String: Any]],
-//                  items.count == 2 else {
-//                return (topID, nil, nil, nil)
-//            }
-//            
-//            // Look for the inner THRESH (the one with MULTISIG + timelock)
-//            var subID: String?
-//            var timelockValue: UInt64?
-//            var hotFingerprint: String?
-//            
-//            for item in items {
-//                guard let itemType = item["type"] as? String,
-//                      itemType == "THRESH",
-//                      let itemID = item["id"] as? String,
-//                      let itemThreshold = item["threshold"] as? Int,
-//                      itemThreshold == 2,
-//                      let subItems = item["items"] as? [[String: Any]],
-//                      subItems.count == 2 else {
-//                    continue
-//                }
-//                
-//                subID = itemID
-//                
-//                // Now look inside this sub-THRESH's items
-//                for sub in subItems {
-//                    guard let subType = sub["type"] as? String else { continue }
-//                    
-//                    if subType == "MULTISIG",
-//                       let keys = sub["keys"] as? [[String: Any]] {
-//                        let fps = keys.compactMap({ $0["fingerprint"] as? String })
-//                        if let hotXfp = hotXfp,
-//                            fps.contains(hotXfp) {
-//                            hotFingerprint = hotXfp
-//                         }
-//                    }
-//                    else if subType == "ABSOLUTETIMELOCK",
-//                            let val = sub["value"] as? UInt64 {
-//                        timelockValue = val
-//                    }
-//                }
-//                
-//                // We found the interesting branch → can break early
-//                if subID != nil && (timelockValue != nil || hotFingerprint != nil) {
-//                    break
-//                }
-//            }
-//            
-//            return (topID, subID, timelockValue, hotFingerprint)
-//            
-//        } catch {
-//            #if DEBUG
-//            print("Policy JSON parse error: \(error)")
-//            #endif
-//            return (nil, nil, nil, nil)
-//        }
-//    }
+    func extractTimelockPolicyValues(from policyString: String?, hotXfp: String?) -> (topID: String?, subID: String?, timelock: UInt64?, hotFingerprint: String?) {
+        guard let policyString,
+              let jsonStart = policyString.range(of: "{")?.lowerBound,
+              let jsonEnd = policyString.range(of: "}", options: .backwards)?.upperBound else {
+            return (nil, nil, nil, nil)
+        }
+        
+        let json = String(policyString[jsonStart..<jsonEnd])
+        guard let data = json.data(using: .utf8) else {
+            return (nil, nil, nil, nil)
+        }
+        
+        do {
+            guard let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                return (nil, nil, nil, nil)
+            }
+            
+            // Top-level THRESH (1-of-2 branches)
+            let topID = jsonObject["id"] as? String
+            
+            guard let items = jsonObject["items"] as? [[String: Any]],
+                  items.count == 2 else {
+                return (topID, nil, nil, nil)
+            }
+            
+            // Look for the inner THRESH (the one with MULTISIG + timelock)
+            var subID: String?
+            var timelockValue: UInt64?
+            var hotFingerprint: String?
+            
+            for item in items {
+                guard let itemType = item["type"] as? String,
+                      itemType == "THRESH",
+                      let itemID = item["id"] as? String,
+                      let itemThreshold = item["threshold"] as? Int,
+                      itemThreshold == 2,
+                      let subItems = item["items"] as? [[String: Any]],
+                      subItems.count == 2 else {
+                    continue
+                }
+                
+                subID = itemID
+                
+                // Now look inside this sub-THRESH's items
+                for sub in subItems {
+                    guard let subType = sub["type"] as? String else { continue }
+                    
+                    if subType == "MULTISIG",
+                       let keys = sub["keys"] as? [[String: Any]] {
+                        let fps = keys.compactMap({ $0["fingerprint"] as? String })
+                        if let hotXfp = hotXfp,
+                            fps.contains(hotXfp) {
+                            hotFingerprint = hotXfp
+                         }
+                    }
+                    else if subType == "ABSOLUTETIMELOCK",
+                            let val = sub["value"] as? UInt64 {
+                        timelockValue = val
+                    }
+                }
+                
+                // We found the interesting branch → can break early
+                if subID != nil && (timelockValue != nil || hotFingerprint != nil) {
+                    break
+                }
+            }
+            
+            return (topID, subID, timelockValue, hotFingerprint)
+            
+        } catch {
+            #if DEBUG
+            print("Policy JSON parse error: \(error)")
+            #endif
+            return (nil, nil, nil, nil)
+        }
+    }
     
 }
 

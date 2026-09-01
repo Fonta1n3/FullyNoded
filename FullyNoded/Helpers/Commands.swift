@@ -7,6 +7,8 @@
 //
 
 public enum BTC_CLI_COMMAND {
+    case getblock(_ param: Get_Block)
+    case getblockhash(_ param: Get_Block_Hash)
     case listdescriptors
     case setban(_ param: Set_Ban)
     case scantxoutset(_ param: Scan_Tx_Out)
@@ -73,6 +75,10 @@ public enum BTC_CLI_COMMAND {
     
     var stringValue:String {
         switch self {
+        case .getblock:
+            return "getblock"
+        case .getblockhash:
+            return "getblockhash"
         case .listdescriptors:
             return "listdescriptors"
         case .setban:
@@ -204,6 +210,10 @@ public enum BTC_CLI_COMMAND {
     
     var paramDict:[String:Any] {
         switch self {
+        case .getblock(param: let getBlock):
+            return getBlock.param
+        case .getblockhash(param: let getBlockhash):
+            return getBlockhash.param
         case .setban(param: let setBan):
             return setBan.param
         case .setlabel(param: let setLabel):

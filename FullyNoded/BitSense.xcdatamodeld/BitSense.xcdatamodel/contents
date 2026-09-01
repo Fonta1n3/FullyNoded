@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24D60" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24902" systemVersion="25G76" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="AuthKeys" representedClassName="AuthKeys" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="privateKey" optional="YES" attributeType="Binary"/>
@@ -63,6 +63,7 @@
         <attribute name="txid" optional="YES" attributeType="String"/>
         <attribute name="vout" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="walletId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="witnessScript" optional="YES" attributeType="String"/>
     </entity>
     <entity name="Wallets" representedClassName="Wallets" syncable="YES" codeGenerationType="class">
         <attribute name="blockheight" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
