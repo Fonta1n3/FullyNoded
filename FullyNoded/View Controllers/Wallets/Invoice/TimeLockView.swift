@@ -45,6 +45,7 @@ final class TimelockViewController: UIViewController {
         picker.datePickerMode = .date
         picker.preferredDatePickerStyle = .wheels
         picker.minimumDate = Date() // Only future dates
+        picker.maximumDate = Calendar.current.date(from: DateComponents(year: 2105, month: 12, day: 31)) // Limit prior to the bitcoin killer bug.
         picker.translatesAutoresizingMaskIntoConstraints = false
         return picker
     }()
@@ -121,10 +122,10 @@ final class TimelockViewController: UIViewController {
             instructionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             instructionLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             
-            datePicker.topAnchor.constraint(equalTo: instructionLabel.bottomAnchor, constant: 40),
+            datePicker.topAnchor.constraint(equalTo: instructionLabel.bottomAnchor, constant: 20),
             datePicker.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            timestampLabel.topAnchor.constraint(equalTo: datePicker.bottomAnchor, constant: 50),
+            timestampLabel.topAnchor.constraint(equalTo: datePicker.bottomAnchor, constant: 20),
             timestampLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             timestampLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             timestampLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 80),

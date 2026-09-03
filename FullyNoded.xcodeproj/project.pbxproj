@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -84,6 +84,10 @@
 		0AF61BB62EC8AF1B001CDF34 /* DuressPinViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BB52EC8AF1B001CDF34 /* DuressPinViewController.swift */; };
 		0AF73250291DDFC4009F6296 /* BTC_Params.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF7324F291DDFC4009F6296 /* BTC_Params.swift */; };
 		0AFD7CF32C7E5FB100C46E36 /* Bbqr in Frameworks */ = {isa = PBXBuildFile; productRef = 0AFD7CF22C7E5FB100C46E36 /* Bbqr */; };
+		5939EEDF2FB3698400F73D8E /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5939EEDE2FB3698400F73D8E /* BitcoinDevKit */; };
+		59A81B173011F7620027AE96 /* NodelessWalletsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59A81B163011F7620027AE96 /* NodelessWalletsTableViewController.swift */; };
+		59D7BB0D30282D3100530445 /* Security.md in Resources */ = {isa = PBXBuildFile; fileRef = 59D7BB0C30282D3100530445 /* Security.md */; };
+		59DEFD92301497230021F041 /* Timelocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59DEFD91301497230021F041 /* Timelocks.swift */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
 		D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00B9A272111427200E8B95A /* AppDelegate.swift */; };
 		D00B9A2D2111427200E8B95A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D00B9A2B2111427200E8B95A /* Main.storyboard */; };
@@ -275,6 +279,9 @@
 		0AF61BB52EC8AF1B001CDF34 /* DuressPinViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuressPinViewController.swift; sourceTree = "<group>"; };
 		0AF7324F291DDFC4009F6296 /* BTC_Params.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTC_Params.swift; sourceTree = "<group>"; };
 		55FF5DCF6C4B0C2309EC4BF2 /* Pods-FullyNoded.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FullyNoded.debug.xcconfig"; path = "Target Support Files/Pods-FullyNoded/Pods-FullyNoded.debug.xcconfig"; sourceTree = "<group>"; };
+		59A81B163011F7620027AE96 /* NodelessWalletsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodelessWalletsTableViewController.swift; sourceTree = "<group>"; };
+		59D7BB0C30282D3100530445 /* Security.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Security.md; sourceTree = "<group>"; };
+		59DEFD91301497230021F041 /* Timelocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Timelocks.swift; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
 		899ECC6727CAAA7F913D0DA1 /* Pods-FullyNoded.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FullyNoded.release.xcconfig"; path = "Target Support Files/Pods-FullyNoded/Pods-FullyNoded.release.xcconfig"; sourceTree = "<group>"; };
 		A084FD782359F7B700DA63CF /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
@@ -378,6 +385,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5939EEDF2FB3698400F73D8E /* BitcoinDevKit in Frameworks */,
 				0AA6EFFC2C7E65F900503A39 /* URKit in Frameworks */,
 				0AFD7CF32C7E5FB100C46E36 /* Bbqr in Frameworks */,
 				0A8850FF2A4201C10078A603 /* LibWally.xcframework in Frameworks */,
@@ -427,7 +435,6 @@
 				D09F9E4B24B0673C006B588C /* SignersViewController.swift */,
 				D09F9E4F24B1BAC3006B588C /* SignerDetailViewController.swift */,
 				D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */,
-				0A2D4F592EE54CB700121667 /* Nodeless */,
 			);
 			path = Signers;
 			sourceTree = "<group>";
@@ -478,6 +485,7 @@
 		0A2D4F592EE54CB700121667 /* Nodeless */ = {
 			isa = PBXGroup;
 			children = (
+				59A81B163011F7620027AE96 /* NodelessWalletsTableViewController.swift */,
 				0A2D4F4F2EE2F09C00121667 /* NodelessTableViewController.swift */,
 				0A2D4F512EE2F98500121667 /* AddressCell.swift */,
 				0ABEC1FC2F02743500092FCE /* NodelessTransactionCreator.swift */,
@@ -519,6 +527,7 @@
 				D09A330424A8C4F6009FA0B2 /* Wallet.swift */,
 				0ABEC2002F03AAAA00092FCE /* UsedAddresses.swift */,
 				0ABEC2102F0D421100092FCE /* WalletBackup.swift */,
+				59DEFD91301497230021F041 /* Timelocks.swift */,
 			);
 			path = Entities;
 			sourceTree = "<group>";
@@ -649,6 +658,7 @@
 				A084FD6F2359E9C900DA63CF /* Build */,
 				D084960522EC0A94003FE8EB /* LICENSE.md */,
 				D0DE292A22BCFE9900D9EBCF /* Readme.md */,
+				59D7BB0C30282D3100530445 /* Security.md */,
 				D00B9A262111427200E8B95A /* FullyNoded */,
 				D00BD9C92365664600222A37 /* FullyNodedTests */,
 				D00B9A252111427200E8B95A /* Products */,
@@ -773,6 +783,7 @@
 				0A2D4F4A2EE2EF5D00121667 /* Signers */,
 				0A2D4F4C2EE2EF9000121667 /* QRs */,
 				0A2D4F4D2EE2EFA100121667 /* Transactions */,
+				0A2D4F592EE54CB700121667 /* Nodeless */,
 				0A0ABC342EBE07F6000329E0 /* TextModalViewController.swift */,
 			);
 			path = "View Controllers";
@@ -967,6 +978,7 @@
 				0AFD7CF22C7E5FB100C46E36 /* Bbqr */,
 				0AA6EFFB2C7E65F900503A39 /* URKit */,
 				0AD2023E2ECEDBF3006286DD /* BitcoinDevKit */,
+				5939EEDE2FB3698400F73D8E /* BitcoinDevKit */,
 			);
 			productName = BitSense;
 			productReference = D00B9A242111427200E8B95A /* FullyNoded.app */;
@@ -1041,7 +1053,7 @@
 			packageReferences = (
 				0AFD7CF12C7E5FB100C46E36 /* XCRemoteSwiftPackageReference "bbqr-swift" */,
 				0AA6EFFA2C7E65F900503A39 /* XCRemoteSwiftPackageReference "URKit" */,
-				0AD2023D2ECEDBF3006286DD /* XCLocalSwiftPackageReference "../bdk-swift" */,
+				5939EEDD2FB3698400F73D8E /* XCRemoteSwiftPackageReference "bdk-swift" */,
 			);
 			productRefGroup = D00B9A252111427200E8B95A /* Products */;
 			projectDirPath = "";
@@ -1062,6 +1074,7 @@
 				D084960622EC0A94003FE8EB /* LICENSE.md in Resources */,
 				D0DE292B22BCFE9900D9EBCF /* Readme.md in Resources */,
 				D00B9A352111427200E8B95A /* LaunchScreen.storyboard in Resources */,
+				59D7BB0D30282D3100530445 /* Security.md in Resources */,
 				D00B9A322111427200E8B95A /* Assets.xcassets in Resources */,
 				D049CB3924C7EFDF0039711B /* iTunesArtwork@2x.png in Resources */,
 				D06FD7D2250640F800481185 /* logo_grey_.png in Resources */,
@@ -1165,6 +1178,7 @@
 				D0C20EE024A6EF3800C62AA4 /* Balances.swift in Sources */,
 				D08A92B7233E113B00409D6E /* LockedViewController.swift in Sources */,
 				D039D3C823322F1300D1ED18 /* NodeStruct.swift in Sources */,
+				59A81B173011F7620027AE96 /* NodelessWalletsTableViewController.swift in Sources */,
 				D09A330D24A9B10E009FA0B2 /* BIP39WordList.swift in Sources */,
 				0A64634428FDC01B0079C5DB /* NostrResponse.swift in Sources */,
 				0A9287F82EC99248002484C3 /* UserCertURLSessionDelegate.swift in Sources */,
@@ -1184,6 +1198,7 @@
 				0A1F110726A2783000BE2707 /* KeyType.swift in Sources */,
 				0A212D8B26C66A9600BF6FD4 /* OnchainUtils.swift in Sources */,
 				D02094F3225936D2002E8E7A /* ConnectingView.swift in Sources */,
+				59DEFD92301497230021F041 /* Timelocks.swift in Sources */,
 				D09F9E5224B1F8DE006B588C /* AddSignerViewController.swift in Sources */,
 				D09F9E4C24B0673C006B588C /* SignersViewController.swift in Sources */,
 				D0E2A1052496EE9400AE0C04 /* ActiveWalletViewController.swift in Sources */,
@@ -1464,7 +1479,7 @@
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNoded.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -1481,7 +1496,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.3.2;
+				MARKETING_VERSION = 2.3.4;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
@@ -1513,7 +1528,7 @@
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNodedRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1532,7 +1547,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.3.2;
+				MARKETING_VERSION = 2.3.4;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
@@ -1633,13 +1648,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		0AD2023D2ECEDBF3006286DD /* XCLocalSwiftPackageReference "../bdk-swift" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "../bdk-swift";
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
 		0AA6EFFA2C7E65F900503A39 /* XCRemoteSwiftPackageReference "URKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -1655,6 +1663,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 0.3.1;
+			};
+		};
+		5939EEDD2FB3698400F73D8E /* XCRemoteSwiftPackageReference "bdk-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/bitcoindevkit/bdk-swift.git";
+			requirement = {
+				kind = exactVersion;
+				version = 3.0.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -1673,6 +1689,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0AFD7CF12C7E5FB100C46E36 /* XCRemoteSwiftPackageReference "bbqr-swift" */;
 			productName = Bbqr;
+		};
+		5939EEDE2FB3698400F73D8E /* BitcoinDevKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5939EEDD2FB3698400F73D8E /* XCRemoteSwiftPackageReference "bdk-swift" */;
+			productName = BitcoinDevKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 

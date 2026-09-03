@@ -50,6 +50,7 @@ struct UTXO {
     let vout: Int
     let lastUpdated: Date?
     var walletId: UUID?
+    let witnessScript: String?
     
     let rawData: [String: Any]
     
@@ -77,6 +78,7 @@ extension UTXO {
         amount = raw["amount"] as! Double
         walletId = raw["walletId"] as? UUID
         lastUpdated = raw["lastUpdated"] as? Date
+        witnessScript = raw["witnessScript"] as? String
         id = raw["id"] as? UUID
         
     }

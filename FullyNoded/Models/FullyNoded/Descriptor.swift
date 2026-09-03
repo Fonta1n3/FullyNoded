@@ -9,55 +9,62 @@ import LibWally
 
 public struct Descriptor: CustomStringConvertible {
     
-    let isCosigner:Bool
-    let scriptType:String
-    let format:String
-    let isHot:Bool
-    let mOfNType:String
-    let chain:String
-    let isMulti:Bool
-    let isBIP67:Bool
-    let isBIP49:Bool
-    let isBIP84:Bool
-    let isBIP48:Bool
-    let isBIP44:Bool
-    let isP2WPKH:Bool
-    let isP2PKH:Bool
-    let isP2SHP2WPKH:Bool
-    let isP2TR:Bool
-    let multiSigKeys:[String]
-    let multiSigPaths:[String]
-    let sigsRequired:UInt
+    let isCosigner: Bool
+    let scriptType: String
+    let format: String
+    let isHot: Bool
+    let mOfNType: String
+    let chain: String
+    let isMulti: Bool
+    let isBIP67: Bool
+    let isBIP49: Bool
+    let isBIP84: Bool
+    let isBIP48: Bool
+    let isBIP44: Bool
+    let isP2WPKH: Bool
+    let isP2PKH: Bool
+    let isP2SHP2WPKH: Bool
+    let isP2TR: Bool
+    let multiSigKeys: [String]
+    let multiSigPaths: [String]
+    let sigsRequired: UInt
     let accountXpub: String
     let accountXprv: String
-    let derivation:String
-    let derivationArray:[String]
-    let isSpecter:Bool
-    let isHD:Bool
-    let keysWithPath:[String]
+    let derivation: String
+    let derivationArray: [String]
+    let isSpecter: Bool
+    let isHD: Bool
+    let keysWithPath: [String]
     let scriptPath: String
     let internalKey: String
-    let isAccount:Bool
-    let fingerprint:String
-    let prefix:String
-    let pubkey:String
-    let isTaproot:Bool
+    let isAccount: Bool
+    let fingerprint: String
+    let prefix: String
+    let pubkey: String
+    let isTaproot: Bool
     let index: Int?
     let isInternal: Bool
     let isTimelocked: Bool
     let string: String
+    let expiry: String
+    let hasRange: Bool
     
     init(_ descriptor: String) {
         string = descriptor
                 
         var dictionary = [String:Any]()
         
+        if descriptor.contains("/*,") || descriptor.contains("/*)") {
+            dictionary["hasRange"] = true
+        } else {
+            dictionary["hasRange"] = false
+        }
+        
         if descriptor.contains("&") {
             dictionary["isSpecter"] = true
             
         } else {
             dictionary["isSpecter"] = false
-            
         }
         
         isTaproot = descriptor.hasPrefix("tr(")
@@ -69,11 +76,15 @@ public struct Descriptor: CustomStringConvertible {
             let scriptPath = trArray.dropFirst().joined(separator: ",").replacingOccurrences(of: "))", with: ")")
             dictionary["internalKey"] = internalKeyPath
             dictionary["scriptPath"] = scriptPath
-            //print("scriptPath: \(scriptPath)")
         }
         
         if descriptor.contains(",after(") {
             dictionary["isTimelocked"] = true
+            let arr = descriptor.components(separatedBy: ",after(")
+            let arr2 = "\(arr[1])".components(separatedBy: ")")
+            let expiryRaw = "\(arr2[0])"
+            let formattedExpiry = expiryRaw.unixTimestampToDateString()
+            dictionary["expiry"] = formattedExpiry
         }
         
         if descriptor.contains("/1/") {
@@ -115,40 +126,27 @@ public struct Descriptor: CustomStringConvertible {
                     case "tr":
                         dictionary["format"] = "P2TR"
                         dictionary["scriptType"] = "Taproot multi-sig"
-                        //print("arr[1]: \(arr[1])")
                         let internalKeyAndPrefixArr = "\(arr[1])".split(separator: ",")
                         let internalKey = "\(internalKeyAndPrefixArr[0])"
                         dictionary["internalKey"] = internalKey
-                        let scriptType = "\(internalKeyAndPrefixArr[1])"
                         
                         let mofnarray = (arr[2]).split(separator: ",")
-                        
                         let numberOfKeys = mofnarray.count - 1
                         dictionary["mOfNType"] = "\(mofnarray[0]) of \(numberOfKeys)"
                         dictionary["sigsRequired"] = UInt(mofnarray[0])
-                        
-//                        let scriptPath = "\(scriptType)(\(mofnarray.joined(separator: ","))".replacingOccurrences(of: "))", with: ")")
-//                        dictionary["scriptPath"] = scriptPath
-//                        print("scriptPath: \(scriptPath)")
                         
                         let trArray = descriptor.split(separator: ",")
                         let internalKeyPath = "\(trArray[0])"
                         let scriptPath = trArray.dropFirst().joined(separator: ",")
                         dictionary["internalKey"] = internalKeyPath
-                        //dictionary["scriptPath"] = scriptPath
-                        //print("scriptPath: \(scriptPath)")
-//                        let scriptPath = "\(trArray[1])"
                         var keysWithPath = [String]()
                         
                         if scriptPath.contains("multi_a") {
-                            //print("its a multi_a")
                             let processed = scriptPath.replacingOccurrences(of: "and_v(v:multi_a(", with: "")
                             let processArr = processed.components(separatedBy: "),after")
                             let plainMofN = "\(processArr[0])".split(separator: ",")
-                            //print("plainMofN: \(plainMofN)")
                             for (i, item) in plainMofN.enumerated() {
                                 if i != 0 {
-                                    //print("append: \(item)")
                                     keysWithPath.append("\(item.replacingOccurrences(of: ")", with: ""))")
                                 }
                                 if i + 1 == mofnarray.count {
@@ -156,9 +154,9 @@ public struct Descriptor: CustomStringConvertible {
                                 }
                             }
                             
-                            // and_v(v:multi_a(2,[8084b36e/48h/1h/0h/2h/0/12]03864f2908573eaab8dc53f63406cbfa0aa0526bc9f410615575ff4cf597663edb,[a99c0f45/48h/1h/0h/2h/0/12]03f1fed95a4867e7eff12285fa244a4de0c7d3ec6c66018d168b535f7f3d4f0903),after(1767970400)))#zhsvtrd4
-                            
-                            // tr(0227caee8bea95a44d40f9d433d6707c8b63694b364109602d5804f8a3d2d0994c,and_v(v:multi_a(2,[8084b36e/48h/1h/0h/2h/0/12]03864f2908573eaab8dc53f63406cbfa0aa0526bc9f410615575ff4cf597663edb,[a99c0f45/48h/1h/0h/2h/0/12]03f1fed95a4867e7eff12285fa244a4de0c7d3ec6c66018d168b535f7f3d4f0903),after(1767970400)))#zhsvtrd4)
+                            let numberOfKeys = plainMofN.count - 1
+                            dictionary["mOfNType"] = "\(plainMofN[0]) of \(numberOfKeys)"
+                            dictionary["sigsRequired"] = UInt(plainMofN[0])
                             
                         } else {
                             
@@ -172,7 +170,6 @@ public struct Descriptor: CustomStringConvertible {
                             }
                         }
                         
-                        //print("keyswithpath: \(keysWithPath)")
                         var fingerprints = [String]()
                         var keyArray = [String]()
                         var paths = [String]()
@@ -266,15 +263,11 @@ public struct Descriptor: CustomStringConvertible {
                                 dictionary["isP2SHP2WPKH"] = false
                                 dictionary["isBIP48"] = true
                                 dictionary["isAccount"] = true
-                                //dictionary["scriptType"] = "Taproot - multi-sig"
-                                //dictionary["format"] = "P2TR"
                                 
                             default:
                                 break
-                                
                             }
                         }
-                        
                     default:
                         break
                     }
@@ -380,8 +373,6 @@ public struct Descriptor: CustomStringConvertible {
                     for deriv in derivationArray {
                         let withH = deriv.replacingOccurrences(of: "h", with: "'")
                         switch withH {
-                            
-                        
                         
                         case "m/48'/0'/0'/1'", "m/48'/1'/0'/1'":
                             dictionary["isBIP44"] = false
@@ -443,13 +434,9 @@ public struct Descriptor: CustomStringConvertible {
                             dictionary["isAccount"] = true
                             
                         default:
-                            
                             break
-                            
                         }
-                        
                     }
-                    
                 default:
                     break
                 }
@@ -489,8 +476,6 @@ public struct Descriptor: CustomStringConvertible {
                     }
                 } else {
                     let subarray = extendedKey.split(separator: "#")
-                    //print("gtting here?")
-                    //print("subarray: \(subarray)")
                     if subarray.count == 2 {
                         dictionary["pubkey"] = "\("\(subarray[0])".replacingOccurrences(of: ")", with: ""))"
                     } else {
@@ -681,11 +666,28 @@ public struct Descriptor: CustomStringConvertible {
         internalKey = dictionary["internalKey"] as? String ?? ""
         isInternal = dictionary["isInternal"] as? Bool ?? false
         isTimelocked = dictionary["isTimelocked"] as? Bool ?? false
+        expiry = dictionary["expiry"] as? String ?? ""
+        hasRange = dictionary["hasRange"] as? Bool ?? false
     }
     
     public var description: String {
         return ""
     }
     
+}
+
+extension String {
+    func unixTimestampToDateString() -> String? {
+        guard let timestamp = Double(self) else { return nil }
+        let date = Date(timeIntervalSince1970: timestamp)
+        
+        return date.formatted(
+            .dateTime
+            .month(.abbreviated)
+            .day()
+            .year()
+            .hour().minute()
+        )
+    }
 }
 

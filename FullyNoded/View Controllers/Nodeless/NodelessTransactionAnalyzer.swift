@@ -19,6 +19,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     private let network: BitcoinDevKit.Network
     private let inputs: [Esplora_Utxo]
     private let fxRate: Double?
+    private var savedUtxo: UTXO?
     
     // New: for signed transaction
     private var signedRawTx: String?
@@ -334,55 +335,180 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     }
     
     private func analyzePsbt(psbt: Psbt) {
-        do {
-            let tx = try psbt.extractTx()  // Final tx if fully signed, otherwise underlying tx
+        var totalInputs = 0
+        var fullySignedInputs = 0
+        var statusLines: [String] = []
+        var anySigs = false
+        
+        let inputs = psbt.input()
+        
+        for (index, input) in inputs.enumerated() {
+            totalInputs += 1
             
-            var containsSigs = false
-            // Check if finalized
-            let finalized = psbt.finalize()
-            if !finalized.couldFinalize {
-                // check if contains partial sigs
-                for input in psbt.input() {
-                    if input.partialSigs.count > 0 {
-                        containsSigs = true
-                    }
-                }
-                if containsSigs {
-                    // update UI to show it is partially signed
-                    txStatusLabel.text = "Partially signed, needs more signatures."
-                    txStatusLabel.textColor = .systemGreen
-                } else {
-                    // no sigs
-                    txStatusLabel.text = "Unsigned, needs more signatures."
-                    txStatusLabel.textColor = .systemOrange
-                }
-                analyzeTx(tx: tx)
+            let legacySigCount = input.partialSigs.count
+            let hasTapKeySig = input.tapKeySig != nil
+            let tapScriptSigCount = input.tapScriptSigs.count
+            let currentSigs = legacySigCount + (hasTapKeySig ? 1 : 0) + tapScriptSigCount
+            if currentSigs > 0 { anySigs = true }
+            
+            let requiredSigs = requiredSignatures(for: input) ?? 1
+            let missing = max(0, requiredSigs - currentSigs)
+            
+            if missing == 0 {
+                fullySignedInputs += 1
+                statusLines.append("Input \(index + 1): \(currentSigs)/\(requiredSigs) sigs ✓")
             } else {
-                let finalTx = try finalized.psbt.extractTx()
-                // fully signed
-                txStatusLabel.text = "Signatures complete, tap broadcast to send."
-                txStatusLabel.textColor = .systemGreen
-                signedRawTx = finalTx.serialize().hex
-                broadcastButton.isHidden = false
-                signButton.isHidden = true
-                exportButton.setTitle("Export Signed Transaction", for: .normal)
-                analyzeTx(tx: finalTx)
+                statusLines.append("Input \(index + 1): \(currentSigs)/\(requiredSigs) sigs – needs \(missing) more")
             }
-            
-            
-            
-            let fee = try psbt.fee()
+        }
+        
+        let finalized = psbt.finalize()
+        
+        var feeText = ""
+        if let fee = try? psbt.fee() {
             let btcFee = Double(fee) / 100_000_000.0
             if let fxRate = fxRate {
-                let fiatAmount = (btcFee * fxRate).fiatString
-                feeLabel.text = "Fee: \(btcFee.btcBalanceWithSpaces) / \(fiatAmount)"
+                feeText = "Fee: \(btcFee.btcBalanceWithSpaces) / \((btcFee * fxRate).fiatString)"
             } else {
-                feeLabel.text = "Fee: \(btcFee.btcBalanceWithSpaces)"
+                feeText = "Fee: \(btcFee.btcBalanceWithSpaces)"
+            }
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.feeLabel.text = feeText.isEmpty ? self.feeLabel.text : feeText
+            
+            if finalized.couldFinalize {
+                do {
+                    let tx = try finalized.psbt.extractTx()
+                    self.txStatusLabel.text = "Signatures complete, tap broadcast to send."
+                    self.txStatusLabel.textColor = .systemGreen
+                    self.signedRawTx = tx.serialize().hex
+                    self.broadcastButton.isHidden = false
+                    self.signButton.isHidden = true
+                    self.exportButton.setTitle("Export Signed Transaction", for: .normal)
+                    self.analyzeTx(tx: tx)
+                } catch {
+                    showAlert(title: "Failed extracting", message: error.localizedDescription)
+                }
+                return
             }
             
-        } catch {
-            showAlert(title: "Failed analyzing", message: error.localizedDescription)
+            if fullySignedInputs == totalInputs && totalInputs > 0 {
+                self.txStatusLabel.text = "Enough signatures, but not finalized yet.\n" + statusLines.joined(separator: "\n")
+                self.txStatusLabel.textColor = .systemOrange
+            } else if anySigs {
+                self.txStatusLabel.text = "Partially signed\n" + statusLines.joined(separator: "\n")
+                self.txStatusLabel.textColor = .systemGreen
+            } else {
+                self.txStatusLabel.text = "Unsigned\n" + statusLines.joined(separator: "\n")
+                self.txStatusLabel.textColor = .systemOrange
+            }
+            
+            // unsigned / partial preview
+            if let tx = try? psbt.extractTx() {
+                self.analyzeTx(tx: tx)
+            }
         }
+    }
+    
+    // MARK: - Helpers
+
+    private func requiredSignatures(for input: WalletLogic.BDKPsbtInput) -> Int? {
+        for item in input.tapScripts {
+            if let threshold = parseMultiAThreshold(from: item.value.script) {
+                return threshold
+            }
+        }
+        
+        if let witnessScript = input.witnessScript,
+           let threshold = parseCheckMultisigThreshold(from: witnessScript) {
+            return threshold
+        }
+        if let redeemScript = input.redeemScript,
+           let threshold = parseCheckMultisigThreshold(from: redeemScript) {
+            return threshold
+        }
+        
+        if input.tapInternalKey != nil || input.tapKeySig != nil {
+            return 1
+        }
+        return nil
+    }
+
+    private func parseMultiAThreshold(from script: Script) -> Int? {
+        let bytes = script.toBytes()
+        guard bytes.count > 2 else { return nil }
+        
+        var i = 0
+        var lastSmallInt: Int?
+        var sawChecksigAdd = false
+        var sawChecksig = false
+        
+        while i < bytes.count {
+            let op = bytes[i]
+            
+            if (1...75).contains(op) {
+                i += 1 + Int(op)
+                continue
+            }
+            if (0x51...0x60).contains(op) {
+                lastSmallInt = Int(op - 0x50)
+                i += 1
+                continue
+            }
+            if op == 0xac || op == 0xad { // CHECKSIG / VERIFY
+                sawChecksig = true
+                i += 1
+                continue
+            }
+            if op == 0xba { // CHECKSIGADD
+                sawChecksigAdd = true
+                i += 1
+                continue
+            }
+            // NUMEQUAL / NUMEQUALVERIFY — threshold is the small-int just before this
+            if op == 0x9c || op == 0x9d {
+                if let k = lastSmallInt, sawChecksigAdd || sawChecksig {
+                    return k
+                }
+            }
+            i += 1
+        }
+        
+        if sawChecksigAdd, let k = lastSmallInt {
+            return k
+        }
+        if sawChecksig && !sawChecksigAdd {
+            return 1
+        }
+        return nil
+    }
+    
+    /// Classic CHECKMULTISIG script: OP_m <pubkey>… <pubkey> OP_n OP_CHECKMULTISIG
+    private func parseCheckMultisigThreshold(from script: Script) -> Int? {
+        let bytes = script.toBytes()          // adjust to your binding
+        guard bytes.count >= 4 else { return nil }
+        
+        // First opcode is the threshold (OP_1 … OP_16)
+        let first = bytes[0]
+        if first >= 0x51 && first <= 0x60 {   // OP_1 … OP_16
+            return Int(first - 0x50)
+        }
+        
+        // Sometimes it’s a direct push of a small number
+        if first > 0 && first <= 16 {
+            return Int(first)
+        }
+        
+        return nil
+    }
+
+    
+
+    private func currentSigsExist(_ lines: [String]) -> Bool {
+        lines.contains { !$0.contains("0/") }
     }
     
     @objc private func exportPsbtTapped() {
@@ -391,17 +517,17 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     
     func showQr() {
         promptQRDisplayFormat { format in
-            var isBBQr = false
+            //var isBBQr = false
             var isUr = false
             
             switch format {
-            case .bbqr:
-                isBBQr = true
+//            case .bbqr:
+//                isBBQr = true
             case .ur:
                 isUr = true
             case .plain:
                 isUr = false
-                isBBQr = false
+                //isBBQr = false
             }
             
             DispatchQueue.main.async { [weak self] in
@@ -431,7 +557,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                     headerText: headerText,
                     descriptionText: descriptionText,
                     headerIcon: UIImage(systemName: "qrcode"),
-                    isBbqr: isBBQr,
+                    isBbqr: false,
                     isUR: isUr
                 )
 
@@ -457,9 +583,9 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         })
         
         // BBQr Option (animated split parts)
-        alert.addAction(UIAlertAction(title: "BBQr", style: .default) { _ in
-            completion?(.bbqr)
-        })
+//        alert.addAction(UIAlertAction(title: "BBQr", style: .default) { _ in
+//            completion?(.bbqr)
+//        })
         
         // Plain Text Option (static single QR)
         alert.addAction(UIAlertAction(title: "Plain Text (Static QR)", style: .default) { _ in
@@ -483,7 +609,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
 
     enum QRDisplayFormat {
         case ur
-        case bbqr
+        //case bbqr
         case plain
     }
         
@@ -662,7 +788,8 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
             return
         }
         
-        Signer.shared.sign(fnWallet: fnWallet, psbt: psbt.serialize(), passphrase: passphrase, signers: signers, network: network, parentDesc: fnWallet.receiveDescriptor) { (signedPsbt, rawTx, errorMessage) in
+        Signer.shared.sign(fnWallet: fnWallet, psbt: psbt.serialize(), passphrase: passphrase, signers: signers, network: network, parentDesc: fnWallet.receiveDescriptor) { [weak self] (signedPsbt, rawTx, errorMessage) in
+            guard let self = self else { return }
             ConnectingView.shared.dismiss()
             
             if let rawTx = rawTx {
@@ -678,28 +805,12 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                     self.showTransactionSuccessAnimation(title: "Transaction signed!", subtitle: "Ready to broadcast")
                 }
             } else if let signedPsbt = signedPsbt {
-                guard let signedBdkPsbt = try? Psbt(psbtBase64: signedPsbt) else { return }
-                
-                var hasSigs = false
-                for input in signedBdkPsbt.input() {
-                    if input.partialSigs.count > 0 {
-                        hasSigs = true
-                    }
+                guard let signedBdkPsbt = try? Psbt(psbtBase64: signedPsbt) else {
+                    return
                 }
                 
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    if hasSigs {
-                        self.signedPsbt = signedPsbt
-                        txStatusLabel.text = "Partially signed, needs more signatures."
-                        txStatusLabel.textColor = .systemOrange
-                        self.showTransactionSuccessAnimation(title: "Transaction partially signed!", subtitle: "Ready to export to another signer")
-                    } else {
-                        txStatusLabel.text = "Unsigned, needs signatures."
-                        txStatusLabel.textColor = .systemOrange
-                        showAlert(title: "Psbt is unsigned", message: "Sign it with another signer.")
-                    }
-                }
+                self.signedPsbt = signedPsbt
+                analyzePsbt(psbt: signedBdkPsbt)
             } else {
                 showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "Unknown error.")
             }

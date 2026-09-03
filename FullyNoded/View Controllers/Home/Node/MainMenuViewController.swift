@@ -14,7 +14,6 @@ class MainMenuViewController: UIViewController {
     weak var mgr = TorClient.sharedInstance
     let ud = UserDefaults.standard
     @IBOutlet var mainMenu: UITableView!
-    var nodes = [[String:Any]]()
     var activeNode: NodeStruct?
     var existingNodeID: UUID!
     var initialLoad = false
@@ -23,7 +22,6 @@ class MainMenuViewController: UIViewController {
     var dataRefresher = UIBarButtonItem()
     var isUnlocked = false
     let refreshControl = UIRefreshControl()
-    //private var needsTableReload = false
     
     var blockchainInfo: BlockchainInfo?
     var peerInfo: GetPeerInfoResponse?
@@ -66,15 +64,19 @@ class MainMenuViewController: UIViewController {
         UIApplication.shared.isIdleTimerDisabled = true
         torStatusLabel.alpha = 0
         addNavBarSpinner()
+        
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
             guard let node = node  else {
+                guard  UserDefaults.standard.value(forKey: "beenHere") == nil else { return }
+                
                 CoreDataService.retrieveEntity(entityName: .newNodes) { savedNodes in
                     if savedNodes == nil || savedNodes?.count == 0 {
                         DispatchQueue.main.async { [weak self] in
                             guard let self = self else { return }
                             removeLoader()
                             performSegue(withIdentifier: "segueToFirstTimeHere", sender: self)
+                            UserDefaults.standard.set(true, forKey: "beenHere")
                         }
                     }
                 }
@@ -83,13 +85,12 @@ class MainMenuViewController: UIViewController {
             activeNode = node
         }
         
-        if !Crypto.setupinit() {
-            showAlert(vc: self, title: "", message: "There was an error setupinit.")
-        }
+       
         mainMenu.delegate = self
         mainMenu.tableFooterView = UIView(frame: .zero)
         mainMenu.layer.cornerRadius = 8
         mainMenu.clipsToBounds = true
+        applyCypherStyle()
         initialLoad = true
         showUnlockScreen()
         setFeeTarget()
@@ -123,10 +124,46 @@ class MainMenuViewController: UIViewController {
         updateTorStatus()
     }
     
+    private func applyCypherStyle() {
+        view.backgroundColor = Cypher.bg
+        mainMenu.backgroundColor = Cypher.bg
+        mainMenu.separatorStyle = .none
+        mainMenu.layer.cornerRadius = 2
+        mainMenu.layer.borderWidth = 1
+        mainMenu.layer.borderColor = Cypher.line.cgColor
+        mainMenu.indicatorStyle = .white
+
+        headerLabel.font = Cypher.mono(18, weight: .semibold)
+        headerLabel.textColor = Cypher.green
+        headerLabel.text = headerLabel.text?.uppercased()
+
+        torStatusLabel.font = Cypher.mono(12)
+        torProgressLabel.font = Cypher.mono(12)
+        torProgressLabel.textColor = Cypher.dim
+
+        progressView.progressTintColor = Cypher.green
+        progressView.trackTintColor = UIColor(white: 1, alpha: 0.08)
+        blurView.backgroundColor = Cypher.card
+        blurView.layer.cornerRadius = 2
+        blurView.layer.borderWidth = 1
+        blurView.layer.borderColor = Cypher.line.cgColor
+
+        refreshControl.tintColor = Cypher.green
+        spinner.color = Cypher.green
+        sectionSpinner.color = Cypher.green
+
+        navigationController?.navigationBar.barStyle = .black
+        navigationController?.navigationBar.tintColor = Cypher.green
+        navigationController?.navigationBar.titleTextAttributes = [
+            .foregroundColor: Cypher.green,
+            .font: Cypher.mono(15, weight: .semibold)
+        ]
+    }
+    
     // If XFP was not saved (which seems to be possible currently) we need it to identify potential signers.
     private func ensureXfpSaved() {
         CoreDataService.retrieveEntity(entityName: .signers) { [weak self] encryptedSigners in
-            guard let self = self else { return }
+            guard let _ = self else { return }
             
             guard let encryptedSigners = encryptedSigners else { return }
             
@@ -230,13 +267,6 @@ class MainMenuViewController: UIViewController {
             }
         }
     }
-        
-    
-//    @IBAction func showLightningNode(_ sender: Any) {
-//        DispatchQueue.main.async { [weak self] in
-//            self?.performSegue(withIdentifier: "segueToLightningNode", sender: self)
-//        }
-//    }
     
     func addNavBarSpinner() {
         DispatchQueue.main.async { [weak self] in
@@ -405,15 +435,23 @@ class MainMenuViewController: UIViewController {
     func blankCell() -> UITableViewCell {
         let cell = UITableViewCell()
         cell.selectionStyle = .none
-        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+        cell.backgroundColor = Cypher.card
+        cell.contentView.backgroundColor = Cypher.card
         return cell
     }
     
     private func homeCell(_ indexPath: IndexPath) -> UITableViewCell {
         let cell = mainMenu.dequeueReusableCell(withIdentifier: "homeCell", for: indexPath)
         cell.selectionStyle = .none
+        cell.backgroundColor = Cypher.card
+        cell.contentView.backgroundColor = Cypher.card
+        cell.layer.borderWidth = 0
+        
         let icon = cell.viewWithTag(1) as! UIImageView
         let label = cell.viewWithTag(2) as! UILabel
+        label.font = Cypher.mono(13)
+        label.textColor = Cypher.text
+        icon.tintColor = Cypher.green
         
         var chevronButton = cell.contentView.viewWithTag(999) as? UIButton
             if chevronButton == nil {
@@ -422,7 +460,7 @@ class MainMenuViewController: UIViewController {
                 chevronButton!.translatesAutoresizingMaskIntoConstraints = false
                 let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .light, scale: .default)
                 chevronButton!.setImage(UIImage(systemName: "chevron.right", withConfiguration: config), for: .normal)
-                chevronButton!.tintColor = .tintColor
+                chevronButton!.tintColor = Cypher.green
                 chevronButton!.backgroundColor = .clear
                 chevronButton!.layer.cornerRadius = 20
                 cell.contentView.addSubview(chevronButton!)
@@ -447,20 +485,20 @@ class MainMenuViewController: UIViewController {
             case 0:
                 if blockchainInfo.progressString == "Fully verified" {
                     icon.image = UIImage(systemName: "checkmark.seal")
-                    icon.tintColor = .tintColor
+                    icon.tintColor = Cypher.green
                 } else {
                     icon.image = UIImage(systemName: "exclamationmark.triangle")
-                    icon.tintColor = .systemRed
+                    icon.tintColor = Cypher.danger
                 }
-                label.text = blockchainInfo.progressString
+                label.text = blockchainInfo.progressString.uppercased()
                 
             case 1:
-                icon.tintColor = .tintColor
+                icon.tintColor = Cypher.green
                 label.text = blockchainInfo.network.capitalized + " blockchain"
                 icon.image = UIImage(systemName: "bitcoinsign.circle")
                 
             case 2:
-                icon.tintColor = .tintColor
+                icon.tintColor = Cypher.green
                 if blockchainInfo.pruned {
                     label.text = "Pruned node"
                     icon.image = UIImage(systemName: "rectangle.compress.vertical")
@@ -470,17 +508,17 @@ class MainMenuViewController: UIViewController {
                 }
                 
             case 3:
-                icon.tintColor = .tintColor
+                icon.tintColor = Cypher.green
                 label.text = "Blockheight \(blockchainInfo.blockheight.withCommas)"
                 icon.image = UIImage(systemName: "square.stack.3d.up")
                 
             case 4:
-                icon.tintColor = .tintColor
+                icon.tintColor = Cypher.green
                 label.text = "Blockchain size \(blockchainInfo.size)"
                 icon.image = UIImage(systemName: "archivebox")
                 
             case 5:
-                icon.tintColor = .tintColor
+                icon.tintColor = Cypher.green
                 label.text = "\(blockchainInfo.diffString)"
                 icon.image = UIImage(systemName: "slider.horizontal.3")
                 
@@ -493,12 +531,12 @@ class MainMenuViewController: UIViewController {
                         
             switch indexPath.row {
             case 0:
-                icon.tintColor = .tintColor
+                icon.tintColor = Cypher.green
                 label.text = networkInfo.version
                 icon.image = UIImage(systemName: "v.circle")
                 
             case 1:
-                icon.tintColor = .tintColor
+                icon.tintColor = Cypher.green
                 if networkInfo.torReachable {
                     label.text = "Tor hidden service on"
                     icon.image = UIImage(systemName: "wifi")
@@ -513,7 +551,7 @@ class MainMenuViewController: UIViewController {
             }
             
         case .peerInfo:
-            icon.tintColor = .tintColor
+            icon.tintColor = Cypher.green
             guard let peerInfo = peerInfo else { return blankCell() }
             
             label.text = "Peers \(peerInfo.outgoingCount) outgoing / \(peerInfo.incomingCount) incoming"
@@ -525,28 +563,28 @@ class MainMenuViewController: UIViewController {
             chevronButton!.addTarget(self, action: #selector(chevronButtonTapped(_:)), for: .touchUpInside)
             
         case .miningInfo:
-            icon.tintColor = .tintColor
+            icon.tintColor = Cypher.green
             guard let miningInfo = miningInfo else { return blankCell() }
                         
             label.text = miningInfo.hashrate + " " + "EH/s mining hashrate"
             icon.image = UIImage(systemName: "speedometer")
             
         case .upTime:
-            icon.tintColor = .tintColor
+            icon.tintColor = Cypher.green
             guard let uptimeInfo = uptimeInfo else { return blankCell() }
             
             label.text = "\(uptimeInfo.uptime / 86400) days \((uptimeInfo.uptime % 86400) / 3600) hours of uptime"
             icon.image = UIImage(systemName: "clock")
             
         case .mempoolInfo:
-            icon.tintColor = .tintColor
+            icon.tintColor = Cypher.green
             guard let mempoolInfo = mempoolInfo else { return blankCell() }
             
             label.text = "\(mempoolInfo.mempoolCount.withCommas) transactions in mempool"
             icon.image = UIImage(systemName: "waveform.path.ecg")
             
         case .feeInfo:
-            icon.tintColor = .tintColor
+            icon.tintColor = Cypher.green
             guard let feeInfo = feeInfo else { return blankCell() }
             
             label.text = feeInfo.feeRate + " " + "fee rate setting"
@@ -561,13 +599,6 @@ class MainMenuViewController: UIViewController {
     private func segueToShowDetail() {
         DispatchQueue.main.async { [weak self] in
             self?.performSegue(withIdentifier: "showDetailSegue", sender: self)
-        }
-    }
-    
-    private func updateSection(section: Section.RawValue) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            mainMenu.reloadSections(IndexSet(arrayLiteral: section), with: .none)
         }
     }
         
@@ -600,7 +631,7 @@ class MainMenuViewController: UIViewController {
                 headerLabel.textColor = .none
                 self.blockchainInfo = blockchainInfo
                 showBlockchainInfoSpinner = false
-                updateSection(section: Section.blockchainInfo.rawValue)
+                reloadTable()
                 getNetworkInfo()
             }
         }
@@ -623,7 +654,7 @@ class MainMenuViewController: UIViewController {
                 
                 peerInfo = response
                 showPeerInfoSpinner = false
-                updateSection(section: Section.peerInfo.rawValue)
+                reloadTable()
                 getMiningInfo()
             }
         }
@@ -646,7 +677,7 @@ class MainMenuViewController: UIViewController {
                 
                 networkInfo = NetworkInfo(dictionary: response)
                 showNetworkInfoSpinner = false
-                updateSection(section: Section.networkInfo.rawValue)
+                reloadTable()
                 getPeerInfo()
             }
         }
@@ -669,7 +700,7 @@ class MainMenuViewController: UIViewController {
                 
                 self.miningInfo = MiningInfo(dictionary: response)
                 showMiningInfoSpinner = false
-                updateSection(section: Section.miningInfo.rawValue)
+                reloadTable()
                 self.getUptime()
             }
         }
@@ -692,7 +723,7 @@ class MainMenuViewController: UIViewController {
                 
                 self.uptimeInfo = Uptime(dictionary: response)
                 showUpTimeSpinner = false
-                updateSection(section: Section.upTime.rawValue)
+                reloadTable()
                 self.getMempoolInfo()
             }
         }
@@ -712,7 +743,7 @@ class MainMenuViewController: UIViewController {
             
             self.mempoolInfo = MempoolInfo(dictionary: response)
             showMempoolInfoSpinner = false
-            updateSection(section: Section.mempoolInfo.rawValue)
+            reloadTable()
             self.getFeeInfo()
         }
     }
@@ -731,7 +762,7 @@ class MainMenuViewController: UIViewController {
             
             self.feeInfo = FeeInfo(dictionary: response)
             showFeeInfoSpinner = false
-            updateSection(section: Section.feeInfo.rawValue)
+            reloadTable()
             self.removeLoader()
         }
     }
@@ -740,14 +771,13 @@ class MainMenuViewController: UIViewController {
     
     func removeLoader() {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
+            guard let self else { return }
             refreshControl.endRefreshing()
             spinner.stopAnimating()
             spinner.alpha = 0
             refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(self.refreshData(_:)))
-            refreshButton.tintColor = UIColor.systemBlue.withAlphaComponent(1)
-            navigationItem.setRightBarButton(self.refreshButton, animated: true)
+            refreshButton.tintColor = Cypher.green
+            navigationItem.setRightBarButton(refreshButton, animated: true)
         }
     }
     
@@ -755,18 +785,6 @@ class MainMenuViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.mainMenu.reloadData()
-        }
-    }
-    
-    func getNodes(completion: @escaping (([[String:Any]]?)) -> Void) {
-        nodes.removeAll()
-        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
-            if nodes != nil {
-                completion(nodes!)
-            } else {
-                displayAlert(viewController: self, isError: true, message: "error getting nodes from coredata")
-                completion(nil)
-            }
         }
     }
     
@@ -793,16 +811,15 @@ class MainMenuViewController: UIViewController {
     
     private func updateTorStatus() {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
+            guard let self else { return }
+            torStatusLabel.font = Cypher.mono(12)
+            torStatusLabel.alpha = 1
             if mgr?.state == .connected {
-                torStatusLabel.text = "Tor v0.4.8.21 connected ✓"
-                torStatusLabel.textColor = .green
-                torStatusLabel.alpha = 1.0
+                torStatusLabel.text = "TOR V0.4.9.11 CONNECTED"
+                torStatusLabel.textColor = Cypher.green
             } else if mgr?.state == .stopped {
-                torStatusLabel.text = "Tor v0.4.8.21 disconnected"
-                torStatusLabel.textColor = .label
-                torStatusLabel.alpha = 1.0
+                torStatusLabel.text = "TOR V0.4.9.11 DISCONNECTED"
+                torStatusLabel.textColor = Cypher.danger
             }
         }
     }
@@ -907,20 +924,13 @@ extension MainMenuViewController {
     
     private func headerName(for section: Section) -> String {
         switch section {
-        case .blockchainInfo:
-            return "Blockchain info"
-        case .networkInfo:
-            return "Network info"
-        case .peerInfo:
-            return "Peer info"
-        case .miningInfo:
-            return "Mining info"
-        case .upTime:
-            return "Up time"
-        case .mempoolInfo:
-            return "Mempool info"
-        case .feeInfo:
-            return "Fee info"
+        case .blockchainInfo: return "BLOCKCHAIN"
+        case .networkInfo:    return "NETWORK"
+        case .peerInfo:       return "PEERS"
+        case .miningInfo:     return "MINING"
+        case .upTime:         return "UPTIME"
+        case .mempoolInfo:    return "MEMPOOL"
+        case .feeInfo:        return "FEES"
         }
     }
     
@@ -1029,8 +1039,11 @@ extension MainMenuViewController: UITableViewDelegate {
         
         let textLabel = UILabel()
         textLabel.textAlignment = .left
-        textLabel.font = UIFont.systemFont(ofSize: 17, weight: .regular)
-        textLabel.textColor = .quaternaryLabel
+        //textLabel.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        //textLabel.textColor = .quaternaryLabel
+        textLabel.font = Cypher.mono(13, weight: .medium)
+        textLabel.textColor = Cypher.dim
+            
         
         let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .light, scale: .default)
         
@@ -1038,7 +1051,8 @@ extension MainMenuViewController: UITableViewDelegate {
         let iconButton = UIButton(type: .system)
         iconButton.translatesAutoresizingMaskIntoConstraints = false
         iconButton.setImage(iconImage, for: .normal)
-        iconButton.tintColor = .tertiaryLabel
+        //iconButton.tintColor = .tertiaryLabel
+        iconButton.tintColor = Cypher.dim
         iconButton.backgroundColor = .clear
         iconButton.layer.cornerRadius = 20
         iconButton.addTarget(self, action: #selector(infoButtonTapped(_:)), for: .touchUpInside)
@@ -1057,12 +1071,12 @@ extension MainMenuViewController: UITableViewDelegate {
             switch section {
             case .blockchainInfo:
                 if blockchainInfo != nil {
-                    textLabel.textColor = .secondaryLabel
-                    iconButton.tintColor = .tintColor
+                    textLabel.textColor = Cypher.green
+                    iconButton.tintColor = Cypher.green
                 }
                 if showBlockchainInfoSpinner {
                     spinner.stopAnimating()
-                    textLabel.textColor = .tertiaryLabel
+                    textLabel.textColor = Cypher.dim
                     sectionSpinner.frame = CGRect(x: mainMenu.frame.maxX - 50, y: 4, width: 44, height: 44)
                     sectionSpinner.startAnimating()
                 } else {
@@ -1070,12 +1084,12 @@ extension MainMenuViewController: UITableViewDelegate {
                 }
             case .networkInfo:
                 if networkInfo != nil {
-                    textLabel.textColor = .secondaryLabel
-                    iconButton.tintColor = .tintColor
+                    textLabel.textColor = Cypher.green
+                    iconButton.tintColor = Cypher.green
                 }
                 if showNetworkInfoSpinner {
                     spinner.stopAnimating()
-                    textLabel.textColor = .tertiaryLabel
+                    textLabel.textColor = Cypher.dim
                     sectionSpinner.frame = CGRect(x: mainMenu.frame.maxX - 50, y: -14, width: 44, height: 44)
                     sectionSpinner.startAnimating()
                 } else {
@@ -1083,12 +1097,12 @@ extension MainMenuViewController: UITableViewDelegate {
                 }
             case .feeInfo:
                 if feeInfo != nil {
-                    textLabel.textColor = .secondaryLabel
-                    iconButton.tintColor = .tintColor
+                    textLabel.textColor = Cypher.green
+                    iconButton.tintColor = Cypher.green
                 }
                 if showFeeInfoSpinner {
                     spinner.stopAnimating()
-                    textLabel.textColor = .tertiaryLabel
+                    textLabel.textColor = Cypher.dim
                     sectionSpinner.frame = CGRect(x: mainMenu.frame.maxX - 50, y: -14, width: 44, height: 44)
                     sectionSpinner.startAnimating()
                 } else {
@@ -1097,12 +1111,12 @@ extension MainMenuViewController: UITableViewDelegate {
                 iconButton.alpha = 0
             case .mempoolInfo:
                 if mempoolInfo != nil {
-                    textLabel.textColor = .secondaryLabel
-                    iconButton.tintColor = .tintColor
+                    textLabel.textColor = Cypher.green
+                    iconButton.tintColor = Cypher.green
                 }
                 if showMempoolInfoSpinner {
                     spinner.stopAnimating()
-                    textLabel.textColor = .tertiaryLabel
+                    textLabel.textColor = Cypher.dim
                     sectionSpinner.frame = CGRect(x: mainMenu.frame.maxX - 50, y: -14, width: 44, height: 44)
                     sectionSpinner.startAnimating()
                 } else {
@@ -1110,12 +1124,12 @@ extension MainMenuViewController: UITableViewDelegate {
                 }
             case .miningInfo:
                 if miningInfo != nil {
-                    textLabel.textColor = .secondaryLabel
-                    iconButton.tintColor = .tintColor
+                    textLabel.textColor = Cypher.green
+                    iconButton.tintColor = Cypher.green
                 }
                 if showMiningInfoSpinner {
                     spinner.stopAnimating()
-                    textLabel.textColor = .tertiaryLabel
+                    textLabel.textColor = Cypher.dim
                     sectionSpinner.frame = CGRect(x: mainMenu.frame.maxX - 50, y: -14, width: 44, height: 44)
                     sectionSpinner.startAnimating()
                 } else {
@@ -1123,12 +1137,12 @@ extension MainMenuViewController: UITableViewDelegate {
                 }
             case .peerInfo:
                 if peerInfo != nil {
-                    textLabel.textColor = .secondaryLabel
-                    iconButton.tintColor = .tintColor
+                    textLabel.textColor = Cypher.green
+                    iconButton.tintColor = Cypher.green
                 }
                 if showPeerInfoSpinner {
                     spinner.stopAnimating()
-                    textLabel.textColor = .tertiaryLabel
+                    textLabel.textColor = Cypher.dim
                     sectionSpinner.frame = CGRect(x: mainMenu.frame.maxX - 50, y: -14, width: 44, height: 44)
                     sectionSpinner.startAnimating()
                 } else {
@@ -1136,12 +1150,12 @@ extension MainMenuViewController: UITableViewDelegate {
                 }
             case .upTime:
                 if uptimeInfo != nil {
-                    textLabel.textColor = .secondaryLabel
-                    iconButton.tintColor = .tintColor
+                    textLabel.textColor = Cypher.green
+                    iconButton.tintColor = Cypher.green
                 }
                 if showUpTimeSpinner {
                     spinner.stopAnimating()
-                    textLabel.textColor = .tertiaryLabel
+                    textLabel.textColor = Cypher.dim
                     sectionSpinner.frame = CGRect(x: mainMenu.frame.maxX - 50, y: -14, width: 44, height: 44)
                     sectionSpinner.startAnimating()
                 } else {
@@ -1184,3 +1198,16 @@ extension MainMenuViewController: UITableViewDataSource {}
 
 extension MainMenuViewController: UINavigationControllerDelegate {}
 
+private enum Cypher {
+    static let bg = UIColor.black
+    static let card = UIColor(white: 0.06, alpha: 1)
+    static let line = UIColor(red: 0.2, green: 1.0, blue: 0.45, alpha: 0.55)
+    static let green = UIColor(red: 0.25, green: 1.0, blue: 0.48, alpha: 1)
+    static let dim = UIColor(red: 0.35, green: 0.7, blue: 0.45, alpha: 1)
+    static let text = UIColor(red: 0.75, green: 1.0, blue: 0.82, alpha: 1)
+    static let danger = UIColor(red: 1.0, green: 0.28, blue: 0.32, alpha: 1)
+
+    static func mono(_ size: CGFloat, weight: UIFont.Weight = .regular) -> UIFont {
+        .monospacedSystemFont(ofSize: size, weight: weight)
+    }
+}

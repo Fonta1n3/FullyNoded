@@ -59,7 +59,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func getBitcoinCoreWallets() {
-        spinner.show(vc: self, description: "getting total balance...")
+        //spinner.show(vc: self, description: "getting total balance...")
         bitcoinCoreWallets.removeAll()
         wallets.removeAll()
         externalWallets.removeAll()

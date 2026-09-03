@@ -69,8 +69,6 @@ class ActiveWalletViewController: UIViewController {
             initialLoad = false
             loadTable()
         }
-        
-        //backupWalletNow()
     }
     
     @IBAction func getWalletDetail(_ sender: Any) {
@@ -85,7 +83,6 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    
     private func hideData() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -97,12 +94,6 @@ class ActiveWalletViewController: UIViewController {
             self.walletTable.reloadData()
         }
     }
-    
-    
-    
-    
-    
-
     
     @objc func importTx() {
         DispatchQueue.main.async { [weak self] in
@@ -282,7 +273,7 @@ class ActiveWalletViewController: UIViewController {
                 
                 return
             }
-            
+                                    
             self.wallet = wallet
             walletLabel = wallet.label
             getWalletBalance()
@@ -298,7 +289,7 @@ class ActiveWalletViewController: UIViewController {
             do {
                 let loadedBackup = try decoder.decode(WalletBackup.self, from: backup)
                 
-                if isMoreThanOneMonthAgo(loadedBackup.lastUpdate) {
+                if isMoreThanFiveMinutesAgo(loadedBackup.lastUpdate) {
                     backupWalletNow()
                 }
             } catch {
@@ -308,69 +299,74 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func backupWalletNow() {
-        var descriptors: [BackupItem] = []
-        
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
+            
             do {
-                guard let response = response else { return }
+                guard let response = response else {
+                    print("listdescriptors returned nil response")
+                    return
+                }
                 
                 let jsonData = try JSONSerialization.data(withJSONObject: response, options: [])
-                
                 let listDescriptorResponse = try JSONDecoder().decode(ListDescriptorsResponse.self, from: jsonData)
                 
-                var backupItem: BackupItem? = nil
-                
-                for (i, descriptor) in listDescriptorResponse.descriptors.enumerated() {
+                let descriptors: [BackupItem] = listDescriptorResponse.descriptors.map { descriptor in
                     var rangeValue: [Int]? = nil
-                    
                     if let range = descriptor.range {
-                        //rangeValue = [r]
-                        print("range.count: \(range.count)")
-                        if range.count == 2 {
-                            rangeValue = [range[0],range[1]]
-                            backupItem?.range = rangeValue
-                        } else if range.count == 1 {
-                            rangeValue = [range[0]]
-                            backupItem?.range = rangeValue
+                        switch range.count {
+                        case 2: rangeValue = [range[0], range[1]]
+                        case 1: rangeValue = [range[0]]
+                        default: break
                         }
                     }
                     
-                    var timestamp: Int? = nil
-                    if let timestampt = descriptor.timestamp {
-                        timestamp = timestampt
-                    }
-                    
-                    let backupitem: BackupItem = .init(desc: descriptor.desc, active: descriptor.active, range: rangeValue, nextIndex: descriptor.nextIndex ?? 0, timestamp: timestamp, internal: descriptor.internal_, label: descriptor.label ?? wallet!.label)
-                    
-                    descriptors.append(backupitem)
-                    
-                    if i + 1 == listDescriptorResponse.descriptors.count {
-                        let backup = WalletBackup(
-                            lastUpdate: Date(),
-                            descriptors: descriptors
-                        )
-                        updateNow(backup: backup)
-                    }
+                    return BackupItem(
+                        desc: descriptor.desc,
+                        active: descriptor.active,
+                        range: rangeValue,
+                        nextIndex: descriptor.nextIndex ?? 0,
+                        timestamp: descriptor.timestamp,
+                        internal: descriptor.internal_,
+                        label: descriptor.label
+                    )
                 }
+                
+                // TODO: Compare to existing before actually updating.
+                let backup = WalletBackup(
+                    lastUpdate: Date(),
+                    descriptors: descriptors
+                )
+                updateNow(backup: backup)
+                
             } catch {
-                print("listdescritpors response logic failed: \(error.localizedDescription)")
+                print("listdescriptors response logic failed: \(error.localizedDescription)")
             }
         }
-        return
+    }
+    
+    /// Helper to compare two descriptor arrays (order-independent)
+    private func areDescriptorsEqual(_ lhs: [BackupItem], _ rhs: [BackupItem]) -> Bool {
+        guard lhs.count == rhs.count else { return false }
+        
+        // Compare by the unique `desc` string (most important field)
+        let lhsSet = Set(lhs.map { $0.desc })
+        let rhsSet = Set(rhs.map { $0.desc })
+        
+        return lhsSet == rhsSet
     }
     
     @IBAction func loadBackupTapped(_ sender: Any) {
         exportBackup()
     }
     
-    func isMoreThanOneMonthAgo(_ date: Date) -> Bool {
+    func isMoreThanFiveMinutesAgo(_ date: Date) -> Bool {
         let calendar = Calendar.current
         let now = Date()
-        guard let oneMonthAgo = calendar.date(byAdding: .month, value: -1, to: now) else {
+        guard let fiveMinutesAgo = calendar.date(byAdding: .minute, value: -5, to: now) else {
             return false // Safety fallback
         }
-        return date < oneMonthAgo
+        return date < fiveMinutesAgo
     }
     
     private func exportBackup() {
@@ -456,8 +452,6 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func exportAsFile(backup: WalletBackup) {
-        print("exportAsFile: \(backup.descriptors.count)")
-        
         do {
             // 2. Encode to pretty-printed JSON
             let encoder = JSONEncoder()
@@ -513,6 +507,7 @@ class ActiveWalletViewController: UIViewController {
                     return
                 }
             }
+            //SuccessView(title: "Backup updated", subtitle: <#T##String#>)
             
         } catch {
             showAlert(title: "", message: "Updating failed: \(error.localizedDescription)")

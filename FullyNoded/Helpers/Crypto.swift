@@ -24,30 +24,21 @@ enum Crypto {
     }
     
     static func privateKey() -> Data {
-        return P256.Signing.PrivateKey().rawRepresentation
+        let key = SymmetricKey(size: .bits256)
+        return key.withUnsafeBytes { Data($0) }
     }
     
     static func encrypt(_ data: Data) -> Data? {
-        guard let key = KeyChain.getData("privateKey") else { return nil }
-        
-        return try? ChaChaPoly.seal(data, using: SymmetricKey(data: key)).combined
-    }
-    
-    static func blindPsbt(_ psbt: Data) -> Data? {
-        guard let key = KeyChain.getData("blindingKey") else {
-            return nil
+        if let key = KeyChain.getData("privateKey") {
+            return try? ChaChaPoly.seal(data, using: SymmetricKey(data: key)).combined
+        } else {
+            // create it
+            guard KeyChain.set(privateKey(), forKey: "privateKey") else { return nil }
+            
+            guard let key = KeyChain.getData("privateKey") else { return nil }
+            
+            return try? ChaChaPoly.seal(data, using: SymmetricKey(data: key)).combined
         }
-
-        return try? ChaChaPoly.seal(psbt, using: SymmetricKey(data: key)).combined
-    }
-    
-    static func decryptPsbt(_ data: Data) -> Data? {
-        guard let key = KeyChain.getData("blindingKey"),
-            let box = try? ChaChaPoly.SealedBox.init(combined: data) else {
-                return nil
-        }
-        
-        return try? ChaChaPoly.open(box, using: SymmetricKey(data: key))
     }
     
     static func decrypt(_ data: Data) -> Data? {
@@ -73,24 +64,12 @@ enum Crypto {
         return checksum.hexString
     }
     
-    static func setupinit() -> Bool {
-        // Goal is to replace this with a get request to my own server behind an authenticated v3 onion
-        guard KeyChain.getData("blindingKey") == nil else { return true }
-        
-        guard let pk = Data(base64Encoded: currentDate()) else { return false }
-
-        return KeyChain.set(pk, forKey: "blindingKey")
-    }
-    
     static func secret() -> Data? {
-        var bytes = [UInt8](repeating: 0, count: 32)
-        let result = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
-
-        guard result == errSecSuccess else {
-            print("Problem generating random bytes")
-            return nil
-        }
-
-        return Crypto.sha256hash(Crypto.sha256hash(Crypto.sha256hash(Data(bytes))))
+        var bytes = [UInt8](repeating: 0, count: 64) // 512 bits
+        let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+        guard status == errSecSuccess else { return nil }
+        
+        // Reduce to 256 bits with a single SHA-256
+        return Crypto.sha256hash(Data(bytes))
     }
 }

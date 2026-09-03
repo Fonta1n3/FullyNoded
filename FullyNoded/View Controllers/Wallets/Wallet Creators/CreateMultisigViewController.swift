@@ -23,7 +23,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     var alertStyle = UIAlertController.Style.alert
     var multiSigAccountDesc = ""
     var qrToExport = ""
-    var isBbqr = false
     let jsonDecoder = JSONDecoder()
     @IBOutlet weak var scriptSegmentedControl: UISegmentedControl!
     
@@ -332,7 +331,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             }
             var text = ""
             
-                message = "Export the wallet as a text file (compatible with Coldcard) or QR code (compatible with Passport, Sparrow, Blue Wallet and more)."
+                message = "Export the wallet as a text file or QR code (compatible with Passport, Sparrow, Blue Wallet and more)."
                 
                 text = """
                 Name: Fully Noded
@@ -355,7 +354,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             
             let alert = UIAlertController(title: "\(mofn) successfully created ✓", message: message, preferredStyle: alertStyle)
             
-            alert.addAction(UIAlertAction(title: "Export Text File (Coldcard)", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "Export Text File", style: .default, handler: { action in
                 self.export(text: text)
             }))
             
@@ -366,17 +365,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 }
                 
                 self.qrToExport = ur.qrString
-                
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.performSegue(withIdentifier: "segueToExportMsig", sender: self)
-                }
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Export BBQr", style: .default, handler: { action in
-                self.qrToExport = text
-                self.isBbqr = true
                 
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
@@ -452,7 +440,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             guard let self = self else { return }
             
             let fileManager = FileManager.default
-            let fileURL = fileManager.temporaryDirectory.appendingPathComponent("Coldcard-Import.txt")
+            let fileURL = fileManager.temporaryDirectory.appendingPathComponent("Import.txt")
             
             try? text.dataUsingUTF8StringEncoding.write(to: fileURL)
             
@@ -693,14 +681,8 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             guard let vc = segue.destination as? QRDisplayerViewController else { return }
             
             vc.text = self.qrToExport
-            vc.isBbqr = self.isBbqr
             vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-            
-            if isBbqr {
-                vc.headerText = "Multisig Wallet BBQr"
-            } else {
-                vc.headerText = "Multisig Wallet UR Bytes"
-            }
+            vc.headerText = "Multisig Wallet UR Bytes"
          
         default:
             break

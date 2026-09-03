@@ -26,6 +26,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     var balance = ""
     var psbt: String?
+    var utxoToSweep: UTXO?
     
     
     @IBOutlet weak private var addressInput: UILabel!
@@ -41,7 +42,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet weak private var addOutputOutlet: UIBarButtonItem!
     @IBOutlet weak private var playButtonOutlet: UIBarButtonItem!
     @IBOutlet weak private var amountInput: UITextField!
-    //@IBOutlet weak private var addressInput: UITextField!
     @IBOutlet weak private var amountLabel: UILabel!
     @IBOutlet weak private var actionOutlet: UIButton!
     @IBOutlet weak private var scanOutlet: UIButton!
@@ -69,13 +69,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         } else {
             balanceLabel.text = balance + " btc"
         }
-       
+        
         addTapGesture()
-                
+        
         slider.addTarget(self, action: #selector(setFee), for: .allEvents)
         slider.maximumValue = 2 * -1
         slider.minimumValue = 432 * -1
-                
+        
         if ud.object(forKey: "feeTarget") != nil {
             let numberOfBlocks = ud.object(forKey: "feeTarget") as! Int
             slider.value = Float(numberOfBlocks) * -1
@@ -85,7 +85,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             slider.value = 432 * -1
             ud.set(432, forKey: "feeTarget")
         }
-         
+        
         showFeeSetting()
         
         slider.addTarget(self, action: #selector(didFinishSliding(_:)), for: .valueChanged)
@@ -93,7 +93,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         amountInput.text = ""
         if address != "" {
             addAddress(address)
-        }        
+        }
     }
     
     @IBAction func sendToWalletAction(_ sender: Any) {
@@ -158,7 +158,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         // Temporarily set the active wallet to the wallet we are deriving an address from.
         UserDefaults.standard.set(walletToFetchFrom.name, forKey: "walletName")
         
-        let addressType = Descriptor(walletToFetchFrom.receiveDescriptor).addressType        
+        let addressType = Descriptor(walletToFetchFrom.receiveDescriptor).addressType
         
         let p = Get_New_Address(["address_type": addressType])
         
@@ -271,7 +271,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
         tryRaw()
     }
-        
+    
     private func convertedAmount() -> String? {
         guard let amount = amountInput.text, amount != "" else { return nil }
         
@@ -293,7 +293,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                       message: "You need to fill out a recipient and amount first then tap this button, this button is used for adding multiple recipients aka \"batching\".")
             return
         }
-                
+        
         outputs.append([address.replacingOccurrences(of: "-", with: ""):amount])
         
         DispatchQueue.main.async { [weak self] in
@@ -309,7 +309,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     override func viewDidAppear(_ animated: Bool) {
         if inputs.count > 0 {
-                        
+            
             if let fxRate = fxRate {
                 balanceLabel.text = utxoTotal.btcBalanceWithSpaces + " / " + (fxRate * utxoTotal).fiatString
             } else {
@@ -319,7 +319,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             showAlert(vc: self, title: "Coin control ✓", message: "Only the utxo's you have just selected will be used in this transaction. You may send the total balance of the *selected utxo's* by tapping the \"Send all\" button or enter a custom amount as normal.")
         }
     }
-                
+    
     @IBAction func createPsbt(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "segueToCreatePsbt", sender: vc)
@@ -402,7 +402,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 cell.textLabel?.textColor = .lightGray
             }
         } else {
-           cell.textLabel?.text = ""
+            cell.textLabel?.text = ""
         }
         return cell
     }
@@ -439,132 +439,146 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    private func sweepSelectedUtxos(_ receivingAddress: String) {
-        standardSweep(receivingAddress)
-    }
-    
-    private func standardSweep(_ receivingAddress: String) {
-        var paramDict:[String:Any] = [:]
-        paramDict["inputs"] = inputs
-        paramDict["outputs"] = [[receivingAddress: "\(utxoTotal)"]]
-        paramDict["bip32derivs"] = true
-        
-        if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {            
-            paramDict["options"] = ["includeWatching": true, "replaceable": true, "fee_rate": feeRate, "subtractFeeFromOutputs": [0], "changeAddress": receivingAddress]
-        } else {
-            paramDict["options"] = ["includeWatching": true, "replaceable": true, "conf_target": ud.object(forKey: "feeTarget") as? Int ?? 432, "subtractFeeFromOutputs": [0], "changeAddress": receivingAddress]
-        }
-        
-        let param:Wallet_Create_Funded_Psbt = .init(paramDict)
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletcreatefundedpsbt(param: param)) { [weak self] (response, errorMessage) in
-            guard let self = self else { return }
-            
-            guard let result = response as? NSDictionary, let psbt1 = result["psbt"] as? String else {
-                self.spinner.dismiss()
-                displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
+    private func sweepUtxos(utxosToSweep: [UTXO], receivingAddress: String) {
+        var inputArray: [[String: Any]] = []
+        var amount = Double()
+        var spendFromCold = Bool()
+        var locktime: UInt32 = 0
+
+        for utxo in utxosToSweep {
+            if utxo.spendable == false { spendFromCold = true }
+            amount += utxo.amount
+
+            guard let confirmations = utxo.confirmations, confirmations > 0 else {
+                spinner.dismiss()
+                showAlert(vc: self, title: "", message: "You have unconfirmed utxo's, wait till they get a confirmation before trying to sweep them.")
                 return
             }
-            
-            let param_process:Wallet_Process_PSBT = .init(["psbt": psbt1])
-            MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletprocesspsbt(param: param_process)) { [weak self] (response, errorMessage) in
-                guard let self = self else { return }
-                
-                guard let dict = response as? NSDictionary, let processedPSBT = dict["psbt"] as? String else {
-                    self.spinner.dismiss()
-                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
-                    return
-                }
-                
-                self.sign(psbt: processedPSBT)
+
+            if let ws = utxo.witnessScript,
+               let cltv = WalletLogic.shared.extractCLTV(fromWitnessScript: ws) {
+                locktime = max(locktime, cltv)
             }
+
+            var input = utxo.input
+            input["sequence"] = 1
+            inputArray.append(input)
         }
-    }
-    
-    private func sweepWallet(_ receivingAddress: String) {
-       standardWalletSweep(receivingAddress)
-    }
-    
-    private func standardWalletSweep(_ receivingAddress: String) {
-        let param: List_Unspent = .init(["minconf": 0])
-        //OnchainUtils.listUnspent(param: param) { [weak self] (utxos, message) in
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listunspent(param)) { [weak self] (response, errorDesc) in
-            guard let self = self else { return }
-            
-            guard let response = response as? [[String: Any]] else {
-                self.spinner.dismiss()
-                displayAlert(viewController: self, isError: true, message: errorDesc ?? "error fetching utxo's")
-                return
-            }
-            
-            let utxos = [UTXO].from(rawArray: response)
-            
-            var inputArray:[[String:Any]] = []
-            var amount = Double()
-            var spendFromCold = Bool()
-            
-            for utxo in utxos {
-                if !utxo.spendable! {
-                    spendFromCold = true
-                }
-                
-                amount += utxo.amount
-                
-                guard let confirmations = utxo.confirmations, confirmations > 0 else {
-                    self.spinner.dismiss()
-                    showAlert(vc: self, title: "", message: "You have unconfirmed utxo's, wait till they get a confirmation before trying to sweep them.")
-                    return
-                }
-                
-                inputArray.append(utxo.input)
-            }
-            
-            var paramDict:[String:Any] = [:]
-            var options:[String:Any] = [:]
+
+        func buildParams(lock: UInt32) -> [String: Any] {
+            var paramDict: [String: Any] = [:]
             paramDict["inputs"] = inputArray
-            paramDict["outputs"] = [[receivingAddress: "\((rounded(number: amount)))"]]
+            paramDict["outputs"] = [[receivingAddress: "\(rounded(number: amount))"]]
             paramDict["bip32derivs"] = true
-            
+            if lock > 0 { paramDict["locktime"] = lock }
+
+            var options: [String: Any] = [:]
             options["includeWatching"] = spendFromCold
             options["replaceable"] = true
             options["subtractFeeFromOutputs"] = [0]
             options["changeAddress"] = receivingAddress
-            
             if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
                 options["fee_rate"] = feeRate
             } else {
-                options["conf_target"] = self.ud.object(forKey: "feeTarget") as? Int ?? 432
+                options["conf_target"] = ud.object(forKey: "feeTarget") as? Int ?? 432
             }
-            
             paramDict["options"] = options
-            
-            let param:Wallet_Create_Funded_Psbt = .init(paramDict)
-                        
-            MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletcreatefundedpsbt(param: param)) { [weak self] (response, errorMessage) in
-                guard let self = self else { return }
-                
-                guard let result = response as? NSDictionary, let psbt1 = result["psbt"] as? String else {
-                    self.spinner.dismiss()
+            return paramDict
+        }
+
+        func processAndVerify(_ psbt: String) {
+            let processParam: Wallet_Process_PSBT = .init(["psbt": psbt])
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletprocesspsbt(param: processParam)) { [weak self] response, errorMessage in
+                guard let self else { return }
+                guard let dict = response as? NSDictionary, let processedPSBT = dict["psbt"] as? String else {
+                    spinner.dismiss()
                     displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                     return
                 }
-                
-                let process_param: Wallet_Process_PSBT = .init(["psbt": psbt1])
-                MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletprocesspsbt(param: process_param)) { [weak self] (response, errorMessage) in
-                    guard let self = self else { return }
-                    
-                    guard let dict = response as? NSDictionary, let processedPSBT = dict["psbt"] as? String else {
-                        self.spinner.dismiss()
-                        displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
-                        return
+                goVerifyPsbt(psbt: processedPSBT)
+            }
+        }
+
+        func locktimeFromDecodedPsbt(_ decoded: [String: Any]) -> UInt32 {
+            var needed: UInt32 = 0
+            guard let inputs = decoded["inputs"] as? [[String: Any]] else { return 0 }
+
+            for input in inputs {
+                if let scripts = input["taproot_scripts"] as? [[String: Any]] {
+                    for s in scripts {
+                        if let hex = s["script"] as? String,
+                           let v = WalletLogic.shared.extractCLTV(fromWitnessScript: hex) {
+                            needed = max(needed, v)
+                        }
                     }
-                    
-                    self.sign(psbt: processedPSBT)
+                }
+                if let ws = input["witness_script"] as? [String: Any],
+                   let hex = ws["hex"] as? String,
+                   let v = WalletLogic.shared.extractCLTV(fromWitnessScript: hex) {
+                    needed = max(needed, v)
+                }
+            }
+            return needed
+        }
+
+        func fund(lock: UInt32, completion: @escaping (String?) -> Void) {
+            let param: Wallet_Create_Funded_Psbt = .init(buildParams(lock: lock))
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletcreatefundedpsbt(param: param)) { [weak self] response, errorMessage in
+                guard let self else { return }
+                guard let result = response as? NSDictionary, let psbt = result["psbt"] as? String else {
+                    spinner.dismiss()
+                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
+                    completion(nil)
+                    return
+                }
+                completion(psbt)
+            }
+        }
+
+        fund(lock: locktime) { psbt1 in
+            guard let psbt1 else { return }
+
+            let decodeParam: Decode_Psbt = .init(["psbt": psbt1])
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .decodepsbt(param: decodeParam)) { response, _ in
+                let decoded = response as? [String: Any] ?? [:]
+                let txLock = ((decoded["tx"] as? [String: Any])?["locktime"] as? NSNumber)?.uint32Value ?? 0
+                let needed = max(locktime, locktimeFromDecodedPsbt(decoded))
+
+                if needed == 0 || txLock >= needed {
+                    processAndVerify(psbt1)
+                    return
+                }
+
+                fund(lock: needed) { psbt2 in
+                    guard let psbt2 else { return }
+                    processAndVerify(psbt2)
                 }
             }
         }
     }
+        
+    private func sweepWallet(_ receivingAddress: String) {
+        guard inputs.count == 0, utxoToSweep == nil else {
+            sweepUtxos(utxosToSweep: [utxoToSweep!], receivingAddress: receivingAddress)
+            return
+        }
+        
+        let param: List_Unspent = .init(["minconf": 0])
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listunspent(param)) { [weak self] response, errorDesc in
+            guard let self else { return }
+
+            guard let response = response as? [[String: Any]] else {
+                spinner.dismiss()
+                displayAlert(viewController: self, isError: true, message: errorDesc ?? "error fetching utxo's")
+                return
+            }
+
+            let utxos = [UTXO].from(rawArray: response)
+            sweepUtxos(utxosToSweep: utxos, receivingAddress: receivingAddress)
+        }
+    }
     
-    private func sign(psbt: String) {
+    private func goVerifyPsbt(psbt: String) {
         self.psbt = psbt
         showRaw()
     }
@@ -572,18 +586,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     private func sweep() {
         guard let receivingAddress = addressInput.text,
               receivingAddress != "" else {
-                  showAlert(vc: self, title: "Add an address first", message: "")
-                  return
-              }
-        
-        if inputs.count > 0 {
-            spinner.show(vc: self, description: "sweeping selected utxo's...")
-            sweepSelectedUtxos(receivingAddress.replacingOccurrences(of: "-", with: ""))
-        } else {
-            
-            spinner.show(vc: self, description: "sweeping wallet...")
-            sweepWallet(receivingAddress.replacingOccurrences(of: "-", with: ""))
+            showAlert(vc: self, title: "Add an address first", message: "")
+            return
         }
+        spinner.show(vc: self, description: "sweeping wallet...")
+        sweepWallet(receivingAddress.replacingOccurrences(of: "-", with: ""))
     }
     
     @IBAction func sweep(_ sender: Any) {
@@ -629,7 +636,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         addressInput.resignFirstResponder()
         feeRateInputField.resignFirstResponder()
     }
-        
+    
     //MARK: Textfield methods
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
@@ -763,32 +770,28 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     func getRawTx() {
-        
-        func createNow() {
-            CreatePSBT.create(inputs: self.inputs, outputs: self.outputs) { [weak self] (psbt, rawTx, errorMessage) in
-                guard let self = self else { return }
+        CreatePSBT.create(inputs: self.inputs, outputs: self.outputs) { [weak self] (psbt, rawTx, errorMessage) in
+            guard let self = self else { return }
+            
+            self.spinner.dismiss()
+            
+            if let rawTx = rawTx {
+                self.rawTx = rawTx
+                self.showRaw()
                 
-                self.spinner.dismiss()
+            } else if let psbt = psbt {
+                self.psbt = psbt
+                self.showRaw()
                 
-                if let rawTx = rawTx {
-                    self.rawTx = rawTx
-                    self.showRaw()
-                
-                } else if let psbt = psbt {
-                    self.psbt = psbt
-                    self.showRaw()
-                                    
-                } else {
-                    self.outputs.removeAll()
-                    DispatchQueue.main.async {
-                        self.outputsTable.reloadData()
-                    }
-                    
-                    showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error creating transaction")
+            } else {
+                self.outputs.removeAll()
+                DispatchQueue.main.async {
+                    self.outputsTable.reloadData()
                 }
+                
+                showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error creating transaction")
             }
         }
-        createNow()
     }
     
     @IBAction func pasteAddressAction(_ sender: Any) {

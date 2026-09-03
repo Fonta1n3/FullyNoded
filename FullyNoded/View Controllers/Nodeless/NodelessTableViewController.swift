@@ -22,11 +22,15 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
     var changeDescriptor: String?
     var watchOnlyBdkWallet: WalletLogic.BDKWallet?
     var initialLoad = true
+    var walletName: String?
+    var keychain: WalletLogic.BDKKeyChain = .external
+    var savedUtxoParentDesc = ""
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         tableView.register(BitcoinAddressCell.self, forCellReuseIdentifier: "BitcoinCell")
+        setupTableHeader()
         
         let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
         FiatConverter.sharedInstance.getFxRate(currency: currency) { fxRate in
@@ -39,6 +43,77 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
             load()
             initialLoad = false
         }
+    }
+    
+    private func setupTableHeader() {
+        let headerView = UIView()
+        headerView.backgroundColor = .clear
+        
+        let titleLabel = UILabel()
+        
+        if let walletName = walletName {
+            titleLabel.text = walletName
+        } else if let signer = signer {
+            titleLabel.text = signer.label
+        }
+        
+        titleLabel.font = .systemFont(ofSize: 17, weight: .bold)
+        titleLabel.textColor = .systemGreen
+        titleLabel.numberOfLines = 0
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Segmented Control
+        let segmentedControl = UISegmentedControl(items: ["Receive", "Change"])
+        segmentedControl.selectedSegmentIndex = 0
+        segmentedControl.selectedSegmentTintColor = .systemGreen
+        segmentedControl.setTitleTextAttributes([.foregroundColor: UIColor.systemGreen], for: .normal)
+        segmentedControl.setTitleTextAttributes([.foregroundColor: UIColor.black], for: .selected)
+        segmentedControl.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Optional: add target
+        segmentedControl.addTarget(self, action: #selector(segmentChanged(_:)), for: .valueChanged)
+        
+        headerView.addSubview(titleLabel)
+        headerView.addSubview(segmentedControl)
+        
+        NSLayoutConstraint.activate([
+            // Title
+            titleLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 16),
+            titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 20),
+            titleLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -20),
+            
+            // Segmented Control
+            segmentedControl.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 12),
+            segmentedControl.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 20),
+            segmentedControl.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -20),
+            segmentedControl.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -16)
+        ])
+        
+        // Size the header
+        headerView.setNeedsLayout()
+        headerView.layoutIfNeeded()
+        
+        let height = headerView.systemLayoutSizeFitting(
+            CGSize(width: tableView.bounds.width, height: UIView.layoutFittingCompressedSize.height),
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        ).height
+        
+        headerView.frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: height)
+        tableView.tableHeaderView = headerView
+    }
+
+    @objc private func segmentChanged(_ sender: UISegmentedControl) {
+        switch sender.selectedSegmentIndex {
+        case 0:
+            keychain = .external
+        case 1:
+            keychain = .internal
+        default:
+            break
+        }
+        
+        load()
     }
     
     @IBAction func importTransaction(_ sender: Any) {
@@ -133,6 +208,7 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
             for savedUtxo in savedUtxos {
                 if savedUtxo.vout == vout && savedUtxo.txid == txid {
                     var status = Esplora_Utxo.Status(confirmed: false, blockHeight: nil, blockHash: nil, blockTime: nil)
+                    savedUtxoParentDesc = savedUtxo.parentDescs![0]
                     
                     if let confs = savedUtxo.confirmations {
                         if confs > 0 {
@@ -260,7 +336,6 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
         load()
     }
     
-    
     @IBAction func deleteCacheAction(_ sender: Any) {
         Task {
             await deleteItem()
@@ -297,23 +372,45 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
         savedUtxos.removeAll()
         addresses.removeAll()
         
+        let parsedDesc = Descriptor(primaryDescriptor)
+        
+        if signer == nil {
+            CoreDataService.retrieveEntity(entityName: .signers) { signers in
+                guard let signers = signers else { return }
+                
+                for signer in signers {
+                    let str = SignerStruct(dictionary: signer)
+                    guard let encryptedXfp = str.xfp else { return }
+                    guard let decryptedXfp = Crypto.decrypt(encryptedXfp) else { return }
+                    guard let utf8Xfp = decryptedXfp.utf8String else { return }
+                    if parsedDesc.fingerprint.contains(utf8Xfp) {
+                        self.signer = str
+                    }
+                }
+            }
+        }
+        
         let descArr = primaryDescriptor.components(separatedBy: "#")
         var changeDesc = ""
-        if let changeDescriptor = changeDescriptor {
+        if let changeDescriptor = changeDescriptor, changeDescriptor != "" {
             changeDesc = changeDescriptor
         } else {
             changeDesc = "\(descArr[0])".replacingOccurrences(of: "/0/", with: "/1/")
         }
         
-        network = WalletLogic.shared.bdkNetwork()
+        if parsedDesc.chain == "Mainnet" {
+            network = .bitcoin
+        } else {
+            network = .testnet
+        }
                 
-        guard let bdkPrimDesc = try? WalletLogic.BDKDescriptor(descriptor: primaryDescriptor, network: network) else {
+        guard let bdkPrimDesc = try? WalletLogic.BDKDescriptor(descriptor: primaryDescriptor, networkKind: WalletLogic.shared.networkKind(network: network)) else {
             spinner.dismiss()
             showAlert(vc: self, title: "", message: "Unable to derive BDK primary descriptor.")
             return
         }
         
-        guard let bdkChangeDesc = try? WalletLogic.BDKDescriptor(descriptor: changeDesc, network: network) else {
+        guard let bdkChangeDesc = try? WalletLogic.BDKDescriptor(descriptor: changeDesc, networkKind: WalletLogic.shared.networkKind(network: network)) else {
             spinner.dismiss()
             showAlert(vc: self, title: "", message: "Unable to derive BDK change descriptor.")
             return
@@ -332,103 +429,41 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
         }
         
         watchOnlyBdkWallet = bdkWallet
-       
-        
-//        guard let encryptedWords = signer.words else {
-//            spinner.dismiss()
-//            showAlert(vc: self, title: "", message: "For now the BIP39 words need to be present to use this feature. Watch-only nodeless functionality coming soon.")
-//            return
-//        }
-//        
-//        guard var decryptedData = Crypto.decrypt(encryptedWords) else {
-//            spinner.dismiss()
-//            return
-//        }
-//        
-//        var passphrase: String?
-//        
-//        if signer.passphrase != nil {
-//            guard var decryptedPassphrase = Crypto.decrypt(signer.passphrase!) else {
-//                spinner.dismiss()
-//                return
-//            }
-//            
-//            defer {
-//                decryptedPassphrase.secureZero()
-//            }
-//            
-//            passphrase = String(bytes: decryptedPassphrase, encoding: .utf8)
-//        }
-//        
-//        if network == nil {
-//            guard let networkCheck = WalletLogic.shared.bdkNetwork() else {
-//                spinner.dismiss()
-//                return
-//            }
-//            
-//            network = networkCheck
-//        }        
-//        
-//        guard var words = String(bytes: decryptedData, encoding: .utf8) else {
-//            spinner.dismiss()
-//            return
-//        }
-//        
-//        guard let secretMasterKey = WalletLogic.shared.bdkMasterKey(network: network, mnemonic: words, passphrase: passphrase) else {
-//            spinner.dismiss()
-//            return
-//        }
-//        
-//        guard let persister = WalletLogic.shared.persistor() else {
-//            spinner.dismiss()
-//            return
-//        }
-//        
-//        defer {
-//            words.secureWipe()
-//            passphrase?.secureWipe()
-//            decryptedData.secureZero()
-//        }
-//        
-//        var recDesc: WalletLogic.BDKDescriptor!
-//        var changeDesc: WalletLogic.BDKDescriptor!
-//        
-//        if accountPath.hasPrefix("m/86") {
-//            recDesc = WalletLogic.BDKDescriptor.newBip86(secretKey: secretMasterKey, keychainKind: .external, network: network)
-//            changeDesc = WalletLogic.BDKDescriptor.newBip86(secretKey: secretMasterKey, keychainKind: .internal, network: network)
-//        }
-//        
-//        if accountPath.hasPrefix("m/84") {
-//            recDesc = WalletLogic.BDKDescriptor.newBip84(secretKey: secretMasterKey, keychainKind: .external, network: network)
-//            changeDesc = WalletLogic.BDKDescriptor.newBip84(secretKey: secretMasterKey, keychainKind: .internal, network: network)
-//        }
-//        
-//        guard let bdkWallet = try? WalletLogic.BDKWallet(descriptor: recDesc, changeDescriptor: changeDesc, network: network, persister: persister) else {
-//            spinner.dismiss()
-//            return
-//        }
         
         let path = Descriptor(primaryDescriptor).derivation
         
-        DispatchQueue.global(qos: .background).async { [weak self] in
-            guard let self = self else { return }
-            for i in 0...999 {
-                let addressInfo = bdkWallet.peekAddress(keychain: .external, index: UInt32(i))
-                
-                let str = AddressStruct(dictionary: [
-                    "address": addressInfo.address.description,
-                    "balance": 0.0,
-                    "derivation": "\(path)/0/\(i)",
-                    "utxos": [],
-                    "used": false
-                ])
-                
-                addresses.append(str)
-                
-                if i == 999 {
-                    checkSavedUtxos()
+        if parsedDesc.hasRange {
+            DispatchQueue.global(qos: .background).async { [weak self] in
+                guard let self = self else { return }
+                for i in 0...999 {
+                    let addressInfo = bdkWallet.peekAddress(keychain: keychain, index: UInt32(i))
+                    
+                    let str = AddressStruct(dictionary: [
+                        "address": addressInfo.address.description,
+                        "balance": 0.0,
+                        "derivation": "\(path)/0/\(i)",
+                        "utxos": [],
+                        "used": false
+                    ])
+                    
+                    addresses.append(str)
+                    
+                    if i == 999 {
+                        checkSavedUtxos()
+                    }
                 }
             }
+        } else {
+            let addressInfo = bdkWallet.revealNextAddress(keychain: keychain)
+            let str = AddressStruct(dictionary: [
+                "address": addressInfo.address.description,
+                "balance": 0.0,
+                "derivation": "\(path)",
+                "utxos": [],
+                "used": false
+            ])
+            addresses.append(str)
+            checkSavedUtxos()
         }
     }
     

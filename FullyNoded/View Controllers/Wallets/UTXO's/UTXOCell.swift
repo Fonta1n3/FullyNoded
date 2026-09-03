@@ -21,6 +21,7 @@ protocol UTXOCellDelegate: AnyObject {
     func showUtxoRawData(_ utxo: UTXO)
     func copyParentDesc(_ utxo: UTXO)
     func didTapParentDescInfoButton(_ utxo: UTXO)
+    func didTapNodeless(_ utxo: UTXO)
 }
 
 class UTXOCell: UITableViewCell {
@@ -30,7 +31,7 @@ class UTXOCell: UITableViewCell {
     private var isLocked: Bool!
     private unowned var delegate: UTXOCellDelegate!
     
-    
+    @IBOutlet weak var nodelessButton: UIButton!
     @IBOutlet weak var spendUtxoButtonOutlet: UIButton!
     @IBOutlet weak var addressLabel: UILabel!
     @IBOutlet weak var checkMarkImageView: UIImageView!
@@ -52,7 +53,6 @@ class UTXOCell: UITableViewCell {
     @IBOutlet weak var isSolvableImageView: UIImageView!
     @IBOutlet weak var fiatAmount: UILabel!
     @IBOutlet weak var parentDescLabel: UILabel!
-    
     
     
     override func awakeFromNib() {
@@ -130,7 +130,7 @@ class UTXOCell: UITableViewCell {
             walletLabel = wallet.label
         }
                 
-        if let solvable = utxo.solvable {
+        if let _ = utxo.solvable {
             solvableLabel.text = "Owned by \(walletLabel)"
             isSolvableImageView.tintColor = .none
             isSolvableImageView.image = UIImage(systemName: "person.crop.circle.fill.badge.checkmark")
@@ -163,6 +163,10 @@ class UTXOCell: UITableViewCell {
         voutLabel.text = "\(utxo.vout)"
         self.translatesAutoresizingMaskIntoConstraints = true
         self.sizeToFit()
+    }
+    
+    @IBAction func didTapNodelessButton(_ sender: Any) {
+        delegate.didTapNodeless(utxo)
     }
     
     @IBAction func didTapCopyParentDescButton(_ sender: Any) {

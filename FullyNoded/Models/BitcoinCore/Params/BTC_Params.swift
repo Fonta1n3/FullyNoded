@@ -640,20 +640,55 @@ public struct Wallet_Create_Funded_Psbt: CustomStringConvertible {
      5. bip32derivs                        (boolean, optional, default=true) Include BIP 32 derivation paths for public keys if we know them
 
      */
-    let param:[String:Any]
+    var param:[String:Any]
     init(_ dict: [String:Any]) {
         let inputs = dict["inputs"] as? [[String:Any]] ?? []
         let outputs = dict["outputs"] as? [[String:Any]] ?? []
-        //let locktime = dict["locktime"] as? Int ?? 0
+        let locktime = dict["locktime"] as? UInt32
         let options = dict["options"] as? [String:Any] ?? [:]
         let bip32derivs = dict["bip32derivs"] as? Bool ?? true
         param = [
             "inputs": inputs,
             "outputs": outputs,
-            //"locktime": locktime,
             "options": options,
             "bip32derivs": bip32derivs
         ]
+        if let locktime = locktime {
+            param["locktime"] = locktime
+        }
+    }
+}
+
+public struct Get_Block_Hash: CustomStringConvertible {
+    public var description: String {
+        return ""
+    }
+    /*
+     Arguments:
+     1. height    (numeric, required) The height index
+     */
+    
+    let param:[String:Any]
+    init(_ dict: [String:Any]) {
+        let height = dict["height"] as? Int ?? 0
+        param = ["height": height]
+    }
+}
+
+public struct Get_Block: CustomStringConvertible {
+    public var description: String {
+        return ""
+    }
+    /*
+     Arguments:
+     1. blockhash    (string, required) The block hash
+     2. verbosity    (numeric, optional, default=1) 0 for hex-encoded data, 1 for a JSON object, 2 for JSON object with transaction data, and 3 for JSON object with transaction data including prevout information for inputs
+     */
+    
+    let param:[String:Any]
+    init(_ dict: [String:Any]) {
+        let blockhash = dict["blockhash"] as? String ?? ""
+        param = ["blockhash": blockhash]
     }
 }
 

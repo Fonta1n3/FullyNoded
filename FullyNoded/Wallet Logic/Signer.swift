@@ -19,12 +19,12 @@ class Signer {
                            passphrase: String?,
                            utxoParentDesc: String,
                            completion: @escaping ((psbt: String?, rawTx: String?, errorMessage: String?)) -> Void) {
-        
+                
         guard let bdkNetwork = WalletLogic.shared.bdkNetwork() else {
             completion((nil, nil, "Failed getting bdkNetwork."))
             return
         }
-                
+                        
         CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
             guard let self = self else { return }
             
@@ -37,25 +37,46 @@ class Signer {
             print("utxoParentDesc: \(utxoParentDesc)")
             #endif
             
+            let fnDesc = Descriptor(utxoParentDesc)
             var signerArray: [SignerStruct] = []
+            
             for (i, signer) in signers.enumerated() {
                 let signerStr = SignerStruct(dictionary: signer)
-                if let _ = signerStr.words {
+                if var encryptedWords = signerStr.words {
+                    if signerStr.xfp == nil, var decryptedSigner = Crypto.decrypt(encryptedWords), var words = decryptedSigner.utf8String, let mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase ?? ""), let xfp = Keys.fingerprint(masterKey: mkMain), let encryptedXfp = Crypto.encrypt(xfp.utf8) {
+                        defer {
+                            decryptedSigner.secureZero()
+                            encryptedWords.secureZero()
+                            words.secureWipe()
+                        }
+                        CoreDataService.update(id: signerStr.id, keyToUpdate: "xfp", newValue: encryptedXfp, entity: .signers) { _ in }
+                        
+                        if fnDesc.fingerprint.contains(xfp) {
+                            signerArray.append(signerStr)
+                        }
+                        if i + 1 == signers.count {
+                            sign(fnWallet: fnWallet, psbt: psbt, passphrase: passphrase, signers: signerArray, network: bdkNetwork, parentDesc: utxoParentDesc, completion: completion)
+                        }
+                    } else {
                         if let encryptedXfp = signerStr.xfp, let decryptedXfp = Crypto.decrypt(encryptedXfp), let utf8Xfp = decryptedXfp.utf8String {
                             let fnDesc = Descriptor(utxoParentDesc)
                             if fnDesc.fingerprint.contains(utf8Xfp) {
                                 signerArray.append(signerStr)
                             }
                         }
-                }
-                if i + 1 == signers.count {
-                    sign(fnWallet: fnWallet, psbt: psbt, passphrase: passphrase, signers: signerArray, network: bdkNetwork, parentDesc: utxoParentDesc, completion: completion)
+                        if i + 1 == signers.count {
+                            sign(fnWallet: fnWallet, psbt: psbt, passphrase: passphrase, signers: signerArray, network: bdkNetwork, parentDesc: utxoParentDesc, completion: completion)
+                        }
+                    }
+                } else {
+                    if i + 1 == signers.count {
+                        sign(fnWallet: fnWallet, psbt: psbt, passphrase: passphrase, signers: signerArray, network: bdkNetwork, parentDesc: utxoParentDesc, completion: completion)
+                    }
                 }
             }
         }
     }
     
-    // need to create individual BDKWallets using the timelocked descriptor
     func sign(fnWallet: Wallet,
               psbt: String,
               passphrase: String?,
@@ -97,7 +118,7 @@ class Signer {
                 
                 // if its change the parent desc will be the change desc...
                 if parentDesc.contains("/1/") {
-                    changeDesc = fnWallet.receiveDescriptor
+                    changeDesc = parentDesc.replacingOccurrences(of: "/1/", with: "/0/")
                 }
                 
                 WalletLogic.shared.wallet(passphrase: passphrase,
@@ -113,13 +134,12 @@ class Signer {
                         print("bdkWallet creation failed")
                         #endif
                         return
-                    }                    
-                    
+                    }
+                                        
                     let (signedPsbt, signedRawTx, errorMessage) = WalletLogic.shared.signPsbt(wallet: bdkWallet, psbtBase64: psbt)
                     #if DEBUG
                     print("rawTx: \(signedRawTx ?? "")")
                     #endif
-                    
                     
                     if signedRawTx != nil {
                         rawTxToReturn = signedRawTx

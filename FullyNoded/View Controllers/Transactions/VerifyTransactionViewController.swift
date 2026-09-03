@@ -7,8 +7,6 @@
 //
 
 import UIKit
-//import LibWally
-//import CoreNFC
 
 class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate {
     
@@ -46,7 +44,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var bitcoinCoreWallets = [String()]
     var walletIndex = 0
     var qrCodeStringToExport = ""
-    var isBBQr = false
     var isUR = false
     var isPlainText = false
     var exporting = false
@@ -78,7 +75,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        isBBQr = false
         isUR = false
         isPlainText = false
         qrCodeStringToExport = ""
@@ -517,16 +513,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             enableExportButton()
             signedRawTx = processed
             load()
-//        } else if processed.count == 64 {
-//            fetchTxFromId(txid: processed)
         } else {
             showAlert(vc: self, title: "Invalid", message: "Whatever you pasted was not a valid psbt, raw transaction or txid.")
         }
     }
-    
-//    private func fetchTxFromId(txid: String) {
-//        print("fetchTxFromId")
-//    }
     
     private func presentUploader() {
         DispatchQueue.main.async { [weak self] in
@@ -556,8 +546,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         
             if Keys.validPsbt(data.base64EncodedString()) {
                 unsignedPsbt = data.base64EncodedString()
+                processPsbt(data.base64EncodedString())
                 self.reset()
-                processPsbt(unsignedPsbt)
             } else if let psbtUtf8 = data.utf8String, Keys.validPsbt(psbtUtf8) {
                 unsignedPsbt = psbtUtf8
                 self.reset()
@@ -835,7 +825,178 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     @objc func dismissKeyboard() {
         view.endEditing(true)
     }
-    
+
+    func sigsNeeded(from inputDict: [String: Any]) -> (present: Int, required: Int, needed: Int) {
+        var present = 0
+        var required = 0
+        
+        // ---------- Present signatures ----------
+        if let sigs = inputDict["taproot_script_path_sigs"] as? [[String: Any]] {
+            present = sigs.count
+        } else if inputDict["taproot_key_path_sig"] != nil {
+            present = 1
+        } else if let partial = inputDict["partial_sigs"] as? [String: Any] {
+            present = partial.count
+        } else if let partial = inputDict["partial_signatures"] as? [String: Any] {
+            present = partial.count
+        }
+        
+        if let finalWitness = inputDict["final_scriptwitness"] as? [Any], !finalWitness.isEmpty {
+            present = max(present, 1)
+        }
+        if let finalSig = inputDict["final_scriptSig"] as? [String: Any],
+           let hex = finalSig["hex"] as? String,
+           !hex.isEmpty {
+            present = max(present, 1)
+        }
+        
+        // ---------- Required threshold ----------
+        
+        // Prefer every taproot leaf and take the highest m we can parse.
+        if let scripts = inputDict["taproot_scripts"] as? [[String: Any]] {
+            for scriptDict in scripts {
+                if let scriptHex = scriptDict["script"] as? String {
+                    required = max(required, extractThreshold(fromHex: scriptHex))
+                }
+            }
+        }
+        
+        if required == 0, let witnessScript = inputDict["witness_script"] as? [String: Any],
+           let hex = witnessScript["hex"] as? String {
+            required = extractThreshold(fromHex: hex)
+        }
+        
+        if required == 0, let redeemScript = inputDict["redeem_script"] as? [String: Any],
+           let hex = redeemScript["hex"] as? String {
+            required = extractThreshold(fromHex: hex)
+        }
+        
+        // Single-sig fallback only when no m-of-n script was found.
+        if required == 0 {
+            let hasPartial =
+                ((inputDict["partial_sigs"] as? [String: Any])?.isEmpty == false) ||
+                ((inputDict["partial_signatures"] as? [String: Any])?.isEmpty == false)
+            
+            if inputDict["taproot_internal_key"] != nil ||
+                inputDict["taproot_key_path_sig"] != nil ||
+                inputDict["witness_script"] != nil ||
+                inputDict["redeem_script"] != nil ||
+                inputDict["bip32_derivs"] != nil ||
+                inputDict["witness_utxo"] != nil ||
+                inputDict["non_witness_utxo"] != nil ||
+                hasPartial {
+                required = 1
+            }
+        }
+        
+        if present > 0 && required == 0 {
+            required = present
+        }
+        
+        let needed = max(0, required - present)
+        return (present, required, needed)
+    }
+
+    /// Classic multisig, CHECKSIG / CHECKSIGVERIFY, and Taproot multi_a (CHECKSIGADD).
+    func extractThreshold(fromHex hex: String) -> Int {
+        guard let script = Data(hexString: hex) else { return 0 }
+        
+        var i = 0
+        var numbers: [Int] = []
+        var sawChecksig = false
+        var sawChecksigAdd = false
+        
+        func skipPush(_ length: Int) {
+            i += length
+        }
+        
+        while i < script.count {
+            let op = script[i]
+            
+            if (1...75).contains(op) {
+                i += 1 + Int(op)
+                continue
+            }
+            
+            if op == 0x4c { // OP_PUSHDATA1
+                guard i + 1 < script.count else { return 0 }
+                let len = Int(script[i + 1])
+                i += 2
+                skipPush(len)
+                continue
+            }
+            if op == 0x4d { // OP_PUSHDATA2
+                guard i + 2 < script.count else { return 0 }
+                let len = Int(script[i + 1]) | (Int(script[i + 2]) << 8)
+                i += 3
+                skipPush(len)
+                continue
+            }
+            if op == 0x4e { // OP_PUSHDATA4
+                guard i + 4 < script.count else { return 0 }
+                let len = Int(script[i + 1])
+                    | (Int(script[i + 2]) << 8)
+                    | (Int(script[i + 3]) << 16)
+                    | (Int(script[i + 4]) << 24)
+                i += 5
+                skipPush(len)
+                continue
+            }
+            
+            // OP_0
+            if op == 0x00 {
+                numbers.append(0)
+                i += 1
+                continue
+            }
+            
+            // OP_1 ... OP_16
+            if (0x51...0x60).contains(op) {
+                numbers.append(Int(op) - 0x50)
+                i += 1
+                continue
+            }
+            
+            // CHECKMULTISIG / CHECKMULTISIGVERIFY → classic m-of-n, m is the first small-int
+            if op == 0xae || op == 0xaf {
+                return numbers.first ?? 0
+            }
+            
+            // CHECKSIGADD (Taproot / BIP342 multi_a)
+            if op == 0xba {
+                sawChecksigAdd = true
+                i += 1
+                continue
+            }
+            
+            // CHECKSIG / CHECKSIGVERIFY
+            if op == 0xac || op == 0xad {
+                sawChecksig = true
+                i += 1
+                continue
+            }
+            
+            // NUMEQUAL / NUMEQUALVERIFY → threshold is the last small-int (e.g. OP_2 OP_NUMEQUAL)
+            if op == 0x9c || op == 0x9d {
+                if sawChecksigAdd || sawChecksig {
+                    return numbers.last ?? 0
+                }
+                i += 1
+                continue
+            }
+            
+            // CLTV, CSV, DROP, etc.
+            i += 1
+        }
+        
+        if sawChecksigAdd {
+            return numbers.last ?? 0
+        }
+        if sawChecksig {
+            return 1
+        }
+        return 0
+    }
     private func decodePsbt(param: Decode_Psbt) {
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .decodepsbt(param: param)) { [weak self] (object, errorDesc) in
             guard let self = self else { return }
@@ -851,7 +1012,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             if let inputs = dict["inputs"] as? NSArray, inputs.count > 0 {
                 for (i, input) in inputs.enumerated() {
                     var isSigned = false
+                    var sigsRequired = 0
+                    var sigsPresent = 0
+                    var sigsRemaining = 0
+                    
                     if let inputDict = input as? NSDictionary {
+                        let status = sigsNeeded(from: inputDict as! [String : Any])
+                        sigsPresent = status.present
+                        sigsRequired = status.required
+                        sigsRemaining = status.needed
+                        
                         if let signatures = inputDict["partial_signatures"] as? NSDictionary {
                             for (key, value) in signatures {
                                 self.signatures.append(["\(key)":(value as? String ?? "")])
@@ -869,18 +1039,21 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                                 }
                             }
                         }
+                        
+                        let tableInputDict:[String:Any] = [
+                            "index": i + 1,
+                            "amount": "Unknown.",
+                            "address": "Unknown.",
+                            "isOurs": false,// Hardcode at this stage and update before displaying
+                            "isDust": true,
+                            "isSigned": isSigned,
+                            "sigsRequired": sigsRequired,
+                            "sigsPresent": sigsPresent,
+                            "sigsRemaining": sigsRemaining
+                        ]
+                        
+                        self.inputTableArray.append(tableInputDict)
                     }
-                    
-                    let inputDict:[String:Any] = [
-                        "index": i + 1,
-                        "amount": "Unknown.",
-                        "address": "Unknown.",
-                        "isOurs": false,// Hardcode at this stage and update before displaying
-                        "isDust": true,
-                        "isSigned": isSigned
-                    ]
-                    
-                    self.inputTableArray.append(inputDict)
                 }
             }
             
@@ -1392,34 +1565,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
         }
         
-//        func checkEsplora(txid: String) {
-//            guard let useEsplora = UserDefaults.standard.object(forKey: "useEsplora") as? Bool, useEsplora else {
-//                if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraAlert") == nil {
-//                    showAlert(vc: self, title: "Unable to fetch input.", message: "Pruned nodes can not lookup input details for inputs that are associated with transactions which are not owned by the active wallet. In order to see inputs in detail you can enable Esplora (Blockstream's block explorer) over Tor in \"Settings\".")
-//
-//                    UserDefaults.standard.setValue(true, forKey: "useEsploraAlert")
-//                }
-//
-//                self.parsePrevTxOutput(outputs: [], vout: 0)
-//                return
-//            }
-//
-//            self.updateLabel("fetching inputs previous output with Esplora...")
-//
-//            let fetcher = GetTx.sharedInstance
-//            fetcher.fetch(txid: txid) { [weak self] rawHex in
-//                guard let self = self else { return }
-//
-//                guard let rawHex = rawHex else {
-//                    // Esplora must be down, pass an empty array instead
-//                    self.parsePrevTxOutput(outputs: [], vout: 0)
-//                    return
-//                }
-//                let param_decode_raw:Decode_Raw_Tx = .init(["hexstring":rawHex])
-//                self.parsePrevTx(method: .decoderawtransaction(param: param_decode_raw), vout: vout, txid: txid)
-//            }
-//            return
-//        }
         
         func getRawTx() {
             updateLabel("fetching inputs previous output...")
@@ -1490,6 +1635,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         label.text = "\(confs) confirmations"
         label.textColor = .label
         
+        disableSendButton()
+        
         if confs > 0 {
             imageView.tintColor = .systemGreen
             imageView.image = UIImage(systemName: "checkmark.seal")
@@ -1513,17 +1660,21 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 label.text = "Mempool acception verified ✓"
                 imageView.tintColor = .systemGreen
                 imageView.image = UIImage(systemName: "checkmark.seal")
+                enableSendButton()
             } else {
                 label.text = "Transaction invalid! Reason: \(rejectionMessage)."
                 imageView.tintColor = .systemRed
                 imageView.image = UIImage(systemName: "exclamationmark.triangle")
+                disableSendButton()
             }
         } else {
             if unsignedPsbt != "" {
                 label.text = "Transaction incomplete."
+                disableSendButton()
             } else {
                 if signedRawTx != "" {
                     label.text = "Transaction complete."
+                    enableSendButton()
                 } else {
                     let version = UserDefaults.standard.object(forKey: "version") as? String ?? "0.20"
                     
@@ -1607,6 +1758,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             let hasSigned = input["isSigned"] as! Bool
             let parentDesc = input["parent_desc"] as? String
             
+            let sigsRequired = input["sigsRequired"] as? Int ?? 0
+            let sigsPresent = input["sigsPresent"] as? Int ?? 0
+            let sigsRemaining = input["sigsRemaining"] as? Int ?? 0
+            
             if signedRawTx == "" {
                 if let parentDesc = parentDesc {
                     if let _ = input["signatures"] as? String {
@@ -1648,45 +1803,42 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             getAddressInfoButton.addTarget(self, action: #selector(showAddressInfo(_:)), for: .touchUpInside)
             signButton.addTarget(self, action: #selector(signInputAction(_:)), for:     .touchUpInside)
             
-            signaturesLabel.text = signatureStatus
-            
-            if signatureStatus == "Signatures complete" || hasSigned {
-                //sigsBackgroundView.backgroundColor = .systemGreen
+            if signatureStatus == "Signatures complete" {
                 signaturesLabel.text = "Signatures complete."
                 sigsImageView.tintColor = .green
-            } else if self.signatures.count > 0 {
-                //sigsBackgroundView.backgroundColor = .systemOrange
-                signaturesLabel.text = "Signed."
-                sigsImageView.tintColor = .systemGreen
+                
             } else {
-                //sigsBackgroundView.backgroundColor = .systemRed
-                sigsImageView.tintColor = .systemOrange
+                signaturesLabel.text = "\(sigsPresent)/\(sigsRequired) signatures → \(sigsRemaining) more needed"
+                
+                if sigsRemaining == 0 {
+                    signaturesLabel.text = "Signatures complete."
+                    sigsImageView.tintColor = .green
+                } else if sigsPresent < sigsRequired {
+                    sigsImageView.tintColor = .systemOrange
+                } else {
+                    sigsImageView.tintColor = .systemRed
+                }
             }
             
             if isDust {
                 isDustImageView.image = UIImage(systemName: "exclamationmark.circle")
                 isDustImageView.tintColor = .systemRed
-                //backgroundView3.backgroundColor = .systemRed
             } else {
                 isDustImageView.image = UIImage(systemName: "checkmark.circle")
                 isDustImageView.tintColor = .tintColor
-                //backgroundView3.backgroundColor = .systemGreen
             }
             
             if isChange {
                 isChangeImageView.image = UIImage(systemName: "arrow.triangle.2.circlepath")
-               // backgroundView2.backgroundColor = .systemPurple
                 isChangeImageView.tintColor = .systemPurple
                 inputTypeLabel.text = "Change input"
             } else {
                 isChangeImageView.image = UIImage(systemName: "arrow.down.left")
-                //backgroundView2.backgroundColor = .systemBlue
                 isChangeImageView.tintColor = .tintColor
                 inputTypeLabel.text = "Receive input"
             }
             
             if isOurs {
-                //backgroundView1.backgroundColor = .systemGreen
                 inputIsOursImage.image = UIImage(systemName: "checkmark.circle")
                 inputIsOursImage.tintColor = .tintColor
                 
@@ -2402,22 +2554,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             alert.addAction(UIAlertAction(title: "UR QR", style: .default, handler: { action in
                 self.qrCodeStringToExport = itemToExport
-                self.isBBQr = false
                 self.isUR = true
                 self.isPlainText = false
-                self.exportAsQR()
-            }))
-            
-            alert.addAction(UIAlertAction(title: "BBQr", style: .default, handler: { action in
-                self.isBBQr = true
-                self.isUR = true
-                self.isPlainText = false
-                self.qrCodeStringToExport = itemToExport
                 self.exportAsQR()
             }))
             
             alert.addAction(UIAlertAction(title: "Plain Text QR", style: .default, handler: { action in
-                self.isBBQr = false
                 self.isUR = false
                 self.isPlainText = true
                 self.qrCodeStringToExport = itemToExport
@@ -2561,7 +2703,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         if segue.identifier == "segueToExportPsbtAsQr" {            
             if let vc = segue.destination as? QRDisplayerViewController {
-                vc.isBbqr = self.isBBQr
                 vc.isUR = self.isUR
                 
                 if self.qrCodeStringToExport != "" {
@@ -2572,9 +2713,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         vc.headerText = "Encrypted PSBT"
                         vc.descriptionText = "Pass this psbt to your signer or to others to create a collaborative batch transaction."
                     } else {
-                        if isBBQr {
-                            vc.headerText = "PSBT BBQr"
-                        } else if isUR {
+                        if isUR {
                             vc.headerText = "PSBT UR QR"
                         } else if isPlainText {
                             vc.headerText = "PSBT Plain Text"

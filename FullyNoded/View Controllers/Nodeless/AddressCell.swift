@@ -73,7 +73,7 @@ class BitcoinAddressCell: UITableViewCell {
     let derivationLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 17)
-        label.textColor = .tertiaryLabel
+        label.textColor = .secondaryLabel
         label.numberOfLines = 0 // Allow wrapping if address is long
         label.translatesAutoresizingMaskIntoConstraints = false
         return label

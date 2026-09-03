@@ -18,4 +18,5 @@ public enum ENTITY: String {
     case utxos = "Utxos"
     case transactions = "Transactions"
     case usedAddresses = "UsedAddresses"
+    case timelocks = "Timelocks"
 }

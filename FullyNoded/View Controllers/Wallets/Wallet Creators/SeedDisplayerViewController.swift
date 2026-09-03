@@ -102,7 +102,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     private func getWords() {
         spinner.show(vc: self, description: "creating Fully Noded wallet...")
         
-        guard let seed = Keys.seed() else {
+        guard let seed = Keys.seedWords() else {
             showError(error: "Error deriving seed")
             return
         }
