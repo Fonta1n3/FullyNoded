@@ -85,6 +85,7 @@
 		0AF73250291DDFC4009F6296 /* BTC_Params.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF7324F291DDFC4009F6296 /* BTC_Params.swift */; };
 		0AFD7CF32C7E5FB100C46E36 /* Bbqr in Frameworks */ = {isa = PBXBuildFile; productRef = 0AFD7CF22C7E5FB100C46E36 /* Bbqr */; };
 		5939EEDF2FB3698400F73D8E /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5939EEDE2FB3698400F73D8E /* BitcoinDevKit */; };
+		5955E7443053CE5D00C4B1E5 /* P256K in Frameworks */ = {isa = PBXBuildFile; productRef = 5955E7433053CE5D00C4B1E5 /* P256K */; };
 		59A81B173011F7620027AE96 /* NodelessWalletsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59A81B163011F7620027AE96 /* NodelessWalletsTableViewController.swift */; };
 		59D7BB0D30282D3100530445 /* Security.md in Resources */ = {isa = PBXBuildFile; fileRef = 59D7BB0C30282D3100530445 /* Security.md */; };
 		59DEFD92301497230021F041 /* Timelocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59DEFD91301497230021F041 /* Timelocks.swift */; };
@@ -390,6 +391,7 @@
 				0AFD7CF32C7E5FB100C46E36 /* Bbqr in Frameworks */,
 				0A8850FF2A4201C10078A603 /* LibWally.xcframework in Frameworks */,
 				0AD2023F2ECEDBF3006286DD /* BitcoinDevKit in Frameworks */,
+				5955E7443053CE5D00C4B1E5 /* P256K in Frameworks */,
 				F4505B6A72D68BD208B4904B /* Pods_FullyNoded.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -979,6 +981,7 @@
 				0AA6EFFB2C7E65F900503A39 /* URKit */,
 				0AD2023E2ECEDBF3006286DD /* BitcoinDevKit */,
 				5939EEDE2FB3698400F73D8E /* BitcoinDevKit */,
+				5955E7433053CE5D00C4B1E5 /* P256K */,
 			);
 			productName = BitSense;
 			productReference = D00B9A242111427200E8B95A /* FullyNoded.app */;
@@ -1054,6 +1057,7 @@
 				0AFD7CF12C7E5FB100C46E36 /* XCRemoteSwiftPackageReference "bbqr-swift" */,
 				0AA6EFFA2C7E65F900503A39 /* XCRemoteSwiftPackageReference "URKit" */,
 				5939EEDD2FB3698400F73D8E /* XCRemoteSwiftPackageReference "bdk-swift" */,
+				5955E7423053CE5C00C4B1E5 /* XCRemoteSwiftPackageReference "swift-secp256k1" */,
 			);
 			productRefGroup = D00B9A252111427200E8B95A /* Products */;
 			projectDirPath = "";
@@ -1479,7 +1483,7 @@
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNoded.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -1528,7 +1532,7 @@
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNodedRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1673,6 +1677,14 @@
 				version = 3.0.0;
 			};
 		};
+		5955E7423053CE5C00C4B1E5 /* XCRemoteSwiftPackageReference "swift-secp256k1" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/21-DOT-DEV/swift-secp256k1";
+			requirement = {
+				kind = exactVersion;
+				version = 0.23.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1694,6 +1706,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5939EEDD2FB3698400F73D8E /* XCRemoteSwiftPackageReference "bdk-swift" */;
 			productName = BitcoinDevKit;
+		};
+		5955E7433053CE5D00C4B1E5 /* P256K */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5955E7423053CE5C00C4B1E5 /* XCRemoteSwiftPackageReference "swift-secp256k1" */;
+			productName = P256K;
 		};
 /* End XCSwiftPackageProductDependency section */
 

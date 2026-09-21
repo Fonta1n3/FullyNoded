@@ -1,5 +1,5 @@
 {
-  "originHash" : "14a824bcf8303806cc357224f17b4e5a3f45351818522041c727a18d88b871b7",
+  "originHash" : "8a282b3f427212785d6c5131e492f069e94341cdced1c25cff40650cf821548d",
   "pins" : [
     {
       "identity" : "bbqr-swift",
@@ -62,6 +62,15 @@
       "state" : {
         "revision" : "34a26297c200489779929b7fd7d4d30b63e87e69",
         "version" : "2.4.3"
+      }
+    },
+    {
+      "identity" : "swift-secp256k1",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/21-DOT-DEV/swift-secp256k1",
+      "state" : {
+        "revision" : "e70a10e036a55fffea31568f0af92d69b6d449cd",
+        "version" : "0.23.2"
       }
     },
     {

@@ -328,6 +328,9 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 guard var decrypted = Crypto.decrypt(encryptedWords),
                       var words = decrypted.utf8String else { return }
                 
+                let spAddress = try? WalletLogic.shared.silentPaymentAddressFromMnemonic(mnemonic: words)
+                print("spAddress: \(spAddress)")
+                
                 guard var masterKey = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase) else {
                     showAlert(vc: self, title: "", message: "Unable to derive your master key.")
                     return

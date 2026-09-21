@@ -8,6 +8,7 @@
 
 import Foundation
 import BitcoinDevKit
+import P256K
 
 class WalletLogic {
     static let shared = WalletLogic()
@@ -64,7 +65,6 @@ class WalletLogic {
     
     func bdkMasterKey(network: BDKNetwork, mnemonic: String, passphrase: String?) -> DescriptorSecretKey? {
         guard let bdkMnemonic = try? Mnemonic.fromString(mnemonic: mnemonic) else { return nil }
-        
         
         return DescriptorSecretKey(
             networkKind: networkKind(network: network),
@@ -400,26 +400,26 @@ class WalletLogic {
         }
         
         // Reveal the exact SPK so BDK treats the coin as local.
-        for utxo in utxos {
-            guard let addrStr = utxo.address else { continue }
-            let target = try Address(address: addrStr, network: network)
-            let targetSpk = target.scriptPubkey()
-            
-            var found = false
-            for _ in 0..<1000 {
-                let next = wallet.revealNextAddress(keychain: .external)
-                if next.address.scriptPubkey().toBytes() == targetSpk.toBytes() {
-                    found = true
-                    break
-                }
-            }
-            if !found {
-                print("Address \(addrStr) is not in this wallet descriptor. addUtxo will always fail.")
-                throw CustomError.networkFailed(
-                    reason: "Address \(addrStr) is not in this wallet descriptor. addUtxo will always fail."
-                )
-            }
-        }
+//        for utxo in utxos {
+//            guard let addrStr = utxo.address else { continue }
+//            let target = try Address(address: addrStr, network: network)
+//            let targetSpk = target.scriptPubkey()
+//            
+//            var found = false
+//            for _ in 0..<1000 {
+//                let next = wallet.revealNextAddress(keychain: .external)
+//                if next.address.scriptPubkey().toBytes() == targetSpk.toBytes() {
+//                    found = true
+//                    break
+//                }
+//            }
+//            if !found {
+//                print("Address \(addrStr) is not in this wallet descriptor. addUtxo will always fail.")
+//                throw CustomError.networkFailed(
+//                    reason: "Address \(addrStr) is not in this wallet descriptor. addUtxo will always fail."
+//                )
+//            }
+//        }
         
         let syncRequest = try wallet.startSyncWithRevealedSpks().build()
         let client = EsploraClient(url: baseURL, proxy: "http://localhost:9080")
@@ -452,10 +452,10 @@ class WalletLogic {
             }
         }
         if appliedLocktime == nil {
-            if let external = try? wallet.policies(keychain: .external) {
+            if let _ = try? wallet.policies(keychain: .external) {
                 appliedLocktime = extractAfterLocktime(from: wallet.publicDescriptor(keychain: .external).description)
             }
-            if appliedLocktime == nil, let internalP = try? wallet.policies(keychain: .internal) {
+            if appliedLocktime == nil, let _ = try? wallet.policies(keychain: .internal) {
                 appliedLocktime = extractAfterLocktime(from: wallet.publicDescriptor(keychain: .internal).description)
             }
         }
@@ -659,8 +659,7 @@ class WalletLogic {
             
             if fnDesc.isMulti && fnDesc.isP2TR, let descriptor = descriptor {
                 let (dummyPubkey, checksumlessDesc) = try dummyPubkeyAndChecksumLessDesc(descriptor: descriptor)
-                print("checksumlessDesc: \(checksumlessDesc.scriptPath)")
-                let nonRanged = nonRanged(desc: checksumlessDesc.scriptPath)//.replacingOccurrences(of: "tr(", with: "multi_a(")
+                let nonRanged = nonRanged(desc: checksumlessDesc.scriptPath)
                 let descriptorString = "tr(\(dummyPubkey),and_v(v:\(nonRanged),after(\(timelock))))"
                 #if DEBUG
                 print("timelocked multisig taproot descriptorString: \(descriptorString)")
@@ -670,8 +669,8 @@ class WalletLogic {
             } else if fnDesc.isP2TR, let descriptor = descriptor {
                 let nonRanged = nonRanged(desc: descriptor)
                 let (dummyPubkey, checksumlessDesc) = try dummyPubkeyAndChecksumLessDesc(descriptor: nonRanged)
-                let trPrefixDesc = checksumlessDesc.string.replacingOccurrences(of: "tr(", with: "pk(")
-                let descriptorString = "tr(\(dummyPubkey),and_v(v:\(trPrefixDesc),after(\(timelock))))"
+                let pkPrefixDesc = checksumlessDesc.string.replacingOccurrences(of: "tr(", with: "pk(")
+                let descriptorString = "tr(\(dummyPubkey),and_v(v:\(pkPrefixDesc),after(\(timelock))))"
                 #if DEBUG
                 print("timelocked single sig taproot descriptorString: \(descriptorString)")
                 #endif
@@ -828,6 +827,154 @@ class WalletLogic {
             print("Policy JSON parse error: \(error)")
             #endif
             return (nil, nil, nil, nil)
+        }
+    }
+    
+    //enum SilentPaymentFromMnemonic {
+    func silentPaymentAddressFromMnemonic(
+        mnemonic: String,
+        passphrase: String? = nil,
+        network: NetworkKind = .test
+    ) throws -> (address: String, scanPrivHex: String, spendPrivHex: String) {
+        let words = try Mnemonic.fromString(mnemonic: mnemonic)
+        let master = DescriptorSecretKey(
+            networkKind: network,
+            mnemonic: words,
+            password: passphrase
+        )
+        
+        let coin: UInt32 = (network == .main) ? 0 : 1
+        let spendPath = try BDKDerivationPath(path: "m/352h/\(coin)h/0h/0h/0")
+        let scanPath  = try BDKDerivationPath(path: "m/352h/\(coin)h/0h/1h/0")
+        
+        let spendKey = try master.derive(path: spendPath)
+        let scanKey  = try master.derive(path: scanPath)
+        
+        let spendPriv = Data(spendKey.secretBytes())
+        let scanPriv  = Data(scanKey.secretBytes())
+        
+        let spendPub = Data(try P256K.Signing.PrivateKey(dataRepresentation: spendPriv).publicKey.dataRepresentation)
+        let scanPub  = Data(try P256K.Signing.PrivateKey(dataRepresentation: scanPriv).publicKey.dataRepresentation)
+        
+        let hrp = (network == .main) ? "sp" : "tsp"
+        let address = try Bech32m.encode(hrp: hrp, version: 0, data: scanPub + spendPub)
+        
+        return (
+            address: address,
+            scanPrivHex: SPHex.encode(scanPriv),
+            spendPrivHex: SPHex.encode(spendPriv)
+        )
+    }
+    //}
+    
+    enum SPHex {
+        static func decode(_ hex: String) -> Data? {
+            let s = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+                .replacingOccurrences(of: "0x", with: "")
+                .lowercased()
+            guard s.count % 2 == 0 else { return nil }
+            var data = Data()
+            data.reserveCapacity(s.count / 2)
+            var idx = s.startIndex
+            while idx < s.endIndex {
+                let next = s.index(idx, offsetBy: 2)
+                guard let b = UInt8(s[idx..<next], radix: 16) else { return nil }
+                data.append(b)
+                idx = next
+            }
+            return data
+        }
+
+        static func encode(_ data: Data) -> String {
+            data.map { String(format: "%02x", $0) }.joined()
+        }
+
+        static func reverse(_ hex: String) -> String? {
+            guard let d = decode(hex) else { return nil }
+            return encode(Data(d.reversed()))
+        }
+    }
+    
+    struct SPError: LocalizedError {
+        let errorDescription: String?
+        init(_ message: String) { errorDescription = message }
+    }
+    
+    enum Bech32m {
+        private static let charset = Array("qpzry9x8gf2tvdw0s3jn54khce6mua7l")
+        private static let gen: [UInt32] = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3]
+        private static let const: UInt32 = 0x2bc830a3
+
+        static func encode(hrp: String, version: Int, data: Data) throws -> String {
+            var values = [UInt8(version)]
+            values += try convertBits(Array(data), from: 8, to: 5, pad: true)
+            let checksum = createChecksum(hrp: hrp, values: values)
+            let combined = values + checksum
+            return hrp + "1" + combined.map { String(charset[Int($0)]) }.joined()
+        }
+
+        static func decode(_ bech: String) throws -> (String, Int, Data) {
+            let s = bech.lowercased()
+            guard let pos = s.lastIndex(of: "1") else { throw SPError("bad bech32") }
+            let hrp = String(s[s.startIndex..<pos])
+            let dataPart = String(s[s.index(after: pos)...])
+            var values: [UInt8] = []
+            for ch in dataPart {
+                guard let idx = charset.firstIndex(of: ch) else { throw SPError("bad bech32 char") }
+                values.append(UInt8(charset.distance(from: charset.startIndex, to: idx)))
+            }
+            guard values.count >= 7, verifyChecksum(hrp: hrp, values: values) else {
+                throw SPError("bad bech32 checksum")
+            }
+            let payload = Array(values.dropLast(6))
+            guard let version = payload.first else { throw SPError("missing version") }
+            let converted = try convertBits(Array(payload.dropFirst()), from: 5, to: 8, pad: false)
+            return (hrp, Int(version), Data(converted))
+        }
+
+        private static func polymod(_ values: [UInt8]) -> UInt32 {
+            var chk: UInt32 = 1
+            for v in values {
+                let b = chk >> 25
+                chk = ((chk & 0x1ffffff) << 5) ^ UInt32(v)
+                for i in 0..<5 where ((b >> i) & 1) != 0 {
+                    chk ^= gen[i]
+                }
+            }
+            return chk
+        }
+
+        private static func hrpExpand(_ hrp: String) -> [UInt8] {
+            let bytes = Array(hrp.utf8)
+            return bytes.map { $0 >> 5 } + [0] + bytes.map { $0 & 31 }
+        }
+
+        private static func createChecksum(hrp: String, values: [UInt8]) -> [UInt8] {
+            let polymod = polymod(hrpExpand(hrp) + values + [0, 0, 0, 0, 0, 0]) ^ const
+            return (0..<6).map { UInt8((polymod >> (5 * (5 - $0))) & 31) }
+        }
+
+        private static func verifyChecksum(hrp: String, values: [UInt8]) -> Bool {
+            polymod(hrpExpand(hrp) + values) == const
+        }
+
+        private static func convertBits(_ data: [UInt8], from: Int, to: Int, pad: Bool) throws -> [UInt8] {
+            var acc = 0, bits = 0, ret: [UInt8] = []
+            let maxv = (1 << to) - 1
+            for value in data {
+                acc = (acc << from) | Int(value)
+                bits += from
+                while bits >= to {
+                    bits -= to
+                    ret.append(UInt8((acc >> bits) & maxv))
+                }
+            }
+            if pad {
+                if bits > 0 { ret.append(UInt8((acc << (to - bits)) & maxv)) }
+            } else if bits >= from || ((acc << (to - bits)) & maxv) != 0 {
+                throw SPError("invalid padding")
+            }
+            return ret
         }
     }
     

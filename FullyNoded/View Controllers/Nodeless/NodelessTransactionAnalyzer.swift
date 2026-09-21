@@ -505,8 +505,6 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         return nil
     }
 
-    
-
     private func currentSigsExist(_ lines: [String]) -> Bool {
         lines.contains { !$0.contains("0/") }
     }
@@ -716,7 +714,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         let signAction = UIAlertAction(title: "Sign", style: .default) { [weak self] _ in
             guard let self = self else { return }
             
-            let passphrase = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let passphrase = alert.textFields?.first?.text ?? ""
             
             // Now proceed with signing using the optional passphrase
             self.performSigning(with: passphrase)
