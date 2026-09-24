@@ -30,35 +30,81 @@ class WalletLogic {
     typealias BDKKeyChain = BitcoinDevKit.KeychainKind
        
     
-    // TODO: Improve this so we use a random NUMS instead of a dummy key.
+    /// BIP341 NUMS point H (x-only, even Y): lift_x(SHA256(G uncompressed)). Nobody
+    /// knows its private key.
+    static let numsH = "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
+
+    /// Unspendable (NUMS) taproot internal key, as an extended public key (xpub on
+    /// mainnet, tpub otherwise) so callers can use it in descriptors and derive children
+    /// from it (Keys.childPubkey).
+    ///
+    /// The public key is H + r·G, where H is the BIP341 NUMS point and r is random. BIP341
+    /// recommends this so the internal key isn't recognisable on-chain as H. Nobody knows
+    /// the discrete log of H, so nobody knows the private key of H + r·G, and the key path
+    /// can never be spent. Non-hardened children only add public tweaks, so they're
+    /// unspendable too. The chain code is random.
+    ///
+    /// r is not stored. Keeping r would let you PROVE unspendability to a third party;
+    /// without it the key is still unspendable, just not provably so.
     func dummyKey() -> String? {
-        guard var secretDataForDummyMnemonic = Crypto.secret() else { return nil }
-        
-        guard let dummyMnemonic = try? BDKMnemonic.fromEntropy(entropy: secretDataForDummyMnemonic) else { return nil }
-        
-        guard let network = bdkNetwork() else {
-            return nil
-        }
-        
-        guard var randomData = Crypto.secret() else { return nil }
-        
-        // Include random passphrase to add entropy to dummy master key.
-        let hash = Crypto.sha256hash(Crypto.sha256hash(Crypto.sha256hash(randomData))).hex
-        
-        guard let dummyMk = bdkMasterKey(network: network, mnemonic: dummyMnemonic.description, passphrase: hash) else {
-            return nil
-        }
-        
-        let arr = dummyMk.asPublic().description.components(separatedBy: "/")
-        
-        defer {
-            randomData.secureZero()
-            secretDataForDummyMnemonic.secureZero()
-        }
-        
-        return "\(arr[0])"
+        guard let network = bdkNetwork() else { return nil }
+
+        // Random tweak r and chain code (Crypto.secret() = 32 random bytes).
+        guard var r = Crypto.secret(), r.count == 32,
+              let chainCode = Crypto.secret(), chainCode.count == 32 else { return nil }
+        defer { r.secureZero() }
+
+        // K = H + r·G (compressed). Fails only if r ≥ n or K is infinity (negligible).
+        guard let hData = SPHex.decode("02" + WalletLogic.numsH),
+              let h = try? P256K.Signing.PublicKey(dataRepresentation: hData, format: .compressed),
+              let k = try? h.add(Array(r)) else { return nil }
+        let key = Data(k.dataRepresentation)
+        guard key.count == 33 else { return nil }
+
+        // BIP32 serialization: version | depth | parent fingerprint | child number | chain code | key.
+        let version: [UInt8] = network == .bitcoin ? [0x04, 0x88, 0xB2, 0x1E]   // xpub
+                                                    : [0x04, 0x35, 0x87, 0xCF]   // tpub
+        let fourZeros: [UInt8] = [0, 0, 0, 0]
+        var payload = Data()
+        payload.append(contentsOf: version)
+        payload.append(0)                            // depth 0
+        payload.append(contentsOf: fourZeros)        // parent fingerprint
+        payload.append(contentsOf: fourZeros)        // child number
+        payload.append(chainCode)                    // 32 bytes
+        payload.append(key)                          // 33 bytes
+        return Base58Check.encode(payload)
     }
-    
+
+    /// Base58Check (used above to serialize the NUMS extended public key).
+    enum Base58Check {
+        private static let alphabet = Array("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".utf8)
+
+        static func encode(_ payload: Data) -> String {
+            // payload || first 4 bytes of SHA256(SHA256(payload)).
+            let checksum = Crypto.sha256hash(Crypto.sha256hash(payload)).prefix(4)
+            let bytes = [UInt8](payload) + [UInt8](checksum)
+            // Leading zero bytes become leading "1"s.
+            var zeros = 0
+            while zeros < bytes.count && bytes[zeros] == 0 { zeros += 1 }
+            // Base-256 → base-58, digits stored least significant first.
+            var digits: [UInt8] = []
+            for byte in bytes {
+                var carry = Int(byte)
+                for i in 0..<digits.count {
+                    carry += Int(digits[i]) << 8
+                    digits[i] = UInt8(carry % 58)
+                    carry /= 58
+                }
+                while carry > 0 {
+                    digits.append(UInt8(carry % 58))
+                    carry /= 58
+                }
+            }
+            let chars = [UInt8](repeating: alphabet[0], count: zeros) + digits.reversed().map { alphabet[Int($0)] }
+            return String(decoding: chars, as: UTF8.self)
+        }
+    }
+
     func fingerprint(masterKey: DescriptorSecretKey) -> String {
         return masterKey.asPublic().masterFingerprint()
     }
@@ -741,6 +787,7 @@ class WalletLogic {
         return ((addressInfo.address.description, descriptorString))
     }
     
+    // Child pubkey (0/0) of the NUMS xpub from dummyKey(), so it's unspendable too.
     func dummyPubKey() throws -> String? {
         guard let dummyXpub = dummyKey() else {
             throw TimelockedAddressError.unableToGenerateDummyPubkey
