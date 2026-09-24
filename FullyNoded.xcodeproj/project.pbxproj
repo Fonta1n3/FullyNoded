@@ -87,6 +87,7 @@
 		5939EEDF2FB3698400F73D8E /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5939EEDE2FB3698400F73D8E /* BitcoinDevKit */; };
 		5955E7443053CE5D00C4B1E5 /* P256K in Frameworks */ = {isa = PBXBuildFile; productRef = 5955E7433053CE5D00C4B1E5 /* P256K */; };
 		59A81B173011F7620027AE96 /* NodelessWalletsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59A81B163011F7620027AE96 /* NodelessWalletsTableViewController.swift */; };
+		59C8DBCD3065AF490074762F /* SilentPaymentSend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C8DBCC3065AF490074762F /* SilentPaymentSend.swift */; };
 		59D7BB0D30282D3100530445 /* Security.md in Resources */ = {isa = PBXBuildFile; fileRef = 59D7BB0C30282D3100530445 /* Security.md */; };
 		59DEFD92301497230021F041 /* Timelocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59DEFD91301497230021F041 /* Timelocks.swift */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
@@ -281,6 +282,7 @@
 		0AF7324F291DDFC4009F6296 /* BTC_Params.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTC_Params.swift; sourceTree = "<group>"; };
 		55FF5DCF6C4B0C2309EC4BF2 /* Pods-FullyNoded.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FullyNoded.debug.xcconfig"; path = "Target Support Files/Pods-FullyNoded/Pods-FullyNoded.debug.xcconfig"; sourceTree = "<group>"; };
 		59A81B163011F7620027AE96 /* NodelessWalletsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodelessWalletsTableViewController.swift; sourceTree = "<group>"; };
+		59C8DBCC3065AF490074762F /* SilentPaymentSend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilentPaymentSend.swift; sourceTree = "<group>"; };
 		59D7BB0C30282D3100530445 /* Security.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Security.md; sourceTree = "<group>"; };
 		59DEFD91301497230021F041 /* Timelocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Timelocks.swift; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
@@ -914,6 +916,7 @@
 		D0A519B5226B3DA000860D5C /* Wallet Logic */ = {
 			isa = PBXGroup;
 			children = (
+				59C8DBCC3065AF490074762F /* SilentPaymentSend.swift */,
 				D0855FC922B0CEA800DBBFC2 /* CreatePSBT.swift */,
 				D09A32FE24A8419C009FA0B2 /* KeyHelpers.swift */,
 				D09A330224A86C7C009FA0B2 /* Signer.swift */,
@@ -1224,6 +1227,7 @@
 				0ABEC2152F0E6CF600092FCE /* WalletExportFormatView.swift in Sources */,
 				0A34073D2EC08A0B008576C7 /* ListUnspent.swift in Sources */,
 				D00F851B24949691008D7CD3 /* AppPasswordViewController.swift in Sources */,
+				59C8DBCD3065AF490074762F /* SilentPaymentSend.swift in Sources */,
 				D03968B1246F6CBA0010D821 /* Crypto.swift in Sources */,
 				0ABEC1FD2F02743500092FCE /* NodelessTransactionCreator.swift in Sources */,
 				0A2B4D702716ABCB00B607EE /* WalletImport.swift in Sources */,

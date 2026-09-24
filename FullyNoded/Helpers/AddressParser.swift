@@ -94,8 +94,10 @@ class AddressParser {
             _ where address.hasPrefix("2"),
             _ where address.lowercased().hasPrefix("bcrt"),
             _ where address.hasPrefix("m"),
-            _ where address.hasPrefix("n"):
-            if address.hasPrefix("BC1") || address.hasPrefix("TB1") {
+            _ where address.hasPrefix("n"),
+            _ where address.lowercased().hasPrefix("sp1"),     // silent payment (mainnet)
+            _ where address.lowercased().hasPrefix("tsp1"):    // silent payment (test networks)
+            if address.hasPrefix("BC1") || address.hasPrefix("TB1") || SilentPaymentSend.isSilentPaymentAddress(address) {
                 return address.lowercased()
             } else {
                 return address

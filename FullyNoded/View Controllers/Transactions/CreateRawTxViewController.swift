@@ -770,6 +770,37 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     func getRawTx() {
+        // Silent payment recipient (sp1… / tsp1…): the output key depends on the inputs
+        // and their private keys, so SilentPaymentSend builds the psbt. It comes back
+        // UNSIGNED and goes to VerifyTransactionViewController like any other psbt,
+        // where the normal sign / broadcast flow happens.
+        if outputs.contains(where: { $0.keys.contains(where: { SilentPaymentSend.isSilentPaymentAddress($0) }) }) {
+            guard outputs.count == 1, let entry = outputs.first?.first else {
+                spinner.dismiss()
+                showAlert(vc: self, title: "Silent payments", message: "A silent payment address must be the only recipient in the transaction.")
+                return
+            }
+
+            SilentPaymentSend.create(spAddress: entry.key, amount: "\(entry.value)", inputs: self.inputs) { [weak self] psbt, errorMessage in
+                guard let self = self else { return }
+
+                self.spinner.dismiss()
+
+                if let psbt = psbt {
+                    self.rawTx = nil
+                    self.psbt = psbt
+                    self.showRaw()
+                } else {
+                    self.outputs.removeAll()
+                    DispatchQueue.main.async {
+                        self.outputsTable.reloadData()
+                    }
+                    showAlert(vc: self, title: "Silent payment error", message: errorMessage ?? "unknown error creating silent payment transaction")
+                }
+            }
+            return
+        }
+
         CreatePSBT.create(inputs: self.inputs, outputs: self.outputs) { [weak self] (psbt, rawTx, errorMessage) in
             guard let self = self else { return }
             

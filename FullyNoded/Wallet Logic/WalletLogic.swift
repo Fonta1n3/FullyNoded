@@ -834,7 +834,7 @@ class WalletLogic {
     func silentPaymentAddressFromMnemonic(
         mnemonic: String,
         passphrase: String? = nil,
-        network: NetworkKind = .test
+        network: NetworkKind = .main
     ) throws -> (address: String, scanPrivHex: String, spendPrivHex: String) {
         let words = try Mnemonic.fromString(mnemonic: mnemonic)
         let master = DescriptorSecretKey(
