@@ -8,6 +8,7 @@
 
 import UIKit
 import LocalAuthentication
+import Security
 
 class LogInViewController: UIViewController, UITextFieldDelegate {
 
@@ -514,24 +515,123 @@ extension UIViewController {
 /// Face ID / Touch ID locks out). The fallback is always the APP password.
 enum AppAuthentication {
 
-    /// Face ID / Touch ID only. Completion runs on the main queue with success, or the
-    /// LAError code (nil if unknown) on failure / when biometrics aren't available.
-    static func biometrics(reason: String, completion: @escaping (Bool, LAError.Code?) -> Void) {
-        let context = LAContext()
-        // Empty title hides the fallback button ("Enter Password" → device passcode).
-        context.localizedFallbackTitle = ""
+    /// Keychain item that can ONLY be read after a successful Face ID / Touch ID match.
+    private static let biometricService = (Bundle.main.bundleIdentifier ?? "FullyNoded") + ".biometricUnlock"
+    private static let biometricAccount = "BiometricUnlockToken"
 
+    /// Face ID / Touch ID only, enforced by the keychain rather than by the system prompt.
+    ///
+    /// Success means we READ a keychain item whose access control is `.biometryCurrentSet`
+    /// with no passcode flag. The Secure Enclave only releases it after a biometric match,
+    /// so a device passcode or Mac login password can't unlock it, even when the system
+    /// sheet offers "Use Password…" (as it does for iOS apps running on a Mac). Any such
+    /// fallback just fails, and the caller falls back to the APP password.
+    ///
+    /// Completion runs on the main queue with success, or an LAError code (nil if unknown)
+    /// on failure / when biometrics aren't available.
+    static func biometrics(reason: String, completion: @escaping (Bool, LAError.Code?) -> Void) {
+        // Availability / lockout check only (shows no UI).
+        let probe = LAContext()
         var availabilityError: NSError?
-        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &availabilityError) else {
+        guard probe.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &availabilityError) else {
             let code = availabilityError.map { LAError.Code(rawValue: $0.code) } ?? nil
             DispatchQueue.main.async { completion(false, code) }
             return
         }
 
-        context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, error in
-            let code = (error as? LAError)?.code
-            DispatchQueue.main.async { completion(success, code) }
+        // Reading a biometry-protected item blocks while the sheet is up: keep it off main.
+        DispatchQueue.global(qos: .userInitiated).async {
+            guard AppAuthentication.ensureBiometricToken() else {
+                // Couldn't create the protected item: no biometric unlock, app password only.
+                DispatchQueue.main.async { completion(false, nil) }
+                return
+            }
+
+            let context = LAContext()
+            context.localizedFallbackTitle = ""   // hide the fallback button where honoured
+            context.localizedReason = reason
+
+            let query: [String: Any] = [
+                kSecClass as String:                     kSecClassGenericPassword,
+                kSecAttrService as String:               AppAuthentication.biometricService,
+                kSecAttrAccount as String:               AppAuthentication.biometricAccount,
+                kSecReturnData as String:                true,
+                kSecMatchLimit as String:                kSecMatchLimitOne,
+                kSecUseDataProtectionKeychain as String: true,
+                kSecUseAuthenticationContext as String:  context
+            ]
+
+            var result: AnyObject?
+            let status = SecItemCopyMatching(query as CFDictionary, &result)
+            let success = status == errSecSuccess && ((result as? Data)?.count ?? 0) == 32
+
+            var code: LAError.Code?
+            switch status {
+            case errSecSuccess:        code = nil
+            case errSecUserCanceled:   code = .userCancel
+            case errSecAuthFailed:     code = .authenticationFailed
+            case errSecItemNotFound:
+                // Biometric enrollment changed (.biometryCurrentSet invalidates the item).
+                // Remove it; a fresh one is created next time.
+                AppAuthentication.deleteBiometricToken()
+                code = .authenticationFailed
+            default:                   code = .authenticationFailed
+            }
+
+            DispatchQueue.main.async { completion(success, success ? nil : code) }
         }
+    }
+
+    /// Makes sure the biometry-protected item exists. Returns false if it can't be
+    /// created, in which case biometric unlock is unavailable.
+    private static func ensureBiometricToken() -> Bool {
+        // Existence check without any UI: a protected item reports
+        // errSecInteractionNotAllowed instead of prompting.
+        let silent = LAContext()
+        silent.interactionNotAllowed = true
+        let lookup: [String: Any] = [
+            kSecClass as String:                     kSecClassGenericPassword,
+            kSecAttrService as String:               biometricService,
+            kSecAttrAccount as String:               biometricAccount,
+            kSecUseDataProtectionKeychain as String: true,
+            kSecUseAuthenticationContext as String:  silent
+        ]
+        let status = SecItemCopyMatching(lookup as CFDictionary, nil)
+        if status == errSecSuccess || status == errSecInteractionNotAllowed {
+            return true
+        }
+        guard status == errSecItemNotFound else { return false }
+
+        // Only a biometric match can read it: no .devicePasscode / .userPresence flag.
+        var cfError: Unmanaged<CFError>?
+        guard let access = SecAccessControlCreateWithFlags(nil,
+                                                           kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
+                                                           .biometryCurrentSet,
+                                                           &cfError),
+              let token = Crypto.secret(), token.count == 32 else {
+            return false
+        }
+
+        deleteBiometricToken()
+        let add: [String: Any] = [
+            kSecClass as String:                     kSecClassGenericPassword,
+            kSecAttrService as String:               biometricService,
+            kSecAttrAccount as String:               biometricAccount,
+            kSecAttrAccessControl as String:         access,
+            kSecUseDataProtectionKeychain as String: true,
+            kSecValueData as String:                 token
+        ]
+        return SecItemAdd(add as CFDictionary, nil) == errSecSuccess
+    }
+
+    private static func deleteBiometricToken() {
+        let query: [String: Any] = [
+            kSecClass as String:                     kSecClassGenericPassword,
+            kSecAttrService as String:               biometricService,
+            kSecAttrAccount as String:               biometricAccount,
+            kSecUseDataProtectionKeychain as String: true
+        ]
+        SecItemDelete(query as CFDictionary)
     }
 
     /// True if `password` is the app password (stored as its SHA-256 in the keychain;
