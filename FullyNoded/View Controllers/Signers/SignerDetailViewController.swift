@@ -137,33 +137,14 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             return
         }
         
-        let localAuthenticationContext = LAContext()
-        localAuthenticationContext.localizedFallbackTitle = "Use Passcode"
-        var authError: NSError?
-        let reasonString = "To Unlock"
+        // Face ID / Touch ID, else the APP password. Never the device passcode.
+        AppAuthentication.authenticate(from: self, reason: "To show your seed words") { [weak self] success in
+            guard let self = self, success else { return }
 
-        if localAuthenticationContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: &authError) {
-            localAuthenticationContext.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reasonString) { [weak self] (success, evaluateError) in
-                guard let self = self else { return }
-                
-                if success {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        //self.tableDict[1]["censoredText"] = self.tableDict[1]["text"] as? String ?? "no seed words"
-                        //tableDict.removeAll()
-                        showWords = true
-                        getData()
-                    }
-                } else {
-                    guard let error = evaluateError else { return }
-                    showAlert(vc: self, title: "Auth failed...", message: error.localizedDescription)
-                }
-            }
-
-        } else {
-            guard let error = authError else { return }
-            showAlert(vc: self, title: "Auth failed...", message: error.localizedDescription)
+            //self.tableDict[1]["censoredText"] = self.tableDict[1]["text"] as? String ?? "no seed words"
+            //tableDict.removeAll()
+            self.showWords = true
+            self.getData()
         }
     }
     
