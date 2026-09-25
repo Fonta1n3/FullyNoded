@@ -77,10 +77,9 @@ public func showAlert(vc: UIViewController? = nil, title: String, message: Strin
 }
 
 public func exportPsbtToURL(data: Data) -> URL? {
-    let documents = FileManager.default.urls(
-        for: .documentDirectory,
-        in: .userDomainMask
-    ).first
+    // Temporary folder, not Documents: Documents is visible in the Files app / Finder
+    // (UIFileSharingEnabled) and is backed up.
+    let documents: URL? = FileManager.default.temporaryDirectory
     guard let path = documents?.appendingPathComponent("/FullyNodedPSBT.psbt") else {
         return nil
     }
@@ -94,10 +93,9 @@ public func exportPsbtToURL(data: Data) -> URL? {
 }
 
 public func exportMultisigWalletToURL(data: Data) -> URL? {
-    let documents = FileManager.default.urls(
-        for: .documentDirectory,
-        in: .userDomainMask
-    ).first
+    // Temporary folder, not Documents: Documents is visible in the Files app / Finder
+    // (UIFileSharingEnabled) and is backed up.
+    let documents: URL? = FileManager.default.temporaryDirectory
     guard let path = documents?.appendingPathComponent("/FullyNodedMultisig.txt") else {
         return nil
     }
@@ -111,10 +109,9 @@ public func exportMultisigWalletToURL(data: Data) -> URL? {
 }
 
 public func exportWalletJson(name: String, data: Data) -> URL? {
-    let documents = FileManager.default.urls(
-        for: .documentDirectory,
-        in: .userDomainMask
-    ).first
+    // Temporary folder, not Documents: Documents is visible in the Files app / Finder
+    // (UIFileSharingEnabled) and is backed up.
+    let documents: URL? = FileManager.default.temporaryDirectory
     guard let path = documents?.appendingPathComponent("/\(name).json") else {
         return nil
     }
