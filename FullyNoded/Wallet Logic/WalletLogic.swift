@@ -153,12 +153,13 @@ class WalletLogic {
             guard let self = self else { return }
             
             guard var hotRecDescString = hotRecDescString else {
-                //print("Fetching hotRecDescString failed.")
+                // This signer's keys (with this passphrase) aren't in the receive descriptor.
+                completion((nil, "This signer's keys aren't in this wallet (wrong signer or passphrase?)."))
                 return
             }
                         
             guard let hotReceiveBDKDescriptor = try? BDKDescriptor(descriptor: hotRecDescString, networkKind: networkKind(network: network)) else {
-                //print("Could not convert hot receive descriptor string to BDKDescriptor.")
+                completion((nil, "Could not build the signing receive descriptor."))
                 return
             }
             
@@ -173,6 +174,7 @@ class WalletLogic {
                     #if DEBUG
                     print("Fetching hotChangeDescString failed.")
                     #endif
+                    completion((nil, "This signer's keys aren't in this wallet's change descriptor."))
                     return
                 }
                 
@@ -181,7 +183,7 @@ class WalletLogic {
                 #endif
                                 
                 guard let hotChangeBDKDescriptor = try? BDKDescriptor(descriptor: hotChangeDescString, networkKind: networkKind(network: network)) else {
-                    //print("Could not convert hot change descriptor string to BDKDescriptor.")
+                    completion((nil, "Could not build the signing change descriptor."))
                     return
                 }
                 
@@ -218,26 +220,71 @@ class WalletLogic {
         }
     }
     
-    func securelyDeleteWallet(name: String) throws {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let dbURL = docs.appendingPathComponent("\(name).sqlite3")
-        
-        guard FileManager.default.fileExists(atPath: dbURL.path) else { return }
-        
-        // Overwrite with random data first.
-        let fileHandle = try FileHandle(forWritingTo: dbURL)
-        let randomData = Data((0..<Int(64_000)).map { _ in UInt8.random(in: 0...255) })
-        try fileHandle.write(contentsOf: randomData)
-        try fileHandle.write(contentsOf: randomData)  // twice is enough
-        try fileHandle.close()
-        
-        // Then delete
-        try FileManager.default.removeItem(at: dbURL)
+    /// Folder for BDK's temporary signing database: Application Support/BDK.
+    /// Not Documents (visible in the Files app / Finder because UIFileSharingEnabled is
+    /// on), excluded from backups, and unreadable while the device is locked.
+    func bdkDirectory() -> URL? {
+        let fm = FileManager.default
+        guard let base = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
+        var dir = base.appendingPathComponent("BDK", isDirectory: true)
+        if !fm.fileExists(atPath: dir.path) {
+            do {
+                try fm.createDirectory(at: dir,
+                                       withIntermediateDirectories: true,
+                                       attributes: [.protectionKey: FileProtectionType.complete])
+            } catch {
+                return nil
+            }
+        }
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        try? dir.setResourceValues(values)
+        return dir
     }
     
+    /// Overwrites (best effort; flash storage may keep old blocks) and deletes the
+    /// temporary BDK database and its SQLite side files (-wal, -shm, -journal), both in
+    /// the current location and in Documents, where older versions kept it.
+    /// Never throws for a failed delete, so it can't turn a successful signing into an error.
+    func securelyDeleteWallet(name: String) throws {
+        let fm = FileManager.default
+        var folders: [URL] = []
+        if let dir = bdkDirectory() { folders.append(dir) }
+        if let docs = fm.urls(for: .documentDirectory, in: .userDomainMask).first { folders.append(docs) }
+        
+        for folder in folders {
+            for suffix in ["", "-wal", "-shm", "-journal"] {
+                let url = folder.appendingPathComponent("\(name).sqlite3\(suffix)")
+                guard fm.fileExists(atPath: url.path) else { continue }
+                
+                let attributes = try? fm.attributesOfItem(atPath: url.path)
+                let size = (attributes?[.size] as? NSNumber)?.intValue ?? 0
+                if size > 0, let handle = try? FileHandle(forWritingTo: url) {
+                    let randomData = Data((0..<size).map { _ in UInt8.random(in: 0...255) })
+                    try? handle.write(contentsOf: randomData)
+                    try? handle.close()
+                }
+                try? fm.removeItem(at: url)
+            }
+        }
+    }
+    
+    /// Removes files older app versions left in Documents (visible in Files / Finder).
+    /// Only app-named files are touched; anything the user put there is left alone.
+    func cleanUpLegacyDocuments() {
+        try? securelyDeleteWallet(name: "temp_wallet")
+        
+        let fm = FileManager.default
+        guard let docs = fm.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+        for name in ["FullyNodedPSBT.psbt", "FullyNodedMultisig.txt"] {
+            try? fm.removeItem(at: docs.appendingPathComponent(name))
+        }
+    }
+    
+    /// Plain file path of the temporary BDK database (not a file:// URL string).
     func walletDatabaseURL(named walletName: String) -> String {
-        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        return documents.appendingPathComponent("\(walletName).sqlite3").absoluteString
+        let dir = bdkDirectory() ?? FileManager.default.temporaryDirectory
+        return dir.appendingPathComponent("\(walletName).sqlite3").path
     }
     
     func signPsbt(wallet: BDKWallet, psbtBase64: String) -> ((signedPsbt: String?, rawTx: String?, errorMessage: String?)) {
@@ -246,7 +293,7 @@ class WalletLogic {
         }
         
         let signOptions = SignOptions(
-            trustWitnessUtxo: true,
+            trustWitnessUtxo: false,
             assumeHeight: nil,
             allowAllSighashes: false,
             tryFinalize: true,
@@ -298,10 +345,12 @@ class WalletLogic {
             let derivation = watchOnlyDescriptor.derivation
             
             guard let path = try? BDKDerivationPath(path: derivation) else {
+                completion((nil))
                 return
             }
             
             guard let derivedKey = try? masterKey.derive(path: path) else {
+                completion((nil))
                 return
             }
             
@@ -322,6 +371,9 @@ class WalletLogic {
                 print("hotDescriptor: \(hotDescriptor)")
                 #endif
                 completion((hotDescriptor))
+            } else {
+                // Key doesn't belong to this descriptor.
+                completion((nil))
             }
             
         } else if watchOnlyDescriptor.isMulti {
@@ -332,22 +384,20 @@ class WalletLogic {
             }
                                     
             for (x, _) in watchOnlyDescriptor.multiSigKeys.enumerated() {
-                guard let path = try? BDKDerivationPath(path: watchOnlyDescriptor.derivationArray[x]) else {
-                    return
-                }
-                
-                guard let derivedKey = try? masterKey.derive(path: path) else {
-                    return
+                // A key we can't derive just isn't ours; keep checking the others.
+                guard x < watchOnlyDescriptor.derivationArray.count,
+                      let path = try? BDKDerivationPath(path: watchOnlyDescriptor.derivationArray[x]),
+                      let derivedKey = try? masterKey.derive(path: path) else {
+                    continue
                 }
                                 
                 if derivedKey.asPublic().description.contains(watchOnlyDescriptor.multiSigKeys[x]) {
                     hotDescriptor = processMultiSig(derivedKey: derivedKey, watchOnlyDescriptor: watchOnlyDescriptor, keyIndex: x)
                 }
-                
-                if x + 1 == watchOnlyDescriptor.multiSigKeys.count {
-                    completion((hotDescriptor))
-                }
             }
+            
+            // Always report back: the hot descriptor, or nil if none of our keys matched.
+            completion((hotDescriptor))
         } else {
             guard let path = try? BDKDerivationPath(path: watchOnlyDescriptor.derivation) else {
                 completion((nil))
@@ -362,6 +412,7 @@ class WalletLogic {
             var xprvString = derivedKey.asPublic().description
             
             guard derivedKey.asPublic().description.contains(watchOnlyDescriptor.accountXpub) else {
+                completion((nil))
                 return
             }
             
@@ -679,6 +730,43 @@ class WalletLogic {
     enum TimelockedSigningError: Error {
         case didNotSign
         case timelockNotMet
+    }
+    
+    /// Verifies LOCALLY (no node involved) that `address` is derived from `fnWallet`'s
+    /// receive or change descriptor.
+    ///
+    /// `keyPath` comes from the node (getaddressinfo hdkeypath / desc) and is only used as
+    /// a hint for WHICH index to derive. Both branches are derived at that index and
+    /// compared with the address, so a dishonest node can't make its own address pass as
+    /// "ours" or "change". Whether it's change is decided here, not by the node.
+    func locallyVerifyAddress(_ address: String, keyPath: String, fnWallet: Wallet) -> (isOurs: Bool, isChange: Bool) {
+        // Last path element is the address index; hardened ("5h"/"5'") never matches.
+        guard let last = keyPath.split(separator: "/").last,
+              let index = UInt32(last),
+              let bdkWallet = try? bdkWalletFromDescriptors(recDesc: fnWallet.receiveDescriptor,
+                                                            changeDesc: fnWallet.changeDescriptor) else {
+            return (false, false)
+        }
+        
+        let target = normalizedAddress(address)
+        
+        if normalizedAddress(bdkWallet.peekAddress(keychain: .external, index: index).address.description) == target {
+            return (true, false)
+        }
+        if normalizedAddress(bdkWallet.peekAddress(keychain: .internal, index: index).address.description) == target {
+            return (true, true)
+        }
+        return (false, false)
+    }
+    
+    /// Bech32(m) addresses are case-insensitive; base58 addresses are not.
+    private func normalizedAddress(_ address: String) -> String {
+        let trimmed = address.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "-", with: "")
+        let lower = trimmed.lowercased()
+        if lower.hasPrefix("bc1") || lower.hasPrefix("tb1") || lower.hasPrefix("bcrt1") {
+            return lower
+        }
+        return trimmed
     }
     
     func bdkWalletFromDescriptors(recDesc: String, changeDesc: String) throws -> BDKWallet {
