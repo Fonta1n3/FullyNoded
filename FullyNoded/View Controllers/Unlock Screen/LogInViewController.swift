@@ -367,31 +367,29 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     }
     
     @objc func authenticationWithTouchID() {
-        let localAuthenticationContext = LAContext()
-        localAuthenticationContext.localizedFallbackTitle = "Use passcode"
-        var authError: NSError?
-        let reasonString = "To unlock"
+        // Face ID / Touch ID only. If it fails, is cancelled or is locked out, the ONLY
+        // fallback is the app password below, never the device passcode.
+        AppAuthentication.biometrics(reason: "To unlock") { [weak self] success, errorCode in
+            guard let self = self else { return }
 
-        if localAuthenticationContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: &authError) {
-            localAuthenticationContext.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reasonString) { success, evaluateError in
-                if success {
-                    DispatchQueue.main.async {
-                        self.unlock()
-                    }
-                } else {
-                    guard let error = evaluateError else { return }
-
-                    print(self.evaluateAuthenticationPolicyMessageForLA(errorCode: error._code))
-                }
+            if success {
+                self.unlock()
+                return
             }
 
-        } else {
+            #if DEBUG
+            if let errorCode = errorCode {
+                print(self.evaluateAuthenticationPolicyMessageForLA(errorCode: errorCode.rawValue))
+            }
+            #endif
 
-            guard let error = authError else { return }
+            // Fall back to the app password.
+            if self.passwordInput.isUserInteractionEnabled {
+                self.passwordInput.becomeFirstResponder()
+            }
 
-            //TODO: Show appropriate alert if biometry/TouchID/FaceID is lockout or not enrolled
-            if self.evaluateAuthenticationPolicyMessageForLA(errorCode: error._code) != "Too many failed attempts." {
-
+            if errorCode == .biometryLockout {
+                showAlert(vc: self, title: "Biometrics locked", message: "Too many failed attempts. Enter your app password to unlock.")
             }
         }
     }
@@ -505,4 +503,92 @@ extension UIViewController {
 
     }
 
+}
+
+
+/// App authentication shared by the unlock screen and sensitive screens (e.g. showing
+/// seed words).
+///
+/// Biometrics use `.deviceOwnerAuthenticationWithBiometrics` with the fallback button
+/// hidden, so iOS never offers the DEVICE passcode as a way in (not even after
+/// Face ID / Touch ID locks out). The fallback is always the APP password.
+enum AppAuthentication {
+
+    /// Face ID / Touch ID only. Completion runs on the main queue with success, or the
+    /// LAError code (nil if unknown) on failure / when biometrics aren't available.
+    static func biometrics(reason: String, completion: @escaping (Bool, LAError.Code?) -> Void) {
+        let context = LAContext()
+        // Empty title hides the fallback button ("Enter Password" → device passcode).
+        context.localizedFallbackTitle = ""
+
+        var availabilityError: NSError?
+        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &availabilityError) else {
+            let code = availabilityError.map { LAError.Code(rawValue: $0.code) } ?? nil
+            DispatchQueue.main.async { completion(false, code) }
+            return
+        }
+
+        context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, error in
+            let code = (error as? LAError)?.code
+            DispatchQueue.main.async { completion(success, code) }
+        }
+    }
+
+    /// True if `password` is the app password (stored as its SHA-256 in the keychain;
+    /// very old installs stored it in plain text).
+    static func verifyAppPassword(_ password: String) -> Bool {
+        guard !password.isEmpty, let stored = KeyChain.getData("UnlockPassword") else { return false }
+
+        if let hashed = Data(hexString: Crypto.sha256hash(password)), hashed == stored {
+            return true
+        }
+        return stored.utf8String == password
+    }
+
+    /// Biometrics if enabled, otherwise (or if they fail) the app password in an alert.
+    /// Never the device passcode. `completion(true)` only after a successful check.
+    static func authenticate(from vc: UIViewController, reason: String, completion: @escaping (Bool) -> Void) {
+        let biometricsEnabled = UserDefaults.standard.object(forKey: "bioMetricsDisabled") == nil
+
+        guard biometricsEnabled else {
+            AppAuthentication.promptForAppPassword(from: vc, completion: completion)
+            return
+        }
+
+        AppAuthentication.biometrics(reason: reason) { success, _ in
+            if success {
+                completion(true)
+            } else {
+                AppAuthentication.promptForAppPassword(from: vc, completion: completion)
+            }
+        }
+    }
+
+    /// Asks for the app password in an alert and checks it.
+    static func promptForAppPassword(from vc: UIViewController, completion: @escaping (Bool) -> Void) {
+        DispatchQueue.main.async { [weak vc] in
+            guard let vc = vc else { return }
+
+            let alert = UIAlertController(title: "App password",
+                                          message: "Enter your app password to continue.",
+                                          preferredStyle: .alert)
+            alert.addTextField { textField in
+                textField.isSecureTextEntry = true
+                textField.autocorrectionType = .no
+                textField.spellCheckingType = .no
+                textField.autocapitalizationType = .none
+            }
+            alert.addAction(UIAlertAction(title: "Continue", style: .default) { _ in
+                let ok = AppAuthentication.verifyAppPassword(alert.textFields?.first?.text ?? "")
+                if !ok {
+                    showAlert(vc: vc, title: "Wrong password", message: "")
+                }
+                completion(ok)
+            })
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                completion(false)
+            })
+            vc.present(alert, animated: true)
+        }
+    }
 }
