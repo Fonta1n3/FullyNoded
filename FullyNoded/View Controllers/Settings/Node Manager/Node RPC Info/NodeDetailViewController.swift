@@ -605,8 +605,11 @@ extension NodeDetailViewController: UIDocumentPickerDelegate {
         guard let url = urls.first else { return }
         
         let securedURL = copyToAppContainer(url: url)
+        let certText = CertificateManager.shared.certFileToBase64(fileURL: securedURL)
+        // Only needed long enough to read it; the cert is stored (encrypted) with the node.
+        try? FileManager.default.removeItem(at: securedURL)
         
-        guard let base64Cert = CertificateManager.shared.certFileToBase64(fileURL: securedURL) else {
+        guard let base64Cert = certText else {
             showAlert(vc: self, title: "Error", message: "Unable to convert the cert file to base64 text. Ensure you are trying to upload a .pem, .cer, .crt or .der file.")
             return
         }
@@ -620,8 +623,8 @@ extension NodeDetailViewController: UIDocumentPickerDelegate {
     
     private func copyToAppContainer(url: URL) -> URL {
         let fm = FileManager.default
-        let docsDir = fm.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let dest = docsDir.appendingPathComponent(url.lastPathComponent)
+        // Temporary folder, not Documents (visible in the Files app / Finder).
+        let dest = fm.temporaryDirectory.appendingPathComponent(url.lastPathComponent)
         
         try? fm.removeItem(at: dest)
         try? fm.copyItem(at: url, to: dest)
