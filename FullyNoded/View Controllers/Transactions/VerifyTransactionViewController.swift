@@ -1450,13 +1450,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         // also adding a signer verify button to show whether FN is able to sign for the output or not
                         if solvable && self.wallet != nil {
                             // Only do this if we are not using the default wallet.
-                            Keys.verifyAddress(parentDesc: parentDesc, passphrase: self.passphrase) { (isOursFullyNoded, walletLabel, signable, signer) in
-                                self.outputArray[self.index]["isOursFullyNoded"] = isOursFullyNoded
-                                self.outputArray[self.index]["walletLabel"] = walletLabel
-                                self.outputArray[self.index]["signable"] = signable
-                                self.outputArray[self.index]["signerLabel"] = signer
-                                self.index += 1
-                                self.verifyOutputs()
+                            Keys.verifyAddress(parentDesc: parentDesc, passphrase: self.passphrase) { (_, _, signable, signer) in
+                                // "Ours" and "change" are decided by deriving the address from
+                                // our own descriptors, NOT by what the node reports.
+                                self.locallyVerifyOutput(address: address, keyPath: keypath) { local in
+                                    self.applyLocalVerification(local, nodeSaysChange: isChange, to: &self.outputArray[self.index])
+                                    self.outputArray[self.index]["signable"] = signable
+                                    self.outputArray[self.index]["signerLabel"] = signer
+                                    self.index += 1
+                                    self.verifyOutputs()
+                                }
                             }
                         } else {
                             self.outputArray[self.index]["isOursFullyNoded"] = false
@@ -2014,9 +2017,59 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 isChangeImageView.tintColor = .systemOrange
                 addressTypeLabel.text = "Address type unknown."
             }
+
+            // The node says this output is our change, but Fully Noded couldn't derive the
+            // address from the wallet's descriptors: treat it as someone else's output.
+            if output["changeUnverified"] as? Bool ?? false {
+                isChangeImageView.image = UIImage(systemName: "exclamationmark.triangle")
+                isChangeImageView.tintColor = .systemRed
+                addressTypeLabel.text = "Node says change, but Fully Noded couldn't verify it. Don't sign unless you recognize this address."
+            }
         }
         
         return outputCell
+    }
+
+    // MARK: - Local (node-independent) output verification
+
+    /// Checks whether `address` derives from one of our Fully Noded wallets' descriptors,
+    /// active wallet first. `keyPath` from the node is only a hint for the index.
+    private func locallyVerifyOutput(address: String,
+                                     keyPath: String,
+                                     completion: @escaping ((isOurs: Bool, isChange: Bool, walletLabel: String?)) -> Void) {
+        if let active = wallet {
+            let result = WalletLogic.shared.locallyVerifyAddress(address, keyPath: keyPath, fnWallet: active)
+            if result.isOurs {
+                completion((true, result.isChange, active.label))
+                return
+            }
+        }
+
+        CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] wallets in
+            guard let self = self else { return }
+            for dict in wallets ?? [] {
+                let fnWallet = Wallet(dictionary: dict)
+                if fnWallet.id == self.wallet?.id { continue }
+                let result = WalletLogic.shared.locallyVerifyAddress(address, keyPath: keyPath, fnWallet: fnWallet)
+                if result.isOurs {
+                    completion((true, result.isChange, fnWallet.label))
+                    return
+                }
+            }
+            completion((false, false, nil))
+        }
+    }
+
+    /// Writes the local verification result into an output dict. "Change" is only shown
+    /// when WE derived it from a change descriptor; if the node claimed change but we
+    /// couldn't verify it, the output is flagged `changeUnverified`.
+    private func applyLocalVerification(_ local: (isOurs: Bool, isChange: Bool, walletLabel: String?),
+                                        nodeSaysChange: Bool,
+                                        to output: inout [String: Any]) {
+        output["isOursFullyNoded"] = local.isOurs
+        output["walletLabel"] = local.isOurs ? (local.walletLabel ?? "") : ""
+        output["isChange"] = local.isOurs && local.isChange
+        output["changeUnverified"] = nodeSaysChange && !(local.isOurs && local.isChange)
     }
     
     private func miningFeeCell(_ indexPath: IndexPath) -> UITableViewCell {
@@ -2189,20 +2242,26 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     // will add a dedicated verify button for unsolvable to cross check against all wallets
                     // also adding a signer verify button to show whether FN is able to sign for the output or not
                     
-                    Keys.verifyAddress(parentDesc: parentDesc, passphrase: self.passphrase) { (isOursFullyNoded, walletLabel, signable, signer) in
-                        updatedOutput["isOursFullyNoded"] = isOursFullyNoded
-                        updatedOutput["walletLabel"] = walletLabel
-                        updatedOutput["signable"] = signable
-                        updatedOutput["signerLabel"] = signer
+                    Keys.verifyAddress(parentDesc: parentDesc, passphrase: self.passphrase) { (_, nodeWalletLabel, signable, signer) in
+                        // Confirm locally from our own descriptors before saying it's ours.
+                        self.locallyVerifyOutput(address: address, keyPath: keypath) { local in
+                            self.applyLocalVerification(local, nodeSaysChange: isChange, to: &updatedOutput)
+                            updatedOutput["signable"] = signable
+                            updatedOutput["signerLabel"] = signer
                         
-                        DispatchQueue.main.async { [weak self] in
-                            guard let self = self else { return }
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
                             
-                            resetActiveWallet()
-                            self.outputArray[int] = updatedOutput
-                            self.verifyTable.reloadData()
-                            ConnectingView.shared.dismiss()
-                            showAlert(vc: self, title: "", message: "Owned by \(walletLabel ?? "Bitcoin Core") ✓")
+                                resetActiveWallet()
+                                self.outputArray[int] = updatedOutput
+                                self.verifyTable.reloadData()
+                                ConnectingView.shared.dismiss()
+                                if local.isOurs {
+                                    showAlert(vc: self, title: "", message: "Owned by \(local.walletLabel ?? "your wallet") ✓ (verified from the wallet's descriptors)")
+                                } else {
+                                    showAlert(vc: self, title: "⚠️ Not verified", message: "The node says this address belongs to \(nodeWalletLabel ?? "one of its wallets"), but Fully Noded couldn't derive it from any of your wallets' descriptors.")
+                                }
+                            }
                         }
                         
                         return
