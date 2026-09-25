@@ -93,7 +93,8 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
 
             let ud = UserDefaults.standard
 
-            if ud.object(forKey: "bioMetricsDisabled") == nil {
+            // No biometric unlock where it can't be enforced (Mac): app password only.
+            if ud.object(forKey: "bioMetricsDisabled") == nil && AppAuthentication.biometricsSupported {
                 touchIDButton.removeFromSuperview()
                 lockView.addSubview(touchIDButton)
             }
@@ -104,7 +105,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                 UIImpactFeedbackGenerator().impactOccurred()
             }
 
-            if ud.object(forKey: "bioMetricsDisabled") == nil {
+            if ud.object(forKey: "bioMetricsDisabled") == nil && AppAuthentication.biometricsSupported {
                 authenticationWithTouchID()
             }
 
@@ -515,6 +516,24 @@ extension UIViewController {
 /// Face ID / Touch ID locks out). The fallback is always the APP password.
 enum AppAuthentication {
 
+    /// Whether biometric unlock can be enforced on this device.
+    ///
+    /// On a Mac (iOS app running on Apple silicon, or Mac Catalyst) macOS always lets the
+    /// user's LOGIN PASSWORD satisfy Touch ID prompts, including keychain items protected
+    /// with `.biometryCurrentSet`. There's no way to insist on the fingerprint alone, so a
+    /// "biometric" success there can't be told apart from the Mac password. Biometric
+    /// unlock is therefore disabled on Mac: the app password is the only way in.
+    static var biometricsSupported: Bool {
+        #if targetEnvironment(macCatalyst)
+        return false
+        #else
+        if #available(iOS 14.0, *) {
+            return !ProcessInfo.processInfo.isiOSAppOnMac
+        }
+        return true
+        #endif
+    }
+
     /// Keychain item that can ONLY be read after a successful Face ID / Touch ID match.
     private static let biometricService = (Bundle.main.bundleIdentifier ?? "FullyNoded") + ".biometricUnlock"
     private static let biometricAccount = "BiometricUnlockToken"
@@ -530,6 +549,12 @@ enum AppAuthentication {
     /// Completion runs on the main queue with success, or an LAError code (nil if unknown)
     /// on failure / when biometrics aren't available.
     static func biometrics(reason: String, completion: @escaping (Bool, LAError.Code?) -> Void) {
+        // Never on Mac: the login password would count as success (see biometricsSupported).
+        guard biometricsSupported else {
+            DispatchQueue.main.async { completion(false, .biometryNotAvailable) }
+            return
+        }
+
         // Availability / lockout check only (shows no UI).
         let probe = LAContext()
         var availabilityError: NSError?
@@ -649,6 +674,7 @@ enum AppAuthentication {
     /// Never the device passcode. `completion(true)` only after a successful check.
     static func authenticate(from vc: UIViewController, reason: String, completion: @escaping (Bool) -> Void) {
         let biometricsEnabled = UserDefaults.standard.object(forKey: "bioMetricsDisabled") == nil
+            && AppAuthentication.biometricsSupported
 
         guard biometricsEnabled else {
             AppAuthentication.promptForAppPassword(from: vc, completion: completion)
