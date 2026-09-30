@@ -970,7 +970,7 @@ class WalletLogic {
         mnemonic: String,
         passphrase: String? = nil,
         network: NetworkKind = .main
-    ) throws -> (address: String, scanPrivHex: String, spendPrivHex: String) {
+    ) throws -> (address: String, scanPrivHex: String, spendPrivHex: String, scanPubHex: String, spendPubHex: String) {
         let words = try Mnemonic.fromString(mnemonic: mnemonic)
         let master = DescriptorSecretKey(
             networkKind: network,
@@ -997,7 +997,9 @@ class WalletLogic {
         return (
             address: address,
             scanPrivHex: SPHex.encode(scanPriv),
-            spendPrivHex: SPHex.encode(spendPriv)
+            spendPrivHex: SPHex.encode(spendPriv),
+            scanPubHex: SPHex.encode(scanPub),
+            spendPubHex: SPHex.encode(spendPub)
         )
     }
     //}
