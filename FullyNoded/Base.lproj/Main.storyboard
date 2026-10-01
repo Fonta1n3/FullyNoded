@@ -1371,7 +1371,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
         <!--Nodeless-->
         <scene sceneID="wgv-RK-Dvs">
             <objects>
-                <tableViewController hidesBottomBarWhenPushed="YES" id="8y2-FD-bX6" customClass="NodelessTableViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="NodelessTable" hidesBottomBarWhenPushed="YES" id="8y2-FD-bX6" customClass="NodelessTableViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="DZ6-zd-DKk">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="494"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1566,85 +1566,6 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
             </objects>
             <point key="canvasLocation" x="-9623.2000000000007" y="1127.5862068965519"/>
         </scene>
-        <!--Signer-->
-        <scene sceneID="r9q-c5-d2Z">
-            <objects>
-                <viewController title="Signer" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="Avw-Yr-vaR" customClass="SignerDetailViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="hXY-Kg-4yD">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="YbQ-Ro-DcZ">
-                                <rect key="frame" x="0.0" y="121" width="320" height="427"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <color key="sectionIndexBackgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="defaultCell" rowHeight="61" id="ce9-Yb-EUo">
-                                        <rect key="frame" x="16" y="55.5" width="288" height="61"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="ce9-Yb-EUo" id="E7m-py-Knf">
-                                            <rect key="frame" x="0.0" y="0.0" width="288" height="61"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        </tableViewCellContentView>
-                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
-                                    </tableViewCell>
-                                </prototypes>
-                                <connections>
-                                    <outlet property="dataSource" destination="Avw-Yr-vaR" id="BVv-qd-qb7"/>
-                                    <outlet property="delegate" destination="Avw-Yr-vaR" id="YuD-Yo-2a0"/>
-                                </connections>
-                            </tableView>
-                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="H3c-ew-Tc0">
-                                <rect key="frame" x="208" y="82" width="96" height="32"/>
-                                <segments>
-                                    <segment title="main"/>
-                                    <segment title="test"/>
-                                </segments>
-                                <connections>
-                                    <action selector="switchNetwork:" destination="Avw-Yr-vaR" eventType="valueChanged" id="ILg-Xu-A5x"/>
-                                </connections>
-                            </segmentedControl>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="ycR-gB-bCm"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <constraints>
-                            <constraint firstItem="YbQ-Ro-DcZ" firstAttribute="top" secondItem="H3c-ew-Tc0" secondAttribute="bottom" constant="8" symbolic="YES" id="14U-Hz-XfP"/>
-                            <constraint firstItem="ycR-gB-bCm" firstAttribute="trailing" secondItem="H3c-ew-Tc0" secondAttribute="trailing" constant="16" id="5kb-vJ-zmo"/>
-                            <constraint firstItem="YbQ-Ro-DcZ" firstAttribute="leading" secondItem="ycR-gB-bCm" secondAttribute="leading" id="EeQ-gU-1TJ"/>
-                            <constraint firstItem="H3c-ew-Tc0" firstAttribute="top" secondItem="ycR-gB-bCm" secondAttribute="top" constant="8" id="PuA-tO-xaW"/>
-                            <constraint firstItem="YbQ-Ro-DcZ" firstAttribute="trailing" secondItem="ycR-gB-bCm" secondAttribute="trailing" id="Zzb-qh-apD"/>
-                            <constraint firstItem="ycR-gB-bCm" firstAttribute="bottom" secondItem="YbQ-Ro-DcZ" secondAttribute="bottom" constant="20" id="nfU-0x-O7G"/>
-                        </constraints>
-                    </view>
-                    <navigationItem key="navigationItem" title="Signers" id="KB0-Dh-00J">
-                        <rightBarButtonItems>
-                            <barButtonItem image="trash.circle" catalog="system" id="1IX-b3-6zg">
-                                <color key="tintColor" systemColor="systemPinkColor"/>
-                                <connections>
-                                    <action selector="deleteAction:" destination="Avw-Yr-vaR" id="3JO-qq-tTz"/>
-                                </connections>
-                            </barButtonItem>
-                            <barButtonItem image="eye" catalog="system" id="OS9-LX-evh">
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <connections>
-                                    <action selector="showSignerAction:" destination="Avw-Yr-vaR" id="AdE-a3-lg6"/>
-                                </connections>
-                            </barButtonItem>
-                        </rightBarButtonItems>
-                    </navigationItem>
-                    <connections>
-                        <outlet property="segmentedControl" destination="H3c-ew-Tc0" id="Iir-ac-ali"/>
-                        <outlet property="tableView" destination="YbQ-Ro-DcZ" id="Zen-5Y-Cvr"/>
-                        <segue destination="GlR-4A-eAx" kind="show" identifier="segueToExportKeystore" id="ods-Ql-GAw"/>
-                        <segue destination="00Y-n8-WfC" kind="show" identifier="segueToCreateMultiSigFromSigner" id="5iI-Ra-crf"/>
-                        <segue destination="8y2-FD-bX6" kind="show" identifier="segueToNodeless" id="hLi-xy-fNZ"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="oeA-4f-Yg1" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-4573" y="422"/>
-        </scene>
         <!--Signers-->
         <scene sceneID="HBy-5M-PSd">
             <objects>
@@ -1722,7 +1643,6 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                     </navigationItem>
                     <connections>
                         <outlet property="signerTable" destination="WVI-Gu-NZf" id="OZi-wC-sFO"/>
-                        <segue destination="Avw-Yr-vaR" kind="show" identifier="segueToSignerDetail" id="PAL-VQ-iLQ"/>
                         <segue destination="G0V-te-kek" kind="show" identifier="addSignerSegue" id="cXu-ZW-bhg"/>
                     </connections>
                 </viewController>

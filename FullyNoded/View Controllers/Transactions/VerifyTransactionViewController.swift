@@ -662,6 +662,14 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         Signer.shared.attemptToSignPsbt(fnWallet: wallet, psbt: unsignedPsbt, passphrase: passphrase, utxoParentDesc: checksumless) { [weak self] (signedPsbt, rawTx, errorMessage) in
             guard let self = self else { return }
+            self.handleSigningResult(signedPsbt: signedPsbt, rawTx: rawTx, errorMessage: errorMessage)
+        }
+    }
+
+    /// Shared result handling for every signing path (normal and silent payment).
+    private func handleSigningResult(signedPsbt: String?, rawTx: String?, errorMessage: String?) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             
             if let rawTx = rawTx {
                 ConnectingView.shared.dismiss()
@@ -688,6 +696,101 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 if let errorMessage = errorMessage {
                     showAlert(vc: self, title: "Error Signing", message: errorMessage)
                 }
+            }
+        }
+    }
+
+    // MARK: - Silent payment inputs
+
+    /// Sign, handling silent payment inputs.
+    ///
+    /// Every taproot input is checked by re-running BIP352 receiver scanning on its
+    /// funding transaction with your signers' scan keys (no reliance on address labels).
+    /// - No silent payment inputs: the normal `signNow` path, unchanged.
+    /// - Otherwise: SP inputs are signed with `SilentPaymentSpend` (tweaked key),
+    ///   remaining inputs with the normal `Signer` (chained per parent descriptor), and
+    ///   the node's `finalizepsbt` turns a complete PSBT into the raw transaction.
+    private func signWithSilentPaymentSupport(passphrase: String?, parentDesc: String) {
+        ConnectingView.shared.show(vc: self, description: "checking for silent payment inputs...")
+
+        let psbtToSign = unsignedPsbt
+
+        SilentPaymentSpend.detectInputs(psbt: psbtToSign, passphrase: passphrase) { [weak self] spOutputs in
+            guard let self = self else { return }
+
+            guard !spOutputs.isEmpty else {
+                // No silent payment inputs: exactly the normal flow.
+                ConnectingView.shared.dismiss()
+                self.signNow(passphrase: passphrase, parentDesc: parentDesc)
+                return
+            }
+
+            ConnectingView.shared.show(vc: self, description: "signing silent payment inputs...")
+
+            SilentPaymentSpend.sign(psbt: psbtToSign, outputs: spOutputs, passphrase: passphrase) { [weak self] signedPsbt, _, errorMessage in
+                guard let self = self else { return }
+
+                guard let signedPsbt = signedPsbt else {
+                    self.handleSigningResult(signedPsbt: nil, rawTx: nil, errorMessage: errorMessage ?? "Unable to sign the silent payment inputs.")
+                    return
+                }
+
+                // Parent descriptors of the inputs that are NOT silent payment outputs.
+                let spOutpoints = Set(spOutputs.map { "\($0.txid.lowercased()):\($0.vout)" })
+                var parentDescs: [String] = []
+                for input in self.inputTableArray {
+                    let outpoint = "\((input["txid"] as? String ?? "").lowercased()):\(input["vout"] as? Int ?? -1)"
+                    guard !spOutpoints.contains(outpoint),
+                          let desc = input["parent_desc"] as? String, !desc.isEmpty else { continue }
+                    let checksumless = "\(desc.split(separator: "#")[0])"
+                    if !parentDescs.contains(checksumless) { parentDescs.append(checksumless) }
+                }
+
+                ConnectingView.shared.show(vc: self, description: "signing...")
+                self.signRemainingInputs(psbt: signedPsbt, parentDescs: parentDescs, passphrase: passphrase)
+            }
+        }
+    }
+
+    /// Normal Signer for the non-silent-payment inputs, one parent descriptor at a time,
+    /// each signing the previous result. Then finalize with the node.
+    private func signRemainingInputs(psbt: String, parentDescs: [String], passphrase: String?) {
+        guard let parentDesc = parentDescs.first else {
+            finalizeWithNode(psbt)
+            return
+        }
+
+        guard let wallet = wallet else {
+            // SP inputs are signed; the others need a Fully Noded wallet to sign.
+            finalizeWithNode(psbt)
+            return
+        }
+
+        Signer.shared.attemptToSignPsbt(fnWallet: wallet, psbt: psbt, passphrase: passphrase, utxoParentDesc: parentDesc) { [weak self] signedPsbt, rawTx, _ in
+            guard let self = self else { return }
+
+            if let rawTx = rawTx {
+                self.handleSigningResult(signedPsbt: nil, rawTx: rawTx, errorMessage: nil)
+                return
+            }
+
+            // Keep going with whatever we have (a signer error leaves the psbt unchanged).
+            self.signRemainingInputs(psbt: signedPsbt ?? psbt, parentDescs: Array(parentDescs.dropFirst()), passphrase: passphrase)
+        }
+    }
+
+    /// finalizepsbt on the node: raw tx if every input is signed, otherwise keep the
+    /// partially signed PSBT so the remaining signatures can be added.
+    private func finalizeWithNode(_ psbt: String) {
+        let param = Finalize_Psbt(["psbt": psbt])
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .finalizepsbt(param)) { [weak self] response, _ in
+            guard let self = self else { return }
+
+            let dict = response as? [String: Any]
+            if let complete = dict?["complete"] as? Bool, complete, let hex = dict?["hex"] as? String {
+                self.handleSigningResult(signedPsbt: nil, rawTx: hex, errorMessage: nil)
+            } else {
+                self.handleSigningResult(signedPsbt: dict?["psbt"] as? String ?? psbt, rawTx: nil, errorMessage: nil)
             }
         }
     }
@@ -2387,13 +2490,14 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         isSigning = true
         
+        // Checks for silent payment inputs first; falls back to signNow when there are none.
         if UserDefaults.standard.object(forKey: "passphrasePrompt") == nil {
-            signNow(passphrase: nil, parentDesc: parentDesc)
+            signWithSilentPaymentSupport(passphrase: nil, parentDesc: parentDesc)
         } else {
             setPassphrase { [weak self] passphrase in
                 guard let self = self else { return }
                 self.passphrase = passphrase
-                signNow(passphrase: passphrase, parentDesc: parentDesc)
+                signWithSilentPaymentSupport(passphrase: passphrase, parentDesc: parentDesc)
             }
         }
         

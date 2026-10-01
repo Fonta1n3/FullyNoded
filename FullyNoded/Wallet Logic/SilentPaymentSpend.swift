@@ -454,3 +454,417 @@ enum SPWriter {
      // psbt has PSBT_IN_TAP_KEY_SIG for `signed` inputs → finalizepsbt → broadcast
  }
 */
+
+
+// MARK: - Detecting silent payment inputs
+//
+// Decides whether a PSBT input spends a silent payment output you own WITHOUT relying
+// on wallet labels: it re-runs BIP352 receiver scanning on the input's FUNDING
+// transaction (fetched from your node with its prevouts) using each signer's scan key
+// and spend public key. A match proves the output is yours AND yields the tweak t_k
+// (and label tweak) that `sign(psbt:outputs:)` needs, so FN-Server's saved tweaks
+// aren't required.
+
+extension SilentPaymentSpend {
+
+    /// Scan key pair derived from one signer (+ passphrase candidate).
+    struct ScanKeys {
+        var bScan: Data        // b_scan, 32 bytes (secret, wiped after use)
+        let bSpendPub: Data    // B_spend, 33 bytes compressed
+    }
+
+    /// Finds which inputs of `psbt` are silent payment outputs paid to one of your
+    /// signers. Only taproot inputs are checked. Completion (main queue) gets the owned
+    /// outputs, ready for `sign(psbt:outputs:passphrase:completion:)`; empty if none.
+    static func detectInputs(psbt: String,
+                             passphrase: String?,
+                             completion: @escaping ([OwnedOutput]) -> Void) {
+        let finish: ([OwnedOutput]) -> Void = { found in DispatchQueue.main.async { completion(found) } }
+
+        guard let raw = Data(base64Encoded: psbt.trimmingCharacters(in: .whitespacesAndNewlines)),
+              let parsed = try? SPPsbt(raw) else {
+            finish([])
+            return
+        }
+
+        // Taproot (OP_1 <32 bytes>) inputs only.
+        var candidates: [(txid: String, vout: Int)] = []
+        for (i, input) in parsed.tx.inputs.enumerated() {
+            guard let prev = try? parsed.prevout(input: i) else { continue }
+            let s = [UInt8](prev.script)
+            guard s.count == 34, s[0] == 0x51, s[1] == 0x20 else { continue }
+            candidates.append((input.txidDisplay, Int(input.vout)))
+        }
+        guard !candidates.isEmpty else {
+            finish([])
+            return
+        }
+
+        scanKeyCandidates(passphrase: passphrase) { keys in
+            var keys = keys
+            guard !keys.isEmpty else {
+                finish([])
+                return
+            }
+
+            var found: [OwnedOutput] = []
+            var remaining = candidates
+
+            func next() {
+                guard let candidate = remaining.first else {
+                    for i in keys.indices { keys[i].bScan.secureZero() }
+                    finish(found)
+                    return
+                }
+                remaining.removeFirst()
+
+                fetchFundingTransaction(txid: candidate.txid) { tx in
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        if let tx = tx {
+                            for key in keys {
+                                if let owned = scan(fundingTx: tx, txid: candidate.txid, vout: candidate.vout, keys: key) {
+                                    found.append(owned)
+                                    break
+                                }
+                            }
+                        }
+                        next()
+                    }
+                }
+            }
+
+            next()
+        }
+    }
+
+    /// The funding transaction with prevouts (`getrawtransaction <txid> 2 [blockhash]`,
+    /// Core ≥ 25). The block hash comes from the wallet so -txindex isn't needed.
+    static func fetchFundingTransaction(txid: String, completion: @escaping ([String: Any]?) -> Void) {
+        let walletTx = Get_Tx(["txid": txid, "verbose": false])
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .gettransaction(walletTx)) { response, _ in
+            var params: [String: Any] = ["txid": txid, "verbosity": 2]
+            if let blockhash = (response as? [String: Any])?["blockhash"] as? String {
+                params["blockhash"] = blockhash
+            }
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .getrawtransaction(param: Get_Raw_Tx(params))) { response, _ in
+                completion(response as? [String: Any])
+            }
+        }
+    }
+
+    /// b_scan (m/352'/coin'/0'/1'/0) and B_spend (m/352'/coin'/0'/0'/0) for every signer,
+    /// trying the same passphrase candidates as `sign(...)`: typed, stored, none.
+    static func scanKeyCandidates(passphrase: String?, completion: @escaping ([ScanKeys]) -> Void) {
+        CoreDataService.retrieveEntity(entityName: .signers) { signers in
+            var result: [ScanKeys] = []
+            let coin = SPAddress.isMainnet ? 0 : 1
+
+            for dict in signers ?? [] {
+                let signer = SignerStruct(dictionary: dict)
+                guard var encWords = signer.words,
+                      var wordsData = Crypto.decrypt(encWords),
+                      var words = wordsData.utf8String,
+                      let mnemonic = try? Mnemonic.fromString(mnemonic: words) else { continue }
+                defer {
+                    wordsData.secureZero()
+                    encWords.secureZero()
+                    words.secureWipe()
+                }
+
+                var candidates: [String] = [passphrase ?? ""]
+                if let encPass = signer.passphrase, var passData = Crypto.decrypt(encPass), let p = passData.utf8String {
+                    candidates.append(p)
+                    passData.secureZero()
+                }
+                candidates.append("")
+                var seen = Set<String>()
+
+                for p in candidates where seen.insert(p).inserted {
+                    let master = DescriptorSecretKey(networkKind: SPAddress.isMainnet ? .main : .test,
+                                                     mnemonic: mnemonic,
+                                                     password: p.isEmpty ? nil : p)
+                    guard let scanPath = try? BDKDerivationPathFN(path: "m/352h/\(coin)h/0h/1h/0"),
+                          let spendPath = try? BDKDerivationPathFN(path: "m/352h/\(coin)h/0h/0h/0"),
+                          let scanKey = try? master.derive(path: scanPath),
+                          let spendKey = try? master.derive(path: spendPath) else { continue }
+
+                    var spendPriv = Data(spendKey.secretBytes())
+                    defer { spendPriv.secureZero() }
+                    guard let spendPub = try? P256K.Signing.PrivateKey(dataRepresentation: spendPriv).publicKey else { continue }
+
+                    result.append(ScanKeys(bScan: Data(scanKey.secretBytes()),
+                                           bSpendPub: Data(spendPub.dataRepresentation)))
+                }
+            }
+            completion(result)
+        }
+    }
+
+    /// BIP352 receiver check of one funding transaction (decoded JSON with vin.prevout)
+    /// for output `vout`. Returns the owned output (t_k, label tweak) if it's ours.
+    static func scan(fundingTx tx: [String: Any], txid: String, vout target: Int, keys: ScanKeys) -> OwnedOutput? {
+        guard let vins = tx["vin"] as? [[String: Any]],
+              let vouts = tx["vout"] as? [[String: Any]],
+              !vins.isEmpty else { return nil }
+
+        // Coinbase can't be a silent payment.
+        if vins.first?["coinbase"] != nil { return nil }
+        // Every input needs its prevout (verbosity 2 / undo data), otherwise A is unknown.
+        if vins.contains(where: { $0["prevout"] == nil }) { return nil }
+        // BIP352: a tx spending any segwit v2+ output isn't a silent payment.
+        for vin in vins {
+            if let spk = ((vin["prevout"] as? [String: Any])?["scriptPubKey"] as? [String: Any])?["hex"] as? String,
+               SPDetect.isSegwitV2Plus(spk) {
+                return nil
+            }
+        }
+
+        // Taproot outputs (n → x-only key); the target must be one of them.
+        var taproot: [Int: String] = [:]
+        for (idx, out) in vouts.enumerated() {
+            guard let hex = ((out["scriptPubKey"] as? [String: Any])?["hex"] as? String)?.lowercased(),
+                  hex.count == 68, hex.hasPrefix("5120") else { continue }
+            let n = (out["n"] as? NSNumber)?.intValue ?? idx
+            taproot[n] = String(hex.dropFirst(4))
+        }
+        guard let targetXonly = taproot[target] else { return nil }
+
+        // Eligible input keys and ALL outpoints.
+        var pubkeys: [Data] = []
+        var outpoints: [Data] = []
+        for vin in vins {
+            if let prevTxid = vin["txid"] as? String,
+               let n = (vin["vout"] as? NSNumber)?.uint32Value,
+               let txidBytes = SPHexFN.decode(prevTxid), txidBytes.count == 32 {
+                var le = n.littleEndian
+                outpoints.append(Data(txidBytes.reversed()) + Data(bytes: &le, count: 4))
+            }
+            if let pk = SPDetect.eligiblePubkey(vin: vin) { pubkeys.append(pk) }
+        }
+        guard !pubkeys.isEmpty,
+              let smallest = outpoints.min(by: { $0.lexicographicallyPrecedes($1) }) else { return nil }
+
+        do {
+            // A = Σ input keys (throws if it's the point at infinity → not a silent payment).
+            let parsed = try pubkeys.map { try P256K.Signing.PublicKey(dataRepresentation: $0, format: .compressed) }
+            let sum: P256K.Signing.PublicKey
+            if parsed.count == 1 {
+                sum = parsed[0]
+            } else {
+                sum = try parsed[0].combine(Array(parsed.dropFirst()), format: .compressed)
+            }
+            let aSum = Data(sum.dataRepresentation)
+
+            // input_hash = hash_BIP0352/Inputs(outpoint_L || A)
+            let inputHash = SPHashFN.tagged("BIP0352/Inputs", smallest + aSum)
+            guard SPScalar.isValid(inputHash), SPScalar.isValid(keys.bScan) else { return nil }
+
+            // ecdh = (input_hash · b_scan) · A  (two scalar multiplications of A)
+            let ecdh = try sum.multiply(Array(keys.bScan), format: .compressed)
+                              .multiply(Array(inputHash), format: .compressed)
+            let sharedPoint = Data(ecdh.dataRepresentation)
+
+            let bSpend = try P256K.Signing.PublicKey(dataRepresentation: keys.bSpendPub, format: .compressed)
+            // Change label m = 0 is always scanned (BIP352).
+            let label0 = SPHashFN.tagged("BIP0352/Label", keys.bScan + Data([0, 0, 0, 0]))
+            let bSpendLabel0 = try bSpend.add(Array(label0))
+
+            var remaining = Set(taproot.values)
+            var k: UInt32 = 0
+            while k < 2323, !remaining.isEmpty {
+                var be = k.bigEndian
+                let tk = SPHashFN.tagged("BIP0352/SharedSecret", sharedPoint + Data(bytes: &be, count: 4))
+                guard SPScalar.isValid(tk) else { return nil }
+
+                var hit = false
+
+                let unlabeled = SPHexFN.encode(Data(try bSpend.add(Array(tk)).xonly.bytes))
+                if remaining.remove(unlabeled) != nil {
+                    hit = true
+                    if unlabeled == targetXonly {
+                        return OwnedOutput(txid: txid, vout: target, tweakHex: SPHexFN.encode(tk), labelTweakHex: nil)
+                    }
+                }
+
+                let labeled = SPHexFN.encode(Data(try bSpendLabel0.add(Array(tk)).xonly.bytes))
+                if remaining.remove(labeled) != nil {
+                    hit = true
+                    if labeled == targetXonly {
+                        return OwnedOutput(txid: txid, vout: target, tweakHex: SPHexFN.encode(tk), labelTweakHex: SPHexFN.encode(label0))
+                    }
+                }
+
+                if !hit { break }
+                k += 1
+            }
+        } catch {
+            return nil
+        }
+        return nil
+    }
+}
+
+/// BIP352 input rules used by detection (same rules as FN-Server's scanner, checked
+/// against the BIP352 test vectors).
+enum SPDetect {
+    static let numsH = "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
+
+    /// Witness program of version 2…16 (exactly OP_n <2…40-byte push>).
+    static func isSegwitV2Plus(_ hex: String) -> Bool {
+        guard let s = SPHexFN.decode(hex).map({ [UInt8]($0) }), s.count >= 4, s.count <= 42 else { return false }
+        let pushLen = Int(s[1])
+        guard (2...40).contains(pushLen), s.count == pushLen + 2 else { return false }
+        return (0x52...0x60).contains(s[0])
+    }
+
+    /// Compressed public key an input contributes to A, or nil if it's not eligible.
+    static func eligiblePubkey(vin: [String: Any]) -> Data? {
+        guard let spk = (((vin["prevout"] as? [String: Any])?["scriptPubKey"] as? [String: Any])?["hex"] as? String)?.lowercased()
+        else { return nil }
+        let witness = (vin["txinwitness"] as? [String] ?? []).map { $0.lowercased() }
+        let scriptSig = ((vin["scriptSig"] as? [String: Any])?["hex"] as? String ?? "").lowercased()
+
+        func compressed(_ hex: String) -> Data? {
+            guard hex.count == 66, hex.hasPrefix("02") || hex.hasPrefix("03") else { return nil }
+            return SPHexFN.decode(hex)
+        }
+
+        // P2TR: even-Y output key, unless a script-path spend with the NUMS internal key.
+        if spk.count == 68 && spk.hasPrefix("5120") {
+            var stack = witness
+            if stack.count >= 2, let last = stack.last, last.hasPrefix("50") { stack.removeLast() }  // annex
+            if stack.count >= 2, let control = stack.last, control.count >= 66,
+               String(control.dropFirst(2).prefix(64)) == numsH {
+                return nil
+            }
+            return SPHexFN.decode("02" + String(spk.dropFirst(4)))
+        }
+        // P2WPKH: witness [sig, pubkey].
+        if spk.count == 44 && spk.hasPrefix("0014") {
+            return witness.count == 2 ? witness.last.flatMap(compressed) : nil
+        }
+        // P2SH-P2WPKH: scriptSig is exactly the 0x16 0014<20> push.
+        if spk.count == 46 && spk.hasPrefix("a914") && spk.hasSuffix("87") {
+            guard scriptSig.count == 46, scriptSig.hasPrefix("160014"), witness.count == 2 else { return nil }
+            return witness.last.flatMap(compressed)
+        }
+        // P2PKH: last 33-byte window of the scriptSig whose HASH160 matches.
+        if spk.count == 50 && spk.hasPrefix("76a914") && spk.hasSuffix("88ac") {
+            guard let want = SPHexFN.decode(String(spk.dropFirst(6).prefix(40))),
+                  let sig = SPHexFN.decode(scriptSig) else { return nil }
+            let bytes = [UInt8](sig)
+            var end = bytes.count
+            while end >= 33 {
+                let window = Data(bytes[(end - 33)..<end])
+                if let first = window.first, first == 0x02 || first == 0x03,
+                   SPRIPEMD160.hash(Data(SHA256.hash(data: window))) == want {
+                    return window
+                }
+                end -= 1
+            }
+            return nil
+        }
+        return nil
+    }
+}
+
+/// RIPEMD-160 (CryptoKit has none), for HASH160 in P2PKH key extraction. Same code as
+/// FN-Server's scanner, checked against the RIPEMD-160 test vectors.
+enum SPRIPEMD160 {
+    private static let ML: [Int] = [
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+        7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8,
+        3, 10, 14, 4, 9, 15, 8, 1, 2, 7, 0, 6, 13, 11, 5, 12,
+        1, 9, 11, 10, 0, 8, 12, 4, 13, 3, 7, 15, 14, 5, 6, 2,
+        4, 0, 5, 9, 7, 12, 2, 10, 14, 1, 3, 8, 11, 6, 15, 13
+    ]
+    private static let MR: [Int] = [
+        5, 14, 7, 0, 9, 2, 11, 4, 13, 6, 15, 8, 1, 10, 3, 12,
+        6, 11, 3, 7, 0, 13, 5, 10, 14, 15, 8, 12, 4, 9, 1, 2,
+        15, 5, 1, 3, 7, 14, 6, 9, 11, 8, 12, 2, 10, 0, 4, 13,
+        8, 6, 4, 1, 3, 11, 15, 0, 5, 12, 2, 13, 9, 7, 10, 14,
+        12, 15, 10, 4, 1, 5, 8, 7, 6, 2, 13, 14, 0, 3, 9, 11
+    ]
+    private static let RL: [UInt32] = [
+        11, 14, 15, 12, 5, 8, 7, 9, 11, 13, 14, 15, 6, 7, 9, 8,
+        7, 6, 8, 13, 11, 9, 7, 15, 7, 12, 15, 9, 11, 7, 13, 12,
+        11, 13, 6, 7, 14, 9, 13, 15, 14, 8, 13, 6, 5, 12, 7, 5,
+        11, 12, 14, 15, 14, 15, 9, 8, 9, 14, 5, 6, 8, 6, 5, 12,
+        9, 15, 5, 11, 6, 8, 13, 12, 5, 12, 13, 14, 11, 8, 5, 6
+    ]
+    private static let RR: [UInt32] = [
+        8, 9, 9, 11, 13, 15, 15, 5, 7, 7, 8, 11, 14, 14, 12, 6,
+        9, 13, 15, 7, 12, 8, 9, 11, 7, 7, 12, 7, 6, 15, 13, 11,
+        9, 7, 15, 11, 8, 6, 6, 14, 12, 13, 5, 14, 13, 13, 7, 5,
+        15, 5, 8, 11, 14, 14, 6, 14, 6, 9, 12, 9, 12, 5, 15, 8,
+        8, 5, 12, 9, 12, 5, 14, 6, 8, 13, 6, 5, 15, 13, 11, 11
+    ]
+    private static let KL: [UInt32] = [0, 0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xa953fd4e]
+    private static let KR: [UInt32] = [0x50a28be6, 0x5c4dd124, 0x6d703ef3, 0x7a6d76e9, 0]
+
+    private static func f(_ x: UInt32, _ y: UInt32, _ z: UInt32, _ i: Int) -> UInt32 {
+        switch i {
+        case 0: return x ^ y ^ z
+        case 1: return (x & y) | (~x & z)
+        case 2: return (x | ~y) ^ z
+        case 3: return (x & z) | (y & ~z)
+        default: return x ^ (y | ~z)
+        }
+    }
+
+    private static func rol(_ x: UInt32, _ n: UInt32) -> UInt32 {
+        return (x << n) | (x >> (32 - n))
+    }
+
+    private static func compress(_ h: inout [UInt32], _ block: ArraySlice<UInt8>) {
+        var x = [UInt32](repeating: 0, count: 16)
+        let base = block.startIndex
+        for i in 0..<16 {
+            let o = base + 4 * i
+            let b0 = UInt32(block[o])
+            let b1 = UInt32(block[o + 1]) << 8
+            let b2 = UInt32(block[o + 2]) << 16
+            let b3 = UInt32(block[o + 3]) << 24
+            x[i] = b0 | b1 | b2 | b3
+        }
+        var al = h[0], bl = h[1], cl = h[2], dl = h[3], el = h[4]
+        var ar = h[0], br = h[1], cr = h[2], dr = h[3], er = h[4]
+        for j in 0..<80 {
+            let rnd = j >> 4
+            var t = al &+ f(bl, cl, dl, rnd) &+ x[ML[j]] &+ KL[rnd]
+            t = rol(t, RL[j]) &+ el
+            al = el; el = dl; dl = rol(cl, 10); cl = bl; bl = t
+            t = ar &+ f(br, cr, dr, 4 - rnd) &+ x[MR[j]] &+ KR[rnd]
+            t = rol(t, RR[j]) &+ er
+            ar = er; er = dr; dr = rol(cr, 10); cr = br; br = t
+        }
+        let t = h[1] &+ cl &+ dr
+        h[1] = h[2] &+ dl &+ er
+        h[2] = h[3] &+ el &+ ar
+        h[3] = h[4] &+ al &+ br
+        h[4] = h[0] &+ bl &+ cr
+        h[0] = t
+    }
+
+    static func hash(_ data: Data) -> Data {
+        let msg = [UInt8](data)
+        var h: [UInt32] = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0]
+        let full = msg.count / 64
+        for b in 0..<full {
+            compress(&h, msg[(64 * b) ..< (64 * (b + 1))])
+        }
+        var fin = Array(msg[(64 * full)...])
+        fin.append(0x80)
+        while fin.count % 64 != 56 { fin.append(0) }
+        let bitLen = UInt64(msg.count) * 8
+        for i in 0..<8 { fin.append(UInt8(truncatingIfNeeded: bitLen >> (8 * UInt64(i)))) }
+        for b in 0..<(fin.count / 64) {
+            compress(&h, fin[(64 * b) ..< (64 * (b + 1))])
+        }
+        var out = Data(capacity: 20)
+        for v in h {
+            for i in 0..<4 { out.append(UInt8(truncatingIfNeeded: v >> (8 * UInt32(i)))) }
+        }
+        return out
+    }
+}

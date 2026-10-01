@@ -18,6 +18,19 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     override func viewDidLoad() {
         super.viewDidLoad()       
+        applyTheme()
+    }
+
+    /// Cypherpunk deep purple / gray look (see SignerTheme).
+    private func applyTheme() {
+        view.backgroundColor = SignerTheme.bg
+        overrideUserInterfaceStyle = .dark
+        SignerTheme.styleNavigation(navigationItem)
+        navigationItem.rightBarButtonItem?.tintColor = SignerTheme.accent
+
+        signerTable.backgroundColor = SignerTheme.bg
+        signerTable.separatorStyle = .none
+        signerTable.indicatorStyle = .white
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -135,6 +148,21 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
         cell.selectionStyle = .none
         let label = cell.viewWithTag(1) as! UILabel
        
+        // Each signer as a bordered charcoal card.
+        cell.backgroundColor = .clear
+        cell.contentView.backgroundColor = .clear
+        if cell.backgroundView?.tag != 4242 {
+            let card = SignerTheme.cardBackground()
+            card.tag = 4242
+            cell.backgroundView = card
+        }
+        label.font = SignerTheme.mono(14)
+        label.textColor = SignerTheme.text
+        for case let imageView as UIImageView in cell.contentView.subviews {
+            // tag 3 = signature icon, the other one is the chevron
+            imageView.tintColor = imageView.tag == 3 ? SignerTheme.accent : SignerTheme.dim
+        }
+
         if signers.count > 0 {
             let s = SignerStruct(dictionary: signers[indexPath.row])
             if s.label == "Signer" {
@@ -203,21 +231,12 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     private func segueToDetail() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToSignerDetail", sender: vc)
-        }
-    }
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, let id = self.id else { return }
     
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-        if segue.identifier == "segueToSignerDetail" {
-            if let vc = segue.destination as? SignerDetailViewController {
-                vc.id = id
-            }
+            // Signer detail is built in code (no storyboard scene).
+            let detail = SignerDetailViewController(id: id)
+            self.navigationController?.pushViewController(detail, animated: true)
         }
     }
 

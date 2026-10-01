@@ -965,6 +965,15 @@ class WalletLogic {
         }
     }
     
+    /// Only the silent payment address (sp1… / tsp1…) for a signer's seed, for display.
+    /// The derived private keys stay inside WalletLogic.
+    func silentPaymentAddress(mnemonic: String, passphrase: String?, mainnet: Bool) -> String? {
+        let pass = (passphrase?.isEmpty ?? true) ? nil : passphrase
+        return try? silentPaymentAddressFromMnemonic(mnemonic: mnemonic,
+                                                     passphrase: pass,
+                                                     network: mainnet ? .main : .test).address
+    }
+    
     //enum SilentPaymentFromMnemonic {
     func silentPaymentAddressFromMnemonic(
         mnemonic: String,

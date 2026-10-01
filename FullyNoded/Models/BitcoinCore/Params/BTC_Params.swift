@@ -514,7 +514,12 @@ public struct Get_Raw_Tx: CustomStringConvertible {
     let param:[String:Any]
     init(_ dict: [String:Any]) {
         let txid = dict["txid"] as? String ?? ""
-        param = ["txid": txid]
+        var p: [String: Any] = ["txid": txid]
+        // Optional, only sent when given: verbosity 2 adds each input's prevout
+        // (Core >= 25); blockhash lets it work without -txindex.
+        if let verbosity = dict["verbosity"] as? Int { p["verbosity"] = verbosity }
+        if let blockhash = dict["blockhash"] as? String { p["blockhash"] = blockhash }
+        param = p
     }
 }
 

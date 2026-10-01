@@ -9,6 +9,8 @@
 import UIKit
 import LocalAuthentication
 
+/// Signer detail screen, built entirely in code (no storyboard scene, outlets or segues).
+/// Push it with `SignerDetailViewController(id:)`.
 class SignerDetailViewController: UIViewController, UINavigationControllerDelegate {
     
     var id:UUID!
@@ -33,14 +35,92 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         case cosigner
         case singleSigBip84
         case singleSigBip86
+        case silentPayment
     }
     
-    @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var segmentedControl: UISegmentedControl!
+    // MARK: - Views (programmatic)
+    
+    /// Network switch (main / test), top right under the navigation bar.
+    private let segmentedControl: UISegmentedControl = {
+        let control = UISegmentedControl(items: ["main", "test"])
+        control.selectedSegmentIndex = 0
+        control.translatesAutoresizingMaskIntoConstraints = false
+        return control
+    }()
+    
+    private let tableView: UITableView = {
+        let table = UITableView(frame: .zero, style: .insetGrouped)
+        table.backgroundColor = .clear
+        table.rowHeight = UITableView.automaticDimension
+        table.estimatedRowHeight = 61
+        table.translatesAutoresizingMaskIntoConstraints = false
+        table.register(UITableViewCell.self, forCellReuseIdentifier: "defaultCell")
+        return table
+    }()
+    
+    // MARK: - Init
+    
+    init(id: UUID) {
+        self.id = id
+        super.init(nibName: nil, bundle: nil)
+        hidesBottomBarWhenPushed = true
+        extendedLayoutIncludesOpaqueBars = true
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        hidesBottomBarWhenPushed = true
+        extendedLayoutIncludesOpaqueBars = true
+    }
+    
+    private func setupViews() {
+        view.backgroundColor = SignerTheme.bg
+        overrideUserInterfaceStyle = .dark
+        navigationItem.title = "Signers"
+        SignerTheme.styleNavigation(navigationItem)
+        
+        // Same buttons as before: rightmost trash (delete signer), then eye (show words).
+        let deleteItem = UIBarButtonItem(image: UIImage(systemName: "trash.circle"),
+                                         style: .plain,
+                                         target: self,
+                                         action: #selector(deleteAction(_:)))
+        deleteItem.tintColor = SignerTheme.danger
+        
+        let showItem = UIBarButtonItem(image: UIImage(systemName: "eye"),
+                                       style: .plain,
+                                       target: self,
+                                       action: #selector(showSignerAction(_:)))
+        showItem.tintColor = SignerTheme.accent
+        
+        navigationItem.rightBarButtonItems = [deleteItem, showItem]
+        
+        segmentedControl.addTarget(self, action: #selector(switchNetwork(_:)), for: .valueChanged)
+        SignerTheme.style(segmentedControl)
+
+        tableView.backgroundColor = SignerTheme.bg
+        tableView.separatorStyle = .none
+        tableView.indicatorStyle = .white
+        
+        view.addSubview(segmentedControl)
+        view.addSubview(tableView)
+        
+        let guide = view.safeAreaLayoutGuide
+        NSLayoutConstraint.activate([
+            segmentedControl.topAnchor.constraint(equalTo: guide.topAnchor, constant: 8),
+            segmentedControl.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            
+            tableView.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor, constant: 8),
+            tableView.leadingAnchor.constraint(equalTo: guide.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: guide.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: guide.bottomAnchor, constant: -20)
+        ])
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        setupViews()
+        
         // Do any additional setup after loading the view.
         tableView.delegate = self
         tableView.dataSource = self
@@ -76,7 +156,10 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             ],// singlesigbip84 7
             [
                 "text": "", "ur": "", "footerText": "The taproot watch-only descriptor, can be used to create a taproot watch-only wallet from this signer."
-            ]// singlesigbip86 8
+            ],// singlesigbip86 8
+            [
+                "text": "", "footerText": "Your BIP352 silent payment address. Share it publicly to receive bitcoin privately: every payment to it lands at a new address that can't be linked to it on-chain. Tap the QR button to export it."
+            ]// silentPayment 9
         ]
         
         let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
@@ -107,19 +190,36 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             return "Descriptor - BIP84"
         case .singleSigBip86:
             return "Descriptor - BIP86"
+        case .silentPayment:
+            return "Silent Payment Address"
         }
     }
     
-    @IBAction func switchNetwork(_ sender: Any) {
+    /// SF Symbol shown next to each section header (as on the wallet detail screen).
+    private func headerIconName(for section: Section) -> String {
+        switch section {
+        case .label: return "rectangle.and.paperclip"
+        case .words: return "key"
+        case .masterKeyFingerprint: return "touchid"
+        case .passphrase: return "lock"
+        case .dateAdded: return "calendar"
+        case .signableWallets: return "wallet.pass"
+        case .cosigner: return "person.2"
+        case .singleSigBip84, .singleSigBip86: return "doc.text"
+        case .silentPayment: return "eye.slash"
+        }
+    }
+
+    @objc func switchNetwork(_ sender: Any) {
         network = segmentedControl.selectedSegmentIndex
         getData()
     }
     
     private func configureField(_ field: UIView) {
         field.clipsToBounds = true
-        field.layer.cornerRadius = 8
-        field.layer.borderWidth = 0.5
-        field.layer.borderColor = UIColor.lightGray.cgColor
+        field.layer.cornerRadius = 2
+        field.layer.borderWidth = 1
+        field.layer.borderColor = SignerTheme.line.cgColor
     }
     
     private func reloadTable() {
@@ -130,7 +230,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         }
     }
     
-    @IBAction func showSignerAction(_ sender: Any) {
+    @objc func showSignerAction(_ sender: Any) {
         guard let _ = KeyChain.getData("UnlockPassword") else {
             showAlert(vc: self, title: "You are not using the app securely...", message: "You can only show signers if the app has a lock/unlock password. Tap the lock button on the home screen to add a password.")
             
@@ -148,7 +248,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         }
     }
     
-    @IBAction func deleteAction(_ sender: Any) {
+    @objc func deleteAction(_ sender: Any) {
         promptToDeleteSigner()
     }
     
@@ -305,12 +405,25 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 }
             }
             
+            if signer.words == nil {
+                // The address is derived from the seed, so it can't be shown once the seed is gone.
+                self.tableDict[9]["text"] = "Seed words deleted, silent payment address unavailable."
+            }
+            
             if var encryptedWords = signer.words {
                 guard var decrypted = Crypto.decrypt(encryptedWords),
                       var words = decrypted.utf8String else { return }
                 
-                let spAddress = try? WalletLogic.shared.silentPaymentAddressFromMnemonic(mnemonic: words)
-                print("spAddress: \(spAddress)")
+                // Silent payment address for the selected network (sp1… / tsp1…), derived
+                // with the same stored passphrase as the descriptors above. Only the
+                // address is returned; no private keys reach this view.
+                if let spAddress = WalletLogic.shared.silentPaymentAddress(mnemonic: words,
+                                                                           passphrase: passphrase,
+                                                                           mainnet: self.network == 0) {
+                    self.tableDict[9]["text"] = spAddress
+                } else {
+                    self.tableDict[9]["text"] = "Unable to derive the silent payment address."
+                }
                 
                 guard var masterKey = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase) else {
                     showAlert(vc: self, title: "", message: "Unable to derive your master key.")
@@ -489,9 +602,45 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     
     private func segueToQr() {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
+            guard let self = self,
+                  let vc = UIStoryboard(name: "Main", bundle: nil)
+                    .instantiateViewController(withIdentifier: "QRDisplayer") as? QRDisplayerViewController else { return }
             
-            self.performSegue(withIdentifier: "segueToExportKeystore", sender: self)
+            vc.descriptionText = self.descriptionText
+            vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+            vc.headerText = self.headerText
+            vc.text = self.stringToExport
+            
+            self.navigationController?.pushViewController(vc, animated: true)
+        }
+    }
+    
+    private func showMultisigCreator() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self,
+                  let vc = UIStoryboard(name: "Main", bundle: nil)
+                    .instantiateViewController(withIdentifier: "MultisigCreator") as? CreateMultisigViewController else { return }
+            
+            vc.cosigner = self.cosigner
+            
+            self.navigationController?.pushViewController(vc, animated: true)
+        }
+    }
+    
+    private func showNodeless() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self,
+                  let vc = UIStoryboard(name: "Main", bundle: nil)
+                    .instantiateViewController(withIdentifier: "NodelessTable") as? NodelessTableViewController else { return }
+            
+            vc.signer = self.signer
+            vc.primaryDescriptor = self.nodelessDescriptor
+            
+            if self.segmentedControl.selectedSegmentIndex == 0 {
+                vc.network = .bitcoin
+            }
+            
+            self.navigationController?.pushViewController(vc, animated: true)
         }
     }
     
@@ -619,7 +768,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private func exportQrButton(_ x: CGFloat) -> UIButton {
         let qrButton = UIButton()
         qrButton.setImage(.init(systemName: "qrcode"), for: .normal)
-        qrButton.imageView?.tintColor = .systemBlue
+        qrButton.tintColor = SignerTheme.accent
+        qrButton.imageView?.tintColor = SignerTheme.accent
         qrButton.frame = CGRect(x: x, y: 5, width: 40, height: 40)
         qrButton.addTarget(self, action: #selector(promptForQRFormat(_:)), for: .touchUpInside)
         return qrButton
@@ -627,10 +777,14 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     
     private func nodelessButton(_ x: CGFloat) -> UIButton {
         let nodelessButton = UIButton()
-        nodelessButton.setTitle("Nodeless", for: .normal)
-        nodelessButton.tintColor = .tintColor
-        nodelessButton.configuration = .tinted()
-        nodelessButton.setTitleColor(.tintColor, for: .normal)
+        var config = UIButton.Configuration.tinted()
+        config.baseForegroundColor = SignerTheme.accent
+        config.baseBackgroundColor = SignerTheme.accent
+        config.background.cornerRadius = 2
+        var title = AttributedString("NODELESS")
+        title.font = SignerTheme.mono(12, weight: .semibold)
+        config.attributedTitle = title
+        nodelessButton.configuration = config
         nodelessButton.frame = CGRect(x: x, y: 5, width: 100, height: 40)
         nodelessButton.addTarget(self, action: #selector(nodeless(_:)), for: .touchUpInside)
         return nodelessButton
@@ -639,7 +793,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private func createWalletButton(_ x: CGFloat) -> UIButton {
         let createWalletButton = UIButton()
         createWalletButton.setImage(.init(systemName: "plus"), for: .normal)
-        createWalletButton.imageView?.tintColor = .systemBlue
+        createWalletButton.tintColor = SignerTheme.accent
+        createWalletButton.imageView?.tintColor = SignerTheme.accent
         createWalletButton.frame = CGRect(x: x, y: 5, width: 40, height: 40)
         createWalletButton.addTarget(self, action: #selector(createWallet), for: .touchUpInside)
         return createWalletButton
@@ -648,7 +803,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     private func deleteButton(_ x: CGFloat) -> UIButton {
         let deleteButton = UIButton()
         deleteButton.setImage(.init(systemName: "trash"), for: .normal)
-        deleteButton.imageView?.tintColor = .systemRed
+        deleteButton.tintColor = SignerTheme.danger
+        deleteButton.imageView?.tintColor = SignerTheme.danger
         deleteButton.frame = CGRect(x: x, y: 5, width: 40, height: 40)
         return deleteButton
     }
@@ -832,12 +988,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 
                 if let descriptor = self.tableDict[6]["text"] as? String {
                     self.cosigner = Descriptor(descriptor)
-
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-
-                        self.performSegue(withIdentifier: "segueToCreateMultiSigFromSigner", sender: self)
-                    }
+                    self.showMultisigCreator()
                 } else {
                     showAlert(vc: self, title: "There was an issue...", message: "Unable to get your bip84 descriptor.")
                 }
@@ -879,12 +1030,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         
         if desc.isCosigner {
             self.cosigner = desc
-
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-
-                self.performSegue(withIdentifier: "segueToCreateMultiSigFromSigner", sender: self)
-            }
+            self.showMultisigCreator()
         } else {
             self.importAccountMap(primDesc, signer.label, "")
         }
@@ -950,11 +1096,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             break
             
         }
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            performSegue(withIdentifier: "segueToNodeless", sender: self)
-        }
+        showNodeless()
     }
     
     @objc func promptForQRFormat(_ sender: UIButton) {
@@ -985,9 +1127,29 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         self.present(alert, animated: true)
     }
     
+    /// Silent payment address QR: always plain text (it isn't a UR type), straight to
+    /// the existing QR displayer.
+    @objc func exportSilentPaymentQr(_ sender: UIButton) {
+        let address = tableDict[Section.silentPayment.rawValue]["text"] as? String ?? ""
+        
+        guard address.lowercased().hasPrefix("sp1") || address.lowercased().hasPrefix("tsp1") else {
+            showAlert(vc: self, title: "", message: "No silent payment address available for this signer.")
+            return
+        }
+        
+        stringToExport = address
+        headerText = "Silent Payment Address"
+        descriptionText = "Share this silent payment address to receive bitcoin privately. Every payment to it creates a new output that can't be linked to it on-chain."
+        segueToQr()
+    }
+    
     private func exportQr(isBbqr: Bool, plainText: Bool, section: Int) {
         var dict = tableDict[section]
         let text = dict["text"] as? String ?? ""
+        
+        // Descriptor exports have no description (as before); don't carry over the
+        // silent payment one.
+        descriptionText = ""
         
         defer {
             dict.removeAll()
@@ -1018,42 +1180,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             break
         }
     }
-
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-        
-        switch segue.identifier {
-        case "segueToCreateMultiSigFromSigner":
-            guard let vc = segue.destination as? CreateMultisigViewController else { fallthrough }
-            
-            vc.cosigner = self.cosigner
-            
-        case "segueToExportKeystore":
-            guard let vc = segue.destination as? QRDisplayerViewController else { fallthrough }
-            
-            vc.descriptionText = descriptionText
-            vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-            vc.headerText = headerText
-            vc.text = stringToExport
-            
-        case "segueToNodeless":
-            guard let vc = segue.destination as? NodelessTableViewController else { fallthrough }
-            
-            vc.signer = signer
-            vc.primaryDescriptor = nodelessDescriptor
-            
-            if segmentedControl.selectedSegmentIndex == 0 {
-                vc.network = .bitcoin
-            }
-            
-        default:
-            break
-        }
-    }
 }
 
 extension SignerDetailViewController: UITableViewDelegate {
@@ -1062,6 +1188,8 @@ extension SignerDetailViewController: UITableViewDelegate {
         let footerView = DynamicFooterView(frame: .zero)
         let text = tableDict[section]["footerText"] as? String ?? ""
         footerView.configure(with: text)
+        footerView.textLabel.font = SignerTheme.mono(11)
+        footerView.textLabel.textColor = SignerTheme.dim
         return footerView
     }
     
@@ -1087,7 +1215,7 @@ extension SignerDetailViewController: UITableViewDelegate {
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 9
+        return tableDict.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -1096,8 +1224,11 @@ extension SignerDetailViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "defaultCell", for: indexPath)
+        cell.backgroundColor = SignerTheme.card
+        cell.contentView.backgroundColor = SignerTheme.card
         cell.textLabel?.numberOfLines = 0
-        cell.textLabel?.textColor = .lightGray
+        cell.textLabel?.font = SignerTheme.mono(13)
+        cell.textLabel?.textColor = SignerTheme.text
         cell.textLabel?.sizeToFit()
         cell.sizeToFit()
         cell.selectionStyle = .none
@@ -1142,6 +1273,9 @@ extension SignerDetailViewController: UITableViewDelegate {
         case .singleSigBip86:
             cell.textLabel?.text = dict["text"] as? String ?? "no descriptor"
             
+        case .silentPayment:
+            cell.textLabel?.text = dict["text"] as? String ?? "no silent payment address"
+            
         case .none:
             break
         }
@@ -1156,9 +1290,9 @@ extension SignerDetailViewController: UITableViewDelegate {
         
         let textLabel = UILabel()
         textLabel.textAlignment = .left
-        textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
-        textLabel.textColor = .label
-        textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
+        textLabel.font = SignerTheme.mono(13, weight: .medium)
+        textLabel.textColor = SignerTheme.dim
+        textLabel.frame = CGRect(x: 33, y: 0, width: 260, height: 50)
                         
         let exportQrButtonGeneric = exportQrButton(header.frame.maxX - 46)
         exportQrButtonGeneric.tag = section
@@ -1193,11 +1327,27 @@ extension SignerDetailViewController: UITableViewDelegate {
                 header.addSubview(nodelessButton)
                 textLabel.text = headerName(for: section)
                 
+            case .silentPayment:
+                // Plain-text QR only, so skip the UR / plain text format prompt.
+                exportQrButtonGeneric.removeTarget(nil, action: nil, for: .allEvents)
+                exportQrButtonGeneric.addTarget(self, action: #selector(exportSilentPaymentQr(_:)), for: .touchUpInside)
+                header.addSubview(exportQrButtonGeneric)
+                textLabel.text = headerName(for: section)
+                
             default:
                 textLabel.text = headerName(for: section)
             }
         }
         
+        if let kind = Section(rawValue: section) {
+            let icon = UIImageView(image: UIImage(systemName: headerIconName(for: kind)))
+            icon.contentMode = .scaleAspectFit
+            icon.tintColor = SignerTheme.accent
+            icon.frame = CGRect(x: 0, y: 12.5, width: 25, height: 25)
+            header.addSubview(icon)
+        }
+
+        textLabel.text = textLabel.text?.uppercased()
         header.addSubview(textLabel)
         return header
     }
@@ -1209,3 +1359,75 @@ extension SignerDetailViewController: UITableViewDelegate {
 }
 
 extension SignerDetailViewController: UITableViewDataSource {}
+
+// MARK: - Theme
+
+/// Cypherpunk deep purple / gray palette for the signer screens. Same structure as the
+/// green `Cypher` palette used by the home and wallet detail screens.
+enum SignerTheme {
+    static let bg = UIColor(red: 0.035, green: 0.03, blue: 0.05, alpha: 1)      // near-black, violet tint
+    static let card = UIColor(red: 0.09, green: 0.085, blue: 0.11, alpha: 1)    // charcoal gray
+    static let line = UIColor(red: 0.50, green: 0.30, blue: 0.95, alpha: 0.55)  // deep purple border
+    static let accent = UIColor(red: 0.58, green: 0.38, blue: 1.0, alpha: 1)    // deep purple neon
+    static let dim = UIColor(red: 0.56, green: 0.53, blue: 0.64, alpha: 1)      // muted gray-lavender
+    static let text = UIColor(red: 0.86, green: 0.84, blue: 0.93, alpha: 1)     // light gray
+    static let danger = UIColor(red: 1.0, green: 0.28, blue: 0.32, alpha: 1)
+
+    static func mono(_ size: CGFloat, weight: UIFont.Weight = .regular) -> UIFont {
+        UIFont.monospacedSystemFont(ofSize: size, weight: weight)
+    }
+
+    /// Per-screen navigation bar look (set on the navigationItem, so it doesn't leak into
+    /// the home / wallet screens' green bar when navigating back).
+    static func styleNavigation(_ item: UINavigationItem) {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = bg
+        appearance.shadowColor = line
+        appearance.titleTextAttributes = [.foregroundColor: accent, .font: mono(15, weight: .semibold)]
+        appearance.largeTitleTextAttributes = [.foregroundColor: accent, .font: mono(28, weight: .semibold)]
+
+        let buttons = UIBarButtonItemAppearance()
+        buttons.normal.titleTextAttributes = [.foregroundColor: accent, .font: mono(15)]
+        appearance.buttonAppearance = buttons
+        appearance.backButtonAppearance = buttons
+
+        let chevronConfig = UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
+        if let chevron = UIImage(systemName: "chevron.backward", withConfiguration: chevronConfig)?
+            .withTintColor(accent, renderingMode: .alwaysOriginal) {
+            appearance.setBackIndicatorImage(chevron, transitionMaskImage: chevron)
+        }
+
+        item.standardAppearance = appearance
+        item.scrollEdgeAppearance = appearance
+        item.compactAppearance = appearance
+    }
+
+    static func style(_ control: UISegmentedControl) {
+        control.backgroundColor = card
+        control.selectedSegmentTintColor = accent
+        control.setTitleTextAttributes([.font: mono(12), .foregroundColor: dim], for: .normal)
+        control.setTitleTextAttributes([.font: mono(12, weight: .semibold), .foregroundColor: bg], for: .selected)
+    }
+
+    /// Bordered charcoal card used as a cell background (inset vertically so rows read
+    /// as separate cards).
+    static func cardBackground(verticalInset: CGFloat = 3) -> UIView {
+        let container = UIView()
+        container.backgroundColor = .clear
+        let card = UIView()
+        card.translatesAutoresizingMaskIntoConstraints = false
+        card.backgroundColor = SignerTheme.card
+        card.layer.cornerRadius = 2
+        card.layer.borderWidth = 1
+        card.layer.borderColor = line.cgColor
+        container.addSubview(card)
+        NSLayoutConstraint.activate([
+            card.topAnchor.constraint(equalTo: container.topAnchor, constant: verticalInset),
+            card.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -verticalInset),
+            card.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            card.trailingAnchor.constraint(equalTo: container.trailingAnchor)
+        ])
+        return container
+    }
+}
