@@ -50,20 +50,26 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var passphrase: String?
     private var initialLoad = true
     
-    @IBOutlet weak private var verifyTable: UITableView!
-    @IBOutlet weak private var exportButtonOutlet: UIButton!
-    @IBOutlet weak private var bumpFeeOutlet: UIButton!
-    @IBOutlet weak private var sendOutlet: UIButton!
-    @IBOutlet weak private var buttonsBackgroundView: UIVisualEffectView!
+    // Built in code (no storyboard scene); see `buildLayout()`.
+    private let verifyTable = UITableView(frame: .zero, style: .grouped)
+    private let exportButtonOutlet = UIButton(type: .system)
+    private let bumpFeeOutlet = UIButton(type: .system)
+    private let sendOutlet = UIButton(type: .system)
+
+    init() {
+        super.init(nibName: nil, bundle: nil)
+        hidesBottomBarWhenPushed = true
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        hidesBottomBarWhenPushed = true
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.delegate = self
-        
-        verifyTable.delegate = self
-        verifyTable.dataSource = self
-        verifyTable.layer.cornerRadius = 8
-        verifyTable.clipsToBounds = true
+        buildLayout()
         
         activeWallet { [weak self] w in
             guard let self = self else { return }
@@ -72,6 +78,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         configureViews()
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.stylePrimary(sendOutlet, tint: .transaction)
+        WalletTheme.apply(to: self, tint: .transaction)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -101,7 +110,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         passphrase?.secureWipe()
     }
     
-    @IBAction func showRawDataAction(_ sender: Any) {
+    @objc func showRawDataAction(_ sender: Any) {
         if signedRawTx != "" {
             ConnectingView.shared.show(vc: self, description: "Decoding raw transaction...")
             
@@ -300,6 +309,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         okButton.translatesAutoresizingMaskIntoConstraints = false
         successView.addSubview(okButton)
         
+        // Cypherpunk teal look.
+        WalletTheme.style(successView, tint: .transaction)
+        WalletTheme.stylePrimary(okButton, tint: .transaction)
+        
         // Layout
         NSLayoutConstraint.activate([
             overlay.topAnchor.constraint(equalTo: view.topAnchor),
@@ -412,14 +425,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
     }
     
-    private func roundCorners(_ view: UIView) {
-        DispatchQueue.main.async {
-            view.layer.cornerRadius = 8
-            view.clipsToBounds = true
-            view.layer.borderWidth = 0.5
-        }
-    }
-    
     private func enableButton(_ button: UIButton) {
         DispatchQueue.main.async {
             button.isEnabled = true
@@ -431,24 +436,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async {
             button.isEnabled = false
             button.alpha = 0.3
-        }
-    }
-    
-    private func enableView(_ view: UIView) {
-        DispatchQueue.main.async {
-            view.layer.borderColor = UIColor.lightGray.cgColor
-        }
-    }
-    
-    private func disableView(_ view: UIView) {
-        DispatchQueue.main.async {
-            view.layer.borderColor = UIColor.clear.cgColor
-        }
-    }
-    
-    private func copy(_ text: String) {
-        DispatchQueue.main.async {
-            UIPasteboard.general.string = text
         }
     }
     
@@ -482,7 +469,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.performSegue(withIdentifier: "segueToScanPsbt", sender: self)
+            self.presentScanner()
         }
     }
     
@@ -565,7 +552,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         load()
     }
     
-    @IBAction func addTransactionAction(_ sender: Any) {
+    @objc func addTransactionAction(_ sender: Any) {
         promptToAddTx()
     }
     
@@ -573,7 +560,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         promptToAddTx()
     }
                         
-    @IBAction func exportAction(_ sender: Any) {
+    @objc func exportAction(_ sender: Any) {
         if unsignedPsbt != "" {
             exportPsbt(plainText: unsignedPsbt)
         } else if signedRawTx != "" {
@@ -581,7 +568,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
     }
     
-    @IBAction func sendAction(_ sender: Any) {
+    @objc func sendAction(_ sender: Any) {
         send()
     }
     
@@ -595,7 +582,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
     }
     
-    @IBAction func bumpFeeAction(_ sender: Any) {
+    @objc func bumpFeeAction(_ sender: Any) {
         if confs == 0 && alreadyBroadcast {
             if UserDefaults.standard.object(forKey: "passphrasePrompt") == nil {
                 self.bumpFee(nil)
@@ -704,8 +691,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
 
     /// Sign, handling silent payment inputs.
     ///
-    /// Every taproot input is checked by re-running BIP352 receiver scanning on its
-    /// funding transaction with your signers' scan keys (no reliance on address labels).
+    /// Silent payment inputs are found from the active wallet's own records
+    /// (`SilentPaymentSpend.detect(candidates:)`): only bare-key taproot inputs it holds
+    /// (FN-Server's imports) are considered, using the import label's scan key and tweak.
     /// - No silent payment inputs: the normal `signNow` path, unchanged.
     /// - Otherwise: SP inputs are signed with `SilentPaymentSpend` (tweaked key),
     ///   remaining inputs with the normal `Signer` (chained per parent descriptor), and
@@ -715,7 +703,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
 
         let psbtToSign = unsignedPsbt
 
-        SilentPaymentSpend.detectInputs(psbt: psbtToSign, passphrase: passphrase) { [weak self] spOutputs in
+        SilentPaymentSpend.detectInputs(psbt: psbtToSign, passphrase: passphrase, knownInfo: knownWalletInfo()) { [weak self] spOutputs in
             guard let self = self else { return }
 
             guard !spOutputs.isEmpty else {
@@ -735,34 +723,46 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     return
                 }
 
-                // Parent descriptors of the inputs that are NOT silent payment outputs.
-                let spOutpoints = Set(spOutputs.map { "\($0.txid.lowercased()):\($0.vout)" })
-                var parentDescs: [String] = []
-                for input in self.inputTableArray {
-                    let outpoint = "\((input["txid"] as? String ?? "").lowercased()):\(input["vout"] as? Int ?? -1)"
-                    guard !spOutpoints.contains(outpoint),
-                          let desc = input["parent_desc"] as? String, !desc.isEmpty else { continue }
-                    let checksumless = "\(desc.split(separator: "#")[0])"
-                    if !parentDescs.contains(checksumless) { parentDescs.append(checksumless) }
-                }
-
                 ConnectingView.shared.show(vc: self, description: "signing...")
-                self.signRemainingInputs(psbt: signedPsbt, parentDescs: parentDescs, passphrase: passphrase)
+                self.signRemainingInputs(psbt: signedPsbt,
+                                         parentDescs: self.parentDescs(excluding: spOutputs),
+                                         passphrase: passphrase) { [weak self] psbt, rawTx, error in
+                    self?.handleSigningResult(signedPsbt: psbt, rawTx: rawTx, errorMessage: error)
+                }
             }
         }
     }
 
+    /// Parent descriptors (no checksum, de-duplicated) of the inputs that are NOT
+    /// silent payment outputs; those are signed by the normal Signer.
+    private func parentDescs(excluding spOutputs: [SilentPaymentSpend.OwnedOutput]) -> [String] {
+        let spOutpoints = Set(spOutputs.map { "\($0.txid.lowercased()):\($0.vout)" })
+        var parentDescs: [String] = []
+        for input in inputTableArray {
+            let outpoint = "\((input["txid"] as? String ?? "").lowercased()):\(input["vout"] as? Int ?? -1)"
+            guard !spOutpoints.contains(outpoint),
+                  let desc = input["parent_desc"] as? String, !desc.isEmpty else { continue }
+            let checksumless = "\(desc.split(separator: "#")[0])"
+            if !parentDescs.contains(checksumless) { parentDescs.append(checksumless) }
+        }
+        return parentDescs
+    }
+
     /// Normal Signer for the non-silent-payment inputs, one parent descriptor at a time,
     /// each signing the previous result. Then finalize with the node.
-    private func signRemainingInputs(psbt: String, parentDescs: [String], passphrase: String?) {
+    /// Completion: (psbt, rawTx, error) — rawTx if fully signed and finalized.
+    private func signRemainingInputs(psbt: String,
+                                     parentDescs: [String],
+                                     passphrase: String?,
+                                     completion: @escaping (String?, String?, String?) -> Void) {
         guard let parentDesc = parentDescs.first else {
-            finalizeWithNode(psbt)
+            finalizeWithNode(psbt, completion: completion)
             return
         }
 
         guard let wallet = wallet else {
             // SP inputs are signed; the others need a Fully Noded wallet to sign.
-            finalizeWithNode(psbt)
+            finalizeWithNode(psbt, completion: completion)
             return
         }
 
@@ -770,27 +770,28 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             guard let self = self else { return }
 
             if let rawTx = rawTx {
-                self.handleSigningResult(signedPsbt: nil, rawTx: rawTx, errorMessage: nil)
+                completion(nil, rawTx, nil)
                 return
             }
 
             // Keep going with whatever we have (a signer error leaves the psbt unchanged).
-            self.signRemainingInputs(psbt: signedPsbt ?? psbt, parentDescs: Array(parentDescs.dropFirst()), passphrase: passphrase)
+            self.signRemainingInputs(psbt: signedPsbt ?? psbt,
+                                     parentDescs: Array(parentDescs.dropFirst()),
+                                     passphrase: passphrase,
+                                     completion: completion)
         }
     }
 
     /// finalizepsbt on the node: raw tx if every input is signed, otherwise keep the
     /// partially signed PSBT so the remaining signatures can be added.
-    private func finalizeWithNode(_ psbt: String) {
+    private func finalizeWithNode(_ psbt: String, completion: @escaping (String?, String?, String?) -> Void) {
         let param = Finalize_Psbt(["psbt": psbt])
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .finalizepsbt(param)) { [weak self] response, _ in
-            guard let self = self else { return }
-
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .finalizepsbt(param)) { response, _ in
             let dict = response as? [String: Any]
             if let complete = dict?["complete"] as? Bool, complete, let hex = dict?["hex"] as? String {
-                self.handleSigningResult(signedPsbt: nil, rawTx: hex, errorMessage: nil)
+                completion(nil, hex, nil)
             } else {
-                self.handleSigningResult(signedPsbt: dict?["psbt"] as? String ?? psbt, rawTx: nil, errorMessage: nil)
+                completion(dict?["psbt"] as? String ?? psbt, nil, nil)
             }
         }
     }
@@ -813,11 +814,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func bumpFee(_ passphrase: String?) {
-        guard let wallet = wallet else {
-            showAlert(vc: self, title: "", message: "Signing transactions only works with Fully Noded wallets.")
-            return
-        }
-        
         ConnectingView.shared.show(vc: self, description: "increasing fee...")
         let param_bump_fee = Bump_Fee(["txid":self.txid])
         let param_psbt_bump_fee = PSBT_Bump_Fee(["txid":self.txid])
@@ -858,44 +854,206 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     } else if let errors = result["errors"] as? NSArray {
                         showAlert(vc: self, title: "There was an error increasing the fee.", message: "\(errors)")
                     }
-                    return            }
+                    return
+                }
                 
-                self.signedRawTx = ""
+                // BIP352: Core's bumpfee may ADD inputs to pay the higher fee, which
+                // changes the shared secret and makes any silent payment output of the
+                // original transaction unfindable. Check before signing anything.
+                self.checkBumpKeepsSilentPaymentOutputs(bumpedPsbt: psbt, passphrase: passphrase) { [weak self] proceed in
+                    guard let self = self else { return }
+                    guard proceed else {
+                        ConnectingView.shared.dismiss()
+                        return
+                    }
+                    self.signedRawTx = ""
+                    self.signBumpedPsbt(psbt, passphrase: passphrase, newFee: newFee)
+                }
+            }
+        }
+    }
+    
+    /// Silent payment outputs are derived from the transaction's inputs (BIP352), so a
+    /// replacement must keep exactly the same inputs. psbtbumpfee may add inputs when
+    /// the change can't cover the new fee:
+    /// - same inputs → proceed;
+    /// - added / changed inputs and the original pays one of YOUR silent payment
+    ///   addresses (e.g. your silent payment change) → refuse, it would be lost;
+    /// - added / changed inputs and the original has other taproot outputs (which may
+    ///   be silent payments to someone else; that can't be told from the outside) → ask.
+    /// Completion on the main queue (true = go ahead).
+    private func checkBumpKeepsSilentPaymentOutputs(bumpedPsbt: String,
+                                                    passphrase: String?,
+                                                    completion: @escaping (Bool) -> Void) {
+        let finish: (Bool) -> Void = { ok in DispatchQueue.main.async { completion(ok) } }
+        
+        // The original (unconfirmed) transaction, with witnesses / scriptSigs.
+        let param = Get_Raw_Tx(["txid": txid, "verbosity": 1])
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getrawtransaction(param: param)) { [weak self] response, _ in
+            guard let self = self else { return }
+            
+            SilentPaymentChange.decode(bumpedPsbt) { [weak self] bumped, _ in
+                guard let self = self else { return }
+                
+                guard let original = response as? [String: Any],
+                      let origVin = original["vin"] as? [[String: Any]],
+                      let origVout = original["vout"] as? [[String: Any]],
+                      let bumped = bumped else {
+                    // Can't compare: be safe and ask.
+                    self.confirmBumpWithAddedInputs(finish)
+                    return
+                }
+                
+                let origOutpoints = origVin.compactMap { vin -> String? in
+                    guard let id = vin["txid"] as? String, let n = (vin["vout"] as? NSNumber)?.intValue else { return nil }
+                    return "\(id.lowercased()):\(n)"
+                }
+                let bumpedOutpoints = bumped.inputs.map { "\($0.txid.lowercased()):\($0.vout)" }
+                
+                // Same inputs: every silent payment output stays valid.
+                guard Set(origOutpoints) != Set(bumpedOutpoints) || origOutpoints.count != bumpedOutpoints.count else {
+                    finish(true)
+                    return
+                }
+                
+                // Taproot outputs of the original: only those can be silent payments.
+                let taprootIndexes: [Int] = origVout.enumerated().compactMap { i, out in
+                    let hex = ((out["scriptPubKey"] as? [String: Any])?["hex"] as? String ?? "").lowercased()
+                    guard SPDetect.isP2TR(hex) else { return nil }
+                    return (out["n"] as? NSNumber)?.intValue ?? i
+                }
+                guard !taprootIndexes.isEmpty else {
+                    finish(true)
+                    return
+                }
+                
+                // Rebuild the original with prevouts (its inputs are all in the bumped
+                // psbt, which carries their scripts) and run our receiver scan on it.
+                let prevouts = Dictionary(bumped.inputs.map { ("\($0.txid.lowercased()):\($0.vout)", $0.script) },
+                                          uniquingKeysWith: { first, _ in first })
+                var fundingVin: [[String: Any]] = []
+                for vin in origVin {
+                    guard let id = vin["txid"] as? String, let n = (vin["vout"] as? NSNumber)?.intValue,
+                          let script = prevouts["\(id.lowercased()):\(n)"] else {
+                        self.confirmBumpWithAddedInputs(finish)
+                        return
+                    }
+                    var entry = vin
+                    entry["prevout"] = ["scriptPubKey": ["hex": script]]
+                    fundingVin.append(entry)
+                }
+                let fundingTx: [String: Any] = ["vin": fundingVin, "vout": origVout]
+                
+                SilentPaymentSpend.scanKeyCandidates(passphrase: passphrase) { [weak self] keys in
+                    guard let self = self else { return }
+                    var keys = keys
+                    let paysYou = taprootIndexes.contains { index in
+                        keys.contains { SilentPaymentSpend.scan(fundingTx: fundingTx, txid: self.txid, vout: index, keys: $0) != nil }
+                    }
+                    for i in keys.indices { keys[i].bScan.secureZero() }
+                    
+                    if paysYou {
+                        DispatchQueue.main.async {
+                            showAlert(vc: self, title: "Fee not bumped",
+                                      message: "Bitcoin Core would add inputs to pay the higher fee, but this transaction pays one of your silent payment addresses (e.g. your silent payment change). Silent payment outputs depend on the exact inputs, so that output would be lost. The original transaction is unchanged; you can speed it up with CPFP instead.")
+                        }
+                        finish(false)
+                    } else {
+                        self.confirmBumpWithAddedInputs(finish)
+                    }
+                }
+            }
+        }
+    }
+    
+    private func confirmBumpWithAddedInputs(_ completion: @escaping (Bool) -> Void) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            ConnectingView.shared.dismiss()
+            let alert = UIAlertController(
+                title: "Bitcoin Core added inputs",
+                message: "To pay the higher fee the replacement spends additional inputs. If this transaction pays a silent payment address (sp1…), that payment would become impossible for the recipient to find. Only continue if it doesn't.",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "Continue", style: .destructive) { _ in
+                ConnectingView.shared.show(vc: self, description: "signing...")
+                completion(true)
+            })
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in completion(false) })
+            self.present(alert, animated: true)
+        }
+    }
+    
+    /// Signs the PSBT returned by psbtbumpfee. Silent payment inputs (your received SP
+    /// outputs) are detected and signed with SilentPaymentSpend exactly as in the normal
+    /// sign flow; other inputs use the normal Signer. psbtbumpfee only lowers the change
+    /// output and never adds inputs, so silent payment outputs created by the original
+    /// transaction (recipient or change) stay valid.
+    private func signBumpedPsbt(_ psbt: String, passphrase: String?, newFee: Double) {
+        let finish: (String?, String?, String?) -> Void = { [weak self] signedPsbt, rawTx, errorMessage in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                
+                ConnectingView.shared.dismiss()
+                self.disableBumpButton()
+                
+                if let rawTx = rawTx {
+                    self.signedRawTx = rawTx
+                    self.enableSendButton()
+                    self.load()
+                    showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "Tap the send button to broadcast the new transaction.")
+                    
+                } else if let signedPsbt = signedPsbt {
+                    self.unsignedPsbt = signedPsbt
+                    self.load()
+                    showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "The transaction still needs more signatures before it can be broadcast.")
+                    
+                } else if let errorMessage = errorMessage {
+                    showAlert(vc: self, title: "Error Signing", message: errorMessage)
+                }
+            }
+        }
+        
+        ConnectingView.shared.show(vc: self, description: "checking for silent payment inputs...")
+        
+        SilentPaymentSpend.detectInputs(psbt: psbt, passphrase: passphrase, knownInfo: knownWalletInfo()) { [weak self] spOutputs in
+            guard let self = self else { return }
+            
+            guard !spOutputs.isEmpty else {
+                // No silent payment inputs: the normal Signer, as before.
+                guard let wallet = self.wallet else {
+                    finish(nil, nil, "Signing transactions only works with Fully Noded wallets.")
+                    return
+                }
                 
                 var utxoParentDesc = ""
-                for input in inputTableArray {
+                for input in self.inputTableArray {
                     if let parentDesc = input["parent_desc"] as? String {
-//                        for parentDesc in parentDescs {
-//                            utxoParentDescs.append(parentDesc)
-//                        }
                         utxoParentDesc = parentDesc
                     }
                 }
                 
-                Signer.shared.attemptToSignPsbt(fnWallet: wallet, psbt: psbt, passphrase: passphrase, utxoParentDesc: utxoParentDesc) { [weak self] (signedPsbt, rawTx, errorMessage) in
-                    guard let self = self else { return }
-                    
-                    ConnectingView.shared.dismiss()
-                    
-                    self.disableBumpButton()
-                    
-                    if rawTx != nil {
-                        self.signedRawTx = rawTx!
-                        self.enableSendButton()
-                        self.load()
-                        showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "Tap the send button to broadcast the new transaction.")
-                        
-                    } else if signedPsbt != nil {
-                        self.unsignedPsbt = signedPsbt!
-                        self.load()
-                        showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "The transaction still needs more signatures before it can be broadcast.")
-                        
-                    } else {
-                        if let errorMessage = errorMessage {
-                            showAlert(vc: self, title: "Error Signing", message: errorMessage)
-                        }
-                    }
+                ConnectingView.shared.show(vc: self, description: "signing...")
+                Signer.shared.attemptToSignPsbt(fnWallet: wallet, psbt: psbt, passphrase: passphrase, utxoParentDesc: utxoParentDesc) { (signedPsbt, rawTx, errorMessage) in
+                    finish(signedPsbt, rawTx, errorMessage)
                 }
+                return
+            }
+            
+            ConnectingView.shared.show(vc: self, description: "signing silent payment inputs...")
+            
+            SilentPaymentSpend.sign(psbt: psbt, outputs: spOutputs, passphrase: passphrase) { [weak self] signedPsbt, _, errorMessage in
+                guard let self = self else { return }
+                
+                guard let signedPsbt = signedPsbt else {
+                    finish(nil, nil, errorMessage ?? "Unable to sign the silent payment inputs.")
+                    return
+                }
+                
+                self.signRemainingInputs(psbt: signedPsbt,
+                                         parentDescs: self.parentDescs(excluding: spOutputs),
+                                         passphrase: passphrase,
+                                         completion: finish)
             }
         }
     }
@@ -1445,6 +1603,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     self.inputTableArray[self.index]["label"] = labelsText
                     self.inputTableArray[self.index]["fingerprint"] = fingerprint
                     self.inputTableArray[self.index]["desc"] = desc
+                    // Raw wallet facts, for silent payment detection without extra RPCs.
+                    self.inputTableArray[self.index]["isMine"] = dict["ismine"] as? Bool ?? false
+                    self.inputTableArray[self.index]["walletLabels"] = labels.compactMap { $0 as? String }
                     
                     
                     if script == "multisig" && self.signedRawTx == "" {
@@ -1642,6 +1803,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     func loadTableData() {
+        resolveInputSigners()
+        
         DispatchQueue.main.async { [weak self] in
             self?.verifyTable.reloadData()
             ConnectingView.shared.dismiss()
@@ -1838,6 +2001,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let addressQrButton = inputCell.viewWithTag(20) as! UIButton
         let getAddressInfoButton = inputCell.viewWithTag(21) as! UIButton
         let signButton = inputCell.viewWithTag(22) as! UIButton
+        let dustLabel = inputCell.viewWithTag(VerifyCellTag.dustLabel) as? UILabel
+        let signableImageView = inputCell.viewWithTag(VerifyCellTag.inputSignableImage) as? UIImageView
+        let signerLabel = inputCell.viewWithTag(VerifyCellTag.inputSignerLabel) as? UILabel
 
         isDustImageView.tintColor = .tintColor
         isChangeImageView.tintColor = .tintColor
@@ -1886,7 +2052,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             } else {
                 signButton.alpha = 0
             }
+            signButton.isHidden = signButton.alpha < 0.01
             
+            renderInputSigner(input, imageView: signableImageView, label: signerLabel)
             
             utxoLabel.text = label
             descTextView.text = desc
@@ -1929,9 +2097,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             if isDust {
                 isDustImageView.image = UIImage(systemName: "exclamationmark.circle")
                 isDustImageView.tintColor = .systemRed
+                dustLabel?.text = "Dust input (under 20,000 sats)."
             } else {
                 isDustImageView.image = UIImage(systemName: "checkmark.circle")
                 isDustImageView.tintColor = .tintColor
+                dustLabel?.text = "Not dust."
             }
             
             if isChange {
@@ -1998,6 +2168,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let verifyOwnerButton = outputCell.viewWithTag(23) as! UIButton
         let addressQrButton = outputCell.viewWithTag(24) as! UIButton
         let getAddressInfoButton = outputCell.viewWithTag(25) as! UIButton
+        let dustLabel = outputCell.viewWithTag(VerifyCellTag.dustLabel) as? UILabel
 
         descTextView.layer.cornerRadius = 8
         descTextView.layer.borderWidth = 0.5
@@ -2072,11 +2243,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             if isDust {
                 isDustImageView.image = UIImage(systemName: "exclamationmark.circle")
                 isDustImageView.tintColor = .systemRed
-                //backgroundView3.backgroundColor = .systemRed
+                dustLabel?.text = "Dust output (under 20,000 sats)."
             } else {
                 isDustImageView.image = UIImage(systemName: "checkmark.circle")
                 isDustImageView.tintColor = .tintColor
-                //backgroundView3.backgroundColor = .systemGreen
+                dustLabel?.text = "Not dust."
             }
             
             if isChange {
@@ -2128,9 +2299,181 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 isChangeImageView.tintColor = .systemRed
                 addressTypeLabel.text = "Node says change, but Fully Noded couldn't verify it. Don't sign unless you recognize this address."
             }
+            
+            verifyOwnerButton.isHidden = verifyOwnerButton.alpha < 0.01
         }
         
         return outputCell
+    }
+
+    // MARK: - Input signers
+
+    /// Works out which stored signer(s) can sign each input, for the input cell's
+    /// "signable" row. PSBT inputs carry the master fingerprint of every key that can sign
+    /// them (`bip32_derivs` / `taproot_bip32_derivs`); a raw transaction falls back to the
+    /// key origins in the input's descriptor. Those are matched against each signer's
+    /// fingerprint. Taproot inputs no signer matches are then checked for silent payment
+    /// outputs owned by one of your signers (no fingerprint is involved there).
+    private func resolveInputSigners() {
+        let psbtInputs: [[String: Any]] = unsignedPsbt != "" ? (psbtDict?["inputs"] as? [[String: Any]] ?? []) : []
+        let isHotWallet = wallet.map { Descriptor($0.receiveDescriptor).isHot } ?? false
+
+        CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
+            var known: [(xfp: String, label: String)] = []
+            for dict in signers ?? [] {
+                let signer = SignerStruct(dictionary: dict)
+                guard let encrypted = signer.xfp,
+                      let decrypted = Crypto.decrypt(encrypted),
+                      let xfp = decrypted.utf8String else { continue }
+                known.append((xfp.lowercased(), signer.label))
+            }
+
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                var silentPaymentCandidates: [SilentPaymentSpend.Candidate] = []
+
+                for i in self.inputTableArray.indices {
+                    let input = self.inputTableArray[i]
+                    let fingerprints = Self.masterFingerprints(input: input, psbtInput: i < psbtInputs.count ? psbtInputs[i] : nil)
+                    let matches = known.filter { fingerprints.contains($0.xfp) }
+
+                    self.inputTableArray[i]["signers"] = matches.map { "\($0.label) [\($0.xfp)]" }
+                    self.inputTableArray[i]["fingerprints"] = fingerprints
+                    self.inputTableArray[i]["matchedKeys"] = Set(matches.map { $0.xfp }).count
+                    self.inputTableArray[i]["hotWallet"] = isHotWallet && (input["isOurs"] as? Bool ?? false)
+
+                    if matches.isEmpty, let candidate = Self.silentPaymentCandidate(input) {
+                        silentPaymentCandidates.append(candidate)
+                    }
+                }
+
+                self.verifyTable.reloadData()
+                self.resolveSilentPaymentSigners(silentPaymentCandidates)
+            }
+        }
+    }
+
+    /// Silent payment inputs have no BIP32 origin. Name the signer from what the active
+    /// wallet already told us (getaddressinfo in `verifyInputs`): FN-Server's import label
+    /// carries the scan key and tweak, checked locally. No extra RPC for labeled inputs.
+    private func resolveSilentPaymentSigners(_ candidates: [SilentPaymentSpend.Candidate]) {
+        guard !candidates.isEmpty else { return }
+        let txid = self.txid
+
+        SilentPaymentSpend.detectInputSigners(candidates: candidates, passphrase: passphrase) { [weak self] found in
+            guard let self = self, self.txid == txid, !found.isEmpty else { return }
+
+            for i in self.inputTableArray.indices {
+                guard let txid = self.inputTableArray[i]["txid"] as? String,
+                      let vout = self.inputTableArray[i]["vout"] as? Int,
+                      let signer = found["\(txid.lowercased()):\(vout)"] else { continue }
+                self.inputTableArray[i]["signers"] = [signer]
+                self.inputTableArray[i]["isSilentPayment"] = true
+            }
+
+            self.verifyTable.reloadData()
+        }
+    }
+
+    /// A taproot input as a silent payment candidate, with the wallet info
+    /// `verifyInputs` already fetched (nil info if it wasn't looked up).
+    private static func silentPaymentCandidate(_ input: [String: Any]) -> SilentPaymentSpend.Candidate? {
+        guard isTaproot(input["address"] as? String),
+              let address = input["address"] as? String,
+              let txid = input["txid"] as? String,
+              let vout = input["vout"] as? Int,
+              let decoded = try? WalletLogic.Bech32m.decode(address),
+              decoded.1 == 1, decoded.2.count == 32 else { return nil }
+
+        var info: SilentPaymentSpend.WalletInfo?
+        if let labels = input["walletLabels"] as? [String] {
+            info = SilentPaymentSpend.WalletInfo(isMine: input["isMine"] as? Bool ?? false,
+                                                 desc: input["desc"] as? String ?? "",
+                                                 labels: labels)
+        }
+        return SilentPaymentSpend.Candidate(txid: txid, vout: vout, outputKey: SPHexFN.encode(decoded.2), info: info)
+    }
+
+    /// Wallet info per input ("txid:vout" lowercase), so signing doesn't look it up again.
+    private func knownWalletInfo() -> [String: SilentPaymentSpend.WalletInfo] {
+        var known: [String: SilentPaymentSpend.WalletInfo] = [:]
+        for input in inputTableArray {
+            guard let candidate = Self.silentPaymentCandidate(input), let info = candidate.info else { continue }
+            known["\(candidate.txid.lowercased()):\(candidate.vout)"] = info
+        }
+        return known
+    }
+
+    /// Lowercase master fingerprints of the keys that can sign an input (de-duplicated).
+    private static func masterFingerprints(input: [String: Any], psbtInput: [String: Any]?) -> [String] {
+        var result: [String] = []
+        func add(_ fingerprint: String?) {
+            guard let fingerprint = fingerprint?.lowercased(), fingerprint.count == 8, !result.contains(fingerprint) else { return }
+            result.append(fingerprint)
+        }
+
+        for key in ["bip32_derivs", "taproot_bip32_derivs"] {
+            for derivation in psbtInput?[key] as? [[String: Any]] ?? [] {
+                add(derivation["master_fingerprint"] as? String)
+            }
+        }
+
+        if result.isEmpty {
+            for key in ["desc", "parent_desc"] {
+                guard let descriptor = input[key] as? String else { continue }
+                originFingerprints(in: descriptor).forEach { add($0) }
+            }
+        }
+
+        return result
+    }
+
+    /// The `[fingerprint/...]` key origins in a descriptor.
+    private static func originFingerprints(in descriptor: String) -> [String] {
+        guard let regex = try? NSRegularExpression(pattern: "\\[([0-9a-fA-F]{8})") else { return [] }
+        let range = NSRange(descriptor.startIndex..., in: descriptor)
+        return regex.matches(in: descriptor, range: range).compactMap { match in
+            Range(match.range(at: 1), in: descriptor).map { String(descriptor[$0]) }
+        }
+    }
+
+    private static func isTaproot(_ address: String?) -> Bool {
+        guard let address = address?.lowercased() else { return false }
+        return address.hasPrefix("bc1p") || address.hasPrefix("tb1p") || address.hasPrefix("bcrt1p")
+    }
+
+    /// Fills an input cell's "signable" row.
+    private func renderInputSigner(_ input: [String: Any], imageView: UIImageView?, label: UILabel?) {
+        imageView?.image = UIImage(systemName: "signature")
+
+        guard let signers = input["signers"] as? [String] else {
+            imageView?.tintColor = .systemGray
+            label?.text = "Checking signers…"
+            return
+        }
+
+        let fingerprints = input["fingerprints"] as? [String] ?? []
+
+        if !signers.isEmpty {
+            var text = "Signable by " + signers.joined(separator: ", ")
+            if input["isSilentPayment"] as? Bool ?? false {
+                text += " (silent payment)"
+            } else if fingerprints.count > 1 {
+                text += " (\(input["matchedKeys"] as? Int ?? signers.count) of \(fingerprints.count) keys)"
+            }
+            imageView?.tintColor = .systemGreen
+            label?.text = text
+        } else if input["hotWallet"] as? Bool ?? false {
+            imageView?.image = UIImage(systemName: "checkmark.square")
+            imageView?.tintColor = .systemGreen
+            label?.text = "Bitcoin Core hot wallet."
+        } else if !fingerprints.isEmpty {
+            imageView?.tintColor = .systemOrange
+            label?.text = "No signer on this device for " + fingerprints.map { "[\($0)]" }.joined(separator: ", ") + "."
+        } else {
+            imageView?.tintColor = .systemOrange
+            label?.text = "Unable to determine."
+        }
     }
 
     // MARK: - Local (node-independent) output verification
@@ -2458,7 +2801,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             guard let self = self else { return }
             
             self.qrCodeStringToExport = address
-            self.performSegue(withIdentifier: "segueToShowAddressQR", sender: self)
+            self.showAddressQR()
         }
     }
     
@@ -2539,15 +2882,15 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.performSegue(withIdentifier: "segueToTxLabelMemo", sender: self)
+            self.presentLabelMemo()
         }
     }
     
     private func configureView(_ view: UIView) {
         view.clipsToBounds = true
-        view.layer.cornerRadius = 8
-        view.layer.borderColor = UIColor.lightGray.cgColor
-        view.layer.borderWidth = 0.5
+        view.layer.cornerRadius = WalletTheme.radius
+        view.layer.borderColor = WalletTheme.Tint.transaction.line.cgColor
+        view.layer.borderWidth = 1
     }
     
     private func configureCell(_ cell: UITableViewCell) {
@@ -2739,7 +3082,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.performSegue(withIdentifier: "segueToExportPsbtAsQr", sender: self)
+            self.showExportQR()
         }
     }
     
@@ -2851,109 +3194,108 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     // MARK: - Navigation
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-        if segue.identifier == "segueToShowAddressQR" {
-            if let vc = segue.destination as? QRDisplayerViewController {
-                vc.text = self.qrCodeStringToExport
-                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                vc.headerText = "Address"
-                vc.descriptionText = self.qrCodeStringToExport
+    private static func storyboardViewController<T: UIViewController>(_ identifier: String, as type: T.Type) -> T? {
+        UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: identifier) as? T
+    }
+
+    private func showAddressQR() {
+        guard let vc = Self.storyboardViewController("QRDisplayer", as: QRDisplayerViewController.self) else { return }
+        vc.text = qrCodeStringToExport
+        vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+        vc.headerText = "Address"
+        vc.descriptionText = qrCodeStringToExport
+        navigationController?.pushViewController(vc, animated: true)
+    }
+
+    private func showExportQR() {
+        guard let vc = Self.storyboardViewController("QRDisplayer", as: QRDisplayerViewController.self) else { return }
+        vc.isUR = isUR
+
+        if qrCodeStringToExport != "" {
+            vc.psbt = qrCodeStringToExport
+            vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+
+            if qrCodeStringToExport.hasPrefix("UR:BYTES") {
+                vc.headerText = "Encrypted PSBT"
+                vc.descriptionText = "Pass this psbt to your signer or to others to create a collaborative batch transaction."
+            } else {
+                if isUR {
+                    vc.headerText = "PSBT UR QR"
+                } else if isPlainText {
+                    vc.headerText = "PSBT Plain Text"
+                }
+                vc.descriptionText = "This psbt still needs more signatures to be complete, you can share it with another signer."
+            }
+        } else if signedRawTx != "" {
+            vc.txn = signedRawTx
+            vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+            vc.headerText = "Signed Transaction"
+            vc.descriptionText = "You can save this signed transaction and broadcast it later or share it with someone else."
+        }
+
+        navigationController?.pushViewController(vc, animated: true)
+    }
+
+    private func presentLabelMemo() {
+        guard let vc = Self.storyboardViewController("TransactionLabelMemo", as: TransactionLabelMemoViewController.self) else { return }
+        vc.txid = txid
+        vc.labelText = labelText
+
+        vc.doneBlock = { [weak self] result in
+            guard let self = self else { return }
+            self.labelText = result
+
+            DispatchQueue.main.async {
+                self.verifyTable.reloadData()
+                showAlert(vc: self, title: "", message: "Transaction updated ✓")
             }
         }
-        
-        if segue.identifier == "segueToExportPsbtAsQr" {            
-            if let vc = segue.destination as? QRDisplayerViewController {
-                vc.isUR = self.isUR
-                
-                if self.qrCodeStringToExport != "" {
-                    vc.psbt = self.qrCodeStringToExport
-                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                    
-                    if self.qrCodeStringToExport.hasPrefix("UR:BYTES") {
-                        vc.headerText = "Encrypted PSBT"
-                        vc.descriptionText = "Pass this psbt to your signer or to others to create a collaborative batch transaction."
-                    } else {
-                        if isUR {
-                            vc.headerText = "PSBT UR QR"
-                        } else if isPlainText {
-                            vc.headerText = "PSBT Plain Text"
-                        }
-                        vc.descriptionText = "This psbt still needs more signatures to be complete, you can share it with another signer."
+
+        present(vc, animated: true)
+    }
+
+    private func presentScanner() {
+        if #available(macCatalyst 14.0, *) {
+            guard let vc = Self.storyboardViewController("QRScanner", as: QRScannerViewController.self) else { return }
+
+            vc.fromSignAndVerify = true
+
+            vc.onDoneBlock = { [weak self] tx in
+                guard let self = self, let tx = tx else { return }
+
+                self.reset()
+
+                if Keys.validPsbt(tx) {
+                    self.processPsbt(tx)
+                } else if Keys.validTx(tx) {
+                    self.signedRawTx = tx
+                    self.load()
+                } else if tx.uppercased().hasPrefix("UR:BYTES") {
+                    guard let ur = URHelper.ur(tx) else {
+                        showAlert(vc: self, title: "", message: "Unable to convert ur string to ur.")
+                        return
                     }
-                } else if signedRawTx != "" {
-                    vc.txn = signedRawTx
-                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                    vc.headerText = "Signed Transaction"
-                    vc.descriptionText = "You can save this signed transaction and broadcast it later or share it with someone else."
+
+                    guard let psbt = URHelper.bytesToData(ur) else { return }
+
+                    self.processPsbt(psbt.base64EncodedString())
+
+                } else if tx.uppercased().hasPrefix("UR:CRYPTO-PSBT") {
+                    guard let ur = URHelper.ur(tx) else {
+                        showAlert(vc: self, title: "", message: "Unable to convert ur string to ur.")
+                        return
+                    }
+
+                    guard let psbt = URHelper.psbtUrToBase64Text(ur) else {
+                        showAlert(vc: self, title: "", message: "Unable to convert ur to psbt.")
+                        return
+                    }
+
+                    self.processPsbt(psbt)
                 }
             }
-        }
-        
-        if segue.identifier == "segueToTxLabelMemo" {
-            if let vc = segue.destination as? TransactionLabelMemoViewController {
-                vc.txid = self.txid
-                vc.labelText = labelText
-                //vc.memoText = memoText
-                
-                vc.doneBlock = { result in
-                    self.labelText = result
-                    
-                    DispatchQueue.main.async {
-                        self.verifyTable.reloadSections(IndexSet(arrayLiteral: 0), with: .none)
-                        showAlert(vc: self, title: "", message: "Transaction updated ✓")
-                    }
-                }
-            }
-        }
-        
-        if segue.identifier == "segueToScanPsbt" {
-            if #available(macCatalyst 14.0, *) {
-                guard let vc = segue.destination as? QRScannerViewController else { return }
-                
-                vc.fromSignAndVerify = true
-                
-                vc.onDoneBlock = { [weak self] tx in
-                    guard let self = self, let tx = tx else {
-                        return }
-                    
-                    self.reset()
-                    
-                    if Keys.validPsbt(tx) {
-                        self.processPsbt(tx)
-                    } else if Keys.validTx(tx) {
-                        self.signedRawTx = tx
-                        self.load()
-                    } else if tx.uppercased().hasPrefix("UR:BYTES") {
-                        guard let ur = URHelper.ur(tx) else {
-                            showAlert(vc: self, title: "", message: "Unable to convert ur string to ur.")
-                            return
-                        }
-                        
-                        guard let psbt = URHelper.bytesToData(ur) else {
-                            return
-                        }
-                        
-                        
-                        self.processPsbt(psbt.base64EncodedString())
-                        
-                    } else if tx.uppercased().hasPrefix("UR:CRYPTO-PSBT") {
-                        guard let ur = URHelper.ur(tx) else {
-                            showAlert(vc: self, title: "", message: "Unable to convert ur string to ur.")
-                            return
-                        }
-                        
-                        guard let psbt = URHelper.psbtUrToBase64Text(ur) else {
-                            showAlert(vc: self, title: "", message: "Unable to convert ur to psbt.")
-                            return
-                        }
-                        
-                       self.processPsbt(psbt)
-                    }
-                }
-            }
+
+            present(vc, animated: true)
         }
     }
 }
@@ -2989,23 +3331,8 @@ extension VerifyTransactionViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        switch indexPath.section {
-        case 3:
-            return 441
-            
-        case 4:
-            return 522
-            
-        case 0, 1:
-            return 50
-            
-        case 2, 5, 6:
-            return 80
-            
-        default:
-            return 0
-            
-        }
+        // Programmatic cells size themselves (Auto Layout).
+        return UITableView.automaticDimension
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -3116,3 +3443,359 @@ extension VerifyTransactionViewController: UITableViewDelegate {
 }
 
 extension VerifyTransactionViewController: UITableViewDataSource {}
+
+// MARK: - Theme
+
+extension VerifyTransactionViewController {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .transaction)
+    }
+
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        WalletTheme.styleHeader(view, tint: .transaction)
+    }
+}
+
+// MARK: - Layout (programmatic)
+
+extension VerifyTransactionViewController {
+
+    /// Table, bottom action bar and navigation items (formerly the storyboard scene).
+    fileprivate func buildLayout() {
+        title = "Transaction Detail"
+        view.backgroundColor = WalletTheme.bg
+
+        navigationItem.rightBarButtonItems = [
+            UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addTransactionAction(_:))),
+            UIBarButtonItem(image: UIImage(systemName: "info.circle"), style: .plain, target: self, action: #selector(showRawDataAction(_:)))
+        ]
+
+        verifyTable.translatesAutoresizingMaskIntoConstraints = false
+        verifyTable.delegate = self
+        verifyTable.dataSource = self
+        verifyTable.rowHeight = UITableView.automaticDimension
+        verifyTable.estimatedRowHeight = 120
+        verifyTable.sectionFooterHeight = 0
+        verifyTable.keyboardDismissMode = .onDrag
+        verifyTable.register(VerifyInputCell.self, forCellReuseIdentifier: VerifyInputCell.reuseId)
+        verifyTable.register(VerifyOutputCell.self, forCellReuseIdentifier: VerifyOutputCell.reuseId)
+        verifyTable.register(VerifyStatusCell.self, forCellReuseIdentifier: VerifyStatusCell.reuseId)
+        verifyTable.register(VerifyMemoCell.self, forCellReuseIdentifier: VerifyMemoCell.reuseId)
+        verifyTable.register(VerifyAddCell.self, forCellReuseIdentifier: VerifyAddCell.reuseId)
+
+        configureActionButton(exportButtonOutlet, title: "export", systemImage: "square.and.arrow.up", action: #selector(exportAction(_:)))
+        configureActionButton(bumpFeeOutlet, title: "bump fee", systemImage: "arrow.up.forward", action: #selector(bumpFeeAction(_:)))
+        configureActionButton(sendOutlet, title: "send", systemImage: "paperplane", action: #selector(sendAction(_:)))
+
+        let buttons = UIStackView(arrangedSubviews: [exportButtonOutlet, bumpFeeOutlet, sendOutlet])
+        buttons.axis = .horizontal
+        buttons.spacing = 8
+        buttons.distribution = .fillEqually
+        buttons.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(verifyTable)
+        view.addSubview(buttons)
+
+        let guide = view.safeAreaLayoutGuide
+        NSLayoutConstraint.activate([
+            verifyTable.topAnchor.constraint(equalTo: guide.topAnchor),
+            verifyTable.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            verifyTable.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            buttons.topAnchor.constraint(equalTo: verifyTable.bottomAnchor, constant: 8),
+            buttons.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            buttons.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            buttons.bottomAnchor.constraint(equalTo: guide.bottomAnchor, constant: -8),
+            buttons.heightAnchor.constraint(equalToConstant: 50)
+        ])
+    }
+
+    private func configureActionButton(_ button: UIButton, title: String, systemImage: String, action: Selector) {
+        button.configuration = WalletTheme.buttonConfiguration(title: title, systemImage: systemImage, filled: false, tint: .transaction)
+        button.addTarget(self, action: action, for: .touchUpInside)
+    }
+}
+
+// MARK: - Programmatic cells
+//
+// The cells keep the view tags the storyboard prototypes used, so the cell builders above
+// look their subviews up exactly as before. New: tag 30 (dust text) on inputs and outputs,
+// and tags 31 / 32 (signable icon / signer text) on inputs.
+
+enum VerifyCellTag {
+    static let dustLabel = 30
+    static let inputSignableImage = 31
+    static let inputSignerLabel = 32
+}
+
+private enum VerifyCellKit {
+    static func label(_ tag: Int, size: CGFloat = 13, weight: UIFont.Weight = .regular, color: UIColor = WalletTheme.text, lines: Int = 0) -> UILabel {
+        let label = UILabel()
+        label.tag = tag
+        label.font = WalletTheme.mono(size, weight: weight)
+        label.textColor = color
+        label.numberOfLines = lines
+        label.adjustsFontForContentSizeCategory = false
+        return label
+    }
+
+    static func caption(_ text: String) -> UILabel {
+        let label = UILabel()
+        label.text = text
+        label.font = WalletTheme.mono(11, weight: .bold)
+        label.textColor = WalletTheme.dim
+        return label
+    }
+
+    static func icon(_ tag: Int) -> UIImageView {
+        let imageView = UIImageView()
+        imageView.tag = tag
+        imageView.contentMode = .scaleAspectFit
+        imageView.tintColor = WalletTheme.Tint.transaction.accent
+        imageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            imageView.widthAnchor.constraint(equalToConstant: 22),
+            imageView.heightAnchor.constraint(equalToConstant: 22)
+        ])
+        return imageView
+    }
+
+    /// Borderless icon button (empty title, so the theme keeps it an icon).
+    static func iconButton(_ tag: Int, systemName: String) -> UIButton {
+        var config = UIButton.Configuration.plain()
+        config.image = UIImage(systemName: systemName,
+                               withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold))
+        config.contentInsets = .zero
+        config.baseForegroundColor = WalletTheme.Tint.transaction.accent
+        let button = UIButton(configuration: config)
+        button.tag = tag
+        button.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            button.widthAnchor.constraint(equalToConstant: 34),
+            button.heightAnchor.constraint(equalToConstant: 30)
+        ])
+        return button
+    }
+
+    /// Small bordered text button ("Sign", "verify owner", "edit").
+    static func textButton(_ tag: Int, title: String, systemImage: String? = nil) -> UIButton {
+        let config = WalletTheme.chipConfiguration(title: title,
+                                                   systemImage: systemImage,
+                                                   tint: .transaction,
+                                                   fontSize: 12,
+                                                   imageSize: 11,
+                                                   imagePadding: 5,
+                                                   insets: NSDirectionalEdgeInsets(top: 5, leading: 9, bottom: 5, trailing: 9))
+        let button = UIButton(configuration: config)
+        button.tag = tag
+        button.setContentHuggingPriority(.required, for: .horizontal)
+        button.setContentCompressionResistancePriority(.required, for: .horizontal)
+        return button
+    }
+
+    static func hStack(_ views: [UIView], spacing: CGFloat = 8, alignment: UIStackView.Alignment = .center) -> UIStackView {
+        let stack = UIStackView(arrangedSubviews: views)
+        stack.axis = .horizontal
+        stack.spacing = spacing
+        stack.alignment = alignment
+        return stack
+    }
+
+    static func spacer() -> UIView {
+        let view = UIView()
+        view.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        view.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        return view
+    }
+
+    /// Icon + wrapping text, optionally with a trailing control.
+    static func statusRow(icon: UIImageView, label: UILabel, trailing: UIView? = nil) -> UIStackView {
+        label.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        var views: [UIView] = [icon, label]
+        if let trailing = trailing { views.append(trailing) }
+        return hStack(views, spacing: 10, alignment: .center)
+    }
+
+    /// Caption on the left, icon buttons on the right.
+    static func captionRow(_ text: String, buttons: [UIButton]) -> UIStackView {
+        let leading: [UIView] = [caption(text), spacer()]
+        let row = hStack(leading + buttons.map { $0 as UIView }, spacing: 4)
+        row.heightAnchor.constraint(greaterThanOrEqualToConstant: 30).isActive = true
+        return row
+    }
+
+    static func hairline() -> UIView {
+        // Drawn as a 1pt border, not a background colour: the theme walker turns coloured
+        // views it sees before layout (zero size) into cards.
+        let line = UIView()
+        line.layer.borderWidth = 1
+        line.layer.borderColor = WalletTheme.Tint.transaction.line.cgColor
+        line.translatesAutoresizingMaskIntoConstraints = false
+        line.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        return line
+    }
+
+    static func descriptorView(_ tag: Int) -> UITextView {
+        let textView = UITextView()
+        textView.tag = tag
+        textView.isEditable = false
+        textView.isScrollEnabled = false
+        textView.font = WalletTheme.mono(11)
+        textView.textColor = WalletTheme.text
+        textView.backgroundColor = WalletTheme.card
+        textView.textContainerInset = UIEdgeInsets(top: 8, left: 6, bottom: 8, right: 6)
+        textView.layer.borderWidth = 1
+        textView.layer.borderColor = WalletTheme.Tint.transaction.line.cgColor
+        return textView
+    }
+
+    /// Pins a vertical stack inside the cell's content view (clear of the card's 4pt inset).
+    static func install(_ views: [UIView], in cell: UITableViewCell, spacing: CGFloat = 8) {
+        cell.selectionStyle = .none
+        cell.backgroundColor = .clear
+        let stack = UIStackView(arrangedSubviews: views)
+        stack.axis = .vertical
+        stack.spacing = spacing
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        cell.contentView.addSubview(stack)
+        let bottom = stack.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -16)
+        bottom.priority = UILayoutPriority(999)
+        NSLayoutConstraint.activate([
+            stack.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 16),
+            stack.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -16),
+            bottom
+        ])
+    }
+}
+
+/// One transaction input: amount, address, ownership, signatures, who can sign it, descriptor.
+final class VerifyInputCell: UITableViewCell {
+    static let reuseId = "inputCell"
+
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        typealias K = VerifyCellKit
+
+        let indexLabel = K.label(1, size: 14, weight: .bold, color: WalletTheme.Tint.transaction.accent, lines: 1)
+        let amountLabel = K.label(2, size: 14, weight: .semibold)
+        amountLabel.textAlignment = .right
+        indexLabel.setContentHuggingPriority(.required, for: .horizontal)
+        indexLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        let topRow = K.hStack([indexLabel, amountLabel], spacing: 12, alignment: .firstBaseline)
+
+        let signButton = K.textButton(22, title: "Sign", systemImage: "signature")
+
+        K.install([
+            topRow,
+            K.hairline(),
+            K.captionRow("ADDRESS", buttons: [K.iconButton(18, systemName: "doc.on.doc"),
+                                              K.iconButton(20, systemName: "qrcode"),
+                                              K.iconButton(21, systemName: "info.circle")]),
+            K.label(3, size: 13),
+            K.caption("UTXO LABEL"),
+            K.label(7, size: 13),
+            K.hairline(),
+            K.statusRow(icon: K.icon(4), label: K.label(5)),
+            K.statusRow(icon: K.icon(8), label: K.label(6)),
+            K.statusRow(icon: K.icon(10), label: K.label(VerifyCellTag.dustLabel)),
+            K.statusRow(icon: K.icon(17), label: K.label(14), trailing: signButton),
+            K.statusRow(icon: K.icon(VerifyCellTag.inputSignableImage), label: K.label(VerifyCellTag.inputSignerLabel)),
+            K.hairline(),
+            K.captionRow("DESCRIPTOR", buttons: [K.iconButton(19, systemName: "doc.on.doc")]),
+            K.descriptorView(15)
+        ], in: self)
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+}
+
+/// One transaction output: amount, address, who owns it, who can sign for it, descriptor.
+final class VerifyOutputCell: UITableViewCell {
+    static let reuseId = "outputCell"
+
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        typealias K = VerifyCellKit
+
+        let indexLabel = K.label(1, size: 14, weight: .bold, color: WalletTheme.Tint.transaction.accent, lines: 1)
+        let amountLabel = K.label(2, size: 14, weight: .semibold)
+        amountLabel.textAlignment = .right
+        indexLabel.setContentHuggingPriority(.required, for: .horizontal)
+        indexLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        let topRow = K.hStack([indexLabel, amountLabel], spacing: 12, alignment: .firstBaseline)
+
+        K.install([
+            topRow,
+            K.hairline(),
+            K.captionRow("ADDRESS", buttons: [K.iconButton(21, systemName: "doc.on.doc"),
+                                              K.iconButton(24, systemName: "qrcode"),
+                                              K.iconButton(25, systemName: "info.circle")]),
+            K.label(3, size: 13),
+            K.caption("UTXO LABEL"),
+            K.label(7, size: 13),
+            K.hairline(),
+            K.statusRow(icon: K.icon(6), label: K.label(9)),
+            K.statusRow(icon: K.icon(4), label: K.label(19), trailing: K.textButton(23, title: "verify owner")),
+            K.statusRow(icon: K.icon(8), label: K.label(20)),
+            K.statusRow(icon: K.icon(10), label: K.label(VerifyCellTag.dustLabel)),
+            K.statusRow(icon: K.icon(17), label: K.label(18)),
+            K.hairline(),
+            K.captionRow("DESCRIPTOR", buttons: [K.iconButton(22, systemName: "doc.on.doc")]),
+            K.descriptorView(15)
+        ], in: self)
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+}
+
+/// Icon + text row (mempool accept, confirmations, txid, mining fee, eta).
+final class VerifyStatusCell: UITableViewCell {
+    static let reuseId = "miningFeeCell"
+
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        typealias K = VerifyCellKit
+        let row = K.statusRow(icon: K.icon(2), label: K.label(1, size: 13))
+        row.heightAnchor.constraint(greaterThanOrEqualToConstant: 24).isActive = true
+        K.install([row], in: self)
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+}
+
+/// Transaction label with an edit button.
+final class VerifyMemoCell: UITableViewCell {
+    static let reuseId = "memoLabelCell"
+
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        typealias K = VerifyCellKit
+        let label = K.label(1, size: 13)
+        label.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        let row = K.hStack([label, K.textButton(2, title: "edit", systemImage: "pencil")], spacing: 10)
+        row.heightAnchor.constraint(greaterThanOrEqualToConstant: 24).isActive = true
+        K.install([row], in: self)
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+}
+
+/// Empty state: "Add a transaction" with a plus button.
+final class VerifyAddCell: UITableViewCell {
+    static let reuseId = "defaultCell"
+
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        typealias K = VerifyCellKit
+        let label = K.label(1, size: 14, lines: 1)
+        label.text = "Add a transaction"
+        label.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        let row = K.hStack([label, K.iconButton(2, systemName: "plus")], spacing: 10)
+        K.install([row], in: self)
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+}

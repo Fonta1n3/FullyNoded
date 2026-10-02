@@ -974,6 +974,19 @@ class WalletLogic {
                                                      network: mainnet ? .main : .test).address
     }
     
+    /// The BIP352 scan private key (32-byte hex) for this seed, for exporting to a
+    /// scanner such as Fully Noded Server. It can only detect incoming silent payments,
+    /// never spend them. The spend private key derived alongside it is wiped here and
+    /// never returned.
+    func silentPaymentScanPrivateKey(mnemonic: String, passphrase: String?, mainnet: Bool) -> String? {
+        let pass = (passphrase?.isEmpty ?? true) ? nil : passphrase
+        guard var keys = try? silentPaymentAddressFromMnemonic(mnemonic: mnemonic,
+                                                              passphrase: pass,
+                                                              network: mainnet ? .main : .test) else { return nil }
+        keys.spendPrivHex.secureWipe()
+        return keys.scanPrivHex
+    }
+    
     //enum SilentPaymentFromMnemonic {
     func silentPaymentAddressFromMnemonic(
         mnemonic: String,
@@ -987,9 +1000,8 @@ class WalletLogic {
             password: passphrase
         )
         
-        let coin: UInt32 = (network == .main) ? 0 : 1
-        let spendPath = try BDKDerivationPath(path: "m/352h/\(coin)h/0h/0h/0")
-        let scanPath  = try BDKDerivationPath(path: "m/352h/\(coin)h/0h/1h/0")
+        let spendPath = try BDKDerivationPath(path: SPSignerKeys.spendPath(mainnet: network == .main))
+        let scanPath  = try BDKDerivationPath(path: SPSignerKeys.scanPath(mainnet: network == .main))
         
         let spendKey = try master.derive(path: spendPath)
         let scanKey  = try master.derive(path: scanPath)

@@ -36,6 +36,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         case singleSigBip84
         case singleSigBip86
         case silentPayment
+        case silentPaymentScanKey
     }
     
     // MARK: - Views (programmatic)
@@ -159,7 +160,10 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             ],// singlesigbip86 8
             [
                 "text": "", "footerText": "Your BIP352 silent payment address. Share it publicly to receive bitcoin privately: every payment to it lands at a new address that can't be linked to it on-chain. Tap the QR button to export it."
-            ]// silentPayment 9
+            ],// silentPayment 9
+            [
+                "text": "Hidden. Tap the QR button to export it (requires authentication).", "footerText": "Your BIP352 scan private key, for a silent payment scanner you control such as Fully Noded Server. It can't spend your bitcoin, but anyone who has it can see every silent payment you receive, so never share it with a third party."
+            ]// silentPaymentScanKey 10
         ]
         
         let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
@@ -192,6 +196,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             return "Descriptor - BIP86"
         case .silentPayment:
             return "Silent Payment Address"
+        case .silentPaymentScanKey:
+            return "SP Scan Private Key"
         }
     }
     
@@ -207,6 +213,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         case .cosigner: return "person.2"
         case .singleSigBip84, .singleSigBip86: return "doc.text"
         case .silentPayment: return "eye.slash"
+        case .silentPaymentScanKey: return "eye"
         }
     }
 
@@ -217,7 +224,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     
     private func configureField(_ field: UIView) {
         field.clipsToBounds = true
-        field.layer.cornerRadius = 2
+        field.layer.cornerRadius = 0
         field.layer.borderWidth = 1
         field.layer.borderColor = SignerTheme.line.cgColor
     }
@@ -407,7 +414,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             
             if signer.words == nil {
                 // The address is derived from the seed, so it can't be shown once the seed is gone.
-                self.tableDict[9]["text"] = "Seed words deleted, silent payment address unavailable."
+                self.tableDict[Section.silentPayment.rawValue]["text"] = "Seed words deleted, silent payment address unavailable."
+                self.tableDict[Section.silentPaymentScanKey.rawValue]["text"] = "Seed words deleted, scan private key unavailable."
             }
             
             if var encryptedWords = signer.words {
@@ -416,13 +424,14 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 
                 // Silent payment address for the selected network (sp1… / tsp1…), derived
                 // with the same stored passphrase as the descriptors above. Only the
-                // address is returned; no private keys reach this view.
+                // address is returned; no private keys reach this view (the scan private
+                // key is derived separately, on export).
                 if let spAddress = WalletLogic.shared.silentPaymentAddress(mnemonic: words,
                                                                            passphrase: passphrase,
                                                                            mainnet: self.network == 0) {
-                    self.tableDict[9]["text"] = spAddress
+                    self.tableDict[Section.silentPayment.rawValue]["text"] = spAddress
                 } else {
-                    self.tableDict[9]["text"] = "Unable to derive the silent payment address."
+                    self.tableDict[Section.silentPayment.rawValue]["text"] = "Unable to derive the silent payment address."
                 }
                 
                 guard var masterKey = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase) else {
@@ -780,7 +789,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         var config = UIButton.Configuration.tinted()
         config.baseForegroundColor = SignerTheme.accent
         config.baseBackgroundColor = SignerTheme.accent
-        config.background.cornerRadius = 2
+        config.background.cornerRadius = 0
         var title = AttributedString("NODELESS")
         title.font = SignerTheme.mono(12, weight: .semibold)
         config.attributedTitle = title
@@ -1143,6 +1152,87 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         segueToQr()
     }
     
+    // MARK: - Silent payment scan private key export
+    
+    /// Exports the BIP352 scan private key as a QR, e.g. to set up Fully Noded Server.
+    /// Requires an app password, an explicit confirmation and Face ID / Touch ID or the
+    /// app password (never the device passcode). The key is derived on demand from the
+    /// seed (with the signer's passphrase, like the address above) and handed straight to
+    /// the QR screen: it is never stored or kept in this view.
+    @objc func exportScanPrivateKey(_ sender: Any) {
+        guard let _ = KeyChain.getData("UnlockPassword") else {
+            showAlert(vc: self, title: "You are not using the app securely...", message: "You can only export private keys if the app has a lock/unlock password. Tap the lock button on the home screen to add a password.")
+            return
+        }
+        
+        guard signer?.words != nil else {
+            showAlert(vc: self, title: "", message: "This signer's seed words were deleted, so its scan private key can't be derived.")
+            return
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(
+                title: "Export scan private key?",
+                message: "Only give this key to a silent payment scanner you control, such as your own Fully Noded Server. It can't spend your bitcoin, but whoever has it can see every silent payment you receive.",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "Export", style: .destructive) { [weak self] _ in
+                guard let self = self else { return }
+                
+                AppAuthentication.authenticate(from: self, reason: "To export your silent payment scan private key") { [weak self] success in
+                    guard let self = self, success else { return }
+                    self.showScanPrivateKeyQr()
+                }
+            })
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            self.present(alert, animated: true)
+        }
+    }
+    
+    private func showScanPrivateKeyQr() {
+        guard let encryptedWords = signer?.words,
+              var decryptedWords = Crypto.decrypt(encryptedWords),
+              var words = decryptedWords.utf8String else {
+            showAlert(vc: self, title: "", message: "Unable to decrypt your seed words.")
+            return
+        }
+        
+        var passphrase = ""
+        if let encryptedPassphrase = signer?.passphrase,
+           var decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) {
+            passphrase = decryptedPassphrase.utf8String ?? ""
+            decryptedPassphrase.secureZero()
+        }
+        
+        let mainnet = network == 0
+        let scanKey = WalletLogic.shared.silentPaymentScanPrivateKey(mnemonic: words,
+                                                                     passphrase: passphrase,
+                                                                     mainnet: mainnet)
+        decryptedWords.secureZero()
+        words.secureWipe()
+        passphrase.secureWipe()
+        
+        // Handed straight to the QR screen; nothing keeps a copy in this view.
+        guard let key = scanKey else {
+            showAlert(vc: self, title: "", message: "Unable to derive the scan private key.")
+            return
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self,
+                  let vc = UIStoryboard(name: "Main", bundle: nil)
+                    .instantiateViewController(withIdentifier: "QRDisplayer") as? QRDisplayerViewController else { return }
+            
+            vc.headerIcon = UIImage(systemName: "eye")
+            vc.headerText = "SP Scan Private Key"
+            vc.descriptionText = "BIP352 scan private key (\(mainnet ? "mainnet" : "testnet / signet"), hex) at m/352'/\(mainnet ? 0 : 1)'/0'/1'/0. For your own silent payment scanner only: it reveals every silent payment you receive, but can't spend them."
+            vc.text = key
+            self.navigationController?.pushViewController(vc, animated: true)
+        }
+    }
+    
     private func exportQr(isBbqr: Bool, plainText: Bool, section: Int) {
         var dict = tableDict[section]
         let text = dict["text"] as? String ?? ""
@@ -1206,6 +1296,9 @@ extension SignerDetailViewController: UITableViewDelegate {
         case 3:
             promptToEditPassphrase()
             
+        case Section.silentPaymentScanKey.rawValue:
+            exportScanPrivateKey(self)
+            
 //        case 6, 7:
 //            setClipBoard(dict["text"] as? String ?? "")
             
@@ -1226,6 +1319,7 @@ extension SignerDetailViewController: UITableViewDelegate {
         let cell = tableView.dequeueReusableCell(withIdentifier: "defaultCell", for: indexPath)
         cell.backgroundColor = SignerTheme.card
         cell.contentView.backgroundColor = SignerTheme.card
+        WalletTheme.squareCorners(cell)   // square edges, no section rounding
         cell.textLabel?.numberOfLines = 0
         cell.textLabel?.font = SignerTheme.mono(13)
         cell.textLabel?.textColor = SignerTheme.text
@@ -1275,6 +1369,11 @@ extension SignerDetailViewController: UITableViewDelegate {
             
         case .silentPayment:
             cell.textLabel?.text = dict["text"] as? String ?? "no silent payment address"
+            
+        case .silentPaymentScanKey:
+            // Never shown in the table; only exported on demand (see exportScanPrivateKey).
+            cell.textLabel?.text = dict["text"] as? String ?? "Hidden."
+            cell.textLabel?.textColor = SignerTheme.dim
             
         case .none:
             break
@@ -1334,6 +1433,13 @@ extension SignerDetailViewController: UITableViewDelegate {
                 header.addSubview(exportQrButtonGeneric)
                 textLabel.text = headerName(for: section)
                 
+            case .silentPaymentScanKey:
+                // Warn + authenticate, then derive the key on demand and show its QR.
+                exportQrButtonGeneric.removeTarget(nil, action: nil, for: .allEvents)
+                exportQrButtonGeneric.addTarget(self, action: #selector(exportScanPrivateKey(_:)), for: .touchUpInside)
+                header.addSubview(exportQrButtonGeneric)
+                textLabel.text = headerName(for: section)
+                
             default:
                 textLabel.text = headerName(for: section)
             }
@@ -1374,23 +1480,13 @@ enum SignerTheme {
     static let danger = UIColor(red: 1.0, green: 0.28, blue: 0.32, alpha: 1)
 
     static func mono(_ size: CGFloat, weight: UIFont.Weight = .regular) -> UIFont {
-        UIFont.monospacedSystemFont(ofSize: size, weight: weight)
+        WalletTheme.mono(size, weight: weight)
     }
 
     /// Per-screen navigation bar look (set on the navigationItem, so it doesn't leak into
     /// the home / wallet screens' green bar when navigating back).
     static func styleNavigation(_ item: UINavigationItem) {
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = bg
-        appearance.shadowColor = line
-        appearance.titleTextAttributes = [.foregroundColor: accent, .font: mono(15, weight: .semibold)]
-        appearance.largeTitleTextAttributes = [.foregroundColor: accent, .font: mono(28, weight: .semibold)]
-
-        let buttons = UIBarButtonItemAppearance()
-        buttons.normal.titleTextAttributes = [.foregroundColor: accent, .font: mono(15)]
-        appearance.buttonAppearance = buttons
-        appearance.backButtonAppearance = buttons
+        let appearance = WalletTheme.navigationAppearance(background: bg, line: line, accent: accent)
 
         let chevronConfig = UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
         if let chevron = UIImage(systemName: "chevron.backward", withConfiguration: chevronConfig)?
@@ -1398,35 +1494,31 @@ enum SignerTheme {
             appearance.setBackIndicatorImage(chevron, transitionMaskImage: chevron)
         }
 
-        item.standardAppearance = appearance
-        item.scrollEdgeAppearance = appearance
-        item.compactAppearance = appearance
+        WalletTheme.setNavigationAppearance(appearance, on: item)
     }
 
     static func style(_ control: UISegmentedControl) {
-        control.backgroundColor = card
-        control.selectedSegmentTintColor = accent
-        control.setTitleTextAttributes([.font: mono(12), .foregroundColor: dim], for: .normal)
-        control.setTitleTextAttributes([.font: mono(12, weight: .semibold), .foregroundColor: bg], for: .selected)
+        WalletTheme.styleSegmented(control, background: card, accent: accent, text: dim, selectedText: bg)
     }
 
     /// Bordered charcoal card used as a cell background (inset vertically so rows read
     /// as separate cards).
-    static func cardBackground(verticalInset: CGFloat = 3) -> UIView {
+    static func cardBackground(verticalInset: CGFloat = 4) -> UIView {
         let container = UIView()
         container.backgroundColor = .clear
         let card = UIView()
         card.translatesAutoresizingMaskIntoConstraints = false
         card.backgroundColor = SignerTheme.card
-        card.layer.cornerRadius = 2
+        card.layer.cornerRadius = 0
         card.layer.borderWidth = 1
         card.layer.borderColor = line.cgColor
         container.addSubview(card)
         NSLayoutConstraint.activate([
             card.topAnchor.constraint(equalTo: container.topAnchor, constant: verticalInset),
             card.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -verticalInset),
-            card.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            card.trailingAnchor.constraint(equalTo: container.trailingAnchor)
+            // Horizontal inset keeps the inset-grouped section rounding off the border.
+            card.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 5),
+            card.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -5)
         ])
         return container
     }

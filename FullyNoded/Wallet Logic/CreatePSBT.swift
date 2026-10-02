@@ -10,8 +10,11 @@ import Foundation
 
 class CreatePSBT {
 
+    /// - changeAddress: optional explicit change destination (e.g. when the active wallet
+    ///   is a watch-only wallet that can't generate change addresses).
     class func create(inputs: [[String: Any]],
                       outputs: [[String: Any]],
+                      changeAddress: String? = nil,
                       completion: @escaping ((psbt: String?, rawTx: String?, errorMessage: String?)) -> Void) {
 
         func buildParams(inputs: [[String: Any]], locktime: UInt32?) -> [String: Any] {
@@ -26,6 +29,9 @@ class CreatePSBT {
             var options: [String: Any] = [:]
             options["includeWatching"] = true
             options["replaceable"] = true
+            if let changeAddress, !changeAddress.isEmpty {
+                options["changeAddress"] = changeAddress
+            }
             if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
                 options["fee_rate"] = feeRate
             } else if let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int {

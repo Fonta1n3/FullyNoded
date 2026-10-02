@@ -50,6 +50,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet weak private var feeRateInputField: UITextField!
     
     let spinner = ConnectingView.shared
+    /// "≈ $1,234.56" under the amount, updated live as the BTC amount is typed
+    /// (display / reference only, never used to build the transaction).
+    private let fiatAmountLabel = UILabel()
     var spendableBalance = Double()
     
     override func viewDidLoad() {
@@ -61,8 +64,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         outputsTable.tableFooterView = UIView(frame: .zero)
         outputsTable.alpha = 0
         slider.isContinuous = false
-        createOutlet.layer.cornerRadius = 8
-        createOutlet.clipsToBounds = true
         
         if let fxRate = fxRate {
             balanceLabel.text = balance + " btc" + " / " + (fxRate * balance.condenseWhitespace().doubleValue).fiatString
@@ -94,6 +95,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         if address != "" {
             addAddress(address)
         }
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        // Regroup the storyboard rows into cards first, so the theme styles the result.
+        groupIntoCards()
+        WalletTheme.apply(to: self, tint: .send)
+        styleCards()
+        flattenInfoButtons()
+        configureCreateButton()
     }
     
     @IBAction func sendToWalletAction(_ sender: Any) {
@@ -273,7 +281,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func convertedAmount() -> String? {
-        guard let amount = amountInput.text, amount != "" else { return nil }
+        // The field shows spaces between digit groups; strip them before parsing.
+        guard let amount = amountInput.text?.condenseWhitespace(), amount != "" else { return nil }
         
         let dblAmount = amount.doubleValue
         
@@ -301,6 +310,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
             self.outputsTable.alpha = 1
             self.amountInput.text = ""
+            self.updateFiatAmount()
             self.addressInput.text = ""
             self.outputsTable.reloadData()
         }
@@ -597,11 +607,31 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         promptToSweep()
     }
     
+    /// Pushes the (programmatic) transaction verifier with the created psbt / raw tx.
+    private func showVerifier() {
+        let vc = VerifyTransactionViewController()
+        vc.fxRate = fxRate
+
+        if let rawTx = rawTx {
+            vc.signedRawTx = rawTx
+        } else if let psbt = psbt {
+            vc.unsignedPsbt = psbt
+        }
+
+        outputs.removeAll()
+        inputs.removeAll()
+        addressInput.text = ""
+        amountInput.text = ""
+        updateFiatAmount()
+
+        navigationController?.pushViewController(vc, animated: true)
+    }
+
     func showRaw() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.performSegue(withIdentifier: "segueToBroadcaster", sender: self)
+            self.showVerifier()
         }
     }
     
@@ -640,19 +670,71 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     //MARK: Textfield methods
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        guard textField == amountInput, let text = textField.text, string != "" else { return true }
+        guard textField == amountInput else { return true }
         
-        guard text.contains(".") else { return true }
+        // The amount is shown grouped like balances ("0.01 234 567"), so edits are applied
+        // to the raw digits (typing / pasting appends, backspace removes the last digit)
+        // and the field is reformatted. Max 8 whole digits and 8 decimals.
+        var raw = (textField.text ?? "").condenseWhitespace()
+        if string.isEmpty {
+            if !raw.isEmpty { raw.removeLast() }
+        } else {
+            raw += string.replacingOccurrences(of: ",", with: ".")
+        }
+        textField.text = Self.formatAmount(raw)
+        // Live fiat reference. (Returning false means no editingChanged event fires,
+        // so it's updated here, on every keystroke.)
+        updateFiatAmount()
+        return false
+    }
+    
+    /// "1234.01234567" → "1 234.01 234 567". Keeps only digits and the first ".", drops
+    /// leading zeros, caps whole digits at 8 (21 000 000) and decimals at 8. Decimals are
+    /// grouped 2-3-3 like `btcBalanceWithSpaces`; whole digits in threes.
+    static func formatAmount(_ input: String) -> String {
+        var whole = ""
+        var fraction = ""
+        var hasPoint = false
+        for c in input {
+            if c == "." {
+                hasPoint = true
+            } else if c.isASCII, c.isNumber {
+                if hasPoint {
+                    if fraction.count < 8 { fraction.append(c) }
+                } else if whole.count < 8 {
+                    whole.append(c)
+                }
+            }
+        }
+        // No leading zeros ("007" → "7"), but "0" before a decimal point.
+        while whole.count > 1 && whole.hasPrefix("0") { whole.removeFirst() }
+        if whole.isEmpty && hasPoint { whole = "0" }
+        guard !whole.isEmpty else { return "" }
         
-        let arr = text.components(separatedBy: ".")
+        // Whole part in threes from the right.
+        var groupedWhole = ""
+        for (i, c) in whole.reversed().enumerated() {
+            if i > 0 && i % 3 == 0 { groupedWhole.append(" ") }
+            groupedWhole.append(c)
+        }
+        groupedWhole = String(groupedWhole.reversed())
+        guard hasPoint else { return groupedWhole }
         
-        guard arr.count > 0 else { return true }
-        
-        return arr[1].count < 8
+        // Decimals: 2, then 3, then 3 ("01 234 567").
+        var groupedFraction = ""
+        for (i, c) in fraction.enumerated() {
+            if i == 2 || i == 5 { groupedFraction.append(" ") }
+            groupedFraction.append(c)
+        }
+        return groupedWhole + "." + groupedFraction
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         textField.resignFirstResponder()
+        
+        if textField == amountInput {
+            updateFiatAmount()
+        }
         
         if textField == addressInput && addressInput.text != "" {
             let address = addressInput.text!
@@ -760,7 +842,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 
                 if amount != nil {
                     amountText = amount!.avoidNotation
-                    self.amountInput.text = amountText
+                    self.amountInput.text = Self.formatAmount(amountText.replacingOccurrences(of: ",", with: ""))
+                    self.updateFiatAmount()
                     self.ud.set("btc", forKey: "unit")
                 }
                 
@@ -781,23 +864,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 return
             }
 
-            SilentPaymentSend.create(spAddress: entry.key, amount: "\(entry.value)", inputs: self.inputs) { [weak self] psbt, errorMessage in
-                guard let self = self else { return }
-
-                self.spinner.dismiss()
-
-                if let psbt = psbt {
-                    self.rawTx = nil
-                    self.psbt = psbt
-                    self.showRaw()
-                } else {
-                    self.outputs.removeAll()
-                    DispatchQueue.main.async {
-                        self.outputsTable.reloadData()
-                    }
-                    showAlert(vc: self, title: "Silent payment error", message: errorMessage ?? "unknown error creating silent payment transaction")
-                }
-            }
+            createSilentPayment(to: entry.key, amount: "\(entry.value)", change: .wallet)
             return
         }
 
@@ -811,8 +878,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 self.showRaw()
                 
             } else if let psbt = psbt {
-                self.psbt = psbt
-                self.showRaw()
+                // Spending silent payment outputs? Ask where the change should go.
+                self.offerSilentPaymentChange(psbt: psbt, recipients: self.outputs.count) { [weak self] pinnedInputs in
+                    self?.createWithSilentPaymentChange(inputs: pinnedInputs)
+                }
                 
             } else {
                 self.outputs.removeAll()
@@ -822,6 +891,115 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 
                 showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error creating transaction")
             }
+        }
+    }
+    
+    // MARK: - Silent payment change
+    
+    /// Silent payment recipient: SilentPaymentSend builds the (unsigned) psbt.
+    /// Built with the wallet's own change (Fully Noded wallets always have a change
+    /// descriptor). If it spends silent payment outputs, ask whether the change goes to
+    /// your silent payment address or stays with the wallet. Silent payment change uses
+    /// k = 1 automatically when you pay your own address (BIP352 numbering).
+    /// - inputs: coin-control inputs (nil = the screen's selection).
+    private func createSilentPayment(to address: String,
+                                     amount: String,
+                                     change: SilentPaymentChange.Destination,
+                                     inputs pinned: [[String: Any]]? = nil) {
+        spinner.show(vc: self, description: "creating silent payment...")
+        SilentPaymentSend.create(spAddress: address, amount: amount, inputs: pinned ?? inputs, change: change) { [weak self] psbt, errorMessage in
+            guard let self = self else { return }
+            
+            self.spinner.dismiss()
+            
+            if let psbt = psbt {
+                guard case .wallet = change else {
+                    self.rawTx = nil
+                    self.psbt = psbt
+                    self.showRaw()
+                    return
+                }
+                self.offerSilentPaymentChange(psbt: psbt, recipients: 1) { [weak self] pinnedInputs in
+                    self?.createSilentPayment(to: address, amount: amount, change: .silentPayment, inputs: pinnedInputs)
+                }
+                
+            } else {
+                showAlert(vc: self, title: "Silent payment error", message: errorMessage ?? "unknown error creating silent payment transaction")
+            }
+        }
+    }
+    
+    /// After building with the wallet's own change: if the transaction spends silent
+    /// payment outputs (detected exactly as the verifier does) and has a change output,
+    /// ask whether the change should go to your silent payment address instead.
+    /// - rebuildWithSilentPaymentChange: gets the same inputs, pinned, so the change is
+    ///   computed for exactly the coins that were chosen.
+    private func offerSilentPaymentChange(psbt: String,
+                                          recipients: Int,
+                                          rebuildWithSilentPaymentChange: @escaping ([[String: Any]]) -> Void) {
+        let useAsIs: () -> Void = { [weak self] in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.spinner.dismiss()
+                self.rawTx = nil
+                self.psbt = psbt
+                self.showRaw()
+            }
+        }
+        
+        spinner.show(vc: self, description: "checking for silent payment inputs...")
+        SilentPaymentSpend.detectInputs(psbt: psbt, passphrase: nil) { owned in
+            guard !owned.isEmpty else {
+                useAsIs()
+                return
+            }
+            SilentPaymentChange.decode(psbt) { [weak self] tx, _ in
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    // No change output (exact amount): nothing to decide.
+                    guard let tx = tx, tx.outputs.count > recipients else {
+                        useAsIs()
+                        return
+                    }
+                    self.spinner.dismiss()
+                    
+                    let pinned: [[String: Any]] = tx.inputs.map { ["txid": $0.txid, "vout": $0.vout] }
+                    let alert = UIAlertController(
+                        title: "Change",
+                        message: "This transaction spends silent payment outputs. Send the change to your silent payment address, or to this wallet's normal change address?",
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: "My silent payment address", style: .default) { _ in
+                        rebuildWithSilentPaymentChange(pinned)
+                    })
+                    alert.addAction(UIAlertAction(title: "Wallet change address", style: .default) { _ in
+                        useAsIs()
+                    })
+                    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+                    self.present(alert, animated: true)
+                }
+            }
+        }
+    }
+    
+    private func createWithSilentPaymentChange(inputs: [[String: Any]]) {
+        spinner.show(vc: self, description: "creating psbt with silent payment change...")
+        SilentPaymentChange.create(inputs: inputs, outputs: outputs) { [weak self] psbt, errorMessage in
+            guard let self = self else { return }
+            self.finishCreate(psbt: psbt, rawTx: nil, errorMessage: errorMessage)
+        }
+    }
+    
+    private func finishCreate(psbt: String?, rawTx: String?, errorMessage: String?) {
+        spinner.dismiss()
+        if let rawTx = rawTx {
+            self.rawTx = rawTx
+            showRaw()
+        } else if let psbt = psbt {
+            self.psbt = psbt
+            showRaw()
+        } else {
+            showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error creating transaction")
         }
     }
     
@@ -852,23 +1030,393 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 }
             }
             
-        case "segueToBroadcaster":
-            guard let vc = segue.destination as? VerifyTransactionViewController else { fallthrough }
-            
-            vc.fxRate = fxRate
-            
-            if let rawTx = rawTx {
-                vc.signedRawTx = rawTx
-            } else if let psbt = psbt {
-                vc.unsignedPsbt = psbt
-            }
-            outputs.removeAll()
-            inputs.removeAll()
-            addressInput.text = ""
-            amountInput.text = ""
-            
         default:
             break
         }
+    }
+}
+
+// MARK: - Theme
+
+extension CreateRawTxViewController {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .send)
+    }
+
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        WalletTheme.styleHeader(view, tint: .send)
+    }
+}
+
+extension CreateRawTxViewController {
+    /// The address info button is an icon: keep it borderless (only the text buttons such as
+    /// Paste, Wallet, Batch, Send all and Donate are outlined).
+    fileprivate func flattenInfoButtons() {
+        var stack: [UIView] = [view]
+        while let current = stack.popLast() {
+            if let button = current as? UIButton {
+                let actions = button.actions(forTarget: self, forControlEvent: .touchUpInside) ?? []
+                if actions.contains("showAddressInfoAction:") {
+                    WalletTheme.styleIconButton(button, tint: .send)
+                }
+            } else {
+                stack.append(contentsOf: current.subviews)
+            }
+        }
+    }
+}
+
+extension CreateRawTxViewController {
+    /// "Create transaction": a full-width hero button lined up with the outputs table,
+    /// instead of the storyboard's fixed 181 x 38 pill (too narrow for its title).
+    fileprivate func configureCreateButton() {
+        WalletTheme.styleHero(createOutlet, title: "Create transaction", tint: .send)
+
+        // Drop the storyboard's fixed width / height.
+        for constraint in createOutlet.constraints
+        where constraint.firstItem === createOutlet && constraint.secondItem == nil
+            && (constraint.firstAttribute == .width || constraint.firstAttribute == .height) {
+            constraint.isActive = false
+        }
+
+        NSLayoutConstraint.activate([
+            createOutlet.leadingAnchor.constraint(equalTo: outputsTable.leadingAnchor),
+            createOutlet.trailingAnchor.constraint(equalTo: outputsTable.trailingAnchor),
+            createOutlet.heightAnchor.constraint(equalToConstant: 52)
+        ])
+    }
+}
+
+// MARK: - Layout: AMOUNT / RECIPIENT / FEE cards
+
+/// The storyboard lays the screen out as ten loose rows, each with its own icon and
+/// label. Here they're regrouped (in code, so every outlet, action and the batching table
+/// keep working) into three cards:
+///
+///   > AMOUNT
+///     [ amount field                 ]  max
+///     ≈ <fiat value of the amount>   (live, reference only)
+///     AVAILABLE
+///     <balance btc / fiat>
+///   > RECIPIENT ………………………………… (i)
+///     <address>
+///     [PASTE] [WALLET] [+ BATCH] [DONATE]
+///   > FEE ………………………………… <n s/vB>
+///     ─────────○──────────  (ETA slider)
+///     Target: 2 blocks ~20 minutes
+///     [ custom sat/vB          ] (x)
+///
+/// The batching table (hidden until something is added) and the Create button stay
+/// below the cards, as before.
+extension CreateRawTxViewController {
+
+    private static let cardTag = 0x5E4D
+    // Unique tags (small ones like 1 / 2 can collide with storyboard tags).
+    private static let captionTag = 0x5E4E
+    private static let availableTag = 0x5E4F
+    /// Every card caption ("> AMOUNT", "> RECIPIENT", "> FEE") is exactly this.
+    private static let captionFont = WalletTheme.mono(11, weight: .bold)
+    private static let captionRowHeight: CGFloat = 24
+
+    /// The storyboard's main vertical stack (the one holding the amount field).
+    private var mainStack: UIStackView? {
+        var view: UIView? = amountInput
+        while let current = view {
+            if let stack = current as? UIStackView, stack.axis == .vertical, stack.arrangedSubviews.count > 3 {
+                return stack
+            }
+            view = current.superview
+        }
+        return nil
+    }
+
+    /// The top-level row of the main stack that contains `view`.
+    private func row(containing view: UIView, in main: UIStackView) -> UIStackView? {
+        main.arrangedSubviews.first { view.isDescendant(of: $0) } as? UIStackView
+    }
+
+    /// Storyboard buttons, found by the action they trigger.
+    private func button(withAction action: String, in root: UIView) -> UIButton? {
+        var stack: [UIView] = [root]
+        while let current = stack.popLast() {
+            if let button = current as? UIButton,
+               (button.actions(forTarget: self, forControlEvent: .touchUpInside) ?? []).contains(action) {
+                return button
+            }
+            stack.append(contentsOf: current.subviews)
+        }
+        return nil
+    }
+
+    private func detach(_ view: UIView) {
+        (view.superview as? UIStackView)?.removeArrangedSubview(view)
+        view.removeFromSuperview()
+    }
+
+    fileprivate func groupIntoCards() {
+        // The outlets are weak: take strong references first, so views stay alive while
+        // they're moved between stacks (their only owner is their superview).
+        guard let main = mainStack, main.viewWithTag(Self.cardTag) == nil,
+              let amount = amountInput, let address = addressInput, let balance = balanceLabel,
+              let feeRate = satPerByteLabel, let target = miningTargetLabel,
+              let slider = slider, let customFee = feeRateInputField, let batch = batchOutlet,
+              let amountRow = row(containing: amount, in: main),
+              let addressRow = row(containing: address, in: main),
+              let actionsRow = row(containing: batch, in: main),
+              let sliderRow = row(containing: slider, in: main),
+              let manualRow = row(containing: customFee, in: main) else { return }
+        _ = addressRow
+
+        let infoButton = button(withAction: "showAddressInfoAction:", in: main)
+        let order = ["pasteAddressAction:", "sendToWalletAction:", "addToBatchAction:", "donateAction:"]
+        let chips = order.compactMap { button(withAction: $0, in: actionsRow) }
+
+        // Pull out what's kept; the old caption labels and icons are dropped.
+        [balance, feeRate, target, address].forEach { detach($0) }
+        if let infoButton = infoButton { detach(infoButton) }
+        for row in [sliderRow, manualRow] {
+            // "Set ETA" / "Set manually" labels.
+            row.arrangedSubviews.filter { $0 is UILabel }.forEach { detach($0) }
+        }
+        actionsRow.arrangedSubviews.forEach { detach($0) }
+        let originalRows = main.arrangedSubviews
+        originalRows.forEach { detach($0) }
+
+        // AMOUNT (the available balance gets its own full-width line under the field)
+        let available = UILabel()
+        available.text = "AVAILABLE"
+        available.tag = Self.availableTag
+        available.setContentHuggingPriority(.required, for: .horizontal)
+        available.setContentCompressionResistancePriority(.required, for: .horizontal)
+        balance.numberOfLines = 0
+        balance.setContentCompressionResistancePriority(.required, for: .vertical)
+        // "AVAILABLE" on one line, the balance itself on the next.
+        let availableRow = UIStackView(arrangedSubviews: [available, balance])
+        availableRow.axis = .vertical
+        availableRow.alignment = .leading
+        availableRow.spacing = 2
+        let amountCaption = captionRow("> AMOUNT", trailing: [])
+
+        // RECIPIENT
+        address.numberOfLines = 0
+        address.lineBreakMode = .byCharWrapping
+        address.heightAnchor.constraint(greaterThanOrEqualToConstant: 34).isActive = true
+        let recipientCaption = captionRow("> RECIPIENT", trailing: infoButton.map { [$0] } ?? [])
+
+        // Chips in a sensible order: Paste, Wallet, Batch, Donate.
+        chips.forEach { actionsRow.addArrangedSubview($0) }
+        actionsRow.distribution = .fillEqually
+        actionsRow.spacing = 6
+
+        // FEE
+        feeRate.textAlignment = .right
+        let feeCaption = captionRow("> FEE", trailing: [feeRate])
+        manualRow.spacing = 8
+
+        // Fiat value of the entered amount (hidden until there's an amount and a rate).
+        fiatAmountLabel.isHidden = true
+        fiatAmountLabel.numberOfLines = 0
+        
+        // A little air between the navigation bar's bottom border and the first card.
+        if let container = main.superview {
+            for constraint in container.constraints where constraint.relation == .equal {
+                if constraint.firstItem === main, constraint.firstAttribute == .top {
+                    constraint.constant = max(constraint.constant, 12)
+                } else if constraint.secondItem === main, constraint.secondAttribute == .top {
+                    constraint.constant = min(constraint.constant, -12)
+                }
+            }
+        }
+        
+        main.spacing = 12
+        main.addArrangedSubview(card([amountCaption, amountRow, fiatAmountLabel, availableRow]))
+        main.addArrangedSubview(card([recipientCaption, address, actionsRow]))
+        main.addArrangedSubview(card([feeCaption, sliderRow, target, manualRow]))
+    }
+
+    /// "> CAPTION ……… trailing views"
+    private func captionRow(_ title: String, trailing: [UIView]) -> UIStackView {
+        let caption = UILabel()
+        caption.text = title
+        caption.tag = Self.captionTag
+        caption.font = Self.captionFont
+        caption.textColor = WalletTheme.Tint.send.accent
+        caption.setContentHuggingPriority(.required, for: .horizontal)
+        let spacer = UIView()
+        spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        let row = UIStackView(arrangedSubviews: [caption, spacer] + trailing)
+        row.axis = .horizontal
+        row.alignment = .center
+        row.spacing = 6
+        // Same height for every caption row, whatever sits on the right (the info button,
+        // the fee rate, or nothing), so all three headers look identical.
+        let height = row.heightAnchor.constraint(equalToConstant: Self.captionRowHeight)
+        height.priority = .required
+        height.isActive = true
+        for view in trailing {
+            view.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+            if let button = view as? UIButton {
+                // Fit the icon to the row: no content insets (the storyboard's plain
+                // configuration pads it, which clipped the symbol in a 24pt frame) and a
+                // symbol sized for the row. Later theme passes only recolour it.
+                if var config = button.configuration {
+                    config.contentInsets = .zero
+                    config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 15, weight: .regular)
+                    config.title = nil
+                    config.attributedTitle = nil
+                    button.configuration = config
+                }
+                button.clipsToBounds = false
+                button.widthAnchor.constraint(equalToConstant: Self.captionRowHeight + 4).isActive = true
+                button.heightAnchor.constraint(equalToConstant: Self.captionRowHeight).isActive = true
+            }
+        }
+        return row
+    }
+
+    /// Bordered card (square corners) holding `rows` (shared WalletTheme card).
+    private func card(_ rows: [UIView]) -> UIView {
+        let card = WalletTheme.cardView(rows, tint: .send)
+        card.tag = Self.cardTag
+        return card
+    }
+
+    /// Typography / chip styling on top of the theme (runs after WalletTheme.apply).
+    fileprivate func styleCards() {
+        let tint = WalletTheme.Tint.send
+        guard let main = mainStack else { return }
+
+        var stack: [UIView] = [main]
+        while let current = stack.popLast() {
+            if let label = current as? UILabel {
+                switch label.tag {
+                case Self.captionTag:   // captions (re-applied after the theme walker)
+                    label.font = Self.captionFont
+                    label.textColor = tint.accent
+                case Self.availableTag: // "AVAILABLE"
+                    label.font = WalletTheme.mono(10, weight: .semibold)
+                    label.textColor = WalletTheme.dim
+                default:
+                    break
+                }
+            }
+            stack.append(contentsOf: current.subviews)
+        }
+
+        balanceLabel.font = WalletTheme.mono(12)
+        balanceLabel.textColor = WalletTheme.text
+        balanceLabel.numberOfLines = 0             // wraps instead of clipping
+        balanceLabel.lineBreakMode = .byWordWrapping
+        balanceLabel.textAlignment = .left
+
+        // The amount is the hero of the screen: large, bold, grouped like balances, with a
+        // "BTC" unit tag. Large amounts shrink to fit instead of clipping.
+        let amountFont = WalletTheme.mono(30, weight: .bold)
+        amountInput.font = amountFont
+        amountInput.textColor = tint.accent
+        amountInput.keyboardType = .decimalPad
+        amountInput.adjustsFontSizeToFitWidth = true
+        amountInput.minimumFontSize = 14
+        amountInput.attributedPlaceholder = NSAttributedString(string: "0.00 000 000",
+                                                               attributes: [.foregroundColor: WalletTheme.dim.withAlphaComponent(0.6),
+                                                                            .font: amountFont])
+        amountInput.heightAnchor.constraint(greaterThanOrEqualToConstant: 60).isActive = true
+        amountInput.layer.borderColor = tint.accent.withAlphaComponent(0.7).cgColor
+        amountInput.backgroundColor = WalletTheme.bg
+        
+        let unit = UILabel()
+        unit.text = "BTC "
+        unit.font = WalletTheme.mono(13, weight: .bold)
+        unit.textColor = WalletTheme.dim
+        unit.sizeToFit()
+        amountInput.rightView = unit
+        amountInput.rightViewMode = .always
+        
+        // Re-group any amount already in the field (e.g. set before the view loaded).
+        if let text = amountInput.text, !text.isEmpty {
+            amountInput.text = Self.formatAmount(text.condenseWhitespace().replacingOccurrences(of: ",", with: ""))
+        }
+        
+        fiatAmountLabel.font = WalletTheme.mono(14, weight: .semibold)
+        fiatAmountLabel.textColor = WalletTheme.text
+        updateFiatAmount()
+
+        addressInput.font = WalletTheme.mono(13)
+        addressInput.textColor = WalletTheme.text
+
+        satPerByteLabel.font = WalletTheme.mono(13, weight: .semibold)
+        satPerByteLabel.textColor = tint.accent
+        miningTargetLabel.font = WalletTheme.mono(11)
+        miningTargetLabel.textColor = WalletTheme.dim
+
+        feeRateInputField.font = WalletTheme.mono(13)
+        feeRateInputField.attributedPlaceholder = NSAttributedString(string: "custom sat/vB (optional)",
+                                                                     attributes: [.foregroundColor: WalletTheme.dim,
+                                                                                  .font: WalletTheme.mono(13)])
+
+        // Compact chips.
+        let chips: [(action: String, title: String, symbol: String)] = [
+            ("pasteAddressAction:", "PASTE", "doc.on.clipboard"),
+            ("sendToWalletAction:", "WALLET", "wallet.pass"),
+            ("addToBatchAction:", "BATCH", "plus.rectangle.on.rectangle"),
+            ("donateAction:", "DONATE", "heart")
+        ]
+        for chip in chips {
+            guard let button = button(withAction: chip.action, in: main) else { continue }
+            button.configuration = chipConfiguration(title: chip.title, symbol: chip.symbol, tint: tint)
+        }
+
+        // MAX: a quiet text link beside the amount, not a full-height button. The storyboard
+        // gives it a fixed 100pt width and the row stretches it to the field's height.
+        if let maxButton = button(withAction: "sweep:", in: main) {
+            maxButton.constraints
+                .filter { $0.firstAttribute == .width && $0.secondItem == nil }
+                .forEach { $0.isActive = false }
+            maxButton.configuration = maxConfiguration()
+            maxButton.setContentHuggingPriority(.required, for: .horizontal)
+            maxButton.setContentCompressionResistancePriority(.required, for: .horizontal)
+            (maxButton.superview as? UIStackView)?.alignment = .center
+        }
+    }
+
+    private func maxConfiguration() -> UIButton.Configuration {
+        var config = UIButton.Configuration.plain()
+        config.title = "MAX"
+        config.titleLineBreakMode = .byClipping
+        config.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 6, bottom: 4, trailing: 2)
+        config.baseForegroundColor = WalletTheme.dim
+        config.background.backgroundColor = .clear
+        config.background.strokeWidth = 0
+        config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var attributes = incoming
+            attributes.font = WalletTheme.mono(11, weight: .semibold)
+            return attributes
+        }
+        return config
+    }
+
+    /// Shows "≈ <fiat>" for the entered BTC amount (reference only), or hides the line when
+    /// there's no amount or no exchange rate.
+    func updateFiatAmount() {
+        let btc = (amountInput?.text ?? "").condenseWhitespace().doubleValue
+        guard btc > 0, let rate = fxRate, rate > 0 else {
+            fiatAmountLabel.text = nil
+            fiatAmountLabel.isHidden = true
+            return
+        }
+        fiatAmountLabel.text = "≈ " + (btc * rate).fiatString
+        fiatAmountLabel.isHidden = false
+    }
+
+    private func chipConfiguration(title: String, symbol: String, tint: WalletTheme.Tint) -> UIButton.Configuration {
+        WalletTheme.chipConfiguration(title: title,
+                                      systemImage: symbol,
+                                      tint: tint,
+                                      fontSize: 10,
+                                      imageSize: 10,
+                                      imagePadding: 4,
+                                      insets: NSDirectionalEdgeInsets(top: 7, leading: 6, bottom: 7, trailing: 6),
+                                      background: WalletTheme.bg,
+                                      clipsTitle: true)
     }
 }

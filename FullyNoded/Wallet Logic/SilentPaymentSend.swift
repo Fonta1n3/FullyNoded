@@ -2,9 +2,9 @@
 //  SilentPaymentSend.swift
 //  FullyNoded
 //
-//  Send (deposit) BTC from a normal Fully Noded wallet to a BIP352 silent payment
-//  address (sp1… / tsp1…). This does NOT spend silent-payment inputs; it only
-//  creates a silent-payment OUTPUT from ordinary wallet inputs.
+//  Send BTC to a BIP352 silent payment address (sp1… / tsp1…) from the active wallet:
+//  a normal Fully Noded wallet, or the watch-only wallet holding your received silent
+//  payment outputs (those inputs' keys are b_spend + t_k, recomputed by detection).
 //
 //  WHY THIS ISN'T JUST walletcreatefundedpsbt(outputs: [sp1…: amount])
 //  --------------------------------------------------------------------
@@ -24,11 +24,14 @@
 //       picks inputs, change and fee exactly as it would for the real output).
 //    2. decodepsbt → the chosen inputs, their prevout scripts and BIP32 paths.
 //    3. Derive each input's private key from your Fully Noded signer, checking it
-//       against the pubkey / scriptPubKey in the PSBT. The keys are used ONLY to
-//       compute the output, then wiped. Nothing is signed here.
-//    4. Compute P and its P2TR address.
-//    5. walletcreatefundedpsbt again with EXACTLY those inputs and the real output.
-//       Verify the inputs didn't change (otherwise P would be wrong).
+//       against the pubkey / scriptPubKey in the PSBT. Inputs that are your own
+//       silent payment outputs are found by detection (as in the verifier) and use
+//       b_spend + t_k (+ label). The keys are used ONLY to compute the output, then
+//       wiped. Nothing is signed here.
+//    4. Compute P and its P2TR address (and, if asked, silent payment change: k = 0,
+//       or k = 1 when you're paying your own silent payment address).
+//    5. Rebuild with createpsbt: EXACTLY the same inputs and amounts (so the same
+//       fee), placeholder(s) replaced, then verify (otherwise P would be wrong).
 //    6. Return the UNSIGNED psbt. CreateRawTxViewController passes it to
 //       VerifyTransactionViewController, where the normal sign/broadcast flow runs.
 //
@@ -36,10 +39,12 @@
 //  bumping the fee with extra inputs (or coin-control changes) would make the
 //  silent payment output unspendable by the recipient, so rebuild instead.
 //
-//  Supported inputs: single-sig wpkh, sh(wpkh), pkh and tr (key path), i.e. normal
-//  Fully Noded single-sig wallets. Other inputs (e.g. wsh multisig) aren't eligible
-//  under BIP352. They're allowed in the tx but add no key, and at least one
-//  eligible input is required. Taproot script-path inputs are refused.
+//  Supported inputs (BIP352): wpkh, sh(wpkh), pkh and tr, plus your received silent
+//  payment outputs. Taproot inputs use the OUTPUT key's private key (internal key
+//  tweaked with the script tree's merkle root, if any) whichever path they're spent
+//  by; taproot inputs whose internal key is the NUMS point H are skipped (no key,
+//  outpoint still counts). Other inputs (e.g. wsh multisig) aren't eligible: they're
+//  allowed but add no key, and at least one eligible input is required.
 //
 
 import Foundation
@@ -64,11 +69,15 @@ enum SilentPaymentSend {
     ///     as CreatePSBT. Empty lets Core choose.
     ///   - passphrase: signer passphrase, if any. The signer's stored passphrase and no
     ///     passphrase are tried too.
+    ///   - change: where the change goes. `.wallet` (default) lets Core pick the wallet's
+    ///     own change address; `.silentPayment` sends it to your silent payment change
+    ///     address (offered when silent payment outputs are spent).
     /// - Returns: (psbt, errorMessage), always on the main queue.
     static func create(spAddress: String,
                        amount: String,
                        inputs: [[String: Any]] = [],
                        passphrase: String? = nil,
+                       change: SilentPaymentChange.Destination = .wallet,
                        completion: @escaping (_ psbt: String?, _ errorMessage: String?) -> Void) {
 
         // Always report back on the main queue (callers update UI).
@@ -93,7 +102,22 @@ enum SilentPaymentSend {
             return
         }
 
-        CreatePSBT.create(inputs: inputs, outputs: [[placeholder: amount]]) { firstPsbt, _, errorMessage in
+        // Change: Core's own, an explicit address, or a placeholder for silent payment
+        // change (replaced in step 5).
+        let changeAddress: String?
+        switch change {
+        case .wallet:
+            changeAddress = nil
+        case .silentPayment:
+            guard let p = SilentPaymentChange.placeholderAddress() else {
+                done(nil, "Unable to build the placeholder change output.")
+                return
+            }
+            changeAddress = p
+        }
+        let recipientPlaceholderScript = "5120" + SPHexFN.encode(recipient.spendPub.dropFirst())
+
+        CreatePSBT.create(inputs: inputs, outputs: [[placeholder: amount]], changeAddress: changeAddress) { firstPsbt, _, errorMessage in
             guard let firstPsbt = firstPsbt else {
                 done(nil, errorMessage ?? "walletcreatefundedpsbt failed.")
                 return
@@ -106,62 +130,69 @@ enum SilentPaymentSend {
                     return
                 }
 
-                // 4. Derive the private keys for those inputs from the stored signers.
-                SPInputKeys.derive(for: decoded.inputs, passphrase: passphrase) { keys, error in
-                    guard var keys = keys else {
-                        done(nil, error ?? "Unable to derive input keys.")
-                        return
-                    }
+                // Which inputs are your own silent payment outputs (their keys are
+                // b_spend + t_k, which has no BIP32 path in the PSBT).
+                SilentPaymentSpend.detectInputs(psbt: firstPsbt, passphrase: passphrase) { owned in
 
-                    // 5. Compute the silent payment output, then wipe the keys.
-                    let outputAddress: String
-                    let outputXonly: String
-                    do {
-                        defer {
-                            for i in keys.indices { keys[i].secret.secureZero() }
-                            keys.removeAll()
-                        }
-                        let xonly = try SPSender.outputKey(inputKeys: keys,
-                                                           outpoints: decoded.inputs.map { $0.outpoint },
-                                                           recipient: recipient)
-                        outputXonly = SPHexFN.encode(xonly)
-                        outputAddress = try SPAddress.p2tr(xonly: xonly)
-                    } catch {
-                        done(nil, error.localizedDescription)
-                        return
-                    }
-
-                    #if DEBUG
-                    print("SP output key: \(outputXonly) address: \(outputAddress)")
-                    #endif
-
-                    // 6. Rebuild with EXACTLY the same inputs and the real output.
-                    let pinned: [[String: Any]] = decoded.inputs.map { ["txid": $0.txid, "vout": $0.vout] }
-                    CreatePSBT.create(inputs: pinned, outputs: [[outputAddress: amount]]) { finalPsbt, _, errorMessage in
-                        guard let finalPsbt = finalPsbt else {
-                            done(nil, errorMessage ?? "walletcreatefundedpsbt (final) failed.")
+                    // 4. Derive the private keys for those inputs from the stored signers.
+                    SPInputKeys.derive(for: decoded.inputs, passphrase: passphrase, silentPaymentOutputs: owned) { keys, error in
+                        guard var keys = keys else {
+                            done(nil, error ?? "Unable to derive input keys.")
                             return
                         }
 
-                        // 7. Safety check: same input set, and our output is present.
-                        SilentPaymentSend.decode(finalPsbt) { finalDecoded, error in
-                            guard let finalDecoded = finalDecoded else {
-                                done(nil, error ?? "decodepsbt (final) failed.")
+                        // 5. Compute the silent payment output, then wipe the keys.
+                        let outputAddress: String
+                        let outputXonly: String
+                        do {
+                            defer {
+                                for i in keys.indices { keys[i].secret.secureZero() }
+                                keys.removeAll()
+                            }
+                            let xonly = try SPSender.outputKey(inputKeys: keys,
+                                                               outpoints: decoded.inputs.map { $0.outpoint },
+                                                               recipient: recipient)
+                            outputXonly = SPHexFN.encode(xonly)
+                            outputAddress = try SPAddress.p2tr(xonly: xonly)
+                        } catch {
+                            done(nil, error.localizedDescription)
+                            return
+                        }
+
+                        #if DEBUG
+                        print("SP output key: \(outputXonly) address: \(outputAddress)")
+                        #endif
+
+                        // 6. Rebuild with EXACTLY the same inputs and amounts, real output(s).
+                        SilentPaymentChange.decode(firstPsbt) { tx, error in
+                            guard let tx = tx,
+                                  let recipientIndex = tx.outputs.firstIndex(where: { $0.script == recipientPlaceholderScript }) else {
+                                done(nil, error ?? "Placeholder output not found. Aborted.")
                                 return
                             }
-                            let before = Set(decoded.inputs.map { "\($0.txid):\($0.vout)" })
-                            let after = Set(finalDecoded.inputs.map { "\($0.txid):\($0.vout)" })
-                            guard before == after else {
-                                done(nil, "Core changed the inputs when rebuilding, so the silent payment output would be invalid. Aborted.")
-                                return
-                            }
-                            guard finalDecoded.outputScripts.contains("5120" + outputXonly) else {
-                                done(nil, "Final PSBT is missing the silent payment output. Aborted.")
+                            var replacing: [Int: (address: String, script: String)] = [
+                                recipientIndex: (outputAddress, "5120" + outputXonly)
+                            ]
+
+                            let changeIndex = tx.outputs.firstIndex(where: { $0.script == SilentPaymentChange.placeholderScript })
+                            guard case .silentPayment = change, let changeIndex = changeIndex else {
+                                SilentPaymentChange.rebuild(tx: tx, replacing: replacing, completion: done)
                                 return
                             }
 
-                            // 8. Hand back the unsigned psbt for the normal verify/sign flow.
-                            done(finalPsbt, nil)
+                            // Silent payment change (label 0 of the signer owning the inputs).
+                            SilentPaymentChange.change(for: tx,
+                                                       changeIndex: changeIndex,
+                                                       passphrase: passphrase,
+                                                       recipientScanPub: recipient.scanPub,
+                                                       finalScripts: [recipientIndex: "5120" + outputXonly]) { address, script, error in
+                                guard let address = address, let script = script else {
+                                    done(nil, error)
+                                    return
+                                }
+                                replacing[changeIndex] = (address, script)
+                                SilentPaymentChange.rebuild(tx: tx, replacing: replacing, completion: done)
+                            }
                         }
                     }
                 }
@@ -183,8 +214,12 @@ enum SilentPaymentSend {
         let redeemScript: String?
         // BIP32 derivations: (pubkey hex, path). For taproot the pubkey is x-only.
         let derivations: [(pubkey: String, path: String)]
-        // True if a taproot derivation has leaf hashes (script-path key).
-        let hasTapLeaves: Bool
+        // Taproot: derivations of the INTERNAL key only (no leaf hashes); keys that only
+        // appear in leaf scripts are excluded, since BIP352 uses the output key.
+        let tapInternalDerivations: [(pubkey: String, path: String)]
+        // Taproot internal key (x-only hex) and script tree merkle root, if any.
+        let tapInternalKey: String?
+        let tapMerkleRoot: String?
 
         // 36-byte serialized outpoint: txid (internal byte order) || vout LE.
         var outpoint: Data {
@@ -245,12 +280,17 @@ enum SilentPaymentSend {
                         derivs.append((pk.lowercased(), path))
                     }
                 }
-                var tapLeaves = false
+                var tapInternal: [(pubkey: String, path: String)] = []
+                let internalKey = (pin["taproot_internal_key"] as? String)?.lowercased()
                 for d in pin["taproot_bip32_derivs"] as? [[String: Any]] ?? [] {
-                    if let pk = d["pubkey"] as? String, let path = d["path"] as? String {
-                        derivs.append((pk.lowercased(), path))
+                    guard let pk = (d["pubkey"] as? String)?.lowercased(), let path = d["path"] as? String else { continue }
+                    derivs.append((pk, path))
+                    let leaves = d["leaf_hashes"] as? [Any] ?? []
+                    // The internal key: no leaf hashes, and it matches the PSBT's internal
+                    // key field when present.
+                    if leaves.isEmpty && (internalKey == nil || internalKey == pk) {
+                        tapInternal.append((pk, path))
                     }
-                    if let leaves = d["leaf_hashes"] as? [Any], !leaves.isEmpty { tapLeaves = true }
                 }
 
                 inputs.append(DecodedInput(
@@ -260,7 +300,9 @@ enum SilentPaymentSend {
                     address: spk?["address"] as? String,
                     redeemScript: ((pin["redeem_script"] as? [String: Any])?["hex"] as? String)?.lowercased(),
                     derivations: derivs,
-                    hasTapLeaves: tapLeaves || pin["taproot_scripts"] != nil
+                    tapInternalDerivations: tapInternal,
+                    tapInternalKey: internalKey,
+                    tapMerkleRoot: (pin["taproot_merkle_root"] as? String)?.lowercased()
                 ))
             }
 
@@ -345,17 +387,18 @@ enum SPInputKeys {
     static func kind(of input: SilentPaymentSend.DecodedInput) throws -> Kind {
         let s = input.scriptPubKey
         // Witness programs v2–v16 make the whole tx ineligible (BIP352).
-        if let bytes = SPHexFN.decode(s), bytes.count >= 4, bytes.count <= 42,
-           Int(bytes[bytes.startIndex + 1]) == bytes.count - 2,
-           (2...40).contains(bytes.count - 2),
-           (0x52...0x60).contains(bytes[bytes.startIndex]) {
+        if SPDetect.isSegwitV2Plus(s) {
             throw WalletLogic.SPError("An input spends a segwit v2+ output; silent payments can't be used with this input.")
         }
-        if s.count == 68 && s.hasPrefix("5120") { return .p2tr }
-        if s.count == 44 && s.hasPrefix("0014") { return .p2wpkh }
-        if s.count == 50 && s.hasPrefix("76a914") && s.hasSuffix("88ac") { return .p2pkh }
-        if s.count == 46 && s.hasPrefix("a914") && s.hasSuffix("87"),
-           let rs = input.redeemScript, rs.count == 44, rs.hasPrefix("0014") {
+        if SPDetect.isP2TR(s) {
+            // Internal key = NUMS point H: it can only be spent via a script path and
+            // BIP352 skips it (adds no key; its outpoint still counts).
+            if input.tapInternalKey == SPDetect.numsH { return .ineligible }
+            return .p2tr
+        }
+        if SPDetect.isP2WPKH(s) { return .p2wpkh }
+        if SPDetect.isP2PKH(s) { return .p2pkh }
+        if SPDetect.isP2SH(s), let rs = input.redeemScript, SPDetect.isP2WPKH(rs) {
             return .p2shP2wpkh
         }
         return .ineligible
@@ -364,8 +407,11 @@ enum SPInputKeys {
     /// Derive a_i for every eligible input using the stored Fully Noded signers.
     /// Tries the passed passphrase, then each signer's stored passphrase, then none.
     /// A key is only accepted if it reproduces the pubkey/scriptPubKey in the PSBT.
+    /// - silentPaymentOutputs: inputs that are your own silent payment outputs (from
+    ///   `SilentPaymentSpend.detectInputs`); their key is b_spend + t_k (+ label_m).
     static func derive(for inputs: [SilentPaymentSend.DecodedInput],
                        passphrase: String?,
+                       silentPaymentOutputs: [SilentPaymentSpend.OwnedOutput] = [],
                        completion: @escaping ([Key]?, String?) -> Void) {
 
         CoreDataService.retrieveEntity(entityName: .signers) { signers in
@@ -374,47 +420,25 @@ enum SPInputKeys {
                 return
             }
 
-            // Build master keys for every signer / passphrase candidate once.
-            var masters: [DescriptorSecretKey] = []
-            let networkKind: NetworkKind = SPAddress.isMainnet ? .main : .test
-            for dict in signers {
-                let signer = SignerStruct(dictionary: dict)
-                guard var encWords = signer.words,
-                      var wordsData = Crypto.decrypt(encWords),
-                      var words = wordsData.utf8String,
-                      let mnemonic = try? Mnemonic.fromString(mnemonic: words) else { continue }
-                defer {
-                    wordsData.secureZero()
-                    encWords.secureZero()
-                    words.secureWipe()
-                }
-                var candidates: [String?] = [passphrase]
-                if let encPass = signer.passphrase, var passData = Crypto.decrypt(encPass), let p = passData.utf8String {
-                    candidates.append(p)
-                    passData.secureZero()
-                }
-                candidates.append(nil)
-                var seen = Set<String>()
-                for p in candidates {
-                    let key = p ?? ""
-                    if seen.contains(key) { continue }
-                    seen.insert(key)
-                    masters.append(DescriptorSecretKey(networkKind: networkKind,
-                                                       mnemonic: mnemonic,
-                                                       password: (p?.isEmpty ?? true) ? nil : p))
-                }
-            }
+            // Master keys for every signer / passphrase candidate, built once.
+            let masters = SPSignerKeys.masters(signers: signers, passphrase: passphrase)
 
             var keys: [Key] = []
             do {
                 for (i, input) in inputs.enumerated() {
                     let kind = try SPInputKeys.kind(of: input)
                     guard kind != .ineligible else { continue }   // adds its outpoint only
-                    guard kind != .p2tr || !input.hasTapLeaves else {
-                        throw WalletLogic.SPError("Input \(i) is a taproot script-path input; only key-path taproot inputs are supported.")
+                    // Your own silent payment output: b_spend + t_k (+ label_m).
+                    if kind == .p2tr,
+                       let owned = silentPaymentOutputs.first(where: { $0.txid.lowercased() == input.txid.lowercased() && $0.vout == input.vout }) {
+                        guard let key = SPInputKeys.silentPaymentKey(input: input, owned: owned, masters: masters) else {
+                            throw WalletLogic.SPError("Input \(i) is a silent payment output but none of your signers can produce its key.")
+                        }
+                        keys.append(key)
+                        continue
                     }
                     guard let key = try SPInputKeys.deriveKey(input: input, kind: kind, masters: masters) else {
-                        throw WalletLogic.SPError("None of your signers can produce the key for input \(i) (\(input.txid):\(input.vout)). Silent payments need the private key of every input.")
+                        throw WalletLogic.SPError("None of your signers can produce the key for input \(i) (\(input.txid):\(input.vout)). Silent payments need the private key of every eligible input (for taproot, of its output key).")
                     }
                     keys.append(key)
                 }
@@ -431,11 +455,50 @@ enum SPInputKeys {
         }
     }
 
+    /// a_i for one of your received silent payment outputs: d = b_spend + t_k (+ label_m),
+    /// accepted only if d·G is the input's output key, negated if it has odd Y (BIP352
+    /// uses the even-Y key for taproot inputs).
+    static func silentPaymentKey(input: SilentPaymentSend.DecodedInput,
+                                 owned: SilentPaymentSpend.OwnedOutput,
+                                 masters: [DescriptorSecretKey]) -> Key? {
+        guard let tweak = SPHexFN.decode(owned.tweakHex), tweak.count == 32, SPScalar.isValid(tweak) else { return nil }
+        var label: Data?
+        if let labelHex = owned.labelTweakHex {
+            guard let l = SPHexFN.decode(labelHex), l.count == 32, SPScalar.isValid(l) else { return nil }
+            label = l
+        }
+        guard let path = try? BDKDerivationPathFN(path: SPSignerKeys.spendPath()) else { return nil }
+
+        for master in masters {
+            guard let child = try? master.derive(path: path) else { continue }
+            var bSpend = Data(child.secretBytes())
+            var d = SPScalar.add(bSpend, tweak)
+            bSpend.secureZero()
+            if let label = label { d = SPScalar.add(d, label) }
+
+            guard let priv = try? P256K.Signing.PrivateKey(dataRepresentation: d) else {
+                d.secureZero()
+                continue
+            }
+            let pub = Data(priv.publicKey.dataRepresentation)
+            guard "5120" + SPHexFN.encode(pub.dropFirst()) == input.scriptPubKey.lowercased() else {
+                d.secureZero()   // another signer / passphrase
+                continue
+            }
+            if pub.first == 0x03 { d = SPScalar.negate(d) }
+            return Key(secret: d)
+        }
+        return nil
+    }
+
     // Find the derivation that one of our masters can reproduce, and return a_i.
     private static func deriveKey(input: SilentPaymentSend.DecodedInput,
                                   kind: Kind,
                                   masters: [DescriptorSecretKey]) throws -> Key? {
-        for deriv in input.derivations {
+        // Taproot: only the internal key leads to the output key (BIP352 uses the output
+        // key's private key whether the input is later spent via key or script path).
+        let candidates = kind == .p2tr ? input.tapInternalDerivations : input.derivations
+        for deriv in candidates {
             guard let path = try? BDKDerivationPathFN(path: deriv.path) else { continue }
             for master in masters {
                 guard let child = try? master.derive(path: path) else { continue }
@@ -456,13 +519,20 @@ enum SPInputKeys {
                 case .p2tr:
                     // PSBT lists the x-only INTERNAL key.
                     guard SPHexFN.encode(pub.dropFirst()) == deriv.pubkey else { break }
-                    // BIP341 key-path tweak (no script tree):
+                    // BIP341 output key tweak:
                     //   d  = internal key, negated if P = d·G has odd Y
-                    //   t  = hash_TapTweak(xonly(P))
+                    //   t  = hash_TapTweak(xonly(P) [|| merkle_root])   (root only with a script tree)
                     //   q  = d + t, negated if Q = q·G has odd Y (BIP352 needs even Y)
                     var d = secret
                     if pub.first == 0x03 { d = SPScalar.negate(d) }
-                    let t = SPHashFN.tagged("TapTweak", Data(pub.dropFirst()))
+                    var tweakData = Data(pub.dropFirst())
+                    if let rootHex = input.tapMerkleRoot {
+                        guard let root = SPHexFN.decode(rootHex), root.count == 32 else {
+                            throw WalletLogic.SPError("Invalid taproot merkle root for input \(input.txid):\(input.vout).")
+                        }
+                        tweakData += root
+                    }
+                    let t = SPHashFN.tagged("TapTweak", tweakData)
                     guard SPScalar.isValid(t) else { throw WalletLogic.SPError("Invalid taproot tweak.") }
                     var q = SPScalar.add(d, t)
                     guard let qPriv = try? P256K.Signing.PrivateKey(dataRepresentation: q) else {
@@ -472,7 +542,7 @@ enum SPInputKeys {
                     if qPub.first == 0x03 { q = SPScalar.negate(q) }
                     // Safety: the tweaked key must be the output key in the prevout script.
                     guard "5120" + SPHexFN.encode(qPub.dropFirst()) == input.scriptPubKey else {
-                        throw WalletLogic.SPError("Derived taproot key doesn't match input \(input.txid):\(input.vout). Is this a key-path-only tr() wallet?")
+                        throw WalletLogic.SPError("Derived taproot key doesn't match input \(input.txid):\(input.vout). The PSBT may be missing the input's taproot merkle root.")
                     }
                     secret.secureZero()
                     return Key(secret: q)
@@ -608,6 +678,11 @@ enum SPHashFN {
     static func tagged(_ tag: String, _ msg: Data) -> Data {
         let t = Data(SHA256.hash(data: Data(tag.utf8)))
         return Data(SHA256.hash(data: t + t + msg))
+    }
+
+    /// HASH160 = RIPEMD160(SHA256(data)).
+    static func hash160(_ data: Data) -> Data {
+        SPRIPEMD160.hash(Data(SHA256.hash(data: data)))
     }
 }
 

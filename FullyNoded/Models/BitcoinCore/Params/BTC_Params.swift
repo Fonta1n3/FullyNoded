@@ -929,7 +929,12 @@ public struct Create_Psbt: CustomStringConvertible {
     init(_ dict:[String:Any]) {
         inputs = dict["inputs"] as? [[String:Any]] ?? [[:]]
         outputs = dict["outputs"] as? [[String:Any]] ?? [[:]]
-        param = ["inputs": inputs, "outputs": outputs, "replaceable": true]
+        var p: [String: Any] = ["inputs": inputs, "outputs": outputs, "replaceable": true]
+        // Optional raw locktime (kept when rebuilding a funded transaction).
+        if let locktime = dict["locktime"] as? Int, locktime > 0 {
+            p["locktime"] = locktime
+        }
+        param = p
     }
 }
 
