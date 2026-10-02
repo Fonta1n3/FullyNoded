@@ -1,38 +1,151 @@
-# Silent Payments (BIP352) in FN-Server and Fully Noded
+# Silent Payments (BIP352) in Fully Noded and FN-Server
 
-This document describes the silent payment (SP) code that exists today in
-**FullyNoded-Server** (receiving/scanning) and **Fully Noded** (address
-derivation, sending, and signing spends of received outputs). It covers the protocol logic only; UI wiring is
-intentionally out of scope because neither app exposes SP in its UI yet.
+> 🧪 **Experimental.** Silent payment support is in development on the
+> `Silent-Payments` branch of both projects. Test with small amounts.
 
-| | FN-Server | Fully Noded |
+This document describes how silent payments (SP) work across the two apps today:
+**Fully Noded** (the mobile wallet) holds the keys, sends to SP addresses and
+signs spends of received SP outputs; **FN-Server** (the Mac node manager) scans
+the chain for payments to you and imports them, watch-only, into your Fully
+Noded wallet on your node. The same document lives in both repositories.
+
+| | Fully Noded | FN-Server |
 |---|---|---|
-| Derive SP keys / `sp1…` address | – | ✅ `WalletLogic.silentPaymentAddressFromMnemonic` |
-| Send to an `sp1…` / `tsp1…` address | – | ✅ `SilentPaymentSend` |
-| Scan the chain for received SP outputs | ✅ `SilentPaymentService` | – |
-| Make received outputs visible in a Core wallet | ✅ watch-only `rawtr()` import + rescan | – |
-| Sign spends of received SP outputs | ❌ (never holds `b_spend`) | ✅ `SilentPaymentSpend` (tweaks from FN-Server) |
+| Derive SP keys / show `sp1…` address + QR | ✅ Signer detail | – |
+| Export the scan private key (QR) | ✅ Signer detail (auth required) | – |
+| Import scan key + address | – | ✅ Utilities → Silent Payments |
+| Scan the chain for payments to you | – | ✅ `SilentPaymentService` (background) |
+| Make received outputs visible in a Core wallet | – | ✅ watch-only `rawtr()` import + rescan |
+| Scanner status | – | ✅ Bitcoin Core view |
+| Send to an `sp1…` / `tsp1…` address | ✅ Send view → `SilentPaymentSend` | – |
+| Spend received SP outputs | ✅ Transaction verifier → `SilentPaymentSpend` | ❌ never holds `b_spend` |
 
 ---
 
-## 1. FN-Server: the receiver / scanner
+## 1. End-to-end flow
 
-Source: `FullyNoded-Server/Helpers/SilentPaymentsScanner.swift`
+```
+Fully Noded signer (BIP39 seed)
+  ├─ sp1… address (+ QR) ─────────────► share it with payers (any BIP352 wallet)
+  │                         └─────────► FN-Server: B_spend is read from it
+  ├─ scan private key b_scan (QR) ────► FN-Server: Utilities → Silent Payments
+  │                                      scans every new block with b_scan
+  │                                      → imports matches as watch-only rawtr()
+  │                                      → rescans once caught up
+  │                                      → Core wallet shows the SP balance
+  └─ spend private key b_spend ───────► never leaves Fully Noded
+                                         verifier detects SP inputs, recomputes
+                                         each tweak and signs with b_spend + t_k
+```
 
-### 1.1 What it does
+1. **Get your address.** In Fully Noded open a signer. The *Silent Payment
+   Address* pane shows your `sp1…` (mainnet) or `tsp1…` (test networks) address
+   with a QR export. Share it anywhere.
+2. **Export the scan key.** In the same screen, *SP Scan Private Key* → QR
+   button. It requires an app lock password, a confirmation and Face ID /
+   Touch ID or the app password (never the device passcode). The key is derived
+   on demand and shown only as a QR.
+3. **Set up FN-Server.** Bitcoin Core view → Utilities → **Silent Payments**:
+   pick your Fully Noded wallet, import the scan private key and your
+   `sp1…` address (camera QR, QR image or paste), choose a start height and
+   start scanning. Scanning runs in the background and resumes when FN-Server
+   launches; its status is shown in the Bitcoin Core view.
+4. **Receive.** Payers send to your address. FN-Server finds each payment and
+   imports it into the wallet as a watch-only output.
+5. **Spend.** In Fully Noded, spend from that wallet as usual. The transaction verifier
+   recognises the silent payment inputs, recomputes their tweaks with your scan
+   key and signs them with your spend key; any other inputs are signed by the
+   normal signer. **Whenever silent payment outputs are spent**, Fully Noded asks
+   where the change should go: your own silent payment address (its change
+   label, found by FN-Server like any other payment) or the wallet's normal
+   change address. Sweeping from the UTXO view needs no change.
+6. **Send to someone else's SP address.** Paste an `sp1…` / `tsp1…` address in
+   the send view. Fully Noded computes the one-time output and hands the PSBT to
+   the verifier for the normal sign/broadcast flow. This works from a normal
+   wallet holding silent payment outputs too (they can fund it; the same change
+   question is asked).
+7. **Bump the fee.** The verifier's bump-fee path signs silent payment inputs the
+   same way as normal signing.
 
-`SilentPaymentService` is a long-running background service that follows the
-local Bitcoin Core node **block by block**, finds every BIP352 output paying
-one SP identity `(b_scan, B_spend)`, and imports each one into a Bitcoin Core
-wallet as a **watch-only `rawtr(<xonly>)` descriptor**. The result is that the
-Core wallet shows the SP balance, the UTXOs and their later spends, exactly
-like any other watch-only wallet.
+---
 
-It is a *full-node scanner*: it does not use an SP index, tweak server or
-BIP158 filters. It computes the shared secret for every eligible transaction
-in every block itself.
+## 2. Keys (Fully Noded)
 
-### 1.2 Per-transaction logic
+`WalletLogic.silentPaymentAddressFromMnemonic(mnemonic:passphrase:network:)`
+derives the BIP352 keys from a signer's BIP39 seed (and its stored passphrase,
+if any) using the spec paths:
+
+```
+spend: m/352'/coin'/0'/0'/0
+scan:  m/352'/coin'/0'/1'/0      coin = 0 mainnet, 1 test networks
+address = bech32m(hrp "sp"/"tsp", version 0, B_scan ‖ B_spend)
+```
+
+Thin wrappers keep private keys away from the UI:
+
+- `silentPaymentAddress(mnemonic:passphrase:mainnet:)` returns only the address
+  (signer detail, Silent Payment Address pane).
+- `silentPaymentScanPrivateKey(mnemonic:passphrase:mainnet:)` returns only
+  `b_scan`; the spend private key derived alongside it is wiped
+  (signer detail, SP Scan Private Key pane).
+
+The signer detail screen follows its network switch (mainnet / test), so the
+address and scan key always match the network shown. Decrypted seed words and
+passphrases are wiped right after use. `WalletLogic.Bech32m` is local and handles
+SP addresses longer than 90 characters.
+
+**What each key can do**
+
+| Key | Who has it | Can |
+|---|---|---|
+| `b_spend` | Fully Noded only | spend (with each output's tweak) |
+| `b_scan` | Fully Noded, and FN-Server once imported | **see** every payment to you, never spend |
+| `B_scan`, `B_spend` | public (they *are* the address) | – |
+
+Leaking `b_scan` costs privacy, not funds. Because every step of both paths is
+hardened, `b_scan` can't be used to derive any other key in the wallet, even
+together with the master xpub.
+
+---
+
+## 3. FN-Server: the scanner
+
+Sources: `FullyNoded-Server/Helpers/SilentPaymentsScanner.swift`,
+`FullyNoded-Server/Views/SilentPaymentsView.swift`.
+
+### 3.1 Setup window (Utilities → Silent Payments)
+
+A single SwiftUI window:
+
+- **Wallet**: picker of the node's loaded wallets; pick the Fully Noded wallet
+  you'll spend from (Fully Noded wallets are watch-only descriptor wallets on
+  the node, with their own change addresses). Before starting, `getwalletinfo`
+  confirms the wallet is a descriptor wallet with private keys disabled (Core
+  refuses watch-only imports otherwise).
+- **Scan private key**: hidden field with show/hide; *Scan QR* (only if the Mac
+  has a camera), *QR image…* and *Paste*. Validated as a secp256k1 key; `B_scan`
+  is computed from it.
+- **Silent payment address**: `sp1…` / `tsp1…` only. `B_spend` is read from it.
+  The address must match the node's network, and its `B_scan` must match the
+  scan key (so a wrong or mistyped key is caught before scanning).
+- **Start height**: the first block that could contain a payment to you, with
+  *Use current height*. Only used the first time a key pair is scanned.
+- **Scanner**: status, progress, payments found this session, last error, and
+  *Start scanning* / *Save & restart*, *Stop*, *Resume saved*, *Forget keys*.
+
+The camera is read with AVFoundation, each frame is displayed as a SwiftUI
+`Image`, and QR codes are decoded with Core Image. `bitcoin:` prefixes and query
+strings are stripped from scanned or pasted text. The app has the camera
+entitlement and an `NSCameraUsageDescription`, so macOS asks once.
+
+### 3.2 Status in the Bitcoin Core view
+
+Once keys are imported, a read-only *Silent Payments* row shows the scanner state
+(refreshed every 5 s from `SilentPaymentService.status()`): stopped, starting,
+retrying (with the error), scanning block X of Y, wallet rescan pending /
+running, or up to date. On/off stays in Utilities.
+
+### 3.3 Per-transaction logic
 
 For each non-coinbase transaction in a block (`getblock` verbosity 3):
 
@@ -63,22 +176,14 @@ For each non-coinbase transaction in a block (`getblock` verbosity 3):
    - unlabeled: `P_k = B_spend + t_k·G`
    - labeled: `P_k,m = B_spend + label_m·G + t_k·G`, where
      `label_m = hash_BIP0352/Label(b_scan ‖ ser32(m))`.
-     **Label `m = 0` (change) is always scanned**; extra labels `m ≥ 1` are
-     scanned only if passed in `extraLabels`. Matching is done by computing
-     `B_m + t_k·G` per label (O(#labels) point ops per `k`), which is fine for
-     a handful of labels.
+     **Label `m = 0` (change) is always scanned**; extra labels `m ≥ 1` only if
+     passed to `start(extraLabels:)` (the setup window passes none).
    - Comparison is on x-only keys. A matched output is removed from the
      candidate set so it cannot match twice.
 
-Each match is recorded as an `SPFoundOutput`: txid, vout, scriptPubKey,
-`t_k` (`tweakHex`), `k`, label `m` and `label_m` (if labeled), block height,
-hash and time. That is everything needed to spend later:
+Validated against the official BIP352 receiving test vectors.
 
-```
-spend key = b_spend + t_k (+ label_m) mod n
-```
-
-### 1.3 Service loop, import and rescan
+### 3.4 Service loop, import and rescan
 
 - **One serial queue** owns all state; a `generation` counter makes stale
   callbacks from a previous `start()`/`stop()` exit instead of racing.
@@ -90,149 +195,104 @@ spend key = b_spend + t_k (+ label_m) mod n
   prevouts) is retried with exponential backoff (5 s → 300 s) on the *same*
   height; blocks are never skipped.
 - **Import**: for all matches in a block, `getdescriptorinfo` adds a checksum,
-  then **one** `importdescriptors` call with
-  `timestamp: "now"`, `active: false`, `internal: false` and a label of
-  `sp scan=<B_scan> k=<k> [m=<m>]`. Re-importing is idempotent.
+  then **one** `importdescriptors` call with `timestamp: "now"`,
+  `active: false`, `internal: false` and a label of
+  `sp scan=<B_scan> k=<k> [m=<m>] t=<t_k>`. Fully Noded reads this label to
+  recognise and sign the input without fetching any blocks (5.1). `t_k` can't
+  spend anything without `b_spend`. Re-importing is idempotent.
 - **Deferred rescan**: because imports use `"now"`, the lowest height with a
   found output is kept in `pendingRescanFrom`. Once the scanner reaches the
   tip, **one** `rescanblockchain(start_height)` makes the wallet pick up the
   historical outputs and any later spends. This avoids a rescan per payment
-  while catching up from an old birthday.
+  while catching up from an old start height.
 - **Wallet loading**: every wallet RPC that fails with `-18` (not loaded) runs
   `loadwallet` and retries once (`-35` "already loaded" is tolerated).
 - **Reorgs**: each block's `previousblockhash` is checked against the hash
   saved for `height − 1` (last 200 heights kept). On mismatch it steps back one
-  height, drops `found` entries from the orphaned block and rescans. Imported
-  descriptors from orphaned blocks are left in the wallet (harmless,
-  watch-only). Reorgs deeper than 200 blocks are not handled.
-- **Persistence**: `SPScanState` (`nextHeight`, `recentHashes`,
-  `pendingRescanFrom`, `found`) is saved to `UserDefaults` after **every**
-  block under `sp_state_<first 16 hex of SHA256(wallet|B_scan|B_spend)>`, so
-  restarts resume exactly where they stopped. The birthday height is only used
-  when no saved state exists.
-- **Callbacks** (main queue): `onFound([SPFoundOutput])`, `onError(SPError)`,
-  `onProgress(height, tip)`. `foundOutputs()` returns a snapshot of everything
-  found so far.
+  height and rescans. Imported descriptors from orphaned blocks stay in the
+  wallet (harmless, watch-only). Reorgs deeper than 200 blocks are not handled.
+- **API**: `start(...)` (validates the keys, throws on bad ones), `stop()`,
+  `isRunning`, `status()` (thread-safe snapshot for the UI), and main-queue
+  callbacks `onProgress(height, tip)`, `onFound([SPFoundOutput])` and
+  `onError(SPError)`.
 
-### 1.4 What it requires
+### 3.5 What is stored
 
-**Keys (passed to `SilentPaymentService.start`)**
+| What | Where | Why |
+|---|---|---|
+| Wallet name, `b_scan`, `B_scan`, `B_spend`, address, start height | Keychain, encrypted with the app's key (`SPConfigStore`) | resume scanning at launch; *Forget keys* deletes it |
+| Scan progress: next height, recent block hashes, pending rescan height | UserDefaults, `sp_state_<first 16 hex of SHA256(wallet\|B_scan\|B_spend)>` | resume exactly where it stopped |
+| Found outputs (txids, tweaks, labels) | only in the imported output's **wallet label** in Core (nothing in FN-Server) | lets Fully Noded recognise and sign the input without fetching blocks |
 
-| Input | Why |
-|---|---|
-| `scanPrivateKeyHex` (`b_scan`, 32 bytes) | ECDH and label tweaks. Validated up front; a bad key throws instead of silently finding nothing. |
-| `spendPublicKeyHex` (`B_spend`, 33 bytes compressed) | Building `P_k`. Only the **public** spend key is needed. |
-| `scanPublicKeyHex` (`B_scan`) | Only used for the state key and descriptor labels. |
-| `walletName` | Target Core wallet. |
-| `birthdayHeight` | First block that could contain a payment (first run only). |
-| `extraLabels` | Any labels `m ≥ 1` you hand out. |
+The server never holds `b_spend`, so it **cannot spend** what it finds.
 
-The server never holds `b_spend`, so it **cannot spend** what it finds, by
-design.
+### 3.6 Requirements
 
 **Bitcoin Core**
 
 - **Core ≥ 25**: `getblock` verbosity 3 provides `vin.prevout`.
-- **Unpruned from the birthday height onward**: verbosity 3 needs undo data. A
+- **Unpruned from the start height onward**: verbosity 3 needs undo data. A
   block without prevouts fails loudly rather than being skipped.
-- **A watch-only descriptor wallet** (`disable_private_keys=true`); Core refuses
-  to import a private-keyless `rawtr()` into a wallet with private keys. It
-  should be `load_on_startup=true`, although the service will load it itself.
-- **RPC access** to `127.0.0.1:<port>` with these methods allowed if
-  `rpcwhitelist` is used: `getblockcount`, `getblockhash`, `getblock`,
-  `getdescriptorinfo`, `importdescriptors`, `rescanblockchain`, `loadwallet`.
+- **A watch-only descriptor wallet** (private keys disabled): your Fully Noded
+  wallet. The service loads it itself if it isn't loaded.
+- **RPC methods** (if `rpcwhitelist` is used): `getblockcount`, `getblockhash`,
+  `getblock`, `getdescriptorinfo`, `importdescriptors`, `rescanblockchain`,
+  `loadwallet`, plus `listwallets` and `getwalletinfo` for the setup window.
 - `txindex` is **not** required.
 
-**FN-Server configuration**
+**FN-Server**: the RPC port / user from settings and the encrypted RPC password
+(Core Data), as for everything else in FN-Server.
 
-- `UserDefaults` `port` (default `8332`) and `rpcuser` (default
-  `FullyNoded-Server`).
-- Encrypted RPC password in Core Data (`rpcCreds`), decrypted with the
-  app's keychain key.
+### 3.7 Caveats
 
-### 1.5 Caveats
-
-- **FN-Server can't spend.** The imported descriptors are watch-only. Spending
-  is done by Fully Noded's `SilentPaymentSpend` (section 2.5), which needs the
-  `t_k`/`label_m` values from FN-Server's saved state. If that state is lost,
-  the tweaks can only be recovered by rescanning from the birthday with `b_scan`.
-- **Privacy of saved state**: `tweakHex`, `labelTweakHex` and the outpoints are
-  stored in a plain-text plist
-  (`~/Library/Preferences/com.dentonllc.FullyNoded-Server.plist`). They can't
-  spend anything without `b_spend`, but they identify outputs as yours.
-- **`b_scan` in source**: the current development call in
-  `Views/BitcoinCore.swift` hardcodes `scanPrivateKeyHex`, and commit
-  `b4763db9` is on `origin/Silent-Payments`. Anyone with `b_scan` + `B_spend`
-  can see every payment to that SP address (no theft risk, full privacy loss).
-  Treat that SP identity as public and move to one whose `b_scan` is kept out of
-  the repo.
-- Throughput is bounded by `getblock` verbosity 3 serialization and one ECDH per
-  eligible tx; catching up from an old birthday on mainnet is slow.
-- One SP identity per running service (`SilentPaymentService` is a singleton).
+- It's a full-node scanner (no SP index, tweak server or BIP158 filters): one
+  ECDH per eligible transaction. Catching up from an old start height on mainnet
+  is slow.
+- One SP identity at a time (`SilentPaymentService` is a singleton).
+- Scanning only runs while FN-Server is open (it resumes, and catches up, at
+  the next launch).
 
 ---
 
-## 2. Fully Noded: keys, sending and spending
+## 4. Fully Noded: sending to an SP address
 
-Sources: `FullyNoded/Wallet Logic/SilentPaymentSend.swift`,
-`FullyNoded/Wallet Logic/SilentPaymentSpend.swift`,
-`FullyNoded/Wallet Logic/WalletLogic.swift`,
-`FullyNoded/Helpers/AddressParser.swift`.
+Source: `FullyNoded/Wallet Logic/SilentPaymentSend.swift`.
 
-### 2.1 SP key derivation / address
-
-`WalletLogic.silentPaymentAddressFromMnemonic(mnemonic:passphrase:network:)`
-derives the BIP352 keys from a BIP39 mnemonic using the spec paths:
-
-```
-spend: m/352'/coin'/0'/0'/0
-scan:  m/352'/coin'/0'/1'/0      coin = 0 mainnet, 1 test networks
-address = bech32m(hrp "sp"/"tsp", version 0, B_scan ‖ B_spend)
-```
-
-It returns the address and all four keys (`b_scan`, `b_spend`, `B_scan`,
-`B_spend`) as hex. This is exactly what FN-Server's scanner needs
-(`b_scan`, `B_scan`, `B_spend`), so Fully Noded is the natural source of the
-scanner's keys and the only place that can produce `b_spend` for spending.
-
-Notes:
-- `network` defaults to `.main`. A caller on testnet/signet must pass `.test`,
-  or it gets mainnet paths and an `sp1` address.
-- `SignerDetailViewController` currently calls it with the default network and
-  no passphrase and does
-  `print("spAddress: \(spAddress)")`. That prints the **whole tuple, including
-  `b_scan` and `b_spend`**, to the console, and it is not wrapped in
-  `#if DEBUG`.
-- Bech32m encode/decode (`WalletLogic.Bech32m`) is local and handles SP
-  addresses longer than 90 characters.
-
-### 2.2 Sending to a silent payment address
-
-`SilentPaymentSend.create(spAddress:amount:inputs:passphrase:completion:)` builds
-an **unsigned PSBT** that pays an `sp1…`/`tsp1…` address from the active Fully
-Noded (Core-backed) wallet. It creates an SP **output** from ordinary inputs; it
-does not spend SP inputs.
+`SilentPaymentSend.create(spAddress:amount:inputs:passphrase:change:completion:)`
+builds an **unsigned PSBT** that pays an `sp1…` / `tsp1…` address from the active
+(Core-backed) Fully Noded wallet, including your received silent payment outputs
+in it. `AddressParser` accepts `sp1` / `tsp1`, and
+`CreateRawTxViewController` routes an SP recipient here; the resulting PSBT goes
+to the transaction verifier for the normal sign/broadcast flow.
 
 Because an SP output key depends on the transaction's inputs *and their private
-keys*, it cannot just call `walletcreatefundedpsbt` with the SP address. Flow:
+keys*, it can't simply call `walletcreatefundedpsbt` with the SP address:
 
 1. **Parse the address** (`SPRecipient`): bech32m decode, HRP must match the
    node's chain (`sp` on main, `tsp` otherwise), v0 must be exactly 66 bytes,
    v1–v30 read forward-compatibly, v31 rejected, both keys must be valid points.
 2. **Placeholder PSBT**: `walletcreatefundedpsbt` with a same-size P2TR output
    (x-only of `B_spend`) so Core selects inputs, change and fee as it would for
-   the real output. Honors coin-control `inputs`. Never signed.
-3. **`decodepsbt`** to get each input's outpoint, prevout script, redeem script
-   and BIP32 / taproot derivations.
-4. **Derive input private keys** (`SPInputKeys`) from the stored Fully Noded
-   signers (decrypted mnemonics; tries the given passphrase, the signer's stored
-   passphrase, then none). A key is only accepted if it reproduces the pubkey in
-   the PSBT; for taproot, the BIP341 key-path tweak is applied and checked
-   against the prevout script, and the key is negated for odd Y as BIP352
-   requires. Supported inputs: `pkh`, `wpkh`, `sh(wpkh)`, `tr` key path.
-   Other inputs (e.g. `wsh` multisig) are allowed but add no key; at least one
-   eligible input is required. Taproot script-path inputs and segwit v2+ inputs
-   are refused.
+   the real output. Honors coin-control `inputs`. Never signed. Change follows
+   5.3: the wallet's own change by default; if silent payment outputs are spent
+   the send view asks, and silent payment change (`change: .silentPayment`) is
+   rebuilt with the same inputs and a placeholder change output.
+3. **`decodepsbt`** for each input's outpoint, prevout script, redeem script and
+   BIP32 / taproot derivations.
+4. **Derive input private keys** (`SPInputKeys`) from the stored signers (tries
+   the typed passphrase, the signer's stored passphrase, then none). A key is
+   only accepted if it reproduces the pubkey in the PSBT; for taproot the BIP341
+   key-path tweak is applied and checked, and the key is negated for odd Y as
+   BIP352 requires. **Your own received silent payment outputs** are found with
+   the verifier's detection (5.1) and use `a_i = b_spend + t_k (+ label_m)`, only
+   if `a_i·G` is the input's output key, negated for odd Y. Taproot inputs
+   with a script tree use the **output key's** private key (internal key tweaked
+   with `taproot_merkle_root`) whichever path they're later spent by, as BIP352
+   requires; taproot inputs whose internal key is the NUMS point `H` are skipped
+   (no key, outpoint still counts). Eligible: `pkh`, `wpkh`, `sh(wpkh)`, `tr` key path. Other
+   inputs (e.g. `wsh` multisig) are allowed but add no key; at least one
+   eligible input is required. Segwit v2+ inputs are refused, and so is any
+   eligible input whose (output) private key isn't held by a signer.
 5. **Compute the output** (`SPSender.outputKey`, `k = 0`):
    ```
    a = Σ a_i mod n   (refused if 0)
@@ -241,43 +301,78 @@ keys*, it cannot just call `walletcreatefundedpsbt` with the SP address. Flow:
    t_0  = hash_BIP0352/SharedSecret(serP(ecdh) ‖ ser32(0))
    P    = B_spend + t_0·G   →   P2TR(xonly(P))
    ```
-   Private keys are wiped (`secureZero`) right after.
-6. **Rebuild** with exactly the same inputs and the real P2TR output.
-7. **Safety checks**: input set unchanged and the `5120<xonly(P)>` output
-   present, otherwise abort.
-8. Return the unsigned PSBT for the normal verify/sign/broadcast flow.
+   Private keys are wiped right after.
+6. **Rebuild** with `createpsbt`: exactly the same inputs, sequences, locktime,
+   outputs and amounts (so the same fee), placeholder(s) replaced by the real
+   P2TR output (and silent payment change, if chosen). If you're paying your own
+   SP address, the payment is `k = 0` and the change, which shares the same scan
+   key, is `k = 1` (BIP352 numbers outputs per scan key); scanners find both.
+   Prevouts are added with `walletprocesspsbt` (no signing).
+7. **Safety checks**: same inputs, same amounts and the `5120<xonly(P)>` output
+   (and change) present, otherwise abort.
 
-`AddressParser` accepts `sp1`/`tsp1` (lowercasing them), and
-`CreateRawTxViewController.getRawTx()` routes an SP recipient to
-`SilentPaymentSend`.
+Validated against the BIP352 sending test vectors.
 
-### 2.3 What sending requires
+**Requirements / limitations**
 
-- A **Core-backed wallet whose inputs are single-sig and whose seed is stored as
-  a Fully Noded signer**. Every eligible input's private key must be derivable
-  locally; inputs from hardware wallets or external signers can't be used.
-- A node on the same network as the address HRP.
-- PSBTs from Core that include BIP32/taproot derivations (normal for descriptor
-  wallets).
+- Every eligible input's private key must be derivable from a Fully Noded
+  signer (BIP32 path, or `b_spend + t_k` for your SP outputs); inputs from
+  hardware wallets or external signers can't be used.
+- One SP recipient per transaction, `k = 0` only (no multiple outputs to the same
+  SP address, no mixing with normal recipients). Core still adds change.
+- **Inputs are frozen**: anything that adds inputs or changes coin control
+  invalidates the SP output; rebuild instead. Core's `psbtbumpfee` can add inputs
+  when the change can't cover the higher fee, so the verifier checks every bump
+  (see 5.2).
+- No BIP375 PSBT fields, so a separate signer can't verify the SP output
+  independently; correctness rests on the checks above.
 
-### 2.4 Limitations
+---
 
-- **One SP recipient per transaction**, and only `k = 0` (no multiple outputs to
-  the same SP address, no mixing SP with normal recipients). Change is still
-  added by Core.
-- **Inputs are frozen.** Signing is fine, but RBF/`bumpfee` that adds inputs,
-  or any coin-control change, invalidates the SP output (the recipient would
-  never find it). Rebuild instead.
-- The PSBT has no BIP375 SP fields, so a separate signer can't verify the SP
-  output independently; correctness rests on the checks above.
-- No receiving/scanning in Fully Noded (that's FN-Server's job).
+## 5. Fully Noded: spending received SP outputs
 
-### 2.5 Spending received SP outputs (tweaked-key signing)
+Source: `FullyNoded/Wallet Logic/SilentPaymentSpend.swift`, wired into
+`VerifyTransactionViewController`.
 
-`SilentPaymentSpend.sign(psbt:outputs:passphrase:completion:)` signs every input
-of a PSBT that is one of your silent payment outputs. A received SP output is a
-P2TR output whose key is used as-is (`rawtr(<xonly>)`, no BIP341 taproot tweak),
-so each input is signed with:
+Every input in the verifier has a "signable" row naming the signer that can sign
+it. Normal inputs are matched by master fingerprint (the PSBT's BIP32 derivations,
+or the descriptor's key origins for a raw transaction). Silent payment inputs carry
+no derivation, so taproot inputs no fingerprint matches go through the same
+detection as signing (5.1, via `detectInputSigners`), using the wallet info the
+verifier already fetched with `getaddressinfo`, and show as
+"Signable by <signer> (silent payment)".
+
+### 5.1 Detection (from the active wallet, no block fetching)
+
+The verifier only cares about inputs the active wallet owns, and Core already
+knows those. `SilentPaymentSpend.detect(candidates:)` works from that:
+
+1. Takes every P2TR input and its `getaddressinfo` in the active wallet (the
+   verifier already has it from verifying the inputs; other callers make one
+   cheap wallet call per taproot input).
+2. Keeps only inputs the wallet **owns as a bare taproot key**: FN-Server's
+   `rawtr(<xonly>)` imports, recognised by their label
+   `sp scan=<B_scan> k=<k> [m=<m>] t=<t_k>` (or a `rawtr()` / `addr()`
+   descriptor). Normal wallet inputs (`tr(…)`, `wpkh(…)`, …) are skipped with no
+   extra work, and nothing is derived if no input qualifies.
+3. For a labeled input, the signer whose `B_scan` is in the label is used and
+   the tweak is **checked locally**: `B_spend (+ label_m·G) + t_k·G` must equal
+   the input's output key. No RPC. A match becomes an `OwnedOutput`
+   (`t_k`, `label_m`) for signing.
+4. Only outputs imported before FN-Server wrote `t=` (or imported unlabeled)
+   fall back to scanning their own funding transaction: block hash from
+   `gettransaction`, then `getrawtransaction <txid> 2 <blockhash>`, then the
+   BIP352 receiving computation (section 3.3) with every signer's keys
+   (passphrase candidates: typed, stored, none).
+
+The label is only a hint: signing still refuses unless `b_spend + t_k
+(+ label_m)` reproduces the output key (5.2). No SP inputs → exactly the normal
+signing flow.
+
+### 5.2 Signing
+
+`SilentPaymentSpend.sign(psbt:outputs:passphrase:)` signs each owned input. A
+received SP output is a P2TR key used as-is (no BIP341 tweak), so:
 
 ```
 d = b_spend + t_k (+ label_m)  mod n
@@ -285,66 +380,103 @@ d = n − d   if d·G has odd Y                (BIP340 signs for the even-Y key)
 sig = BIP340 Schnorr(d, BIP341 sighash)     → PSBT_IN_TAP_KEY_SIG (0x13)
 ```
 
-- **`b_spend`** is derived from the stored Fully Noded signers at
-  `m/352'/coin'/0'/0'/0`, trying the passed passphrase, the signer's stored
-  passphrase, then none. The right one is whichever reproduces the input's
-  output key.
-- **`t_k` / `label_m`** come from the caller as `[OwnedOutput]`
-  (`txid`, `vout`, `tweakHex`, `labelTweakHex`). The field names match
-  FN-Server's `SPFoundOutput`, so its saved `found` array decodes directly.
-- `sign(psbt:outputs:spendKey:)` is the pure core (no Core Data, no RPC) and can
-  be used with an explicit 32-byte `b_spend`.
+1. Parses the PSBT (v0) into raw key/value maps; every other field is
+   re-serialized unchanged.
+2. Reads every input's prevout (`witness_utxo` or `non_witness_utxo`); BIP341
+   needs all of them.
+3. For each owned input: derives `b_spend` from the signers (typed, stored, no
+   passphrase), computes `d`, and **only signs if `d·G` exactly matches that
+   input's scriptPubKey**.
+4. Computes the BIP341 key-path sighash locally (BDK can't sign
+   `rawtr()` inputs), signs with P256K using random
+   aux data, **verifies the signature**, then adds `PSBT_IN_TAP_KEY_SIG`. `d` is
+   wiped afterwards.
+5. Supports `SIGHASH_DEFAULT` and `SIGHASH_ALL`; anything else is refused.
 
-How it signs:
-1. Parses the PSBT (v0 only) into raw key/value maps and the unsigned tx; every
-   other field is re-serialized unchanged.
-2. Reads every input's prevout (amount + scriptPubKey) from `witness_utxo`, or
-   from `non_witness_utxo`. BIP341 needs all of them.
-3. For each input whose outpoint is in `outputs`: computes `d`, negates for odd
-   Y, and **only signs if `d·G` exactly matches that input's P2TR
-   scriptPubKey**.
-4. Computes the BIP341 key-path sighash locally (the bundled LibWally predates
-   taproot sighash, and BDK can't sign `rawtr()`). Signs with P256K using random
-   aux data, **verifies the signature** against the output key, then appends
-   `PSBT_IN_TAP_KEY_SIG`. `d` is wiped afterwards.
-5. Supports `SIGHASH_DEFAULT` (64-byte sig) and `SIGHASH_ALL` (65-byte sig,
-   taken from `PSBT_IN_SIGHASH_TYPE`). Anything else is refused.
+Then the verifier signs the **remaining (non-SP) inputs** with the normal
+`Signer` for each input's parent descriptor, and finalizes with the node's
+`finalizepsbt`. A fully signed transaction is shown ready to broadcast;
+otherwise the partially signed PSBT is returned for export.
 
-Safety properties:
-- The BIP341 sighash commits to the amounts and scripts of **all** inputs, so a
-  PSBT that lies about a prevout produces an invalid signature, not a
-  fee-overpaying one.
-- Clear errors for a wrong signer/passphrase (key doesn't match any input),
-  inputs not in `outputs`, a bad tweak for one input, and unsupported sighash
-  types. Already-signed inputs are skipped.
+**Fee bumps** use the same path: the PSBT from `psbtbumpfee` goes through the
+same detection, `SilentPaymentSpend.sign`, remaining-input signing and
+finalization (`signBumpedPsbt`). Without SP inputs it's the normal Signer, as
+before.
 
-The result is **not finalized**. Run Core's `finalizepsbt` (it turns
-`PSBT_IN_TAP_KEY_SIG` into the key-path witness), and sign any non-SP inputs
-with the normal `Signer` first.
+Before signing a bump, `checkBumpKeepsSilentPaymentOutputs` compares its inputs
+with the original transaction's. BIP352 outputs depend on the exact inputs, so:
 
-Verified against the BIP341 wallet test-vector sighashes (DEFAULT and ALL) and
-end to end on regtest: spends of odd-Y, even-Y and labeled outputs, with both
-sighash types, were accepted by `testmempoolaccept` and mined.
+- same inputs → sign;
+- inputs added / changed and the original pays one of **your** SP addresses
+  (found by running the receiver scan on the original, with prevouts from the
+  bumped PSBT) → refused, the original stays as is (use CPFP);
+- inputs added / changed and the original has other taproot outputs (possibly a
+  silent payment to someone else, which can't be told from outside) → explicit
+  confirmation required.
+
+Safety properties: the BIP341 sighash commits to all input amounts and scripts,
+so a PSBT that lies about a prevout produces an invalid signature rather than an
+overpaid fee. Wrong signer/passphrase, a bad tweak and unsupported sighash types
+give clear errors. Already-signed inputs are skipped.
+
+Verified against the BIP341 wallet sighash test vectors and end to end on
+regtest (odd-Y, even-Y and labeled outputs, both sighash types, accepted by
+`testmempoolaccept` and mined).
+
+### 5.3 Change when silent payment outputs are spent
+
+The send view first builds the transaction with the wallet's own change. If it
+spends silent payment outputs (same detection as the verifier) and has a change
+output, it asks where the change should go:
+
+- **Wallet change address**: the transaction as built.
+- **My silent payment address** → rebuilt with the **same inputs** (pinned) by
+  `SilentPaymentChange.create(inputs:outputs:)`, or by `SilentPaymentSend` with
+  `change: .silentPayment` when the recipient is a silent payment address.
+
+Silent payment change goes to the **change address (label `m = 0`)** of the
+signer that owns the silent payment inputs, `B_m = B_spend + label_0·G`.
+FN-Server always scans label 0 and the verifier always checks it, so the change
+reappears in the same wallet and is spendable like any other silent payment
+output.
+  1. Fund with a placeholder P2TR change output (same size) so Core picks the
+     fee (inputs pinned to the ones already chosen).
+  2. Find the owning signer from the inputs' wallet labels (`B_scan` in
+     `sp scan=…`), falling back to the funding-transaction scan only for
+     unlabeled imports.
+  3. Compute the change key **as the receiver**, which needs no input private
+     keys. A sums the eligible inputs' public keys: taproot output keys (even Y;
+     script-path spends with the NUMS internal key excluded) and, for `wpkh`,
+     `sh(wpkh)` and `pkh` inputs, the compressed key from the PSBT's BIP32
+     derivations (checked against the script). Other inputs (e.g. multisig) add
+     only their outpoint. Refused if an eligible input's key is missing or any
+     input is segwit v2+:
+     ```
+     A          = Σ eligible input keys (taproot: even Y)
+     input_hash = hash_BIP0352/Inputs(smallest_outpoint ‖ A)
+     t_0        = hash_BIP0352/SharedSecret(serP(input_hash · b_scan · A) ‖ ser32(0))
+     P          = B_spend + label_0·G + t_0·G
+     ```
+     (`t_1` instead of `t_0` when the same transaction also pays your own SP
+     address, which takes `k = 0`.)
+     This equals what a BIP352 sender computes from the input private keys
+     (checked in a Python model over random keys).
+  4. Self-check: the verifier's receiver scan runs on the transaction as it will
+     be broadcast (each input with a witness / scriptSig shaped like its real
+     spend) and must find the change as a label-0 output.
+  5. Rebuild with `createpsbt` (same inputs, sequences, outputs and amounts, so
+     the same fee) and add prevouts with `walletprocesspsbt` (no signing); abort
+     unless inputs, amounts and the change output all match.
 
 ---
 
-## 3. How the two fit together
+## 6. Current limitations
 
-```
-Fully Noded signer mnemonic
-  └─ silentPaymentAddressFromMnemonic → sp1… address, b_scan, B_scan, b_spend, B_spend
-        │
-        ├─ sp1… address ──────────► given to payers (any BIP352 sender, incl. Fully Noded)
-        │
-        ├─ b_scan, B_scan, B_spend ─► FN-Server SilentPaymentService
-        │                              scans blocks → rawtr() watch-only import
-        │                              → Core wallet shows SP balance
-        │
-        └─ b_spend ─────────────────► Fully Noded SilentPaymentSpend
-                                       signs with b_spend + t_k (+ label_m),
-                                       tweaks from FN-Server's found outputs
-```
-
-Missing for a complete loop: getting the scan keys from Fully Noded to FN-Server
-without hardcoding them, and getting FN-Server's per-output tweaks to Fully
-Noded's `SilentPaymentSpend`.
+- Labels: only the change label `m = 0` is scanned and spendable; handing out
+  labeled addresses (`m ≥ 1`) isn't supported in the UI.
+- Sending: one SP recipient per transaction (see section 4).
+- Silent payment change needs the public key of every eligible input in the
+  PSBT (always true for Fully Noded wallets) and no segwit v2+ inputs.
+- No BIP375 / BIP376 PSBT fields yet.
+- Scanning needs FN-Server (a full node on a Mac); Fully Noded doesn't scan by
+  itself.

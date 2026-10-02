@@ -42,6 +42,36 @@ Want to run a node on your Mac? Download [Fully Noded Server](https://fullynoded
 * **HWW Functionality.** FN Signers tab allows you to add BIP39 mnemonics and passphrases and stores the mnemonic double encrypted locally on your device. It signs transactions locally with no internet connection required.
 
 
+## Silent Payments (BIP352)
+
+> 🧪 Experimental: in development on the `Silent-Payments` branch. Test with small amounts.
+
+Silent payments give you **one static address you can share anywhere**, such as a website, donation page, invoice footer or Nostr profile, **without ever reusing an address on-chain**. Every payment to your `sp1…` address lands on a brand new, unique Taproot output that only you can find and spend.
+
+**Why they're awesome**
+
+* **Reusable address, zero address reuse.** Post it once and forget about it. Payments can't be linked to each other or to your published address by anyone watching the chain.
+* **No interaction.** The sender doesn't need to ask you for a fresh address, and you don't need to be online when they pay.
+* **No notification transaction, no third party.** Unlike BIP47 there is no on-chain setup step, and no server ever holds your xpub. Fully Noded does the scanning with your own node via [Fully Noded Server](https://fullynoded.app).
+* **Blends in.** Silent payment outputs look like any other Taproot output, so they improve privacy for everyone using Taproot.
+* **Watch and spend keys are separate.** The scan key can only *see* incoming payments. Spending needs the spend key, which never leaves your Fully Noded signer.
+
+**How it works (high level)**
+
+1. **Your address is two public keys.** A silent payment address is a *scan* key and a *spend* key, both derived from your signer's seed (`m/352'/coin'/0'/1'/0` and `m/352'/coin'/0'/0'/0`).
+2. **The sender makes a shared secret.** Their wallet combines the private keys of the inputs it's spending with your public scan key (an ECDH key exchange). That secret tweaks your spend key into a one-time Taproot output that nobody else can link to you.
+3. **You find it with the same secret.** Your node looks at each new block's transactions. It combines each transaction's input *public* keys with your *private* scan key, which gives the same shared secret, and checks whether any output matches. Matches are imported into your node as watch-only coins.
+4. **You spend it with the tweak.** Your spend private key plus that output's tweak is the key that signs. Only the device holding your seed can do that.
+
+**In Fully Noded**
+
+* **Receive:** the signer detail screen shows your `sp1…` address with a QR export.
+* **Send:** paste an `sp1…` / `tsp1…` address in the send view. Fully Noded computes the one-time output and the PSBT goes through the normal transaction verifier.
+* **Scan:** export your scan private key from the signer detail screen (QR, authentication required) and import it, with your address, into Fully Noded Server (Utilities → Silent Payments). It watches the chain with your own node and imports what it finds, watch-only, into your Fully Noded wallet.
+* **Spend:** the transaction verifier recognises silent payment inputs and signs them with the tweaked key. Normal inputs are signed as usual.
+
+For the full technical details see **[SilentPayments.md](./SilentPayments.md)**: key derivation, sending, scanning, rescans and spending, plus current limitations and caveats.
+
 ## PGP
 
 * 9E3F 8A38 C100 8D95 FEB9  1D08 0BF9 9EAD 77F9 FFAA
@@ -58,9 +88,8 @@ please contact me at [dentondevelopment@protonmail.com](mailto:dentondevelopment
 The following dependencies are bundled with the Fully Noded®, but are under
 terms of a separate license:
 
-* [bdk-swift](https://github.com/bitcoindevkit/bdk-swift) replacing Libwally for signing PSBTs, local psbt creation/parsing, bip32 key derivation, mini-script functionality, BIP39 mnemonics.
+* [bdk-swift](https://github.com/bitcoindevkit/bdk-swift) for signing PSBTs, local psbt creation/parsing, bip32 key derivation, mini-script functionality, BIP39 mnemonics (it replaced Libwally, which is no longer used).
 * [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
-* [Libwally-Swift](https://github.com/Fonta1n3/libwally-swift) which relies on [Libwally-Core v0.7.7](https://github.com/Fonta1n3/libwally-swift/tree/master/CLibWally/libwally-core) for converting cryptographically secure entropy to BIP39 words, deriving HD keys and most importantly signing psbt's.
 * [Base32](https://github.com/norio-nomura/Base32/blob/master/Sources/Base32) built by [@norio-nomura](https://github.com/norio-nomura) - for Tor V3 authentication key encoding which is licensed under The MIT License (MIT).
-* [Base58](https://github.com/wavesplatform/Base58/tree/master/Source) from [@LukeDash-jr](https://github.com/luke-jr) and the [Waves Platform](https://github.com/wavesplatform) which is licensed under The MIT License (MIT). Used for converting Slip0132 extended keys to xpubs/xprvs.
+* [Base58](https://github.com/wavesplatform/Base58/tree/master/Source) from [@LukeDash-jr](https://github.com/luke-jr) and the [Waves Platform](https://github.com/wavesplatform) which is licensed under The MIT License (MIT). Used for converting Slip0132 extended keys to xpubs/xprvs and decoding extended keys.
 * The contents of the [UR](https://github.com/Fonta1n3/FullyNoded/tree/master/FullyNoded/Helpers/UR) directory (excluding the [UR.swift](https://github.com/Fonta1n3/FullyNoded/blob/master/FullyNoded/Helpers/UR/UR.swift) file which falls under Fully Noded license) from [Blockchain Commons](https://github.com/BlockchainCommons) which is under the [spdx:BSD-2-Clause Plus Patent License](https://spdx.org/licenses/BSD-2-Clause-Patent.html). 
