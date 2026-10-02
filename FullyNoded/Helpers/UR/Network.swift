@@ -7,7 +7,6 @@
 
 import SwiftUI
 import URKit
-import LibWally
 
 enum Network_: UInt32, Identifiable, CaseIterable {
     case mainnet = 0
@@ -24,15 +23,6 @@ enum Network_: UInt32, Identifiable, CaseIterable {
             throw GeneralError("Invalid Network.")
         }
         self = a
-    }
-    
-    var wallyNetwork: LibWally.Network {
-        switch self {
-        case .mainnet:
-            return .mainnet
-        case .testnet:
-            return .testnet
-        }
     }
     
     var image: Image {
