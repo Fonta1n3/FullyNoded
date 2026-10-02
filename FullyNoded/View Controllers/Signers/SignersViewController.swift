@@ -42,7 +42,7 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        if isCreatingMsig { title = "Choose Signer" }
+        if isCreatingMsig { navigationItem.title = "Choose Signer" }
         buildLayout()
         applyTheme()
     }

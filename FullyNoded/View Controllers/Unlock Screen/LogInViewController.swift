@@ -10,7 +10,7 @@ import UIKit
 import LocalAuthentication
 import Security
 
-class LogInViewController: UIViewController, UITextFieldDelegate {
+class LogInViewController: UIViewController, UITextFieldDelegate, UIGestureRecognizerDelegate {
 
     var onDoneBlock: (() -> Void)?
     let passwordInput = UITextField()
@@ -33,6 +33,8 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
 
         tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
+        tapGesture.cancelsTouchesInView = false
+        tapGesture.delegate = self
         self.view.addGestureRecognizer(tapGesture)
 
         passwordInput.delegate = self
@@ -88,7 +90,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             initialLoad = false
             lockView.addSubview(imageView)
             lockView.addSubview(passwordInput)
-            passwordInput.removeGestureRecognizer(tapGesture)
             addNextButton(inputView: passwordInput)
 
             let ud = UserDefaults.standard
@@ -207,6 +208,13 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             
             self.passwordInput.resignFirstResponder()
         }
+    }
+
+    /// Taps on the password field must not trigger the dismiss gesture, otherwise the field
+    /// resigns first responder as soon as it gains it and typing goes nowhere.
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        guard let touched = touch.view else { return true }
+        return !touched.isDescendant(of: passwordInput)
     }
 
     func addNextButton(inputView: UITextField) {

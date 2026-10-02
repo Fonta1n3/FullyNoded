@@ -8,7 +8,7 @@
 
 import UIKit
 
-class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
+class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate, UIGestureRecognizerDelegate {
     
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var textField: UITextField!
@@ -24,8 +24,9 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
+        tapGesture.cancelsTouchesInView = false
+        tapGesture.delegate = self
         view.addGestureRecognizer(tapGesture)
-        textField.removeGestureRecognizer(tapGesture)
         
         buttonOutlet.clipsToBounds = true
         buttonOutlet.layer.cornerRadius = 8
@@ -48,6 +49,13 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         textField.resignFirstResponder()
+    }
+
+    /// Taps on the text field must not trigger the dismiss gesture, otherwise the field
+    /// resigns first responder as soon as it gains it and typing goes nowhere.
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        guard let touched = touch.view else { return true }
+        return !touched.isDescendant(of: textField)
     }
     
     @IBAction func buttonAction(_ sender: Any) {

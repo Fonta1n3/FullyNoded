@@ -30,7 +30,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Settings"
+        // navigationItem only: `title` would also put "Settings" under the tab bar icon.
+        navigationItem.title = "Settings"
 
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self

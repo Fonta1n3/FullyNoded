@@ -139,7 +139,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             buttonRow([
                 makeButton(title: "Copy", systemImage: "doc.on.doc", action: #selector(copyRpcAuthAction(_:))),
                 makeButton(title: "Export", systemImage: "square.and.arrow.up", action: #selector(exportRpcAuth(_:))),
-                makeButton(title: "What's this?", systemImage: "info.circle", action: #selector(showRpcAuthInfoAction(_:)))
+                makeButton(title: "Info", systemImage: "info.circle", action: #selector(showRpcAuthInfoAction(_:)))
             ])
         ], tint: tint, spacing: 8))
         

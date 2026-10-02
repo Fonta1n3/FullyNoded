@@ -8,7 +8,7 @@
 
 import UIKit
 
-class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
+class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate, UIGestureRecognizerDelegate {
 
     @IBOutlet weak var wordView: UITextView!
     @IBOutlet weak var textView: UITextField!
@@ -36,8 +36,9 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         updatePlaceHolder(wordNumber: 1)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
         tapGesture.numberOfTapsRequired = 1
+        tapGesture.cancelsTouchesInView = false
+        tapGesture.delegate = self
         self.view.addGestureRecognizer(tapGesture)
-        textView.removeGestureRecognizer(tapGesture)
         
         
     }
@@ -162,6 +163,13 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         hideKeyboards()
+    }
+
+    /// Taps on the word field must not trigger the dismiss gesture, otherwise the field
+    /// resigns first responder as soon as it gains it and typing goes nowhere.
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        guard let touched = touch.view else { return true }
+        return !touched.isDescendant(of: textView)
     }
     
     private func hideKeyboards() {

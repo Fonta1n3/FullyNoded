@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
+class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate {
     
     @IBOutlet weak var importOutlet: UIButton!
     @IBOutlet weak var labelField: UITextField!
@@ -32,8 +32,9 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
         tapGesture.numberOfTapsRequired = 1
+        tapGesture.cancelsTouchesInView = false
+        tapGesture.delegate = self
         view.addGestureRecognizer(tapGesture)
-        labelField.removeGestureRecognizer(tapGesture)
         
         if let desc = descriptor {
             addDescriptorToLabel(desc)
@@ -46,6 +47,13 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         labelField.resignFirstResponder()
+    }
+
+    /// Taps on the label field must not trigger the dismiss gesture, otherwise the field
+    /// resigns first responder as soon as it gains it and typing goes nowhere.
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        guard let touched = touch.view else { return true }
+        return !touched.isDescendant(of: labelField)
     }
     
     @IBAction func importAction(_ sender: Any) {
