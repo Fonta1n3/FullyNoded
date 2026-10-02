@@ -66,6 +66,9 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.stylePrimary(createOutlet, tint: .create)
+        WalletTheme.apply(to: self, tint: .create)
     }
     
     override func viewDidAppear(_ animated: Bool) {}

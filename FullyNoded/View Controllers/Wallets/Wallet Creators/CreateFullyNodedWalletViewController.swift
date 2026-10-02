@@ -43,6 +43,8 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         singleSigOutlet.layer.cornerRadius = 8
         multiSigOutlet.layer.cornerRadius = 8
         
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .create)
     }
     
     @IBAction func pasteTextAction(_ sender: Any) {

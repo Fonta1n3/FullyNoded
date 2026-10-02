@@ -40,6 +40,10 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
             titleLabel.text = "Create an unlock password"
             buttonOutlet.setTitle("save", for: .normal)
         }
+        
+        // Cypherpunk look (WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.stylePrimary(buttonOutlet, tint: .settings)
+        WalletTheme.apply(to: self, tint: .settings)
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {

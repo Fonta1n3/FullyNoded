@@ -39,6 +39,9 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
             addDescriptorToLabel(desc)
             loadAddresses(desc)
         }
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.stylePrimary(importOutlet, tint: .create)
+        WalletTheme.apply(to: self, tint: .create)
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
@@ -157,5 +160,17 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
                 }
             }
         }
+    }
+}
+
+// MARK: - Theme
+
+extension ImportXpubViewController {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .create)
+    }
+
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        WalletTheme.styleHeader(view, tint: .create)
     }
 }

@@ -48,6 +48,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
         
         
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .utxo)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -467,16 +469,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             vc.fxRate = fxRate
             vc.utxoToSweep = utxoToSweep
             
-        case "segueToBroadcasterFromUtxo":
-            guard let vc = segue.destination as? VerifyTransactionViewController else { fallthrough }
-            
-            if let signedRawTx = signedRawTx {
-                vc.signedRawTx = signedRawTx
-            } else if let psbt = psbt {
-                vc.unsignedPsbt = psbt
-            }
-            
-            
         default:
             break
         }
@@ -738,5 +730,18 @@ extension UTXOViewController: UITableViewDelegate {
         let headerView = UIView()
         headerView.backgroundColor = .clear
         return headerView
+    }
+}
+
+// MARK: - Theme
+
+extension UTXOViewController {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .utxo)
+        (cell as? UTXOCell)?.flattenIconButtons()   // only Nodeless keeps a border
+    }
+
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        WalletTheme.styleHeader(view, tint: .utxo)
     }
 }

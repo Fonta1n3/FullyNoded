@@ -25,6 +25,8 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         super.viewDidLoad()
         securityTable.delegate = self
         securityTable.dataSource = self
+        // Cypherpunk look (WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .settings)
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -52,7 +54,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         cell.selectionStyle = .none
         let label = cell.viewWithTag(2) as! UILabel
         let icon = cell.viewWithTag(1) as! UIImageView
-        icon.tintColor = .systemBlue
+        icon.tintColor = WalletTheme.Tint.settings.accent
         //let background = cell.viewWithTag(3)!
         //background.clipsToBounds = true
         //background.layer.cornerRadius = 8
@@ -370,5 +372,17 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             alert.addAction(cancel)
             vc.present(alert, animated:true, completion: nil)
         }
+    }
+}
+
+// MARK: - Theme
+
+extension SecurityCenterViewController {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .settings)
+    }
+
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        WalletTheme.styleHeader(view, tint: .settings)
     }
 }

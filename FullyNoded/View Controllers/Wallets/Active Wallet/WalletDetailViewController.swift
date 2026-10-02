@@ -65,19 +65,17 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Teal wallet theme (see WalletTheme in ActiveWalletViewController.swift). The nav
+        // bar look is set on this screen's navigationItem so it doesn't leak to other screens.
+        overrideUserInterfaceStyle = .dark
         view.backgroundColor = Cypher.bg
-        navigationController?.navigationBar.barStyle = .black
-        navigationController?.navigationBar.tintColor = Cypher.green
-        navigationController?.navigationBar.titleTextAttributes = [
-            .foregroundColor: Cypher.green,
-            .font: Cypher.mono(17, weight: .semibold)
-        ]
+        view.tintColor = Cypher.green
+        WalletTheme.styleNavigation(navigationItem)
         
         detailTable.backgroundColor = Cypher.bg
         detailTable.separatorStyle = .none
         detailTable.indicatorStyle = .white
         
-        view.backgroundColor = .systemBackground
         title = "Wallet"
         
         navigationController?.delegate = self
@@ -128,7 +126,7 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     private func styledCard(_ views: [UIView], height: CGFloat? = nil) -> UIView {
         let card = UIView()
         card.backgroundColor = Cypher.card
-        card.layer.cornerRadius = 2
+        card.layer.cornerRadius = 0
         card.layer.borderWidth = 1
         card.layer.borderColor = Cypher.line.cgColor
 
@@ -163,7 +161,7 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         button.titleLabel?.font = Cypher.mono(12, weight: .semibold)
         button.setTitleColor(Cypher.bg, for: .normal)
         button.backgroundColor = Cypher.green
-        button.layer.cornerRadius = 2
+        button.layer.cornerRadius = 0
         button.addTarget(self, action: #selector(exportButtonAction(_:)), for: .touchUpInside)
         return button
     }
@@ -171,10 +169,11 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     private func nodelessButton() -> UIButton {
         let button = UIButton(type: .system)
         button.setTitle("Nodeless", for: .normal)
-        button.tintColor = .tintColor
+        button.tintColor = Cypher.green
         button.configuration = .tinted()
-        button.setTitleColor(.tintColor, for: .normal)
+        button.setTitleColor(Cypher.green, for: .normal)
         button.addTarget(self, action: #selector(nodeless(_:)), for: .touchUpInside)
+        WalletTheme.styleButton(button)
         return button
     }
     
@@ -819,14 +818,11 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         tv.heightAnchor.constraint(equalToConstant: 440).isActive = true
 
         let control = UISegmentedControl(items: ["Receive", "Change"])
-        control.backgroundColor = Cypher.card
-        control.selectedSegmentTintColor = Cypher.green
+        WalletTheme.style(control)
         control.selectedSegmentIndex = showReceive
         control.addTarget(self, action: #selector(updateAddressExplorer(_:)), for: .valueChanged)
         control.heightAnchor.constraint(equalToConstant: 32).isActive = true
         control.setContentCompressionResistancePriority(.required, for: .vertical)
-        control.setTitleTextAttributes([.font: Cypher.mono(12), .foregroundColor: Cypher.dim], for: .normal)
-        control.setTitleTextAttributes([.font: Cypher.mono(12, weight: .semibold), .foregroundColor: Cypher.bg], for: .selected)
 
         let export = makeExportButton()
         export.tag = Section.addressExplorer.rawValue
@@ -938,7 +934,8 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     
     private func exportWalletContent() -> UIView {
         let header = UILabel()
-        header.font = .systemFont(ofSize: 17, weight: .semibold)
+        header.font = Cypher.mono(15, weight: .semibold)
+        header.textColor = Cypher.green
         header.textAlignment = .center
 
         let imageView = UIImageView()
@@ -1335,16 +1332,18 @@ extension UIView {
     }
 }
 
+/// Wallet detail palette: now the same teal scheme as the wallet screen (WalletTheme).
+/// `green` is kept as the accent's name so the rest of this file is unchanged.
 private enum Cypher {
-    static let bg = UIColor.black
-    static let card = UIColor(white: 0.06, alpha: 1)
-    static let line = UIColor(red: 0.2, green: 1.0, blue: 0.45, alpha: 0.55)
-    static let green = UIColor(red: 0.25, green: 1.0, blue: 0.48, alpha: 1)
-    static let dim = UIColor(red: 0.35, green: 0.7, blue: 0.45, alpha: 1)
-    static let text = UIColor(red: 0.75, green: 1.0, blue: 0.82, alpha: 1)
-    static let danger = UIColor(red: 1.0, green: 0.28, blue: 0.32, alpha: 1)
+    static let bg = WalletTheme.bg
+    static let card = WalletTheme.card
+    static let line = WalletTheme.line
+    static let green = WalletTheme.accent
+    static let dim = WalletTheme.dim
+    static let text = WalletTheme.text
+    static let danger = WalletTheme.danger
 
     static func mono(_ size: CGFloat, weight: UIFont.Weight = .regular) -> UIFont {
-        UIFont.monospacedSystemFont(ofSize: size, weight: weight)
+        WalletTheme.mono(size, weight: weight)
     }
 }

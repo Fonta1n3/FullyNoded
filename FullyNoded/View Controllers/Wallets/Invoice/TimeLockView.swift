@@ -102,6 +102,9 @@ final class TimelockViewController: UIViewController {
            setupUI()
            updateTimestamp(for: datePicker.date)
            datePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.stylePrimary(doneActionButton, tint: .receive)
+        WalletTheme.apply(to: self, tint: .receive)
     }
     
     // MARK: - UI Setup

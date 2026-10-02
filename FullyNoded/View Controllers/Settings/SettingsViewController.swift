@@ -9,157 +9,286 @@
 import UIKit
 import Foundation
 
-class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource  {
-    
-    let ud = UserDefaults.standard
-    @IBOutlet var settingsTable: UITableView!
-    
-        
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        settingsTable.delegate = self
+/// Settings home, built in code. The storyboard scene is only the tab's root shell: it
+/// keeps the navigation-controller relationship and the Security / Currency / App Icon
+/// segues. Node Manager is pushed in code.
+class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+
+    private enum Row {
+        case nodes, security, currency, appIcon
     }
 
-    override func viewDidAppear(_ animated: Bool) {
-        settingsTable.reloadData()
+    private let sections: [(title: String, rows: [Row])] = [
+        ("> NODES", [.nodes]),
+        ("> SECURITY", [.security]),
+        ("> DISPLAY", [.currency, .appIcon])
+    ]
+
+    private let tableView = UITableView(frame: .zero, style: .grouped)
+    private var nodeCount = 0
+    private var activeNodeLabel: String?
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        title = "Settings"
+
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 64
+        tableView.sectionFooterHeight = 0
+        tableView.register(ThemedRowCell.self, forCellReuseIdentifier: ThemedRowCell.reuseId)
+        tableView.tableFooterView = versionFooter()
+        view.addSubview(tableView)
+
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+
+        // Cypherpunk look (WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .settings)
     }
-    
-    private func configureCell(_ cell: UITableViewCell) {
-        cell.selectionStyle = .none
-        cell.tintColor = .systemBlue
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        loadNodeSummary()
     }
-    
-    private func settingsCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let settingsCell = settingsTable.dequeueReusableCell(withIdentifier: "settingsCell", for: indexPath)
-        configureCell(settingsCell)
-        
-        let label = settingsCell.viewWithTag(1) as! UILabel
-        label.adjustsFontSizeToFitWidth = true
-        
-        let icon = settingsCell.viewWithTag(3) as! UIImageView
-        
-        switch indexPath.section {
-        case 0:
-            label.text = "Node Manager"
-            icon.image = UIImage(systemName: "desktopcomputer")
-            
-        case 1:
-            label.text = "Security Center"
-            icon.image = UIImage(systemName: "lock.shield")
-            
-        case 2:
-            let currencyToUse = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
-            label.text = currencyToUse
-            
-            for currency in Currencies.currenciesWithCircle {
-                for (key, value) in currency {
-                    if key == currencyToUse {
-                        icon.image = UIImage(systemName: value)
-                    }
-                }
+
+    /// Node count and the active node's label, for the Node Manager row.
+    private func loadNodeSummary() {
+        CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
+            let structs = (nodes ?? []).map { NodeStruct(dictionary: $0) }.filter { $0.id != nil }
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.nodeCount = structs.count
+                self.activeNodeLabel = structs.first(where: { $0.isActive })?.label
+                self.tableView.reloadData()
             }
-        
-        case 3:
-            label.text = "App Icon"
-            icon.image = UIImage(systemName: "photo")
-            
-        default:
-            break
         }
-        
-        return settingsCell
     }
-    
+
+    private static var versionText: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
+        return "FULLY NODED v\(version) (\(build))"
+    }
+
+    private func versionFooter() -> UIView {
+        let label = UILabel()
+        label.text = Self.versionText
+        label.font = WalletTheme.mono(11)
+        label.textColor = WalletTheme.dim
+        label.textAlignment = .center
+        label.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 56)
+        label.autoresizingMask = [.flexibleWidth]
+        return label
+    }
+
+    // MARK: - Table
+
+    func numberOfSections(in tableView: UITableView) -> Int {
+        sections.count
+    }
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        sections[section].rows.count
+    }
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return settingsCell(indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: ThemedRowCell.reuseId, for: indexPath) as! ThemedRowCell
+
+        switch sections[indexPath.section].rows[indexPath.row] {
+        case .nodes:
+            let subtitle: String
+            if nodeCount == 0 {
+                subtitle = "No nodes yet, tap to add one"
+            } else if let active = activeNodeLabel, !active.isEmpty {
+                subtitle = "Active: \(active) · \(nodeCount) node\(nodeCount == 1 ? "" : "s")"
+            } else {
+                subtitle = "\(nodeCount) node\(nodeCount == 1 ? "" : "s"), none active"
+            }
+            cell.configure(icon: "server.rack", title: "Node Manager", subtitle: subtitle)
+
+        case .security:
+            let locked = KeyChain.getData("UnlockPassword") != nil
+            cell.configure(icon: "lock.shield",
+                           title: "Security Center",
+                           subtitle: locked ? "App lock on" : "No app lock set",
+                           value: locked ? nil : "!",
+                           valueIsWarning: !locked)
+
+        case .currency:
+            let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+            let symbol = Currencies.currenciesWithCircle.compactMap { $0[currency] }.first ?? "dollarsign.circle"
+            cell.configure(icon: symbol, title: "Fiat currency", subtitle: "Balances and amounts", value: currency)
+
+        case .appIcon:
+            cell.configure(icon: "app.badge", title: "App icon", subtitle: "Home screen icon")
+        }
+
+        return cell
     }
-    
+
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let header = UIView()
-        header.backgroundColor = UIColor.clear
-        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
-        let textLabel = UILabel()
-        textLabel.textAlignment = .left
-        textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
-        textLabel.textColor = .secondaryLabel
-        textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
-        switch section {
-        case 0:
-            textLabel.text = "Nodes"
-                        
-        case 1:
-            textLabel.text = "Security"
-            
-        case 2:
-            textLabel.text = "Fiat Currency"
-            
-        case 3:
-            textLabel.text = "App Icon"
-            
-        default:
-            break
-        }
-        
-        header.addSubview(textLabel)
+        let caption = WalletTheme.caption(sections[section].title, tint: .settings)
+        caption.translatesAutoresizingMaskIntoConstraints = false
+        header.addSubview(caption)
+        NSLayoutConstraint.activate([
+            caption.leadingAnchor.constraint(equalTo: header.leadingAnchor, constant: 2),
+            caption.bottomAnchor.constraint(equalTo: header.bottomAnchor, constant: -6)
+        ])
         return header
     }
-    
-    
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return 4
-    }
-    
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
-    }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 54
-    }
-    
-    
+
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 50
+        section == 0 ? 36 : 44
     }
-    
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         impact()
-        
-        switch indexPath.section {
-        case 0:
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.performSegue(withIdentifier: "goToNodes", sender: self)
-            }
-            
-        case 1:
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.performSegue(withIdentifier: "goToSecurity", sender: self)
-            }
-            
-        case 2:
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                performSegue(withIdentifier: "segueToCurrencies", sender: self)
-            }
-            
-        case 3:
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                performSegue(withIdentifier: "segueToAppIconSelector", sender: self)
-            }
-        default:
-            break
+
+        switch sections[indexPath.section].rows[indexPath.row] {
+        case .nodes:
+            navigationController?.pushViewController(NodesViewController(), animated: true)
+        case .security:
+            performSegue(withIdentifier: "goToSecurity", sender: self)
+        case .currency:
+            performSegue(withIdentifier: "segueToCurrencies", sender: self)
+        case .appIcon:
+            performSegue(withIdentifier: "segueToAppIconSelector", sender: self)
         }
+    }
+
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .settings)
     }
 }
 
+// MARK: - Row cell
 
+/// Settings-style row: bordered icon tile, title, subtitle, optional value / badge,
+/// and a chevron or an action button. Used by Settings, the Node Manager and Signers.
+final class ThemedRowCell: UITableViewCell {
+    static let reuseId = "ThemedRowCell"
 
+    private let iconTile = UIView()
+    private let iconView = UIImageView()
+    private let titleLabel = UILabel()
+    private let subtitleLabel = UILabel()
+    private let valueLabel = UILabel()
+    private let chevron = UIImageView(image: UIImage(systemName: "chevron.right"))
+    /// Optional trailing action (hidden unless `configure` gets one).
+    let actionButton = UIButton(type: .system)
+
+    private var tint: WalletTheme.Tint = .settings
+
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        selectionStyle = .none
+
+        iconTile.layer.borderWidth = 1
+        iconTile.translatesAutoresizingMaskIntoConstraints = false
+        iconView.contentMode = .scaleAspectFit
+        iconView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+        iconTile.addSubview(iconView)
+
+        titleLabel.font = WalletTheme.mono(15, weight: .semibold)
+        titleLabel.numberOfLines = 1
+        subtitleLabel.font = WalletTheme.mono(11)
+        subtitleLabel.numberOfLines = 2
+        valueLabel.font = WalletTheme.mono(13, weight: .bold)
+        valueLabel.setContentHuggingPriority(.required, for: .horizontal)
+        valueLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        chevron.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 12, weight: .semibold)
+        chevron.setContentHuggingPriority(.required, for: .horizontal)
+
+        actionButton.translatesAutoresizingMaskIntoConstraints = false
+        actionButton.isHidden = true
+
+        let texts = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
+        texts.axis = .vertical
+        texts.spacing = 3
+
+        let row = UIStackView(arrangedSubviews: [iconTile, texts, valueLabel, actionButton, chevron])
+        row.axis = .horizontal
+        row.alignment = .center
+        row.spacing = 12
+        row.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(row)
+
+        let bottom = row.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -14)
+        bottom.priority = UILayoutPriority(999)
+        NSLayoutConstraint.activate([
+            row.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 14),
+            row.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            row.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            bottom,
+            iconTile.widthAnchor.constraint(equalToConstant: 36),
+            iconTile.heightAnchor.constraint(equalToConstant: 36),
+            iconView.centerXAnchor.constraint(equalTo: iconTile.centerXAnchor),
+            iconView.centerYAnchor.constraint(equalTo: iconTile.centerYAnchor),
+            actionButton.widthAnchor.constraint(equalToConstant: 36),
+            actionButton.heightAnchor.constraint(equalToConstant: 36)
+        ])
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        actionButton.removeTarget(nil, action: nil, for: .allEvents)
+    }
+
+    /// - value: short trailing text (e.g. "USD", "ACTIVE"); `valueIsWarning` shows it in red.
+    /// - dimmed: inactive look (dim title and icon).
+    /// - action: trailing icon button instead of the chevron.
+    func configure(icon: String,
+                   title: String,
+                   subtitle: String?,
+                   value: String? = nil,
+                   valueIsWarning: Bool = false,
+                   dimmed: Bool = false,
+                   tint: WalletTheme.Tint = .settings,
+                   action: (symbol: String, target: Any, selector: Selector, tag: Int)? = nil) {
+        self.tint = tint
+        let accent = dimmed ? tint.dim : tint.accent
+
+        iconView.image = UIImage(systemName: icon)
+        iconView.tintColor = accent
+        iconTile.layer.borderColor = (dimmed ? tint.dim.withAlphaComponent(0.4) : tint.line).cgColor
+        iconTile.backgroundColor = .clear
+
+        titleLabel.text = title
+        titleLabel.textColor = dimmed ? tint.dim : tint.text
+        subtitleLabel.text = subtitle
+        subtitleLabel.isHidden = (subtitle ?? "").isEmpty
+        subtitleLabel.textColor = tint.dim
+
+        valueLabel.text = value
+        valueLabel.isHidden = (value ?? "").isEmpty
+        valueLabel.textColor = valueIsWarning ? WalletTheme.danger : tint.accent
+
+        if let action = action {
+            actionButton.isHidden = false
+            chevron.isHidden = true
+            actionButton.tag = action.tag
+            actionButton.setImage(UIImage(systemName: action.symbol,
+                                          withConfiguration: UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)),
+                                  for: .normal)
+            actionButton.tintColor = tint.accent
+            actionButton.addTarget(action.target, action: action.selector, for: .touchUpInside)
+        } else {
+            actionButton.isHidden = true
+            chevron.isHidden = false
+            chevron.tintColor = tint.dim
+        }
+    }
+}

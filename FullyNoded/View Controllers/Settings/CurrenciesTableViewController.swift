@@ -15,6 +15,8 @@ class CurrenciesTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Cypherpunk look (WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .settings)
 
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
@@ -140,4 +142,9 @@ class CurrenciesTableViewController: UITableViewController {
     }
     */
 
+    // MARK: - Theme
+
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .settings)
+    }
 }

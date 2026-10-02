@@ -41,6 +41,8 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         fxRateLabel.text = ""
         existingActiveWalletName = UserDefaults.standard.object(forKey: "walletName") as? String ?? ""
         initialLoad = true
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .wallet)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -330,5 +332,17 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         default:
             break
         }
+    }
+}
+
+// MARK: - Theme
+
+extension FullyNodedWalletsViewController {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .wallet)
+    }
+
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        WalletTheme.styleHeader(view, tint: .wallet)
     }
 }

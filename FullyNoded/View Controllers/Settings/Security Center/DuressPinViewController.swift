@@ -22,6 +22,9 @@ class DuressPinViewController: UIViewController, UITextFieldDelegate {
         // Do any additional setup after loading the view.
         duressPinTextField.delegate = self
         configureTapGesture()
+        // Cypherpunk look (WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.stylePrimary(saveButtonOutlet, tint: .settings)
+        WalletTheme.apply(to: self, tint: .settings)
     }
     
     @IBAction func saveDuressPinAction(_ sender: Any) {

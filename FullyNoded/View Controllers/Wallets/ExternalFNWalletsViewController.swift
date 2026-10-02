@@ -42,6 +42,8 @@ class ExternalFNWalletsViewController: UIViewController {
                 testnetWallets.append(wallet)
             }
         }
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .wallet)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -292,4 +294,16 @@ extension ExternalFNWalletsViewController: UITableViewDataSource {
     }
     
     
+}
+
+// MARK: - Theme
+
+extension ExternalFNWalletsViewController {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .wallet)
+    }
+
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        WalletTheme.styleHeader(view, tint: .wallet)
+    }
 }

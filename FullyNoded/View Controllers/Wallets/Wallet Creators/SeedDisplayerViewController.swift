@@ -34,6 +34,9 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         textView.textColor = .systemGreen
         savedOutlet.layer.cornerRadius = 8
         setCoinType()
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.stylePrimary(savedOutlet, tint: .create)
+        WalletTheme.apply(to: self, tint: .create)
     }
     
     private func setCoinType() {

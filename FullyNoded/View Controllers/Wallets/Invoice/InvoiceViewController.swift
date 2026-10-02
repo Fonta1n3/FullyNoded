@@ -57,6 +57,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         } else {
             addTimelockOutlet.alpha = 0
         }
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .receive)
     }
     
     private func setDelegates() {

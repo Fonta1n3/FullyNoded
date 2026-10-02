@@ -23,6 +23,8 @@ class LockedViewController: UIViewController {
         tableView.register(UINib(nibName: UTXOCell.identifier, bundle: nil), forCellReuseIdentifier: UTXOCell.identifier)
         tableView.tableFooterView = UIView(frame: .zero)
         spinner.show(vc: self, description: "Getting Locked UTXO's")
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .utxo)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -205,4 +207,17 @@ extension LockedViewController: UITableViewDelegate {
         return headerView
     }
     
+}
+
+// MARK: - Theme
+
+extension LockedViewController {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .utxo)
+        (cell as? UTXOCell)?.flattenIconButtons()   // only Nodeless keeps a border
+    }
+
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        WalletTheme.styleHeader(view, tint: .utxo)
+    }
 }
