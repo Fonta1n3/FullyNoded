@@ -56,8 +56,6 @@
 		0A83EB3C2C4837C600502806 /* AccountMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A83EB3B2C4837C600502806 /* AccountMap.swift */; };
 		0A83EB3E2C4838BB00502806 /* ColdCardSparrowExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A83EB3D2C4838BB00502806 /* ColdCardSparrowExport.swift */; };
 		0A83EB402C4943C700502806 /* ColdcardMultiSigExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A83EB3F2C4943C700502806 /* ColdcardMultiSigExport.swift */; };
-		0A8850FF2A4201C10078A603 /* LibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AD438842A41F7F90004F923 /* LibWally.xcframework */; };
-		0A8851002A4201C10078A603 /* LibWally.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0AD438842A41F7F90004F923 /* LibWally.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		0A9287F82EC99248002484C3 /* UserCertURLSessionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9287F72EC99248002484C3 /* UserCertURLSessionDelegate.swift */; };
 		0A9287FA2EC9930A002484C3 /* CertificateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9287F92EC9930A002484C3 /* CertificateManager.swift */; };
 		0AA6EFFC2C7E65F900503A39 /* URKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA6EFFB2C7E65F900503A39 /* URKit */; };
@@ -197,7 +195,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				0A8851002A4201C10078A603 /* LibWally.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -271,7 +268,6 @@
 		0ABEC2122F0D766F00092FCE /* SuccessView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuccessView.swift; sourceTree = "<group>"; };
 		0ABEC2142F0E6CF600092FCE /* WalletExportFormatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletExportFormatView.swift; sourceTree = "<group>"; };
 		0AD202402ECEEAC0006286DD /* WalletLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLogic.swift; sourceTree = "<group>"; };
-		0AD438842A41F7F90004F923 /* LibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LibWally.xcframework; sourceTree = "<group>"; };
 		0AD8AD4F29FF45B200F1ADD8 /* InvoiceSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceSettingsViewController.swift; sourceTree = "<group>"; };
 		0AD94909273C051B00AF83F5 /* ExternalFNWalletsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalFNWalletsViewController.swift; sourceTree = "<group>"; };
 		0AF61BA92EC2FCB2001CDF34 /* PeersDetailTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeersDetailTableViewController.swift; sourceTree = "<group>"; };
@@ -393,7 +389,6 @@
 				5939EEDF2FB3698400F73D8E /* BitcoinDevKit in Frameworks */,
 				0AA6EFFC2C7E65F900503A39 /* URKit in Frameworks */,
 				0AFD7CF32C7E5FB100C46E36 /* Bbqr in Frameworks */,
-				0A8850FF2A4201C10078A603 /* LibWally.xcframework in Frameworks */,
 				0AD2023F2ECEDBF3006286DD /* BitcoinDevKit in Frameworks */,
 				5955E7443053CE5D00C4B1E5 /* P256K in Frameworks */,
 				F4505B6A72D68BD208B4904B /* Pods_FullyNoded.framework in Frameworks */,
@@ -907,7 +902,6 @@
 		D08C1FBB211147F600B7CA79 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				0AD438842A41F7F90004F923 /* LibWally.xcframework */,
 				0A9834C526BC2E6700BAB74E /* CloudKit.framework */,
 				D026E5C7253A79DB001F1054 /* AuthenticationServices.framework */,
 				021B4B6C9A2B5B2A991ECF6E /* Pods_FullyNoded.framework */,
