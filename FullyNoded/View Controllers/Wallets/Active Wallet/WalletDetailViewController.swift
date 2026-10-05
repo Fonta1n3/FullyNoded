@@ -256,7 +256,8 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
             activityVC.completionWithItemsHandler = { [weak self] _, completed, _, error in
                 try? FileManager.default.removeItem(at: tempURL)
                 if completed {
-                    SuccessView.show(in: self!, title: "Backup Exported", subtitle: "Your wallet backup has been saved.") { }
+                    guard let self = self else { return }
+                    SuccessView.show(in: self, title: "Backup exported", subtitle: "Your wallet backup has been saved.") { }
                 } else if let error {
                     showAlert(title: "Export Failed", message: error.localizedDescription)
                 }
@@ -522,7 +523,7 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
             } else {
                 updateLocalWallet()
             }
-            showAlert(vc: self, title: "", message: "Wallet label updated ✓")
+            SuccessView.toast("Wallet label updated", in: self)
         }
     }
     

@@ -325,7 +325,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             rpcAuthLabel.text = auth.rpcAuth
             
-            showAlert(title: "", message: "A secure RPC password was created ✓")
+            SuccessView.toast("A secure RPC password was created", in: self)
         }
     }
     
@@ -381,7 +381,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         UIPasteboard.general.string = auth
         
-        showAlert(vc: self, title: "", message: "Rpc auth copied ✓")
+        SuccessView.toast("Rpc auth copied", in: self)
     }
     
     private func encryptCert(_ certText: String) -> Data? {

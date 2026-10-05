@@ -599,7 +599,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 
                 self.getData()
                 
-                showAlert(vc: self, title: "Signer updated ✓", message: "")
+                SuccessView.toast("Signer updated", in: self)
             }
         }
     }
@@ -910,7 +910,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
 //    private func setClipBoard(_ string: String) {
 //        let clipBoard = UIPasteboard.general
 //        clipBoard.string = string
-//        showAlert(vc: self, title: "", message: "Copied to clipboard ✓")
+//        SuccessView.toast("Copied to clipboard", in: self)
 //    }
     
     private func importAccountMap(_ descriptor: String, _ label: String, _ password: String) {
@@ -943,22 +943,10 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
-                    let tit = "Wallet created ✓"
-                    
-                    let mess = "Navigate to the active wallet view, optionally go to the wallet detail view to rescan for a missing balance."
-                    
-                    let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
-                    
-                    alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { action in
-                        DispatchQueue.main.async { [weak self] in
-                            guard let self = self else { return }
-                            
-                            self.tabBarController?.selectedIndex = 1
-                        }
-                    }))
-                    
-                    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-                    self.present(alert, animated: true, completion: nil)
+                    SuccessView.show(in: self, title: "Wallet created",
+                                     subtitle: "Opening it now. If a balance is missing, rescan from the wallet's detail screen.") { [weak self] in
+                        self?.tabBarController?.selectedIndex = 1
+                    }
                 }
             }
         }

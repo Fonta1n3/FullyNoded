@@ -75,7 +75,7 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
             self.titleLabel.text = "Add new unlock password"
             self.buttonOutlet.setTitle("save", for: .normal)
             self.isResetting = false
-            showAlert(vc: self, title: "Password confirmed ✓", message: "Correct password, now you may add a new one")
+            SuccessView.toast("Password confirmed. Now enter a new one", in: self)
             self.textField.becomeFirstResponder()
         }
     }

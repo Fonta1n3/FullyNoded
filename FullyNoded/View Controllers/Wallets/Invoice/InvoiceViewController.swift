@@ -117,7 +117,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func copyAddressAction(_ sender: Any) {
         UIPasteboard.general.string = addressString
-        showAlert(vc: self, title: "", message: "Address text copied ✓")
+        SuccessView.toast("Address text copied", in: self)
     }
     
     @IBAction func shareQrAction(_ sender: Any) {
@@ -133,7 +133,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func copyQrAction(_ sender: Any) {
         UIPasteboard.general.image = self.qrView.image
-        showAlert(vc: self, title: "", message: "QR copied ✓")
+        SuccessView.toast("QR copied", in: self)
     }
     
     @IBAction func shareInvoiceTextAction(_ sender: Any) {
@@ -142,7 +142,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func copyInvoiceTextAction(_ sender: Any) {
         UIPasteboard.general.string = invoiceText.text
-        showAlert(vc: self, title: "", message: "Invoice text copied ✓")
+        SuccessView.toast("Invoice text copied", in: self)
     }
                     
     func generateOnchainInvoice() {
@@ -344,7 +344,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                     
                     SuccessView.show(
                         in: self,
-                        title: "Wallet backup updated!",
+                        title: "Wallet backup updated",
                         subtitle: "You can export this backup by going back to the Active Wallet view and tapping the export button in the top right."
                     ) {
                         DispatchQueue.main.async { [weak self] in

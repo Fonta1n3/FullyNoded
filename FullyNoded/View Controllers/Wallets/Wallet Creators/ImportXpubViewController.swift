@@ -103,7 +103,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
             guard let self = self else { return }
             
             if success {
-                self.doneAlert("Descriptor wallet created ✓", "Tap done to go back and the home screen will refresh, your wallet is rescanning the blockchain, this can take awhile, to monitor rescan progress tap the refresh button on the \"Active Wallet\" tab. You will not see your balances or transaction history until the rescan completes.")
+                self.doneAlert("Descriptor wallet created", "Tap done to go back and the home screen will refresh, your wallet is rescanning the blockchain, this can take awhile, to monitor rescan progress tap the refresh button on the \"Active Wallet\" tab. You will not see your balances or transaction history until the rescan completes.")
             } else {
                 self.hideActivity()
                 showAlert(vc: self, title: "", message: errorDescription ?? "unknown error")
@@ -126,17 +126,9 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
             NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
             
             self.hideActivity()
-            
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
-                DispatchQueue.main.async {
-                    self.navigationController?.popToRootViewController(animated: true)
-                }
-            }))
-            
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true) {}
+            SuccessView.show(in: self, title: title, subtitle: message) { [weak self] in
+                self?.navigationController?.popToRootViewController(animated: true)
+            }
         }
     }
     

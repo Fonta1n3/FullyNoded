@@ -41,7 +41,7 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
         guard let pubkey = publickKeyLabel.text else { return }
         
         UIPasteboard.general.string = pubkey
-        showAlert(vc: self, title: "", message: "Pubkey copied ✓")
+        SuccessView.toast("Pubkey copied", in: self)
     }
     
     

@@ -258,7 +258,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                     hideActivity()
                     
                 case .walletpassphrasechange:
-                    showAlert(vc: self, title: "", message: "Passphrase updated ✓")
+                    SuccessView.toast("Passphrase updated", in: self)
                     hideActivity()
                     
                 default:

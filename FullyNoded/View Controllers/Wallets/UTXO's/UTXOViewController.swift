@@ -560,7 +560,7 @@ extension UTXOViewController: UTXOCellDelegate {
     func copyParentDesc(_ utxo: UTXO) {
         if let parentDescs = utxo.parentDescs {
             UIPasteboard.general.string = "\(parentDescs)"
-            showAlert(vc: self, title: "", message: "Parent descriptor copied ✓")
+            SuccessView.toast("Parent descriptor copied", in: self)
         }
     }
     
@@ -675,17 +675,17 @@ extension UTXOViewController: UTXOCellDelegate {
     
     func copyAddress(_ utxo: UTXO) {
         UIPasteboard.general.string = utxo.address!
-        showAlert(vc: self, title: "", message: "Address copied ✓")
+        SuccessView.toast("Address copied", in: self)
     }
     
     func copyTxid(_ utxo: UTXO) {
         UIPasteboard.general.string = utxo.txid
-        showAlert(vc: self, title: "", message: "Transaction ID copied ✓")
+        SuccessView.toast("Transaction ID copied", in: self)
     }
     
     func copyDesc(_ utxo: UTXO) {
         UIPasteboard.general.string = utxo.desc!
-        showAlert(vc: self, title: "", message: "Descriptor copied ✓")
+        SuccessView.toast("Descriptor copied", in: self)
     }
     
     func editLabel(_ utxo: UTXO) {

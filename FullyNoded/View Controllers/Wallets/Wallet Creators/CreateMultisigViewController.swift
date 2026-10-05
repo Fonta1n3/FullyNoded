@@ -59,7 +59,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             derivationField.text = cosigner.derivation
             addKeyStore(cosigner.fingerprint, cosigner.accountXpub == "" ? cosigner.accountXprv : cosigner.accountXpub)
             scriptSegmentedControl.selectedSegmentIndex = 1
-            showAlert(vc: self, title: "Cosigner added ✓", message: "Add more or select create wallet.")
+            SuccessView.toast("Cosigner added", in: self)
         }
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
