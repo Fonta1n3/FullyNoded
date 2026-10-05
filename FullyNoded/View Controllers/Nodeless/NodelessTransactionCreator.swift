@@ -294,11 +294,12 @@ class SweepViewController: UIViewController {
     }
     
     @objc private func createTransactionPressed() {
-        ConnectingView.shared.show(vc: self, description: "Creating psbt...")
+        guard !isShowingActivity else { return }
+        self.showActivity("Creating psbt...", button: createTxButton)
         
         guard let destination = addressTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
               !destination.isEmpty else {
-            ConnectingView.shared.dismiss()
+            self.hideActivity()
             showAlert(title: "", message: "Destination address not formatted correctly.")
             return
         }
@@ -323,7 +324,7 @@ class SweepViewController: UIViewController {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
-                    ConnectingView.shared.dismiss()
+                    self.hideActivity()
                     
                     guard let psbt = psbt else { return }
                     
@@ -343,7 +344,7 @@ class SweepViewController: UIViewController {
             } catch {
                 // Error: dismiss spinner and show alert on main thread
                 DispatchQueue.main.async {
-                    ConnectingView.shared.dismiss()
+                    self.hideActivity()
                     showAlert(title: "Error", message: error.localizedDescription)
                 }
             }

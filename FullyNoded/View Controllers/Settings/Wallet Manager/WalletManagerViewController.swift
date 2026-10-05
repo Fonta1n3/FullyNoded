@@ -11,7 +11,6 @@ import UIKit
 class WalletManagerViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     @IBOutlet var walletTable: UITableView!
-    let connectingView = ConnectingView.shared
     var activeWallets: [String] = []
     var inactiveWallets: [String] = []
     var wallets: [[String:Any]] = []
@@ -41,7 +40,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     }
         
     func refresh() {
-        connectingView.show(vc: self, description: "getting wallets...")
+        showActivity("getting wallets...")
         
         self.fnWallets.removeAll()
         
@@ -70,7 +69,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                         DispatchQueue.main.async { [weak self] in
                              guard let self = self else { return }
                             
-                            self.connectingView.dismiss()
+                            self.hideActivity()
                             displayAlert(viewController: self, isError: true, message: "error getting wallets: \(message ?? "")")
                         }
                         return
@@ -149,34 +148,34 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     private func syncCoreWalletToFN(walletName: String) {
         UserDefaults.standard.set(walletName, forKey: "walletName")
         
-        ConnectingView.shared.show(vc: self)
+        self.showActivity("syncing wallet...")
         
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
             
             guard let response = response else {
-                ConnectingView.shared.dismiss()
+                self.hideActivity()
                 showAlert(title: "Wallet activated, with an error:", message: (errorDesc ?? "Unknown error from listdescriptors.") + " Navigate back to the active wallet view and tap the refresh button.")
                 activateWallet(walletName: walletName)
                 return
             }
             
             guard let jsonData = try? JSONSerialization.data(withJSONObject: response, options: []) else {
-                ConnectingView.shared.dismiss()
+                self.hideActivity()
                 showAlert(title: "Wallet activated with an error:", message: "Could not serialize listdescriptors response to jsonData. Navigate back to the active wallet view and tap the refresh button.")
                 activateWallet(walletName: walletName)
                 return
             }
             
             guard let listDescriptorResponse = try? JSONDecoder().decode(ListDescriptorsResponse.self, from: jsonData) else {
-                ConnectingView.shared.dismiss()
+                self.hideActivity()
                 showAlert(title: "Wallet activated with an error:", message: "Could not decode listdescriptors response from jsonData. Navigate back to the active wallet view and tap the refresh button.")
                 activateWallet(walletName: walletName)
                 return
             }
             
             guard listDescriptorResponse.descriptors.count > 0 else {
-                ConnectingView.shared.dismiss()
+                self.hideActivity()
                 showAlert(title: "Wallet activated.", message: "This is not a descriptor wallet, therefore you will get limited functionality when utilizing this wallet. Navigate back to the active wallet view and tap the refresh button.")
                 activateWallet(walletName: walletName)
                 return
@@ -197,7 +196,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                 }
             }
             
-            ConnectingView.shared.dismiss()
+            self.hideActivity()
             prompToChoosePrimaryDesc(externalDescriptors: externalDescriptors, internalDescriptors: internalDescriptors, walletName: walletName)
         }
     }
@@ -330,7 +329,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.connectingView.dismiss()
+            self.hideActivity()
             self.walletTable.reloadData()
         }
     }

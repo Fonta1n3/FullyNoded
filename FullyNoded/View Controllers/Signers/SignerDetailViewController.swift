@@ -15,7 +15,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     
     var id:UUID!
     var cosigner:Descriptor?
-    private let spinner = ConnectingView.shared
     private var signer: SignerStruct!
     private var tableDict = [[String:Any]]()
     private var network = 0
@@ -915,12 +914,12 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
 //    }
     
     private func importAccountMap(_ descriptor: String, _ label: String, _ password: String) {
-        spinner.show(vc: self, description: "creating wallet...")
+        showActivity("creating wallet...")
         
         OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
             guard let self = self else { return }
             guard let blockchainInfo = blockchainInfo else {
-                self.spinner.dismiss()
+                self.hideActivity()
                 showAlert(vc: self, title: "", message: message ?? "error getting blockchaininfo")
                 return
             }
@@ -934,7 +933,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             }
             
             ImportWallet.accountMap(accountMap) { (success, errorDescription) in
-                self.spinner.dismiss()
+                self.hideActivity()
                 
                 guard success else {
                     showAlert(vc: self, title: "There was an issue creating your wallet...", message: errorDescription ?? "Unknown...")

@@ -323,7 +323,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            ConnectingView.shared.dismiss()
+            self.hideActivity()
             self.refresher.endRefreshing()
             self.spinner.stopAnimating()
             self.spinner.alpha = 0
@@ -482,7 +482,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             guard let signers = signers, signers.count > 0 else {
                 showAlert(title: "", message: "No signers present.")
-                ConnectingView.shared.dismiss()
+                self.hideActivity()
                 return
             }
             
@@ -525,7 +525,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                         
                     } catch {
                         showAlert(title: "Failed converting to bdkMnemonic", message: error.localizedDescription)
-                        ConnectingView.shared.dismiss()
+                        self.hideActivity()
                     }
                 }
             }

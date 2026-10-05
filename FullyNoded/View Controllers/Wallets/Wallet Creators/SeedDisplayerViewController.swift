@@ -13,7 +13,6 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     @IBOutlet weak var savedOutlet: UIButton!
     @IBOutlet weak var textView: UITextView!
     
-    let spinner = ConnectingView.shared
     var primDesc = ""
     var changeDesc = ""
     var name = ""
@@ -49,7 +48,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             self.blockheight = Int64(blockheight)
             
         } else {
-            spinner.show(vc: self, description: "fetching chain type...")
+            showActivity("fetching chain type...")
             
             OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
                 guard let self = self else { return }
@@ -76,7 +75,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         
         // check if version is at least 0.21.0 to use native descriptors
         guard let version = UserDefaults.standard.object(forKey: "version") as? Int else {
-            self.spinner.dismiss()
+            self.hideActivity()
             showAlert(vc: self, title: "Version unknown.", message: "In order to create a wallet we need to know which version of Bitcoin Core you are running, please go the the home screen and refresh then try to create this wallet again.")
             
             return
@@ -97,13 +96,13 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             
             UserDefaults.standard.removeObject(forKey: "walletName")
             self.textView.text = ""
-            self.spinner.dismiss()
+            self.hideActivity()
             showAlert(vc: self, title: "Error", message: error)
         }
     }
     
     private func getWords() {
-        spinner.show(vc: self, description: "creating Fully Noded wallet...")
+        showActivity("creating Fully Noded wallet...")
         
         guard let seed = Keys.seedWords() else {
             showError(error: "Error deriving seed")
@@ -139,7 +138,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     private func importAccountMap(_ accountMap: [String:Any]) {
         ImportWallet.accountMap(accountMap) { (success, errorDescription) in
             if success {
-                self.spinner.dismiss()
+                self.hideActivity()
                 
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
@@ -250,7 +249,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 
             } else {
                 if let message = message {
-                    self.spinner.dismiss()
+                    self.hideActivity()
                     showAlert(vc: self, title: "Error", message: message)
                 }
             }
@@ -353,7 +352,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             guard let self = self else { return }
             
             if success {
-                self.spinner.dismiss()
+                self.hideActivity()
                 
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
@@ -364,7 +363,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 
             } else {
                 UserDefaults.standard.removeObject(forKey: "walletName")
-                self.spinner.dismiss()
+                self.hideActivity()
                 self.showError(error: "Error saving your wallet to the device")
             }
         }

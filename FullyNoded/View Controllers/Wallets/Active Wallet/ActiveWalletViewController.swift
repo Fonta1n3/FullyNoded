@@ -20,7 +20,6 @@ class ActiveWalletViewController: UIViewController {
     private var wallet: Wallet?
     private var fxRate: Double?
     private let barSpinner = UIActivityIndicatorView(style: .medium)
-    private let spinner = ConnectingView.shared
     private var hex = ""
     private var confs = 0
     private var txToEdit = ""
@@ -275,10 +274,10 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @objc func importWallet(_ notification: NSNotification) {
-        spinner.show(vc: self, description: "Creating your wallet, this can take a minute...")
+        showActivity("Creating your wallet, this can take a minute...")
         
         guard let accountMap = notification.userInfo as? [String:Any] else {
-            self.spinner.dismiss()
+            self.hideActivity()
             showAlert(vc: self, title: "", message: "That file does not seem to be a compatible wallet import, please raise an issue on the github so we can add support for it.")
             return
         }
@@ -287,12 +286,12 @@ class ActiveWalletViewController: UIViewController {
             guard let self = self else { return }
             
             guard success else {
-                self.spinner.dismiss()
+                self.hideActivity()
                 showAlert(vc: self, title: "Error importing wallet", message: errorDescription ?? "unknown")
                 return
             }
             
-            self.spinner.dismiss()
+            self.hideActivity()
             OnchainUtils.rescan { _ in }
             showAlert(vc: self, title: "Wallet created ✓", message: "It has been activated and is refreshing now. A rescan has been initiated, you may not see balances or transaction history until the rescan completes.")
             self.refreshWallet()
@@ -300,10 +299,10 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @objc func addColdcard(_ notification: NSNotification) {
-        spinner.show(vc: self, description: "creating your Coldcard wallet, this can take a minute...")
+        showActivity("creating your Coldcard wallet, this can take a minute...")
         
         guard let coldCard = notification.userInfo as? [String:Any] else {
-            self.spinner.dismiss()
+            self.hideActivity()
             showAlert(vc: self, title: "Ooops", message: "That file does not seem to be a compatible wallet import, please raise an issue on the github so we can add support for it.")
             return
         }
@@ -312,12 +311,12 @@ class ActiveWalletViewController: UIViewController {
             guard let self = self else { return }
             
             guard success else {
-                self.spinner.dismiss()
+                self.hideActivity()
                 showAlert(vc: self, title: "Error creating Coldcard wallet", message: errorDescription ?? "unknown")
                 return
             }
             
-            self.spinner.dismiss()
+            self.hideActivity()
             showAlert(vc: self, title: "Coldcard Wallet imported ✓", message: "It has been activated and is refreshing now.")
             self.refreshWallet()
         }
@@ -642,13 +641,13 @@ class ActiveWalletViewController: UIViewController {
         guard let onchainTransactions = onchainTransactions,
               onchainTransactions.transactions.indices.contains(index) else { return }
         
-        spinner.show(vc: self, description: "getting raw transaction...")
+        showActivity("getting raw transaction...")
         
         let transaction = onchainTransactions.transactions[index]
         let param:Get_Tx = .init(["txid": transaction.txid, "verbose": true])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .gettransaction(param)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
-            self.spinner.dismiss()
+            self.hideActivity()
             guard let dict = response as? NSDictionary, let hex = dict["hex"] as? String else {
                 showAlert(vc: self, title: "There was an issue getting the transaction.", message: errorMessage ?? "unknown error")
                 return
@@ -871,7 +870,7 @@ class ActiveWalletViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.spinner.dismiss()
+            self.hideActivity()
             self.barSpinner.stopAnimating()
             self.barSpinner.alpha = 0
             self.refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(self.refreshData(_:)))
@@ -986,7 +985,7 @@ class ActiveWalletViewController: UIViewController {
                 guard let self = self else { return }
                 
                 showAlert(vc: self, title: "", message: "Transaction updated ✓")
-                self.spinner.show(vc: self, description: "refreshing transactions...")
+                self.showActivity("refreshing transactions...")
                 self.loadTransactions()
             }
             

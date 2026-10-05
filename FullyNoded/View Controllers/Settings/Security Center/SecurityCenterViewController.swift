@@ -237,36 +237,35 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     }
         
     func executNodeCommand(method: BTC_CLI_COMMAND) {
-        let connectingView = ConnectingView.shared
-        connectingView.show(vc: self, description: "")
+        showActivity("updating wallet encryption...")
         MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             if errorMessage == nil {
                 switch method {
                 case .encryptwallet:
-                    connectingView.dismiss()
+                    hideActivity()
                     if let result = response as? String {
                         showAlert(vc: self, title: "", message: result)
                     }
                     
                 case .walletlock:
                     showAlert(vc: self, title: "", message: "Wallet encrypted 🔐")
-                    connectingView.dismiss()
+                    hideActivity()
                     
                 case .walletpassphrase:
                     showAlert(vc: self, title: "", message: "Wallet decrypted 🔓 for 10 minutes.")
-                    connectingView.dismiss()
+                    hideActivity()
                     
                 case .walletpassphrasechange:
                     showAlert(vc: self, title: "", message: "Passphrase updated ✓")
-                    connectingView.dismiss()
+                    hideActivity()
                     
                 default:
                     break
                 }
             } else {
-                connectingView.dismiss()
+                hideActivity()
                 displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
             }
         }

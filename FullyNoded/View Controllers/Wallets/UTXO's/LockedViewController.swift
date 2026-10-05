@@ -11,7 +11,6 @@ import UIKit
 class LockedViewController: UIViewController {
     
     private var lockedUtxos: [[String: Any]] = []
-    let spinner = ConnectingView.shared
     var selectedVout = Int()
     var selectedTxid = ""
     @IBOutlet var tableView: UITableView!
@@ -22,7 +21,7 @@ class LockedViewController: UIViewController {
         tableView.dataSource = self
         tableView.register(UINib(nibName: UTXOCell.identifier, bundle: nil), forCellReuseIdentifier: UTXOCell.identifier)
         tableView.tableFooterView = UIView(frame: .zero)
-        spinner.show(vc: self, description: "Getting Locked UTXO's")
+        showActivity("Getting Locked UTXO's")
         // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
         WalletTheme.apply(to: self, tint: .utxo)
     }
@@ -35,7 +34,7 @@ class LockedViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.spinner.dismiss()
+            self.hideActivity()
             self.tableView.reloadData()
             self.tableView.isUserInteractionEnabled = true
         }
@@ -94,7 +93,7 @@ class LockedViewController: UIViewController {
     }
     
     private func unlock(_ utxo: [String: Any]) {
-        spinner.show(vc: self, description: "unlocking...")
+        showActivity("unlocking...")
         let param:Lock_Unspent = .init(["unlock": true, "transactions": [["txid":utxo["txid"] as! String,"vout":utxo["vout"] as! Int]]])
         
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .lockunspent(param)) { (response, errorMessage) in

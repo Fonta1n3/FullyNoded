@@ -617,11 +617,12 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
             return
         }
         
-        ConnectingView.shared.show(vc: self, description: "Broadcasting...")
+        guard !isShowingActivity else { return }
+        self.showActivity("Broadcasting...", button: broadcastButton)
         
         Task {
             let result = try await Broadcaster.sharedInstance.broadcastRawTransaction(rawTx: rawTx, network: network)
-            ConnectingView.shared.dismiss()
+            self.hideActivity()
             switch result {
             case .success(let txid):
                 saveNewUtxo(txid: txid)
@@ -693,6 +694,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     }
     
     @objc private func signButtonTapped() {
+        guard !isShowingActivity else { return }
         let alert = UIAlertController(
             title: "Passphrase (Optional)",
             message: "Enter your BIP39 passphrase if your wallet uses one.\nLeave blank if none.",
@@ -732,7 +734,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     private func performSigning(with passphrase: String) {
         // Show loading spinner
         guard let wallet = wallet else { return }
-        ConnectingView.shared.show(vc: self, description: "Signing transaction...")
+        self.showActivity("Signing transaction...", button: signButton)
         
         // Run signing on background thread
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
@@ -756,13 +758,13 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                     guard let self = self else { return }
                     
                     guard let signers = signers else {
-                        ConnectingView.shared.dismiss()
+                        self.hideActivity()
                         showAlert(title: "", message: "No signers to sign with...")
                         return
                     }
                     
                     guard !signers.isEmpty else {
-                        ConnectingView.shared.dismiss()
+                        self.hideActivity()
                         showAlert(title: "", message: "No signers to sign with...")
                         return
                     }
@@ -781,14 +783,14 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     
     private func attemptToSign(signers: [SignerStruct], passphrase: String?, fnWallet: Wallet) {
         guard let psbt = psbt else {
-            ConnectingView.shared.dismiss()
+            self.hideActivity()
             showAlert(title: "", message: "No psbt to sign...")
             return
         }
         
         Signer.shared.sign(fnWallet: fnWallet, psbt: psbt.serialize(), passphrase: passphrase, signers: signers, network: network, parentDesc: fnWallet.receiveDescriptor) { [weak self] (signedPsbt, rawTx, errorMessage) in
             guard let self = self else { return }
-            ConnectingView.shared.dismiss()
+            self.hideActivity()
             
             if let rawTx = rawTx {
                 DispatchQueue.main.async { [weak self] in

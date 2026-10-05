@@ -20,7 +20,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     var cosigner:Descriptor?
     var onDoneBlock:(((Bool)) -> Void)?
-    let spinner = ConnectingView.shared
     var ccXfp = ""
     var xpub = ""
     var deriv = ""
@@ -181,7 +180,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
-            spinner.dismiss()
+            hideActivity()
             showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup/export/import file")
             return
         }
@@ -189,7 +188,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         guard let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
             
             guard let txt = String(bytes: data, encoding: .utf8) else {
-                spinner.dismiss()
+                hideActivity()
                 showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup/export/import file")
                 return
             }
@@ -469,7 +468,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func importAccountMap(_ accountMap: [String:Any]) {
-        spinner.show(vc: self, description: "importing...")
+        showActivity("importing...")
         
         func importAccount() {
             if let _ = accountMap["descriptor"] as? String {
@@ -478,18 +477,18 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                     ImportWallet.accountMap(accountMap) { (success, errorDescription) in
                         if success {
                             DispatchQueue.main.async {
-                                self.spinner.dismiss()
+                                self.hideActivity()
                                 self.onDoneBlock!(true)
                                 self.navigationController?.popViewController(animated: true)
                             }
                         } else {
-                            self.spinner.dismiss()
+                            self.hideActivity()
                             showAlert(vc: self, title: "Error", message: "There was an error importing your wallet: \(errorDescription ?? "unknown")")
                         }
                     }
                 }
             } else if let _ = accountMap["ExtPubKey"] as? String {
-                spinner.dismiss()
+                hideActivity()
                 promptToImportCoboSingleSig(accountMap)
             }
         }
@@ -497,7 +496,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         if let url = accountMap["quickConnect"] as? String {
             QuickConnect.addNode(url: url) { (success, errorMessage) in
                 guard success else {
-                    self.spinner.dismiss()
+                    self.hideActivity()
                     showAlert(vc: self, title: "Node connection issue:", message: errorMessage ?? "unknown error")
                     return
                 }
@@ -612,7 +611,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
 
     private func performImport(backup: WalletBackup) {
         guard let jsonData = try? backup.jsonData() else { return }
-        spinner.show(vc: self, description: "Recovering wallet...")
+        showActivity("Recovering wallet...")
         
         var fnWalletToCreateDict: [String: Any] = [
             "walletBackup": jsonData,
@@ -801,7 +800,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                                             let data = try backup.jsonData()
                                             CoreDataService.update(id: existingFnWallet.id, keyToUpdate: "walletBackup", newValue: data, entity: .wallets) { [weak self] backupUpdated in
                                                 guard let self = self else { return }
-                                                spinner.dismiss()
+                                                hideActivity()
                                                 guard backupUpdated else {
                                                     showAlert(title: "Updating backup failed.", message: "Please contact as asap and let us know about this bug.")
                                                     return
@@ -809,7 +808,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                                                 showSuccess(showUpdatedTimestampAlert: showUpdatedTimestampAlert)
                                             }
                                         } catch {
-                                            spinner.dismiss()
+                                            hideActivity()
                                             showAlert(title: "Can not convert backup to json data", message: "Please contact as asap and let us know about this bug.")
                                         }
                                     }
@@ -831,7 +830,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                     }
                 }
             } catch {
-                spinner.dismiss {
+                hideActivity {
                     showAlert(title: "Error parsing JSON", message: error.localizedDescription)
                 }
             }
@@ -855,7 +854,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 if let message = message, message.contains("Database already exists") {
                     setActiveAndImport(name: fnWalletToCreateDict["name"] as! String, exists: true, backup: backup, descriptorDicts: descriptorDicts, fnWalletToCreateDict: fnWalletToCreateDict)
                 } else {
-                    spinner.dismiss()
+                    hideActivity()
                     showAlert(title: "", message: message ?? "Unknown error creating wallet.")
                 }
                 return
@@ -865,7 +864,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func showSuccess(showUpdatedTimestampAlert: Bool) {
-        spinner.dismiss {
+        hideActivity {
             if showUpdatedTimestampAlert {
                 SuccessView.show(
                     in: self,
@@ -891,7 +890,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         OnchainUtils.importDescriptors(p) { [weak self] (imported, message) in
             guard let self = self else { return }
             guard imported else {
-                spinner.dismiss()
+                hideActivity()
                 if let message = message {
                     guard message.contains("-rescan") else {
                         showAlert(title: "", message: message)

@@ -15,7 +15,6 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     var walletId: UUID!
     var wallet: Wallet!
     
-    let spinner = ConnectingView.shared
     var coinType = "0"
     var addresses = ""
     var originalLabel = ""
@@ -196,10 +195,10 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     }
     
     @objc func showGetWalletInfoAction() {
-        spinner.show(vc: self, description: "Getting wallet info...")
+        showActivity("Getting wallet info...")
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .getwalletinfo) { [weak self] response, errorDesc in
             guard let self else { return }
-            spinner.dismiss()
+            hideActivity()
             guard let response = response as? [String: Any] else {
                 showAlert(vc: self, title: "", message: "No response from getwalletinfo.")
                 return
@@ -278,7 +277,7 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         OnchainUtils.getDescriptorInfo(p) { [weak self] descriptorInfo, message in
             guard let self else { return }
             guard let descriptorInfo else {
-                spinner.dismiss()
+                hideActivity()
                 showAlert(vc: self, title: "", message: message ?? "Can not get descriptorinfo.")
                 return
             }
@@ -290,7 +289,7 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
             let param: Derive_Addresses = .init(["descriptor": desc, "range": range])
             OnchainUtils.deriveAddresses(param: param) { [weak self] response, message in
                 guard let self else { return }
-                spinner.dismiss()
+                hideActivity()
                 if let addr = response as? NSArray {
                     for (i, address) in addr.enumerated() {
                         addresses += "#\(i): \(address)\n\n"
@@ -1103,12 +1102,12 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
                 request["next_index"] = next
             }
 
-            spinner.show(vc: self, description: "Setting descriptor active...")
+            showActivity("Setting descriptor active...")
 
             let param: Import_Descriptors = .init(["requests": [request]])
             MakeRPCCall.sharedInstance.executeRPCCommand(method: .importdescriptors(param: param)) { [weak self] response, errorDesc in
                 guard let self else { return }
-                spinner.dismiss()
+                hideActivity()
 
                 if let errorDesc, !errorDesc.isEmpty {
                     sender.setOn(false, animated: true)
@@ -1204,10 +1203,10 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         showReceive = sender.selectedSegmentIndex
         addresses = ""
         if showReceive == 0 {
-            spinner.show(vc: self, description: "deriving receive addresses...")
+            showActivity("deriving receive addresses...")
             deriveAddresses(wallet.receiveDescriptor)
         } else {
-            spinner.show(vc: self, description: "deriving change addresses...")
+            showActivity("deriving change addresses...")
             deriveAddresses(wallet.changeDescriptor)
         }
     }
@@ -1227,11 +1226,11 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
                         if yearToScanFrom < 2010 { yearToScanFrom = 2010 }
                         let yearsToScan = (currentYear - yearToScanFrom) + 1
                         let blocksToScan = yearsToScan * 55000
-                        spinner.show(vc: self, description: "rescanning...")
+                        showActivity("rescanning...")
                         OnchainUtils.getBlockchainInfo { [weak self] blockchainInfo, message in
                             guard let self else { return }
                             guard let blockchainInfo else {
-                                spinner.dismiss()
+                                hideActivity()
                                 showAlert(vc: self, title: "", message: message ?? "Unknown issue getblockchaininfo.")
                                 return
                             }
@@ -1243,15 +1242,15 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
                                 OnchainUtils.rescanNow(from: blockheight) { [weak self] started, message in
                                     guard let self else { return }
                                     guard started else {
-                                        spinner.dismiss()
+                                        hideActivity()
                                         showAlert(vc: self, title: "", message: message ?? "Unknown issue from rescan.")
                                         return
                                     }
-                                    self.spinner.dismiss()
+                                    self.hideActivity()
                                     showAlert(vc: self, title: "", message: "Rescanning, you can refresh this page to see completion status.")
                                 }
                             } else {
-                                spinner.dismiss()
+                                hideActivity()
                                 showAlert(vc: self, title: "", message: "Wait till your node is done syncing before attempting to rescan or use wallets.")
                             }
                         }

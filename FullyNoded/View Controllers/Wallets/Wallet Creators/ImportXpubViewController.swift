@@ -16,7 +16,6 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
     @IBOutlet var addressTableView: UITableView!
     
     var addresses: [String] = []
-    let spinner = ConnectingView.shared
     var onDoneBlock:(((Bool)) -> Void)?
     var descriptor: Descriptor?
 
@@ -57,6 +56,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
     }
     
     @IBAction func importAction(_ sender: Any) {
+        guard !isShowingActivity else { return }
         guard let desc = self.descriptor else { return }
         
         importDescriptor(desc.string)
@@ -87,7 +87,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
     }
         
     private func importDescriptor(_ desc: String) {
-        spinner.show(vc: self, description: "importing descriptor wallet, this can take a minute...")
+        showActivity("importing descriptor wallet, this can take a minute...", button: importOutlet)
         
         let defaultLabel = "Descriptor import"
         
@@ -105,7 +105,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
             if success {
                 self.doneAlert("Descriptor wallet created ✓", "Tap done to go back and the home screen will refresh, your wallet is rescanning the blockchain, this can take awhile, to monitor rescan progress tap the refresh button on the \"Active Wallet\" tab. You will not see your balances or transaction history until the rescan completes.")
             } else {
-                self.spinner.dismiss()
+                self.hideActivity()
                 showAlert(vc: self, title: "", message: errorDescription ?? "unknown error")
             }
         }
@@ -125,7 +125,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
             
             NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
             
-            self.spinner.dismiss()
+            self.hideActivity()
             
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             

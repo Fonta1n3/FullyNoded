@@ -17,7 +17,6 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
     var addressToExport = ""
     var derivationToExport = ""
     var network: WalletLogic.BDKNetwork!
-    let spinner = ConnectingView.shared
     var primaryDescriptor = ""
     var changeDescriptor: String?
     var watchOnlyBdkWallet: WalletLogic.BDKWallet?
@@ -314,7 +313,7 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
         guard let text = try? String(contentsOf: urls[0].absoluteURL) else {
             
             guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
-                spinner.dismiss()
+                hideActivity()
                 showAlert(vc: self, title: "Invalid File", message: "That is not a recognized format, generally it will be a .psbt or .txn file.")
                 return
             }
@@ -368,7 +367,7 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
     }
     
     func load() {
-        spinner.show(vc: self, description: "Loading...")
+        showActivity("Loading...")
         savedUtxos.removeAll()
         addresses.removeAll()
         
@@ -405,25 +404,25 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
         }
                 
         guard let bdkPrimDesc = try? WalletLogic.BDKDescriptor(descriptor: primaryDescriptor, networkKind: WalletLogic.shared.networkKind(network: network)) else {
-            spinner.dismiss()
+            hideActivity()
             showAlert(vc: self, title: "", message: "Unable to derive BDK primary descriptor.")
             return
         }
         
         guard let bdkChangeDesc = try? WalletLogic.BDKDescriptor(descriptor: changeDesc, networkKind: WalletLogic.shared.networkKind(network: network)) else {
-            spinner.dismiss()
+            hideActivity()
             showAlert(vc: self, title: "", message: "Unable to derive BDK change descriptor.")
             return
         }
         
         guard let persister = WalletLogic.shared.persistor() else {
-            spinner.dismiss()
+            hideActivity()
             showAlert(vc: self, title: "", message: "Unable to create persistor.")
             return
         }
         
         guard let bdkWallet = try? WalletLogic.BDKWallet(descriptor: bdkPrimDesc, changeDescriptor: bdkChangeDesc, network: network, persister: persister) else {
-            spinner.dismiss()
+            hideActivity()
             showAlert(vc: self, title: "", message: "Unable to derive BDK wallet.")
             return
         }
@@ -597,7 +596,7 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
             guard let self = self else { return }
             
             tableView.reloadData()
-            spinner.dismiss()
+            hideActivity()
         }
     }
 
