@@ -67,6 +67,18 @@ class MainMenuViewController: UIViewController {
     private let heightLabel = UILabel()
     private let syncLabel = UILabel()
     private let syncProgressView = UIProgressView(progressViewStyle: .bar)
+    /// Device clock vs the chain tip's timestamp (generous; see clockCheck).
+    private let clockLabel = UILabel()
+
+    // Node connection status row: dot + state, and when we last heard from the node.
+    private enum NodeState { case idle, noNode, connecting, connected, unreachable }
+    private var nodeState: NodeState = .idle { didSet { renderNodeStatus() } }
+    private let nodeDot = UIView()
+    private let nodeStatusLabel = UILabel()
+    private let updatedLabel = UILabel()
+    /// Last successful response from the active node (persisted per node).
+    private var lastUpdated: Date?
+    private var statusTimer: Timer?
     
     private let peersTile = DashboardTile(caption: "PEERS", symbol: "person.3")
     private let mempoolTile = DashboardTile(caption: "MEMPOOL", symbol: "waveform.path.ecg")
@@ -84,23 +96,29 @@ class MainMenuViewController: UIViewController {
         UIApplication.shared.isIdleTimerDisabled = true
         addNavBarSpinner()
         
+        let firstRun = UserDefaults.standard.value(forKey: "beenHere") == nil
+        if firstRun { OnboardingViewController.expect() }
+        
         MakeRPCCall.sharedInstance.getActiveNode { [weak self] node in
             guard let self = self else { return }
             guard let node = node  else {
-                guard  UserDefaults.standard.value(forKey: "beenHere") == nil else { return }
+                guard firstRun else { return }
                 
                 CoreDataService.retrieveEntity(entityName: .newNodes) { savedNodes in
-                    if savedNodes == nil || savedNodes?.count == 0 {
-                        DispatchQueue.main.async { [weak self] in
-                            guard let self = self else { return }
-                            removeLoader()
-                            performSegue(withIdentifier: "segueToFirstTimeHere", sender: self)
-                            UserDefaults.standard.set(true, forKey: "beenHere")
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        guard savedNodes == nil || savedNodes?.count == 0 else {
+                            OnboardingViewController.cancelExpected()
+                            return
                         }
+                        removeLoader()
+                        OnboardingViewController.present(from: self.tabBarController ?? self)
+                        UserDefaults.standard.set(true, forKey: "beenHere")
                     }
                 }
                 return
             }
+            if firstRun { OnboardingViewController.cancelExpected() }
             activeNode = node
             DispatchQueue.main.async { [weak self] in
                 self?.nodeLabel.text = node.label
@@ -117,6 +135,11 @@ class MainMenuViewController: UIViewController {
         scrollView.refreshControl = refreshControl
         ensureXfpSaved()
         renderDashboard()
+        statusTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            self.renderNodeStatus()
+            if let info = self.blockchainInfo { self.renderClockCheck(info) }
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -145,6 +168,13 @@ class MainMenuViewController: UIViewController {
     // MARK: - Layout
     
     private func buildLayout() {
+        // Replays the onboarding flow (next to the lock; the right side is the refresh/spinner slot).
+        let guide = UIBarButtonItem(image: UIImage(systemName: "signpost.right"), style: .plain,
+                                    target: self, action: #selector(showOnboarding))
+        guide.tintColor = tint.accent
+        guide.accessibilityLabel = "Setup guide"
+        navigationItem.leftBarButtonItems = (navigationItem.leftBarButtonItems ?? []) + [guide]
+
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.alwaysBounceVertical = true
         view.addSubview(scrollView)
@@ -201,6 +231,11 @@ class MainMenuViewController: UIViewController {
         
         // Cypherpunk look (WalletTheme in ActiveWalletViewController.swift).
         WalletTheme.apply(to: self, tint: tint)
+        // The theme pass paints progress tracks green; keep the node card's neutral so
+        // only actual progress is green.
+        for bar in [torProgressView, syncProgressView] {
+            bar.trackTintColor = WalletTheme.dim.withAlphaComponent(0.18)
+        }
         navigationController?.navigationBar.tintColor = tint.accent
         // Also styled from SceneDelegate; repeated here in case the tab bar wasn't the
         // window's root yet when the scene connected.
@@ -214,20 +249,25 @@ class MainMenuViewController: UIViewController {
     /// Node label, chain, Tor status, block height and sync progress.
     private func nodeCard() -> UIView {
         nodeLabel.font = WalletTheme.mono(22, weight: .bold)
-        nodeLabel.textColor = tint.accent
+        nodeLabel.textColor = WalletTheme.text
         nodeLabel.adjustsFontSizeToFitWidth = true
         nodeLabel.minimumScaleFactor = 0.6
         nodeLabel.text = "—"
         
         chainBadge.font = WalletTheme.mono(11, weight: .bold)
-        chainBadge.textColor = tint.accent
+        chainBadge.textColor = WalletTheme.dim
         chainBadge.layer.borderWidth = 1
-        chainBadge.layer.borderColor = tint.line.cgColor
+        chainBadge.layer.borderColor = WalletTheme.dim.withAlphaComponent(0.5).cgColor
         chainBadge.isHidden = true
         chainBadge.setContentHuggingPriority(.required, for: .horizontal)
         chainBadge.setContentCompressionResistancePriority(.required, for: .horizontal)
         
-        let captionRow = UIStackView(arrangedSubviews: [WalletTheme.caption("> NODE", tint: tint), UIView(), chainBadge])
+        let chevron = UIImageView(image: UIImage(systemName: "chevron.right",
+                                                 withConfiguration: UIImage.SymbolConfiguration(pointSize: 11, weight: .bold)))
+        chevron.tintColor = WalletTheme.dim
+        chevron.setContentHuggingPriority(.required, for: .horizontal)
+        let captionRow = UIStackView(arrangedSubviews: [WalletTheme.caption("> NODE", tint: tint), UIView(), chainBadge, chevron])
+        captionRow.spacing = 8
         captionRow.axis = .horizontal
         captionRow.alignment = .center
         
@@ -245,8 +285,29 @@ class MainMenuViewController: UIViewController {
         torRow.alignment = .center
         torRow.spacing = 8
         
+        nodeDot.translatesAutoresizingMaskIntoConstraints = false
+        nodeDot.layer.cornerRadius = 4
+        NSLayoutConstraint.activate([
+            nodeDot.widthAnchor.constraint(equalToConstant: 8),
+            nodeDot.heightAnchor.constraint(equalToConstant: 8)
+        ])
+        nodeStatusLabel.font = WalletTheme.mono(12, weight: .semibold)
+        updatedLabel.font = WalletTheme.mono(10, weight: .medium)
+        updatedLabel.textColor = WalletTheme.dim
+        updatedLabel.textAlignment = .right
+        updatedLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        updatedLabel.adjustsFontSizeToFitWidth = true
+        updatedLabel.minimumScaleFactor = 0.8
+        nodeStatusLabel.setContentHuggingPriority(.required, for: .horizontal)
+        nodeStatusLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        let nodeRow = UIStackView(arrangedSubviews: [nodeDot, nodeStatusLabel, updatedLabel])
+        nodeRow.axis = .horizontal
+        nodeRow.alignment = .center
+        nodeRow.spacing = 8
+        renderNodeStatus()
+
         torProgressView.progressTintColor = tint.accent
-        torProgressView.trackTintColor = tint.line
+        torProgressView.trackTintColor = WalletTheme.dim.withAlphaComponent(0.18)   // only progress is green
         torProgressView.isHidden = true
         
         heightLabel.font = WalletTheme.mono(17, weight: .semibold)
@@ -257,19 +318,131 @@ class MainMenuViewController: UIViewController {
         syncLabel.textColor = WalletTheme.dim
         syncLabel.text = "SYNC ···"
         syncProgressView.progressTintColor = tint.accent
-        syncProgressView.trackTintColor = tint.line
+        syncProgressView.trackTintColor = WalletTheme.dim.withAlphaComponent(0.18)   // only progress is green
         syncProgressView.progress = 0
+
+        clockLabel.font = WalletTheme.mono(10, weight: .semibold)
+        clockLabel.textColor = WalletTheme.dim
+        clockLabel.numberOfLines = 0
+        clockLabel.isHidden = true
         
-        let card = WalletTheme.cardView([captionRow, nodeLabel, torRow, torProgressView, heightLabel, syncLabel, syncProgressView],
+        let card = WalletTheme.cardView([captionRow, nodeLabel, nodeRow, torRow, torProgressView, heightLabel, syncLabel, syncProgressView, clockLabel],
                                         tint: tint, spacing: 8)
         if let stack = card.subviews.first as? UIStackView {
             stack.setCustomSpacing(10, after: torProgressView)
             stack.setCustomSpacing(4, after: syncLabel)
         }
+        // Tap: the getblockchaininfo response already loaded for this card.
+        card.isUserInteractionEnabled = true
+        card.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(nodeCardTapped(_:))))
+        card.accessibilityTraits = .button
+        card.accessibilityHint = "Shows the raw getblockchaininfo response"
         return card
     }
     
     // MARK: - Rendering
+
+    /// Node status row. The timestamp reads "UPDATED …" while connected, otherwise
+    /// "LAST CONNECTED …" (or nothing if this node has never answered).
+    private func renderNodeStatus() {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in self?.renderNodeStatus() }
+            return
+        }
+        let (text, color): (String, UIColor) = {
+            switch nodeState {
+            case .connected: return ("NODE CONNECTED", WalletTheme.text)
+            case .connecting: return ("CONNECTING…", WalletTheme.pending)
+            case .unreachable: return ("NODE UNREACHABLE", WalletTheme.danger)
+            case .noNode: return ("NO NODE", WalletTheme.dim)
+            case .idle: return ("NOT CONNECTED", WalletTheme.dim)
+            }
+        }()
+        nodeStatusLabel.text = text
+        nodeStatusLabel.textColor = color
+        nodeDot.backgroundColor = nodeState == .connected ? tint.accent : color
+
+        guard nodeState != .noNode, let lastUpdated = lastUpdated else {
+            updatedLabel.text = nil
+            return
+        }
+        let ago = Self.relativeAgo(lastUpdated)
+        updatedLabel.text = nodeState == .connected ? "UPDATED \(ago)" : "LAST CONNECTED \(ago)"
+    }
+
+    /// "JUST NOW", "45S AGO", "12M AGO", "3H AGO", "2D AGO".
+    private static func relativeAgo(_ date: Date) -> String {
+        let seconds = max(0, Int(Date().timeIntervalSince(date)))
+        switch seconds {
+        case ..<10: return "JUST NOW"
+        case ..<60: return "\(seconds)S AGO"
+        case ..<3600: return "\(seconds / 60)M AGO"
+        case ..<86400: return "\(seconds / 3600)H AGO"
+        default: return "\(seconds / 86400)D AGO"
+        }
+    }
+
+    /// Compares the device clock with the chain tip's timestamp. Generous on purpose: a
+    /// block's time is set by its miner (consensus allows up to 2h ahead of network time)
+    /// and blocks are ~10 min apart, so only clear mismatches are flagged.
+    /// - tip more than ~2h15m in the FUTURE: impossible for a valid tip with a correct
+    ///   device clock, so the device clock is behind.
+    /// - mainnet tip older than 3h while not in IBD: node stuck or device clock ahead.
+    /// Falls back to `mediantime` (lags ~1h) when `time` isn't reported, with 1h more slack.
+    private func renderClockCheck(_ info: BlockchainInfo) {
+        let raw = info.rawData
+        let usesMedian = raw["time"] == nil
+        guard !info.initialblockdownload, info.chain != "regtest",
+              let tipTime = ((raw["time"] ?? raw["mediantime"]) as? NSNumber)?.doubleValue, tipTime > 0 else {
+            clockLabel.isHidden = true
+            return
+        }
+        let age = Date().timeIntervalSince1970 - tipTime
+        let slack: TimeInterval = usesMedian ? 3600 : 0
+        let tipAge = age < 0 ? "TIP IN THE FUTURE" : "TIP " + Self.relativeAgo(Date(timeIntervalSince1970: tipTime))
+
+        clockLabel.isHidden = false
+        if age < -(2 * 3600 + 15 * 60) {
+            clockLabel.text = "DEVICE CLOCK BEHIND? · \(tipAge)"
+            clockLabel.textColor = WalletTheme.pending
+        } else if info.chain == "main" {
+            if age <= 3 * 3600 + slack {
+                clockLabel.text = "TIME IN SYNC · \(tipAge)"
+                clockLabel.textColor = WalletTheme.dim
+            } else {
+                clockLabel.text = "\(tipAge.replacingOccurrences(of: " AGO", with: " OLD")) · CHECK CLOCK"
+                clockLabel.textColor = WalletTheme.pending
+            }
+        } else {
+            // Test networks: irregular blocks, no verdict beyond the future check.
+            clockLabel.text = tipAge
+            clockLabel.textColor = WalletTheme.dim
+        }
+    }
+
+    private static func lastUpdatedKey(_ id: UUID) -> String { "nodeLastUpdated.\(id.uuidString)" }
+
+    /// Shows the stored "last connected" time for `node` (before it answers this session).
+    private func loadLastUpdated(for node: NodeStruct) {
+        lastUpdated = node.id.flatMap { UserDefaults.standard.object(forKey: Self.lastUpdatedKey($0)) as? Date }
+        renderNodeStatus()
+    }
+
+    /// A successful RPC response from the active node: it's connected, and "UPDATED" moves
+    /// to now. Called for every response in the home screen's load chain, so the final
+    /// stamp is when the screen finished loading (fee estimate, the last call).
+    private func noteRPCSuccess() {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in self?.noteRPCSuccess() }
+            return
+        }
+        let now = Date()
+        lastUpdated = now
+        if let id = activeNode?.id ?? existingNodeID {
+            UserDefaults.standard.set(now, forKey: Self.lastUpdatedKey(id))
+        }
+        nodeState = .connected
+    }
     
     /// Fills every view from the latest RPC responses. "···" = loading, "—" = no data.
     private func renderDashboard() {
@@ -283,11 +456,13 @@ class MainMenuViewController: UIViewController {
             syncProgressView.setProgress(progress, animated: true)
             let verified = info.progressString == "Fully verified"
             syncLabel.text = info.progressString.uppercased() + (info.initialblockdownload ? " · IBD" : "")
-            syncLabel.textColor = verified ? tint.accent : WalletTheme.pending
-            syncProgressView.progressTintColor = verified ? tint.accent : WalletTheme.pending
+            syncLabel.textColor = verified ? WalletTheme.dim : WalletTheme.pending
+            syncProgressView.progressTintColor = verified ? tint.accent.withAlphaComponent(0.55) : WalletTheme.pending
             chainBadge.text = Self.chainName(info.chain)
             chainBadge.isHidden = false
+            renderClockCheck(info)
         } else {
+            clockLabel.isHidden = true
             heightLabel.text = "BLOCK " + (showBlockchainInfoSpinner ? loading : none)
             syncLabel.text = "SYNC " + (showBlockchainInfoSpinner ? loading : none)
             syncLabel.textColor = WalletTheme.dim
@@ -379,6 +554,15 @@ class MainMenuViewController: UIViewController {
         showModal(data: miningInfo.rawData, title: "getmininginfo")
     }
     
+    @objc private func nodeCardTapped(_ gesture: UITapGestureRecognizer) {
+        guard blockchainInfo != nil, let card = gesture.view else { return }
+        impact()
+        UIView.animate(withDuration: 0.08, animations: { card.alpha = 0.6 }) { _ in
+            UIView.animate(withDuration: 0.15) { card.alpha = 1 }
+        }
+        blockchainTapped()
+    }
+
     @objc private func blockchainTapped() {
         guard let blockchainInfo = blockchainInfo else { return }
         showModal(data: blockchainInfo.rawData, title: "getblockchaininfo")
@@ -454,11 +638,23 @@ class MainMenuViewController: UIViewController {
         }
     }
     
-    private func alertToAddNode() {
-        showAlert(vc: self, title: "No active node.", message: "Navigate to Settings > Node Manager to add or activate a node.")
+    /// No active node: show the "Connect a node" sheet. `force` for explicit refreshes,
+    /// otherwise it stays away for the session once dismissed with "Not now".
+    private func alertToAddNode(force: Bool = false) {
+        nodeState = .noNode
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            // Onboarding already covers connecting a node.
+            guard !OnboardingViewController.consumeNoNodeAlertSuppression(force: force) else { return }
+            OnboardingViewController.presentAddNode(from: self.tabBarController ?? self, force: force)
+        }
     }
     
         
+    @objc private func showOnboarding() {
+        OnboardingViewController.replay(from: tabBarController ?? self)
+    }
+
     @IBAction func lockAction(_ sender: Any) {
         if KeyChain.getData("UnlockPassword") != nil {
             showUnlockScreen()
@@ -495,7 +691,7 @@ class MainMenuViewController: UIViewController {
             guard let self = self else { return }
             guard let node = node else {
                 removeLoader()
-                alertToAddNode()
+                alertToAddNode(force: true)
                 return
             }
             
@@ -524,6 +720,9 @@ class MainMenuViewController: UIViewController {
     }
     
     private func loadNode(node: NodeStruct) {
+        if node.id != existingNodeID || nodeState == .idle || nodeState == .noNode {
+            loadLastUpdated(for: node)
+        }
         if initialLoad {
             existingNodeID = node.id
             loadTableData()
@@ -564,7 +763,7 @@ class MainMenuViewController: UIViewController {
             guard let self = self else { return }
             guard let node = node else {
                 removeLoader()
-                alertToAddNode()
+                alertToAddNode(force: true)
                 return
             }
             self.activeNode = node
@@ -583,6 +782,7 @@ class MainMenuViewController: UIViewController {
     // MARK: - Data
     
     func loadTableData() {
+        nodeState = .connecting
         showBlockchainInfoSpinner = true
         reloadTable()
         
@@ -591,6 +791,7 @@ class MainMenuViewController: UIViewController {
             
             guard let blockchainInfo = blockchainInfo else {
                 
+                nodeState = .unreachable
                 showBlockchainInfoSpinner = false
                 reloadTable()
                 
@@ -610,6 +811,7 @@ class MainMenuViewController: UIViewController {
                 guard let self = self else { return }
                 impact()
                 initialLoad = false
+                noteRPCSuccess()
                 self.blockchainInfo = blockchainInfo
                 showBlockchainInfoSpinner = false
                 reloadTable()
@@ -637,6 +839,7 @@ class MainMenuViewController: UIViewController {
                 guard let self = self else { return }
                 
                 peerInfo = response
+                noteRPCSuccess()
                 showPeerInfoSpinner = false
                 reloadTable()
                 getMiningInfo()
@@ -663,6 +866,7 @@ class MainMenuViewController: UIViewController {
                 guard let self = self else { return }
                 
                 networkInfo = NetworkInfo(dictionary: response)
+                noteRPCSuccess()
                 showNetworkInfoSpinner = false
                 reloadTable()
                 getPeerInfo()
@@ -689,6 +893,7 @@ class MainMenuViewController: UIViewController {
                 guard let self = self else { return }
                 
                 self.miningInfo = MiningInfo(dictionary: response)
+                self.noteRPCSuccess()
                 showMiningInfoSpinner = false
                 reloadTable()
                 self.getUptime()
@@ -715,6 +920,7 @@ class MainMenuViewController: UIViewController {
                 guard let self = self else { return }
                 
                 self.uptimeInfo = Uptime(dictionary: response)
+                self.noteRPCSuccess()
                 showUpTimeSpinner = false
                 reloadTable()
                 self.getMempoolInfo()
@@ -738,6 +944,7 @@ class MainMenuViewController: UIViewController {
             }
             
             self.mempoolInfo = MempoolInfo(dictionary: response)
+            self.noteRPCSuccess()
             showMempoolInfoSpinner = false
             reloadTable()
             self.getFeeInfo()
@@ -760,6 +967,7 @@ class MainMenuViewController: UIViewController {
             }
             
             self.feeInfo = FeeInfo(dictionary: response)
+            self.noteRPCSuccess()
             showFeeInfoSpinner = false
             reloadTable()
             self.removeLoader()
@@ -815,9 +1023,10 @@ class MainMenuViewController: UIViewController {
             let state = mgr?.state
             if state == .connected {
                 torStatusLabel.text = "TOR CONNECTED"
-                torStatusLabel.textColor = tint.accent
+                torStatusLabel.textColor = WalletTheme.dim
                 torDot.backgroundColor = tint.accent
             } else if state == .stopped {
+                if nodeState == .connected { nodeState = .idle }
                 torStatusLabel.text = "TOR DISCONNECTED"
                 torStatusLabel.textColor = WalletTheme.danger
                 torDot.backgroundColor = WalletTheme.danger
@@ -874,7 +1083,7 @@ class MainMenuViewController: UIViewController {
                             loadNode(node: node)
                         }
                     } else {
-                        showAlert(vc: self, title: "", message: "No active node, navigate to Settings > Node Manager to add a node or activate one.")
+                        self.alertToAddNode()
                     }
                 }
             }
