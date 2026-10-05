@@ -1,15 +1,6 @@
 {
-  "originHash" : "8a282b3f427212785d6c5131e492f069e94341cdced1c25cff40650cf821548d",
+  "originHash" : "598b1c3294f58415f463c872ca582caa8790276641677843646c4b726c07bdca",
   "pins" : [
-    {
-      "identity" : "bbqr-swift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/bitcoinppl/bbqr-swift.git",
-      "state" : {
-        "revision" : "83b828077ecc4f5d2cf8889da5543a61b4a60a3c",
-        "version" : "0.3.1"
-      }
-    },
     {
       "identity" : "bcswiftdcbor",
       "kind" : "remoteSourceControl",
