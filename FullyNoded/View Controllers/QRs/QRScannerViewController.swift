@@ -9,7 +9,6 @@
 import URKit
 import AVFoundation
 import UIKit
-import Bbqr
 
 @available(macCatalyst 14.0, *)
 class QRScannerViewController: UIViewController {
@@ -29,7 +28,6 @@ class QRScannerViewController: UIViewController {
     var fromSignAndVerify = Bool()
     var decoder:URDecoder!
     var bbqrParts: [String] = []
-    private let spinner = ConnectingView.shared
     private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     private var blurArray = [UIVisualEffectView]()
     private var isTorchOn = Bool()
@@ -49,7 +47,7 @@ class QRScannerViewController: UIViewController {
         progressDescriptionLabel.alpha = 0
         progressView.alpha = 0
         configureScanner()
-        spinner.show(vc: self, description: "")
+        showActivity("starting camera...")
         decoder = URDecoder()
     }
     
@@ -73,7 +71,7 @@ class QRScannerViewController: UIViewController {
             
             self.scanQRCode()
             self.addScannerButtons()
-            self.spinner.dismiss()
+            self.hideActivity()
         }
     }
     
@@ -254,28 +252,27 @@ class QRScannerViewController: UIViewController {
     }
     
     func continousJoiner(parts: [String]) throws -> ((psbt: String?, descriptor: String?)) {
-        let continousJoiner = ContinuousJoiner()
+        let joiner = BBQR.Joiner()
         
         for part in parts {
-            switch try continousJoiner.addPart(part: part) {
-            case .notStarted:
+            switch try joiner.add(part) {
+            case .inProgress(let received, let total):
                 #if DEBUG
-                print("not started")
-                #endif
-                
-            case .inProgress(let partsLeft):
-                #if DEBUG
-                print("added item, \(partsLeft) parts left")
+                print("added item, \(total - received) parts left")
                 #endif
                 hasScanned = false
                 
-            case .complete(let joined):
+            case .complete(let type, let data):
                 hasScanned = true
-                let s = String(decoding: joined.data(), as: UTF8.self)
-                if s.hasPrefix("psbt") {
-                    stopScanning(joined.data().base64EncodedString())
-                } else {
-                    stopScanning(s)
+                switch type {
+                case .psbt:
+                    stopScanning(data.base64EncodedString())
+                case .transaction:
+                    stopScanning(data.hexString)
+                default:
+                    let s = String(decoding: data, as: UTF8.self)
+                    // A psbt sent with another type letter.
+                    stopScanning(s.hasPrefix("psbt") ? data.base64EncodedString() : s)
                 }
             }
         }
@@ -335,7 +332,7 @@ class QRScannerViewController: UIViewController {
                 // could be a specter animated psbt
                 parseSpecterAnimatedQr(text)
             } else {
-                spinner.dismiss()
+                hideActivity()
                 showAlert(vc: self, 
                           title: "Unrecognized format",
                           message: "That is an unrecognized transaction format, please reach out to us so we can add compatibility.")

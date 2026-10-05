@@ -505,8 +505,6 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         return nil
     }
 
-    
-
     private func currentSigsExist(_ lines: [String]) -> Bool {
         lines.contains { !$0.contains("0/") }
     }
@@ -619,11 +617,19 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
             return
         }
         
-        ConnectingView.shared.show(vc: self, description: "Broadcasting...")
+        guard !isShowingActivity else { return }
+        self.showActivity("Broadcasting...", button: broadcastButton)
         
         Task {
-            let result = try await Broadcaster.sharedInstance.broadcastRawTransaction(rawTx: rawTx, network: network)
-            ConnectingView.shared.dismiss()
+            let result: Broadcaster.BroadcastResult
+            do {
+                result = try await Broadcaster.sharedInstance.broadcastRawTransaction(rawTx: rawTx, network: network)
+            } catch {
+                self.hideActivity()
+                showAlert(title: "", message: "Broadcast failed: \(error.localizedDescription)")
+                return
+            }
+            self.hideActivity()
             switch result {
             case .success(let txid):
                 saveNewUtxo(txid: txid)
@@ -631,7 +637,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                 
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
-                    self.showTransactionSuccessAnimation(title: "Transaction broadcast successfully!", subtitle: "TxID: \(txid)")
+                    SuccessView.show(in: self, title: "Transaction sent", subtitle: "Broadcast over Tor. Tap to copy the transaction ID.", detail: txid)
                     self.broadcastButton.isHidden = true
                 }
             case .failure(let msg):
@@ -695,6 +701,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     }
     
     @objc private func signButtonTapped() {
+        guard !isShowingActivity else { return }
         let alert = UIAlertController(
             title: "Passphrase (Optional)",
             message: "Enter your BIP39 passphrase if your wallet uses one.\nLeave blank if none.",
@@ -716,7 +723,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         let signAction = UIAlertAction(title: "Sign", style: .default) { [weak self] _ in
             guard let self = self else { return }
             
-            let passphrase = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let passphrase = alert.textFields?.first?.text ?? ""
             
             // Now proceed with signing using the optional passphrase
             self.performSigning(with: passphrase)
@@ -734,7 +741,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     private func performSigning(with passphrase: String) {
         // Show loading spinner
         guard let wallet = wallet else { return }
-        ConnectingView.shared.show(vc: self, description: "Signing transaction...")
+        self.showActivity("Signing transaction...", button: signButton)
         
         // Run signing on background thread
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
@@ -758,13 +765,13 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                     guard let self = self else { return }
                     
                     guard let signers = signers else {
-                        ConnectingView.shared.dismiss()
+                        self.hideActivity()
                         showAlert(title: "", message: "No signers to sign with...")
                         return
                     }
                     
                     guard !signers.isEmpty else {
-                        ConnectingView.shared.dismiss()
+                        self.hideActivity()
                         showAlert(title: "", message: "No signers to sign with...")
                         return
                     }
@@ -783,14 +790,14 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     
     private func attemptToSign(signers: [SignerStruct], passphrase: String?, fnWallet: Wallet) {
         guard let psbt = psbt else {
-            ConnectingView.shared.dismiss()
+            self.hideActivity()
             showAlert(title: "", message: "No psbt to sign...")
             return
         }
         
         Signer.shared.sign(fnWallet: fnWallet, psbt: psbt.serialize(), passphrase: passphrase, signers: signers, network: network, parentDesc: fnWallet.receiveDescriptor) { [weak self] (signedPsbt, rawTx, errorMessage) in
             guard let self = self else { return }
-            ConnectingView.shared.dismiss()
+            self.hideActivity()
             
             if let rawTx = rawTx {
                 DispatchQueue.main.async { [weak self] in
@@ -802,7 +809,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                     self.broadcastButton.isHidden = false
                     self.signButton.isHidden = true
                     self.exportButton.setTitle("Export Signed Transaction", for: .normal)
-                    self.showTransactionSuccessAnimation(title: "Transaction signed!", subtitle: "Ready to broadcast")
+                    SuccessView.show(in: self, title: "Transaction signed", subtitle: "Ready to broadcast.")
                 }
             } else if let signedPsbt = signedPsbt {
                 guard let signedBdkPsbt = try? Psbt(psbtBase64: signedPsbt) else {
@@ -817,111 +824,6 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         }
     }
     
-    private func showTransactionSuccessAnimation(title: String, subtitle: String) {
-        // Background overlay
-        let overlay = UIView()
-        overlay.backgroundColor = UIColor.black.withAlphaComponent(0.9)
-        overlay.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(overlay)
-        
-        // Success container
-        let successView = UIView()
-        successView.backgroundColor = .systemBackground
-        successView.layer.cornerRadius = 20
-        successView.translatesAutoresizingMaskIntoConstraints = false
-        overlay.addSubview(successView)
-        
-        // Checkmark
-        let checkmarkImageView = UIImageView()
-        let config = UIImage.SymbolConfiguration(pointSize: 80, weight: .light)
-        checkmarkImageView.image = UIImage(systemName: "checkmark.circle.fill", withConfiguration: config)
-        checkmarkImageView.tintColor = .systemGreen
-        checkmarkImageView.translatesAutoresizingMaskIntoConstraints = false
-        successView.addSubview(checkmarkImageView)
-        
-        // Title label
-        let titleLabel = UILabel()
-        titleLabel.text = title
-        titleLabel.font = UIFont.boldSystemFont(ofSize: 24)
-        titleLabel.textAlignment = .center
-        titleLabel.textColor = .label
-        titleLabel.lineBreakMode = .byWordWrapping
-        titleLabel.numberOfLines = 0
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        successView.addSubview(titleLabel)
-        
-        // Subtitle
-        let subtitleLabel = UILabel()
-        subtitleLabel.text = subtitle
-        subtitleLabel.font = UIFont.systemFont(ofSize: 18)
-        subtitleLabel.textColor = .secondaryLabel
-        subtitleLabel.lineBreakMode = .byWordWrapping
-        subtitleLabel.numberOfLines = 0
-        subtitleLabel.textAlignment = .center
-        subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        successView.addSubview(subtitleLabel)
-        
-        // Layout
-        NSLayoutConstraint.activate([
-            overlay.topAnchor.constraint(equalTo: view.topAnchor),
-            overlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            overlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            overlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            successView.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
-            successView.centerYAnchor.constraint(equalTo: overlay.centerYAnchor),
-            successView.leadingAnchor.constraint(greaterThanOrEqualTo: overlay.leadingAnchor, constant: 40),
-            successView.trailingAnchor.constraint(lessThanOrEqualTo: overlay.trailingAnchor, constant: -40),
-            successView.widthAnchor.constraint(lessThanOrEqualToConstant: 400),
-            
-            checkmarkImageView.topAnchor.constraint(equalTo: successView.topAnchor, constant: 40),
-            checkmarkImageView.centerXAnchor.constraint(equalTo: successView.centerXAnchor),
-            checkmarkImageView.heightAnchor.constraint(equalToConstant: 120),
-            checkmarkImageView.widthAnchor.constraint(equalToConstant: 120),
-            
-            titleLabel.topAnchor.constraint(equalTo: checkmarkImageView.bottomAnchor, constant: 20),
-            titleLabel.leadingAnchor.constraint(equalTo: successView.leadingAnchor, constant: 30),
-            titleLabel.trailingAnchor.constraint(equalTo: successView.trailingAnchor, constant: -30),
-            
-            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 10),
-            subtitleLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            subtitleLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            subtitleLabel.bottomAnchor.constraint(equalTo: successView.bottomAnchor, constant: -40)
-        ])
-        
-        // Animation sequence
-        successView.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
-        successView.alpha = 0
-        
-        checkmarkImageView.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-        
-        UIView.animate(withDuration: 0.6, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: []) {
-            successView.transform = .identity
-            successView.alpha = 1
-            checkmarkImageView.transform = .identity
-        }
-        
-        // Pulse effect on checkmark
-        let pulse = CABasicAnimation(keyPath: "transform.scale")
-        pulse.fromValue = 1.0
-        pulse.toValue = 1.15
-        pulse.duration = 0.4
-        pulse.autoreverses = true
-        checkmarkImageView.layer.add(pulse, forKey: "pulse")
-        
-        // Auto-dismiss after 2.5 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-            UIView.animate(withDuration: 0.4, animations: {
-                overlay.alpha = 0
-            }) { _ in
-                overlay.removeFromSuperview()
-            }
-        }
-        
-        // Optional: Haptic feedback
-        let feedback = UINotificationFeedbackGenerator()
-        feedback.notificationOccurred(.success)
-    }
 }
 
 // MARK: - UITableViewDataSource & Delegate

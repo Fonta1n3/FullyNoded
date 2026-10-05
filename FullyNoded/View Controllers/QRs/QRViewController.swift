@@ -8,7 +8,6 @@
 
 import UIKit
 import URKit
-import Bbqr
 
 class QRViewController: UIViewController {
     
@@ -21,7 +20,6 @@ class QRViewController: UIViewController {
     var headerIcon: UIImage?
     
     // MARK: - Private Properties
-    private let spinner = ConnectingView.shared
     private let qrGenerator = QRGenerator()
     private var isBbqr: Bool = false
     private var isUR: Bool = false
@@ -292,7 +290,7 @@ class QRViewController: UIViewController {
     
     private func split(string: String) throws -> [String] {
         var data: Data? = nil
-        var fileType: FileType = .unicodeText
+        var fileType: BBQR.FileType = .unicodeText
         
         if !psbt.isEmpty {
             data = Data(base64Encoded: psbt)
@@ -318,16 +316,8 @@ class QRViewController: UIViewController {
         
         let minSplitNumber = UInt16(max(1, ceil(Double(data.count) / 250.0)))
         
-        let options = SplitOptions(
-            encoding: .zlib,
-            minSplitNumber: minSplitNumber,
-            minVersion: .v01,
-            maxVersion: .v40
-        )
-        
         do {
-            let split = try Split.tryFromData(bytes: data, fileType: fileType, options: options)
-            return split.parts()
+            return try BBQR.split(data, type: fileType, encoding: .zlib, minParts: Int(minSplitNumber))
         } catch {
             print("BBQR split failed: \(error)")
             // Fallback to single part
@@ -338,7 +328,7 @@ class QRViewController: UIViewController {
     private func showBbqrParts(bbQrparts: [String]) {
         parts = bbQrparts
         partIndex = 0
-        spinner.dismiss()
+        hideActivity()
         
         // Start animation timer
         timer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
@@ -372,21 +362,21 @@ class QRViewController: UIViewController {
         // ... your existing startQRGeneration(), showStaticQR(), animateUr(), showBbqrParts(), etc.
         // All logic remains exactly the same
         if isBbqr {
-            spinner.show(vc: self, description: "")
+            showActivity("generating QR...")
             let input = txn.isEmpty ? (text.isEmpty ? psbt : text) : txn
             if let parts = try? split(string: input) {
                 showBbqrParts(bbQrparts: parts)
             } else {
-                spinner.dismiss()
+                hideActivity()
                 showStaticQR(from: input)
             }
         } else if isUR || psbt.lowercased().hasPrefix("ur:") || text.lowercased().hasPrefix("ur:") {
-            spinner.show(vc: self, description: "loading...")
+            showActivity("loading...")
             let input = text.isEmpty ? psbt : text
             if let ur = URHelper.ur(input) {
                 animateUr(ur: ur)
             } else {
-                spinner.dismiss()
+                hideActivity()
                 showStaticQR(from: input)
             }
         } else {
@@ -399,14 +389,14 @@ class QRViewController: UIViewController {
         encoder = UREncoder(ur, maxFragmentLen: 250)
         
         guard let encoder = encoder else {
-            spinner.dismiss()
+            hideActivity()
             showStaticQR(from: originalQrText)
             return
         }
         
         if encoder.isSinglePart {
             // Single part — show static QR
-            spinner.dismiss()
+            hideActivity()
             showQR(ur.qrString.uppercased())
         } else {
             // Multi-part — animate
@@ -422,7 +412,7 @@ class QRViewController: UIViewController {
                 // First part: dismiss spinner and start animation
                 if encoder.seqNum == 1 {
                     self.parts.append(part)
-                    self.spinner.dismiss()
+                    self.hideActivity()
                     self.showQR(part)
                 } else if encoder.seqNum <= encoder.seqLen {
                     self.parts.append(part)

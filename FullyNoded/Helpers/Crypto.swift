@@ -28,21 +28,44 @@ enum Crypto {
         return key.withUnsafeBytes { Data($0) }
     }
     
-    static func encrypt(_ data: Data) -> Data? {
-        if let key = KeyChain.getData("privateKey") {
-            return try? ChaChaPoly.seal(data, using: SymmetricKey(data: key)).combined
-        } else {
-            // create it
-            guard KeyChain.set(privateKey(), forKey: "privateKey") else { return nil }
+    /// Name of the master encryption key in the keychain.
+    private static let keyName = "privateKey"
+    
+    /// The master encryption key, created ONLY if the keychain reports it doesn't exist.
+    ///
+    /// If the keychain can't be read (e.g. errSecInteractionNotAllowed while the device
+    /// is locked) this returns nil and changes nothing. Replacing the key would make every
+    /// stored seed and credential undecryptable, so an existing key is never deleted or
+    /// overwritten (add-only write).
+    static func encryptionKey() -> Data? {
+        switch KeyChain.read(keyName) {
+        case .found(let key):
+            return key
             
-            guard let key = KeyChain.getData("privateKey") else { return nil }
+        case .error(let status):
+            #if DEBUG
+            print("Keychain unavailable (\(status)); not touching the encryption key.")
+            #endif
+            return nil
             
-            return try? ChaChaPoly.seal(data, using: SymmetricKey(data: key)).combined
+        case .notFound:
+            // First run: create it. errSecDuplicateItem means another caller created it
+            // meanwhile, which is fine: re-read so everyone uses the same stored key.
+            let status = KeyChain.add(privateKey(), forKey: keyName)
+            guard status == errSecSuccess || status == errSecDuplicateItem else { return nil }
+            if case .found(let key) = KeyChain.read(keyName) { return key }
+            return nil
         }
     }
     
+    static func encrypt(_ data: Data) -> Data? {
+        guard let key = encryptionKey() else { return nil }
+        return try? ChaChaPoly.seal(data, using: SymmetricKey(data: key)).combined
+    }
+    
     static func decrypt(_ data: Data) -> Data? {
-        guard let key = KeyChain.getData("privateKey"),
+        // Decrypt never creates a key: a missing key can't decrypt anything anyway.
+        guard case .found(let key) = KeyChain.read(keyName),
             let box = try? ChaChaPoly.SealedBox.init(combined: data) else {
                 return nil
         }

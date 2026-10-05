@@ -21,6 +21,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let _ = (scene as? UIWindowScene) else { return }
+
+        // Cypherpunk tab bar (WalletTheme in ActiveWalletViewController.swift).
+        if let tabBarController = window?.rootViewController as? UITabBarController {
+            WalletTheme.styleTabBar(tabBarController)
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -122,9 +127,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
         
         if let window = self.window {
-            blacked.frame = window.frame
-            blacked.backgroundColor = .black
-            self.window?.addSubview(blacked)
+            // Privacy cover for the app switcher: the brand mark on the app's dark background.
+            blacked.frame = window.bounds
+            blacked.backgroundColor = WalletTheme.bg
+            if blacked.subviews.isEmpty {
+                let mark = BrandLockup(logoSize: 96)
+                mark.translatesAutoresizingMaskIntoConstraints = false
+                blacked.addSubview(mark)
+                NSLayoutConstraint.activate([
+                    mark.centerXAnchor.constraint(equalTo: blacked.centerXAnchor),
+                    mark.centerYAnchor.constraint(equalTo: blacked.centerYAnchor, constant: -30)
+                ])
+            }
+            window.addSubview(blacked)
         }
     }
         

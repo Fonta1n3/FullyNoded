@@ -20,7 +20,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     var cosigner:Descriptor?
     var onDoneBlock:(((Bool)) -> Void)?
-    let spinner = ConnectingView.shared
     var ccXfp = ""
     var xpub = ""
     var deriv = ""
@@ -43,6 +42,8 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         singleSigOutlet.layer.cornerRadius = 8
         multiSigOutlet.layer.cornerRadius = 8
         
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .create)
     }
     
     @IBAction func pasteTextAction(_ sender: Any) {
@@ -179,7 +180,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
-            spinner.dismiss()
+            hideActivity()
             showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup/export/import file")
             return
         }
@@ -187,7 +188,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         guard let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
             
             guard let txt = String(bytes: data, encoding: .utf8) else {
-                spinner.dismiss()
+                hideActivity()
                 showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup/export/import file")
                 return
             }
@@ -467,7 +468,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func importAccountMap(_ accountMap: [String:Any]) {
-        spinner.show(vc: self, description: "importing...")
+        showActivity("importing...")
         
         func importAccount() {
             if let _ = accountMap["descriptor"] as? String {
@@ -476,18 +477,18 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                     ImportWallet.accountMap(accountMap) { (success, errorDescription) in
                         if success {
                             DispatchQueue.main.async {
-                                self.spinner.dismiss()
+                                self.hideActivity()
                                 self.onDoneBlock!(true)
                                 self.navigationController?.popViewController(animated: true)
                             }
                         } else {
-                            self.spinner.dismiss()
+                            self.hideActivity()
                             showAlert(vc: self, title: "Error", message: "There was an error importing your wallet: \(errorDescription ?? "unknown")")
                         }
                     }
                 }
             } else if let _ = accountMap["ExtPubKey"] as? String {
-                spinner.dismiss()
+                hideActivity()
                 promptToImportCoboSingleSig(accountMap)
             }
         }
@@ -495,7 +496,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         if let url = accountMap["quickConnect"] as? String {
             QuickConnect.addNode(url: url) { (success, errorMessage) in
                 guard success else {
-                    self.spinner.dismiss()
+                    self.hideActivity()
                     showAlert(vc: self, title: "Node connection issue:", message: errorMessage ?? "unknown error")
                     return
                 }
@@ -569,21 +570,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func decodeWalletBackup(from hexString: String) -> WalletBackup? {
-        
-        guard let data = Data(hexString: hexString) else {
-            return nil
-        }
-        
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        
-        do {
-            let backup = try decoder.decode(WalletBackup.self, from: data)
-            return backup
-        } catch {
-            showAlert(title: "Decode Failed", message: "Could not parse backup data.\n\nError: \(error.localizedDescription)")
-            return nil
-        }
+        WalletBackup.decode(hex: hexString)
     }
     
     private func promptToImport(backup: WalletBackup) {
@@ -608,272 +595,172 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         present(alert, animated: true)
     }
 
+    // MARK: - Recovering a wallet backup
+    //
+    // 1. createwallet (watch-only, blank, descriptors) named after the receive descriptor,
+    //    so recovering the same backup twice lands in the same Core wallet.
+    // 2. Pruned node: move timestamps that predate the prune height up to it.
+    // 3. importdescriptors for every descriptor the node's wallet doesn't already have.
+    // 4. Save (or update) the Fully Noded wallet record with the backup attached.
+
     private func performImport(backup: WalletBackup) {
-        guard let jsonData = try? backup.jsonData() else { return }
-        spinner.show(vc: self, description: "Recovering wallet...")
-        
-        var fnWalletToCreateDict: [String: Any] = [
-            "walletBackup": jsonData,
+        guard let pair = backup.walletDescriptors() else {
+            showAlert(title: "Can't recover this backup",
+                      message: "It has no active HD (ranged) receive descriptor, so there's no wallet to recreate.")
+            return
+        }
+        guard let backupData = try? backup.jsonData() else { return }
+        showActivity("Recovering wallet...")
+
+        let name = "FullyNoded-" + Crypto.sha256hash(String(pair.receive.split(separator: "#")[0]))
+        let fnWallet: [String: Any] = [
+            "id": UUID(),
+            "name": name,
             "label": "Recovered wallet",
-            "blockheight": UInt64(0),// fix this
-            "id": UUID()
+            "receiveDescriptor": pair.receive,
+            "changeDescriptor": pair.change,
+            "walletBackup": backupData,
+            "blockheight": Int64(backup.birthday.map { approximateHeight(for: Int64($0)) } ?? 0)
         ]
-        
-        var descriptorDicts: [[String: Any]] = []
-        for (i, descriptor) in backup.descriptors.enumerated() {
-            let fnDesc = Descriptor(descriptor.desc)            
-            
-            var descriptorDict: [String: Any] = [
-                "internal": descriptor.internal ?? false,
-                "active": descriptor.active,
-                "desc": descriptor.desc
-            ]
-                        
-            if let range = descriptor.range {
-                if range.count == 2 {
-                    descriptorDict["range"] = [range[0],range[1]]
-                } else if range.count == 1 {
-                    descriptorDict["range"] = [range[0]]
-                } else if let _internal = descriptor.internal, !_internal {
-                    descriptorDict["label"] = descriptor.label
-                }
-            } else if let _internal = descriptor.internal, !_internal  {
-                descriptorDict["label"] = descriptor.label
-            } else if descriptor.internal == nil {
-                descriptorDict["label"] = descriptor.label
-            }
-            
-            if let timestamp = descriptor.timestamp {
-                descriptorDict["timestamp"] = timestamp
-                fnWalletToCreateDict["blockheight"] = approximateHeight(for: Int64(timestamp))
-            }
-            
-            if let nextIndex = descriptor.nextIndex {
-                descriptorDict["next_index"] = nextIndex
-            }
-            
-            descriptorDicts.append(descriptorDict)
-            
-            if fnDesc.isHD, descriptor.active {
-                if !fnDesc.isInternal {
-                    fnWalletToCreateDict["receiveDescriptor"] = descriptor.desc
-                    fnWalletToCreateDict["name"] = "FullyNoded-" + Crypto.sha256hash("\(descriptor.desc.split(separator: "#")[0])")
-                } else {
-                    fnWalletToCreateDict["changeDescriptor"] = descriptor.desc
-                }
-            }
-            
-            if i + 1 == backup.descriptors.count {
-                createWallet(fnWalletToCreateDict: fnWalletToCreateDict, backup: backup, descriptorDicts: descriptorDicts)
-            }
-        }
-    }
-    
-    private func setActiveAndImport(name: String, exists: Bool, backup: WalletBackup, descriptorDicts: [[String: Any]], fnWalletToCreateDict: [String: Any]) {
-        UserDefaults.standard.set(name, forKey: "walletName")
-        var descriptorDicts_ = descriptorDicts
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getblockchaininfo) { [weak self] (response, errorDesc) in
-            guard let self = self else { return }
-            guard let response = response as? [String: Any] else { return }
-            var pruneHeight: Int?
-            let blockchainInfo = BlockchainInfo(response)
-            if blockchainInfo.pruned {
-                pruneHeight = blockchainInfo.pruneheight
-            }
-            
-            var showUpdatedTimestampAlert: Bool = false
-            
-            for i in 0..<descriptorDicts_.count {
-                var descriptorDict = descriptorDicts_[i]
-                
-                if let descriptorTimestamp = descriptorDict["timestamp"] as? Int,
-                   let pruneHeight = pruneHeight {
-                    
-                    if !checkPruneHeightAndTimestamp(descriptorTimestamp: descriptorTimestamp, pruneHeight: pruneHeight) {
-                        // Update timestamp to pruneHeight
-                        let estimatedTimestamp = approximateTimestamp(for: pruneHeight)
-                        descriptorDict["timestamp"] = estimatedTimestamp
-                        showUpdatedTimestampAlert = true
-                    }
-                }
-                
-                descriptorDicts_[i] = descriptorDict
-            }
-            
-            if exists {
-                processWalletThatExistsOnNode(name: name, exists: exists, backup: backup, descriptorDicts: descriptorDicts_, fnWalletToCreateDict: fnWalletToCreateDict, pruneHeight: pruneHeight, showUpdatedTimestampAlert: showUpdatedTimestampAlert)
-            } else {
-                // save the local wallet and import the descriptors.
-                CoreDataService.saveEntity(dict: fnWalletToCreateDict, entityName: .wallets) { [weak self] walletRecovered in
-                    guard let self = self else { return }
-                    guard walletRecovered else {
-                        showAlert(title: "Wallet backuo not updated.", message: "Please contact as asap and let us know about this bug.")
-                        return
-                    }
-                    importDescNow(descriptorDicts: descriptorDicts_, exists: false, fnWalletToCreateDict: fnWalletToCreateDict, name: name, backup: backup, showUpdatedTimestampAlert: showUpdatedTimestampAlert)
-                }
-            }
-        }
-    }
-    
-    func checkPruneHeightAndTimestamp(descriptorTimestamp: Int, pruneHeight: Int) -> Bool {
-        let target = Int64(descriptorTimestamp - 7_200)
-        let estimatedHeight = approximateHeight(for: target)
-        if pruneHeight <= estimatedHeight {
-            return true
-        } else {
-            return false
-        }
-    }
 
-    private func approximateHeight(for timestamp: Int64) -> Int {
-        // Genesis block time (block 0)
-        let genesisTime: Int64 = 1_231_006_505
-        
-        // Average seconds per block (Bitcoin target)
-        let secondsPerBlock: Double = 600.0
-        
-        let elapsed = Double(timestamp - genesisTime)
-        let height = elapsed / secondsPerBlock
-        
-        return max(0, Int(height.rounded()))
-    }
-    
-    private func approximateTimestamp(for height: Int) -> Int64 {
-        // Genesis block time (block 0)
-        let genesisTime: Int64 = 1_231_006_505
-        
-        // Average seconds per block (Bitcoin target)
-        let secondsPerBlock: Double = 600.0
-        
-        let elapsed = Double(height) * secondsPerBlock
-        return genesisTime + Int64(elapsed.rounded())
-    }
-    
-    private func processWalletThatExistsOnNode(name: String, exists: Bool, backup: WalletBackup, descriptorDicts: [[String: Any]], fnWalletToCreateDict: [String: Any], pruneHeight: Int?, showUpdatedTimestampAlert: Bool) {
-        UserDefaults.standard.set(name, forKey: "walletName")
-        
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors) { [weak self] (response, errorDesc) in
-            guard let self = self else { return }
-            guard let response = response else { return }
-            
-            var uniqueDesc: [[String: Any]] = []
-            var descriptorAlreadyExists = false
-            
-            do {
-                let jsonData = try JSONSerialization.data(withJSONObject: response, options: [])
-                let listDescriptorResponse = try JSONDecoder().decode(ListDescriptorsResponse.self, from: jsonData)
-                
-                guard listDescriptorResponse.descriptors.count > 0 else {
-                    importDescNow(descriptorDicts: descriptorDicts, exists: true, fnWalletToCreateDict: fnWalletToCreateDict, name: name, backup: backup, showUpdatedTimestampAlert: showUpdatedTimestampAlert)
-                    return
-                }
-                
-                for (d, descriptor) in listDescriptorResponse.descriptors.enumerated() {
-                    
-                    for (b, backupDescriptorDict) in descriptorDicts.enumerated() {
-                        if descriptor.desc == backupDescriptorDict["desc"] as? String {
-                            descriptorAlreadyExists = true
-                        }
-                        
-                        if b + 1 == descriptorDicts.count,  !descriptorAlreadyExists {
-                            uniqueDesc.append(backupDescriptorDict)
-                        }
-                    }
-                    
-                    if d + 1 == listDescriptorResponse.descriptors.count {
-                        if uniqueDesc.count > 0 {
-                            importDescNow(descriptorDicts: uniqueDesc, exists: true, fnWalletToCreateDict: fnWalletToCreateDict, name: name, backup: backup, showUpdatedTimestampAlert: showUpdatedTimestampAlert)
-                        } else {
-                            // else its the same exact wallet.. just activate and check for FNWallet equivalent..
-                            CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] existingLocalFnWallets in
-                                guard let self = self else { return }
-                                guard let existingLocalFnWallets = existingLocalFnWallets, existingLocalFnWallets.count > 0 else { return }
-                                var existsLocally = false
-                                for (i, w) in existingLocalFnWallets.enumerated() {
-                                    let existingFnWallet = Wallet(dictionary: w)
-                                    if existingFnWallet.name == name {
-                                        existsLocally = true
-                                        // update it
-                                        do {
-                                            let data = try backup.jsonData()
-                                            CoreDataService.update(id: existingFnWallet.id, keyToUpdate: "walletBackup", newValue: data, entity: .wallets) { [weak self] backupUpdated in
-                                                guard let self = self else { return }
-                                                spinner.dismiss()
-                                                guard backupUpdated else {
-                                                    showAlert(title: "Updating backup failed.", message: "Please contact as asap and let us know about this bug.")
-                                                    return
-                                                }
-                                                showSuccess(showUpdatedTimestampAlert: showUpdatedTimestampAlert)
-                                            }
-                                        } catch {
-                                            spinner.dismiss()
-                                            showAlert(title: "Can not convert backup to json data", message: "Please contact as asap and let us know about this bug.")
-                                        }
-                                    }
-                                    
-                                    if i + 1 == existingLocalFnWallets.count, !existsLocally {
-                                        // save the local fnwallet which exists on node only.
-                                        CoreDataService.saveEntity(dict: fnWalletToCreateDict, entityName: .wallets) { [weak self] walletRecovered in
-                                            guard let self = self else { return }
-                                            guard walletRecovered else {
-                                                showAlert(title: "Wallet backuo not updated.", message: "Please contact as asap and let us know about this bug.")
-                                                return
-                                            }
-                                            showSuccess(showUpdatedTimestampAlert: showUpdatedTimestampAlert)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch {
-                spinner.dismiss {
-                    showAlert(title: "Error parsing JSON", message: error.localizedDescription)
-                }
-            }
-        }
-
-    }
-    
-    private func createWallet(fnWalletToCreateDict: [String : Any], backup: WalletBackup, descriptorDicts: [[String: Any]]) {
         let p = Create_Wallet_Param([
-            "wallet_name": (fnWalletToCreateDict["name"] as! String),
+            "wallet_name": name,
             "disable_private_keys": true,
             "blank": true,
             "avoid_reuse": true,
             "descriptors": true,
             "load_on_startup": true
         ])
-        
-        OnchainUtils.createWallet(param: p) { [weak self] (name, message) in
+        OnchainUtils.createWallet(param: p) { [weak self] (created, message) in
             guard let self = self else { return }
-            guard let name = name else {
-                if let message = message, message.contains("Database already exists") {
-                    setActiveAndImport(name: fnWalletToCreateDict["name"] as! String, exists: true, backup: backup, descriptorDicts: descriptorDicts, fnWalletToCreateDict: fnWalletToCreateDict)
-                } else {
-                    spinner.dismiss()
-                    showAlert(title: "", message: message ?? "Unknown error creating wallet.")
-                }
+            if created == nil, message?.contains("Database already exists") != true {
+                self.failRecovery(message ?? "Unknown error creating wallet.")
                 return
             }
-            setActiveAndImport(name: name, exists: false, backup: backup, descriptorDicts: descriptorDicts, fnWalletToCreateDict: fnWalletToCreateDict)
+            // New or already on the node: either way, make it the active wallet.
+            UserDefaults.standard.set(name, forKey: "walletName")
+            self.importMissingDescriptors(backup: backup, fnWallet: fnWallet)
+        }
+    }
+
+    private func importMissingDescriptors(backup: WalletBackup, fnWallet: [String: Any]) {
+        // What the node's wallet already has (empty for a freshly created one).
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors) { [weak self] (response, errorDesc) in
+            guard let self = self else { return }
+            var existing: [String] = []
+            if let response = response,
+               let json = try? JSONSerialization.data(withJSONObject: response),
+               let listed = try? JSONDecoder().decode(ListDescriptorsResponse.self, from: json) {
+                existing = listed.descriptors.map { $0.desc }
+            } else if response == nil {
+                self.failRecovery("Couldn't read the wallet's descriptors: \(errorDesc ?? "unknown error")")
+                return
+            }
+
+            let requests = backup.missingImportRequests(existing: existing)
+            guard !requests.isEmpty else {
+                // Same wallet as on the node: just make sure Fully Noded has it.
+                self.saveRecoveredWallet(fnWallet, backup: backup, timestampsMoved: false)
+                return
+            }
+
+            self.adjustForPruning(requests) { requests, moved in
+                OnchainUtils.importDescriptors(Import_Descriptors(["requests": requests])) { (imported, message) in
+                    guard imported else {
+                        self.failRecovery(message ?? "importdescriptors failed.")
+                        return
+                    }
+                    self.saveRecoveredWallet(fnWallet, backup: backup, timestampsMoved: moved)
+                }
+            }
+        }
+    }
+
+    /// On a pruned node, rescanning from before the prune height fails, so any earlier
+    /// timestamp is moved up to the time of the first block still on disk (its real time,
+    /// from getblock; the 10-minute estimate is weeks off at today's heights).
+    private func adjustForPruning(_ requests: [[String: Any]],
+                                  completion: @escaping ([[String: Any]], Bool) -> Void) {
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getblockchaininfo) { response, _ in
+            guard let info = (response as? [String: Any]).map(BlockchainInfo.init), info.pruned else {
+                completion(requests, false)
+                return
+            }
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .getblockhash(.init(["height": info.pruneheight]))) { hashResponse, _ in
+                let fallback = Int(self.approximateTimestamp(for: info.pruneheight))
+                guard let hash = hashResponse as? String else {
+                    completion(Self.moveTimestamps(requests, notBefore: fallback), true)
+                    return
+                }
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .getblock(.init(["blockhash": hash]))) { blockResponse, _ in
+                    let pruneTime = (blockResponse as? [String: Any])?["time"] as? Int ?? fallback
+                    let moved = requests.contains { ($0["timestamp"] as? Int ?? 0) < pruneTime }
+                    completion(Self.moveTimestamps(requests, notBefore: pruneTime), moved)
+                }
+            }
+        }
+    }
+
+    private static func moveTimestamps(_ requests: [[String: Any]], notBefore time: Int) -> [[String: Any]] {
+        requests.map { request in
+            var request = request
+            if (request["timestamp"] as? Int ?? 0) < time { request["timestamp"] = time }
+            return request
+        }
+    }
+
+    /// Adds the Fully Noded wallet record, or refreshes the backup on the one already there.
+    private func saveRecoveredWallet(_ fnWallet: [String: Any], backup: WalletBackup, timestampsMoved: Bool) {
+        let name = fnWallet["name"] as? String ?? ""
+        CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] wallets in
+            guard let self = self else { return }
+            let finished: (Bool) -> Void = { [weak self] saved in
+                guard let self = self else { return }
+                guard saved else {
+                    self.failRecovery("The wallet was imported on your node, but saving it in Fully Noded failed.")
+                    return
+                }
+                self.showSuccess(showUpdatedTimestampAlert: timestampsMoved)
+            }
+
+            if let existing = (wallets ?? []).map(Wallet.init(dictionary:)).first(where: { $0.name == name }) {
+                CoreDataService.update(id: existing.id, keyToUpdate: "walletBackup",
+                                       newValue: fnWallet["walletBackup"] as Any, entity: .wallets, completion: finished)
+            } else {
+                CoreDataService.saveEntity(dict: fnWallet, entityName: .wallets, completion: finished)
+            }
+        }
+    }
+
+    private func failRecovery(_ message: String) {
+        hideActivity {
+            showAlert(title: "Recovery failed", message: message)
         }
     }
     
+    private func approximateHeight(for timestamp: Int64) -> Int {
+        let genesisTime: Int64 = 1_231_006_505      // block 0
+        let elapsed = Double(timestamp - genesisTime)
+        return max(0, Int((elapsed / 600.0).rounded()))
+    }
+    
+    private func approximateTimestamp(for height: Int) -> Int64 {
+        let genesisTime: Int64 = 1_231_006_505      // block 0
+        return genesisTime + Int64((Double(height) * 600.0).rounded())
+    }
+    
     private func showSuccess(showUpdatedTimestampAlert: Bool) {
-        spinner.dismiss {
+        hideActivity {
             if showUpdatedTimestampAlert {
                 SuccessView.show(
                     in: self,
-                    title: "Backup Recovered\n⚠️ Pruned funds!",
-                    subtitle: "The birthday of this wallet precedes your prune height (we updated the birthdate to match the prune height). If you don't see balances and a rescan does not show balances you will likely need to -reindex the blockchain."
+                    title: "Backup recovered",
+                    subtitle: "⚠️ Pruned node: this wallet is older than your prune height (we updated the birthdate to match the prune height). If you don't see balances and a rescan does not show balances you will likely need to -reindex the blockchain."
                 )
             } else {
                 SuccessView.show(
                     in: self,
-                    title: "Backup Recovered",
+                    title: "Backup recovered",
                     subtitle: "Your wallet has been recovered."
                 )
             }
@@ -883,33 +770,12 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
-    private func importDescNow(descriptorDicts: [[String: Any]], exists: Bool, fnWalletToCreateDict: [String: Any], name: String, backup: WalletBackup, showUpdatedTimestampAlert: Bool) {
-        let p = Import_Descriptors(["requests": descriptorDicts])
-        
-        OnchainUtils.importDescriptors(p) { [weak self] (imported, message) in
-            guard let self = self else { return }
-            guard imported else {
-                spinner.dismiss()
-                if let message = message {
-                    guard message.contains("-rescan") else {
-                        showAlert(title: "", message: message)
-                        return
-                    }
-                    showAlert(title: "", message: message)
-                }
-                return
-            }
-            
-            if !exists {
-                showSuccess(showUpdatedTimestampAlert: showUpdatedTimestampAlert)
-            }
-        }
-    }
-    
     private func processImportedString(_ item: String) {
         let lowercased = item.lowercased()
                 
-        if item.isValidHex, let walletBackup = decodeWalletBackup(from: item) {
+        // A Fully Noded wallet backup: hex-encoded JSON (whitespace / newlines from a
+        // file or a paste are fine). Anything else falls through to the other formats.
+        if let walletBackup = decodeWalletBackup(from: item) {
             promptToImport(backup: walletBackup)
             
         } else if self.isExtendedKey(lowercased) {
@@ -998,7 +864,12 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 return
             }
             
-            let dict = ["id":UUID(), "words":encryptedSigner, "added": Date()] as [String:Any]
+            var dict = ["id":UUID(), "words":encryptedSigner, "added": Date()] as [String:Any]
+            if let mk = Keys.masterKey(words: item, coinType: "0", passphrase: ""),
+               let xfp = Keys.fingerprint(masterKey: mk),
+               let encryptedXfp = Crypto.encrypt(xfp.utf8) {
+                dict["xfp"] = encryptedXfp
+            }
             CoreDataService.saveEntity(dict: dict, entityName: .signers) { success in
                 guard success else {
                     return

@@ -5,7 +5,7 @@
 //  Created by Peter on 15/02/20.
 //  Copyright © 2020 Blockchain Commons, LLC. All rights reserved.
 //
-import LibWally
+import Foundation
 
 public struct Descriptor: CustomStringConvertible {
     
@@ -471,8 +471,8 @@ public struct Descriptor: CustomStringConvertible {
                     dictionary["accountXpub"] = "\(extendedKey.replacingOccurrences(of: ")", with: ""))"
                 } else if extendedKey.contains("tprv") || extendedKey.contains("xprv") {
                     dictionary["accountXprv"] = "\(extendedKey.replacingOccurrences(of: ")", with: ""))"
-                    if let hdkey = try? HDKey(base58: String(extendedKey)) {
-                        dictionary["accountXpub"] = hdkey.xpub
+                    if let xpub = Keys.xpub(fromXprv: String(extendedKey)) {
+                        dictionary["accountXpub"] = xpub
                     }
                 } else {
                     let subarray = extendedKey.split(separator: "#")

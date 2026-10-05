@@ -197,32 +197,36 @@ public extension String {
         return "\(prefix)-\(groupedMiddle)-\(suffix)"
     }
     
-    /// Securely overwrites the string's memory with zeros and then clears it
+    /// Overwrites this string's bytes with zeros, then empties it.
+    ///
+    /// Swift strings share storage on copy (copy-on-write), so a wipe may only write into
+    /// storage that THIS variable owns exclusively:
+    /// - `reserveCapacity` guarantees that. It's a no-op when the storage is already
+    ///   unique, native and large enough (the normal case for decrypted seed words), so
+    ///   the real bytes get zeroed. If the bytes are shared with another String, or live
+    ///   in read-only memory (a literal) or an NSString, it copies them first. That way we
+    ///   never zero memory someone else is still reading, or crash writing into a literal.
+    ///   Those other copies are their owners' to wipe.
+    /// - Strings of 15 UTF-8 bytes or fewer are stored inline in the variable itself;
+    ///   assigning "" at the end overwrites them.
+    /// - memset_s is guaranteed not to be optimised away.
+    ///
+    /// Copies made earlier (split/components, interpolation, NSString bridging, text
+    /// shown in UI) aren't reachable from here and aren't wiped.
     mutating func secureWipe() {
-        // Get mutable access to the underlying UTF-8 bytes
         let count = self.utf8.count
-        guard count > 0 else { self = ""; return }
+        guard count > 0 else { return }
         
-        self.withMutableStrings { pointer in
-            guard let base = pointer else { return }
-            base.initialize(repeating: 0, count: count)  // zero-fill
+        // Make sure we own unique, mutable, contiguous storage before writing to it.
+        self.reserveCapacity(count)
+        
+        self.withUTF8 { buffer in
+            guard let base = buffer.baseAddress, buffer.count > 0 else { return }
+            let mutable = UnsafeMutableRawPointer(mutating: base)
+            _ = memset_s(mutable, buffer.count, 0, buffer.count)
         }
         
-        // Final obfuscation + clear
-        self = String(repeating: "X", count: min(count, 200))
         self = ""
-    }
-    
-    // Helper to get mutable pointer to UTF-8 buffer
-    func withMutableStrings<T>(_ body: (UnsafeMutablePointer<CChar>?) -> T) -> T {
-        return self.withCString { cString in
-            //let length = strlen(cString) + 1
-            guard let mutableCopy = strdup(cString) else {
-                return body(nil)
-            }
-            defer { free(mutableCopy) }
-            return body(mutableCopy)
-        }
     }
     
     var pong: String {

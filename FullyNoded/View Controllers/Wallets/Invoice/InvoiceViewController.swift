@@ -15,7 +15,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     var textToShareViaQRCode = ""
     var addressString = ""
     var qrCode = UIImage()
-    let spinner = ConnectingView.shared
     let qrGenerator = QRGenerator()
     let ud = UserDefaults.standard
     
@@ -57,6 +56,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         } else {
             addTimelockOutlet.alpha = 0
         }
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .receive)
     }
     
     private func setDelegates() {
@@ -116,7 +117,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func copyAddressAction(_ sender: Any) {
         UIPasteboard.general.string = addressString
-        showAlert(vc: self, title: "", message: "Address text copied ✓")
+        SuccessView.toast("Address text copied", in: self)
     }
     
     @IBAction func shareQrAction(_ sender: Any) {
@@ -132,7 +133,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func copyQrAction(_ sender: Any) {
         UIPasteboard.general.image = self.qrView.image
-        showAlert(vc: self, title: "", message: "QR copied ✓")
+        SuccessView.toast("QR copied", in: self)
     }
     
     @IBAction func shareInvoiceTextAction(_ sender: Any) {
@@ -141,11 +142,11 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func copyInvoiceTextAction(_ sender: Any) {
         UIPasteboard.general.string = invoiceText.text
-        showAlert(vc: self, title: "", message: "Invoice text copied ✓")
+        SuccessView.toast("Invoice text copied", in: self)
     }
                     
     func generateOnchainInvoice() {
-        spinner.show(vc: self, description: "fetching address...")
+        showActivity("fetching address...")
         
         addressOutlet.text = ""
         
@@ -162,10 +163,10 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
    
     
     private func getTimelockedAddress() {
-        spinner.show(vc: self)
+        showActivity("fetching address...")
         
         guard let wallet = self.wallet else {
-            spinner.dismiss()
+            hideActivity()
             return
         }
         
@@ -174,7 +175,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             guard let self = self else { return }
             
             guard let addressInfoResponse = response as? [String: Any] else {
-                spinner.dismiss()
+                hideActivity()
                 return
             }
             
@@ -210,7 +211,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                                 guard let self = self else { return }
                                 
                                 guard let descriptorInfo = descriptorInfo else {
-                                    spinner.dismiss()
+                                    hideActivity()
                                     showAlert(title: "", message: message ?? "Unknown arror getting descripr")
                                     return
                                 }
@@ -256,7 +257,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                                                         
                                                         backUpNow(displayDate: displayDate)
                                                     } else {
-                                                        spinner.dismiss()
+                                                        hideActivity()
                                                         if let errorDesc = importResponse.error, let message = errorDesc["message"] as? String {
                                                             showAlert(title: "", message: message)
                                                         } else {
@@ -273,7 +274,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                         
                        
                     } catch {
-                        spinner.dismiss()
+                        hideActivity()
                         showAlert(title: "", message: error.localizedDescription)
                     }
                 }
@@ -343,7 +344,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                     
                     SuccessView.show(
                         in: self,
-                        title: "Wallet backup updated!",
+                        title: "Wallet backup updated",
                         subtitle: "You can export this backup by going back to the Active Wallet view and tapping the export button in the top right."
                     ) {
                         DispatchQueue.main.async { [weak self] in
@@ -363,7 +364,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
         
     private func getReceieveAddressForFullyNodedWallet(_ wallet: Wallet) {
-        spinner.show(vc: self, description: "getting address from \(wallet.label)...")
+        showActivity("getting address from \(wallet.label)...")
         
         let addressType = Descriptor(wallet.receiveDescriptor).addressType
         
@@ -371,7 +372,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .getnewaddress(param: p)) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
             
-            spinner.dismiss()
+            hideActivity()
             
             guard let address = response as? String else {
                 showAlert(vc: self, title: "", message: errorDesc ?? "Unknown error fetching a new address.")
@@ -390,7 +391,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             self.addressOutlet.text = address.addressExpanded
             self.addressString = address
             self.updateQRImage()
-            self.spinner.dismiss()
+            self.hideActivity()
         }
     }
         
@@ -412,7 +413,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             MakeRPCCall.sharedInstance.executeRPCCommand(method: .getnewaddress(param: param)) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 guard let address = response as? String else {
-                    self.spinner.dismiss()
+                    self.hideActivity()
                     
                     showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error fetching address")
                     

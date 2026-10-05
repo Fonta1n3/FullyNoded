@@ -1,15 +1,6 @@
 {
-  "originHash" : "14a824bcf8303806cc357224f17b4e5a3f45351818522041c727a18d88b871b7",
+  "originHash" : "598b1c3294f58415f463c872ca582caa8790276641677843646c4b726c07bdca",
   "pins" : [
-    {
-      "identity" : "bbqr-swift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/bitcoinppl/bbqr-swift.git",
-      "state" : {
-        "revision" : "83b828077ecc4f5d2cf8889da5543a61b4a60a3c",
-        "version" : "0.3.1"
-      }
-    },
     {
       "identity" : "bcswiftdcbor",
       "kind" : "remoteSourceControl",
@@ -62,6 +53,15 @@
       "state" : {
         "revision" : "34a26297c200489779929b7fd7d4d30b63e87e69",
         "version" : "2.4.3"
+      }
+    },
+    {
+      "identity" : "swift-secp256k1",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/21-DOT-DEV/swift-secp256k1",
+      "state" : {
+        "revision" : "e70a10e036a55fffea31568f0af92d69b6d449cd",
+        "version" : "0.23.2"
       }
     },
     {

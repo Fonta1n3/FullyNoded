@@ -28,6 +28,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // Remove the temporary BDK database and old exports that earlier versions left in
+        // Documents, which is visible in the Files app / Finder.
+        WalletLogic.shared.cleanUpLegacyDocuments()
         return true
     }
 

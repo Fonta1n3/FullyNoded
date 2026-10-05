@@ -18,7 +18,6 @@ class QRDisplayerViewController: UIViewController {
     var headerText = ""
     var descriptionText = ""
     var headerIcon: UIImage!
-    let spinner = ConnectingView.shared
     let qrGenerator = QRGenerator()
     //var isBbqr = false
     var isUR = false
@@ -59,7 +58,7 @@ class QRDisplayerViewController: UIViewController {
         
         
         /*if isBbqr {
-            spinner.show(vc: self, description: "")
+            showActivity("")
             
             var parts: [String]? = []
             
@@ -80,17 +79,17 @@ class QRDisplayerViewController: UIViewController {
             }
             
         } else */if isUR {
-            spinner.show(vc: self, description: "loading...")
+            showActivity("loading...")
             
             if psbt != "" {
                 guard let data = Data(base64Encoded: psbt) else {
-                    spinner.dismiss()
+                    hideActivity()
                     showAlert(vc: self, title: "", message: "Unable to convert base64 text to data.")
                     return
                 }
                 
                 guard let psbtUr = URHelper.psbtUr(data) else {
-                    spinner.dismiss()
+                    hideActivity()
                     showAlert(vc: self, title: "", message: "Unable to convert to ur:crypto-psbt QR.")
                     return
                 }
@@ -105,7 +104,7 @@ class QRDisplayerViewController: UIViewController {
                 }
             }
         } else if psbt.lowercased().hasPrefix("ur:") || text.lowercased().hasPrefix("ur:") {
-            spinner.show(vc: self, description: "loading...")
+            showActivity("loading...")
             
             guard let ur = URHelper.ur(text == "" ? psbt : text) else { return }
                 
@@ -206,7 +205,7 @@ class QRDisplayerViewController: UIViewController {
 //        
 //        if txn != "" {
 //            guard let hexData = hex_decode(string) else {
-//                spinner.dismiss()
+//                hideActivity()
 //                return [string]
 //            }
 //            data = Data(hexData)
@@ -228,16 +227,16 @@ class QRDisplayerViewController: UIViewController {
 //        )
 //        
 //        guard let data = data else {
-//            spinner.dismiss()
+//            hideActivity()
 //            return [string]
 //        }
 //        
 //        do {
 //            let split = try Split.tryFromData(bytes: data, fileType: fileType, options: options)
-//            spinner.dismiss()
+//            hideActivity()
 //            return split.parts()
 //        } catch {
-//            spinner.dismiss()
+//            hideActivity()
 //            return [string]
 //        }
 //    }
@@ -271,7 +270,7 @@ class QRDisplayerViewController: UIViewController {
     private func animateUr(ur: UR) {
         let encoder = UREncoder(ur, maxFragmentLen: 250)
         if encoder.isSinglePart {
-            spinner.dismiss()
+            hideActivity()
             showQR(ur.qrString)
         } else {
             timer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
@@ -283,7 +282,7 @@ class QRDisplayerViewController: UIViewController {
                 if index <= encoder.seqLen {
                     self.parts.append(part.uppercased())
                 } else {
-                    self.spinner.dismiss()
+                    self.hideActivity()
                     self.animate()
                     timer?.invalidate()
                     timer = Timer.scheduledTimer(timeInterval: 0.3, target: self, selector: #selector(self.animate), userInfo: nil, repeats: true)

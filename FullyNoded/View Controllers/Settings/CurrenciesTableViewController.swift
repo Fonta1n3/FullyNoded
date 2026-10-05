@@ -11,10 +11,11 @@ import UIKit
 class CurrenciesTableViewController: UITableViewController {
     
     let currencies = Currencies.currenciesWithCircle
-    let spinner = ConnectingView.shared
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Cypherpunk look (WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .settings)
 
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
@@ -70,12 +71,12 @@ class CurrenciesTableViewController: UITableViewController {
     }
     
     func updateFxRate(currency: String) {
-        spinner.show(vc: self, description: "fetching fx rate...")
+        showActivity("fetching fx rate...")
         
         FiatConverter.sharedInstance.getFxRate(currency: currency) { [weak self] fxRate in
             guard let self = self else { return }
             
-            spinner.dismiss()
+            hideActivity()
             
             guard let fxRate = fxRate else {
                 showAlert(vc: self, title: "", message: "There was an error fetching the exchange rate for \(currency).")
@@ -140,4 +141,9 @@ class CurrenciesTableViewController: UITableViewController {
     }
     */
 
+    // MARK: - Theme
+
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .settings)
+    }
 }

@@ -48,6 +48,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
         
         
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .utxo)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -321,7 +323,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            ConnectingView.shared.dismiss()
+            self.hideActivity()
             self.refresher.endRefreshing()
             self.spinner.stopAnimating()
             self.spinner.alpha = 0
@@ -467,16 +469,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             vc.fxRate = fxRate
             vc.utxoToSweep = utxoToSweep
             
-        case "segueToBroadcasterFromUtxo":
-            guard let vc = segue.destination as? VerifyTransactionViewController else { fallthrough }
-            
-            if let signedRawTx = signedRawTx {
-                vc.signedRawTx = signedRawTx
-            } else if let psbt = psbt {
-                vc.unsignedPsbt = psbt
-            }
-            
-            
         default:
             break
         }
@@ -490,7 +482,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             guard let signers = signers, signers.count > 0 else {
                 showAlert(title: "", message: "No signers present.")
-                ConnectingView.shared.dismiss()
+                self.hideActivity()
                 return
             }
             
@@ -533,7 +525,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                         
                     } catch {
                         showAlert(title: "Failed converting to bdkMnemonic", message: error.localizedDescription)
-                        ConnectingView.shared.dismiss()
+                        self.hideActivity()
                     }
                 }
             }
@@ -568,7 +560,7 @@ extension UTXOViewController: UTXOCellDelegate {
     func copyParentDesc(_ utxo: UTXO) {
         if let parentDescs = utxo.parentDescs {
             UIPasteboard.general.string = "\(parentDescs)"
-            showAlert(vc: self, title: "", message: "Parent descriptor copied ✓")
+            SuccessView.toast("Parent descriptor copied", in: self)
         }
     }
     
@@ -683,17 +675,17 @@ extension UTXOViewController: UTXOCellDelegate {
     
     func copyAddress(_ utxo: UTXO) {
         UIPasteboard.general.string = utxo.address!
-        showAlert(vc: self, title: "", message: "Address copied ✓")
+        SuccessView.toast("Address copied", in: self)
     }
     
     func copyTxid(_ utxo: UTXO) {
         UIPasteboard.general.string = utxo.txid
-        showAlert(vc: self, title: "", message: "Transaction ID copied ✓")
+        SuccessView.toast("Transaction ID copied", in: self)
     }
     
     func copyDesc(_ utxo: UTXO) {
         UIPasteboard.general.string = utxo.desc!
-        showAlert(vc: self, title: "", message: "Descriptor copied ✓")
+        SuccessView.toast("Descriptor copied", in: self)
     }
     
     func editLabel(_ utxo: UTXO) {
@@ -738,5 +730,18 @@ extension UTXOViewController: UITableViewDelegate {
         let headerView = UIView()
         headerView.backgroundColor = .clear
         return headerView
+    }
+}
+
+// MARK: - Theme
+
+extension UTXOViewController {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .utxo)
+        (cell as? UTXOCell)?.flattenIconButtons()   // only Nodeless keeps a border
+    }
+
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        WalletTheme.styleHeader(view, tint: .utxo)
     }
 }
