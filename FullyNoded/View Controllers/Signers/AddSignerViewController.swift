@@ -223,7 +223,8 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
 //    }
     
     private func saveSigner(_ encryptedSigner: Data, _ fingerprint: String) {
-        let dict = ["id":UUID(), "words":encryptedSigner, "added":Date(), "label":fingerprint] as [String:Any]
+        var dict = ["id":UUID(), "words":encryptedSigner, "added":Date(), "label":fingerprint] as [String:Any]
+        if let encryptedXfp = Crypto.encrypt(fingerprint.utf8) { dict["xfp"] = encryptedXfp }
         CoreDataService.saveEntity(dict: dict, entityName: .signers) { [unowned vc = self] success in
             if success {
                 vc.signerAdded()
@@ -280,7 +281,24 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     }
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        var subString = (textField.text!.capitalized as NSString).replacingCharacters(in: range, with: string)
+        // A paste (or any multi-character change) replaces the text wholesale. The field still
+        // holds the grey autocomplete suffix of a half-typed word, and UIKit's own replacement
+        // leaves part of it behind, corrupting the pasted phrase. Drop the suffix and apply the
+        // replacement ourselves.
+        if string.count > 1 {
+            var base = textField.text ?? ""
+            base = String(base.dropLast(min(autoCompleteCharacterCount, base.count)))
+            autoCompleteCharacterCount = 0
+            let location = min(range.location, base.count)
+            let length = min(range.length, base.count - location)
+            let updated = (base as NSString).replacingCharacters(in: NSRange(location: location, length: length), with: string).lowercased()
+            textField.text = updated
+            searchAutocompleteEntriesWIthSubstring(substring: updated)
+            return false
+        }
+        let current = textField.text ?? ""
+        let changeRange = range
+        var subString = (current.capitalized as NSString).replacingCharacters(in: changeRange, with: string)
         
         defer {
             subString.secureWipe()
@@ -383,9 +401,10 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     }
     
     private func processedCharacters(_ string: String) -> String {
-        var result = string.filter("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ".contains)
-        result = result.condenseWhitespace()
-        return result
+        // Keep a single space between words: condenseWhitespace() would strip them all and
+        // the joined string could never validate as a mnemonic.
+        let letters = string.filter("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ".contains)
+        return letters.split(separator: " ").joined(separator: " ")
     }
     
     private func validWordsAdded() {

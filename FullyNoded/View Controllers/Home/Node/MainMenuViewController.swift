@@ -585,7 +585,7 @@ class MainMenuViewController: UIViewController {
             for encryptedSigner in encryptedSigners {
                 let signerStruct = SignerStruct(dictionary: encryptedSigner)
                 
-                guard signerStruct.xfp == nil else { return }
+                guard signerStruct.xfp == nil else { continue }
                 
                 var passphrase = ""
                 

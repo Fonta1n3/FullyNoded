@@ -330,11 +330,17 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             return
         }
         
-        saveSigner(encryptedSigner: encryptedWords, completion: completion)
+        saveSigner(encryptedSigner: encryptedWords, words: words, completion: completion)
     }
     
-    private func saveSigner(encryptedSigner: Data, completion: @escaping ((Bool)) -> Void) {
-        let dict = ["id":UUID(), "words":encryptedSigner, "added": Date(), "label": "Single Sig"] as [String:Any]
+    private func saveSigner(encryptedSigner: Data, words: String, completion: @escaping ((Bool)) -> Void) {
+        var dict = ["id":UUID(), "words":encryptedSigner, "added": Date(), "label": "Single Sig"] as [String:Any]
+        // Store the fingerprint now so the verifier can match this signer without an app relaunch.
+        if let mk = Keys.masterKey(words: words, coinType: "0", passphrase: ""),
+           let xfp = Keys.fingerprint(masterKey: mk),
+           let encryptedXfp = Crypto.encrypt(xfp.utf8) {
+            dict["xfp"] = encryptedXfp
+        }
         CoreDataService.saveEntity(dict: dict, entityName: .signers) { success in
             completion(success)
         }
