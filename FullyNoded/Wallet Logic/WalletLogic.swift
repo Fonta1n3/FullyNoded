@@ -787,13 +787,15 @@ class WalletLogic {
         }
     }
     
-    func createTimelockedAddress(fnWallet: Wallet, pubkey: String?, descriptor: String?, timelock: UInt32) throws -> (timelockedAddress: String, descriptor: String) {
+    /// `keyIndex` is the child index of the address being locked (taken from its hdkeypath), so the
+    /// timelock uses that address's own key rather than always child 0.
+    func createTimelockedAddress(fnWallet: Wallet, pubkey: String?, descriptor: String?, timelock: UInt32, keyIndex: UInt32 = 0, derivedDescriptor: String? = nil) throws -> (timelockedAddress: String, descriptor: String) {
         do {
             let fnDesc = Descriptor(fnWallet.receiveDescriptor)
             
             if fnDesc.isMulti && fnDesc.isP2TR, let descriptor = descriptor {
                 let (dummyPubkey, checksumlessDesc) = try dummyPubkeyAndChecksumLessDesc(descriptor: descriptor)
-                let nonRanged = nonRanged(desc: checksumlessDesc.scriptPath)
+                let nonRanged = nonRanged(desc: checksumlessDesc.scriptPath, index: keyIndex)
                 let descriptorString = "tr(\(dummyPubkey),and_v(v:\(nonRanged),after(\(timelock))))"
                 #if DEBUG
                 print("timelocked multisig taproot descriptorString: \(descriptorString)")
@@ -801,7 +803,7 @@ class WalletLogic {
                 return try fetchTimelockAddressFromDescString(descriptorString: descriptorString, fnWallet: fnWallet)
                 
             } else if fnDesc.isP2TR, let descriptor = descriptor {
-                let nonRanged = nonRanged(desc: descriptor)
+                let nonRanged = nonRanged(desc: descriptor, index: keyIndex)
                 let (dummyPubkey, checksumlessDesc) = try dummyPubkeyAndChecksumLessDesc(descriptor: nonRanged)
                 let pkPrefixDesc = checksumlessDesc.string.replacingOccurrences(of: "tr(", with: "pk(")
                 let descriptorString = "tr(\(dummyPubkey),and_v(v:\(pkPrefixDesc),after(\(timelock))))"
@@ -811,7 +813,7 @@ class WalletLogic {
                 return try fetchTimelockAddressFromDescString(descriptorString: descriptorString, fnWallet: fnWallet)
                 
             } else if fnDesc.isP2WPKH && !fnDesc.isMulti, let descriptor = descriptor {
-                let processed = processSegwitSingleSigDescForMiniScript(desc: descriptor)
+                let processed = processSegwitSingleSigDescForMiniScript(desc: descriptor, index: keyIndex)
                 let miniscript = "and_v(v:\(processed),after(\(timelock)))"
                 let descriptorString = "wsh(\(miniscript))"
                 #if DEBUG
@@ -819,8 +821,11 @@ class WalletLogic {
                 #endif
                 return try fetchTimelockAddressFromDescString(descriptorString: descriptorString, fnWallet: fnWallet)
                 
-            } else if fnDesc.isMulti && fnDesc.isP2WPKH, let descriptor = descriptor {
-                let processed = processSegwitMultisigDescForMiniScript(desc: descriptor)
+            } else if fnDesc.isMulti && fnDesc.isP2WPKH {
+                // Built from the address's own derived descriptor (explicit pubkeys), parsed
+                // properly rather than by string replacement; fails rather than guesses.
+                guard let derivedDescriptor, let descriptor else { throw TimelockedAddressError.unsupportedTimelockFormat }
+                let processed = try multisigMiniscript(fromDerivedDescriptor: derivedDescriptor, parentDescriptor: descriptor, index: keyIndex)
                 let miniScript = "and_v(v:\(processed),after(\(timelock)))"
                 let descriptorString = "wsh(\(miniScript))"
                 #if DEBUG
@@ -843,23 +848,97 @@ class WalletLogic {
         return "\(desc.components(separatedBy: "#")[0])"
     }
     
-    private func nonRanged(desc: String) -> String {
-        return desc.replacingOccurrences(of: "*", with: "0")
+    private func nonRanged(desc: String, index: UInt32 = 0) -> String {
+        return desc.replacingOccurrences(of: "*", with: "\(index)")
     }
     
-    private func processSegwitSingleSigDescForMiniScript(desc: String) -> String {
+    private func processSegwitSingleSigDescForMiniScript(desc: String, index: UInt32) -> String {
         let checksumless = checkSumless(desc: desc)
-        let nonRanged = nonRanged(desc: checksumless)
+        let nonRanged = nonRanged(desc: checksumless, index: index)
         let correctedNestedPrefix = nonRanged.replacingOccurrences(of: "wpkh(", with: "pk(")
         return correctedNestedPrefix
     }
     
-    private func processSegwitMultisigDescForMiniScript(desc: String) -> String {
-        let checksumless = checkSumless(desc: desc)
-        let nonRanged = nonRanged(desc: checksumless)
-        let removedNestedWsh = nonRanged.replacingOccurrences(of: "wsh(", with: "").replacingOccurrences(of: "))", with: ")")
-        let multi = removedNestedWsh.replacingOccurrences(of: "sortedmulti", with: "multi")
-        return multi
+    /// `multi(m,k1,k2,...)` for a miniscript. The ORDER of the keys comes from the address's derived
+    /// descriptor (explicit pubkeys, sorted per BIP67 for `sortedmulti`, so every cosigner builds the
+    /// identical script). The keys themselves are written as the wallet's own xpub expressions at
+    /// `index`, because signing later needs the xpub to substitute the private key. Fails rather
+    /// than guesses when the two descriptors can't be matched one-to-one by fingerprint.
+    private func multisigMiniscript(fromDerivedDescriptor derived: String, parentDescriptor parent: String, index: UInt32) throws -> String {
+        let derivedArgs = try multisigArguments(of: checkSumless(desc: derived))
+        let parentArgs = try multisigArguments(of: checkSumless(desc: parent))
+        guard derivedArgs.keys.count == parentArgs.keys.count, derivedArgs.threshold == parentArgs.threshold else {
+            throw TimelockedAddressError.unsupportedTimelockFormat
+        }
+        
+        func fingerprint(_ key: String) -> String? {
+            guard key.hasPrefix("["), key.count > 9 else { return nil }
+            return String(key.dropFirst().prefix(8)).lowercased()
+        }
+        
+        var parentByFingerprint: [String: String] = [:]
+        for key in parentArgs.keys {
+            guard let fp = fingerprint(key), parentByFingerprint[fp] == nil else { throw TimelockedAddressError.unsupportedTimelockFormat }
+            parentByFingerprint[fp] = key.replacingOccurrences(of: "*", with: "\(index)")
+        }
+        
+        // Each derived key must be "[origin]<66 hex>" so it can be sorted, and match a parent key.
+        var ordered: [(pubkey: String, expression: String)] = []
+        for key in derivedArgs.keys {
+            guard let range = key.range(of: "(0[23][0-9a-fA-F]{64})$", options: .regularExpression),
+                  let fp = fingerprint(key), let expression = parentByFingerprint[fp] else {
+                throw TimelockedAddressError.unsupportedTimelockFormat
+            }
+            ordered.append((String(key[range]).lowercased(), expression))
+        }
+        if derivedArgs.isSorted { ordered.sort { $0.pubkey < $1.pubkey } }
+        
+        return "multi(\(parentArgs.threshold),\(ordered.map { $0.expression }.joined(separator: ",")))"
+    }
+    
+    /// Threshold, keys and whether it's `sortedmulti`, from a descriptor containing one multi().
+    private func multisigArguments(of desc: String) throws -> (threshold: Int, keys: [String], isSorted: Bool) {
+        let isSorted = desc.contains("sortedmulti(")
+        guard let open = desc.range(of: isSorted ? "sortedmulti(" : "multi(")?.upperBound,
+              let close = matchingParenthesis(in: desc, after: open) else {
+            throw TimelockedAddressError.unsupportedTimelockFormat
+        }
+        let args = splitTopLevel(String(desc[open..<close]))
+        guard args.count >= 3, let threshold = Int(args[0]), threshold >= 1, threshold <= args.count - 1 else {
+            throw TimelockedAddressError.unsupportedTimelockFormat
+        }
+        return (threshold, Array(args.dropFirst()), isSorted)
+    }
+    
+    /// Index of the ")" closing a "(" that sits just before `start`.
+    private func matchingParenthesis(in string: String, after start: String.Index) -> String.Index? {
+        var depth = 1
+        var i = start
+        while i < string.endIndex {
+            if string[i] == "(" { depth += 1 }
+            if string[i] == ")" { depth -= 1; if depth == 0 { return i } }
+            i = string.index(after: i)
+        }
+        return nil
+    }
+    
+    /// Splits on commas that aren't inside parentheses or brackets.
+    private func splitTopLevel(_ string: String) -> [String] {
+        var parts: [String] = []
+        var current = ""
+        var depth = 0
+        for character in string {
+            if character == "(" || character == "[" { depth += 1 }
+            if character == ")" || character == "]" { depth -= 1 }
+            if character == "," && depth == 0 {
+                parts.append(current)
+                current = ""
+            } else {
+                current.append(character)
+            }
+        }
+        parts.append(current)
+        return parts
     }
     
    private func dummyPubkeyAndChecksumLessDesc(descriptor: String) throws -> (dummyPubkey: String, checksumlessDescriptor: Descriptor) {
