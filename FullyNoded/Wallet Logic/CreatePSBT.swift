@@ -121,28 +121,57 @@ class CreatePSBT {
                 return
             }
 
-            var pinnedInputs: [[String: Any]] = []
-            if let tx = try? bdkPsbt.extractTx() {
-                for prev in tx.input() {
-                    pinnedInputs.append([
-                        "txid": prev.previousOutput.txid.description,
-                        "vout": prev.previousOutput.vout,
-                        "sequence": 1
-                    ])
+            // Core picked the inputs itself and one of them may still be timelocked (it counts
+            // timelocked coins as spendable). Consensus compares a time-based lock with the chain's
+            // median time past (and a height-based one with the next block's height), not with this
+            // device's clock, so that's what the lock is checked against. If it hasn't passed, the
+            // transaction can't be broadcast yet, so don't hand it over without saying so.
+            // (When the user picked the inputs themselves, a future locktime is deliberate.)
+            func proceed() {
+                var pinnedInputs: [[String: Any]] = []
+                if let tx = try? bdkPsbt.extractTx() {
+                    for prev in tx.input() {
+                        pinnedInputs.append([
+                            "txid": prev.previousOutput.txid.description,
+                            "vout": prev.previousOutput.vout,
+                            "sequence": 1
+                        ])
+                    }
+                } else {
+                    pinnedInputs = inputs.map { input in
+                        var copy = input
+                        copy["sequence"] = 1
+                        return copy
+                    }
                 }
-            } else {
-                pinnedInputs = inputs.map { input in
-                    var copy = input
-                    copy["sequence"] = 1
-                    return copy
+
+                requestPSBT(params: buildParams(inputs: pinnedInputs, locktime: needed)) { rebuilt, rebuildError in
+                    if let rebuilt {
+                        completion((rebuilt, nil, rebuildError))
+                    } else {
+                        completion((nil, nil, rebuildError))
+                    }
                 }
             }
 
-            requestPSBT(params: buildParams(inputs: pinnedInputs, locktime: needed)) { rebuilt, rebuildError in
-                if let rebuilt {
-                    completion((rebuilt, nil, rebuildError))
+            guard inputs.isEmpty else { proceed(); return }
+
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .getblockchaininfo) { response, _ in
+                guard let info = response as? [String: Any],
+                      let height = info["blocks"] as? Int,
+                      let medianTime = info["mediantime"] as? Int else {
+                    proceed()   // can't tell: let the node judge at broadcast
+                    return
+                }
+                let lock = Int(needed)
+                let isOpen = lock >= 500_000_000 ? lock < medianTime : lock <= height
+                if isOpen {
+                    proceed()
                 } else {
-                    completion((nil, nil, rebuildError))
+                    let when = lock >= 500_000_000
+                        ? Date(timeIntervalSince1970: TimeInterval(lock)).formatted(date: .abbreviated, time: .shortened)
+                        : "block \(lock)"
+                    completion((nil, nil, "This amount would need coins that are timelocked until \(when), so the transaction could not be broadcast before then. Send a smaller amount, or choose specific UTXO's to spend."))
                 }
             }
         }

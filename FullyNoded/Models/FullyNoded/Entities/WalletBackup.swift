@@ -93,7 +93,18 @@ extension BackupItem {
                   nextIndex: d.nextIndex ?? d.next ?? 0,
                   timestamp: d.timestamp,
                   internal: d.internal_,
-                  label: d.label)
+                  label: d.label ?? Self.timelockLabel(for: d.desc, ranged: range != nil))
+    }
+
+    /// Core's listdescriptors doesn't return labels, so a timelocked address would come back
+    /// from a recovery without its "Locked until" label. It's rebuilt from the after(N) in the
+    /// descriptor, in the same format the Invoice screen uses.
+    static func timelockLabel(for desc: String, ranged: Bool) -> String? {
+        guard !ranged,
+              let match = desc.range(of: #"after\((\d+)\)"#, options: .regularExpression),
+              let seconds = TimeInterval(desc[match].dropFirst(6).dropLast()),
+              seconds >= 500_000_000 else { return nil }
+        return "Locked until \(Date(timeIntervalSince1970: seconds).dateDisplay)"
     }
 
     /// The descriptor without its "#checksum".
@@ -106,9 +117,12 @@ extension BackupItem {
         var request: [String: Any] = [
             "desc": desc,
             "active": active,
-            "internal": `internal` ?? false,
             "timestamp": timestamp ?? 0
         ]
+        // Core 30 rejects a label combined with an explicit "internal": false on a non-ranged
+        // descriptor ("Internal addresses should not have a label"), so for those the key is
+        // left out entirely (the default is the same).
+        if range != nil || `internal` == true { request["internal"] = `internal` ?? false }
         if let range = range { request["range"] = range }
         if let nextIndex = nextIndex, range != nil { request["next_index"] = nextIndex }
         if range == nil, `internal` != true, let label = label { request["label"] = label }
