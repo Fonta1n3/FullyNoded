@@ -783,13 +783,13 @@ class UTXOViewController: UIViewController {
             other.append(UIAction(title: sp.isVerified ? "Re-check SP info" : "Check SP info", image: UIImage(systemName: "eye.slash")) { [weak self] _ in
                 self?.checkSilentPayment(utxo)
             })
-        } else {
-            // Nodeless sweeps go through BDK, which can't spend a silent payment output.
-            if utxo.parentDescs?.isEmpty == false, utxo.address != nil {
-                other.append(UIAction(title: "Sweep without node (Nodeless)", image: UIImage(systemName: "antenna.radiowaves.left.and.right.slash")) { [weak self] _ in
-                    self?.sweepUtxo(utxo)
-                })
-            }
+        }
+        // Nodeless: descriptor coins through BDK, silent payments with their saved tweak.
+        let canSweep = item.traits.silentPayment.map { $0.isVerified } ?? (utxo.parentDescs?.isEmpty == false)
+        if canSweep, utxo.address != nil {
+            other.append(UIAction(title: "Sweep without node (Nodeless)", image: UIImage(systemName: "antenna.radiowaves.left.and.right.slash")) { [weak self] _ in
+                self?.sweepUtxo(utxo)
+            })
         }
 
         return UIMenu(children: [
@@ -799,41 +799,17 @@ class UTXOViewController: UIViewController {
         ])
     }
 
-    /// Sweep one output without the node (BDK + Esplora), signed by the matching signer.
+    /// Sweep one output without the node: BDK for descriptor coins, or the saved tweak for a
+    /// silent payment (see `NodelessSweep`).
     private func sweepUtxo(_ utxo: UTXO) {
-        guard let wallet = wallet,
-              let parentDesc = utxo.parentDescs?.first,
-              let inputAddress = utxo.address,
-              let network = WalletLogic.shared.bdkNetwork() else { return }
-
-        CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
+        guard let wallet = wallet else { return }
+        NodelessSweep.viewController(for: utxo, wallet: wallet) { [weak self] result in
             guard let self = self else { return }
-            guard let signers = signers, !signers.isEmpty else {
-                showAlert(title: "", message: "No signers present.")
-                return
-            }
-
-            let fingerprint = Descriptor(parentDesc).fingerprint
-            let signer = signers.map { SignerStruct(dictionary: $0) }.first { signer in
-                guard signer.words != nil,
-                      let encryptedXfp = signer.xfp,
-                      let xfp = Crypto.decrypt(encryptedXfp)?.utf8String else { return false }
-                return fingerprint.contains(xfp)
-            }
-
-            let esploraUtxo = Esplora_Utxo(txid: utxo.txid,
-                                           vout: utxo.vout,
-                                           value: Int64((utxo.amount * 100_000_000).rounded()),
-                                           status: .init(confirmed: true, blockHeight: nil, blockHash: nil, blockTime: nil),
-                                           address: inputAddress)
-            do {
-                let bdkWallet = try WalletLogic.shared.bdkWalletFromDescriptors(recDesc: parentDesc, changeDesc: wallet.changeDescriptor)
-                DispatchQueue.main.async {
-                    let vc = SweepViewController(utxos: [esploraUtxo], watchOnlyBdkWallet: bdkWallet, signer: signer, network: network)
-                    self.navigationController?.pushViewController(vc, animated: true)
-                }
-            } catch {
-                showAlert(title: "Unable to build the wallet", message: error.localizedDescription)
+            switch result {
+            case .success(let vc):
+                self.navigationController?.pushViewController(vc, animated: true)
+            case .failure(let error):
+                showAlert(vc: self, title: "Can't sweep", message: error.localizedDescription)
             }
         }
     }

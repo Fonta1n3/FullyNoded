@@ -471,6 +471,30 @@ output.
 
 ---
 
+### 5.4 Sweeping without a node (Nodeless)
+
+A silent payment output whose tweak is saved (5.1, step 1) can be swept from the
+UTXO screen without the node: **⋯ → Sweep without node (Nodeless)**. BDK can't
+build or sign this (a bare taproot key whose private key is `b_spend + t_k`), so
+Fully Noded does it itself (`SilentPaymentSweep`, `SilentPaymentSpend.swift`):
+
+1. **One lookup per output** on Esplora: its amount and script on chain must
+   match the cached UTXO. The transaction is built from the chain's values, which
+   the BIP341 signature commits to. An already spent output shows up as a
+   broadcast error.
+2. **Build** an unsigned PSBT v0: version 2, RBF, locktime 0, every input with its
+   `witness_utxo`, one output to the destination. The fee is the typed fee rate ×
+   the exact vsize (57.5 vB per key-path input).
+3. **Sign** with `SilentPaymentSpend.sign` (5.2): `b_spend + t_k (+ label)`,
+   only if it reproduces the output key.
+4. **Finalize locally** (each witness is just `[signature]`) and **broadcast**.
+
+Esplora is reached over Tor through BDK's client and Tor's HTTP tunnel
+(`localhost:9080`): Blockstream's onion service for mainnet, testnet3 and signet,
+mempool.space's for testnet4 (which Blockstream doesn't serve). A bare
+`HTTP 503` means Tor couldn't reach the onion service; it's retried, since nothing
+was sent.
+
 ## 6. Current limitations
 
 - Labels: only the change label `m = 0` is scanned and spendable; handing out

@@ -10,10 +10,18 @@ import Foundation
 import UIKit
 
 class SweepViewController: UIViewController {
+
+    /// What the swept coins are, and so how the transaction is built and signed.
+    enum Source {
+        /// Coins of a descriptor wallet: BDK builds the PSBT; the signer (or any stored one) signs.
+        case descriptor(wallet: WalletLogic.BDKWallet, signer: SignerStruct?)
+        /// Silent payment outputs with their saved tweaks: built here (BDK can't spend a bare
+        /// taproot key), signed with the spend key + tweak, finalized locally.
+        case silentPayment([SilentPaymentSpend.OwnedOutput])
+    }
     
     private let utxos: [Esplora_Utxo]
-    private let watchOnlyBdkWallet: WalletLogic.BDKWallet
-    private let signer: SignerStruct?
+    private let source: Source
     private let network: WalletLogic.BDKNetwork
     
     // UI Elements
@@ -25,15 +33,20 @@ class SweepViewController: UIViewController {
     private let scanButton = UIButton(type: .system)
     private let pasteButton = UIButton(type: .system)
     private let noticeLabel = UILabel()
+    private let feeRateLabel = UILabel()
+    private let feeRateField = UITextField()
     private let createTxButton = UIButton(type: .system)
     let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double
     
-    init(utxos: [Esplora_Utxo], watchOnlyBdkWallet: WalletLogic.BDKWallet, signer: SignerStruct?, network: WalletLogic.BDKNetwork) {
+    init(utxos: [Esplora_Utxo], source: Source, network: WalletLogic.BDKNetwork) {
         self.utxos = utxos
-        self.watchOnlyBdkWallet = watchOnlyBdkWallet
-        self.signer = signer
+        self.source = source
         self.network = network
         super.init(nibName: nil, bundle: nil)
+    }
+
+    convenience init(utxos: [Esplora_Utxo], watchOnlyBdkWallet: WalletLogic.BDKWallet, signer: SignerStruct?, network: WalletLogic.BDKNetwork) {
+        self.init(utxos: utxos, source: .descriptor(wallet: watchOnlyBdkWallet, signer: signer), network: network)
     }
     
     required init?(coder: NSCoder) {
@@ -44,6 +57,13 @@ class SweepViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         updateBalance()
+    }
+
+    /// The fee rate typed in (sat/vB), nil unless it's a number of at least 1.
+    private var feeRate: Double? {
+        guard let text = feeRateField.text?.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: ",", with: "."),
+              let rate = Double(text), rate >= 1 else { return nil }
+        return rate
     }
     
     private func setupUI() {
@@ -56,7 +76,11 @@ class SweepViewController: UIViewController {
         configureDoneButtonOnKeyboard()
         
         // Title
-        titleLabel.text = "Sweep Funds"
+        if case .silentPayment = source {
+            titleLabel.text = "Sweep Silent Payment"
+        } else {
+            titleLabel.text = "Sweep Funds"
+        }
         titleLabel.font = UIFont.boldSystemFont(ofSize: 28)
         titleLabel.textAlignment = .center
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -113,6 +137,19 @@ class SweepViewController: UIViewController {
         pasteButton.addTarget(self, action: #selector(pastePressed), for: .touchUpInside)
         view.addSubview(pasteButton)
         
+        // Fee rate (sat/vB)
+        feeRateLabel.text = "Fee rate (sat/vB)"
+        feeRateLabel.font = UIFont.systemFont(ofSize: 18, weight: .medium)
+        feeRateLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(feeRateLabel)
+
+        feeRateField.placeholder = "sat/vB"
+        feeRateField.borderStyle = .roundedRect
+        feeRateField.font = UIFont.systemFont(ofSize: 17)
+        feeRateField.keyboardType = .decimalPad
+        feeRateField.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(feeRateField)
+
         // Create Transaction button
         createTxButton.setTitle("Create Transaction", for: .normal)
         createTxButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
@@ -150,10 +187,11 @@ class SweepViewController: UIViewController {
         toolbar.tintColor = .systemBlue
         
         addressTextField.inputAccessoryView = toolbar
+        feeRateField.inputAccessoryView = toolbar
     }
 
     @objc private func doneButtonTapped() {
-        addressTextField.resignFirstResponder()
+        view.endEditing(true)
     }
 
     @objc private func dismissKeyboard() {
@@ -198,6 +236,15 @@ class SweepViewController: UIViewController {
             pasteButton.leadingAnchor.constraint(equalTo: view.centerXAnchor, constant: 10),
             pasteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             pasteButton.heightAnchor.constraint(equalTo: scanButton.heightAnchor),
+
+            // Fee rate
+            feeRateLabel.topAnchor.constraint(equalTo: scanButton.bottomAnchor, constant: 24),
+            feeRateLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            feeRateField.centerYAnchor.constraint(equalTo: feeRateLabel.centerYAnchor),
+            feeRateField.leadingAnchor.constraint(equalTo: feeRateLabel.trailingAnchor, constant: 12),
+            feeRateField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            feeRateField.widthAnchor.constraint(greaterThanOrEqualToConstant: 80),
+            feeRateField.heightAnchor.constraint(equalToConstant: 44),
             
             // Create Transaction button (bottom)
             createTxButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
@@ -295,58 +342,169 @@ class SweepViewController: UIViewController {
     
     @objc private func createTransactionPressed() {
         guard !isShowingActivity else { return }
-        self.showActivity("Creating psbt...", button: createTxButton)
-        
         guard let destination = addressTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
               !destination.isEmpty else {
-            self.hideActivity()
             showAlert(title: "", message: "Destination address not formatted correctly.")
             return
         }
-        
-        var totalAmount: UInt64 = 0
-        
-        for utxo in utxos {
-            totalAmount += UInt64(utxo.value)
+        guard let feeRate = feeRate else {
+            showAlert(title: "Fee rate", message: "Enter a fee rate of at least 1 sat/vB.")
+            return
         }
+        view.endEditing(true)
+        showActivity("Creating psbt...", button: createTxButton)
+
+        switch source {
+        case .descriptor(let wallet, let signer):
+            createDescriptorPsbt(wallet: wallet, signer: signer, destination: destination, feeRate: feeRate)
+        case .silentPayment(let outputs):
+            createSilentPaymentPsbt(outputs: outputs, destination: destination, feeRate: feeRate)
+        }
+    }
+
+    /// BDK builds the PSBT from the wallet's descriptor.
+    private func createDescriptorPsbt(wallet: WalletLogic.BDKWallet, signer: SignerStruct?, destination: String, feeRate: Double) {
+        let totalAmount = utxos.reduce(UInt64(0)) { $0 + UInt64($1.value) }
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
-            
             do {
                 let psbt = try WalletLogic.shared.createPsbtWithManualInputs(
-                    wallet: self.watchOnlyBdkWallet,
+                    wallet: wallet,
                     utxos: self.utxos,
                     outputs: [(address: destination, amount: totalAmount)],
+                    feeRate: Float(feeRate),
                     network: self.network
-                )                 
-                
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
+                )
+                DispatchQueue.main.async {
                     self.hideActivity()
-                    
                     guard let psbt = psbt else { return }
-                    
-                    let reviewVC = PsbtReviewViewController(
-                        psbt: psbt,
-                        rawTransaction: nil,
-                        wallet: watchOnlyBdkWallet,
-                        signer: signer, // optional, pass nil if external signer
-                        network: network,
-                        inputs: utxos,
-                        fxRate: fxRate
-                    )
-                    
-                    navigationController?.pushViewController(reviewVC, animated: true)
+                    self.review(PsbtReviewViewController(psbt: psbt, rawTransaction: nil, wallet: wallet, signer: signer,
+                                                         network: self.network, inputs: self.utxos, fxRate: self.fxRate))
                 }
-                
             } catch {
-                // Error: dismiss spinner and show alert on main thread
                 DispatchQueue.main.async {
                     self.hideActivity()
                     showAlert(title: "Error", message: error.localizedDescription)
                 }
+            }
+        }
+    }
+
+    /// Silent payment outputs: one Esplora lookup per output (like the BDK path's sync): its
+    /// amount and script on chain must match what's cached, and the PSBT is built from the
+    /// chain's values, which the BIP341 signature commits to. Already spent shows up as a
+    /// broadcast error, so it isn't checked separately.
+    private func createSilentPaymentPsbt(outputs: [SilentPaymentSpend.OwnedOutput], destination: String, feeRate: Double) {
+        let utxos = utxos
+        let network = network
+        Task { [weak self] in
+            do {
+                let destinationScript = try WalletLogic.BDKAddress(address: destination, network: network).scriptPubkey().toBytes()
+                var inputs: [SilentPaymentSweep.Input] = []
+                for utxo in utxos {
+                    guard outputs.contains(where: { $0.txid.lowercased() == utxo.txid.lowercased() && $0.vout == utxo.vout }) else {
+                        throw WalletLogic.SPError("No saved silent payment tweak for \(utxo.txid):\(utxo.vout).")
+                    }
+                    guard let address = utxo.address else {
+                        throw WalletLogic.SPError("No address for \(utxo.txid):\(utxo.vout).")
+                    }
+                    let expectedScript = try WalletLogic.BDKAddress(address: address, network: network).scriptPubkey().toBytes()
+                    let onChain = try await EsploraAPI.output(txid: utxo.txid, vout: utxo.vout, network: network)
+                    guard SPHexFN.decode(onChain.scriptPubKey) == expectedScript else {
+                        throw WalletLogic.SPError("\(utxo.txid):\(utxo.vout) on chain doesn't pay \(address). Refresh your utxos.")
+                    }
+                    guard onChain.value == utxo.value else {
+                        throw WalletLogic.SPError("\(utxo.txid):\(utxo.vout) holds \(onChain.value) sats on chain, not the cached \(utxo.value). Refresh your utxos.")
+                    }
+                    inputs.append(.init(txid: utxo.txid, vout: utxo.vout, amount: UInt64(onChain.value), scriptPubKey: expectedScript))
+                }
+
+                let built = try SilentPaymentSweep.psbt(inputs: inputs, destination: destinationScript, feeRate: feeRate)
+                let psbt = try WalletLogic.BDKPsbt(psbtBase64: built.psbt)
+                await MainActor.run {
+                    guard let self = self else { return }
+                    self.hideActivity()
+                    self.review(PsbtReviewViewController(psbt: psbt, rawTransaction: nil, wallet: nil, signer: nil,
+                                                         network: network, inputs: utxos, fxRate: self.fxRate,
+                                                         silentPaymentOutputs: outputs))
+                }
+            } catch {
+                await MainActor.run {
+                    self?.hideActivity()
+                    showAlert(title: "Error", message: error.localizedDescription)
+                }
+            }
+        }
+    }
+
+    private func review(_ reviewVC: PsbtReviewViewController) {
+        navigationController?.pushViewController(reviewVC, animated: true)
+    }
+}
+
+// MARK: - Starting a sweep
+
+/// Picks how a cached utxo is swept without the node: a silent payment output with a saved
+/// tweak, or a descriptor wallet coin signed by the stored signer whose fingerprint is in its
+/// parent descriptor.
+enum NodelessSweep {
+    enum SweepError: LocalizedError {
+        case unsupported(String)
+        var errorDescription: String? {
+            switch self { case .unsupported(let message): return message }
+        }
+    }
+
+    /// Completion on the main queue.
+    static func viewController(for utxo: UTXO, wallet: Wallet, completion: @escaping (Result<UIViewController, Error>) -> Void) {
+        let done: (Result<UIViewController, Error>) -> Void = { result in DispatchQueue.main.async { completion(result) } }
+
+        guard let network = WalletLogic.shared.bdkNetwork() else {
+            done(.failure(SweepError.unsupported("Unknown network.")))
+            return
+        }
+        guard EsploraAPI.apiBase(network: network) != nil else {
+            done(.failure(EsploraAPI.APIError.unsupportedNetwork))
+            return
+        }
+        guard let address = utxo.address else {
+            done(.failure(SweepError.unsupported("This utxo has no address.")))
+            return
+        }
+        let esploraUtxo = Esplora_Utxo(txid: utxo.txid,
+                                       vout: utxo.vout,
+                                       value: Int64((utxo.amount * 100_000_000).rounded()),
+                                       status: .init(confirmed: (utxo.confirmations ?? 0) > 0, blockHeight: nil, blockHash: nil, blockTime: nil),
+                                       address: address)
+
+        // Silent payment: its saved tweak is all signing needs.
+        if let output = utxo.silentPaymentOutput {
+            done(.success(SweepViewController(utxos: [esploraUtxo], source: .silentPayment([output]), network: network)))
+            return
+        }
+        if utxo.desc?.hasPrefix("rawtr(") == true {
+            done(.failure(SweepError.unsupported("Check SP info on this utxo first: a silent payment can only be swept once its tweak is saved.")))
+            return
+        }
+
+        guard let parentDesc = utxo.parentDescs?.first else {
+            done(.failure(SweepError.unsupported("No descriptor is associated with this utxo.")))
+            return
+        }
+        CoreDataService.retrieveEntity(entityName: .signers) { signers in
+            let fingerprint = Descriptor(parentDesc).fingerprint
+            let signer = (signers ?? []).map { SignerStruct(dictionary: $0) }.first { signer in
+                guard signer.words != nil,
+                      let encryptedXfp = signer.xfp,
+                      let xfp = Crypto.decrypt(encryptedXfp)?.utf8String else { return false }
+                return fingerprint.contains(xfp)
+            }
+            do {
+                let bdkWallet = try WalletLogic.shared.bdkWalletFromDescriptors(recDesc: parentDesc, changeDesc: wallet.changeDescriptor)
+                done(.success(SweepViewController(utxos: [esploraUtxo], watchOnlyBdkWallet: bdkWallet, signer: signer, network: network)))
+            } catch {
+                done(.failure(error))
             }
         }
     }

@@ -467,6 +467,11 @@ class WalletLogic {
         case networkFailed(reason: String)
     }
     
+    /// Builds a PSBT spending exactly `utxos` with BDK, without syncing the wallet: each coin's
+    /// funding transaction is fetched (one Esplora lookup per transaction), the coin's address is
+    /// revealed in the wallet, and the transactions are handed to BDK as unconfirmed ones, which
+    /// makes the coins real wallet utxos (BDK then fills in every PSBT field from the descriptor).
+    /// The chain's amounts are used, and must match the cached ones.
     func createPsbtWithManualInputs(
         wallet: BDKWallet,
         utxos: [Esplora_Utxo],
@@ -483,80 +488,64 @@ class WalletLogic {
             group.leave()
         }
         group.wait()
-        
-        let onionRoot = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion"
-        let baseURL: String
-        switch network {
-        case .testnet: baseURL = "\(onionRoot)/testnet/api/"
-        case .testnet4: baseURL = "\(onionRoot)/testnet4/api/"
-        case .signet: baseURL = "\(onionRoot)/signet/api/"
-        case .regtest:
-            throw CustomError.networkFailed(reason: "Nodeless transaction creation does not work on regtest.")
-        default:
-            baseURL = "\(onionRoot)/api/"
+        let cached = cachedUtxos.map { UTXO(from: $0) }
+        func cachedUtxo(_ utxo: Esplora_Utxo) -> UTXO? {
+            cached.first { $0.txid.lowercased() == utxo.txid.lowercased() && $0.vout == utxo.vout }
         }
         
-        // Reveal the exact SPK so BDK treats the coin as local.
-//        for utxo in utxos {
-//            guard let addrStr = utxo.address else { continue }
-//            let target = try Address(address: addrStr, network: network)
-//            let targetSpk = target.scriptPubkey()
-//            
-//            var found = false
-//            for _ in 0..<1000 {
-//                let next = wallet.revealNextAddress(keychain: .external)
-//                if next.address.scriptPubkey().toBytes() == targetSpk.toBytes() {
-//                    found = true
-//                    break
-//                }
-//            }
-//            if !found {
-//                print("Address \(addrStr) is not in this wallet descriptor. addUtxo will always fail.")
-//                throw CustomError.networkFailed(
-//                    reason: "Address \(addrStr) is not in this wallet descriptor. addUtxo will always fail."
-//                )
-//            }
-//        }
+        guard EsploraAPI.apiBase(network: network) != nil else {
+            throw CustomError.networkFailed(reason: "Nodeless transaction creation does not work on regtest.")
+        }
         
-        let syncRequest = try wallet.startSyncWithRevealedSpks().build()
-        let client = EsploraClient(url: baseURL, proxy: "http://localhost:9080")
-        let sync = try client.sync(request: syncRequest, parallelRequests: 4)
-        try wallet.applyUpdate(update: sync)
+        // 1. Funding transactions (once per txid), checked against the cache.
+        var fundingTxs: [String: Transaction] = [:]
+        for utxo in utxos {
+            let key = utxo.txid.lowercased()
+            if fundingTxs[key] == nil {
+                fundingTxs[key] = try EsploraAPI.transaction(txid: utxo.txid, network: network)
+            }
+            guard let tx = fundingTxs[key], tx.output().indices.contains(utxo.vout) else {
+                throw CustomError.networkFailed(reason: "\(utxo.txid):\(utxo.vout) doesn't exist on chain.")
+            }
+            let out = tx.output()[utxo.vout]
+            if let addressString = utxo.address {
+                let address = try Address(address: addressString, network: network)
+                guard address.scriptPubkey().toBytes() == out.scriptPubkey.toBytes() else {
+                    throw CustomError.networkFailed(reason: "\(utxo.txid):\(utxo.vout) on chain doesn't pay \(addressString). Refresh your utxos.")
+                }
+            }
+            guard out.value.toSat() == UInt64(utxo.value) else {
+                throw CustomError.networkFailed(reason: "\(utxo.txid):\(utxo.vout) holds \(out.value.toSat()) sats on chain, not the cached \(utxo.value). Refresh your utxos.")
+            }
+            
+            // 2. Reveal the coin's address so the wallet owns it.
+            try revealAddress(of: out.scriptPubkey, in: wallet, hint: cachedUtxo(utxo)?.desc)
+        }
+        
+        // 3. The funding transactions become wallet transactions; each coin must now be a utxo.
+        let now = UInt64(Date().timeIntervalSince1970)
+        wallet.applyUnconfirmedTxs(unconfirmedTxs: fundingTxs.values.map { UnconfirmedTx(tx: $0, lastSeen: now) })
         
         var txBuilder = TxBuilder()
-        var appliedLocktime: UInt32?
-        
         for utxo in utxos {
-            let txid = try Txid.fromString(hex: utxo.txid)
-            let outpoint = OutPoint(txid: txid, vout: UInt32(utxo.vout))
-            let address = try Address(address: utxo.address!, network: network)
-            let amount = Amount.fromSat(satoshi: UInt64(utxo.value))
-            let txout = TxOut(value: amount, scriptPubkey: address.scriptPubkey())
-            
-            // After sync, re-insert so the graph still has this prevout.
-            wallet.insertTxout(outpoint: outpoint, txout: txout)
+            let outpoint = OutPoint(txid: try Txid.fromString(hex: utxo.txid), vout: UInt32(utxo.vout))
+            guard wallet.getUtxo(op: outpoint) != nil else {
+                throw CustomError.networkFailed(reason: "\(utxo.txid):\(utxo.vout) isn't spendable by this wallet's descriptor.")
+            }
             txBuilder = txBuilder.addUtxo(outpoint: outpoint)
-            
-            for cachedUtxo in cachedUtxos {
-                let cached = UTXO(from: cachedUtxo)
-                guard cached.txid.lowercased() == utxo.txid.lowercased(),
-                      Int(cached.vout) == Int(utxo.vout),
-                      let hex = cached.witnessScript else { continue }
-                
-                if let locktime = extractCLTV(fromWitnessScript: hex) ?? extractCLTVFromAsmOrHex(hex) {
+        }
+        
+        // Timelock: the wallet descriptor's after(N), else a cached witness script's CLTV.
+        var appliedLocktime = extractAfterLocktime(from: wallet.publicDescriptor(keychain: .external).description)
+            ?? extractAfterLocktime(from: wallet.publicDescriptor(keychain: .internal).description)
+        if appliedLocktime == nil {
+            for utxo in utxos {
+                if let hex = cachedUtxo(utxo)?.witnessScript,
+                   let locktime = extractCLTV(fromWitnessScript: hex) ?? extractCLTVFromAsmOrHex(hex) {
                     appliedLocktime = locktime
                 }
             }
         }
-        if appliedLocktime == nil {
-            if let _ = try? wallet.policies(keychain: .external) {
-                appliedLocktime = extractAfterLocktime(from: wallet.publicDescriptor(keychain: .external).description)
-            }
-            if appliedLocktime == nil, let _ = try? wallet.policies(keychain: .internal) {
-                appliedLocktime = extractAfterLocktime(from: wallet.publicDescriptor(keychain: .internal).description)
-            }
-        }
-        
         if let appliedLocktime {
             if appliedLocktime >= 500_000_000 {
                 txBuilder = txBuilder.nlocktime(locktime: .seconds(consensusTime: appliedLocktime))
@@ -565,20 +554,18 @@ class WalletLogic {
             }
         }
         
-        if let appliedLocktime {
-            txBuilder = txBuilder.nlocktime(locktime: .seconds(consensusTime: appliedLocktime))
-        }
-        
         for output in outputs {
             let address = try Address(address: output.address, network: network)
             txBuilder = txBuilder.drainTo(script: address.scriptPubkey())
         }
         
-        let satVb = UInt64(max(1, feeRate ?? 1))
+        // sat/vB × 250 = sat per 1,000 weight units (1 vB = 4 wu), so fractional rates aren't truncated.
+        let satPerKwu = UInt64((Double(max(1, feeRate ?? 1)) * 250).rounded(.up))
+        // No onlyWitnessUtxo(): the wallet has the full funding transactions, so segwit v0 inputs
+        // get their non_witness_utxo, which signing (trustWitnessUtxo: false) requires.
         txBuilder = txBuilder
-            .onlyWitnessUtxo()
             .manuallySelectedOnly()
-            .feeRate(feeRate: try FeeRate.fromSatPerVb(satVb: satVb))
+            .feeRate(feeRate: FeeRate.fromSatPerKwu(satKwu: satPerKwu))
         
         if let policies = try? wallet.policies(keychain: .external), policies.requiresPath() {
             let (topID, subID, _, _) = extractTimelockPolicyValues(from: policies.asString(), hotXfp: nil)
@@ -595,6 +582,40 @@ class WalletLogic {
         return psbt
     }
     
+
+    /// Reveals (up to) the address paying `spk` in `wallet`, so its coins count as the wallet's.
+    /// `hint` is the coin's descriptor from listunspent (`…/0/5]…` → external index 5); without
+    /// one the first addresses of both keychains are searched. Throws if the script isn't the
+    /// wallet's.
+    private func revealAddress(of spk: Script, in wallet: BDKWallet, hint: String?) throws {
+        let target = spk.toBytes()
+        if let known = wallet.derivationOfSpk(spk: spk) {
+            _ = wallet.revealAddressesTo(keychain: known.keychain, index: known.index)
+            return
+        }
+        // From the coin's own descriptor path: the last "/<0|1>/<index>" before a "]".
+        if let hint = hint,
+           let match = hint.range(of: #"/([01])/(\d+)\]"#, options: [.regularExpression, .backwards]) {
+            let parts = hint[match].dropFirst().dropLast().split(separator: "/")
+            if parts.count == 2, let branch = Int(parts[0]), let index = UInt32(parts[1]) {
+                let keychain: KeychainKind = branch == 1 ? .internal : .external
+                if wallet.peekAddress(keychain: keychain, index: index).address.scriptPubkey().toBytes() == target {
+                    _ = wallet.revealAddressesTo(keychain: keychain, index: index)
+                    return
+                }
+            }
+        }
+        // Search (non-ranged descriptors, e.g. a timelocked address, are index 0).
+        for keychain in [KeychainKind.external, .internal] {
+            for index in UInt32(0)..<2000 {
+                if wallet.peekAddress(keychain: keychain, index: index).address.scriptPubkey().toBytes() == target {
+                    _ = wallet.revealAddressesTo(keychain: keychain, index: index)
+                    return
+                }
+            }
+        }
+        throw CustomError.networkFailed(reason: "This coin's address isn't derived from the wallet's descriptor.")
+    }
 
     func extractAfterLocktime(from text: String) -> UInt32? {
         let pattern = #"after\((\d+)\)"#

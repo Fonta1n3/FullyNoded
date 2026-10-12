@@ -438,6 +438,106 @@ enum SPWriter {
     }
 }
 
+// MARK: - Sweeping silent payment outputs without a node
+
+/// Builds and finalizes transactions that spend silent payment outputs on their own, for the
+/// nodeless sweep: BDK can't, as a silent payment output is a bare taproot key (`rawtr()`)
+/// whose private key is b_spend + tweak. Signing is `SilentPaymentSpend.sign` (5.2).
+enum SilentPaymentSweep {
+    /// One P2TR key-path input. Amount and script come from the chain (Esplora), not a cache:
+    /// the BIP341 signature commits to both.
+    struct Input {
+        let txid: String
+        let vout: Int
+        let amount: UInt64
+        let scriptPubKey: Data
+    }
+
+    /// Smallest output this builds (the standard dust limit for any output type).
+    static let dustLimit: UInt64 = 546
+
+    /// Virtual size of a transaction spending `inputCount` P2TR key-path inputs (64-byte
+    /// SIGHASH_DEFAULT signatures) to one output with a script of `outputScriptLength` bytes.
+    static func vsize(inputCount: Int, outputScriptLength: Int) -> Int {
+        let base = 4 + SPWriter.compactSize(inputCount).count + inputCount * (36 + 1 + 4)
+            + SPWriter.compactSize(1).count + 8 + SPWriter.compactSize(outputScriptLength).count + outputScriptLength
+            + 4
+        let witness = 2 + inputCount * (1 + 1 + 64)   // marker + flag; per input: item count, length, signature
+        return (base * 4 + witness + 3) / 4
+    }
+
+    /// Unsigned PSBT v0 sending everything in `inputs` to `destination` (a scriptPubKey), less
+    /// the fee at `feeRate` sat/vB. Version 2, RBF signalled, locktime 0, every input with its
+    /// witness_utxo. Throws if an input isn't P2TR or nothing is left above dust.
+    static func psbt(inputs: [Input], destination: Data, feeRate: Double) throws -> (psbt: String, fee: UInt64, amount: UInt64) {
+        guard !inputs.isEmpty else { throw WalletLogic.SPError("Nothing to sweep.") }
+        guard feeRate >= 1 else { throw WalletLogic.SPError("The fee rate must be at least 1 sat/vB.") }
+        for input in inputs {
+            let s = [UInt8](input.scriptPubKey)
+            guard s.count == 34, s[0] == 0x51, s[1] == 0x20 else {
+                throw WalletLogic.SPError("\(input.txid):\(input.vout) isn't a taproot output.")
+            }
+        }
+        let total = inputs.reduce(UInt64(0)) { $0 + $1.amount }
+        let fee = UInt64((Double(vsize(inputCount: inputs.count, outputScriptLength: destination.count)) * feeRate).rounded(.up))
+        guard total > fee, total - fee >= dustLimit else {
+            throw WalletLogic.SPError("The fee (\(fee) sats) leaves nothing to send from \(total) sats.")
+        }
+        let amount = total - fee
+
+        func le64(_ v: UInt64) -> [UInt8] { (0..<8).map { UInt8(truncatingIfNeeded: v >> (8 * UInt64($0))) } }
+
+        var tx: [UInt8] = SPWriter.le32(2)
+        tx += SPWriter.compactSize(inputs.count)
+        for input in inputs {
+            guard let txid = SPHexFN.decode(input.txid), txid.count == 32 else {
+                throw WalletLogic.SPError("Invalid txid \(input.txid).")
+            }
+            tx += [UInt8](txid.reversed()) + SPWriter.le32(UInt32(input.vout))
+            tx += [0x00]                              // empty scriptSig
+            tx += SPWriter.le32(0xFFFF_FFFD)          // RBF
+        }
+        tx += SPWriter.compactSize(1) + le64(amount) + SPWriter.compactSize(destination.count) + [UInt8](destination)
+        tx += SPWriter.le32(0)
+
+        var psbt: [UInt8] = [0x70, 0x73, 0x62, 0x74, 0xFF]
+        psbt += SPWriter.compactSize(1) + [SPPsbt.globalUnsignedTx] + SPWriter.compactSize(tx.count) + tx + [0x00]
+        for input in inputs {
+            let utxo = le64(input.amount) + SPWriter.compactSize(input.scriptPubKey.count) + [UInt8](input.scriptPubKey)
+            psbt += SPWriter.compactSize(1) + [SPPsbt.inWitnessUtxo] + SPWriter.compactSize(utxo.count) + utxo + [0x00]
+        }
+        psbt += [0x00]                                // the one output map, empty
+        return (Data(psbt).base64EncodedString(), fee, amount)
+    }
+
+    /// The signed transaction (hex) of a PSBT whose every input has a key-path signature
+    /// (PSBT_IN_TAP_KEY_SIG): each witness is just [signature]. Throws if any input is unsigned.
+    static func extractKeyPathTransaction(psbt base64: String) throws -> String {
+        guard let raw = Data(base64Encoded: base64.trimmingCharacters(in: .whitespacesAndNewlines)) else {
+            throw WalletLogic.SPError("PSBT is not valid base64.")
+        }
+        let psbt = try SPPsbt(raw)
+        let tx = psbt.tx
+        var witnesses: [[UInt8]] = []
+        for (i, map) in psbt.inputs.enumerated() {
+            guard let sig = map.first(where: { $0.key == [SPPsbt.inTapKeySig] })?.value,
+                  sig.count == 64 || sig.count == 65 else {
+                throw WalletLogic.SPError("Input \(i) isn't signed.")
+            }
+            witnesses.append(sig)
+        }
+
+        var out: [UInt8] = tx.version + [0x00, 0x01]
+        out += SPWriter.compactSize(tx.inputs.count)
+        for input in tx.inputs { out += input.outpoint + [0x00] + input.sequence }
+        out += SPWriter.compactSize(tx.outputs.count)
+        for output in tx.outputs { out += output.serialized }
+        for sig in witnesses { out += [0x01] + SPWriter.compactSize(sig.count) + sig }
+        out += tx.locktime
+        return SPHexFN.encode(Data(out))
+    }
+}
+
 /*
  Usage: sign the SP inputs, then let Core (or the normal Signer for other inputs)
  finalize. `found` is FN-Server's saved SPScanState "found" array.

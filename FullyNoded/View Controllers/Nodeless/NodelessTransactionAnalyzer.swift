@@ -19,6 +19,9 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     private let network: BitcoinDevKit.Network
     private let inputs: [Esplora_Utxo]
     private let fxRate: Double?
+    /// Silent payment inputs (saved tweaks): signed with the spend key + tweak and finalized
+    /// locally instead of through BDK, which can't sign them.
+    private let silentPaymentOutputs: [SilentPaymentSpend.OwnedOutput]
     private var savedUtxo: UTXO?
     
     // New: for signed transaction
@@ -56,7 +59,8 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         let amountBtc: Double
     }
     
-    init(psbt: BitcoinDevKit.Psbt?, rawTransaction: BitcoinDevKit.Transaction?, wallet: BitcoinDevKit.Wallet?, signer: SignerStruct? = nil, network: BitcoinDevKit.Network, inputs: [Esplora_Utxo], fxRate: Double?) {
+    init(psbt: BitcoinDevKit.Psbt?, rawTransaction: BitcoinDevKit.Transaction?, wallet: BitcoinDevKit.Wallet?, signer: SignerStruct? = nil, network: BitcoinDevKit.Network, inputs: [Esplora_Utxo], fxRate: Double?, silentPaymentOutputs: [SilentPaymentSpend.OwnedOutput] = []) {
+        self.silentPaymentOutputs = silentPaymentOutputs
         self.psbt = psbt
         self.rawTransaction = rawTransaction
         self.wallet = wallet
@@ -672,6 +676,10 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     }
 
     private func performSigning(with passphrase: String) {
+        if !silentPaymentOutputs.isEmpty {
+            signSilentPayments(passphrase: passphrase)
+            return
+        }
         // Show loading spinner
         guard let wallet = wallet else { return }
         self.showActivity("Signing transaction...", button: signButton)
@@ -734,15 +742,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
             
             if let rawTx = rawTx {
                 DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    txStatusLabel.text = "Signatures complete, tap broadcast to send."
-                    txStatusLabel.textColor = .systemGreen
-                    self.signedRawTx = rawTx
-                    self.broadcastButton.isHidden = false
-                    self.signButton.isHidden = true
-                    self.exportButton.setTitle("Export Signed Transaction", for: .normal)
-                    SuccessView.show(in: self, title: "Transaction signed", subtitle: "Ready to broadcast.")
+                    self?.showSigned(rawTx: rawTx)
                 }
             } else if let signedPsbt = signedPsbt {
                 guard let signedBdkPsbt = try? Psbt(psbtBase64: signedPsbt) else {
@@ -757,6 +757,45 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         }
     }
     
+}
+
+extension PsbtReviewViewController {
+    /// Fully signed: ready to broadcast.
+    func showSigned(rawTx: String) {
+        txStatusLabel.text = "Signatures complete, tap broadcast to send."
+        txStatusLabel.textColor = .systemGreen
+        signedRawTx = rawTx
+        broadcastButton.isHidden = false
+        signButton.isHidden = true
+        exportButton.setTitle("Export Signed Transaction", for: .normal)
+        SuccessView.show(in: self, title: "Transaction signed", subtitle: "Ready to broadcast.")
+    }
+
+    /// Signs the silent payment inputs (b_spend from your signers + each saved tweak; the key
+    /// must reproduce the output key) and finalizes the key-path witnesses locally.
+    func signSilentPayments(passphrase: String) {
+        guard let psbt = psbt else {
+            showAlert(title: "", message: "No psbt to sign...")
+            return
+        }
+        showActivity("Signing transaction...", button: signButton)
+        SilentPaymentSpend.sign(psbt: psbt.serialize(), outputs: silentPaymentOutputs, passphrase: passphrase.isEmpty ? nil : passphrase) { [weak self] signed, _, errorMessage in
+            guard let self = self else { return }
+            self.hideActivity()
+            guard let signed = signed else {
+                showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "Unknown error.")
+                return
+            }
+            self.signedPsbt = signed
+            do {
+                self.showSigned(rawTx: try SilentPaymentSweep.extractKeyPathTransaction(psbt: signed))
+            } catch {
+                // Some input still unsigned: show where it stands.
+                if let partial = try? Psbt(psbtBase64: signed) { self.analyzePsbt(psbt: partial) }
+                showAlert(vc: self, title: "Not fully signed", message: error.localizedDescription)
+            }
+        }
+    }
 }
 
 // MARK: - UITableViewDataSource & Delegate
