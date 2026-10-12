@@ -23,6 +23,8 @@ enum WalletTheme {
     /// Per-screen accent, all within the teal family so the wallet flow reads as one place.
     enum Tint {
         case wallet, send, receive, utxo, create, transaction, settings, home, signer
+        /// Status colours for alert cards (SuccessView): amber notices, red errors.
+        case warning, danger
 
         var accent: UIColor {
             switch self {
@@ -42,6 +44,10 @@ enum WalletTheme {
                 return UIColor(red: 0.25, green: 1.0, blue: 0.48, alpha: 1)    // terminal green
             case .signer:
                 return SignerTheme.accent                                      // deep purple
+            case .warning:
+                return WalletTheme.pending                                     // amber
+            case .danger:
+                return WalletTheme.danger                                      // red
             }
         }
 

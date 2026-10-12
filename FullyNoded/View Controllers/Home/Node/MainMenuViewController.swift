@@ -157,11 +157,13 @@ class MainMenuViewController: UIViewController {
                     alertToAddNode()
                     return
                 }
-                
+
                 self.activeNode = node
+                // E.g. renamed in the node details opened from the label.
+                DispatchQueue.main.async { self.nodeLabel.text = node.label }
             }
         }
-        
+
         updateTorStatus()
     }
     
@@ -332,11 +334,14 @@ class MainMenuViewController: UIViewController {
             stack.setCustomSpacing(10, after: torProgressView)
             stack.setCustomSpacing(4, after: syncLabel)
         }
-        // Tap: the getblockchaininfo response already loaded for this card.
+        // Tap: the node's name opens its details / credentials; anywhere else, the
+        // getblockchaininfo response already loaded for this card.
         card.isUserInteractionEnabled = true
         card.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(nodeCardTapped(_:))))
         card.accessibilityTraits = .button
         card.accessibilityHint = "Shows the raw getblockchaininfo response"
+        nodeLabel.accessibilityTraits = .button
+        nodeLabel.accessibilityHint = "Shows the node's details and credentials"
         return card
     }
     
@@ -555,12 +560,40 @@ class MainMenuViewController: UIViewController {
     }
     
     @objc private func nodeCardTapped(_ gesture: UITapGestureRecognizer) {
+        // The node's name opens its details / credentials, also while it isn't connected.
+        if activeNode != nil, nodeLabelHit(gesture) {
+            impact()
+            flash(nodeLabel)
+            showNodeDetail()
+            return
+        }
         guard blockchainInfo != nil, let card = gesture.view else { return }
         impact()
-        UIView.animate(withDuration: 0.08, animations: { card.alpha = 0.6 }) { _ in
-            UIView.animate(withDuration: 0.15) { card.alpha = 1 }
-        }
+        flash(card)
         blockchainTapped()
+    }
+
+    /// Whether the tap landed on the node label's text (not the empty width beside it),
+    /// with a little slop around it.
+    private func nodeLabelHit(_ gesture: UITapGestureRecognizer) -> Bool {
+        let point = gesture.location(in: nodeLabel)
+        let textWidth = min(nodeLabel.intrinsicContentSize.width, nodeLabel.bounds.width)
+        return CGRect(x: 0, y: 0, width: textWidth, height: nodeLabel.bounds.height)
+            .insetBy(dx: -12, dy: -8)
+            .contains(point)
+    }
+
+    private func flash(_ view: UIView) {
+        UIView.animate(withDuration: 0.08, animations: { view.alpha = 0.6 }) { _ in
+            UIView.animate(withDuration: 0.15) { view.alpha = 1 }
+        }
+    }
+
+    private func showNodeDetail() {
+        guard let node = activeNode else { return }
+        let vc = NodeDetailViewController()
+        vc.selectedNode = node
+        navigationController?.pushViewController(vc, animated: true)
     }
 
     @objc private func blockchainTapped() {

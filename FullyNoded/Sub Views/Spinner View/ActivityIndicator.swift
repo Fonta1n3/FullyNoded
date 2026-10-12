@@ -15,6 +15,12 @@
 
 import UIKit
 
+/// A screen that wants to know when its activity starts and stops, e.g. to hold buttons
+/// that must not be used while a request is in flight.
+protocol ActivityObserving: AnyObject {
+    func activityDidChange(isActive: Bool)
+}
+
 extension UIViewController {
 
     /// Starts the activity or, while it's running, just updates the status. The button
@@ -105,6 +111,7 @@ private final class ActivityState {
         guard !isActive else { return }
         isActive = true
         installWindowWatcher()
+        (viewController as? ActivityObserving)?.activityDidChange(isActive: true)
 
         if let item = viewController?.navigationItem, viewController?.navigationController != nil {
             savedTitleView = item.titleView
@@ -126,6 +133,7 @@ private final class ActivityState {
         pendingHide = nil
         isActive = false
         stopButton()
+        (viewController as? ActivityObserving)?.activityDidChange(isActive: false)
         if let item = viewController?.navigationItem, item.titleView === navView {
             item.titleView = savedTitleView
         }

@@ -383,7 +383,6 @@
                         <segue destination="pUo-bf-sNm" kind="show" identifier="spendFromWallet" id="w2g-bl-j8v"/>
                         <segue destination="Xxg-Pp-vvN" kind="show" identifier="segueToInvoice" id="kq8-dj-bJ2"/>
                         <segue destination="zVU-YI-484" kind="show" identifier="goToInvoiceSetting" id="A4d-MO-NRb"/>
-                        <segue destination="1tX-je-wOH" kind="show" identifier="segueToUtxos" id="zKf-il-zDu"/>
                         <segue destination="0gR-Gj-FSR" kind="show" identifier="createFullyNodedWallet" id="e0d-Zp-a29"/>
                         <segue destination="TDC-7I-IgK" kind="show" identifier="segueToWallets" id="vi7-1c-2H7"/>
                         <segue destination="l8t-Do-K11" kind="show" identifier="segueToActiveWalletDetail" id="IAz-j1-Gq6"/>
@@ -2226,7 +2225,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
         <!--Send-->
         <scene sceneID="nPC-E2-jSN">
             <objects>
-                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="pUo-bf-sNm" customClass="CreateRawTxViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" storyboardIdentifier="CreateRawTx" id="pUo-bf-sNm" customClass="CreateRawTxViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="DIN-Fg-EH6">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -3256,57 +3255,6 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
             </objects>
             <point key="canvasLocation" x="4218" y="-1254"/>
         </scene>
-        <!--UTXO's-->
-        <scene sceneID="sdb-2g-t0F">
-            <objects>
-                <viewController title="UTXO's" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="1tX-je-wOH" customClass="UTXOViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="JDj-z9-dsw">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" allowsMultipleSelection="YES" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="CFb-Jk-h9Z">
-                                <rect key="frame" x="0.0" y="104.5" width="320" height="463.5"/>
-                                <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
-                            </tableView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="    " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vpW-Aj-QHT">
-                                <rect key="frame" x="8" y="82" width="13.5" height="14.5"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                <color key="textColor" systemColor="secondaryLabelColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="Qb7-Z6-hPP"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <constraints>
-                            <constraint firstItem="CFb-Jk-h9Z" firstAttribute="trailing" secondItem="Qb7-Z6-hPP" secondAttribute="trailing" id="9GN-sW-P0U"/>
-                            <constraint firstItem="vpW-Aj-QHT" firstAttribute="leading" secondItem="Qb7-Z6-hPP" secondAttribute="leading" constant="8" id="E0u-1e-zyz"/>
-                            <constraint firstItem="CFb-Jk-h9Z" firstAttribute="bottom" secondItem="Qb7-Z6-hPP" secondAttribute="bottom" id="RP6-te-ZSq"/>
-                            <constraint firstItem="vpW-Aj-QHT" firstAttribute="top" secondItem="Qb7-Z6-hPP" secondAttribute="top" constant="8" id="axN-qg-Cae"/>
-                            <constraint firstItem="CFb-Jk-h9Z" firstAttribute="leading" secondItem="Qb7-Z6-hPP" secondAttribute="leading" id="dRz-Hg-Ysz"/>
-                            <constraint firstItem="CFb-Jk-h9Z" firstAttribute="top" secondItem="vpW-Aj-QHT" secondAttribute="bottom" constant="8" symbolic="YES" id="p5P-5S-fBp"/>
-                        </constraints>
-                    </view>
-                    <navigationItem key="navigationItem" title="UTXO's" id="71V-ha-2e7">
-                        <rightBarButtonItems>
-                            <barButtonItem title="    " id="1CO-Ql-YOe"/>
-                            <barButtonItem image="lock" catalog="system" id="T1S-Wl-vQK">
-                                <connections>
-                                    <segue destination="03r-hX-hYT" kind="show" id="rPn-Fg-Jce"/>
-                                </connections>
-                            </barButtonItem>
-                        </rightBarButtonItems>
-                    </navigationItem>
-                    <connections>
-                        <outlet property="lastSavedDateLabel" destination="vpW-Aj-QHT" id="Feu-2M-Cxh"/>
-                        <outlet property="tableView" destination="CFb-Jk-h9Z" id="2QQ-Qg-zs6"/>
-                        <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToGetAddressFromUtxos" id="2DM-Bo-8hK"/>
-                        <segue destination="pUo-bf-sNm" kind="show" identifier="segueToSendFromUtxos" id="EZr-Ut-goC"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="Kf1-ld-TGL" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-2391.6030534351144" y="-505.63380281690144"/>
-        </scene>
         <!--Text Modal View Controller-->
         <scene sceneID="aD2-pB-m6Y">
             <objects>
@@ -3325,7 +3273,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
         <!--Locked UTXO's-->
         <scene sceneID="CKp-4Z-5YA">
             <objects>
-                <viewController title="Locked UTXO's" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="03r-hX-hYT" customClass="LockedViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Locked UTXO's" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" storyboardIdentifier="LockedUtxos" id="03r-hX-hYT" customClass="LockedViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="hqF-Ak-aXu">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

@@ -4,25 +4,44 @@
 //
 //  The one way the app says "that worked":
 //
-//  - `SuccessView.show(in:title:subtitle:detail:onDismiss:)` for real milestones (transaction
+//  - `SuccessView.show(in:title:subtitle:detail:onDismiss:secondaryTitle:onSecondary:)` for real milestones (transaction
 //    sent or signed, wallet created, backup recovered...): a full-screen card with a check
 //    that draws itself in a glowing ring, and a Done button. `detail` (e.g. a txid) is shown
 //    in a box and copied with a tap.
 //  - `SuccessView.toast(_:in:)` for small confirmations ("Address copied"): a pill at the
 //    top that goes away on its own.
 //
-//  Both cover the whole window (navigation and tab bars included), play the success haptic
-//  and announce themselves to VoiceOver.
+//  Both cover the whole window (navigation and tab bars included), play a haptic and
+//  announce themselves to VoiceOver.
+//
+//  The card also has `.notice` (amber "!") and `.error` (red ✕) kinds: every
+//  `showAlert(...)` / `displayAlert(...)` in the app is drawn with it (see Utilities.swift).
+//  Cards never stack: one shown while another is up waits its turn.
 //
 
 import UIKit
 
 final class SuccessView: UIView {
 
+    enum Kind {
+        case success, notice, error
+
+        var tint: WalletTheme.Tint {
+            switch self {
+            case .success: return .home
+            case .notice: return .warning
+            case .error: return .danger
+            }
+        }
+    }
+
     /// Called after Done is tapped and the card has gone.
     var onDismiss: (() -> Void)?
+    /// Called after the optional secondary button is tapped and the card has gone (after `onDismiss`).
+    var onSecondary: (() -> Void)?
 
-    private let tint = WalletTheme.Tint.home
+    private let kind: Kind
+    private let tint: WalletTheme.Tint
     private let overlay = UIView()
     private let card = UIView()
     private let ring = CAShapeLayer()
@@ -30,25 +49,48 @@ final class SuccessView: UIView {
     private let checkContainer = UIView()
     private let titleLabel = UILabel()
     private let subtitleLabel = UILabel()
+    private let subtitleScroll = UIScrollView()
     private let detailButton = UIButton(type: .system)
     private let doneButton = UIButton(type: .system)
+    private let secondaryButton = UIButton(type: .system)
     private let detail: String?
 
     private static let checkSize: CGFloat = 96
 
     // MARK: - Showing
 
-    /// Full success card. Must be dismissed with Done. Safe from any thread.
+    /// Full card. Must be dismissed with its button. Safe from any thread.
     static func show(in viewController: UIViewController,
+                     kind: Kind = .success,
                      title: String,
                      subtitle: String = "",
                      detail: String? = nil,
-                     onDismiss: (() -> Void)? = nil) {
+                     onDismiss: (() -> Void)? = nil,
+                     secondaryTitle: String? = nil,
+                     onSecondary: (() -> Void)? = nil) {
         DispatchQueue.main.async {
-            guard let host = viewController.view.window ?? viewController.view else { return }
-            let view = SuccessView(title: title, subtitle: subtitle, detail: detail)
+            show(on: viewController.view.window ?? viewController.view, kind: kind, title: title, subtitle: subtitle,
+                 detail: detail, onDismiss: onDismiss, secondaryTitle: secondaryTitle, onSecondary: onSecondary)
+        }
+    }
+
+    /// Same, on a window (or any view) directly. Main queue only.
+    static func show(on host: UIView?,
+                     kind: Kind = .success,
+                     title: String,
+                     subtitle: String = "",
+                     detail: String? = nil,
+                     onDismiss: (() -> Void)? = nil,
+                     secondaryTitle: String? = nil,
+                     onSecondary: (() -> Void)? = nil) {
+        guard let host = host else { return }
+        let present = {
+            let view = SuccessView(kind: kind, title: title, subtitle: subtitle, detail: detail, secondaryTitle: secondaryTitle)
             view.onDismiss = onDismiss
+            view.onSecondary = onSecondary
             view.translatesAutoresizingMaskIntoConstraints = false
+            // The card must not hide behind the keyboard.
+            host.endEditing(true)
             host.addSubview(view)
             NSLayoutConstraint.activate([
                 view.topAnchor.constraint(equalTo: host.topAnchor),
@@ -58,6 +100,24 @@ final class SuccessView: UIView {
             ])
             host.layoutIfNeeded()
             view.animateIn()
+        }
+        // One card at a time: a second one (UIAlertController just dropped it) waits.
+        if isShowing {
+            queue.append(present)
+        } else {
+            isShowing = true
+            present()
+        }
+    }
+
+    private static var isShowing = false
+    private static var queue: [() -> Void] = []
+
+    private static func showNext() {
+        if queue.isEmpty {
+            isShowing = false
+        } else {
+            queue.removeFirst()()
         }
     }
 
@@ -85,7 +145,9 @@ final class SuccessView: UIView {
 
     // MARK: - Card
 
-    private init(title: String, subtitle: String, detail: String?) {
+    private init(kind: Kind, title: String, subtitle: String, detail: String?, secondaryTitle: String?) {
+        self.kind = kind
+        self.tint = kind.tint
         self.detail = detail
         super.init(frame: .zero)
         accessibilityViewIsModal = true
@@ -114,10 +176,24 @@ final class SuccessView: UIView {
         ring.strokeColor = tint.accent.cgColor
         ring.lineWidth = 3
         ring.strokeEnd = 0
+        // The mark drawn inside the ring: ✓, ✕ or "!".
         let checkPath = UIBezierPath()
-        checkPath.move(to: CGPoint(x: size * 0.28, y: size * 0.52))
-        checkPath.addLine(to: CGPoint(x: size * 0.44, y: size * 0.67))
-        checkPath.addLine(to: CGPoint(x: size * 0.73, y: size * 0.36))
+        switch kind {
+        case .success:
+            checkPath.move(to: CGPoint(x: size * 0.28, y: size * 0.52))
+            checkPath.addLine(to: CGPoint(x: size * 0.44, y: size * 0.67))
+            checkPath.addLine(to: CGPoint(x: size * 0.73, y: size * 0.36))
+        case .error:
+            checkPath.move(to: CGPoint(x: size * 0.34, y: size * 0.34))
+            checkPath.addLine(to: CGPoint(x: size * 0.66, y: size * 0.66))
+            checkPath.move(to: CGPoint(x: size * 0.66, y: size * 0.34))
+            checkPath.addLine(to: CGPoint(x: size * 0.34, y: size * 0.66))
+        case .notice:
+            checkPath.move(to: CGPoint(x: size * 0.5, y: size * 0.26))
+            checkPath.addLine(to: CGPoint(x: size * 0.5, y: size * 0.58))
+            checkPath.move(to: CGPoint(x: size * 0.5, y: size * 0.72))
+            checkPath.addLine(to: CGPoint(x: size * 0.5, y: size * 0.73))
+        }
         check.path = checkPath.cgPath
         check.fillColor = UIColor.clear.cgColor
         check.strokeColor = tint.accent.cgColor
@@ -169,17 +245,58 @@ final class SuccessView: UIView {
         detailButton.accessibilityLabel = "Copy \(detail ?? "")"
         detailButton.addTarget(self, action: #selector(copyDetail), for: .touchUpInside)
 
-        WalletTheme.styleHero(doneButton, title: "Done", systemImage: "checkmark", tint: tint)
+        WalletTheme.styleHero(doneButton,
+                              title: kind == .success ? "Done" : "OK",
+                              systemImage: "checkmark",
+                              tint: tint)
         doneButton.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
+
+        var secondaryConfig = UIButton.Configuration.plain()
+        secondaryConfig.title = secondaryTitle
+        secondaryConfig.image = UIImage(systemName: "square.and.arrow.up",
+                                        withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold))
+        secondaryConfig.imagePlacement = .leading
+        secondaryConfig.imagePadding = 8
+        secondaryConfig.baseForegroundColor = tint.accent
+        secondaryConfig.background.backgroundColor = .clear
+        secondaryConfig.background.strokeColor = tint.line
+        secondaryConfig.background.strokeWidth = 1
+        secondaryConfig.background.cornerRadius = WalletTheme.radius
+        secondaryConfig.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var attributes = incoming
+            attributes.font = WalletTheme.mono(14, weight: .semibold)
+            return attributes
+        }
+        secondaryButton.configuration = secondaryConfig
+        secondaryButton.isHidden = (secondaryTitle ?? "").isEmpty
+        secondaryButton.addTarget(self, action: #selector(secondaryTapped), for: .touchUpInside)
 
         let checkRow = UIStackView(arrangedSubviews: [checkContainer])
         checkRow.axis = .vertical
         checkRow.alignment = .center
-        let stack = UIStackView(arrangedSubviews: [checkRow, titleLabel, subtitleLabel, detailButton, doneButton])
+        // Long messages (node error dumps) scroll inside the card instead of pushing it off screen.
+        subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        subtitleScroll.addSubview(subtitleLabel)
+        subtitleScroll.isHidden = subtitle.isEmpty
+        subtitleScroll.showsVerticalScrollIndicator = true
+        subtitleScroll.alwaysBounceVertical = false
+        NSLayoutConstraint.activate([
+            subtitleLabel.topAnchor.constraint(equalTo: subtitleScroll.contentLayoutGuide.topAnchor),
+            subtitleLabel.bottomAnchor.constraint(equalTo: subtitleScroll.contentLayoutGuide.bottomAnchor),
+            subtitleLabel.leadingAnchor.constraint(equalTo: subtitleScroll.contentLayoutGuide.leadingAnchor),
+            subtitleLabel.trailingAnchor.constraint(equalTo: subtitleScroll.contentLayoutGuide.trailingAnchor),
+            subtitleLabel.widthAnchor.constraint(equalTo: subtitleScroll.frameLayoutGuide.widthAnchor)
+        ])
+        // As tall as the text, until the card reaches the screen edges.
+        let fitText = subtitleScroll.heightAnchor.constraint(equalTo: subtitleLabel.heightAnchor)
+        fitText.priority = .defaultLow
+        fitText.isActive = true
+
+        let stack = UIStackView(arrangedSubviews: [checkRow, titleLabel, subtitleScroll, detailButton, secondaryButton, doneButton])
         stack.axis = .vertical
         stack.spacing = 12
         stack.setCustomSpacing(22, after: checkRow)
-        stack.setCustomSpacing(22, after: detailButton.isHidden ? subtitleLabel : detailButton)
+        stack.setCustomSpacing(22, after: detailButton.isHidden ? subtitleScroll : detailButton)
         stack.translatesAutoresizingMaskIntoConstraints = false
         card.addSubview(stack)
 
@@ -195,6 +312,7 @@ final class SuccessView: UIView {
             card.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -28),
             card.widthAnchor.constraint(lessThanOrEqualToConstant: 400),
             card.topAnchor.constraint(greaterThanOrEqualTo: safeAreaLayoutGuide.topAnchor, constant: 20),
+            card.bottomAnchor.constraint(lessThanOrEqualTo: safeAreaLayoutGuide.bottomAnchor, constant: -20),
 
             checkContainer.widthAnchor.constraint(equalToConstant: size),
             checkContainer.heightAnchor.constraint(equalToConstant: size),
@@ -203,7 +321,8 @@ final class SuccessView: UIView {
             stack.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 24),
             stack.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -24),
             stack.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -24),
-            doneButton.heightAnchor.constraint(equalToConstant: 52)
+            doneButton.heightAnchor.constraint(equalToConstant: 52),
+            secondaryButton.heightAnchor.constraint(equalToConstant: 48)
         ])
         let preferredWidth = card.widthAnchor.constraint(equalToConstant: 400)
         preferredWidth.priority = .defaultHigh
@@ -215,7 +334,7 @@ final class SuccessView: UIView {
     // MARK: - Animation
 
     private func animateIn() {
-        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        UINotificationFeedbackGenerator().notificationOccurred(kind == .success ? .success : (kind == .error ? .error : .warning))
         UIAccessibility.post(notification: .screenChanged, argument: titleLabel)
 
         overlay.alpha = 0
@@ -281,8 +400,17 @@ final class SuccessView: UIView {
         UIAccessibility.post(notification: .announcement, argument: "Copied")
     }
 
+    @objc private func secondaryTapped() {
+        dismissCard(runSecondary: true)
+    }
+
     @objc private func doneTapped() {
+        dismissCard(runSecondary: false)
+    }
+
+    private func dismissCard(runSecondary: Bool) {
         doneButton.isUserInteractionEnabled = false
+        secondaryButton.isUserInteractionEnabled = false
         UIView.animate(withDuration: 0.25, animations: {
             self.overlay.alpha = 0
             self.card.alpha = 0
@@ -290,6 +418,8 @@ final class SuccessView: UIView {
         }, completion: { _ in
             self.removeFromSuperview()
             self.onDismiss?()
+            if runSecondary { self.onSecondary?() }
+            Self.showNext()
         })
     }
 }

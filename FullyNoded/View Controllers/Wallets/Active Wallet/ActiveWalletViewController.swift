@@ -12,6 +12,9 @@ class ActiveWalletViewController: UIViewController {
     
     private var onchainBalanceBtc = ""
     private var onchainBalanceFiat = ""
+    private var onchainLockedBtc = ""
+    /// Balance minus timelocked coins: what the send screen can use now.
+    private var onchainSpendableBtc = ""
     private var onchainBalance: Double?
     private var sectionZeroLoaded = Bool()
     private var onchainTransactions: ListTransactionsResponse? = nil
@@ -20,6 +23,12 @@ class ActiveWalletViewController: UIViewController {
     private var walletLabel: String!
     private var wallet: Wallet?
     private var fxRate: Double?
+    /// Ids of the locally saved records (labels, fx rates) by txid, so a rate can be added to one.
+    private var savedTransactionIds: [String: UUID] = [:]
+    /// Transactions whose fx rate was recorded this session (a refresh can overtake the save).
+    private var recordedOriginRates = Set<String>()
+    /// How soon after a payment first shows up its exchange rate still counts as "at the time".
+    private static let originRateWindow: TimeInterval = 6 * 60 * 60
     private let barSpinner = UIActivityIndicatorView(style: .medium)
     private var initialLoad = true
     private var backupButton: UIBarButtonItem?
@@ -238,8 +247,13 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @IBAction func goToUtxos(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToUtxos", sender: vc)
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let vc = UTXOViewController()
+            vc.fxRate = self.fxRate
+            vc.wallet = self.wallet
+            vc.hidesBottomBarWhenPushed = true
+            self.navigationController?.pushViewController(vc, animated: true)
         }
     }
     
@@ -340,7 +354,7 @@ class ActiveWalletViewController: UIViewController {
     /// wallet's backup. Only saved when the node answered for THIS wallet and returned
     /// descriptors, so a hiccup can never replace a good backup with an empty or wrong one.
     private func backupWalletNow(walletId: UUID, walletName: String) {
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors) { [weak self] (response, errorDesc) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors, walletName: walletName) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
             guard let response = response,
                   let json = try? JSONSerialization.data(withJSONObject: response),
@@ -371,110 +385,17 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func exportBackup() {
-        guard let backup = Self.decodeBackup(wallet?.walletBackup) else {
-            showAlert(vc: self, title: "No backup yet", message: "The wallet backup is created automatically when the wallet loads. Refresh and try again.")
-            return
-        }
-        promptForBackupExportFormat(backup: backup)
-    }
-    
-    private func promptForBackupExportFormat(backup: WalletBackup) {
-        WalletExportFormatView.show(in: self) { [weak self] format in
-            guard let self = self, let format = format else { return }
-            
-            do {
-                switch format {
-                case .qr:
-                    let qrVC = QRViewController(
-                        text: try backup.hexEncoded(),
-                        headerText: "\(self.wallet?.label ?? "Wallet") Backup",
-                        descriptionText: "Last updated: " + backup.lastUpdate.formattedDate,
-                        headerIcon: UIImage(systemName: "qrcode"),
-                        isBbqr: true,
-                        isUR: false
-                    )
-                    
-                    let nav = UINavigationController(rootViewController: qrVC)
-                    nav.modalPresentationStyle = .fullScreen
-                    
-                    present(nav, animated: true)
-                    
-                case .file:
-                    self.exportAsFile(backup: backup)
-                case .text:
-                    self.copyAsText(backup: backup)
+        // Read the wallet fresh: the copy held by this screen predates any backup refresh
+        // (or timelock added) since it loaded, and an export must never hand out a stale backup.
+        activeWallet { [weak self] fresh in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                guard let backup = Self.decodeBackup((fresh ?? self.wallet)?.walletBackup) else {
+                    showAlert(vc: self, title: "No backup yet", message: "The wallet backup is created automatically when the wallet loads. Refresh and try again.")
+                    return
                 }
-                
-            } catch {
-                print("error completing export format: \(error.localizedDescription)")
+                self.presentBackupExport(backup, walletLabel: (fresh ?? self.wallet)?.label)
             }
-        }
-    }
-    
-    private func copyAsText(backup: WalletBackup) {
-        do {
-            let hexString = try backup.hexEncoded()
-            UIPasteboard.general.string = hexString
-            
-            // Show success with explanation
-            let byteCount = hexString.count / 2
-            let charCount = hexString.count
-            
-            SuccessView.show(
-                in: self,
-                title: "Backup copied",
-                subtitle: "Hex-encoded backup (\(byteCount) bytes → \(charCount) chars) is now in your clipboard.\n\nPaste it into a secure location."
-            ) {
-                print("User acknowledged hex backup copy")
-            }
-            
-            // Haptic feedback
-            let feedback = UIImpactFeedbackGenerator(style: .medium)
-            feedback.impactOccurred()
-            
-        } catch {
-            showAlert(title: "Encoding Failed", message: "Could not encode backup: \(error.localizedDescription)")
-        }
-    }
-    
-    private func exportAsFile(backup: WalletBackup) {
-        do {
-            // Same hex as the QR and text exports (what the importer reads).
-            let jsonData = try backup.hexEncoded().utf8
-            let fileName = "\(backup.lastUpdate.formattedDate).txt"
-            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
-            try jsonData.write(to: tempURL)
-            
-            let activityVC = UIActivityViewController(activityItems: [tempURL], applicationActivities: nil)
-            
-            activityVC.excludedActivityTypes = [
-                .addToReadingList,
-                .assignToContact,
-                .markupAsPDF
-            ]
-            
-            if let popover = activityVC.popoverPresentationController {
-                popover.sourceView = self.view
-                popover.sourceRect = self.view.bounds
-                popover.permittedArrowDirections = []
-            }
-            
-            // Not sure this fires off...
-            activityVC.completionWithItemsHandler = { [weak self] activityType, completed, items, error in
-                try? FileManager.default.removeItem(at: tempURL)
-                
-                if completed {
-                    guard let self = self else { return }
-                    SuccessView.show(in: self, title: "Backup exported", subtitle: "Your wallet backup has been saved.") { }
-                } else if let error = error {
-                    showAlert(title: "Export Failed", message: error.localizedDescription)
-                }
-            }
-            
-            present(activityVC, animated: true)
-            
-        } catch {
-            showAlert(title: "Error", message: "Failed to create backup file: \(error.localizedDescription)")
         }
     }
     
@@ -519,9 +440,11 @@ class ActiveWalletViewController: UIViewController {
             
             // Saved labels and the fx rate at send/receive time, by txid.
             var saved: [String: TransactionStruct] = [:]
+            self.savedTransactionIds.removeAll()
             for dict in transactions {
                 let tx = TransactionStruct(dictionary: dict)
                 saved[tx.txid] = tx   // a later record for the same txid wins, as before
+                if let id = tx.id { self.savedTransactionIds[tx.txid] = id }
             }
             
             for t in self.onchainTransactions!.transactions.indices {
@@ -566,7 +489,7 @@ class ActiveWalletViewController: UIViewController {
             onchainBalanceBtc = "0"
         }
         
-        cell.configure(btc: onchainBalanceBtc.withCommas, fiat: onchainBalanceFiat)
+        cell.configure(btc: onchainBalanceBtc.withCommas, fiat: onchainBalanceFiat, locked: onchainLockedBtc.withCommas)
         return cell
     }
         
@@ -697,6 +620,7 @@ class ActiveWalletViewController: UIViewController {
             
             self.fxRate = rate
             UserDefaults.standard.setValue(rate, forKey: "fxRate")
+            self.recordOriginRates(rate, currency: fiatCurrency)
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -704,6 +628,44 @@ class ActiveWalletViewController: UIViewController {
                 self.fxRateLabel.text = rate.exchangeRate
                 self.updateFiatBalance()
                 walletTable.reloadData()
+            }
+        }
+    }
+    
+    /// Gain/loss is measured from the exchange rate when a payment happened. Sends made in the app
+    /// record it when they're broadcast, but a payment from elsewhere has nothing recorded, so the
+    /// rate is saved the first time the payment is seen, as long as that's soon after it arrived
+    /// (otherwise today's rate would pass for the rate back then): at most 2 confirmations, or
+    /// received within the last few hours.
+    private func recordOriginRates(_ rate: Double, currency: String) {
+        guard rate > 0, let transactions = onchainTransactions?.transactions else { return }
+        let now = Date().timeIntervalSince1970
+        
+        for index in transactions.indices {
+            let tx = transactions[index]
+            // Recent = barely confirmed (no clock needed) or received within the last few hours.
+            let isRecent = (0...2).contains(tx.confirmations) || Swift.abs(now - Double(tx.timereceived)) < Self.originRateWindow
+            guard tx.originRate == nil, isRecent else { continue }
+            
+            onchainTransactions!.transactions[index].originRate = rate
+            guard recordedOriginRates.insert(tx.txid).inserted else { continue }
+            
+            if let id = savedTransactionIds[tx.txid] {
+                // A record exists (e.g. only a label): add the rate to it.
+                CoreDataService.update(id: id, keyToUpdate: "originFxRate", newValue: rate, entity: .transactions) { _ in }
+                CoreDataService.update(id: id, keyToUpdate: "fiatCurrency", newValue: currency, entity: .transactions) { _ in }
+            } else {
+                let id = UUID()
+                savedTransactionIds[tx.txid] = id
+                let record: [String: Any] = [
+                    "id": id,
+                    "label": tx.label ?? "",
+                    "date": Date(),
+                    "txid": tx.txid,
+                    "fiatCurrency": currency,
+                    "originFxRate": rate
+                ]
+                CoreDataService.saveEntity(dict: record, entityName: .transactions) { _ in }
             }
         }
     }
@@ -719,19 +681,26 @@ class ActiveWalletViewController: UIViewController {
             return
         }
         do {
-            OnchainUtils.getBalance { [weak self] (balance, message) in
+            OnchainUtils.getBalanceBreakdown { [weak self] (total, locked, message) in
                 guard let self = self else { return }
                 
-                guard let balance = balance else {
+                guard let total = total else {
                     removeSpinner()
                     showAlert(vc: self, title: "", message: message ?? "Unknown error getting balance.")
                     
                     return
                 }
                 
+                // The headline is the whole balance, timelocked coins included (the line under
+                // it says how much of it is timelocked). The send screen's "available" is what
+                // can actually be spent now.
+                let spendable = max(0, total - locked)
+
                 DispatchQueue.main.async {
-                    self.onchainBalance = balance
-                    self.onchainBalanceBtc = balance.btcBalanceWithSpaces
+                    self.onchainBalance = total
+                    self.onchainBalanceBtc = total.btcBalanceWithSpaces
+                    self.onchainSpendableBtc = spendable.btcBalanceWithSpaces
+                    self.onchainLockedBtc = locked > 0 ? locked.btcBalanceWithSpaces : ""
                     self.updateFiatBalance()
                     
                     self.sectionZeroLoaded = true
@@ -784,6 +753,8 @@ class ActiveWalletViewController: UIViewController {
         walletLabel = nil
         onchainBalanceFiat = ""
         onchainBalanceBtc = ""
+        onchainLockedBtc = ""
+        onchainSpendableBtc = ""
         onchainBalance = nil
         onchainTransactions?.transactions.removeAll()
         
@@ -833,15 +804,9 @@ class ActiveWalletViewController: UIViewController {
         case "spendFromWallet":
             guard let vc = segue.destination as? CreateRawTxViewController else { fallthrough }
             
-            vc.balance = onchainBalanceBtc
+            vc.balance = onchainSpendableBtc.isEmpty ? onchainBalanceBtc : onchainSpendableBtc
             vc.fxRate = fxRate
         
-        case "segueToUtxos":
-            guard let vc = segue.destination as? UTXOViewController else { fallthrough }
-            
-            vc.fxRate = fxRate
-            vc.wallet = wallet
-            
         case "segueToActiveWalletDetail":
             guard let vc = segue.destination as? WalletDetailViewController else { fallthrough }
             
@@ -979,6 +944,7 @@ private final class WalletBalanceCell: UITableViewCell {
     private let caption = UILabel()
     private let btcLabel = UILabel()
     private let fiatLabel = UILabel()
+    private let lockedLabel = UILabel()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -1004,8 +970,13 @@ private final class WalletBalanceCell: UITableViewCell {
         fiatLabel.textAlignment = .center
 
         caption.textAlignment = .center
+        
+        lockedLabel.font = WalletTheme.mono(12)
+        lockedLabel.textColor = WalletTheme.pending
+        lockedLabel.textAlignment = .center
+        lockedLabel.isHidden = true
 
-        let stack = UIStackView(arrangedSubviews: [caption, btcLabel, fiatLabel])
+        let stack = UIStackView(arrangedSubviews: [caption, btcLabel, fiatLabel, lockedLabel])
         stack.axis = .vertical
         stack.spacing = 6
         stack.translatesAutoresizingMaskIntoConstraints = false
@@ -1025,9 +996,11 @@ private final class WalletBalanceCell: UITableViewCell {
         layer.cornerRadius = WalletTheme.radius   // override the inset-grouped section rounding
     }
 
-    func configure(btc: String, fiat: String) {
+    func configure(btc: String, fiat: String, locked: String = "") {
         btcLabel.text = "\(btc) BTC"
         fiatLabel.text = fiat.isEmpty ? " " : "≈ \(fiat)"
+        lockedLabel.isHidden = locked.isEmpty
+        lockedLabel.text = locked.isEmpty ? nil : "incl. \(locked) BTC timelocked"
     }
 }
 
