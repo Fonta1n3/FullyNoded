@@ -144,7 +144,7 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>So we can upload a QR code from your photo library</string>
+	<string>Fully Noded uses the camera to scan QR codes, such as addresses, PSBTs and node connections.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>To log into the app with FaceID</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

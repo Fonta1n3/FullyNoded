@@ -592,6 +592,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             self.hideActivity()
             let vc = VerifyTransactionViewController()
             vc.fxRate = self.fxRate
+            vc.announceCreatedTransaction = true
             if let rawTx = rawTx {
                 vc.signedRawTx = rawTx
             } else if let psbt = psbt {

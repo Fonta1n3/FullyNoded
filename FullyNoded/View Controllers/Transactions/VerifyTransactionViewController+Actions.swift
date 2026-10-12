@@ -237,6 +237,7 @@ extension VerifyTransactionViewController {
             do {
                 result = try await Broadcaster.sharedInstance.broadcastRawTransaction(rawTx: signedRawTx, network: WalletLogic.shared.bdkNetwork() ?? .bitcoin)
             } catch {
+                markBroadcastIfAlreadyKnown(error.localizedDescription)
                 showError(error: "Error broadcasting privately. Error: \(error.localizedDescription)")
                 return
             }
@@ -246,13 +247,14 @@ extension VerifyTransactionViewController {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                    disableSendButton()
+                    markBroadcast()
                     SuccessView.show(in: self, title: "Transaction sent",
                                      subtitle: "Broadcast privately over Tor.", detail: self.txid) { [weak self] in
                         self?.navigationController?.popToRootViewController(animated: true)
                     }
                 }
             case .failure(let message):
+                markBroadcastIfAlreadyKnown(message)
                 showError(error: "Error broadcasting privately. Error: \(message)")
             }
         }
@@ -266,14 +268,16 @@ extension VerifyTransactionViewController {
             guard let self = self else { return }
             
             guard let id = response as? String else {
+                self.markBroadcastIfAlreadyKnown(errorMesage ?? "")
                 self.showError(error: "Error broadcasting: \(errorMesage ?? "unknown error")")
                 return
             }
-            
+
             DispatchQueue.main.async {
+                // The node accepted a transaction either way: don't offer to send it again.
+                self.markBroadcast(id)
                 if self.txid == id {
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                    self.disableSendButton()
                     self.finishActivity()
                     
                     SuccessView.show(in: self, title: "Transaction sent",
@@ -307,6 +311,14 @@ extension VerifyTransactionViewController {
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = self.view
             self.present(alert, animated: true) {}
+        }
+    }
+
+    /// Called from any queue.
+    func markBroadcastIfAlreadyKnown(_ message: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, self.isAlreadyKnownError(message) else { return }
+            self.markBroadcast()
         }
     }
 
