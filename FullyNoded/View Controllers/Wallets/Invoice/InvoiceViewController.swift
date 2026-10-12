@@ -189,46 +189,54 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 timelockVC.completion = { [weak self] (timestamp, afterFragment, displayDate) in
                     guard let self = self else { return }
                     
-                    var pubkey = addressInfo.pubkey
-                    if let _ = pubkey {
-                        pubkey = Descriptor(addressInfo.desc).pubkey
+                    // The timelock is built on this address's own key: its child index comes from
+                    // its hdkeypath (a timelock on the wrong key would lock the wrong coins).
+                    guard let keyIndex = Self.childIndex(of: addressInfo) else {
+                        self.hideActivity()
+                        showAlert(title: "", message: "Can't tell which key this address uses, so a timelock can't be created for it.")
+                        return
                     }
                     
                     do {
-                        let (timelockedAddress, descriptor) = try WalletLogic.shared.createTimelockedAddress(fnWallet: wallet, pubkey: pubkey, descriptor: addressInfo.parent_desc, timelock: timestamp)
+                        let (timelockedAddress, descriptor) = try WalletLogic.shared.createTimelockedAddress(fnWallet: wallet, pubkey: nil, descriptor: addressInfo.parent_desc, timelock: timestamp, keyIndex: keyIndex, derivedDescriptor: addressInfo.desc)
                         
-                        var dict: [String: Any] = ["descriptor": descriptor]
-                        let param = Get_Descriptor_Info(dict)
-                        dict["id"] = UUID()
-                        
-                        CoreDataService.saveEntity(dict: dict, entityName: .timelocks) { saved in
-                            guard saved else {
-                                showAlert(title: "Timelock not saved.", message: "Please let us know about this bug asap. Contact us at dentondevelopment@protonmail.com, X, Telegram ot Github.")
+                        OnchainUtils.getDescriptorInfo(Get_Descriptor_Info(["descriptor": descriptor])) { [weak self] (descriptorInfo, message) in
+                            guard let self = self else { return }
+                            
+                            guard let descriptorInfo = descriptorInfo else {
+                                self.hideActivity()
+                                showAlert(title: "", message: message ?? "Unknown error getting the descriptor info.")
                                 return
                             }
                             
-                            OnchainUtils.getDescriptorInfo(param) { [weak self] (descriptorInfo, message) in
+                            let request = [
+                                "desc": descriptorInfo.descriptor,
+                                "timestamp": "now",
+                                "label": "Locked until \(displayDate)"
+                            ]
+                            
+                            // Import FIRST, pinned to this wallet. Nothing is saved locally unless the node accepted it.
+                            MakeRPCCall.sharedInstance.executeRPCCommand(method: .importdescriptors(param: Import_Descriptors(["requests": [request]])), walletName: wallet.name) { [weak self] (response, errorDesc) in
                                 guard let self = self else { return }
                                 
-                                guard let descriptorInfo = descriptorInfo else {
-                                    hideActivity()
-                                    showAlert(title: "", message: message ?? "Unknown arror getting descripr")
+                                guard let items = response as? [[String: Any]], !items.isEmpty else {
+                                    self.hideActivity()
+                                    showAlert(title: "", message: errorDesc ?? "Unknown error importing the timelock descriptor.")
                                     return
                                 }
                                 
-                                let request = [
-                                    "desc": descriptorInfo.descriptor,
-                                    "timestamp": "now",
-                                    "label": "Locked until \(displayDate)"
-                                ]
+                                // Every request must have succeeded, or none of the success steps run.
+                                if let failed = items.map({ ImportDescriportsResponse($0) }).first(where: { !$0.success }) {
+                                    self.hideActivity()
+                                    let message = (failed.error?["message"] as? String) ?? "Unknown error importing the timelock descriptor."
+                                    showAlert(title: "", message: message)
+                                    return
+                                }
                                 
-                                let p = Import_Descriptors(["requests": [request]])
-                                MakeRPCCall.sharedInstance.executeRPCCommand(method: .importdescriptors(param: p)) { [weak self] (response, errorDesc) in
-                                    guard let self = self else { return }
-                                    
-                                    guard let response = response as? [[String: Any]] else {
-                                        showAlert(title: "", message: errorDesc ?? "Unknown error importing descriptor: \(descriptor)")
-                                        return
+                                let record: [String: Any] = ["descriptor": descriptor, "id": UUID()]
+                                CoreDataService.saveEntity(dict: record, entityName: .timelocks) { saved in
+                                    if !saved {
+                                        showAlert(title: "Timelock not saved locally.", message: "The timelocked address was imported on your node, but saving it in Fully Noded failed. Your backup will still include it.")
                                     }
                                     
                                     DispatchQueue.main.async {
@@ -239,42 +247,16 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                                                 guard let self = self else { return }
                                                 
                                                 self.addTimelockOutlet.isHidden = true
-                                                
-                                                for descriptor in response {
-                                                    let importResponse = ImportDescriportsResponse(descriptor)
-                                                    if importResponse.success {
-                                                        showAddress(address: timelockedAddress)
-                                                        
-//                                                        let item = BackupItem(
-//                                                            desc: descriptorInfo.descriptor,
-//                                                            active: false,
-//                                                            range: nil,
-//                                                            nextIndex: 0,
-//                                                            timestamp: Date().unixTimestamp,
-//                                                            internal: false,
-//                                                            label: "Locked until \(displayDate)"
-//                                                        )
-                                                        
-                                                        backUpNow(displayDate: displayDate)
-                                                    } else {
-                                                        hideActivity()
-                                                        if let errorDesc = importResponse.error, let message = errorDesc["message"] as? String {
-                                                            showAlert(title: "", message: message)
-                                                        } else {
-                                                            showAlert(title: "", message: "Unknown error importing time lock address.")
-                                                        }
-                                                    }
-                                                }
+                                                self.showAddress(address: timelockedAddress)
+                                                self.backUpNow(displayDate: displayDate)
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                        
-                       
                     } catch {
-                        hideActivity()
+                        self.hideActivity()
                         showAlert(title: "", message: error.localizedDescription)
                     }
                 }
@@ -283,51 +265,41 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    /// Refreshes the stored wallet backup so it includes the new timelocked descriptor. Pinned to
+    /// this wallet and only saved if the node answered for exactly this wallet, so a hiccup (or the
+    /// wrong wallet being active) can never replace a good backup with someone else's descriptors.
+    /// The child index the address was derived at: from hdkeypath for single-sig, otherwise from
+    /// the derivation path inside the derived descriptor (multisig addresses have no hdkeypath),
+    /// where every cosigner's key sits at the same index.
+    static func childIndex(of info: AddressInfo) -> UInt32? {
+        if let last = info.hdkeypath.split(separator: "/").last, let index = UInt32(last) { return index }
+        
+        let desc = info.desc
+        guard let regex = try? NSRegularExpression(pattern: #"\[[0-9a-fA-F]{8}[^\]]*/[01]/(\d+)\]"#) else { return nil }
+        let matches = regex.matches(in: desc, range: NSRange(desc.startIndex..., in: desc))
+        let indexes = Set(matches.compactMap { match -> UInt32? in
+            guard let range = Range(match.range(at: 1), in: desc) else { return nil }
+            return UInt32(desc[range])
+        })
+        return indexes.count == 1 ? indexes.first : nil
+    }
+    
     func backUpNow(displayDate: String) {
-        var descriptors: [BackupItem] = []
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors) { [weak self] (response, errorDesc) in
+        guard let wallet = wallet else { return }
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors, walletName: wallet.name) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
-            do {
-                guard let response = response else { return }
-                
-                let jsonData = try JSONSerialization.data(withJSONObject: response, options: [])
-                
-                let listDescriptorResponse = try JSONDecoder().decode(ListDescriptorsResponse.self, from: jsonData)
-                
-                for (i, descriptor) in listDescriptorResponse.descriptors.enumerated() {
-                    var rangeValue: [Int]? = nil
-                    
-                    if let range = descriptor.range {
-                        if range.count == 2 {
-                            rangeValue = [range[0],range[1]]
-                        } else {
-                            rangeValue = [range[0]]
-                        }
-                    }
-                    
-                    var timestamp: Int? = nil
-                    if let timestampt = descriptor.timestamp {
-                        timestamp = timestampt
-                    } else {
-                        showAlert(title: "", message: "Timestamp is nil. Please contact support!")
-                    }
-                    
-                    let backupitem: BackupItem = .init(desc: descriptor.desc, active: descriptor.active, range: rangeValue, nextIndex: descriptor.nextIndex ?? 0, timestamp: timestamp, internal: descriptor.internal_, label: descriptor.label)
-                    
-                    descriptors.append(backupitem)
-                    
-                    if i + 1 == listDescriptorResponse.descriptors.count {
-                        let backup = WalletBackup(
-                            lastUpdate: Date(),
-                            descriptors: descriptors
-                        )
-                        updateNow(backup: backup, displayDate: displayDate)
-                        
-                    }
-                }
-            } catch {
-                showAlert(title: "", message: "listdescritpors response logic failed: \(error.localizedDescription)")
+            
+            guard let response = response,
+                  let data = try? JSONSerialization.data(withJSONObject: response),
+                  let listed = try? JSONDecoder().decode(ListDescriptorsResponse.self, from: data),
+                  listed.walletName == wallet.name,
+                  !listed.descriptors.isEmpty else {
+                showAlert(title: "Backup not updated", message: errorDesc ?? "Couldn't read this wallet's descriptors from your node. Export a fresh backup from the Active Wallet view as soon as you can.")
+                return
             }
+            
+            let backup = WalletBackup(lastUpdate: Date(), descriptors: listed.descriptors.map(BackupItem.init(listed:)))
+            self.updateNow(backup: backup, displayDate: displayDate)
         }
     }
     
@@ -338,6 +310,10 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         do {
             let jsonData = try encoder.encode(backup)
             CoreDataService.update(id: wallet!.id, keyToUpdate: "walletBackup", newValue: jsonData, entity: .wallets) { walletBackupUpdated in
+                guard walletBackupUpdated else {
+                    showAlert(title: "Backup not saved", message: "The timelocked address exists, but updating the stored backup failed. Export a fresh backup from the Active Wallet view now.")
+                    return
+                }
                 
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
@@ -345,17 +321,22 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                     SuccessView.show(
                         in: self,
                         title: "Wallet backup updated",
-                        subtitle: "You can export this backup by going back to the Active Wallet view and tapping the export button in the top right."
-                    ) {
-                        DispatchQueue.main.async { [weak self] in
-                            guard let self = self else { return }
-                            
-                            timelockWarningLabel.text = "⚠️ Timelocked until \(displayDate): FUNDS WILL NOT BE SPENDABLE UNTIL THIS DATE!"
-                            timelockWarningLabel.alpha = 1
-                            
-                            NotificationCenter.default.post(name: .refreshWallet, object: nil)
+                        subtitle: "Export it now to keep a copy that includes this timelock. You can also export it later from the Active Wallet view with the export button in the top right.",
+                        onDismiss: {
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
+                                
+                                timelockWarningLabel.text = "⚠️ Timelocked until \(displayDate): FUNDS WILL NOT BE SPENDABLE UNTIL THIS DATE!"
+                                timelockWarningLabel.alpha = 1
+                                
+                                NotificationCenter.default.post(name: .refreshWallet, object: nil)
+                            }
+                        },
+                        secondaryTitle: "Export backup",
+                        onSecondary: { [weak self] in
+                            self?.presentBackupExport(backup, walletLabel: self?.wallet?.label)
                         }
-                    }
+                    )
                 }
             }
         } catch {

@@ -296,7 +296,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                     ]
                 ] as [String:Any])
                 
-                OnchainUtils.importDescriptors(params) { [weak self] (imported, message) in
+                OnchainUtils.importDescriptors(params, walletName: name) { [weak self] (imported, message) in
                     guard let self = self else { return }
                     
                     guard imported else {

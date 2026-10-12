@@ -19,6 +19,9 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     @IBOutlet weak var scanQrOutlet: UIButton!
     
     var cosigner:Descriptor?
+    /// Set only when the current recovery itself created the Core wallet (never for one that
+    /// already existed), so a failed recovery can unload exactly what it made.
+    private var walletCreatedByRecovery: String?
     var onDoneBlock:(((Bool)) -> Void)?
     var ccXfp = ""
     var xpub = ""
@@ -637,20 +640,27 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 self.failRecovery(message ?? "Unknown error creating wallet.")
                 return
             }
-            // New or already on the node: either way, make it the active wallet.
-            UserDefaults.standard.set(name, forKey: "walletName")
-            self.importMissingDescriptors(backup: backup, fnWallet: fnWallet)
+            // The active wallet is NOT touched here. Every wallet RPC below is pinned to `name`,
+            // so descriptors can't land in whatever wallet happens to be active, and a failed
+            // recovery leaves the user's current active wallet as it was.
+            self.walletCreatedByRecovery = created != nil ? name : nil
+            self.importMissingDescriptors(backup: backup, fnWallet: fnWallet, walletName: name)
         }
     }
 
-    private func importMissingDescriptors(backup: WalletBackup, fnWallet: [String: Any]) {
+    private func importMissingDescriptors(backup: WalletBackup, fnWallet: [String: Any], walletName: String) {
         // What the node's wallet already has (empty for a freshly created one).
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors) { [weak self] (response, errorDesc) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listdescriptors, walletName: walletName) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
             var existing: [String] = []
             if let response = response,
                let json = try? JSONSerialization.data(withJSONObject: response),
                let listed = try? JSONDecoder().decode(ListDescriptorsResponse.self, from: json) {
+                // Belt and braces: the node must answer for exactly the wallet we're recovering.
+                guard listed.walletName == walletName else {
+                    self.failRecovery("The node answered for wallet \(listed.walletName) instead of \(walletName). Nothing was imported.")
+                    return
+                }
                 existing = listed.descriptors.map { $0.desc }
             } else if response == nil {
                 self.failRecovery("Couldn't read the wallet's descriptors: \(errorDesc ?? "unknown error")")
@@ -665,7 +675,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             }
 
             self.adjustForPruning(requests) { requests, moved in
-                OnchainUtils.importDescriptors(Import_Descriptors(["requests": requests])) { (imported, message) in
+                OnchainUtils.importDescriptors(Import_Descriptors(["requests": requests]), walletName: walletName) { (imported, message) in
                     guard imported else {
                         self.failRecovery(message ?? "importdescriptors failed.")
                         return
@@ -720,6 +730,9 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                     self.failRecovery("The wallet was imported on your node, but saving it in Fully Noded failed.")
                     return
                 }
+                // Only now, with everything imported and saved, does it become the active wallet.
+                UserDefaults.standard.set(name, forKey: "walletName")
+                self.walletCreatedByRecovery = nil
                 self.showSuccess(showUpdatedTimestampAlert: timestampsMoved)
             }
 
@@ -733,6 +746,14 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
 
     private func failRecovery(_ message: String) {
+        // A recovery that created the wallet but couldn't finish leaves an empty watch-only
+        // wallet loaded on the node: unload it (the files stay; Core has no RPC to delete
+        // them, and recovering the same backup again reuses them). Pinned by name, and only
+        // ever for a wallet this recovery created.
+        if let created = walletCreatedByRecovery {
+            walletCreatedByRecovery = nil
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .unloadwallet(param: Unload_Wallet(["wallet_name": created]))) { _, _ in }
+        }
         hideActivity {
             showAlert(title: "Recovery failed", message: message)
         }
