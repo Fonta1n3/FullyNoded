@@ -129,6 +129,7 @@ extension VerifyTransactionViewController {
         let dustLabel = inputCell.viewWithTag(VerifyCellTag.dustLabel) as? UILabel
         let signableImageView = inputCell.viewWithTag(VerifyCellTag.inputSignableImage) as? UIImageView
         let signerLabel = inputCell.viewWithTag(VerifyCellTag.inputSignerLabel) as? UILabel
+        let silentPaymentButton = inputCell.viewWithTag(VerifyCellTag.inputSilentPaymentButton) as? UIButton
 
         isDustImageView.tintColor = .tintColor
         isChangeImageView.tintColor = .tintColor
@@ -157,6 +158,7 @@ extension VerifyTransactionViewController {
             let sigsRequired = input["sigsRequired"] as? Int ?? 0
             let sigsPresent = input["sigsPresent"] as? Int ?? 0
             let sigsRemaining = input["sigsRemaining"] as? Int ?? 0
+            let sigsRequiredKnown = input["sigsRequiredKnown"] as? Bool ?? true
             
             if signedRawTx == "" {
                 if let parentDesc = parentDesc {
@@ -181,6 +183,13 @@ extension VerifyTransactionViewController {
             signButton.isEnabled = (input["canSign"] as? Bool) != false
             
             renderInputSigner(input, imageView: signableImageView, label: signerLabel)
+            
+            // Shown only for an input that might be a silent payment output when there are several.
+            silentPaymentButton?.isHidden = (input["spFetch"] as? String) != "available"
+            if let outpoint = (input["txid"] as? String).flatMap({ txid in (input["vout"] as? Int).map { "\(txid.lowercased()):\($0)" } }) {
+                silentPaymentButton?.restorationIdentifier = outpoint
+            }
+            silentPaymentButton?.addTarget(self, action: #selector(fetchSilentPaymentInfo(_:)), for: .touchUpInside)
             
             utxoLabel.text = label
             descTextView.text = desc
@@ -207,6 +216,10 @@ extension VerifyTransactionViewController {
                 signaturesLabel.text = "Signatures complete."
                 sigsImageView.tintColor = .green
                 
+            } else if !sigsRequiredKnown {
+                // Nothing in the PSBT (or the node) says how many this input needs: don't claim a number.
+                signaturesLabel.text = "\(sigsPresent) signature\(sigsPresent == 1 ? "" : "s") so far. How many are needed isn't in this PSBT."
+                sigsImageView.tintColor = .systemOrange
             } else {
                 signaturesLabel.text = "\(sigsPresent)/\(sigsRequired) signatures → \(sigsRemaining) more needed"
                 
@@ -425,6 +438,23 @@ extension VerifyTransactionViewController {
     /// Fills an input cell's "signable" row.
     func renderInputSigner(_ input: [String: Any], imageView: UIImageView?, label: UILabel?) {
         imageView?.image = UIImage(systemName: "signature")
+
+        switch input["spFetch"] as? String {
+        case "available":
+            imageView?.tintColor = .systemOrange
+            label?.text = "Possible silent payment."
+            return
+        case "checking":
+            imageView?.tintColor = .systemGray
+            label?.text = "Fetching silent payment info…"
+            return
+        case "notFound":
+            imageView?.tintColor = .systemOrange
+            label?.text = "No silent payment match found for your signers."
+            return
+        default:
+            break
+        }
 
         guard let signers = input["signers"] as? [String] else {
             imageView?.tintColor = .systemGray
@@ -773,6 +803,7 @@ enum VerifyCellTag {
     static let dustLabel = 30
     static let inputSignableImage = 31
     static let inputSignerLabel = 32
+    static let inputSilentPaymentButton = 33
 }
 
 private enum VerifyCellKit {
@@ -949,7 +980,9 @@ final class VerifyInputCell: UITableViewCell {
             K.statusRow(icon: K.icon(8), label: K.label(6)),
             K.statusRow(icon: K.icon(10), label: K.label(VerifyCellTag.dustLabel)),
             K.statusRow(icon: K.icon(17), label: K.label(14), trailing: signButton),
-            K.statusRow(icon: K.icon(VerifyCellTag.inputSignableImage), label: K.label(VerifyCellTag.inputSignerLabel)),
+            K.statusRow(icon: K.icon(VerifyCellTag.inputSignableImage),
+                        label: K.label(VerifyCellTag.inputSignerLabel),
+                        trailing: K.textButton(VerifyCellTag.inputSilentPaymentButton, title: "fetch SP info", systemImage: "magnifyingglass")),
             K.hairline(),
             K.captionRow("DESCRIPTOR", buttons: [K.iconButton(19, systemName: "doc.on.doc")]),
             K.descriptorView(15)

@@ -60,6 +60,8 @@
         <attribute name="scriptPubKey" optional="YES" attributeType="String"/>
         <attribute name="solvable" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="spendable" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="spLabelTweak" optional="YES" attributeType="Binary"/>
+        <attribute name="spTweak" optional="YES" attributeType="Binary"/>
         <attribute name="txid" optional="YES" attributeType="String"/>
         <attribute name="vout" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="walletId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>

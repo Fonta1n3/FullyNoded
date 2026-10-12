@@ -197,9 +197,9 @@ Validated against the official BIP352 receiving test vectors.
 - **Import**: for all matches in a block, `getdescriptorinfo` adds a checksum,
   then **one** `importdescriptors` call with `timestamp: "now"`,
   `active: false`, `internal: false` and a label of
-  `sp scan=<B_scan> k=<k> [m=<m>] t=<t_k>`. Fully Noded reads this label to
-  recognise and sign the input without fetching any blocks (5.1). `t_k` can't
-  spend anything without `b_spend`. Re-importing is idempotent.
+  `sp scan=<B_scan> k=<k> [m=<m>] t=<t_k>`. The label is informational only:
+  Fully Noded doesn't rely on it, and proves each output from the chain instead
+  (5.1). `t_k` can't spend anything without `b_spend`. Re-importing is idempotent.
 - **Deferred rescan**: because imports use `"now"`, the lowest height with a
   found output is kept in `pendingRescanFrom`. Once the scanner reaches the
   tip, **one** `rescanblockchain(start_height)` makes the wallet pick up the
@@ -222,7 +222,7 @@ Validated against the official BIP352 receiving test vectors.
 |---|---|---|
 | Wallet name, `b_scan`, `B_scan`, `B_spend`, address, start height | Keychain, encrypted with the app's key (`SPConfigStore`) | resume scanning at launch; *Forget keys* deletes it |
 | Scan progress: next height, recent block hashes, pending rescan height | UserDefaults, `sp_state_<first 16 hex of SHA256(wallet\|B_scan\|B_spend)>` | resume exactly where it stopped |
-| Found outputs (txids, tweaks, labels) | only in the imported output's **wallet label** in Core (nothing in FN-Server) | lets Fully Noded recognise and sign the input without fetching blocks |
+| Found outputs (txids, tweaks, labels) | only in the imported output's **wallet label** in Core (nothing in FN-Server) | informational; Fully Noded proves outputs from the chain and keeps its own tweaks (5.1) |
 
 The server never holds `b_spend`, so it **cannot spend** what it finds.
 
@@ -342,32 +342,33 @@ detection as signing (5.1, via `detectInputSigners`), using the wallet info the
 verifier already fetched with `getaddressinfo`, and show as
 "Signable by <signer> (silent payment)".
 
-### 5.1 Detection (from the active wallet, no block fetching)
+### 5.1 Detection (saved tweaks first, then the BIP352 scan)
 
-The verifier only cares about inputs the active wallet owns, and Core already
-knows those. `SilentPaymentSpend.detect(candidates:)` works from that:
+Wallet labels are never used to decide what is a silent payment or how to sign it.
+BIP352 only needs your keys and the chain, so that's what Fully Noded relies on.
+`SilentPaymentSpend.detect(candidates:)` works per taproot input:
 
-1. Takes every P2TR input and its `getaddressinfo` in the active wallet (the
-   verifier already has it from verifying the inputs; other callers make one
-   cheap wallet call per taproot input).
-2. Keeps only inputs the wallet **owns as a bare taproot key**: FN-Server's
-   `rawtr(<xonly>)` imports, recognised by their label
-   `sp scan=<B_scan> k=<k> [m=<m>] t=<t_k>` (or a `rawtr()` / `addr()`
-   descriptor). Normal wallet inputs (`tr(…)`, `wpkh(…)`, …) are skipped with no
-   extra work, and nothing is derived if no input qualifies.
-3. For a labeled input, the signer whose `B_scan` is in the label is used and
-   the tweak is **checked locally**: `B_spend (+ label_m·G) + t_k·G` must equal
-   the input's output key. No RPC. A match becomes an `OwnedOutput`
-   (`t_k`, `label_m`) for signing.
-4. Only outputs imported before FN-Server wrote `t=` (or imported unlabeled)
-   fall back to scanning their own funding transaction: block hash from
-   `gettransaction`, then `getrawtransaction <txid> 2 <blockhash>`, then the
-   BIP352 receiving computation (section 3.3) with every signer's keys
-   (passphrase candidates: typed, stored, none).
+1. **Saved tweak (no RPC).** On the UTXO screen, any output held as a bare taproot
+   key (`rawtr(<xonly>)`, how FN-Server imports) shows **Check SP info**. It runs the
+   BIP352 scan below for that output and, on a match, saves `t_k` (and the label
+   tweak for labeled addresses such as change) on the cached UTXO in Core Data
+   (`Utxos.spTweak` / `spLabelTweak`, encrypted with the app key). A refresh keeps
+   them. When a transaction spends that output, the tweak is **checked locally**:
+   some signer's `B_spend (+ label·G) + t_k·G` must equal the input's output key.
+   A saved tweak is never trusted on its own; one that doesn't check out is
+   ignored and the input falls through to step 2.
+2. **BIP352 scan.** Otherwise only inputs the active wallet holds as a bare taproot
+   key (`rawtr()`, or `addr()` for plain imports, from `getaddressinfo`) qualify;
+   normal wallet inputs (`tr(…)`, `wpkh(…)`, …) are skipped. Each one's funding
+   transaction is fetched (`gettransaction` for the block hash, then
+   `getrawtransaction <txid> 2 <blockhash>`) and the receiving computation
+   (section 3.3) is run with every signer's keys (passphrase candidates: typed,
+   stored, none). A match yields `t_k` and the label tweak.
 
-The label is only a hint: signing still refuses unless `b_spend + t_k
-(+ label_m)` reproduces the output key (5.2). No SP inputs → exactly the normal
-signing flow.
+In the transaction verifier, inputs with a saved tweak resolve straight away; when
+several inputs still need the scan, each gets its own fetch button instead. Either
+way signing refuses unless `b_spend + t_k (+ label)` reproduces the output key
+(5.2). No SP inputs → exactly the normal signing flow.
 
 ### 5.2 Signing
 
@@ -441,9 +442,9 @@ reappears in the same wallet and is spendable like any other silent payment
 output.
   1. Fund with a placeholder P2TR change output (same size) so Core picks the
      fee (inputs pinned to the ones already chosen).
-  2. Find the owning signer from the inputs' wallet labels (`B_scan` in
-     `sp scan=…`), falling back to the funding-transaction scan only for
-     unlabeled imports.
+  2. Find the owning signer: a saved tweak that checks out against an input's
+     output key (5.1, step 1), else the funding-transaction scan (5.1, step 2).
+     Wallet labels aren't used.
   3. Compute the change key **as the receiver**, which needs no input private
      keys. A sums the eligible inputs' public keys: taproot output keys (even Y;
      script-path spends with the NUMS internal key excluded) and, for `wpkh`,

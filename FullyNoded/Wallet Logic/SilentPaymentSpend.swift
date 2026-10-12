@@ -22,9 +22,12 @@
 //  --------------------------
 //  * b_spend: derived from your Fully Noded signer at m/352'/coin'/0'/0'/0 (same
 //    path as WalletLogic.silentPaymentAddressFromMnemonic).
-//  * t_k / label_m: per output, NOT derivable from the seed alone. FN-Server's
-//    scanner saves them (SPFoundOutput.tweakHex / labelTweakHex). OwnedOutput
-//    decodes that JSON directly.
+//  * t_k / label_m: per output, NOT derivable from the seed alone, but derivable from
+//    the transaction that funded it: `detect` fetches that transaction from your node
+//    and re-runs the BIP352 receiver math (A, input_hash, ECDH, t_k) with your scan key,
+//    trying label indices until B_spend (+ label_m·G) + t_k·G is the output key. No wallet
+//    label or saved tweak is needed (FN-Server's `t=` label and OwnedOutput's JSON form
+//    still work, but nothing depends on them).
 //
 //  SAFETY
 //  ------
@@ -132,6 +135,7 @@ enum SilentPaymentSpend {
         for i in tx.inputs.indices { prevouts.append(try psbt.prevout(input: i)) }
 
         var signed = 0
+        var alreadySigned = 0
         var mismatches: [String] = []
 
         for (i, input) in tx.inputs.enumerated() {
@@ -140,7 +144,11 @@ enum SilentPaymentSpend {
             guard spk.count == 34, spk[spk.startIndex] == 0x51, spk[spk.startIndex + 1] == 0x20 else {
                 throw WalletLogic.SPError("Input \(i) (\(out.txid):\(out.vout)) is not a P2TR output.")
             }
-            if psbt.inputs[i].contains(where: { $0.key == [SPPsbt.inTapKeySig] }) { continue }   // already signed
+            // Already signed, or finalized by the node (PSBT_IN_FINAL_SCRIPTWITNESS).
+            if psbt.inputs[i].contains(where: { $0.key == [SPPsbt.inTapKeySig] || $0.key == [SPPsbt.inFinalScriptWitness] }) {
+                alreadySigned += 1
+                continue
+            }
 
             // Sighash type: PSBT_IN_SIGHASH_TYPE if present, else SIGHASH_DEFAULT.
             var hashType: UInt8 = 0x00
@@ -192,6 +200,10 @@ enum SilentPaymentSpend {
             signed += 1
         }
 
+        if signed == 0 && mismatches.isEmpty && alreadySigned > 0 {
+            // Every silent payment input was signed already (e.g. on an earlier pass): nothing to do.
+            return (psbt.serialize().base64EncodedString(), 0)
+        }
         if signed == 0 {
             if !mismatches.isEmpty {
                 throw KeyMismatch("The spend key doesn't match silent payment input(s) \(mismatches.joined(separator: ", ")). Wrong signer or passphrase?")
@@ -232,6 +244,7 @@ struct SPPsbt {
     static let inNonWitnessUtxo: UInt8 = 0x00
     static let inWitnessUtxo: UInt8 = 0x01
     static let inSighashType: UInt8 = 0x03
+    static let inFinalScriptWitness: UInt8 = 0x08
     static let inTapKeySig: UInt8 = 0x13
 
     var global: [Entry]
@@ -524,6 +537,13 @@ extension SilentPaymentSpend {
         let isMine: Bool
         let desc: String
         let labels: [String]
+
+        /// Could this be one of your silent payment outputs? Only an output the wallet holds as a
+        /// bare taproot key can be (`rawtr(<xonly>)`, or `addr()` for plain address imports);
+        /// ordinary wallet inputs (`tr(…)`, `wpkh(…)`) never are.
+        var isPossibleSilentPayment: Bool {
+            isMine && (desc.hasPrefix("rawtr(") || desc.hasPrefix("addr("))
+        }
     }
 
     /// A taproot input that might be one of your silent payment outputs.
@@ -565,9 +585,12 @@ extension SilentPaymentSpend {
     /// `knownInfo` ("txid:vout" lowercase → wallet info) skips `getaddressinfo` for
     /// inputs the caller already looked up. Completion (main queue) gets the owned
     /// outputs, ready for `sign(psbt:outputs:passphrase:completion:)`; empty if none.
+    /// `knownOwned` ("txid:vout" lowercase → output) holds outputs already found (e.g. by the
+    /// verifier's per-input "fetch" button): they aren't fetched and scanned again.
     static func detectInputs(psbt: String,
                              passphrase: String?,
                              knownInfo: [String: WalletInfo] = [:],
+                             knownOwned: [String: OwnedOutput] = [:],
                              completion: @escaping ([OwnedOutput]) -> Void) {
         let finish: ([OwnedOutput]) -> Void = { found in DispatchQueue.main.async { completion(found) } }
 
@@ -579,11 +602,16 @@ extension SilentPaymentSpend {
 
         // Taproot (OP_1 <32 bytes>) inputs only.
         var candidates: [Candidate] = []
+        var alreadyFound: [OwnedOutput] = []
         for (i, input) in parsed.tx.inputs.enumerated() {
             guard let prev = try? parsed.prevout(input: i) else { continue }
             let s = [UInt8](prev.script)
             guard s.count == 34, s[0] == 0x51, s[1] == 0x20 else { continue }
             let outpoint = "\(input.txidDisplay.lowercased()):\(input.vout)"
+            if let owned = knownOwned[outpoint] {
+                alreadyFound.append(owned)
+                continue
+            }
             candidates.append(Candidate(txid: input.txidDisplay,
                                         vout: Int(input.vout),
                                         outputKey: SPHexFN.encode(s[2..<34]),
@@ -591,7 +619,7 @@ extension SilentPaymentSpend {
         }
 
         detect(candidates: candidates, passphrase: passphrase) { found in
-            finish(found.map { $0.output })
+            finish(alreadyFound + found.map { $0.output })
         }
     }
 
@@ -610,20 +638,20 @@ extension SilentPaymentSpend {
         }
     }
 
-    /// Silent payment detection from what the active wallet already knows, without
-    /// scanning anything for ordinary inputs:
+    /// Silent payment detection that never looks at wallet labels:
     ///
-    /// - Only inputs the wallet owns (`ismine`) as a bare taproot key qualify: FN-Server
-    ///   imports each output it finds as `rawtr(<xonly>)` with the label
-    ///   "sp scan=<B_scan> k=… [m=…] [t=<t_k>]". Normal wallet inputs (`tr(…)`, `wpkh(…)`)
-    ///   are skipped with no extra work.
-    /// - Label with `t=`: checked locally (B_spend [+ label_m·G] + t_k·G must be the
-    ///   input's output key) against the signer whose scan key is in the label. No RPC.
-    /// - Older imports (no `t=`) and `rawtr()`/`addr()` imports without the label: the
-    ///   funding transaction of just those inputs is scanned (`match`).
+    /// - Only inputs whose descriptor in the active wallet is a bare taproot key qualify
+    ///   (`rawtr(<xonly>)`, which is how FN-Server imports every output it finds; `addr()` is
+    ///   accepted for outputs imported as plain addresses). Normal wallet inputs (`tr(…)`,
+    ///   `wpkh(…)`) are skipped with no extra work.
+    /// - For each of those, the FULL funding transaction is fetched from the node (with its
+    ///   inputs' prevouts) and the BIP352 receiver math is re-run against every signer's scan
+    ///   key: A = Σ input keys, input_hash, ECDH, then t_k per output. B_spend (+ label_m·G)
+    ///   + t_k·G must equal the input's output key; a match proves the output is yours and
+    ///   yields the tweak (and label tweak) that signing needs. See `scan(fundingTx:)`.
     ///
-    /// The tweak in a label is only a hint: signing still refuses unless the derived key
-    /// reproduces the output key. Completion on any queue.
+    /// Signing still refuses unless the key derived from those tweaks reproduces the output
+    /// key. Completion on any queue.
     static func detect(candidates: [Candidate],
                        passphrase: String?,
                        completion: @escaping ([(output: OwnedOutput, signer: String)]) -> Void) {
@@ -632,51 +660,38 @@ extension SilentPaymentSpend {
             return
         }
 
-        fillWalletInfo(candidates) { candidates in
-            // Bare taproot keys held by the active wallet; everything else can't be one of
-            // FN-Server's imports.
-            let possible = candidates.filter { candidate in
-                guard let info = candidate.info, info.isMine else { return false }
-                return info.labels.contains { WalletLabel($0) != nil }
-                    || info.desc.hasPrefix("rawtr(")
-                    || info.desc.hasPrefix("addr(")
+        // Tweaks saved on this device ("Check SP info" on the UTXO screen) first: checked
+        // locally against the output key, no node calls. The rest (and any saved tweak that
+        // doesn't check out) are scanned from their funding transactions as before.
+        verifySavedTweaks(candidates: candidates, passphrase: passphrase) { saved in
+            let verified = Set(saved.map { "\($0.output.txid.lowercased()):\($0.output.vout)" })
+            let rest = candidates.filter { !verified.contains("\($0.txid.lowercased()):\($0.vout)") }
+            detectByScanning(candidates: rest, passphrase: passphrase) { found in
+                completion(saved.map { (output: $0.output, signer: $0.signerLabel) } + found)
             }
+        }
+    }
+
+    /// `detect` without the saved tweaks: wallet info, then the BIP352 scan of each possible
+    /// silent payment's funding transaction.
+    private static func detectByScanning(candidates: [Candidate],
+                                         passphrase: String?,
+                                         completion: @escaping ([(output: OwnedOutput, signer: String)]) -> Void) {
+        guard !candidates.isEmpty else {
+            completion([])
+            return
+        }
+
+        fillWalletInfo(candidates) { candidates in
+            let possible = candidates.filter { $0.info?.isPossibleSilentPayment ?? false }
             guard !possible.isEmpty else {
                 completion([])
                 return
             }
 
             scanKeyCandidates(passphrase: passphrase) { keys in
-                var keys = keys
-                var found: [(output: OwnedOutput, signer: String)] = []
-                var toScan: [(txid: String, vout: Int)] = []
-
-                for candidate in possible {
-                    let label = candidate.info?.labels.lazy.compactMap { WalletLabel($0) }.first
-                    if let label = label {
-                        // Only the signer named by the label's scan key can own it.
-                        guard keys.contains(where: { scanPublicKey(of: $0) == label.scanPub }) else { continue }
-                        if let tweakHex = label.tweakHex {
-                            if let owned = ownedOutput(candidate, label: label, tweakHex: tweakHex, keys: keys) {
-                                found.append(owned)
-                            }
-                            continue
-                        }
-                    }
-                    toScan.append((candidate.txid, candidate.vout))
-                }
-
-                func done(_ scanned: [(output: OwnedOutput, signer: String)]) {
-                    for i in keys.indices { keys[i].bScan.secureZero() }
-                    completion(found + scanned)
-                }
-
-                guard !toScan.isEmpty else {
-                    done([])
-                    return
-                }
-                match(outpoints: toScan, keys: keys) { matches in
-                    done(matches.map { (output: $0.output, signer: $0.signerLabel) })
+                match(outpoints: possible.map { ($0.txid, $0.vout) }, keys: keys) { matches in
+                    completion(matches.map { (output: $0.output, signer: $0.signerLabel) })
                 }
             }
         }
@@ -721,40 +736,6 @@ extension SilentPaymentSpend {
     static func scanPublicKey(of keys: ScanKeys) -> String? {
         guard let key = try? P256K.Signing.PrivateKey(dataRepresentation: keys.bScan) else { return nil }
         return SPHexFN.encode(Data(key.publicKey.dataRepresentation))
-    }
-
-    /// The owned output a wallet label describes, if it checks out: for the signer whose
-    /// B_scan is in the label, B_spend (+ label_m·G) + t_k·G must equal the input's output
-    /// key.
-    static func ownedOutput(_ candidate: Candidate,
-                            label: WalletLabel,
-                            tweakHex: String,
-                            keys: [ScanKeys]) -> (output: OwnedOutput, signer: String)? {
-        guard let tweak = SPHexFN.decode(tweakHex), tweak.count == 32, SPScalar.isValid(tweak) else { return nil }
-
-        for key in keys where scanPublicKey(of: key) == label.scanPub {
-            guard var spend = try? P256K.Signing.PublicKey(dataRepresentation: key.bSpendPub, format: .compressed) else { continue }
-
-            // label_m = hash_BIP0352/Label(b_scan || ser32(m)).
-            var labelTweak: Data?
-            if let m = label.m {
-                var be = m.bigEndian
-                let tweakM = SPHashFN.tagged("BIP0352/Label", key.bScan + Data(bytes: &be, count: 4))
-                guard SPScalar.isValid(tweakM), let labeled = try? spend.add(Array(tweakM)) else { continue }
-                spend = labeled
-                labelTweak = tweakM
-            }
-
-            guard let output = try? spend.add(Array(tweak)),
-                  SPHexFN.encode(Data(output.xonly.bytes)) == candidate.outputKey.lowercased() else { continue }
-
-            let owned = OwnedOutput(txid: candidate.txid,
-                                    vout: candidate.vout,
-                                    tweakHex: SPHexFN.encode(tweak),
-                                    labelTweakHex: labelTweak.map { SPHexFN.encode($0) })
-            return (owned, key.signerLabel)
-        }
-        return nil
     }
 
     /// One owned output found by `match`.
@@ -856,6 +837,112 @@ extension SilentPaymentSpend {
         }
     }
 
+    /// How many label indices m (0 ..< this) are tried for each output. m = 0 is the change
+    /// label and is always scanned; the rest are labels you may have handed out. Wallet
+    /// labels are not consulted (they can be missing or wrong), so the range is searched
+    /// instead. An output paid to a label index beyond it is not recognised.
+    static let scannedLabelCount: UInt32 = 256
+
+    /// The spend keys an output can be paid to: B_spend itself (no label), then
+    /// B_m = B_spend + label_m·G with label_m = hash_BIP0352/Label(b_scan || ser32(m)).
+    static func labelBases(bScan: Data, bSpend: P256K.Signing.PublicKey) -> [(labelTweak: Data?, point: P256K.Signing.PublicKey)] {
+        var bases: [(labelTweak: Data?, point: P256K.Signing.PublicKey)] = [(nil, bSpend)]
+        for m in 0..<scannedLabelCount {
+            var be = m.bigEndian
+            let tweak = SPHashFN.tagged("BIP0352/Label", bScan + Data(bytes: &be, count: 4))
+            guard SPScalar.isValid(tweak), let labeled = try? bSpend.add(Array(tweak)) else { continue }
+            bases.append((tweak, labeled))
+        }
+        return bases
+    }
+
+    // MARK: Saved tweaks
+
+    /// Silent payment tweaks saved on this device (cached UTXOs that "Check SP info" proved
+    /// are yours), by outpoint ("txid:vout", lowercase txid). Completion on any queue.
+    static func savedTweaks(completion: @escaping ([String: OwnedOutput]) -> Void) {
+        CoreDataService.retrieveEntity(entityName: .utxos) { rows in
+            var saved: [String: OwnedOutput] = [:]
+            for row in rows ?? [] {
+                let utxo = UTXO(from: row)
+                if let output = utxo.silentPaymentOutput {
+                    saved["\(utxo.txid.lowercased()):\(utxo.vout)"] = output
+                }
+            }
+            completion(saved)
+        }
+    }
+
+    /// Saves a proven silent payment output's tweak (and label tweak) on its cached UTXO row,
+    /// encrypted with the app key. Completion (main queue): whether it was saved.
+    static func saveTweak(_ output: OwnedOutput, utxoId: UUID, completion: @escaping (Bool) -> Void) {
+        guard let tweak = SPHexFN.decode(output.tweakHex), tweak.count == 32,
+              let encrypted = Crypto.encrypt(tweak) else {
+            DispatchQueue.main.async { completion(false) }
+            return
+        }
+        CoreDataService.update(id: utxoId, keyToUpdate: "spTweak", newValue: encrypted, entity: .utxos) { saved in
+            guard saved else {
+                DispatchQueue.main.async { completion(false) }
+                return
+            }
+            guard let labelHex = output.labelTweakHex,
+                  let label = SPHexFN.decode(labelHex), label.count == 32,
+                  let encryptedLabel = Crypto.encrypt(label) else {
+                DispatchQueue.main.async { completion(true) }
+                return
+            }
+            CoreDataService.update(id: utxoId, keyToUpdate: "spLabelTweak", newValue: encryptedLabel, entity: .utxos) { saved in
+                DispatchQueue.main.async { completion(saved) }
+            }
+        }
+    }
+
+    /// The x-only output key (hex) B_spend (+ label tweak·G) + t_k·G, as BIP352 defines it.
+    static func outputKey(spendPub: Data, output: OwnedOutput) -> String? {
+        guard let tk = SPHexFN.decode(output.tweakHex), SPScalar.isValid(tk),
+              var base = try? P256K.Signing.PublicKey(dataRepresentation: spendPub, format: .compressed),
+              let tkPoint = try? P256K.Signing.PrivateKey(dataRepresentation: tk).publicKey else { return nil }
+        if let labelHex = output.labelTweakHex {
+            guard let label = SPHexFN.decode(labelHex), SPScalar.isValid(label),
+                  let labeled = try? base.add(Array(label)) else { return nil }
+            base = labeled
+        }
+        guard let key = try? base.combine([tkPoint], format: .compressed) else { return nil }
+        return SPHexFN.encode(Data(key.xonly.bytes))
+    }
+
+    /// The candidates with a saved tweak that one of your signers' spend keys turns into
+    /// exactly the candidate's output key. A saved tweak is never trusted on its own: a
+    /// mismatch (wrong signer, passphrase, or stale data) just isn't returned. With
+    /// `copyKeys` each match carries a copy of the signer's scan keys (the caller wipes it).
+    /// No node calls. Completion on any queue.
+    static func verifySavedTweaks(candidates: [Candidate],
+                                  passphrase: String?,
+                                  copyKeys: Bool = false,
+                                  completion: @escaping ([Match]) -> Void) {
+        savedTweaks { saved in
+            let pairs = candidates.compactMap { candidate -> (Candidate, OwnedOutput)? in
+                saved["\(candidate.txid.lowercased()):\(candidate.vout)"].map { (candidate, $0) }
+            }
+            guard !pairs.isEmpty else {
+                completion([])
+                return
+            }
+            scanKeyCandidates(passphrase: passphrase) { keys in
+                var keys = keys
+                defer { for i in keys.indices { keys[i].bScan.secureZero() } }
+                var matches: [Match] = []
+                for (candidate, output) in pairs {
+                    guard let key = keys.first(where: { outputKey(spendPub: $0.bSpendPub, output: output) == candidate.outputKey.lowercased() }) else { continue }
+                    let copy = copyKeys ? ScanKeys(bScan: Data(Array(key.bScan)), bSpendPub: key.bSpendPub, signerLabel: key.signerLabel) : nil
+                    matches.append(Match(output: output, signerLabel: key.signerLabel, keys: copy))
+                }
+                completion(matches)
+            }
+        }
+    }
+
     /// BIP352 receiver check of one funding transaction (decoded JSON with vin.prevout)
     /// for output `vout`. Returns the owned output (t_k, label tweak) if it's ours.
     static func scan(fundingTx tx: [String: Any], txid: String, vout target: Int, keys: ScanKeys) -> OwnedOutput? {
@@ -921,9 +1008,7 @@ extension SilentPaymentSpend {
             let sharedPoint = Data(ecdh.dataRepresentation)
 
             let bSpend = try P256K.Signing.PublicKey(dataRepresentation: keys.bSpendPub, format: .compressed)
-            // Change label m = 0 is always scanned (BIP352).
-            let label0 = SPHashFN.tagged("BIP0352/Label", keys.bScan + Data([0, 0, 0, 0]))
-            let bSpendLabel0 = try bSpend.add(Array(label0))
+            let bases = labelBases(bScan: keys.bScan, bSpend: bSpend)
 
             var remaining = Set(taproot.values)
             var k: UInt32 = 0
@@ -931,22 +1016,20 @@ extension SilentPaymentSpend {
                 var be = k.bigEndian
                 let tk = SPHashFN.tagged("BIP0352/SharedSecret", sharedPoint + Data(bytes: &be, count: 4))
                 guard SPScalar.isValid(tk) else { return nil }
+                // t_k·G once per k; each candidate output key is then one point addition.
+                let tkPoint = try P256K.Signing.PrivateKey(dataRepresentation: tk).publicKey
 
                 var hit = false
+                for base in bases {
+                    guard let output = try? base.point.combine([tkPoint], format: .compressed) else { continue }
+                    let xonly = SPHexFN.encode(Data(output.xonly.bytes))
+                    guard remaining.remove(xonly) != nil else { continue }
 
-                let unlabeled = SPHexFN.encode(Data(try bSpend.add(Array(tk)).xonly.bytes))
-                if remaining.remove(unlabeled) != nil {
                     hit = true
-                    if unlabeled == targetXonly {
-                        return OwnedOutput(txid: txid, vout: target, tweakHex: SPHexFN.encode(tk), labelTweakHex: nil)
-                    }
-                }
-
-                let labeled = SPHexFN.encode(Data(try bSpendLabel0.add(Array(tk)).xonly.bytes))
-                if remaining.remove(labeled) != nil {
-                    hit = true
-                    if labeled == targetXonly {
-                        return OwnedOutput(txid: txid, vout: target, tweakHex: SPHexFN.encode(tk), labelTweakHex: SPHexFN.encode(label0))
+                    if xonly == targetXonly {
+                        return OwnedOutput(txid: txid, vout: target,
+                                           tweakHex: SPHexFN.encode(tk),
+                                           labelTweakHex: base.labelTweak.map { SPHexFN.encode($0) })
                     }
                 }
 
@@ -1471,47 +1554,40 @@ enum SilentPaymentChange {
         }
     }
 
-    /// Scan keys of the signer that owns (at least one of) the inputs. Read from the
-    /// active wallet's labels (FN-Server labels each import "sp scan=<B_scan> …"), so no
-    /// funding transactions are fetched; only older unlabeled `rawtr()` imports fall
-    /// back to scanning their funding transaction. Completion on any queue.
+    /// Scan keys of the signer that owns (at least one of) the inputs. Tweaks saved on this
+    /// device ("Check SP info") are checked first, locally; otherwise the inputs the wallet
+    /// holds as bare taproot keys (`rawtr()` / `addr()`) have their funding transactions
+    /// scanned. Wallet labels aren't used. Completion on any queue.
     static func owner(of inputs: [Input], passphrase: String?, completion: @escaping (SilentPaymentSpend.ScanKeys?) -> Void) {
         // Only taproot inputs can be silent payment outputs.
         let candidates = inputs.filter { $0.kind == .p2tr }.map {
             SilentPaymentSpend.Candidate(txid: $0.txid, vout: $0.vout, outputKey: String($0.script.dropFirst(4)), info: nil)
         }
+        guard !candidates.isEmpty else {
+            completion(nil)
+            return
+        }
 
-        SilentPaymentSpend.fillWalletInfo(candidates) { candidates in
-            let mine = candidates.filter { $0.info?.isMine == true }
-            let labeledScanKeys = Set(mine.flatMap { $0.info?.labels ?? [] }.compactMap { SilentPaymentSpend.WalletLabel($0)?.scanPub })
-            let unlabeled = mine.filter { candidate in
-                guard let info = candidate.info else { return false }
-                return !info.labels.contains { SilentPaymentSpend.WalletLabel($0) != nil }
-                    && (info.desc.hasPrefix("rawtr(") || info.desc.hasPrefix("addr("))
-            }
-            guard !labeledScanKeys.isEmpty || !unlabeled.isEmpty else {
-                completion(nil)
+        SilentPaymentSpend.verifySavedTweaks(candidates: candidates, passphrase: passphrase, copyKeys: true) { saved in
+            if let keys = saved.first?.keys {
+                // Copies made for every match: keep the first, wipe the rest.
+                for var extra in saved.dropFirst().compactMap({ $0.keys }) { extra.bScan.secureZero() }
+                completion(keys)
                 return
             }
 
-            SilentPaymentSpend.scanKeyCandidates(passphrase: passphrase) { keys in
-                // The signer whose scan key a label names. A separate copy is returned;
-                // the candidates are wiped.
-                if let key = keys.first(where: { SilentPaymentSpend.scanPublicKey(of: $0).map { labeledScanKeys.contains($0) } ?? false }) {
-                    let copy = SilentPaymentSpend.ScanKeys(bScan: Data(Array(key.bScan)),
-                                                          bSpendPub: key.bSpendPub,
-                                                          signerLabel: key.signerLabel)
-                    var keys = keys
-                    for i in keys.indices { keys[i].bScan.secureZero() }
-                    completion(copy)
+            SilentPaymentSpend.fillWalletInfo(candidates) { candidates in
+                let possible = candidates.filter { $0.info?.isPossibleSilentPayment ?? false }
+                guard !possible.isEmpty else {
+                    completion(nil)
                     return
                 }
-
-                // Older imports without the label: scan just their funding transactions.
-                // `match` wipes the candidates and returns a copy of the owner's keys.
-                let outpoints = unlabeled.map { (txid: $0.txid, vout: $0.vout) }
-                SilentPaymentSpend.match(outpoints: outpoints, keys: keys, firstOnly: true, copyKeys: true) { matches in
-                    completion(matches.first?.keys)
+                // `match` wipes the candidate keys and returns a copy of the owner's keys.
+                SilentPaymentSpend.scanKeyCandidates(passphrase: passphrase) { keys in
+                    let outpoints = possible.map { (txid: $0.txid, vout: $0.vout) }
+                    SilentPaymentSpend.match(outpoints: outpoints, keys: keys, firstOnly: true, copyKeys: true) { matches in
+                        completion(matches.first?.keys)
+                    }
                 }
             }
         }

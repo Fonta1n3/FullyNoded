@@ -103,10 +103,19 @@ extension VerifyTransactionViewController {
                     }
                 )
             } else if let signedPsbt = signedPsbt {
-                reset()
-                unsignedPsbt = signedPsbt
-                load()
-                
+                // Signers only finalize the inputs of their own descriptor, so a transaction mixing
+                // descriptors (e.g. a timelocked output next to ordinary ones) can have every
+                // signature yet no raw transaction. Ask the node to finalize before deciding it's partial.
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .finalizepsbt(Finalize_Psbt(["psbt": signedPsbt]))) { [weak self] response, _ in
+                    guard let self = self else { return }
+                    if let dict = response as? [String: Any],
+                       dict["complete"] as? Bool == true,
+                       let hex = dict["hex"] as? String {
+                        self.handleSigningResult(signedPsbt: nil, rawTx: hex, errorMessage: nil)
+                    } else {
+                        self.showPartiallySigned(signedPsbt)
+                    }
+                }
             } else {
                 self.finishActivity()
                 
@@ -117,11 +126,58 @@ extension VerifyTransactionViewController {
         }
     }
 
+    /// Partially signed: still celebrate the signature, say how many are missing,
+    /// and point out that the PSBT can be exported to another signer.
+    func showPartiallySigned(_ signedPsbt: String) {
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .decodepsbt(param: Decode_Psbt(["psbt": signedPsbt]))) { [weak self] response, _ in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                let inputs = (response as? [String: Any])?["inputs"] as? [[String: Any]]
+                // Inputs can need different cosigners, so this is the fewest more signers that
+                // would complete every input, not the largest need of any one input.
+                let statuses = inputs?.enumerated().map { (i, input) -> PSBTInputStatus.Status in
+                    let status = PSBTInputStatus.status(from: input)
+                    // This PSBT alone doesn't say how many this input needs, but the analysis may have
+                    // learned it from the node (the address's descriptor).
+                    guard !status.requiredKnown, self.inputTableArray.indices.contains(i),
+                          self.inputTableArray[i]["sigsRequiredKnown"] as? Bool == true,
+                          let required = self.inputTableArray[i]["sigsRequired"] as? Int else { return status }
+                    return PSBTInputStatus.Status(present: status.present, required: required,
+                                                  needed: max(0, required - status.present),
+                                                  requiredKnown: true, unsignedSigners: status.unsignedSigners)
+                }
+                let outstanding = statuses.map { PSBTInputStatus.additionalSignersNeeded($0) }
+                
+                self.finishActivity()
+                var subtitle = "This transaction is not fully signed yet."
+                if let outstanding = outstanding, outstanding.count > 0 {
+                    subtitle = "\(outstanding.isLowerBound ? "At least " : "")\(outstanding.count) more signature\(outstanding.count == 1 ? "" : "s") needed."
+                    if outstanding.isLowerBound { subtitle += "\nSome inputs don't say how many signatures they need." }
+                } else if outstanding?.isLowerBound == true {
+                    subtitle = "Some inputs don't say how many signatures they need, so more may be required."
+                }
+                subtitle += "\n\nYou can export the PSBT and sign it with another signer."
+                SuccessView.show(
+                    in: self,
+                    title: "Signed",
+                    subtitle: subtitle,
+                    onDismiss: { [weak self] in
+                        guard let self = self else { return }
+                        reset()
+                        unsignedPsbt = signedPsbt
+                        load()
+                    }
+                )
+            }
+        }
+    }
+
     /// Sign, handling silent payment inputs.
     ///
-    /// Silent payment inputs are found from the active wallet's own records
-    /// (`SilentPaymentSpend.detect(candidates:)`): only bare-key taproot inputs it holds
-    /// (FN-Server's imports) are considered, using the import label's scan key and tweak.
+    /// Silent payment inputs are found without wallet labels (`SilentPaymentSpend.detect`): an
+    /// input whose descriptor in the active wallet is `rawtr(<xonly>)` has its funding
+    /// transaction fetched and the BIP352 math run with each signer's scan key, which proves
+    /// the output is yours and yields the tweak needed to sign it.
     /// - No silent payment inputs: the normal `signNow` path, unchanged.
     /// - Otherwise: SP inputs are signed with `SilentPaymentSpend` (tweaked key),
     ///   remaining inputs with the normal `Signer` (chained per parent descriptor), and
@@ -131,7 +187,7 @@ extension VerifyTransactionViewController {
 
         let psbtToSign = unsignedPsbt
 
-        SilentPaymentSpend.detectInputs(psbt: psbtToSign, passphrase: passphrase, knownInfo: knownWalletInfo()) { [weak self] spOutputs in
+        SilentPaymentSpend.detectInputs(psbt: psbtToSign, passphrase: passphrase, knownInfo: knownWalletInfo(), knownOwned: silentPaymentOwned) { [weak self] spOutputs in
             guard let self = self else { return }
 
             guard !spOutputs.isEmpty else {
@@ -152,7 +208,7 @@ extension VerifyTransactionViewController {
                 }
 
                 self.showActivity("signing...")
-                self.signRemainingInputs(psbt: signedPsbt,
+                self.signRemainingInputsAfterSilentPayments(psbt: signedPsbt,
                                          parentDescs: self.parentDescs(excluding: spOutputs),
                                          passphrase: passphrase) { [weak self] psbt, rawTx, error in
                     self?.handleSigningResult(signedPsbt: psbt, rawTx: rawTx, errorMessage: error)
@@ -174,6 +230,30 @@ extension VerifyTransactionViewController {
             if !parentDescs.contains(checksumless) { parentDescs.append(checksumless) }
         }
         return parentDescs
+    }
+
+    /// `signRemainingInputs` for a PSBT the silent payment signer just wrote. The normal Signer
+    /// (BDK) rejects that PSBT as it was re-serialized ("MissingNonWitnessUtxo"), so when
+    /// ordinary inputs are still left it first goes through the node's `finalizepsbt`, which
+    /// returns a normalized PSBT (the signed silent payment inputs finalized). With nothing
+    /// left to sign it behaves exactly like `signRemainingInputs`.
+    func signRemainingInputsAfterSilentPayments(psbt: String,
+                                                parentDescs: [String],
+                                                passphrase: String?,
+                                                completion: @escaping (String?, String?, String?) -> Void) {
+        guard !parentDescs.isEmpty else {
+            signRemainingInputs(psbt: psbt, parentDescs: parentDescs, passphrase: passphrase, completion: completion)
+            return
+        }
+
+        finalizeWithNode(psbt) { [weak self] normalized, rawTx, _ in
+            guard let self = self else { return }
+            if let rawTx = rawTx {
+                completion(nil, rawTx, nil)
+                return
+            }
+            self.signRemainingInputs(psbt: normalized ?? psbt, parentDescs: parentDescs, passphrase: passphrase, completion: completion)
+        }
     }
 
     /// Normal Signer for the non-silent-payment inputs, one parent descriptor at a time,
@@ -427,7 +507,7 @@ extension VerifyTransactionViewController {
         
         self.showActivity("checking for silent payment inputs...")
         
-        SilentPaymentSpend.detectInputs(psbt: psbt, passphrase: passphrase, knownInfo: knownWalletInfo()) { [weak self] spOutputs in
+        SilentPaymentSpend.detectInputs(psbt: psbt, passphrase: passphrase, knownInfo: knownWalletInfo(), knownOwned: silentPaymentOwned) { [weak self] spOutputs in
             guard let self = self else { return }
             
             guard !spOutputs.isEmpty else {
@@ -461,7 +541,7 @@ extension VerifyTransactionViewController {
                     return
                 }
                 
-                self.signRemainingInputs(psbt: signedPsbt,
+                self.signRemainingInputsAfterSilentPayments(psbt: signedPsbt,
                                          parentDescs: self.parentDescs(excluding: spOutputs),
                                          passphrase: passphrase,
                                          completion: finish)

@@ -70,12 +70,14 @@ extension VerifyTransactionViewController {
                     var sigsRequired = 0
                     var sigsPresent = 0
                     var sigsRemaining = 0
+                    var sigsRequiredKnown = true
                     
                     if let inputDict = input as? NSDictionary {
-                        let status = PSBTInputStatus.sigsNeeded(from: inputDict as! [String : Any])
+                        let status = PSBTInputStatus.status(from: inputDict as! [String : Any])
                         sigsPresent = status.present
                         sigsRequired = status.required
                         sigsRemaining = status.needed
+                        sigsRequiredKnown = status.requiredKnown
                         
                         if let signatures = inputDict["partial_signatures"] as? NSDictionary {
                             for (key, value) in signatures {
@@ -104,7 +106,8 @@ extension VerifyTransactionViewController {
                             "isSigned": isSigned,
                             "sigsRequired": sigsRequired,
                             "sigsPresent": sigsPresent,
-                            "sigsRemaining": sigsRemaining
+                            "sigsRemaining": sigsRemaining,
+                            "sigsRequiredKnown": sigsRequiredKnown
                         ]
                         
                         self.inputTableArray.append(tableInputDict)
@@ -252,7 +255,38 @@ extension VerifyTransactionViewController {
         }
     }
 
+    /// The output an input spends, from the PSBT itself (`witness_utxo`, or the vout of
+    /// `non_witness_utxo`). The node can only look a previous transaction up when it belongs to the
+    /// active wallet, so for an input from anywhere else (an external wallet's PSBT) this is the only source.
+    private func psbtSpentOutput(forInputAt inputIndex: Int, vout: Int) -> (amount: Double, scriptPubKey: NSDictionary)? {
+        guard let inputs = psbtDict?["inputs"] as? [[String: Any]], inputs.indices.contains(inputIndex) else { return nil }
+        let input = inputs[inputIndex]
+        
+        if let utxo = input["witness_utxo"] as? [String: Any],
+           let amount = utxo["amount"] as? Double,
+           let scriptPubKey = utxo["scriptPubKey"] as? [String: Any] {
+            return (amount, scriptPubKey as NSDictionary)
+        }
+        if let previous = input["non_witness_utxo"] as? [String: Any],
+           let outputs = previous["vout"] as? [[String: Any]],
+           let output = outputs.first(where: { ($0["n"] as? Int) == vout }),
+           let amount = output["value"] as? Double,
+           let scriptPubKey = output["scriptPubKey"] as? [String: Any] {
+            return (amount, scriptPubKey as NSDictionary)
+        }
+        return nil
+    }
+    
     func parsePrevTxOutput(outputs: NSArray, vout: Int, txid: String) {
+        var outputs = outputs
+        if outputs.count == 0 || !outputs.contains(where: { ($0 as? NSDictionary)?["n"] as? Int == vout }),
+           index < inputArray.count, let inputVout = inputArray[index]["vout"] as? Int,
+           let spent = psbtSpentOutput(forInputAt: index, vout: inputVout) {
+            // Same shape the node's answer has, so the code below needs no second path.
+            outputs = [["n": inputVout, "value": spent.amount, "scriptPubKey": spent.scriptPubKey] as NSDictionary]
+            return parsePrevTxOutput(outputs: outputs, vout: inputVout, txid: inputArray[index]["txid"] as? String ?? txid)
+        }
+        
         if outputs.count > 0 {
             for o in outputs {
                 if let output = o as? NSDictionary {
@@ -299,11 +333,34 @@ extension VerifyTransactionViewController {
         }
     }
 
+    /// When the PSBT carries no script saying how many signatures an input needs (e.g. a bare
+    /// witness_utxo from an external wallet), an address the node knows can still answer: from
+    /// `sigsrequired`, or from the m of its multisig descriptor, or because it's a single-key
+    /// descriptor. Anything else stays "unknown" rather than being guessed as 1.
+    private func resolveUnknownSigsRequired(at index: Int, sigsRequiredFromNode: Int, desc: String) {
+        guard (inputTableArray[index]["sigsRequiredKnown"] as? Bool) == false else { return }
+        
+        var required: Int?
+        if sigsRequiredFromNode > 0 {
+            required = sigsRequiredFromNode
+        } else if let arguments = Descriptor.multisigArguments(in: desc), let m = Int(arguments[0]), m > 0 {
+            required = m
+        } else if desc.hasPrefix("wpkh(") || desc.hasPrefix("pkh(") || desc.hasPrefix("sh(wpkh(") || (desc.hasPrefix("tr(") && !desc.contains(",")) {
+            required = 1
+        }
+        
+        guard let required = required else { return }
+        let present = inputTableArray[index]["sigsPresent"] as? Int ?? 0
+        inputTableArray[index]["sigsRequired"] = required
+        inputTableArray[index]["sigsRemaining"] = max(0, required - present)
+        inputTableArray[index]["sigsRequiredKnown"] = true
+    }
+
     func verifyInputs() {
         if index < inputTableArray.count {
             self.updateLabel("verifying input #\(self.index + 1) out of \(self.inputTableArray.count)")
             
-            if let address = inputTableArray[index]["address"] as? String, address != "Unknown address.", address != "" {
+            if let address = inputTableArray[index]["address"] as? String, address != "Unknown address.", address != "Unknown.", address != "" {
                 
                 let param:Get_Address_Info = .init(["address":address])
                 MakeRPCCall.sharedInstance.executeRPCCommand(method: .getaddressinfo(param: param)) { [weak self] (response, errorMessage) in
@@ -345,6 +402,7 @@ extension VerifyTransactionViewController {
                     self.inputTableArray[self.index]["label"] = labelsText
                     self.inputTableArray[self.index]["fingerprint"] = fingerprint
                     self.inputTableArray[self.index]["desc"] = desc
+                    self.resolveUnknownSigsRequired(at: self.index, sigsRequiredFromNode: sigsrequired, desc: desc)
                     // Raw wallet facts, for silent payment detection without extra RPCs.
                     self.inputTableArray[self.index]["isMine"] = dict["ismine"] as? Bool ?? false
                     self.inputTableArray[self.index]["walletLabels"] = labels.compactMap { $0 as? String }
@@ -563,6 +621,7 @@ extension VerifyTransactionViewController {
         DispatchQueue.main.async { [weak self] in
             self?.verifyTable.reloadData()
             self?.finishActivity()
+            self?.announceCreatedTransactionIfNeeded()
         }
         
         
@@ -664,38 +723,100 @@ extension VerifyTransactionViewController {
             // stored fingerprints can't rule a signer out.
             let passphrasePrompt = UserDefaults.standard.object(forKey: "passphrasePrompt") != nil
 
-            DispatchQueue.main.async {
-                guard let self = self else { return }
-                var silentPaymentCandidates: [SilentPaymentSpend.Candidate] = []
+            // Inputs with a silent payment tweak saved on this device resolve locally, so they
+            // never need the per-input fetch button.
+            SilentPaymentSpend.savedTweaks { savedTweaks in
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    var silentPaymentCandidates: [SilentPaymentSpend.Candidate] = []
 
-                for i in self.inputTableArray.indices {
-                    let input = self.inputTableArray[i]
-                    let fingerprints = Self.masterFingerprints(input: input, psbtInput: i < psbtInputs.count ? psbtInputs[i] : nil)
-                    let matches = known.filter { fingerprints.contains($0.xfp) }
+                    for i in self.inputTableArray.indices {
+                        let input = self.inputTableArray[i]
+                        let fingerprints = Self.masterFingerprints(input: input, psbtInput: i < psbtInputs.count ? psbtInputs[i] : nil)
+                        let matches = known.filter { fingerprints.contains($0.xfp) }
 
-                    self.inputTableArray[i]["signers"] = matches.map { "\($0.label) [\($0.xfp)]" }
-                    self.inputTableArray[i]["fingerprints"] = fingerprints
-                    self.inputTableArray[i]["matchedKeys"] = Set(matches.map { $0.xfp }).count
-                    self.inputTableArray[i]["hotWallet"] = isHotWallet && (input["isOurs"] as? Bool ?? false)
+                        self.inputTableArray[i]["signers"] = matches.map { "\($0.label) [\($0.xfp)]" }
+                        self.inputTableArray[i]["fingerprints"] = fingerprints
+                        self.inputTableArray[i]["matchedKeys"] = Set(matches.map { $0.xfp }).count
+                        self.inputTableArray[i]["hotWallet"] = isHotWallet && (input["isOurs"] as? Bool ?? false)
 
-                    let canSignHere = matches.contains { withWords.contains($0.xfp) } && self.wallet != nil
-                    if matches.isEmpty, let candidate = Self.silentPaymentCandidate(input) {
-                        silentPaymentCandidates.append(candidate)
-                        self.inputTableArray[i]["canSign"] = nil      // known once the SP check is done
-                    } else {
-                        self.inputTableArray[i]["canSign"] = passphrasePrompt ? nil : canSignHere
+                        let canSignHere = matches.contains { withWords.contains($0.xfp) } && self.wallet != nil
+                        if matches.isEmpty, let candidate = Self.silentPaymentCandidate(input) {
+                            silentPaymentCandidates.append(candidate)
+                            self.inputTableArray[i]["canSign"] = nil      // known once the SP check is done
+                        } else {
+                            self.inputTableArray[i]["canSign"] = passphrasePrompt ? nil : canSignHere
+                        }
                     }
-                }
 
-                self.verifyTable.reloadData()
-                self.resolveSilentPaymentSigners(silentPaymentCandidates)
+                    // Several possible silent payment inputs: each needs its funding transaction fetched
+                    // and scanned, so don't do all of them up front. Offer a button per input instead.
+                    let possible = silentPaymentCandidates.filter {
+                        ($0.info?.isPossibleSilentPayment ?? false) && savedTweaks["\($0.txid.lowercased()):\($0.vout)"] == nil
+                    }
+                    var automatic = silentPaymentCandidates
+                    if possible.count > 1 {
+                        let manual = Set(possible.map { "\($0.txid.lowercased()):\($0.vout)" })
+                        automatic = silentPaymentCandidates.filter { !manual.contains("\($0.txid.lowercased()):\($0.vout)") }
+                        for i in self.inputTableArray.indices {
+                            guard let txid = self.inputTableArray[i]["txid"] as? String,
+                                  let vout = self.inputTableArray[i]["vout"] as? Int,
+                                  manual.contains("\(txid.lowercased()):\(vout)") else { continue }
+                            self.inputTableArray[i]["spFetch"] = "available"
+                        }
+                    }
+
+                    self.verifyTable.reloadData()
+                    self.resolveSilentPaymentSigners(automatic)
+                }
             }
         }
     }
 
-    /// Silent payment inputs have no BIP32 origin. Name the signer from what the active
-    /// wallet already told us (getaddressinfo in `verifyInputs`): FN-Server's import label
-    /// carries the scan key and tweak, checked locally. No extra RPC for labeled inputs.
+    /// The "fetch" button on an input that might be a silent payment output: fetches its funding
+    /// transaction and runs the BIP352 scan for just this input.
+    @objc func fetchSilentPaymentInfo(_ sender: UIButton) {
+        guard let outpoint = sender.restorationIdentifier,
+              let i = inputTableArray.firstIndex(where: {
+                  guard let txid = $0["txid"] as? String, let vout = $0["vout"] as? Int else { return false }
+                  return "\(txid.lowercased()):\(vout)" == outpoint
+              }),
+              inputTableArray[i]["spFetch"] as? String == "available",
+              let candidate = Self.silentPaymentCandidate(inputTableArray[i]) else { return }
+
+        inputTableArray[i]["spFetch"] = "checking"
+        verifyTable.reloadData()
+
+        let txid = self.txid
+        let passphrasePrompt = UserDefaults.standard.object(forKey: "passphrasePrompt") != nil
+
+        SilentPaymentSpend.detect(candidates: [candidate], passphrase: passphrase) { [weak self] found in
+            DispatchQueue.main.async {
+                guard let self = self, self.txid == txid,
+                      let i = self.inputTableArray.firstIndex(where: {
+                          guard let t = $0["txid"] as? String, let v = $0["vout"] as? Int else { return false }
+                          return "\(t.lowercased()):\(v)" == outpoint
+                      }) else { return }
+
+                if let match = found.first {
+                    self.silentPaymentOwned[outpoint] = match.output
+                    self.inputTableArray[i]["spFetch"] = nil
+                    self.inputTableArray[i]["signers"] = [match.signer]
+                    self.inputTableArray[i]["isSilentPayment"] = true
+                    self.inputTableArray[i]["canSign"] = true
+                } else {
+                    self.inputTableArray[i]["spFetch"] = "notFound"
+                    if !passphrasePrompt { self.inputTableArray[i]["canSign"] = false }
+                }
+                self.verifyTable.reloadData()
+            }
+        }
+    }
+
+    /// Silent payment inputs have no BIP32 origin. An input the active wallet holds as
+    /// `rawtr(<xonly>)` (getaddressinfo in `verifyInputs`) has its funding transaction
+    /// fetched and the BIP352 math run against each signer's scan key; the signer that
+    /// matches is named. Wallet labels aren't used.
     func resolveSilentPaymentSigners(_ candidates: [SilentPaymentSpend.Candidate]) {
         guard !candidates.isEmpty else { return }
         let txid = self.txid

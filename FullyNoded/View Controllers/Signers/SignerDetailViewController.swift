@@ -1165,12 +1165,22 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                 message: "Only give this key to a silent payment scanner you control, such as your own Fully Noded Server. It can't spend your bitcoin, but whoever has it can see every silent payment you receive.",
                 preferredStyle: .alert
             )
-            alert.addAction(UIAlertAction(title: "Export", style: .destructive) { [weak self] _ in
+            // Fully Noded Server: one QR with the address AND the scan key (fnsp:// link),
+            // so the server is set up from a single scan.
+            alert.addAction(UIAlertAction(title: "Fully Noded Server QR", style: .destructive) { [weak self] _ in
                 guard let self = self else { return }
                 
                 AppAuthentication.authenticate(from: self, reason: "To export your silent payment scan private key") { [weak self] success in
                     guard let self = self, success else { return }
-                    self.showScanPrivateKeyQr()
+                    self.showScanPrivateKeyQr(forServer: true)
+                }
+            })
+            alert.addAction(UIAlertAction(title: "Scan key only", style: .destructive) { [weak self] _ in
+                guard let self = self else { return }
+                
+                AppAuthentication.authenticate(from: self, reason: "To export your silent payment scan private key") { [weak self] success in
+                    guard let self = self, success else { return }
+                    self.showScanPrivateKeyQr(forServer: false)
                 }
             })
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
@@ -1178,7 +1188,14 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         }
     }
     
-    private func showScanPrivateKeyQr() {
+    private func showScanPrivateKeyQr(forServer: Bool) {
+        // The address shown above, derived from the same seed, passphrase and network.
+        let address = tableDict[Section.silentPayment.rawValue]["text"] as? String ?? ""
+        if forServer, SilentPaymentServerLink.make(address: address, scanKey: String(repeating: "0", count: 64)) == nil {
+            showAlert(vc: self, title: "", message: "No silent payment address available for this signer.")
+            return
+        }
+        
         guard let encryptedWords = signer?.words,
               var decryptedWords = Crypto.decrypt(encryptedWords),
               var words = decryptedWords.utf8String else {
@@ -1213,9 +1230,15 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     .instantiateViewController(withIdentifier: "QRDisplayer") as? QRDisplayerViewController else { return }
             
             vc.headerIcon = UIImage(systemName: "eye")
-            vc.headerText = "SP Scan Private Key"
-            vc.descriptionText = "BIP352 scan private key (\(mainnet ? "mainnet" : "testnet / signet"), hex) at m/352'/\(mainnet ? 0 : 1)'/0'/1'/0. For your own silent payment scanner only: it reveals every silent payment you receive, but can't spend them."
-            vc.text = key
+            if forServer, let link = SilentPaymentServerLink.make(address: address, scanKey: key) {
+                vc.headerText = "Fully Noded Server"
+                vc.descriptionText = "In Fully Noded Server, open Silent Payments and use Import from Fully Noded (Paste link after Copy Text, or QR image… with a saved copy of this QR) to set up silent payment scanning in one step. It holds your silent payment address and your scan private key (\(mainnet ? "mainnet" : "testnet / signet")): it can't spend your bitcoin, but it reveals every silent payment you receive. Only scan it with a server you control."
+                vc.text = link
+            } else {
+                vc.headerText = "SP Scan Private Key"
+                vc.descriptionText = "BIP352 scan private key (\(mainnet ? "mainnet" : "testnet / signet"), hex) at m/352'/\(mainnet ? 0 : 1)'/0'/1'/0. For your own silent payment scanner only: it reveals every silent payment you receive, but can't spend them."
+                vc.text = key
+            }
             self.navigationController?.pushViewController(vc, animated: true)
         }
     }
@@ -1508,5 +1531,35 @@ enum SignerTheme {
             card.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -5)
         ])
         return container
+    }
+}
+
+/// The link Fully Noded Server imports silent payment scanning from, as a QR or a URL:
+///
+///     fnsp://import?v=1&address=<sp1… / tsp1…>&scankey=<b_scan, 64 hex>[&wallet=<Core wallet name>]
+///
+/// Both values sit in query items (a 117-character bech32m address isn't a valid URL host).
+/// `wallet` (exports from a wallet's detail screen) tells the server which node wallet to
+/// import found payments into. Fully Noded Server parses the same format (`SPKeyInput.importLink`).
+enum SilentPaymentServerLink {
+    static let scheme = "fnsp"
+
+    static func make(address: String, scanKey: String, wallet: String? = nil) -> String? {
+        let address = address.lowercased()
+        guard address.hasPrefix("sp1") || address.hasPrefix("tsp1"),
+              scanKey.count == 64, scanKey.allSatisfy({ $0.isHexDigit }) else { return nil }
+
+        var components = URLComponents()
+        components.scheme = scheme
+        components.host = "import"
+        components.queryItems = [
+            URLQueryItem(name: "v", value: "1"),
+            URLQueryItem(name: "address", value: address),
+            URLQueryItem(name: "scankey", value: scanKey.lowercased())
+        ]
+        if let wallet, !wallet.isEmpty {
+            components.queryItems?.append(URLQueryItem(name: "wallet", value: wallet))
+        }
+        return components.string
     }
 }

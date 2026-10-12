@@ -32,6 +32,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var signatures = [[String:String]]()
     var signedTxInputs: [[String: Any]] = []
     var alreadyBroadcast = false
+    /// Transactions broadcast from this screen: Send never re-enables for them (cells call
+    /// enableSendButton() whenever they're redrawn). Kept across reset(); a fee bump is a new
+    /// txid, so it can still be sent.
+    var broadcastTxids = Set<String>()
     var confs = 0
     var labelText = "No label added."
     var id: UUID!
@@ -41,7 +45,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var isUR = false
     var isPlainText = false
     var passphrase: String?
+    /// Silent payment outputs found for inputs of this transaction ("txid:vout" lowercase), so
+    /// signing doesn't fetch and scan them again.
+    var silentPaymentOwned: [String: SilentPaymentSpend.OwnedOutput] = [:]
     var initialLoad = true
+    /// Set by the Send screen: show what to do next once the new transaction has loaded.
+    var announceCreatedTransaction = false
+    /// Whether each bottom button should be enabled, regardless of activity.
+    private var wantsEnabled: [ObjectIdentifier: Bool] = [:]
+    /// True while a request is running: Send and Export are held disabled.
+    private var holdingForActivity = false
     
     // Built in code (no storyboard scene); see `buildLayout()`.
     // The rest of the screen lives in extensions: +Analysis, +Signing, +Actions, +Cells.
@@ -113,6 +126,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         txid = ""
         inputArray.removeAll()
         inputTableArray.removeAll()
+        silentPaymentOwned.removeAll()
         outputArray.removeAll()
         index = 0
         inputTotal = 0.0
@@ -198,7 +212,33 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     func enableSendButton() {
-        enableButton(sendOutlet)
+        // On main, where broadcastTxids is written.
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            guard !self.broadcastTxids.contains(self.txid) else {
+                self.disableSendButton()
+                return
+            }
+            self.enableButton(self.sendOutlet)
+        }
+    }
+
+    /// Records the current transaction as sent and disables Send for good. Main queue only.
+    func markBroadcast(_ ids: String...) {
+        for id in ids + [txid] where !id.isEmpty {
+            broadcastTxids.insert(id)
+        }
+        disableSendButton()
+    }
+
+    /// A broadcast "failed" because the network already has the transaction: it was sent
+    /// (e.g. a retry after a timeout, or broadcast elsewhere), so Send stays off.
+    func isAlreadyKnownError(_ message: String) -> Bool {
+        let lower = message.lowercased()
+        return lower.contains("txn-already-in-mempool")
+            || lower.contains("txn-already-known")
+            || lower.contains("already in block chain")
+            || lower.contains("outputs already in utxo set")
     }
     
     func disableSendButton() {
@@ -228,17 +268,27 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     func enableButton(_ button: UIButton) {
-        DispatchQueue.main.async {
-            button.isEnabled = true
-            button.alpha = 1
+        DispatchQueue.main.async { [weak self] in
+            self?.wantsEnabled[ObjectIdentifier(button)] = true
+            self?.applyState(button)
         }
     }
     
     func disableButton(_ button: UIButton) {
-        DispatchQueue.main.async {
-            button.isEnabled = false
-            button.alpha = 0.3
+        DispatchQueue.main.async { [weak self] in
+            self?.wantsEnabled[ObjectIdentifier(button)] = false
+            self?.applyState(button)
         }
+    }
+    
+    /// What a button shows: what the screen wants, except that Send and Export stay
+    /// disabled while a request is running (they'd act on a transaction still changing).
+    private func applyState(_ button: UIButton) {
+        let wanted = wantsEnabled[ObjectIdentifier(button)] ?? button.isEnabled
+        let held = holdingForActivity && (button === sendOutlet || button === exportButtonOutlet)
+        let enabled = wanted && !held
+        button.isEnabled = enabled
+        button.alpha = enabled ? 1 : 0.3
     }
     
     
@@ -423,5 +473,38 @@ extension VerifyTransactionViewController {
     func configureActionButton(_ button: UIButton, title: String, systemImage: String, action: Selector) {
         button.configuration = WalletTheme.buttonConfiguration(title: title, systemImage: systemImage, filled: false, tint: .transaction)
         button.addTarget(self, action: action, for: .touchUpInside)
+    }
+}
+
+// MARK: - Busy state and the "transaction created" card
+
+extension VerifyTransactionViewController: ActivityObserving {
+    /// Called by the screen's activity indicator (every network request shows one).
+    func activityDidChange(isActive: Bool) {
+        for button in [sendOutlet, exportButtonOutlet] {
+            // Remember what each button wanted before holding it.
+            if isActive, wantsEnabled[ObjectIdentifier(button)] == nil {
+                wantsEnabled[ObjectIdentifier(button)] = button.isEnabled
+            }
+        }
+        holdingForActivity = isActive
+        for button in [sendOutlet, exportButtonOutlet] { applyState(button) }
+    }
+
+    /// After a transaction made on the Send screen has loaded: say it was created and that it
+    /// must be signed before it can be sent.
+    func announceCreatedTransactionIfNeeded() {
+        guard announceCreatedTransaction else { return }
+        announceCreatedTransaction = false
+
+        if signedRawTx != "" {
+            SuccessView.show(in: self,
+                             title: "Transaction created",
+                             subtitle: "It's already signed. Check the inputs, outputs and fee below, then tap Send to broadcast it.")
+        } else {
+            SuccessView.show(in: self,
+                             title: "PSBT created",
+                             subtitle: "It isn't signed yet, so it can't be sent. Check the inputs, outputs and fee below, then tap Sign on an input (or export the PSBT to sign it elsewhere). Send becomes available once it's fully signed.")
+        }
     }
 }
