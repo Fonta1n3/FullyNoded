@@ -416,92 +416,25 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     // MARK: - Helpers
 
     private func requiredSignatures(for input: WalletLogic.BDKPsbtInput) -> Int? {
-        for item in input.tapScripts {
-            if let threshold = parseMultiAThreshold(from: item.value.script) {
-                return threshold
-            }
+        // One shared parser (PSBTInputStatus) so this screen and the transaction verifier agree.
+        // A taproot input is spent through one leaf, so the cheapest leaf is what's required.
+        let leafThresholds = input.tapScripts
+            .map { PSBTInputStatus.extractThreshold(from: [UInt8]($0.value.script.toBytes())) }
+            .filter { $0 > 0 }
+        if let threshold = leafThresholds.min() {
+            return threshold
         }
         
-        if let witnessScript = input.witnessScript,
-           let threshold = parseCheckMultisigThreshold(from: witnessScript) {
-            return threshold
-        }
-        if let redeemScript = input.redeemScript,
-           let threshold = parseCheckMultisigThreshold(from: redeemScript) {
-            return threshold
+        for script in [input.witnessScript, input.redeemScript] {
+            if let script = script {
+                let threshold = PSBTInputStatus.extractThreshold(from: [UInt8](script.toBytes()))
+                if threshold > 0 { return threshold }
+            }
         }
         
         if input.tapInternalKey != nil || input.tapKeySig != nil {
             return 1
         }
-        return nil
-    }
-
-    private func parseMultiAThreshold(from script: Script) -> Int? {
-        let bytes = script.toBytes()
-        guard bytes.count > 2 else { return nil }
-        
-        var i = 0
-        var lastSmallInt: Int?
-        var sawChecksigAdd = false
-        var sawChecksig = false
-        
-        while i < bytes.count {
-            let op = bytes[i]
-            
-            if (1...75).contains(op) {
-                i += 1 + Int(op)
-                continue
-            }
-            if (0x51...0x60).contains(op) {
-                lastSmallInt = Int(op - 0x50)
-                i += 1
-                continue
-            }
-            if op == 0xac || op == 0xad { // CHECKSIG / VERIFY
-                sawChecksig = true
-                i += 1
-                continue
-            }
-            if op == 0xba { // CHECKSIGADD
-                sawChecksigAdd = true
-                i += 1
-                continue
-            }
-            // NUMEQUAL / NUMEQUALVERIFY — threshold is the small-int just before this
-            if op == 0x9c || op == 0x9d {
-                if let k = lastSmallInt, sawChecksigAdd || sawChecksig {
-                    return k
-                }
-            }
-            i += 1
-        }
-        
-        if sawChecksigAdd, let k = lastSmallInt {
-            return k
-        }
-        if sawChecksig && !sawChecksigAdd {
-            return 1
-        }
-        return nil
-    }
-    
-    /// Classic CHECKMULTISIG script: OP_m <pubkey>… <pubkey> OP_n OP_CHECKMULTISIG
-    private func parseCheckMultisigThreshold(from script: Script) -> Int? {
-        let bytes = script.toBytes()          // adjust to your binding
-        guard bytes.count >= 4 else { return nil }
-        
-        // First opcode is the threshold (OP_1 … OP_16)
-        let first = bytes[0]
-        if first >= 0x51 && first <= 0x60 {   // OP_1 … OP_16
-            return Int(first - 0x50)
-        }
-        
-        // Sometimes it’s a direct push of a small number
-        if first > 0 && first <= 16 {
-            return Int(first)
-        }
-        
         return nil
     }
 
