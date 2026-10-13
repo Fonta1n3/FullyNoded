@@ -409,6 +409,14 @@ class WalletLogic {
                 return
             }
             
+            // A raw public key (e.g. Core's combo([fp/0'/0'/5']03…)): the key at its origin path
+            // must be exactly that public key; it's replaced by the xprv at that path (no
+            // wildcard, so it signs for that one key).
+            if watchOnlyDescriptor.accountXpub.isEmpty {
+                completion(Self.hotRawKeyDescriptor(watchOnlyDescriptor: watchOnlyDescriptor, derivedKey: derivedKey))
+                return
+            }
+            
             var xprvString = derivedKey.asPublic().description
             
             guard derivedKey.asPublic().description.contains(watchOnlyDescriptor.accountXpub) else {
@@ -427,6 +435,21 @@ class WalletLogic {
         }
     }
     
+    /// Signing descriptor for a single raw public key: nil unless the key derived at its origin
+    /// path has exactly that public key.
+    private static func hotRawKeyDescriptor(watchOnlyDescriptor: Descriptor, derivedKey: DescriptorSecretKey) -> String? {
+        let rawKey = watchOnlyDescriptor.pubkey.lowercased()
+        guard rawKey.count == 66,
+              let derivedPub = Keys.compressedPublicKey(privateKey: Data(derivedKey.secretBytes())),
+              derivedPub.map({ String(format: "%02x", $0) }).joined() == rawKey else { return nil }
+        // derivedKey.description is "[fp/path]xprv…": the plain xprv after the origin.
+        let parts = derivedKey.description.components(separatedBy: "]")
+        guard parts.count > 1, let xprv = parts[1].components(separatedBy: "/").first, !xprv.isEmpty else { return nil }
+        let checksumless = watchOnlyDescriptor.string.components(separatedBy: "#")[0]
+        let hot = checksumless.replacingOccurrences(of: watchOnlyDescriptor.pubkey, with: xprv)
+        return hot == checksumless ? nil : hot
+    }
+
     private func processSingleSig(derivedKey: DescriptorSecretKey, watchOnlyDescriptor: Descriptor) -> String {
         var derivedKeyString = derivedKey.description
         var derivedKeyArr = derivedKeyString.components(separatedBy: "]")
