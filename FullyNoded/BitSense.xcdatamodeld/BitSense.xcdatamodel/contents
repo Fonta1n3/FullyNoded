@@ -27,6 +27,10 @@
         <attribute name="passphrase" optional="YES" attributeType="Binary"/>
         <attribute name="rootTpub" optional="YES" attributeType="Binary"/>
         <attribute name="rootXpub" optional="YES" attributeType="Binary"/>
+        <attribute name="spAddress" optional="YES" attributeType="Binary"/>
+        <attribute name="spAddressTest" optional="YES" attributeType="Binary"/>
+        <attribute name="spScanKey" optional="YES" attributeType="Binary"/>
+        <attribute name="spScanKeyTest" optional="YES" attributeType="Binary"/>
         <attribute name="words" optional="YES" attributeType="Binary"/>
         <attribute name="xfp" optional="YES" attributeType="Binary"/>
     </entity>

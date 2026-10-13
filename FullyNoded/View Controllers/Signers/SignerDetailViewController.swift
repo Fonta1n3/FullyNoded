@@ -412,9 +412,17 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             }
             
             if signer.words == nil {
-                // The address is derived from the seed, so it can't be shown once the seed is gone.
-                self.tableDict[Section.silentPayment.rawValue]["text"] = "Seed words deleted, silent payment address unavailable."
-                self.tableDict[Section.silentPaymentScanKey.rawValue]["text"] = "Seed words deleted, scan private key unavailable."
+                // Saved before the seed was deleted (SignerSilentPayment); older signers deleted
+                // without it have nothing to show.
+                if let saved = SignerSilentPayment.saved(signer, mainnet: self.network == 0) {
+                    self.tableDict[Section.silentPayment.rawValue]["text"] = saved.address
+                } else {
+                    self.tableDict[Section.silentPayment.rawValue]["text"] = "Seed words deleted, silent payment address unavailable."
+                    self.tableDict[Section.silentPaymentScanKey.rawValue]["text"] = "Seed words deleted, scan private key unavailable."
+                }
+            } else {
+                // Keep a copy so the address and scan key survive the words being deleted.
+                SignerSilentPayment.ensureSaved(signer)
             }
             
             if var encryptedWords = signer.words {
@@ -893,6 +901,18 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     }
     
     private func deleteSeed() {
+        // Save the silent payment address and scan key first: they're derived from the words.
+        SignerSilentPayment.ensureSaved(signer) { [weak self] saved in
+            guard let self = self else { return }
+            guard saved else {
+                showAlert(vc: self, title: "Seed not deleted", message: "This signer's silent payment address and scan key couldn't be saved, so the seed words were kept. Please let us know about this bug.")
+                return
+            }
+            self.deleteSeedWords()
+        }
+    }
+    
+    private func deleteSeedWords() {
         CoreDataService.deleteValue(id: signer.id, keyToDelete: "words", entity: .signers) { [weak self] deleted in
             guard let self = self else { return }
             
@@ -1152,7 +1172,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             return
         }
         
-        guard signer?.words != nil else {
+        guard let signer = signer, signer.words != nil || SignerSilentPayment.saved(signer, mainnet: network == 0) != nil else {
             showAlert(vc: self, title: "", message: "This signer's seed words were deleted, so its scan private key can't be derived.")
             return
         }
@@ -1196,27 +1216,13 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             return
         }
         
-        guard let encryptedWords = signer?.words,
-              var decryptedWords = Crypto.decrypt(encryptedWords),
-              var words = decryptedWords.utf8String else {
-            showAlert(vc: self, title: "", message: "Unable to decrypt your seed words.")
+        // From the seed words, or the copy saved before they were deleted.
+        let mainnet = network == 0
+        guard let signer = signer, let info = SignerSilentPayment.info(for: signer, mainnet: mainnet) else {
+            showAlert(vc: self, title: "", message: "Unable to derive the scan private key.")
             return
         }
-        
-        var passphrase = ""
-        if let encryptedPassphrase = signer?.passphrase,
-           var decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) {
-            passphrase = decryptedPassphrase.utf8String ?? ""
-            decryptedPassphrase.secureZero()
-        }
-        
-        let mainnet = network == 0
-        let scanKey = WalletLogic.shared.silentPaymentScanPrivateKey(mnemonic: words,
-                                                                     passphrase: passphrase,
-                                                                     mainnet: mainnet)
-        decryptedWords.secureZero()
-        words.secureWipe()
-        passphrase.secureWipe()
+        let scanKey: String? = info.scanKey
         
         // Handed straight to the QR screen; nothing keeps a copy in this view.
         guard let key = scanKey else {

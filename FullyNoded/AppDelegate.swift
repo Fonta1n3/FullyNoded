@@ -31,6 +31,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Remove the temporary BDK database and old exports that earlier versions left in
         // Documents, which is visible in the Files app / Finder.
         WalletLogic.shared.cleanUpLegacyDocuments()
+        // Save each signer's silent payment address and scan key while its seed words exist.
+        SignerSilentPayment.backfillAll()
         return true
     }
 
