@@ -933,6 +933,17 @@ extension SilentPaymentSpend {
                                        signerLabel: signer.label))
                 return false
             }
+
+            // Signers whose seed words were deleted: the scan key and address saved before
+            // (SignerSilentPayment) are all detection needs (B_spend comes from the address).
+            for dict in signers ?? [] {
+                let signer = SignerStruct(dictionary: dict)
+                guard signer.words == nil,
+                      let info = SignerSilentPayment.saved(signer, mainnet: SPAddress.isMainnet),
+                      let bScan = SPHexFN.decode(info.scanKey), bScan.count == 32,
+                      let bSpendPub = SignerSilentPayment.spendPublicKey(address: info.address) else { continue }
+                result.append(ScanKeys(bScan: bScan, bSpendPub: bSpendPub, signerLabel: signer.label))
+            }
             completion(result)
         }
     }
