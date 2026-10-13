@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import URKit
 
 enum Network_: UInt32, Identifiable, CaseIterable {
     case mainnet = 0

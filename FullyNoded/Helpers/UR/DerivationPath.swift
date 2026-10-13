@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import URKit
 
 struct DerivationPath: ExpressibleByArrayLiteral {    
     var steps: [DerivationStep]

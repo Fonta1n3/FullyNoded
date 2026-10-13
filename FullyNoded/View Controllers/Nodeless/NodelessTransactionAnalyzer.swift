@@ -231,7 +231,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                 // These are the inputs we know we selected bc the transaction was created here.
                 for input in inputs {
                     var fiatAmount: String?
-                    let amountBtc = (input.value.doubleValue / 100000000.0)
+                    let amountBtc = (Double(input.value) / 100000000.0)
                     if let fxRate = fxRate {
                         fiatAmount = (amountBtc * fxRate).fiatString
                     }

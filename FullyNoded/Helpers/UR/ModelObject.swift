@@ -7,7 +7,6 @@
 
 import SwiftUI
 //import LifeHash
-import URKit
 
 struct ModelSubtype: Identifiable, Hashable {
     var id: String
@@ -64,6 +63,6 @@ extension ModelObject {
     }
     
     var sizeLimitedURString: String {
-        UREncoder.encode(sizeLimitedUR)
+        sizeLimitedUR.string
     }
 }

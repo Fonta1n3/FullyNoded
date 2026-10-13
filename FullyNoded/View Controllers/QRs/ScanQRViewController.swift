@@ -9,7 +9,6 @@
 import Foundation
 import UIKit
 import AVFoundation
-import URKit // For UR decoding
 
 @available(macCatalyst 14.0, *)
 final class ScanQRViewController: UIViewController {
@@ -332,7 +331,7 @@ final class ScanQRViewController: UIViewController {
         if let result = try? urDecoder.result?.get() {
             finish(with: result.string)
         } else if let expected = urDecoder.expectedFragmentCount, expected > 0 {
-            let progress = Float(urDecoder.processedPartsCount) / Float(expected)
+            let progress = Float(urDecoder.estimatedPercentComplete)
             updateProgress(text: "\(Int(progress * 100))% complete", progress: progress)
         }
     }

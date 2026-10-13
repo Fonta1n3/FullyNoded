@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import URKit
 
 class URHelper {
     
@@ -102,12 +101,12 @@ class URHelper {
         
         guard let rawUr = try? UR(type: "crypto-seed", cbor: cbor) else { return nil }
         
-        return UREncoder.encode(rawUr)
+        return rawUr.string
     }
     
     static func urToEntropy(urString: String) -> (data: Data?, birthdate: UInt64?) {
         do {
-            let ur = try URDecoder.decode(urString)
+            let ur = try UR(urString: urString)
             let decodedCbor = ur.cbor//try CBOR.decode(ur.cbor.bytes)
             guard case let CBOR.map(dict) = decodedCbor else { return (nil, nil) }
             
@@ -691,7 +690,7 @@ class URHelper {
                   return nil
               }
         
-        return UREncoder.encode(rawUr)
+        return rawUr.string
     }
     
     static func rootXpubToUrHdkey(_ xpub: String) -> String? {
@@ -707,7 +706,7 @@ class URHelper {
             return nil
         }
         
-        return UREncoder.encode(rawUr)
+        return rawUr.string
     }
     
     static func descriptorToUrAccount(_ descriptor: Descriptor) -> String? {
@@ -822,7 +821,7 @@ class URHelper {
                 
         guard let rawUr = try? UR(type: "crypto-account", cbor: cborMap) else { return nil }
   
-        return UREncoder.encode(rawUr)
+        return rawUr.string
     }
     
     static func origins(path: String) -> [CBOR] {

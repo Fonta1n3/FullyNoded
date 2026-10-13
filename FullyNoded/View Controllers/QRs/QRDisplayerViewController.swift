@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import URKit
 //import Bbqr
 
 /// Shows a QR (static, or an animated UR for PSBTs and long payloads) with copy / share.

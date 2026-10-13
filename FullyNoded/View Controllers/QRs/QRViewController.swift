@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import URKit
 
 class QRViewController: UIViewController {
     
