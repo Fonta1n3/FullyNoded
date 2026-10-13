@@ -440,6 +440,24 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             inputArray.append(input)
         }
 
+        // To a silent payment address: its output depends on these inputs' keys, so it's built
+        // by SilentPaymentSend (placeholder output carrying the total, fee subtracted from it).
+        if SilentPaymentSend.isSilentPaymentAddress(receivingAddress) {
+            SilentPaymentSend.create(spAddress: receivingAddress,
+                                     amount: "\(rounded(number: amount))",
+                                     inputs: inputArray,
+                                     sweep: true) { [weak self] psbt, errorMessage in
+                guard let self else { return }
+                self.hideActivity()
+                guard let psbt else {
+                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "Unable to create the silent payment.")
+                    return
+                }
+                self.openVerifier(psbt: psbt)
+            }
+            return
+        }
+
         func buildParams(lock: UInt32) -> [String: Any] {
             var paramDict: [String: Any] = [:]
             paramDict["inputs"] = inputArray
@@ -569,10 +587,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     private func sweep() {
         guard let receivingAddress = recipientAddress else {
             showAlert(vc: self, title: "Add an address first", message: "")
-            return
-        }
-        guard !SilentPaymentSend.isSilentPaymentAddress(receivingAddress) else {
-            showAlert(vc: self, title: "Silent payments", message: "Send all isn't supported to a silent payment address. Enter an amount instead.")
             return
         }
         showActivity("sweeping wallet...", button: createOutlet)
@@ -796,32 +810,52 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     func processBIP21(url: String) {
-        let (address, amount, label, message) = AddressParser.sharedInstance.parse(url: url)
-        
+        let request = AddressParser.sharedInstance.parseRequest(url: url)
+
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
+
             self.amountInput.resignFirstResponder()
-            
-            guard let address = address else {
-                showAlert(vc: self, title: "", message: "Not a valid address or BIP21 invoice.")
+
+            guard let request = request else {
+                showAlert(vc: self, title: "", message: "Not a valid address or payment request.")
                 return
             }
-            
-            self.addAddress(address.addressExpanded)
-            
-            if amount != nil || label != nil || message != nil {
-                var amountText = "not specified"
-                
-                if amount != nil {
-                    amountText = amount!.avoidNotation
-                    self.amountInput.text = Self.formatAmount(amountText.replacingOccurrences(of: ",", with: ""))
-                    self.updateFiatAmount()
-                }
-                
-                showAlert(vc: self, title: "BIP21 Invoice\n", message: "Address: \(address)\n\nAmount: \(amountText) btc\n\nLabel: " + (label ?? "no label") + "\n\nMessage: \((message ?? "no message"))")
+
+            // BIP321 with both: the payer picks. A silent payment needs this wallet's signers to
+            // hold every input's key; the regular address always works.
+            if let sp = request.silentPayment, let fallback = request.address {
+                let alert = UIAlertController(title: "Pay to which address?",
+                                              message: "This request accepts a silent payment address (more private: the recipient gets a fresh, unlinkable address) or a regular address. Paying the silent payment address needs your signer to hold the keys of the coins you spend.",
+                                              preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Silent payment address", style: .default) { [weak self] _ in
+                    self?.applyPaymentRequest(request, address: sp)
+                })
+                alert.addAction(UIAlertAction(title: "Regular address", style: .default) { [weak self] _ in
+                    self?.applyPaymentRequest(request, address: fallback)
+                })
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+                self.present(alert, animated: true)
+                return
             }
+
+            guard let address = request.silentPayment ?? request.address else { return }
+            self.applyPaymentRequest(request, address: address)
         }
+    }
+
+    /// Fills in the recipient (and amount) from a payment request, then summarises it.
+    private func applyPaymentRequest(_ request: AddressParser.PaymentRequest, address: String) {
+        addAddress(address.addressExpanded)
+
+        guard request.amount != nil || request.label != nil || request.message != nil else { return }
+        var amountText = "not specified"
+        if let amount = request.amount {
+            amountText = amount.avoidNotation
+            amountInput.text = Self.formatAmount(amountText.replacingOccurrences(of: ",", with: ""))
+            updateFiatAmount()
+        }
+        showAlert(vc: self, title: "Payment Request\n", message: "Address: \(address)\n\nAmount: \(amountText) btc\n\nLabel: " + (request.label ?? "no label") + "\n\nMessage: \(request.message ?? "no message")")
     }
     
     func getRawTx(outputs: [[String: Any]]) {
