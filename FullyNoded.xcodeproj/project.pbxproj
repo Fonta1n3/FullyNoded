@@ -18,6 +18,8 @@
 		0A1F10DB26A1A58100BE2707 /* GeneralError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10DA26A1A58100BE2707 /* GeneralError.swift */; };
 		0A1F10DE26A1A5F200BE2707 /* ChildIndexRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10DD26A1A5F200BE2707 /* ChildIndexRange.swift */; };
 		0A1F10E126A1A62B00BE2707 /* ChildIndexWildcard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10E026A1A62B00BE2707 /* ChildIndexWildcard.swift */; };
+		0A5E7C212F9A00C100AB1234 /* URFountain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A5E7C202F9A00C100AB1234 /* URFountain.swift */; };
+		0A5E7C1F2F9A00C100AB1234 /* URCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A5E7C1E2F9A00C100AB1234 /* URCore.swift */; };
 		0A1F10E526A1A6C200BE2707 /* CBORExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10E426A1A6C200BE2707 /* CBORExtensions.swift */; };
 		0A1F10E826A1A83E00BE2707 /* IntUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10E726A1A83E00BE2707 /* IntUtils.swift */; };
 		0A1F10EB26A1A8C300BE2707 /* DataExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10EA26A1A8C300BE2707 /* DataExtension.swift */; };
@@ -58,7 +60,6 @@
 		0A83EB402C4943C700502806 /* ColdcardMultiSigExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A83EB3F2C4943C700502806 /* ColdcardMultiSigExport.swift */; };
 		0A9287F82EC99248002484C3 /* UserCertURLSessionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9287F72EC99248002484C3 /* UserCertURLSessionDelegate.swift */; };
 		0A9287FA2EC9930A002484C3 /* CertificateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9287F92EC9930A002484C3 /* CertificateManager.swift */; };
-		0AA6EFFC2C7E65F900503A39 /* URKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA6EFFB2C7E65F900503A39 /* URKit */; };
 		0ABEC1FD2F02743500092FCE /* NodelessTransactionCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABEC1FC2F02743500092FCE /* NodelessTransactionCreator.swift */; };
 		0ABEC1FF2F02857700092FCE /* NodelessTransactionAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABEC1FE2F02857700092FCE /* NodelessTransactionAnalyzer.swift */; };
 		0ABEC2012F03AAAA00092FCE /* UsedAddresses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABEC2002F03AAAA00092FCE /* UsedAddresses.swift */; };
@@ -224,6 +225,8 @@
 		0A1F10DA26A1A58100BE2707 /* GeneralError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralError.swift; sourceTree = "<group>"; };
 		0A1F10DD26A1A5F200BE2707 /* ChildIndexRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildIndexRange.swift; sourceTree = "<group>"; };
 		0A1F10E026A1A62B00BE2707 /* ChildIndexWildcard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildIndexWildcard.swift; sourceTree = "<group>"; };
+		0A5E7C202F9A00C100AB1234 /* URFountain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URFountain.swift; sourceTree = "<group>"; };
+		0A5E7C1E2F9A00C100AB1234 /* URCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URCore.swift; sourceTree = "<group>"; };
 		0A1F10E426A1A6C200BE2707 /* CBORExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBORExtensions.swift; sourceTree = "<group>"; };
 		0A1F10E726A1A83E00BE2707 /* IntUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntUtils.swift; sourceTree = "<group>"; };
 		0A1F10EA26A1A8C300BE2707 /* DataExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExtension.swift; sourceTree = "<group>"; };
@@ -408,7 +411,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				5939EEDF2FB3698400F73D8E /* BitcoinDevKit in Frameworks */,
-				0AA6EFFC2C7E65F900503A39 /* URKit in Frameworks */,
 				0AD2023F2ECEDBF3006286DD /* BitcoinDevKit in Frameworks */,
 				5955E7443053CE5D00C4B1E5 /* P256K in Frameworks */,
 				F4505B6A72D68BD208B4904B /* Pods_FullyNoded.framework in Frameworks */,
@@ -444,6 +446,8 @@
 				0A1F10DD26A1A5F200BE2707 /* ChildIndexRange.swift */,
 				0A1F10E026A1A62B00BE2707 /* ChildIndexWildcard.swift */,
 				0A1F10E426A1A6C200BE2707 /* CBORExtensions.swift */,
+				0A5E7C1E2F9A00C100AB1234 /* URCore.swift */,
+				0A5E7C202F9A00C100AB1234 /* URFountain.swift */,
 				0A1F10E726A1A83E00BE2707 /* IntUtils.swift */,
 				0A1F10EA26A1A8C300BE2707 /* DataExtension.swift */,
 			);
@@ -1008,7 +1012,6 @@
 			);
 			name = FullyNoded;
 			packageProductDependencies = (
-				0AA6EFFB2C7E65F900503A39 /* URKit */,
 				0AD2023E2ECEDBF3006286DD /* BitcoinDevKit */,
 				5939EEDE2FB3698400F73D8E /* BitcoinDevKit */,
 				5955E7433053CE5D00C4B1E5 /* P256K */,
@@ -1084,7 +1087,6 @@
 			);
 			mainGroup = D00B9A1B2111427200E8B95A;
 			packageReferences = (
-				0AA6EFFA2C7E65F900503A39 /* XCRemoteSwiftPackageReference "URKit" */,
 				5939EEDD2FB3698400F73D8E /* XCRemoteSwiftPackageReference "bdk-swift" */,
 				5955E7423053CE5C00C4B1E5 /* XCRemoteSwiftPackageReference "swift-secp256k1" */,
 			);
@@ -1338,6 +1340,8 @@
 				D09A331324AC4C93009FA0B2 /* Descriptor.swift in Sources */,
 				D07AED032435B62800C2FADB /* Commands.swift in Sources */,
 				0A1F10E526A1A6C200BE2707 /* CBORExtensions.swift in Sources */,
+				0A5E7C1F2F9A00C100AB1234 /* URCore.swift in Sources */,
+				0A5E7C212F9A00C100AB1234 /* URFountain.swift in Sources */,
 				0ABEC2092F0BCFAE00092FCE /* ImportDescriportsResponse.swift in Sources */,
 				0AF61BAC2EC450C1001CDF34 /* ListTransactions.swift in Sources */,
 				0A1F111026A2791B00BE2707 /* ModelObjectType.swift in Sources */,
@@ -1695,14 +1699,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		0AA6EFFA2C7E65F900503A39 /* XCRemoteSwiftPackageReference "URKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/BlockchainCommons/URKit.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 14.0.2;
-			};
-		};
 		5939EEDD2FB3698400F73D8E /* XCRemoteSwiftPackageReference "bdk-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/bitcoindevkit/bdk-swift.git";
@@ -1722,11 +1718,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		0AA6EFFB2C7E65F900503A39 /* URKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 0AA6EFFA2C7E65F900503A39 /* XCRemoteSwiftPackageReference "URKit" */;
-			productName = URKit;
-		};
 		0AD2023E2ECEDBF3006286DD /* BitcoinDevKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = BitcoinDevKit;
