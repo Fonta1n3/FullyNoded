@@ -117,6 +117,11 @@ Sources: `FullyNoded-Server/Helpers/SilentPaymentsScanner.swift`,
 
 A single SwiftUI window:
 
+- **Network**: which node the setup uses (Mainnet, Testnet3, Testnet4, Signet,
+  Regtest), independent of the Bitcoin Core network picker. The wallet list, start
+  height and Start all use it; switching clears the wallet and start height. An
+  `sp1…` import selects Mainnet. Start checks the node on that port reports that
+  network, and the network is saved with the keys (3.4).
 - **Wallet**: picker of the node's loaded wallets; pick the Fully Noded wallet
   you'll spend from (Fully Noded wallets are watch-only descriptor wallets on
   the node, with their own change addresses). Before starting, `getwalletinfo`
@@ -129,7 +134,7 @@ A single SwiftUI window:
   The address must match the node's network, and its `B_scan` must match the
   scan key (so a wrong or mistyped key is caught before scanning).
 - **Start height**: the first block that could contain a payment to you, with
-  *Use current height*. Only used the first time a key pair is scanned.
+  *Use current height*. Used the first time a key pair is scanned on a network, and again whenever it's changed (Save & restart then scans from the new height). Start refuses a height a pruned node no longer has.
 - **Scanner**: status, progress, payments found this session, last error, and
   *Start scanning* / *Save & restart*, *Stop*, *Resume saved*, *Forget keys*.
 
@@ -197,9 +202,9 @@ Validated against the official BIP352 receiving test vectors.
 - **Import**: for all matches in a block, `getdescriptorinfo` adds a checksum,
   then **one** `importdescriptors` call with `timestamp: "now"`,
   `active: false`, `internal: false` and a label of
-  `sp scan=<B_scan> k=<k> [m=<m>] t=<t_k>`. The label is informational only:
+  `sp scan=<B_scan> k=<k> [m=<m>]` (no tweak). The label is informational only:
   Fully Noded doesn't rely on it, and proves each output from the chain instead
-  (5.1). `t_k` can't spend anything without `b_spend`. Re-importing is idempotent.
+  (5.1). Re-importing is idempotent.
 - **Deferred rescan**: because imports use `"now"`, the lowest height with a
   found output is kept in `pendingRescanFrom`. Once the scanner reaches the
   tip, **one** `rescanblockchain(start_height)` makes the wallet pick up the
@@ -221,8 +226,8 @@ Validated against the official BIP352 receiving test vectors.
 | What | Where | Why |
 |---|---|---|
 | Wallet name, `b_scan`, `B_scan`, `B_spend`, address, start height | Keychain, encrypted with the app's key (`SPConfigStore`) | resume scanning at launch; *Forget keys* deletes it |
-| Scan progress: next height, recent block hashes, pending rescan height | UserDefaults, `sp_state_<first 16 hex of SHA256(wallet\|B_scan\|B_spend)>` | resume exactly where it stopped |
-| Found outputs (txids, tweaks, labels) | only in the imported output's **wallet label** in Core (nothing in FN-Server) | informational; Fully Noded proves outputs from the chain and keeps its own tweaks (5.1) |
+| Scan progress: next height, recent block hashes, pending rescan height | UserDefaults, `sp_state_<first 16 hex of SHA256(network\|wallet\|B_scan\|B_spend)>` | resume exactly where it stopped, on that network only |
+| Found outputs (scan key, `k`, label `m`; never the tweak) | only in the imported output's **wallet label** in Core (nothing in FN-Server) | informational; Fully Noded proves outputs from the chain and keeps its own tweaks (5.1) |
 
 The server never holds `b_spend`, so it **cannot spend** what it finds.
 
@@ -261,7 +266,10 @@ Source: `FullyNoded/Wallet Logic/SilentPaymentSend.swift`.
 `SilentPaymentSend.create(spAddress:amount:inputs:passphrase:change:completion:)`
 builds an **unsigned PSBT** that pays an `sp1…` / `tsp1…` address from the active
 (Core-backed) Fully Noded wallet, including your received silent payment outputs
-in it. `AddressParser` accepts `sp1` / `tsp1`, and
+in it. `AddressParser` accepts `sp1` / `tsp1`, and BIP321 payment requests
+(`bitcoin:<address>?sp=sp1…`, or `bitcoin:?sp=sp1…` with no fallback); when a request
+offers both, the send view asks which to pay. Fully Noded's Receive screen makes these
+requests from a wallet signer's silent payment address. Then
 `CreateRawTxViewController` routes an SP recipient here; the resulting PSBT goes
 to the transaction verifier for the normal sign/broadcast flow.
 
@@ -312,6 +320,11 @@ keys*, it can't simply call `walletcreatefundedpsbt` with the SP address:
    (and change) present, otherwise abort.
 
 Validated against the BIP352 sending test vectors.
+
+**Send all** to an `sp1…` / `tsp1…` address works the same way: the placeholder
+output carries the selected coins' total with `subtractFeeFromOutputs`, so the fee
+comes out of the silent payment output and there's no change. If Core adds any
+other output the sweep is stopped.
 
 **Requirements / limitations**
 
