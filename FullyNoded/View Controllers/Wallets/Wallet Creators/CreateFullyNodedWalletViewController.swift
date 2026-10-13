@@ -98,16 +98,14 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
-    /// A text file holding one descriptor among comments and blank lines (as Sparrow and Coldcard
-    /// export them) → that descriptor.
-    private static func descriptorIfOnlyOne(in text: String) -> String? {
-        let lines = text.components(separatedBy: .newlines)
-            .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty && !$0.hasPrefix("#") }
-        guard lines.count == 1, lines.count < text.components(separatedBy: .newlines).count else { return nil }
-        let line = lines[0]
-        let scripts = ["wpkh(", "sh(", "pkh(", "wsh(", "tr(", "combo(", "addr(", "multi(", "sortedmulti("]
-        return scripts.contains(where: { line.lowercased().hasPrefix($0) }) ? line : nil
+    /// The descriptor import screen, which shows the descriptor and its addresses first.
+    private func showDescriptorImport(_ descriptor: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.descriptor = Descriptor(descriptor)
+            self.performSegue(withIdentifier: "segueToImportDescriptor", sender: self)
+        }
     }
     
     private func isDescriptor(_ lowercased: String) -> Bool {
@@ -804,7 +802,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func processImportedString(_ item: String) {
-        let item = Self.descriptorIfOnlyOne(in: item) ?? item
+        let item = TextFileImport.singleDescriptor(in: item) ?? item
         let lowercased = item.lowercased()
                 
         // A Fully Noded wallet backup: hex-encoded JSON (whitespace / newlines from a
@@ -817,13 +815,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             showAlert(vc: self, title: "Not supported.", message: "Xpub importing is not supported, you need to import an output descriptor.")
             
         } else if self.isDescriptor(lowercased) {
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.descriptor = Descriptor(item)
-                self.performSegue(withIdentifier: "segueToImportDescriptor", sender: self)
-            }
+            showDescriptorImport(item)
             
         } else if lowercased.hasPrefix("ur:") {
             if lowercased.hasPrefix("ur:bytes") {
@@ -844,8 +836,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                     return
                 }
                 
-                var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [] as [String], "label": "Wallet Import"]
-                
                 if descriptors.count > 1 {
                     self.prompToChoosePrimaryDesc(descriptors: descriptors)
                 } else {
@@ -861,8 +851,8 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                             self.performSegue(withIdentifier: "segueToCreateMultiSig", sender: self)
                         }
                     } else {
-                        accountMap["descriptor"] = descriptors[0]
-                        self.importAccountMap(accountMap)
+                        // Same as a pasted descriptor: show it and its addresses before importing.
+                        self.showDescriptorImport(descriptors[0])
                     }
                 }
             }
@@ -941,17 +931,18 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             } else {
                 let descriptors = WalletImport(dict).descriptors
                 if descriptors.count == 1 {
-                    self.descriptor = Descriptor(descriptors[0])
-                    DispatchQueue.main.async { [weak self] in
-                        self?.performSegue(withIdentifier: "segueToImportDescriptor", sender: self)
-                    }
+                    showDescriptorImport(descriptors[0])
                 } else {
                     self.prompToChoosePrimaryDesc(descriptors: descriptors)
                 }
             }
 
-        } else if let accountMap = TextFileImport.parse(item).accountMap {
-            self.importAccountMap(accountMap)
+        } else if let accountMap = TextFileImport.parse(item).accountMap,
+                  let descriptor = accountMap["descriptor"] as? String {
+            showDescriptorImport(descriptor)
+            
+        } else if item.contains("Format: "), let error = TextFileImport.parse(item).errMessage {
+            showAlert(vc: self, title: "Unsupported wallet file.", message: error)
             
         } else {
             showAlert(vc: self, title: "Unsupported import.", message: item + " is not a supported import option, please let us know about this so we can add support.")
