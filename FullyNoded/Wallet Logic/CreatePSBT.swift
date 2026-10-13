@@ -12,9 +12,12 @@ class CreatePSBT {
 
     /// - changeAddress: optional explicit change destination (e.g. when the active wallet
     ///   is a watch-only wallet that can't generate change addresses).
+    /// - subtractFeeFromOutputs: output indices that pay the fee (a sweep: the output carries
+    ///   the inputs' total and the fee comes out of it, so there's no change).
     class func create(inputs: [[String: Any]],
                       outputs: [[String: Any]],
                       changeAddress: String? = nil,
+                      subtractFeeFromOutputs: [Int]? = nil,
                       completion: @escaping ((psbt: String?, rawTx: String?, errorMessage: String?)) -> Void) {
 
         func buildParams(inputs: [[String: Any]], locktime: UInt32?) -> [String: Any] {
@@ -31,6 +34,9 @@ class CreatePSBT {
             options["replaceable"] = true
             if let changeAddress, !changeAddress.isEmpty {
                 options["changeAddress"] = changeAddress
+            }
+            if let subtractFeeFromOutputs, !subtractFeeFromOutputs.isEmpty {
+                options["subtractFeeFromOutputs"] = subtractFeeFromOutputs
             }
             if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
                 options["fee_rate"] = feeRate

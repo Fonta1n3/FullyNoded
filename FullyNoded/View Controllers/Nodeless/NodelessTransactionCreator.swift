@@ -456,6 +456,22 @@ enum NodelessSweep {
         }
     }
 
+    /// Receive / change descriptors for the sweep wallet, from the coin's parent descriptor.
+    /// BDK refuses identical ones, so a change coin (`…/1/*`) gets its `/0/*` twin as receive
+    /// and a receive coin its `/1/*` twin as change (every key, so multisig works too). A
+    /// non-ranged descriptor (e.g. a timelocked address) is paired with the wallet's change.
+    /// Checksums are dropped (they change with the descriptor; BDK doesn't need them).
+    static func sweepDescriptors(parentDesc: String, wallet: Wallet) -> (receive: String, change: String) {
+        let desc = String(parentDesc.split(separator: "#")[0])
+        if desc.contains("/1/*") {
+            return (desc.replacingOccurrences(of: "/1/*", with: "/0/*"), desc)
+        }
+        if desc.contains("/0/*") {
+            return (desc, desc.replacingOccurrences(of: "/0/*", with: "/1/*"))
+        }
+        return (desc, wallet.changeDescriptor)
+    }
+
     /// Completion on the main queue.
     static func viewController(for utxo: UTXO, wallet: Wallet, completion: @escaping (Result<UIViewController, Error>) -> Void) {
         let done: (Result<UIViewController, Error>) -> Void = { result in DispatchQueue.main.async { completion(result) } }
@@ -501,7 +517,8 @@ enum NodelessSweep {
                 return fingerprint.contains(xfp)
             }
             do {
-                let bdkWallet = try WalletLogic.shared.bdkWalletFromDescriptors(recDesc: parentDesc, changeDesc: wallet.changeDescriptor)
+                let pair = sweepDescriptors(parentDesc: parentDesc, wallet: wallet)
+                let bdkWallet = try WalletLogic.shared.bdkWalletFromDescriptors(recDesc: pair.receive, changeDesc: pair.change)
                 done(.success(SweepViewController(utxos: [esploraUtxo], watchOnlyBdkWallet: bdkWallet, signer: signer, network: network)))
             } catch {
                 done(.failure(error))

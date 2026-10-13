@@ -72,12 +72,16 @@ enum SilentPaymentSend {
     ///   - change: where the change goes. `.wallet` (default) lets Core pick the wallet's
     ///     own change address; `.silentPayment` sends it to your silent payment change
     ///     address (offered when silent payment outputs are spent).
+    ///   - sweep: send everything ("Send all"): `amount` is the total of `inputs` and the fee
+    ///     comes out of the silent payment output, so there's no change. Aborts if Core adds
+    ///     any other output.
     /// - Returns: (psbt, errorMessage), always on the main queue.
     static func create(spAddress: String,
                        amount: String,
                        inputs: [[String: Any]] = [],
                        passphrase: String? = nil,
                        change: SilentPaymentChange.Destination = .wallet,
+                       sweep: Bool = false,
                        completion: @escaping (_ psbt: String?, _ errorMessage: String?) -> Void) {
 
         // Always report back on the main queue (callers update UI).
@@ -117,7 +121,8 @@ enum SilentPaymentSend {
         }
         let recipientPlaceholderScript = "5120" + SPHexFN.encode(recipient.spendPub.dropFirst())
 
-        CreatePSBT.create(inputs: inputs, outputs: [[placeholder: amount]], changeAddress: changeAddress) { firstPsbt, _, errorMessage in
+        CreatePSBT.create(inputs: inputs, outputs: [[placeholder: amount]], changeAddress: changeAddress,
+                          subtractFeeFromOutputs: sweep ? [0] : nil) { firstPsbt, _, errorMessage in
             guard let firstPsbt = firstPsbt else {
                 done(nil, errorMessage ?? "walletcreatefundedpsbt failed.")
                 return
@@ -127,6 +132,11 @@ enum SilentPaymentSend {
             SilentPaymentSend.decode(firstPsbt) { decoded, error in
                 guard let decoded = decoded else {
                     done(nil, error ?? "decodepsbt failed.")
+                    return
+                }
+                // A sweep pays everything to the silent payment output: no change allowed.
+                if sweep, decoded.outputScripts != [recipientPlaceholderScript] {
+                    done(nil, "Bitcoin Core added another output to the sweep, so it was stopped. Send an amount instead.")
                     return
                 }
 
