@@ -115,8 +115,30 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            descriptorField.text = descriptor.string
+            descriptorField.attributedText = descriptorText(descriptor.string)
         }
+    }
+    
+    /// The descriptor, then its checksum (computed here, so it can be compared with the
+    /// signer's or wallet's display), with a warning if the checksum written on it disagrees.
+    private func descriptorText(_ descriptor: String) -> NSAttributedString {
+        let font = descriptorField.font ?? .systemFont(ofSize: 17)
+        let color = descriptorField.textColor ?? .label
+        let text = NSMutableAttributedString(string: descriptor, attributes: [.font: font, .foregroundColor: color])
+        
+        guard let checksum = Descriptor.checksum(of: descriptor) else {
+            text.append(NSAttributedString(string: "\n\nChecksum: invalid characters in descriptor", attributes: [.font: font, .foregroundColor: UIColor.systemRed]))
+            return text
+        }
+        
+        let mono = UIFont.monospacedSystemFont(ofSize: font.pointSize, weight: .semibold)
+        text.append(NSAttributedString(string: "\n\nChecksum: ", attributes: [.font: font, .foregroundColor: UIColor.secondaryLabel]))
+        text.append(NSAttributedString(string: checksum, attributes: [.font: mono, .foregroundColor: color]))
+        
+        if let stated = Descriptor.statedChecksum(of: descriptor), stated != checksum {
+            text.append(NSAttributedString(string: "\n⚠️ The descriptor says #\(stated), it should be #\(checksum). It may have been altered or mistyped.", attributes: [.font: font, .foregroundColor: UIColor.systemRed]))
+        }
+        return text
     }
     
     private func doneAlert(_ title: String, _ message: String) {
@@ -139,7 +161,8 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "addressCell", for: indexPath)
         let label = cell.viewWithTag(1) as! UILabel
-        label.text = "#\(indexPath.row + 1) " + addresses[indexPath.row].addressExpanded
+        // Index as derived (the range starts at 0), matching the wallet's address list.
+        label.text = "#\(indexPath.row) " + addresses[indexPath.row].addressExpanded
         return cell
     }
     
@@ -157,6 +180,9 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
                     
                     self.descriptor = Descriptor(desc)
                     addDescriptorToLabel(self.descriptor!)
+                    self.addresses.removeAll()
+                    self.addressTableView.reloadData()
+                    loadAddresses(self.descriptor!)
                 }
             }
         }

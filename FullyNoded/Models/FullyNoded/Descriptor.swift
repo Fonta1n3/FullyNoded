@@ -559,3 +559,51 @@ extension String {
     }
 }
 
+
+// MARK: - Checksum (BIP380)
+
+extension Descriptor {
+    private static let checksumInputCharset = Array("0123456789()[],'/*abcdefgh@:$%{}IJKLMNOPQRSTUVWXYZ&+-.;<=>?!^_|~ijklmnopqrstuvwxyzABCDEFGH`#\"\\ ")
+    private static let checksumCharset = Array("qpzry9x8gf2tvdw0s3jn54khce6mua7l")
+
+    private static func checksumPolymod(_ c: UInt64, _ value: UInt64) -> UInt64 {
+        let c0 = c >> 35
+        var c = ((c & 0x7_ffff_ffff) << 5) ^ value
+        if c0 & 1 != 0 { c ^= 0xf5_dee5_1989 }
+        if c0 & 2 != 0 { c ^= 0xa9_fdca_3312 }
+        if c0 & 4 != 0 { c ^= 0x1b_ab10_e32d }
+        if c0 & 8 != 0 { c ^= 0x37_06b1_677a }
+        if c0 & 16 != 0 { c ^= 0x64_4d62_6ffd }
+        return c
+    }
+
+    /// The 8-character checksum Bitcoin Core appends after "#", computed locally over the
+    /// descriptor without any existing checksum. Nil if it holds a character descriptors can't.
+    static func checksum(of descriptor: String) -> String? {
+        let body = descriptor.split(separator: "#", maxSplits: 1, omittingEmptySubsequences: false).first.map(String.init) ?? descriptor
+        var c: UInt64 = 1
+        var cls: UInt64 = 0
+        var clsCount = 0
+        for ch in body {
+            guard let pos = checksumInputCharset.firstIndex(of: ch) else { return nil }
+            c = checksumPolymod(c, UInt64(pos & 31))
+            cls = cls * 3 + UInt64(pos >> 5)
+            clsCount += 1
+            if clsCount == 3 {
+                c = checksumPolymod(c, cls)
+                cls = 0
+                clsCount = 0
+            }
+        }
+        if clsCount > 0 { c = checksumPolymod(c, cls) }
+        for _ in 0..<8 { c = checksumPolymod(c, 0) }
+        c ^= 1
+        return String((0..<8).map { checksumCharset[Int((c >> (5 * (7 - UInt64($0)))) & 31)] })
+    }
+
+    /// The checksum written on the descriptor ("…#abcd1234"), if any.
+    static func statedChecksum(of descriptor: String) -> String? {
+        let parts = descriptor.split(separator: "#", maxSplits: 1, omittingEmptySubsequences: false)
+        return parts.count == 2 ? String(parts[1]).trimmingCharacters(in: .whitespacesAndNewlines) : nil
+    }
+}
