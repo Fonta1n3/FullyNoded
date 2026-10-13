@@ -98,6 +98,18 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
+    /// A text file holding one descriptor among comments and blank lines (as Sparrow and Coldcard
+    /// export them) → that descriptor.
+    private static func descriptorIfOnlyOne(in text: String) -> String? {
+        let lines = text.components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty && !$0.hasPrefix("#") }
+        guard lines.count == 1, lines.count < text.components(separatedBy: .newlines).count else { return nil }
+        let line = lines[0]
+        let scripts = ["wpkh(", "sh(", "pkh(", "wsh(", "tr(", "combo(", "addr(", "multi(", "sortedmulti("]
+        return scripts.contains(where: { line.lowercased().hasPrefix($0) }) ? line : nil
+    }
+    
     private func isDescriptor(_ lowercased: String) -> Bool {
         if lowercased.hasPrefix("wsh") || lowercased.hasPrefix("pkh") || lowercased.hasPrefix("sh") || lowercased.hasPrefix("combo") || lowercased.hasPrefix("wpkh") || lowercased.hasPrefix("addr") || lowercased.hasPrefix("multi") || lowercased.hasPrefix("sortedmulti") || lowercased.hasPrefix("tr(") {
             return true
@@ -792,6 +804,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func processImportedString(_ item: String) {
+        let item = Self.descriptorIfOnlyOne(in: item) ?? item
         let lowercased = item.lowercased()
                 
         // A Fully Noded wallet backup: hex-encoded JSON (whitespace / newlines from a
@@ -814,37 +827,14 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             
         } else if lowercased.hasPrefix("ur:") {
             if lowercased.hasPrefix("ur:bytes") {
+                // A text file in a QR (wallet export JSON, a descriptor, a multisig setup file):
+                // handled exactly as if it had been pasted.
                 let (text, err) = URHelper.parseBlueWalletCoordinationSetup(lowercased)
-                if let textFile = text {
-                     if let dict = try? JSONSerialization.jsonObject(with: textFile.utf8, options: []) as? [String:Any] {
-                        let importStruct = WalletImport(dict)
-                        
-                        var descriptors:[String] = []
-                        
-                        if let bip44 = importStruct.bip44 {
-                            descriptors.append(bip44)
-                        }
-                        if let bip49 = importStruct.bip49 {
-                            descriptors.append(bip49)
-                        }
-                        if let bip84 = importStruct.bip84 {
-                            descriptors.append(bip84)
-                        }
-                        if let bip48 = importStruct.bip48 {
-                            descriptors.append(bip48)
-                        }
-                        
-                        self.prompToChoosePrimaryDesc(descriptors: descriptors)
-                        
-                     } else if let accountMap = TextFileImport.parse(textFile).accountMap {
-                        self.importAccountMap(accountMap)
-                                                     
-                    } else {
-                        showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the text file into a descriptor.")
-                    }
-                } else {
+                guard let textFile = text, !textFile.lowercased().hasPrefix("ur:") else {
                     showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the QR code.")
+                    return
                 }
+                processImportedString(textFile)
                 
             } else {
                 let (descriptors, error) = URHelper.parseUr(urString: item)
@@ -904,7 +894,9 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 self.prompToChoosePrimaryDesc(descriptors: [bip84!, bip86!, segwitCosigner!, taprootCosigner!])
             }
             
-        } else if let coldcardSparrowExport = try? jsonDecoder.decode(ColdcardSparrowExport.self, from: item.utf8) {
+        } else if let coldcardSparrowExport = try? jsonDecoder.decode(ColdcardSparrowExport.self, from: item.utf8),
+                  coldcardSparrowExport.chain != nil,
+                  [coldcardSparrowExport.bip44?.standardDesc, coldcardSparrowExport.bip49?.standardDesc, coldcardSparrowExport.bip84?.standardDesc, coldcardSparrowExport.bip48_2?.standardDesc].contains(where: { $0 != nil }) {
             // Need to edit the desc slightly to work with Descriptor.swift
             // Sparrow is using the following format for cosigner
             //"wsh(sortedmulti(M,[0f056943/48h/1h/0h/2h]tpubDF2rnouQaaYrXF4noGTv6rQYmx87cQ4GrUdhpvXkhtChwQPbdGTi8GA88NUaSrwZBwNsTkC9bFkkC8vDyGBVVAQTZ2AS6gs68RQXtXcCvkP/0/*,...))"
@@ -931,7 +923,8 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 self.prompToChoosePrimaryDesc(descriptors: descriptors)
             }
             
-        } else if let coldcardMultisigExport = try? jsonDecoder.decode(ColdcardMultiSigExport.self, from: item.utf8) {
+        } else if let coldcardMultisigExport = try? jsonDecoder.decode(ColdcardMultiSigExport.self, from: item.utf8),
+                  coldcardMultisigExport.p2wsh != nil {
             guard let deriv = coldcardMultisigExport.p2wsh_deriv else { return }
             guard let xfp = coldcardMultisigExport.xfp else { return }
             guard let p2wsh = coldcardMultisigExport.p2wsh else { return}
@@ -941,9 +934,20 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             promptToImportColdcardMsig(Descriptor(descriptor))
             
             
-        } else if let dict = try? JSONSerialization.jsonObject(with: item.utf8, options: []) as? [String:Any] {
-            if let _ = dict["desc"] as? String {
+        } else if let dict = try? JSONSerialization.jsonObject(with: item.utf8, options: []) as? [String:Any],
+                  dict["desc"] is String || !WalletImport(dict).descriptors.isEmpty {
+            if dict["desc"] is String {
                 self.importAccountMap(dict)
+            } else {
+                let descriptors = WalletImport(dict).descriptors
+                if descriptors.count == 1 {
+                    self.descriptor = Descriptor(descriptors[0])
+                    DispatchQueue.main.async { [weak self] in
+                        self?.performSegue(withIdentifier: "segueToImportDescriptor", sender: self)
+                    }
+                } else {
+                    self.prompToChoosePrimaryDesc(descriptors: descriptors)
+                }
             }
 
         } else if let accountMap = TextFileImport.parse(item).accountMap {
