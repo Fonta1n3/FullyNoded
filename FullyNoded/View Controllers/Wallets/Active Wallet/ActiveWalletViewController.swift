@@ -241,8 +241,13 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @IBAction func invoiceAction(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToInvoice", sender: vc)
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let vc = InvoiceViewController()
+            vc.wallet = self.wallet
+            if let fxRate = self.fxRate { vc.fxRate = fxRate }
+            vc.hidesBottomBarWhenPushed = true
+            self.navigationController?.pushViewController(vc, animated: true)
         }
     }
     
@@ -795,11 +800,6 @@ class ActiveWalletViewController: UIViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
-            
-        case "segueToInvoice":
-            guard let vc = segue.destination as? InvoiceViewController else { fallthrough }
-            
-            vc.wallet = wallet
             
         case "spendFromWallet":
             guard let vc = segue.destination as? CreateRawTxViewController else { fallthrough }
