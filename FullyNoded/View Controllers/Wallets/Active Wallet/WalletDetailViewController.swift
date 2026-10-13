@@ -45,6 +45,9 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     private var cellHeights = [IndexPath: CGFloat]()
     /// Stored signers (with seed words) whose fingerprint appears in this wallet's descriptors.
     private var walletSigners: [(label: String, xfp: String, signer: SignerStruct, spAddress: String?)] = []
+    /// Signers whose silent payment address is available for this wallet: those with seed words,
+    /// plus those whose words were deleted after the address and scan key were saved.
+    private var spSigners: [(label: String, xfp: String, signer: SignerStruct, spAddress: String?)] = []
     /// The signer the silent payment section shows (when several can sign).
     private var spSignerIndex = 0
 
@@ -409,42 +412,31 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
 
         CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
             var matches: [(label: String, xfp: String, signer: SignerStruct, spAddress: String?)] = []
+            var spMatches: [(label: String, xfp: String, signer: SignerStruct, spAddress: String?)] = []
             let mainnet = self?.coinType == "0"
             for dict in signers ?? [] {
                 let signer = SignerStruct(dictionary: dict)
-                guard signer.words != nil,
-                      let encrypted = signer.xfp,
+                guard let encrypted = signer.xfp,
                       let xfp = Crypto.decrypt(encrypted)?.utf8String?.lowercased(),
-                      fingerprints.contains(xfp),
-                      !matches.contains(where: { $0.xfp == xfp }) else { continue }
-                matches.append((signer.label, xfp, signer, Self.silentPaymentAddress(signer, mainnet: mainnet)))
+                      fingerprints.contains(xfp) else { continue }
+                let spAddress = SignerSilentPayment.info(for: signer, mainnet: mainnet)?.address
+                if signer.words != nil, !matches.contains(where: { $0.xfp == xfp }) {
+                    matches.append((signer.label, xfp, signer, spAddress))
+                }
+                if spAddress != nil, !spMatches.contains(where: { $0.xfp == xfp }) {
+                    spMatches.append((signer.label, xfp, signer, spAddress))
+                }
             }
 
             DispatchQueue.main.async {
                 guard let self else { return }
                 self.walletSigners = matches
+                self.spSigners = spMatches
                 self.detailTable.reloadSections(IndexSet([Section.signers.rawValue, Section.silentPayment.rawValue]), with: .automatic)
             }
         }
     }
     
-    /// The signer's BIP352 address (public, like a receive address), from its seed and passphrase.
-    private static func silentPaymentAddress(_ signer: SignerStruct, mainnet: Bool) -> String? {
-        guard let encryptedWords = signer.words,
-              var decryptedWords = Crypto.decrypt(encryptedWords),
-              var words = decryptedWords.utf8String else { return nil }
-        var passphrase = ""
-        if let encryptedPassphrase = signer.passphrase,
-           var decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) {
-            passphrase = decryptedPassphrase.utf8String ?? ""
-            decryptedPassphrase.secureZero()
-        }
-        let address = WalletLogic.shared.silentPaymentAddress(mnemonic: words, passphrase: passphrase, mainnet: mainnet)
-        decryptedWords.secureZero()
-        words.secureWipe()
-        passphrase.secureWipe()
-        return address
-    }
     
     private func applyLocalWallet(_ walletStruct: Wallet) {
         wallet = walletStruct
@@ -802,12 +794,12 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     /// The silent payment address of the selected signer (shown, as a QR, exportable) and the
     /// Fully Noded Server link for this wallet.
     private func silentPaymentContent() -> UIView {
-        let index = min(spSignerIndex, walletSigners.count - 1)
-        let entry = walletSigners[index]
+        let index = min(spSignerIndex, spSigners.count - 1)
+        let entry = spSigners[index]
         var views: [UIView] = []
         
-        if walletSigners.count > 1 {
-            let control = UISegmentedControl(items: walletSigners.map { $0.label })
+        if spSigners.count > 1 {
+            let control = UISegmentedControl(items: spSigners.map { $0.label })
             WalletTheme.style(control)
             control.selectedSegmentIndex = index
             control.addTarget(self, action: #selector(spSignerChanged(_:)), for: .valueChanged)
@@ -900,8 +892,8 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     
     /// The silent payment address as a QR (with copy / share): public, so no authentication.
     @objc private func exportSilentPaymentAddress() {
-        guard !walletSigners.isEmpty else { return }
-        let entry = walletSigners[min(spSignerIndex, walletSigners.count - 1)]
+        guard !spSigners.isEmpty else { return }
+        let entry = spSigners[min(spSignerIndex, spSigners.count - 1)]
         guard let address = entry.spAddress,
               let vc = UIStoryboard(name: "Main", bundle: nil)
                 .instantiateViewController(withIdentifier: "QRDisplayer") as? QRDisplayerViewController else { return }
@@ -916,8 +908,8 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     /// silent payment address and scan private key plus this wallet's Bitcoin Core name, so the
     /// server imports what it finds straight into this wallet.
     @objc private func silentPaymentServerLinkAction() {
-        guard !walletSigners.isEmpty else { return }
-        authenticateForServerLink(walletSigners[min(spSignerIndex, walletSigners.count - 1)].signer)
+        guard !spSigners.isEmpty else { return }
+        authenticateForServerLink(spSigners[min(spSignerIndex, spSigners.count - 1)].signer)
     }
     
     private func authenticateForServerLink(_ signer: SignerStruct) {
@@ -928,30 +920,11 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     }
 
     private func showServerLink(_ signer: SignerStruct) {
-        guard let encryptedWords = signer.words,
-              var decryptedWords = Crypto.decrypt(encryptedWords),
-              var words = decryptedWords.utf8String else {
-            showAlert(vc: self, title: "", message: "Unable to decrypt the signer's seed words.")
-            return
-        }
-
-        var passphrase = ""
-        if let encryptedPassphrase = signer.passphrase,
-           var decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) {
-            passphrase = decryptedPassphrase.utf8String ?? ""
-            decryptedPassphrase.secureZero()
-        }
-
-        // The wallet's own network (xpub → mainnet), not the node the app is pointed at.
+        // The wallet's own network (xpub → mainnet), not the node the app is pointed at. From the
+        // seed words, or the copy saved before they were deleted.
         let mainnet = coinType == "0"
-        let address = WalletLogic.shared.silentPaymentAddress(mnemonic: words, passphrase: passphrase, mainnet: mainnet)
-        let scanKey = WalletLogic.shared.silentPaymentScanPrivateKey(mnemonic: words, passphrase: passphrase, mainnet: mainnet)
-        decryptedWords.secureZero()
-        words.secureWipe()
-        passphrase.secureWipe()
-
-        guard let address, let scanKey,
-              let link = SilentPaymentServerLink.make(address: address, scanKey: scanKey, wallet: wallet.name) else {
+        guard let info = SignerSilentPayment.info(for: signer, mainnet: mainnet),
+              let link = SilentPaymentServerLink.make(address: info.address, scanKey: info.scanKey, wallet: wallet.name) else {
             showAlert(vc: self, title: "", message: "Unable to derive the silent payment address and scan private key.")
             return
         }
@@ -1270,7 +1243,7 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     /// The signers and silent payment sections only show when a stored signer can sign for this wallet.
     private func isHidden(_ section: Int) -> Bool {
         let kind = Section(rawValue: section)
-        return (kind == .signers || kind == .silentPayment) && walletSigners.isEmpty
+        return (kind == .signers && walletSigners.isEmpty) || (kind == .silentPayment && spSigners.isEmpty)
     }
 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
