@@ -487,7 +487,10 @@ extension VerifyTransactionViewController {
                 
                 self.finishActivity()
                 self.disableBumpButton()
-                
+                // The bump is a new, unbroadcast transaction: without this the reload treats
+                // it like the original (no mempool check, Send never enabled).
+                if rawTx != nil || signedPsbt != nil { self.alreadyBroadcast = false }
+
                 if let rawTx = rawTx {
                     self.signedRawTx = rawTx
                     self.enableSendButton()
