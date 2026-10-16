@@ -5,23 +5,21 @@
 //  Created by Peter on 21/03/19.
 //  Copyright © 2019 Fontaine. All rights reserved.
 //
-//  Receive screen, built in code: a BIP321 payment request as a QR. It carries a fresh address
-//  and, when the wallet has one, its silent payment address (`?sp=`): wallets that support
-//  silent payments pay that, others the address. Optional amount / label / message. Fully Noded
-//  wallets can also timelock the address until a date.
+//  Receive screen, built in code. Either a BIP21 payment request for a fresh address (optional
+//  amount / label / message; Fully Noded wallets can also timelock the address until a date),
+//  or, when the wallet has one, its silent payment address on its own. Requests are never
+//  combined (no BIP321 `sp=`); paying such requests is still supported (AddressParser).
 //
 
 import UIKit
 
 class InvoiceViewController: UIViewController, UITextFieldDelegate {
 
-    /// Where the request can be paid (only offered when the wallet has a silent payment address).
-    private enum Accept: Int {
-        /// `bitcoin:<address>?sp=<sp1…>`: silent payment, with the address as fallback.
-        case both
-        /// `bitcoin:<address>`.
+    /// What the QR asks to be paid (the choice only appears when the wallet has a silent payment address).
+    private enum Mode: Int {
+        /// `bitcoin:<address>[?amount=…&label=…&message=…]` (BIP21).
         case address
-        /// `bitcoin:?sp=<sp1…>`: no fallback.
+        /// The `sp1…` / `tsp1…` address alone.
         case silentPayment
     }
 
@@ -30,21 +28,21 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
 
     private let tint: WalletTheme.Tint = .receive
     private let qrGenerator = QRGenerator()
-    private var accept: Accept = .both
+    private var mode: Mode = .address
     private var addressString = ""
     /// The silent payment address of a signer of this wallet, if it has one.
     private var silentPaymentAddress: String?
     private var silentPaymentSigner: String?
     private var timelockedUntil: String?
-    /// The text in the QR: the BIP21 request (on-chain) or the silent payment address.
+    /// The text in the QR: the BIP21 request or the silent payment address.
     private var requestText = ""
 
     // Views
     private let scrollView = UIScrollView()
     private let stack = UIStackView()
-    private let acceptControl = UISegmentedControl(items: ["Both", "Address", "Silent payment"])
-    private let acceptNote = UILabel()
-    private var acceptCard: UIView!
+    private let modeControl = UISegmentedControl(items: ["Address", "Silent payment"])
+    private let modeNote = UILabel()
+    private var modeCard: UIView!
     private var addressCard: UIView!
     private var silentPaymentCard: UIView!
     private let silentPaymentLabel = UILabel()
@@ -105,11 +103,11 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             stack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -24)
         ])
 
-        // Where it can be paid: only when the wallet has a silent payment address (see
+        // Address or silent payment: only when the wallet has a silent payment address (see
         // loadSilentPaymentAddress).
-        acceptCard = makeAcceptCard()
-        acceptCard.isHidden = true
-        stack.addArrangedSubview(acceptCard)
+        modeCard = makeModeCard()
+        modeCard.isHidden = true
+        stack.addArrangedSubview(modeCard)
 
         stack.addArrangedSubview(qrCard())
         addressCard = makeAddressCard()
@@ -184,14 +182,14 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         return WalletTheme.cardView([centered, qrCaption, actions], tint: tint, spacing: 12)
     }
 
-    private func makeAcceptCard() -> UIView {
-        WalletTheme.style(acceptControl, tint: tint)
-        acceptControl.selectedSegmentIndex = Accept.both.rawValue
-        acceptControl.addTarget(self, action: #selector(acceptChanged), for: .valueChanged)
-        acceptNote.font = WalletTheme.mono(11)
-        acceptNote.textColor = WalletTheme.dim
-        acceptNote.numberOfLines = 0
-        return WalletTheme.cardView([WalletTheme.caption("> REQUEST PAYMENT TO", tint: tint), acceptControl, acceptNote], tint: tint, spacing: 10)
+    private func makeModeCard() -> UIView {
+        WalletTheme.style(modeControl, tint: tint)
+        modeControl.selectedSegmentIndex = Mode.address.rawValue
+        modeControl.addTarget(self, action: #selector(modeChanged), for: .valueChanged)
+        modeNote.font = WalletTheme.mono(11)
+        modeNote.textColor = WalletTheme.dim
+        modeNote.numberOfLines = 0
+        return WalletTheme.cardView([WalletTheme.caption("> RECEIVE TO", tint: tint), modeControl, modeNote], tint: tint, spacing: 10)
     }
 
     private func makeSilentPaymentCard() -> UIView {
@@ -263,7 +261,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         requestLabel.lineBreakMode = .byCharWrapping
         let actions = chipRow([chip("Copy", "doc.on.doc", action: #selector(copyRequest)),
                                chip("Share", "square.and.arrow.up", action: #selector(shareRequest))])
-        return WalletTheme.cardView([WalletTheme.caption("> PAYMENT REQUEST (BIP321)", tint: tint), requestLabel, actions], tint: tint, spacing: 10)
+        return WalletTheme.cardView([WalletTheme.caption("> PAYMENT REQUEST (BIP21)", tint: tint), requestLabel, actions], tint: tint, spacing: 10)
     }
 
     private func makeTimelockCard() -> UIView {
@@ -311,45 +309,40 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         return text
     }
 
-    /// The silent payment address included in the request, if any. Never with a timelocked
-    /// address: paying it would bypass the lock.
-    private var requestedSilentPayment: String? {
-        guard let sp = silentPaymentAddress, accept != .address, timelockedUntil == nil else { return nil }
-        return sp
+    /// The silent payment address shown, if that's the mode. Never with a timelocked address
+    /// (the mode is forced back to the address while one is shown).
+    private var shownSilentPayment: String? {
+        guard mode == .silentPayment, timelockedUntil == nil else { return nil }
+        return silentPaymentAddress
     }
-
-    /// Whether the on-chain address is in the request (always, unless silent payment only).
-    private var requestsAddress: Bool { requestedSilentPayment == nil || accept != .silentPayment }
 
     /// Rebuilds the QR and the request text from the addresses and fields.
     private func updateRequest() {
-        let sp = requestedSilentPayment
-        let withAddress = requestsAddress
+        if timelockedUntil != nil { mode = .address }
+        let sp = shownSilentPayment
 
         addressLabel.text = addressString.isEmpty ? "Fetching an address…" : addressString.addressExpanded
-        addressCaption.text = sp == nil ? "> ADDRESS" : "> FALLBACK ADDRESS"
-        addressCard.isHidden = !withAddress
+        addressCard.isHidden = sp != nil
+        requestCard.isHidden = sp != nil
+        uriCard.isHidden = sp != nil
         silentPaymentCard.isHidden = sp == nil
         silentPaymentLabel.text = sp
-        acceptCard.isHidden = silentPaymentAddress == nil
-        acceptControl.isEnabled = timelockedUntil == nil
+        modeCard.isHidden = silentPaymentAddress == nil
+        modeControl.isEnabled = timelockedUntil == nil
+        modeControl.selectedSegmentIndex = (sp == nil ? Mode.address : Mode.silentPayment).rawValue
 
-        switch (sp != nil, withAddress) {
-        case (true, true):
-            acceptNote.text = "Wallets that support silent payments pay \(silentPaymentSigner.map { "\($0)'s" } ?? "your") silent payment address (private: a fresh, unlinkable address every time); others pay the fallback address."
-            qrCaption.text = "One QR for both: the payer's wallet picks. Tap it to show it full screen."
-        case (true, false):
-            acceptNote.text = "Only wallets that support silent payments can pay this request: there's no fallback address."
-            qrCaption.text = "Silent payment only. Tap the QR to show it full screen."
-        default:
-            acceptNote.text = timelockedUntil != nil
-                ? "Timelocked address: a silent payment alternative would let the payer bypass the lock, so it's left out."
-                : "A regular address only."
+        if sp != nil {
+            modeNote.text = "\(silentPaymentSigner.map { "\($0)'s" } ?? "Your") silent payment address: every payment to it lands on a fresh, unlinkable output. The payer's wallet must support silent payments (BIP352)."
+            qrCaption.text = "Silent payment address. Tap the QR to show it full screen."
+            requestText = sp!
+        } else {
+            modeNote.text = timelockedUntil != nil
+                ? "Timelocked address: a silent payment address would let the payer bypass the lock."
+                : "A regular address, with an optional amount, label and message. Any bitcoin wallet can pay it."
             qrCaption.text = "Tap the QR to show it full screen."
+            requestText = Self.bip21(address: addressString, amount: amount,
+                                     label: labelField.text ?? "", message: messageField.text ?? "")
         }
-
-        requestText = Self.bip321(address: withAddress ? addressString : nil, silentPayment: sp, amount: amount,
-                                  label: labelField.text ?? "", message: messageField.text ?? "")
 
         let amountText = (amountField.text ?? "").trimmingCharacters(in: .whitespaces)
         if amountText.isEmpty {
@@ -364,20 +357,20 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             amountHint.text = "Not a valid amount: it's left out of the request."
         }
 
-        timelockCard.isHidden = !withAddress || !canTimelock || timelockedUntil != nil
+        timelockCard.isHidden = sp != nil || !canTimelock || timelockedUntil != nil
         timelockWarningCard.isHidden = timelockedUntil == nil
         requestLabel.text = requestText
 
-        let text = requestText.isEmpty ? "bitcoin:" : requestText
+        let text = requestText.isEmpty ? "bitcoin:" : (sp != nil ? requestText.uppercased() : requestText)
         qrGenerator.qrText = text
         let image = qrGenerator.getQRCode()
         UIView.transition(with: qrImageView, duration: 0.3, options: .transitionCrossDissolve,
                           animations: { self.qrImageView.image = image })
     }
 
-    /// BIP321: `bitcoin:[address][?amount=…&label=…&message=…&sp=…]`. The address may be left out
-    /// when a silent payment address is given (no fallback). Values percent-encoded.
-    static func bip321(address: String?, silentPayment: String?, amount: String?, label: String, message: String) -> String {
+    /// BIP21: `bitcoin:<address>[?amount=…&label=…&message=…]`. Values percent-encoded.
+    static func bip21(address: String, amount: String?, label: String, message: String) -> String {
+        guard !address.isEmpty else { return "" }
         var allowed = CharacterSet.urlQueryAllowed
         allowed.remove(charactersIn: "&=?#+")
         var params: [String] = []
@@ -386,12 +379,12 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         if !label.isEmpty, let encoded = label.addingPercentEncoding(withAllowedCharacters: allowed) { params.append("label=\(encoded)") }
         let message = message.trimmingCharacters(in: .whitespaces)
         if !message.isEmpty, let encoded = message.addingPercentEncoding(withAllowedCharacters: allowed) { params.append("message=\(encoded)") }
-        if let silentPayment = silentPayment { params.append("sp=\(silentPayment)") }
-        return "bitcoin:\(address ?? "")" + (params.isEmpty ? "" : "?" + params.joined(separator: "&"))
+        return "bitcoin:\(address)" + (params.isEmpty ? "" : "?" + params.joined(separator: "&"))
     }
 
-    @objc private func acceptChanged() {
-        accept = Accept(rawValue: acceptControl.selectedSegmentIndex) ?? .both
+    @objc private func modeChanged() {
+        mode = Mode(rawValue: modeControl.selectedSegmentIndex) ?? .address
+        view.endEditing(true)
         updateRequest()
     }
 
@@ -399,7 +392,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
 
     /// The wallet's silent payment address: a stored signer whose fingerprint is in the wallet's
     /// descriptors and whose address is known (from its seed, or saved before the words were
-    /// deleted). The "Request payment to" choice only appears when there is one.
+    /// deleted). The Address / Silent payment choice only appears when there is one.
     private func loadSilentPaymentAddress() {
         guard let wallet = wallet else { return }
         let descriptors = wallet.receiveDescriptor + wallet.changeDescriptor
@@ -583,13 +576,12 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         guard !requestText.isEmpty,
               let vc = UIStoryboard(name: "Main", bundle: nil)
                 .instantiateViewController(withIdentifier: "QRDisplayer") as? QRDisplayerViewController else { return }
-        vc.headerIcon = UIImage(systemName: requestedSilentPayment != nil ? "eye.slash" : "qrcode")
-        vc.headerText = "Payment Request"
-        vc.descriptionText = requestedSilentPayment == nil
-            ? "Scan with any bitcoin wallet to pay this request."
-            : (requestsAddress
-               ? "Wallets that support silent payments pay the silent payment address; others pay the fallback address."
-               : "Only wallets that support silent payments can pay this request.")
+        let silentPayment = shownSilentPayment != nil
+        vc.headerIcon = UIImage(systemName: silentPayment ? "eye.slash" : "qrcode")
+        vc.headerText = silentPayment ? "Silent Payment Address" : "Payment Request"
+        vc.descriptionText = silentPayment
+            ? "Scan with a wallet that supports silent payments (BIP352)."
+            : "Scan with any bitcoin wallet to pay this request."
         vc.text = requestText
         navigationController?.pushViewController(vc, animated: true)
     }
