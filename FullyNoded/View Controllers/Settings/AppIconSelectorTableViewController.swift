@@ -19,6 +19,8 @@ class AppIconSelectorTableViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Cypherpunk look (WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .settings)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -118,4 +120,9 @@ class AppIconSelectorTableViewController: UITableViewController {
         return 100
     }
 
+    // MARK: - Theme
+
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .settings)
+    }
 }

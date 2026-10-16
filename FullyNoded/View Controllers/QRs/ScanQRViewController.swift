@@ -9,8 +9,6 @@
 import Foundation
 import UIKit
 import AVFoundation
-import URKit // For UR decoding
-import Bbqr   // For BBQR decoding
 
 @available(macCatalyst 14.0, *)
 final class ScanQRViewController: UIViewController {
@@ -333,7 +331,7 @@ final class ScanQRViewController: UIViewController {
         if let result = try? urDecoder.result?.get() {
             finish(with: result.string)
         } else if let expected = urDecoder.expectedFragmentCount, expected > 0 {
-            let progress = Float(urDecoder.processedPartsCount) / Float(expected)
+            let progress = Float(urDecoder.estimatedPercentComplete)
             updateProgress(text: "\(Int(progress * 100))% complete", progress: progress)
         }
     }
@@ -369,28 +367,27 @@ final class ScanQRViewController: UIViewController {
     }
     
     func continousJoiner(parts: [String]) throws -> ((psbt: String?, descriptor: String?)) {
-        let continousJoiner = ContinuousJoiner()
+        let joiner = BBQR.Joiner()
         
         for part in parts {
-            switch try continousJoiner.addPart(part: part) {
-            case .notStarted:
+            switch try joiner.add(part) {
+            case .inProgress(let received, let total):
                 #if DEBUG
-                print("not started")
-                #endif
-                
-            case .inProgress(let partsLeft):
-                #if DEBUG
-                print("added item, \(partsLeft) parts left")
+                print("added item, \(total - received) parts left")
                 #endif
                 hasScanned = false
                 
-            case .complete(let joined):
+            case .complete(let type, let data):
                 hasScanned = true
-                let s = String(decoding: joined.data(), as: UTF8.self)
-                if s.hasPrefix("psbt") {
-                    stopScanning(joined.data().base64EncodedString())
-                } else {
-                    stopScanning(s)
+                switch type {
+                case .psbt:
+                    stopScanning(data.base64EncodedString())
+                case .transaction:
+                    stopScanning(data.hexString)
+                default:
+                    let s = String(decoding: data, as: UTF8.self)
+                    // A psbt sent with another type letter.
+                    stopScanning(s.hasPrefix("psbt") ? data.base64EncodedString() : s)
                 }
             }
         }

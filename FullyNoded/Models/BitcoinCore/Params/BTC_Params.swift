@@ -514,7 +514,12 @@ public struct Get_Raw_Tx: CustomStringConvertible {
     let param:[String:Any]
     init(_ dict: [String:Any]) {
         let txid = dict["txid"] as? String ?? ""
-        param = ["txid": txid]
+        var p: [String: Any] = ["txid": txid]
+        // Optional, only sent when given: verbosity 2 adds each input's prevout
+        // (Core >= 25); blockhash lets it work without -txindex.
+        if let verbosity = dict["verbosity"] as? Int { p["verbosity"] = verbosity }
+        if let blockhash = dict["blockhash"] as? String { p["blockhash"] = blockhash }
+        param = p
     }
 }
 
@@ -924,7 +929,12 @@ public struct Create_Psbt: CustomStringConvertible {
     init(_ dict:[String:Any]) {
         inputs = dict["inputs"] as? [[String:Any]] ?? [[:]]
         outputs = dict["outputs"] as? [[String:Any]] ?? [[:]]
-        param = ["inputs": inputs, "outputs": outputs, "replaceable": true]
+        var p: [String: Any] = ["inputs": inputs, "outputs": outputs, "replaceable": true]
+        // Optional raw locktime (kept when rebuilding a funded transaction).
+        if let locktime = dict["locktime"] as? Int, locktime > 0 {
+            p["locktime"] = locktime
+        }
+        param = p
     }
 }
 

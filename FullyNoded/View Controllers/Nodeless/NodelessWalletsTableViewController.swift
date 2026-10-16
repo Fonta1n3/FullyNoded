@@ -447,7 +447,7 @@ class WalletCell: UITableViewCell {
     
     @objc private func copyReceiveDescriptor() {
         UIPasteboard.general.string = descriptorLabel.text
-        showAlert(title: "Copied ✓", message: "")
+        SuccessView.toast("Copied", in: self)
     }
     
     // MARK: - Helpers

@@ -16,33 +16,42 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     private let scrollView = UIScrollView()
     private let masterStackView = UIStackView()
-    private let header = UILabel()
     private let nodeLabel = UITextField()
-    private let addressHeader = UILabel()
     private let onionAddressField = UITextField()
-    private let usernameHeader = UILabel()
+    private let transportHint = UILabel()
     private let rpcUserField = UITextField()
-    private let passwordHeader = UILabel()
     private let rpcPassword = UITextField()
+    private let revealPasswordButton = UIButton(type: .system)
     private let createPasswordButton = UIButton(type: .system)
-    private let certHeader = UILabel()
     private let certField = UITextField()
-    private let rpcAuthHeader = UILabel()
     private let rpcAuthLabel = UILabel()
     private let saveButton = UIButton(type: .system)
+    
+    init() {
+        super.init(nibName: nil, bundle: nil)
+        hidesBottomBarWhenPushed = true
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        hidesBottomBarWhenPushed = true
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = .systemBackground
+        title = selectedNode == nil ? "Add Node" : "Node Credentials"
         navigationController?.delegate = self
+        navigationItem.rightBarButtonItems = [
+            UIBarButtonItem(image: UIImage(systemName: "questionmark.circle"), style: .plain, target: self, action: #selector(showHelpAction(_:))),
+            UIBarButtonItem(image: UIImage(systemName: "book"), style: .plain, target: self, action: #selector(showGuideAction(_:)))
+        ]
         
         setupUI()
         configureTapGesture()
         
         [nodeLabel, rpcPassword, rpcUserField, onionAddressField, certField].forEach {
             $0.delegate = self
-            $0.textColor = .lightGray
         }
         
         rpcPassword.isSecureTextEntry = true
@@ -50,10 +59,18 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         rpcPassword.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
         rpcUserField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        onionAddressField.addTarget(self, action: #selector(addressDidChange(_:)), for: .editingChanged)
         
         loadValues()
+        updateTransportHint()
+        
+        // Cypherpunk look (WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .settings)
     }
     
+    // MARK: - Layout
+    
+    /// Four cards (connection, RPC credentials, RPC auth, SSL certificate) and Save.
     private func setupUI() {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.alwaysBounceVertical = true
@@ -61,7 +78,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         view.addSubview(scrollView)
         
         masterStackView.axis = .vertical
-        masterStackView.spacing = 8
+        masterStackView.spacing = 12
         masterStackView.alignment = .fill
         masterStackView.distribution = .fill
         masterStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -73,101 +90,159 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             
-            masterStackView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 20),
-            masterStackView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: 20),
-            masterStackView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -20),
-            masterStackView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -40),
-            masterStackView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -40)
+            masterStackView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 12),
+            masterStackView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: 16),
+            masterStackView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -16),
+            masterStackView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -32),
+            masterStackView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -32)
         ])
-                
-        addSection(title: "Label", field: nodeLabel, placeholder: "My Node")
         
-        addSection(title: "Address (host:port)", field: onionAddressField, placeholder: "xxxx.onion:8332")
+        let tint = WalletTheme.Tint.settings
         
-        addSection(title: "RPC Username", field: rpcUserField, placeholder: "FullyNoded")
+        // CONNECTION
+        prepare(nodeLabel, placeholder: "My Node")
+        prepare(onionAddressField, placeholder: "xxxx.onion:8332")
+        transportHint.font = WalletTheme.mono(11)
+        transportHint.numberOfLines = 0
+        masterStackView.addArrangedSubview(WalletTheme.cardView([
+            WalletTheme.caption("> CONNECTION", tint: tint),
+            fieldLabel("Label"), nodeLabel,
+            fieldLabel("Address (host:port)"), onionAddressField,
+            transportHint
+        ], tint: tint, spacing: 8))
         
-        passwordHeader.text = "RPC Password"
-        passwordHeader.font = .preferredFont(forTextStyle: .headline)
-        passwordHeader.textColor = .systemGreen
-        masterStackView.addArrangedSubview(passwordHeader)
-        
-        let passwordRow = UIStackView(arrangedSubviews: [rpcPassword, createPasswordButton])
-        passwordRow.axis = .vertical
-        passwordRow.spacing = 8
-        passwordRow.alignment = .center
-        rpcPassword.placeholder = "Password"
-        rpcPassword.borderStyle = .roundedRect
-        createPasswordButton.setTitle("Generate secure password", for: .normal)
+        // RPC CREDENTIALS
+        prepare(rpcUserField, placeholder: "FullyNoded")
+        prepare(rpcPassword, placeholder: "Password")
+        revealPasswordButton.setImage(UIImage(systemName: "eye"), for: .normal)
+        revealPasswordButton.frame = CGRect(x: 0, y: 0, width: 40, height: 36)
+        revealPasswordButton.addTarget(self, action: #selector(togglePasswordVisibility(_:)), for: .touchUpInside)
+        rpcPassword.rightView = revealPasswordButton
+        rpcPassword.rightViewMode = .always
+        createPasswordButton.configuration = Self.chipConfiguration(title: "Generate secure password", systemImage: "key")
         createPasswordButton.addTarget(self, action: #selector(createRpcPass(_:)), for: .touchUpInside)
-        masterStackView.addArrangedSubview(passwordRow)
+        masterStackView.addArrangedSubview(WalletTheme.cardView([
+            WalletTheme.caption("> RPC CREDENTIALS", tint: tint),
+            fieldLabel("RPC username"), rpcUserField,
+            fieldLabel("RPC password"), rpcPassword,
+            buttonRow([createPasswordButton])
+        ], tint: tint, spacing: 8))
         
-        let copyRpcAuthButton =  makeButton(title: "Copy", action: #selector(copyRpcAuthAction(_:)))
-        let exportRpcAuthButton = makeButton(title: "Export", action: #selector(exportRpcAuth(_:)))
-        rpcAuthHeader.text = "RPC Auth (for bitcoin.conf)"
-        rpcAuthHeader.font = .preferredFont(forTextStyle: .headline)
-        rpcAuthHeader.textColor = .systemGreen
-        masterStackView.addArrangedSubview(rpcAuthHeader)
-        
+        // RPC AUTH
         rpcAuthLabel.numberOfLines = 0
-        rpcAuthLabel.font = .preferredFont(forTextStyle: .footnote)
-        rpcAuthLabel.textColor = .label
-        masterStackView.addArrangedSubview(rpcAuthLabel)
+        rpcAuthLabel.font = WalletTheme.mono(11)
+        rpcAuthLabel.textColor = WalletTheme.text
+        rpcAuthLabel.lineBreakMode = .byCharWrapping
+        masterStackView.addArrangedSubview(WalletTheme.cardView([
+            WalletTheme.caption("> RPC AUTH (FOR BITCOIN.CONF)", tint: tint),
+            rpcAuthLabel,
+            buttonRow([
+                makeButton(title: "Copy", systemImage: "doc.on.doc", action: #selector(copyRpcAuthAction(_:))),
+                makeButton(title: "Export", systemImage: "square.and.arrow.up", action: #selector(exportRpcAuth(_:))),
+                makeButton(title: "Info", systemImage: "info.circle", action: #selector(showRpcAuthInfoAction(_:)))
+            ])
+        ], tint: tint, spacing: 8))
         
-        let infoBtn = makeButton(title: "RPC Auth?", action: #selector(showRpcAuthInfoAction(_:)))
-        let authButtons = UIStackView(arrangedSubviews: [copyRpcAuthButton, exportRpcAuthButton, infoBtn])
-        authButtons.axis = .horizontal
-        authButtons.spacing = 8
-        authButtons.distribution = .fillEqually
+        // SSL CERTIFICATE
+        prepare(certField, placeholder: "Paste or import .pem / .cer / text")
+        masterStackView.addArrangedSubview(WalletTheme.cardView([
+            WalletTheme.caption("> SSL CERTIFICATE", tint: tint),
+            hintLabel("Only for LAN nodes reached without Tor."),
+            certField,
+            buttonRow([
+                makeButton(title: "Paste", systemImage: "doc.on.clipboard", action: #selector(pasteCertAction(_:))),
+                makeButton(title: "Delete", systemImage: "trash", action: #selector(deleteCertAction(_:))),
+                makeButton(title: "Import", systemImage: "folder", action: #selector(showFilePickerAction(_:)))
+            ])
+        ], tint: tint, spacing: 8))
         
-        masterStackView.addArrangedSubview(authButtons)
-        
-        addSection(title: "SSL Certificate (Tor not used!)", field: certField, placeholder: "Paste or import .pem/.cer/text")
-        
-        let certButtons = UIStackView()
-        certButtons.axis = .horizontal
-        certButtons.spacing = 8
-        certButtons.distribution = .fillEqually
-        
-        let pasteBtn = makeButton(title: "Paste", action: #selector(pasteCertAction(_:)))
-        let deleteBtn = makeButton(title: "Delete", action: #selector(deleteCertAction(_:)))
-        let fileBtn = makeButton(title: "Import File", action: #selector(showFilePickerAction(_:)))
-        
-        certButtons.addArrangedSubview(pasteBtn)
-        certButtons.addArrangedSubview(deleteBtn)
-        certButtons.addArrangedSubview(fileBtn)
-        masterStackView.addArrangedSubview(certButtons)
-
-        saveButton.setTitle("Save Node", for: .normal)
-        saveButton.titleLabel?.font = .preferredFont(forTextStyle: .headline)
-        saveButton.configuration = .tinted()
-        saveButton.setTitleColor(.tintColor, for: .normal)
-        saveButton.layer.cornerRadius = 15
+        WalletTheme.styleHero(saveButton, title: "Save Node", systemImage: "checkmark", tint: tint)
         saveButton.addTarget(self, action: #selector(save(_:)), for: .touchUpInside)
+        masterStackView.setCustomSpacing(20, after: masterStackView.arrangedSubviews.last ?? masterStackView)
         masterStackView.addArrangedSubview(saveButton)
-        
-        masterStackView.addArrangedSubview(UIView())
     }
     
-    private func addSection(title: String, field: UITextField, placeholder: String) {
-        let label = UILabel()
-        label.text = title
-        label.font = .preferredFont(forTextStyle: .headline)
-        label.textColor = .systemGreen
-        masterStackView.addArrangedSubview(label)
-        
+    private func prepare(_ field: UITextField, placeholder: String) {
         field.placeholder = placeholder
-        field.borderStyle = .roundedRect
         field.autocapitalizationType = .none
         field.autocorrectionType = .no
         field.clearButtonMode = .whileEditing
-        masterStackView.addArrangedSubview(field)
+        field.font = WalletTheme.mono(14)
+        field.heightAnchor.constraint(greaterThanOrEqualToConstant: 40).isActive = true
     }
     
-    private func makeButton(title: String, action: Selector) -> UIButton {
+    private func fieldLabel(_ text: String) -> UILabel {
+        let label = UILabel()
+        label.text = text
+        label.font = WalletTheme.mono(11, weight: .semibold)
+        label.textColor = WalletTheme.dim
+        return label
+    }
+    
+    private func hintLabel(_ text: String) -> UILabel {
+        let label = fieldLabel(text)
+        label.font = WalletTheme.mono(11)
+        label.numberOfLines = 0
+        return label
+    }
+    
+    private func buttonRow(_ buttons: [UIButton]) -> UIStackView {
+        let row = UIStackView(arrangedSubviews: buttons)
+        row.axis = .horizontal
+        row.spacing = 8
+        row.distribution = .fillEqually
+        return row
+    }
+    
+    private func makeButton(title: String, systemImage: String? = nil, action: Selector) -> UIButton {
         let btn = UIButton(type: .system)
-        btn.setTitle(title, for: .normal)
+        btn.configuration = Self.chipConfiguration(title: title, systemImage: systemImage)
         btn.addTarget(self, action: action, for: .touchUpInside)
         return btn
+    }
+
+    /// Small outlined action button in the settings palette (shared WalletTheme chip).
+    private static func chipConfiguration(title: String, systemImage: String? = nil) -> UIButton.Configuration {
+        WalletTheme.chipConfiguration(title: title,
+                                      systemImage: systemImage,
+                                      tint: .settings,
+                                      fontSize: 12,
+                                      imageSize: 11,
+                                      imagePadding: 5,
+                                      insets: NSDirectionalEdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8),
+                                      clipsTitle: true)
+    }
+    
+    @objc private func togglePasswordVisibility(_ sender: UIButton) {
+        rpcPassword.isSecureTextEntry.toggle()
+        sender.setImage(UIImage(systemName: rpcPassword.isSecureTextEntry ? "eye" : "eye.slash"), for: .normal)
+    }
+    
+    @objc private func addressDidChange(_ sender: UITextField) {
+        updateTransportHint()
+    }
+    
+    /// How the app will reach the node, from the address.
+    private func updateTransportHint() {
+        let address = onionAddressField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let hasCert = !(certField.text ?? "").isEmpty
+        
+        if address.isEmpty {
+            transportHint.text = "Use your node's onion address, or localhost / a LAN IP with its port."
+            transportHint.textColor = WalletTheme.dim
+        } else if address.contains(".onion") {
+            transportHint.text = "TOR · traffic is routed over Tor."
+            transportHint.textColor = WalletTheme.Tint.settings.accent
+        } else if address.hasPrefix("localhost:") || address.hasPrefix("127.0.0.1:") {
+            transportHint.text = "LOCAL · connects to this device."
+            transportHint.textColor = WalletTheme.Tint.settings.accent
+        } else if hasCert {
+            transportHint.text = "LAN · https with your SSL certificate (no Tor)."
+            transportHint.textColor = WalletTheme.Tint.settings.accent
+        } else {
+            transportHint.text = "LAN · not routed over Tor. Add the node's SSL certificate below."
+            transportHint.textColor = WalletTheme.danger
+        }
     }
     
     @IBAction func pasteCertAction(_ sender: Any) {
@@ -176,6 +251,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 guard let self = self else { return }
                 
                 certField.text = pasted
+                updateTransportHint()
             }
         }
     }
@@ -188,6 +264,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 guard let self = self else { return }
                 
                 certField.text = ""
+                updateTransportHint()
             }
             return
         }
@@ -210,6 +287,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     guard let self = self else { return }
                     
                     certField.text = ""
+                    updateTransportHint()
                 }
             }
         }
@@ -247,7 +325,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             rpcAuthLabel.text = auth.rpcAuth
             
-            showAlert(title: "", message: "A secure RPC password was created ✓")
+            SuccessView.toast("A secure RPC password was created", in: self)
         }
     }
     
@@ -303,7 +381,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         UIPasteboard.general.string = auth
         
-        showAlert(vc: self, title: "", message: "Rpc auth copied ✓")
+        SuccessView.toast("Rpc auth copied", in: self)
     }
     
     private func encryptCert(_ certText: String) -> Data? {
@@ -605,8 +683,11 @@ extension NodeDetailViewController: UIDocumentPickerDelegate {
         guard let url = urls.first else { return }
         
         let securedURL = copyToAppContainer(url: url)
+        let certText = CertificateManager.shared.certFileToBase64(fileURL: securedURL)
+        // Only needed long enough to read it; the cert is stored (encrypted) with the node.
+        try? FileManager.default.removeItem(at: securedURL)
         
-        guard let base64Cert = CertificateManager.shared.certFileToBase64(fileURL: securedURL) else {
+        guard let base64Cert = certText else {
             showAlert(vc: self, title: "Error", message: "Unable to convert the cert file to base64 text. Ensure you are trying to upload a .pem, .cer, .crt or .der file.")
             return
         }
@@ -615,13 +696,14 @@ extension NodeDetailViewController: UIDocumentPickerDelegate {
             guard let self = self else { return }
             
             certField.text = base64Cert.condenseWhitespace()
+            updateTransportHint()
         }
     }
     
     private func copyToAppContainer(url: URL) -> URL {
         let fm = FileManager.default
-        let docsDir = fm.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let dest = docsDir.appendingPathComponent(url.lastPathComponent)
+        // Temporary folder, not Documents (visible in the Files app / Finder).
+        let dest = fm.temporaryDirectory.appendingPathComponent(url.lastPathComponent)
         
         try? fm.removeItem(at: dest)
         try? fm.copyItem(at: url, to: dest)

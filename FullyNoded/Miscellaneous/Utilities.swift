@@ -45,42 +45,66 @@ public func activeWallet(completion: @escaping ((Wallet?)) -> Void) {
     }
 }
 
+/// Every simple "OK" alert in the app. Drawn as the themed card (SuccessView) instead of a
+/// UIAlertController: success, notice or error, inferred from the text unless `kind` is given.
+/// Cards queue rather than being dropped while another is showing. Safe from any thread.
 public func showAlert(vc: UIViewController? = nil, title: String, message: String) {
+    showAlert(vc: vc, title: title, message: message, kind: nil)
+}
+
+func showAlert(vc: UIViewController? = nil, title: String, message: String, kind: SuccessView.Kind?) {
     DispatchQueue.main.async {
-        let presentingVC: UIViewController
-        
-        if let vc = vc, vc.isViewLoaded, vc.view.window != nil {
-            presentingVC = vc
+        let host: UIView?
+        if let vc = vc, vc.isViewLoaded, let window = vc.view.window {
+            host = window
         } else {
-            // Fallback to current top-most
-            guard let rootVC = UIApplication.shared.connectedScenes
-                    .compactMap({ ($0 as? UIWindowScene)?.windows.first { $0.isKeyWindow } })
-                    .first?.rootViewController else {
-                return
-            }
-            presentingVC = rootVC.topMostViewController() // You can add the extension below
+            host = UIApplication.shared.connectedScenes
+                .compactMap { ($0 as? UIWindowScene)?.windows.first { $0.isKeyWindow } }
+                .first
         }
-        
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        
-        if let popover = alert.popoverPresentationController {
-            popover.sourceView = presentingVC.view
-            popover.sourceRect = CGRect(x: presentingVC.view.bounds.midX,
-                                        y: presentingVC.view.bounds.midY,
-                                        width: 0, height: 0)
-            popover.permittedArrowDirections = []
+
+        let kind = kind ?? AlertKind.infer(title: title, message: message)
+        // Many alerts pass only a message: give the card a short heading for its kind.
+        let heading = title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AlertKind.heading(for: kind) : title
+        SuccessView.show(on: host, kind: kind, title: heading, subtitle: message)
+    }
+}
+
+/// Classifies the app's existing alert texts, so the call sites don't change.
+enum AlertKind {
+    private static let errorWords = ["error", "fail", "unable", "invalid", "can't", "cannot", "couldn't",
+                                     "could not", "wrong", "missing", "unsupported", "issue", "uh oh",
+                                     "denied", "not found", "mismatch", "incorrect", "not valid", "no response",
+                                     "unknown", "not secure", "did not match", "not formatted", "not a valid",
+                                     "not reachable", "not supported", "not a supported", "does not appear",
+                                     "was not ", "not saved"]
+    /// Things that just happened ("Wallet unloaded.", "Auth keys saved.").
+    private static let doneWords = [" added", " saved", " updated", " deleted", " activated", " synced",
+                                    " unloaded", " wiped", " increased", " set to active", " encrypted", " decrypted"]
+
+    static func infer(title: String, message: String) -> SuccessView.Kind {
+        let text = (title + " " + message).lowercased()
+        if errorWords.contains(where: { text.contains($0) }) { return .error }
+        if ["✓", "success", "🔐", "🔓", "thank you"].contains(where: { text.contains($0) }) { return .success }
+        // "Cert deleted." is done; "No wallet activated…" / "not …" isn't.
+        let negated = text.hasPrefix("no ") || text.hasPrefix(" no ") || text.contains(" not ")
+        if !negated, doneWords.contains(where: { text.contains($0) }) { return .success }
+        return .notice
+    }
+
+    static func heading(for kind: SuccessView.Kind) -> String {
+        switch kind {
+        case .success: return "Done"
+        case .notice: return "Note"
+        case .error: return "Something went wrong"
         }
-        
-        presentingVC.present(alert, animated: true)
     }
 }
 
 public func exportPsbtToURL(data: Data) -> URL? {
-    let documents = FileManager.default.urls(
-        for: .documentDirectory,
-        in: .userDomainMask
-    ).first
+    // Temporary folder, not Documents: Documents is visible in the Files app / Finder
+    // (UIFileSharingEnabled) and is backed up.
+    let documents: URL? = FileManager.default.temporaryDirectory
     guard let path = documents?.appendingPathComponent("/FullyNodedPSBT.psbt") else {
         return nil
     }
@@ -94,10 +118,9 @@ public func exportPsbtToURL(data: Data) -> URL? {
 }
 
 public func exportMultisigWalletToURL(data: Data) -> URL? {
-    let documents = FileManager.default.urls(
-        for: .documentDirectory,
-        in: .userDomainMask
-    ).first
+    // Temporary folder, not Documents: Documents is visible in the Files app / Finder
+    // (UIFileSharingEnabled) and is backed up.
+    let documents: URL? = FileManager.default.temporaryDirectory
     guard let path = documents?.appendingPathComponent("/FullyNodedMultisig.txt") else {
         return nil
     }
@@ -111,10 +134,9 @@ public func exportMultisigWalletToURL(data: Data) -> URL? {
 }
 
 public func exportWalletJson(name: String, data: Data) -> URL? {
-    let documents = FileManager.default.urls(
-        for: .documentDirectory,
-        in: .userDomainMask
-    ).first
+    // Temporary folder, not Documents: Documents is visible in the Files app / Finder
+    // (UIFileSharingEnabled) and is backed up.
+    let documents: URL? = FileManager.default.temporaryDirectory
     guard let path = documents?.appendingPathComponent("/\(name).json") else {
         return nil
     }
@@ -150,7 +172,7 @@ public func rounded(number: Double) -> Double {
 
 public func displayAlert(viewController: UIViewController?, isError: Bool, message: String) {
     if viewController != nil {
-        showAlert(vc: viewController, title: "Error", message: message)
+        showAlert(vc: viewController, title: isError ? "Error" : "", message: message, kind: isError ? .error : nil)
     }
 }
 

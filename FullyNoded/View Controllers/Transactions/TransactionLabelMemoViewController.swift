@@ -27,6 +27,8 @@ class TransactionLabelMemoViewController: UIViewController, UITextViewDelegate, 
         labelField.clipsToBounds = true
         labelField.layer.cornerRadius = 8
         labelField.text = labelText
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .transaction)
     }
     
     @IBAction func saveAction(_ sender: Any) {

@@ -20,6 +20,8 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
         table.dataSource = self
         table.layer.cornerRadius = 8
         table.clipsToBounds = true
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .receive)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -67,5 +69,17 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 54
+    }
+}
+
+// MARK: - Theme
+
+extension InvoiceSettingsViewController {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .receive)
+    }
+
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        WalletTheme.styleHeader(view, tint: .receive)
     }
 }

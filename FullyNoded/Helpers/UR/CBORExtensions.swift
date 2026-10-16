@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import URKit
 
 extension Tag {
     static let seed = Tag(300)
