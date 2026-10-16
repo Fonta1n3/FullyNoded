@@ -65,10 +65,10 @@ Silent payments give you **one static address you can share anywhere**, such as 
 
 **In Fully Noded**
 
-* **Receive:** the signer detail screen shows your `sp1…` address with a QR export.
-* **Send:** paste an `sp1…` / `tsp1…` address in the send view. Fully Noded computes the one-time output and the PSBT goes through the normal transaction verifier.
-* **Scan:** export your scan private key from the signer detail screen (QR, authentication required) and import it, with your address, into Fully Noded Server (Utilities → Silent Payments). It watches the chain with your own node and imports what it finds, watch-only, into your Fully Noded wallet.
-* **Spend:** the transaction verifier recognises silent payment inputs and signs them with the tweaked key. Normal inputs are signed as usual.
+* **Receive:** the wallet's *Silent payments* section and the signer detail screen show your `sp1…` address with a QR export, and the Receive screen can show it instead of a normal address. The address and scan key are saved on the signer, so they keep working if you delete its seed words (spending then isn't possible).
+* **Send:** paste an `sp1…` / `tsp1…` address (or a BIP321 request with `sp=`) in the send view, including *send all*. Fully Noded computes the one-time output and the PSBT goes through the normal transaction verifier.
+* **Scan:** in the wallet's *Silent payments* section tap **FN-SERVER LINK** (authentication required) and import it in Fully Noded Server (*Silent Payments* → *Import from Fully Noded*). One link carries the address, scan private key and wallet name. The server watches the chain with your own node and imports what it finds, watch-only, into your Fully Noded wallet.
+* **Spend:** the transaction verifier recognises silent payment inputs and signs them with the tweaked key; normal inputs are signed as usual. *Check SP info* on the UTXO screen proves an output is yours and saves its tweak, which also lets you sweep it without your node (*Sweep without node (Nodeless)*, over Tor to Esplora).
 
 For the full technical details see **[SilentPayments.md](./SilentPayments.md)**: key derivation, sending, scanning, rescans and spending, plus current limitations and caveats.
 

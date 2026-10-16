@@ -11,14 +11,18 @@ Noded wallet on your node. The same document lives in both repositories.
 
 | | Fully Noded | FN-Server |
 |---|---|---|
-| Derive SP keys / show `sp1…` address + QR | ✅ Signer detail | – |
-| Export the scan private key (QR) | ✅ Signer detail (auth required) | – |
-| Import scan key + address | – | ✅ Utilities → Silent Payments |
-| Scan the chain for payments to you | – | ✅ `SilentPaymentService` (background) |
+| Derive SP keys / show `sp1…` address + QR | ✅ Signer detail, wallet detail | ✅ shows / shares the imported address |
+| Export for FN-Server (address + scan key + wallet, one QR / link) | ✅ Wallet detail → **FN-SERVER LINK**; signer → *Fully Noded Server QR* (auth required) | – |
+| Export the scan private key alone (QR) | ✅ Signer detail → *Scan key only* (auth required) | – |
+| Import scan key + address | – | ✅ Silent Payments page → *Import from Fully Noded*, or field by field |
+| Scan the chain for payments to you | – | ✅ `SilentPaymentService` (background, parallel) |
 | Make received outputs visible in a Core wallet | – | ✅ watch-only `rawtr()` import + rescan |
-| Scanner status | – | ✅ Bitcoin Core view |
+| Scanner status, history, transaction check | – | ✅ sidebar icon, *History* window, *Check a transaction* |
+| Prove an output is yours and save its tweak | ✅ UTXO screen → *Check SP info* | – |
+| Receive screen: address (BIP21) or silent payment address | ✅ Receive screen | – |
 | Send to an `sp1…` / `tsp1…` address | ✅ Send view → `SilentPaymentSend` | – |
 | Spend received SP outputs | ✅ Transaction verifier → `SilentPaymentSpend` | ❌ never holds `b_spend` |
+| Sweep SP outputs without the node | ✅ UTXO screen → *Sweep without node (Nodeless)* | – |
 
 ---
 
@@ -28,7 +32,8 @@ Noded wallet on your node. The same document lives in both repositories.
 Fully Noded signer (BIP39 seed)
   ├─ sp1… address (+ QR) ─────────────► share it with payers (any BIP352 wallet)
   │                         └─────────► FN-Server: B_spend is read from it
-  ├─ scan private key b_scan (QR) ────► FN-Server: Utilities → Silent Payments
+  ├─ scan private key b_scan ─────────► FN-Server: Silent Payments page
+  │   (both in one fnsp:// link / QR)      (sidebar, or Bitcoin Core → Utilities)
   │                                      scans every new block with b_scan
   │                                      → imports matches as watch-only rawtr()
   │                                      → rescans once caught up
@@ -38,21 +43,29 @@ Fully Noded signer (BIP39 seed)
                                          each tweak and signs with b_spend + t_k
 ```
 
-1. **Get your address.** In Fully Noded open a signer. The *Silent Payment
-   Address* pane shows your `sp1…` (mainnet) or `tsp1…` (test networks) address
-   with a QR export. Share it anywhere.
-2. **Export the scan key.** In the same screen, *SP Scan Private Key* → QR
-   button. It requires an app lock password, a confirmation and Face ID /
-   Touch ID or the app password (never the device passcode). The key is derived
-   on demand and shown only as a QR.
-3. **Set up FN-Server.** Bitcoin Core view → Utilities → **Silent Payments**:
-   pick your Fully Noded wallet, import the scan private key and your
-   `sp1…` address (camera QR, QR image or paste), choose a start height and
-   start scanning. Scanning runs in the background and resumes when FN-Server
-   launches; its status is shown in the Bitcoin Core view.
-4. **Receive.** Payers send to your address. FN-Server finds each payment and
-   imports it into the wallet as a watch-only output.
-5. **Spend.** In Fully Noded, spend from that wallet as usual. The transaction verifier
+1. **Get your address.** In Fully Noded open the wallet (its *Silent payments*
+   section) or the signer (*Silent Payment Address*). It shows your `sp1…`
+   (mainnet) or `tsp1…` (test networks) address with a QR export. Share it
+   anywhere, or show it on the Receive screen (*Silent payment*).
+2. **Export for FN-Server.** In the wallet's *Silent payments* section tap
+   **FN-SERVER LINK** (Face ID / Touch ID or the app password). It's one QR /
+   `fnsp://` link holding the address, the signer's scan private key and the
+   wallet's name on your node. From a signer instead: *SP Scan Private Key* →
+   *Fully Noded Server QR* (same link without the wallet name) or *Scan key only*;
+   both need an app lock password, a confirmation and Face ID / Touch ID or the
+   app password (never the device passcode).
+3. **Set up FN-Server.** Open **Silent Payments** (sidebar, or Bitcoin Core →
+   Utilities). *Import from Fully Noded*: *Paste link* (Copy Text in Fully Noded,
+   Universal Clipboard brings it to the Mac), *QR image…* or *Scan QR*. That fills
+   the address, scan key and wallet. Check the network, choose a start height and
+   press **Start scanning**. Scanning runs in the background and resumes when
+   FN-Server launches; the sidebar icon shows its state.
+4. **Receive.** Payers send to your address. FN-Server finds each payment,
+   imports it into the wallet as a watch-only output and shows a success card;
+   *History* lists everything imported so far.
+5. **Spend.** In Fully Noded, spend from that wallet as usual (optionally *Check SP
+   info* on the UTXO screen first, which proves the output is yours and saves its
+   tweak on the device). The transaction verifier
    recognises the silent payment inputs, recomputes their tweaks with your scan
    key and signs them with your spend key; any other inputs are signed by the
    normal signer. **Whenever silent payment outputs are spent**, Fully Noded asks
@@ -94,6 +107,24 @@ address and scan key always match the network shown. Decrypted seed words and
 passphrases are wiped right after use. `WalletLogic.Bech32m` is local and handles
 SP addresses longer than 90 characters.
 
+**Saved on the signer.** While a signer's seed words exist, `SignerSilentPayment`
+saves its address and `b_scan` for both networks (mainnet coin type 0, test
+networks coin type 1) on the signer in Core Data (`Signers.spAddress` /
+`spScanKey` / `spAddressTest` / `spScanKeyTest`, optional attributes encrypted
+with the app key). So the address, the FN-Server export and payment detection
+keep working after the words are deleted. `b_spend` is never saved: a signer
+without its words can't spend, by design.
+
+**FN-Server link.** One QR / URL carries everything the scanner needs:
+
+```
+fnsp://import?v=1&address=<sp1… / tsp1…>&scankey=<b_scan, 64 hex>[&wallet=<Core wallet name>]
+```
+
+`wallet` is present when exported from a wallet's detail screen (it tells
+FN-Server which node wallet to import into). Made by `SilentPaymentServerLink`
+in Fully Noded and parsed by `SPKeyInput.importLink` in FN-Server.
+
 **What each key can do**
 
 | Key | Who has it | Can |
@@ -113,15 +144,26 @@ together with the master xpub.
 Sources: `FullyNoded-Server/Helpers/SilentPaymentsScanner.swift`,
 `FullyNoded-Server/Views/SilentPaymentsView.swift`.
 
-### 3.1 Setup window (Utilities → Silent Payments)
+### 3.1 Silent Payments page
 
-A single SwiftUI window:
+Open it from the **Silent Payments** row in the sidebar (its icon is the scanner
+status, 3.2) or Bitcoin Core → Utilities → *Silent Payments*. Cards, top to
+bottom:
 
+- **Scanner**: live activity (blocks to go, speed, time left, rescanning,
+  watching, retrying, stopped), the saved network and wallet, payments found this
+  session and what's still needed before Start. *Import from Fully Noded*
+  (*Paste link*, *QR image…*, *Scan QR*) fills the address, scan key and wallet
+  from an `fnsp://` link; with keys saved it moves to an *Import…* menu. Buttons:
+  *Stop* / *Resume*, *Forget keys*, *Rescan* (from the earliest block the node
+  has), *History* and *Start scanning* / *Save & restart*. Nothing is saved until
+  Start / Save & restart.
 - **Network**: which node the setup uses (Mainnet, Testnet3, Testnet4, Signet,
-  Regtest), independent of the Bitcoin Core network picker. The wallet list, start
-  height and Start all use it; switching clears the wallet and start height. An
-  `sp1…` import selects Mainnet. Start checks the node on that port reports that
-  network, and the network is saved with the keys (3.4).
+  Regtest), independent of the Bitcoin Core network picker. The wallet list,
+  start height and Start all use it; switching clears the wallet and start
+  height. An `sp1…` import selects Mainnet. Start checks the node on that port
+  reports that network, and the network is saved with the keys (3.4). If the
+  saved setup is on another network it says so.
 - **Wallet**: picker of the node's loaded wallets; pick the Fully Noded wallet
   you'll spend from (Fully Noded wallets are watch-only descriptor wallets on
   the node, with their own change addresses). Before starting, `getwalletinfo`
@@ -129,26 +171,41 @@ A single SwiftUI window:
   refuses watch-only imports otherwise).
 - **Scan private key**: hidden field with show/hide; *Scan QR* (only if the Mac
   has a camera), *QR image…* and *Paste*. Validated as a secp256k1 key; `B_scan`
-  is computed from it.
+  is computed from it. With keys saved, an empty field keeps the saved key.
 - **Silent payment address**: `sp1…` / `tsp1…` only. `B_spend` is read from it.
   The address must match the node's network, and its `B_scan` must match the
-  scan key (so a wrong or mistyped key is caught before scanning).
+  scan key (so a wrong or mistyped key is caught before scanning). *Share*:
+  *Copy address* and *Show QR* (copy the QR image or save it).
 - **Start height**: the first block that could contain a payment to you, with
-  *Use current height*. Used the first time a key pair is scanned on a network, and again whenever it's changed (Save & restart then scans from the new height). Start refuses a height a pruned node no longer has.
-- **Scanner**: status, progress, payments found this session, last error, and
-  *Start scanning* / *Save & restart*, *Stop*, *Resume saved*, *Forget keys*.
+  *Use current height* and *Earliest available* (the node's prune height, if
+  pruned). Used the first time a key pair is scanned on a network, and again
+  whenever it's changed (Save & restart then scans from the new height). *Rescan*
+  scans again from the height entered, with the saved keys. Start refuses a
+  height a pruned node no longer has.
+- **Check a transaction**: txid (and optionally its block height). Runs the
+  scanner's BIP352 math on that one transaction with the saved keys and lists
+  each step (eligible inputs, shared secret, outputs compared), to see whether it
+  pays you and why not. Only public keys are shown.
 
-The camera is read with AVFoundation, each frame is displayed as a SwiftUI
-`Image`, and QR codes are decoded with Core Image. `bitcoin:` prefixes and query
-strings are stripped from scanned or pasted text. The app has the camera
-entitlement and an `NSCameraUsageDescription`, so macOS asks once.
+Any field also accepts an `fnsp://` link, which fills both keys. The camera is
+read with AVFoundation, each frame is displayed as a SwiftUI `Image`, and QR
+codes are decoded with Core Image. `bitcoin:` prefixes and query strings are
+stripped from scanned or pasted text. The app has the camera entitlement and an
+`NSCameraUsageDescription`, so macOS asks once.
 
-### 3.2 Status in the Bitcoin Core view
+### 3.2 Status, alerts and history
 
-Once keys are imported, a read-only *Silent Payments* row shows the scanner state
-(refreshed every 5 s from `SilentPaymentService.status()`): stopped, starting,
-retrying (with the error), scanning block X of Y, wallet rescan pending /
-running, or up to date. On/off stays in Utilities.
+- **Sidebar icon** on the Silent Payments row (refreshed every 3 s from
+  `SilentPaymentService.status()`): dim ✕ no keys imported, amber ✕ not
+  scanning, ⚠️ retrying (hover for the error), a ring filling with the share of
+  blocks scanned while catching up, a pulsing arrow while the wallet rescans,
+  ✓ up to date.
+- **Import alert**: each time the scanner imports payments, a card in the main
+  window shows how many, the amount and the txids.
+- **History** (window, also in the app menu): every silent payment output in the
+  scanner's wallet, read from the wallet itself (`listdescriptors` for the
+  `rawtr()` imports, plus `listreceivedbyaddress` / `listunspent`), so it
+  includes older imports. FN-Server stores no history of its own.
 
 ### 3.3 Per-transaction logic
 
@@ -192,19 +249,37 @@ Validated against the official BIP352 receiving test vectors.
 
 - **One serial queue** owns all state; a `generation` counter makes stale
   callbacks from a previous `start()`/`stop()` exit instead of racing.
+- **Pinned to one network**: *Start* records the node's chain
+  (`getblockchaininfo`) with the keys, and every scanner RPC goes to that
+  network's port (8332 / 18332 / 48332 / 38332 / 18443), whichever network is
+  selected in FN-Server later. Configs saved before this take mainnet from an
+  `sp1…` address, and the selected test network for a `tsp1…` one.
+- **Node check**: on start and after every error, the node on that port must
+  report the same chain (`getblockchaininfo`) and have the wallet
+  (`listwalletdir`). Until it does nothing is scanned or advanced: the error is
+  shown and retried with backoff (e.g. while that network's node is stopped).
 - **Step**: `getblockcount`. If behind the tip, scan `nextHeight`. If caught up
   and a rescan is pending, run it. Otherwise poll again after
   `pollInterval` (15 s).
+- **Speed**: while block *h* is scanned, block *h + 1* is already being fetched
+  (one block ahead; discarded on a reorg, rescan or restart). A block's
+  transactions are scanned in parallel across the CPU cores
+  (`DispatchQueue.concurrentPerform`), and results are put back in transaction
+  order.
 - **A block only counts as scanned after it was fetched *and* any matches were
   imported.** Any error (node down, 401/403/503, wallet not loaded, missing
   prevouts) is retried with exponential backoff (5 s → 300 s) on the *same*
-  height; blocks are never skipped.
+  height; blocks are never skipped. While the node is unreachable or warming up
+  (`-28`) it's polled every 5 s instead, so scanning resumes within seconds of
+  Core coming back.
 - **Import**: for all matches in a block, `getdescriptorinfo` adds a checksum,
   then **one** `importdescriptors` call with `timestamp: "now"`,
-  `active: false`, `internal: false` and a label of
-  `sp scan=<B_scan> k=<k> [m=<m>]` (no tweak). The label is informational only:
-  Fully Noded doesn't rely on it, and proves each output from the chain instead
-  (5.1). Re-importing is idempotent.
+  `active: false`, `internal: false`. Each output then gets a wallet label of
+  `sp scan=<B_scan> k=<k> [m=<m>]` (no tweak) with `deriveaddresses` +
+  `setlabel` (Core 30 refuses a label inside `importdescriptors` for these
+  non-ranged imports). The label is informational only: Fully Noded doesn't rely
+  on it, and proves each output from the chain instead (5.1). Re-importing is
+  idempotent.
 - **Deferred rescan**: because imports use `"now"`, the lowest height with a
   found output is kept in `pendingRescanFrom`. Once the scanner reaches the
   tip, **one** `rescanblockchain(start_height)` makes the wallet pick up the
@@ -216,7 +291,15 @@ Validated against the official BIP352 receiving test vectors.
   saved for `height − 1` (last 200 heights kept). On mismatch it steps back one
   height and rescans. Imported descriptors from orphaned blocks stay in the
   wallet (harmless, watch-only). Reorgs deeper than 200 blocks are not handled.
-- **API**: `start(...)` (validates the keys, throws on bad ones), `stop()`,
+- **Manual rescan**: `rescan(fromHeight:)` drops saved progress and scans again
+  from that height with the current keys (the page's *Rescan* buttons). Safe to
+  repeat: already-imported outputs change nothing, and new finds queue the
+  wallet rescan as above.
+- **Pruned blocks**: if `getblock` says a block is pruned, the error says to
+  rescan from the node's earliest block or Save & restart with a later start
+  height (retrying can't bring it back).
+- **API**: `start(...)` (validates the keys, throws on bad ones; `fromBirthday`
+  ignores saved progress), `rescan(fromHeight:)`, `stop()`,
   `isRunning`, `status()` (thread-safe snapshot for the UI), and main-queue
   callbacks `onProgress(height, tip)`, `onFound([SPFoundOutput])` and
   `onError(SPError)`.
@@ -225,7 +308,7 @@ Validated against the official BIP352 receiving test vectors.
 
 | What | Where | Why |
 |---|---|---|
-| Wallet name, `b_scan`, `B_scan`, `B_spend`, address, start height | Keychain, encrypted with the app's key (`SPConfigStore`) | resume scanning at launch; *Forget keys* deletes it |
+| Wallet name, `b_scan`, `B_scan`, `B_spend`, address, start height, network | Keychain, encrypted with the app's key (`SPConfigStore`) | resume scanning at launch; *Forget keys* deletes it |
 | Scan progress: next height, recent block hashes, pending rescan height | UserDefaults, `sp_state_<first 16 hex of SHA256(network\|wallet\|B_scan\|B_spend)>` | resume exactly where it stopped, on that network only |
 | Found outputs (scan key, `k`, label `m`; never the tweak) | only in the imported output's **wallet label** in Core (nothing in FN-Server) | informational; Fully Noded proves outputs from the chain and keeps its own tweaks (5.1) |
 
@@ -236,24 +319,32 @@ The server never holds `b_spend`, so it **cannot spend** what it finds.
 **Bitcoin Core**
 
 - **Core ≥ 25**: `getblock` verbosity 3 provides `vin.prevout`.
-- **Unpruned from the start height onward**: verbosity 3 needs undo data. A
-  block without prevouts fails loudly rather than being skipped.
+- **Blocks from the start height onward** (a pruned node works if its prune
+  height is at or below the start height; *Earliest available* fills that in):
+  verbosity 3 needs undo data. A block without prevouts fails loudly rather than
+  being skipped.
 - **A watch-only descriptor wallet** (private keys disabled): your Fully Noded
   wallet. The service loads it itself if it isn't loaded.
-- **RPC methods** (if `rpcwhitelist` is used): `getblockcount`, `getblockhash`,
-  `getblock`, `getdescriptorinfo`, `importdescriptors`, `rescanblockchain`,
-  `loadwallet`, plus `listwallets` and `getwalletinfo` for the setup window.
+- **RPC methods** (if `rpcwhitelist` is used): scanner `getblockchaininfo`,
+  `listwalletdir`, `getblockcount`, `getblockhash`, `getblock`,
+  `getdescriptorinfo`, `importdescriptors`, `deriveaddresses`, `setlabel`,
+  `rescanblockchain`, `loadwallet`; page `listwallets`, `getwalletinfo`,
+  `getrawtransaction` (*Check a transaction*); History `listdescriptors`,
+  `listreceivedbyaddress`, `listunspent`.
 - `txindex` is **not** required.
 
-**FN-Server**: the RPC port / user from settings and the encrypted RPC password
-(Core Data), as for everything else in FN-Server.
+**FN-Server**: the RPC user from settings and the encrypted RPC password
+(Core Data), as for everything else in FN-Server. The scanner uses the default
+RPC port of its network (FN-Server doesn't set `rpcport`).
 
 ### 3.7 Caveats
 
 - It's a full-node scanner (no SP index, tweak server or BIP158 filters): one
-  ECDH per eligible transaction. Catching up from an old start height on mainnet
-  is slow.
-- One SP identity at a time (`SilentPaymentService` is a singleton).
+  ECDH per eligible transaction, spread over the CPU cores. Catching up from an
+  old start height on mainnet still takes a while.
+- One SP identity, on one network, at a time (`SilentPaymentService` is a
+  singleton). Switching the selected network doesn't move the scanner; it keeps
+  scanning its own network while that node runs.
 - Scanning only runs while FN-Server is open (it resumes, and catches up, at
   the next launch).
 
@@ -268,8 +359,9 @@ builds an **unsigned PSBT** that pays an `sp1…` / `tsp1…` address from the a
 (Core-backed) Fully Noded wallet, including your received silent payment outputs
 in it. `AddressParser` accepts `sp1` / `tsp1`, and BIP321 payment requests
 (`bitcoin:<address>?sp=sp1…`, or `bitcoin:?sp=sp1…` with no fallback); when a request
-offers both, the send view asks which to pay. Fully Noded's Receive screen makes these
-requests from a wallet signer's silent payment address. Then
+offers both, the send view asks which to pay. (Fully Noded's own Receive screen shows
+either a BIP21 request for a normal address or the silent payment address on its own,
+never a combined request.) Then
 `CreateRawTxViewController` routes an SP recipient here; the resulting PSBT goes
 to the transaction verifier for the normal sign/broadcast flow.
 
@@ -362,7 +454,9 @@ BIP352 only needs your keys and the chain, so that's what Fully Noded relies on.
 `SilentPaymentSpend.detect(candidates:)` works per taproot input:
 
 1. **Saved tweak (no RPC).** On the UTXO screen, any output held as a bare taproot
-   key (`rawtr(<xonly>)`, how FN-Server imports) shows **Check SP info**. It runs the
+   key (`rawtr(<xonly>)`, how FN-Server imports) is marked as a possible silent
+   payment and shows **Check SP info** (in its ⋯ menu too); once checked it's
+   marked verified and offers *Re-check SP info* and the nodeless sweep (5.4). It runs the
    BIP352 scan below for that output and, on a match, saves `t_k` (and the label
    tweak for labeled addresses such as change) on the cached UTXO in Core Data
    (`Utxos.spTweak` / `spLabelTweak`, encrypted with the app key). A refresh keeps
