@@ -60,29 +60,55 @@ final class SuccessView: UIView {
     // MARK: - Showing
 
     /// Full card. Must be dismissed with its button. Safe from any thread.
+    ///
+    /// A trailing closure is `onDismiss`. (With the secondary button's closure in the same
+    /// signature, Swift 5 mode bound trailing closures to `onSecondary` instead, so they
+    /// never ran; the secondary button has its own overload below.)
     static func show(in viewController: UIViewController,
                      kind: Kind = .success,
                      title: String,
                      subtitle: String = "",
                      detail: String? = nil,
-                     onDismiss: (() -> Void)? = nil,
-                     secondaryTitle: String? = nil,
-                     onSecondary: (() -> Void)? = nil) {
+                     onDismiss: (() -> Void)? = nil) {
+        show(in: viewController, kind: kind, title: title, subtitle: subtitle, detail: detail,
+             onDismiss: onDismiss, secondaryTitle: nil, onSecondary: nil)
+    }
+
+    /// Full card with a second button. Safe from any thread.
+    static func show(in viewController: UIViewController,
+                     kind: Kind = .success,
+                     title: String,
+                     subtitle: String = "",
+                     detail: String? = nil,
+                     onDismiss: (() -> Void)?,
+                     secondaryTitle: String?,
+                     onSecondary: (() -> Void)?) {
         DispatchQueue.main.async {
             show(on: viewController.view.window ?? viewController.view, kind: kind, title: title, subtitle: subtitle,
                  detail: detail, onDismiss: onDismiss, secondaryTitle: secondaryTitle, onSecondary: onSecondary)
         }
     }
 
-    /// Same, on a window (or any view) directly. Main queue only.
+    /// Same, on a window (or any view) directly. Main queue only. A trailing closure is `onDismiss`.
     static func show(on host: UIView?,
                      kind: Kind = .success,
                      title: String,
                      subtitle: String = "",
                      detail: String? = nil,
-                     onDismiss: (() -> Void)? = nil,
-                     secondaryTitle: String? = nil,
-                     onSecondary: (() -> Void)? = nil) {
+                     onDismiss: (() -> Void)? = nil) {
+        show(on: host, kind: kind, title: title, subtitle: subtitle, detail: detail,
+             onDismiss: onDismiss, secondaryTitle: nil, onSecondary: nil)
+    }
+
+    /// Same, with a second button. Main queue only.
+    static func show(on host: UIView?,
+                     kind: Kind = .success,
+                     title: String,
+                     subtitle: String = "",
+                     detail: String? = nil,
+                     onDismiss: (() -> Void)?,
+                     secondaryTitle: String?,
+                     onSecondary: (() -> Void)?) {
         guard let host = host else { return }
         let present = {
             let view = SuccessView(kind: kind, title: title, subtitle: subtitle, detail: detail, secondaryTitle: secondaryTitle)
