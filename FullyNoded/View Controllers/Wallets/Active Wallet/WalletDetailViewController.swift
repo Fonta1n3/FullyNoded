@@ -444,12 +444,15 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
 
         coinType = (wallet.receiveDescriptor.contains("xpub") || wallet.receiveDescriptor.contains("xprv")) ? "0" : "1"
 
-        if let backup = wallet.walletBackup {
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.sortedKeys]
-            encoder.dateEncodingStrategy = .secondsSince1970
-            if let jsonData = try? encoder.encode(backup) {
-                backupText = jsonData.hexString
+        // walletBackup is the backup's JSON (WalletBackup.jsonData()). The export is the hex of
+        // that JSON, the format WalletBackup.decode(hex:) reads back. (JSON-encoding the Data
+        // itself would produce a quoted base64 string that no import recognises.)
+        if let stored = wallet.walletBackup {
+            if let backup = try? JSONDecoder().decode(WalletBackup.self, from: stored),
+               let hex = try? backup.hexEncoded() {
+                backupText = hex
+            } else {
+                backupText = stored.hexString
             }
         }
 
@@ -545,8 +548,10 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     private func walletDeleted() {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            let alert = UIAlertController(title: "Fully Noded wallet removed", message: "It will no longer appear in your list of \"Fully Noded Wallets\".", preferredStyle: alertStyle)
-            alert.addAction(UIAlertAction(title: "Done", style: .cancel) { [weak self] _ in
+            // An alert, not an action sheet: iOS 26 hides an action sheet's cancel button (tap
+            // outside instead), which left this confirmation with no visible way to close it.
+            let alert = UIAlertController(title: "Fully Noded wallet removed", message: "It will no longer appear in your list of \"Fully Noded Wallets\".", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Done", style: .default) { [weak self] _ in
                 self?.navigationController?.popToRootViewController(animated: true)
             })
             alert.popoverPresentationController?.sourceView = view
