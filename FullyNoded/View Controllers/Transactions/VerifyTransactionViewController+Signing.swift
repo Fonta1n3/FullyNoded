@@ -113,7 +113,7 @@ extension VerifyTransactionViewController {
                        let hex = dict["hex"] as? String {
                         self.handleSigningResult(signedPsbt: nil, rawTx: hex, errorMessage: nil)
                     } else {
-                        self.showPartiallySigned(signedPsbt)
+                        self.showPartiallySigned(signedPsbt, signerError: errorMessage)
                     }
                 }
             } else {
@@ -128,7 +128,8 @@ extension VerifyTransactionViewController {
 
     /// Partially signed: still celebrate the signature, say how many are missing,
     /// and point out that the PSBT can be exported to another signer.
-    func showPartiallySigned(_ signedPsbt: String) {
+    /// `signerError`: why some of this device's inputs weren't signed, shown with the result.
+    func showPartiallySigned(_ signedPsbt: String, signerError: String? = nil) {
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .decodepsbt(param: Decode_Psbt(["psbt": signedPsbt]))) { [weak self] response, _ in
             DispatchQueue.main.async {
                 guard let self = self else { return }
@@ -157,6 +158,9 @@ extension VerifyTransactionViewController {
                     subtitle = "Some inputs don't say how many signatures they need, so more may be required."
                 }
                 subtitle += "\n\nYou can export the PSBT and sign it with another signer."
+                if let signerError {
+                    subtitle += "\n\nSome inputs this device can sign weren't signed: \(signerError)"
+                }
                 SuccessView.show(
                     in: self,
                     title: "Signed",
@@ -235,8 +239,10 @@ extension VerifyTransactionViewController {
     /// `signRemainingInputs` for a PSBT the silent payment signer just wrote. The normal Signer
     /// (BDK) rejects that PSBT as it was re-serialized ("MissingNonWitnessUtxo"), so when
     /// ordinary inputs are still left it first goes through the node's `finalizepsbt`, which
-    /// returns a normalized PSBT (the signed silent payment inputs finalized). With nothing
-    /// left to sign it behaves exactly like `signRemainingInputs`.
+    /// returns a normalized PSBT (the signed silent payment inputs finalized), and inputs missing
+    /// their funding transaction get it (`addMissingNonWitnessUtxos`), as BDK otherwise refuses
+    /// the whole PSBT when a silent payment input is left for another device to sign. With
+    /// nothing left to sign it behaves exactly like `signRemainingInputs`.
     func signRemainingInputsAfterSilentPayments(psbt: String,
                                                 parentDescs: [String],
                                                 passphrase: String?,
@@ -252,41 +258,76 @@ extension VerifyTransactionViewController {
                 completion(nil, rawTx, nil)
                 return
             }
-            self.signRemainingInputs(psbt: normalized ?? psbt, parentDescs: parentDescs, passphrase: passphrase, completion: completion)
+            SilentPaymentSpend.addMissingNonWitnessUtxos(psbt: normalized ?? psbt) { [weak self] filled in
+                #if DEBUG
+                print("[sp-sign] normalized by node: \(normalized != nil), non_witness_utxo added: \(filled != (normalized ?? psbt)), parentDescs: \(parentDescs.map { $0.prefix(60) })")
+                #endif
+                self?.signRemainingInputs(psbt: filled, parentDescs: parentDescs, passphrase: passphrase, completion: completion)
+            }
         }
     }
 
     /// Normal Signer for the non-silent-payment inputs, one parent descriptor at a time,
     /// each signing the previous result. Then finalize with the node.
-    /// Completion: (psbt, rawTx, error) — rawTx if fully signed and finalized.
+    /// Completion: (psbt, rawTx, error) — rawTx if fully signed and finalized. With a psbt,
+    /// error is why a descriptor your signers belong to wasn't signed (nil if all were).
     func signRemainingInputs(psbt: String,
                                      parentDescs: [String],
                                      passphrase: String?,
+                                     errors: [String] = [],
                                      completion: @escaping (String?, String?, String?) -> Void) {
         guard let parentDesc = parentDescs.first else {
-            finalizeWithNode(psbt, completion: completion)
+            finalizeWithNode(psbt) { psbt, rawTx, error in
+                completion(psbt, rawTx, rawTx == nil ? (error ?? errors.first) : nil)
+            }
             return
         }
 
         guard let wallet = wallet else {
             // SP inputs are signed; the others need a Fully Noded wallet to sign.
-            finalizeWithNode(psbt, completion: completion)
+            finalizeWithNode(psbt) { psbt, rawTx, _ in
+                completion(psbt, rawTx, rawTx == nil ? "the active wallet isn't a Fully Noded wallet with signers on this device, so only the silent payment inputs were signed." : nil)
+            }
             return
         }
 
-        Signer.shared.attemptToSignPsbt(fnWallet: wallet, psbt: psbt, passphrase: passphrase, utxoParentDesc: parentDesc) { [weak self] signedPsbt, rawTx, _ in
+        Signer.shared.attemptToSignPsbt(fnWallet: wallet, psbt: psbt, passphrase: passphrase, utxoParentDesc: parentDesc) { [weak self] signedPsbt, rawTx, errorMessage in
             guard let self = self else { return }
+            #if DEBUG
+            print("[sp-sign] \(parentDesc.prefix(60))… → psbt: \(signedPsbt != nil), changed: \(signedPsbt.map { $0 != psbt } ?? false), rawTx: \(rawTx != nil), error: \(errorMessage ?? "none")")
+            #endif
 
             if let rawTx = rawTx {
                 completion(nil, rawTx, nil)
                 return
             }
 
-            // Keep going with whatever we have (a signer error leaves the psbt unchanged).
+            // Keep going with whatever we have (a signer error leaves the psbt unchanged). A
+            // descriptor none of your signers belong to (e.g. another device's silent payment
+            // input) isn't an error worth reporting.
+            var errors = errors
+            if signedPsbt == nil, let errorMessage, !errorMessage.hasPrefix("None of your signers match") {
+                errors.append(errorMessage)
+            } else if let signedPsbt, Self.signatureCount(signedPsbt) <= Self.signatureCount(psbt) {
+                // The signer ran without error but added nothing (it didn't recognise any input).
+                errors.append("your signer for \(Descriptor(parentDesc).fingerprint) ran but added no signatures.")
+            }
             self.signRemainingInputs(psbt: signedPsbt ?? psbt,
                                      parentDescs: Array(parentDescs.dropFirst()),
                                      passphrase: passphrase,
+                                     errors: errors,
                                      completion: completion)
+        }
+    }
+
+    /// Signatures in a PSBT (partial sigs, taproot key and script path sigs), to tell whether a
+    /// signer added any. 0 if it can't be parsed.
+    static func signatureCount(_ psbt: String) -> Int {
+        guard let raw = Data(base64Encoded: psbt.trimmingCharacters(in: .whitespacesAndNewlines)),
+              let parsed = try? SPPsbt(raw) else { return 0 }
+        let sigKeyTypes: Set<UInt8> = [0x02, SPPsbt.inTapKeySig, 0x14]
+        return parsed.inputs.reduce(0) { count, input in
+            count + input.filter { sigKeyTypes.contains($0.key.first ?? 0xFF) }.count
         }
     }
 

@@ -402,6 +402,7 @@ struct SPReader {
     init(_ bytes: [UInt8]) { b = bytes }
 
     var atEnd: Bool { i == b.count }
+    var remaining: Int { b.count - i }
     func peek(_ n: Int) -> [UInt8]? { i + n <= b.count ? Array(b[i..<i + n]) : nil }
 
     mutating func bytes(_ n: Int) throws -> [UInt8] {
@@ -906,6 +907,63 @@ extension SilentPaymentSpend {
             MakeRPCCall.sharedInstance.executeRPCCommand(method: .getrawtransaction(param: Get_Raw_Tx(params))) { response, _ in
                 completion(response as? [String: Any])
             }
+        }
+    }
+
+    /// Adds non_witness_utxo (the funding transaction, from the node) to every input that lacks
+    /// it, finalized ones included. BDK signs with trustWitnessUtxo: false and then refuses the
+    /// whole PSBT (MissingNonWitnessUtxo) if any input, even a finalized one, has no funding
+    /// transaction it can verify: e.g. a silent payment input this device already signed, or
+    /// one it can't sign (its scan key is on another device), would leave the multisig inputs
+    /// unsigned too. BDK checks each transaction against the input's txid itself. Completion
+    /// (main queue) gets the PSBT, unchanged if nothing was missing or nothing could be fetched.
+    static func addMissingNonWitnessUtxos(psbt: String, completion: @escaping (String) -> Void) {
+        let finish: (String) -> Void = { result in DispatchQueue.main.async { completion(result) } }
+
+        guard let raw = Data(base64Encoded: psbt.trimmingCharacters(in: .whitespacesAndNewlines)),
+              var parsed = try? SPPsbt(raw) else {
+            finish(psbt)
+            return
+        }
+
+        let missing = parsed.inputs.indices.filter { i in
+            !parsed.inputs[i].contains { entry in entry.key == [SPPsbt.inNonWitnessUtxo] }
+        }
+        guard !missing.isEmpty else {
+            finish(psbt)
+            return
+        }
+
+        var added = false
+        func next(_ remaining: ArraySlice<Int>) {
+            guard let i = remaining.first else {
+                finish(added ? parsed.serialize().base64EncodedString() : psbt)
+                return
+            }
+            fundingTransactionHex(txid: parsed.tx.inputs[i].txidDisplay) { hex in
+                if let hex, let bytes = SPHexFN.decode(hex), (try? SPTx([UInt8](bytes))) != nil {
+                    parsed.inputs[i].append((key: [SPPsbt.inNonWitnessUtxo], value: [UInt8](bytes)))
+                    added = true
+                }
+                #if DEBUG
+                print("[sp-sign] input \(i) non_witness_utxo: \(hex == nil ? "NOT FOUND" : "added")")
+                #endif
+                next(remaining.dropFirst())
+            }
+        }
+        next(missing[...])
+    }
+
+    /// Raw hex of a transaction: the wallet's copy (`gettransaction`, any wallet transaction),
+    /// else `getrawtransaction` (mempool, -txindex, or with the block hash).
+    private static func fundingTransactionHex(txid: String, completion: @escaping (String?) -> Void) {
+        let walletTx = Get_Tx(["txid": txid, "verbose": false])
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .gettransaction(walletTx)) { response, _ in
+            if let hex = (response as? [String: Any])?["hex"] as? String {
+                completion(hex)
+                return
+            }
+            fetchFundingTransaction(txid: txid) { tx in completion(tx?["hex"] as? String) }
         }
     }
 
