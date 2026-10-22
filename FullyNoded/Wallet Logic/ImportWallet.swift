@@ -112,29 +112,36 @@ class ImportWallet {
             }
         }
         
+        /// The wallet becomes the active wallet only once everything has succeeded.
+        func saveAndActivate(_ wallet: [String: Any]) {
+            saveLocally(wallet: wallet) { (success, errorDescription) in
+                if success, let name = wallet["name"] as? String {
+                    UserDefaults.standard.set(name, forKey: "walletName")
+                }
+                completion((success, errorDescription))
+            }
+        }
+        
         func createWalletNow(_ recDesc: String, _ changeDesc: String, _ password: String) {
             // Use the sha256 hash of the checksum-less primary receive keypool desc as the wallet name so it has a deterministic identifier
             let walletName = "\(prefix)-\(Crypto.sha256hash(primDescriptor))"
             
             createWallet(walletName, password) { (name, errorMessage) in
                 guard let name = name else {
-                    UserDefaults.standard.removeObject(forKey: "walletName")
                     completion((false, "error creatig wallet: \(errorMessage ?? "unknown error")"))
                     return
                 }
                 
                 wallet["name"] = name
-                UserDefaults.standard.set(wallet["name"] as! String, forKey: "walletName")
                 
                 if version >= 210100 {
-                    importPrimaryDescriptors(recDesc, changeDesc) { (success, errorMessage) in
+                    importPrimaryDescriptors(recDesc, changeDesc, walletName: name) { (success, errorMessage) in
                         guard success else {
-                            UserDefaults.standard.removeObject(forKey: "walletName")
-                            completion((false, "error importing descriptor: \(errorMessage ?? "unknown error")"))
+                                    completion((false, "error importing descriptor: \(errorMessage ?? "unknown error")"))
                             return
                         }
                         
-                        saveLocally(wallet: wallet, completion: completion)
+                        saveAndActivate(wallet)
                     }
                 } else {
                     completion((false, "Fully Noded works with Bitcoin Core 0.21 minimum."))
@@ -144,7 +151,6 @@ class ImportWallet {
         
         getDescriptorInfo(desc: primDescriptor) { (recDesc, errorMessage) in
             guard let recDesc = recDesc else {
-                UserDefaults.standard.removeObject(forKey: "walletName")
                 completion((false, errorMessage ?? "error getting descriptor info"))
                 return
             }
@@ -153,7 +159,6 @@ class ImportWallet {
             
             getDescriptorInfo(desc: primDescriptor.replacingOccurrences(of: "/0/*", with: "/1/*")) { (changeDesc, errorMessage) in
                 guard let changeDesc = changeDesc else {
-                    UserDefaults.standard.removeObject(forKey: "walletName")
                     completion((false, errorMessage ?? "error getting change descriptor info"))
                     return
                 }
@@ -168,9 +173,7 @@ class ImportWallet {
                     }
                     
                     wallet["name"] = existingWallet
-                    UserDefaults.standard.set(wallet["name"] as! String, forKey: "walletName")
-                    
-                    saveLocally(wallet: wallet, completion: completion)
+                    saveAndActivate(wallet)
                 }
             }
         }
@@ -207,9 +210,8 @@ class ImportWallet {
         
         OnchainUtils.createWallet(param: .init(param)) { (name, message) in
             if password != "" {
-                UserDefaults.standard.setValue(name, forKey: "walletName")
                 let param:Wallet_Passphrase = .init(["passphrase":password, "timeout":600])
-                MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletpassphrase(param: param)) { (response, errorMessage) in
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletpassphrase(param: param), walletName: name ?? walletName) { (response, errorMessage) in
                     if errorMessage == nil {
                         completion((name, message))
                     } else {
@@ -222,7 +224,7 @@ class ImportWallet {
         }
     }
     
-    class func importPrimaryDescriptors(_ recDesc: String, _ changeDesc: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+    class func importPrimaryDescriptors(_ recDesc: String, _ changeDesc: String, walletName: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
         var recDescIsActive = true
         var changeDescIsActive = true
         
@@ -255,11 +257,11 @@ class ImportWallet {
                 ]
         ] as [String:Any])
         
-        importDescriptors(params, completion: completion)
+        importDescriptors(params, walletName: walletName, completion: completion)
     }
     
-    class func importDescriptors(_ params: Import_Descriptors, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        OnchainUtils.importDescriptors(params) { (imported, message) in
+    class func importDescriptors(_ params: Import_Descriptors, walletName: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+        OnchainUtils.importDescriptors(params, walletName: walletName) { (imported, message) in
             completion((imported, message))
         }        
     }

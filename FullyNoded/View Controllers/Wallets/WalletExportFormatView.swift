@@ -295,3 +295,110 @@ extension WalletExportFormatView {
         ])
     }
 }
+
+// MARK: - Backup export
+
+extension UIViewController {
+    
+    /// Asks how to export a wallet backup (QR, file or text) and does it. Shared by the Active
+    /// Wallet export button and the "backup updated" card shown after adding a timelock.
+    func presentBackupExport(_ backup: WalletBackup, walletLabel: String?) {
+        WalletExportFormatView.show(in: self) { [weak self] format in
+            guard let self = self, let format = format else { return }
+            
+            do {
+                switch format {
+                case .qr:
+                    let qrVC = QRViewController(
+                        text: try backup.hexEncoded(),
+                        headerText: "\(walletLabel ?? "Wallet") Backup",
+                        descriptionText: "Last updated: " + backup.lastUpdate.formattedDate,
+                        headerIcon: UIImage(systemName: "qrcode"),
+                        isBbqr: true,
+                        isUR: false
+                    )
+                    
+                    let nav = UINavigationController(rootViewController: qrVC)
+                    nav.modalPresentationStyle = .fullScreen
+                    
+                    self.present(nav, animated: true)
+                    
+                case .file:
+                    self.exportBackupAsFile(backup)
+                case .text:
+                    self.copyBackupAsText(backup)
+                }
+                
+            } catch {
+                print("error completing export format: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func copyBackupAsText(_ backup: WalletBackup) {
+        do {
+            let hexString = try backup.hexEncoded()
+            UIPasteboard.general.string = hexString
+            
+            // Show success with explanation
+            let byteCount = hexString.count / 2
+            let charCount = hexString.count
+            
+            SuccessView.show(
+                in: self,
+                title: "Backup copied",
+                subtitle: "Hex-encoded backup (\(byteCount) bytes → \(charCount) chars) is now in your clipboard.\n\nPaste it into a secure location."
+            ) {
+                print("User acknowledged hex backup copy")
+            }
+            
+            // Haptic feedback
+            let feedback = UIImpactFeedbackGenerator(style: .medium)
+            feedback.impactOccurred()
+            
+        } catch {
+            showAlert(title: "Encoding Failed", message: "Could not encode backup: \(error.localizedDescription)")
+        }
+    }
+    
+    private func exportBackupAsFile(_ backup: WalletBackup) {
+        do {
+            // Same hex as the QR and text exports (what the importer reads).
+            let jsonData = try backup.hexEncoded().utf8
+            let fileName = "\(backup.lastUpdate.formattedDate).txt"
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+            try jsonData.write(to: tempURL)
+            
+            let activityVC = UIActivityViewController(activityItems: [tempURL], applicationActivities: nil)
+            
+            activityVC.excludedActivityTypes = [
+                .addToReadingList,
+                .assignToContact,
+                .markupAsPDF
+            ]
+            
+            if let popover = activityVC.popoverPresentationController {
+                popover.sourceView = self.view
+                popover.sourceRect = self.view.bounds
+                popover.permittedArrowDirections = []
+            }
+            
+            // Not sure this fires off...
+            activityVC.completionWithItemsHandler = { [weak self] activityType, completed, items, error in
+                try? FileManager.default.removeItem(at: tempURL)
+                
+                if completed {
+                    guard let self = self else { return }
+                    SuccessView.show(in: self, title: "Backup exported", subtitle: "Your wallet backup has been saved.") { }
+                } else if let error = error {
+                    showAlert(title: "Export Failed", message: error.localizedDescription)
+                }
+            }
+            
+            present(activityVC, animated: true)
+            
+        } catch {
+            showAlert(title: "Error", message: "Failed to create backup file: \(error.localizedDescription)")
+        }
+    }
+}
