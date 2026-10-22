@@ -13,7 +13,6 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
     @IBOutlet weak var table: UITableView!
     var activeWallets: [[String: Any]] = []
     var fnWallets: [Wallet] = []
-    let connectingView = ConnectingView.shared
     private var initialLoad = true
 
     
@@ -32,20 +31,20 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     private func getAllActiveWallets() {
-        connectingView.show(vc: self, description: "getting all loaded wallets...")
+        showActivity("getting all loaded wallets...")
         activeWallets.removeAll()
         
         OnchainUtils.listWallets { [weak self] (wallets, message) in
             guard let self = self else { return }
             
             guard let loadedWallets = wallets else {
-                self.connectingView.dismiss()
+                self.hideActivity()
                 showAlert(vc: self, title: "Error", message: "There was an error getting your active wallets in order to deactivate them: \(message ?? "")")
                 return
             }
             
             guard loadedWallets.count > 0 else {
-                self.connectingView.dismiss()
+                self.hideActivity()
                 return
             }
             
@@ -69,7 +68,7 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
                         table.reloadData()
-                        connectingView.dismiss()
+                        hideActivity()
                     }
                 }
             }
@@ -99,14 +98,14 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        connectingView.show(vc: self, description: "unloading wallet...")
+        showActivity("unloading wallet...")
         
         let p = Unload_Wallet(["wallet_name": activeWallets[indexPath.row]["name"] as! String])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .unloadwallet(param: p)) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let _ = response else {
-                self.connectingView.dismiss()
+                self.hideActivity()
                 showAlert(vc: self, title: "Error", message: "There was an error unloading your wallet: \(errorMessage!)")
                 return
             }
@@ -119,7 +118,7 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
                 }
                 
                 showAlert(title: "", message: "Wallet unloaded.")
-                self.connectingView.dismiss()
+                self.hideActivity()
                 self.getAllActiveWallets()
             }
         }

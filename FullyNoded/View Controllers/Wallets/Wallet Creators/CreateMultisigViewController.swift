@@ -10,7 +10,6 @@ import UIKit
 
 class CreateMultisigViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate {
     
-    let spinner = ConnectingView.shared
     private var isNested = false
     var blockheight = 0
     var m = Int()
@@ -60,12 +59,15 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             derivationField.text = cosigner.derivation
             addKeyStore(cosigner.fingerprint, cosigner.accountXpub == "" ? cosigner.accountXprv : cosigner.accountXpub)
             scriptSegmentedControl.selectedSegmentIndex = 1
-            showAlert(vc: self, title: "Cosigner added ✓", message: "Add more or select create wallet.")
+            SuccessView.toast("Cosigner added", in: self)
         }
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.stylePrimary(createOutlet, tint: .create)
+        WalletTheme.apply(to: self, tint: .create)
     }
     
     override func viewDidAppear(_ animated: Bool) {}
@@ -234,13 +236,13 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     }
     
     private func create(m: Int) {
-        spinner.show(vc: self, description: "creating multisig wallet...")
+        showActivity("creating multisig wallet...")
         
         var descriptorKeys = ""
         
         for (i, signer) in keys.enumerated() {
             guard let fingerprint = signer["fingerprint"], var xpub = signer["xpub"] else {
-                self.spinner.dismiss()
+                self.hideActivity()
                 
                 showAlert(vc: self, title: "Something is missing", message: "Either the xpub or fingerprint was not added... Please tap the trashcan to reset everything and try again.")
                 
@@ -249,7 +251,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             
             if !xpub.hasPrefix("xpub") && !xpub.hasPrefix("tpub") {
                 guard let convertedXpub = XpubConverter.convert(extendedKey: xpub) else {
-                    self.spinner.dismiss()
+                    self.hideActivity()
                     
                     showAlert(vc: self, title: "Invalid extended key", message: "Only valid extended public keys are allowed. Please tap the trashcan to reset everything and try again.")
                     
@@ -260,7 +262,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             }
             
             guard let derivationPathProcessed = derivationProcessed()?.replacingOccurrences(of: "m/", with: "") else {
-                self.spinner.dismiss()
+                self.hideActivity()
                 
                 showAlert(vc: self, title: "Invalid derivation", message: "Only valid derivation paths that start with m/ are allowed. Please tap the trashcan to reset everything and try again.")
                 
@@ -300,7 +302,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                     if success {
                         self.exportWallet(mofn: "\(m) of \(self.keys.count)")
                     } else {
-                        self.spinner.dismiss()
+                        self.hideActivity()
                         showAlert(vc: self, title: "There was an error!", message: "Something went wrong during the wallet creation process: \(errorDescription ?? "unknown error")")
                     }
                 }
@@ -344,7 +346,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 
                 self.textView.text = text
             
-            self.spinner.dismiss()
+            self.hideActivity()
             
             var alertStyle = UIAlertController.Style.actionSheet
             
@@ -480,6 +482,9 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     }
     
     private func parseImportedString(_ item: String) {
+        let item = TextFileImport.singleDescriptor(in: item) ?? item.trimmingCharacters(in: .whitespacesAndNewlines)
+        let lowercased = item.lowercased()
+        
         if item.hasPrefix("xpub") || item.hasPrefix("tpub") {
             if let _ = XpubConverter.zpub(xpub: item) {
                 showAddButton()
@@ -504,62 +509,38 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         } else if item.hasPrefix("[") {
             parseDescriptor(Descriptor("wsh(\(item))"))
             
-        } else if item.lowercased().hasPrefix("wsh(") || item.lowercased().hasPrefix("sh(wsh(") {
-            parseDescriptor(Descriptor(item))
+        } else if lowercased.hasPrefix("wsh(") || lowercased.hasPrefix("sh(wsh(") {
+            addCosigners(from: [item])
             
-        } else if item.lowercased().hasPrefix("ur:crypto-hdkey") || item.lowercased().hasPrefix("ur:crypto-account") || item.lowercased().hasPrefix("ur:crypto-seed") {
-            let (descriptors, error) = URHelper.parseUr(urString: item.lowercased())
+        } else if lowercased.hasPrefix("wpkh(") || lowercased.hasPrefix("pkh(") || lowercased.hasPrefix("sh(wpkh(") || lowercased.hasPrefix("tr(") {
+            addCosigners(from: [item])
+            
+        } else if lowercased.hasPrefix("ur:crypto-hdkey") || lowercased.hasPrefix("ur:crypto-account") || lowercased.hasPrefix("ur:crypto-seed") || lowercased.hasPrefix("ur:crypto-output") {
+            let (descriptors, error) = URHelper.parseUr(urString: lowercased)
             guard error == nil, let descriptors = descriptors, descriptors.count > 0 else {
                 showAlert(vc: self, title: "Error", message: error ?? "Unknown error decoding the QR code.")
                 return
             }
+            addCosigners(from: descriptors)
             
-            for descriptor in descriptors {
-                let str = Descriptor(descriptor)
-                if str.isCosigner && str.derivation == self.derivationField.text?.replacingOccurrences(of: "h", with: "'") {
-                    parseDescriptor(str)
-                    break
-                } else {
-                    showAlert(vc: self, title: "There was an issue...", message: "It does not look like any of the supplied cosigners match the \(self.derivationField.text ?? "?") derivation path. For now the multisig creator only supports one derivation path per cosigner.")
-                }
-            }
-            
-        } else if item.lowercased().hasPrefix("ur:bytes") {
-            let (text, err) = URHelper.parseBlueWalletCoordinationSetup(item.lowercased())
-            if let textFile = text {
-                if let dict = try? JSONSerialization.jsonObject(with: textFile.utf8, options: []) as? [String:Any] {
-                    let importStruct = WalletImport(dict)
-                    
-                    if let bip48 = importStruct.bip48 {
-                        parseDescriptor(Descriptor(bip48))
-                    }
-                    
-                } else if let accountMap = TextFileImport.parse(textFile).accountMap {
-                    let desc = accountMap["descriptor"] as? String ?? ""
-                    let descriptorStr = Descriptor(desc)
-                    
-                    if descriptorStr.keysWithPath.count > 1 {
-                        // add multiple keys at once
-                        for msigKey in descriptorStr.keysWithPath {
-                            let hack = "wsh(\(msigKey)"
-                            let descHack = Descriptor(hack)
-                            parseDescriptor(descHack)
-                        }
-                    } else {
-                        parseDescriptor(Descriptor(desc))
-                    }
-                } else {
-                    showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the text file into a descriptor.")
-                }
-            } else {
+        } else if lowercased.hasPrefix("ur:bytes") {
+            // A text file in a QR (wallet export JSON, a descriptor, a wallet file): handled
+            // exactly as if it had been pasted.
+            let (text, err) = URHelper.parseBlueWalletCoordinationSetup(lowercased)
+            guard let textFile = text, !textFile.lowercased().hasPrefix("ur:") else {
                 showAlert(vc: self, title: "Error", message: err ?? "Unknown error decoding the QR code.")
+                return
             }
+            parseImportedString(textFile)
             
-        } else if let coldcardMultisigExport = try? jsonDecoder.decode(ColdcardMultiSigExport.self, from: item.utf8) {
-            guard let deriv = coldcardMultisigExport.p2wsh_deriv else { return }
-            guard let xfp = coldcardMultisigExport.xfp else { return }
-            guard let p2wsh = coldcardMultisigExport.p2wsh else { return}
-            guard let xpub = XpubConverter.convert(extendedKey: p2wsh) else { return }
+        } else if let coldcardMultisigExport = try? jsonDecoder.decode(ColdcardMultiSigExport.self, from: item.utf8),
+                  let deriv = coldcardMultisigExport.p2wsh_deriv,
+                  let xfp = coldcardMultisigExport.xfp,
+                  let p2wsh = coldcardMultisigExport.p2wsh {
+            guard let xpub = XpubConverter.convert(extendedKey: p2wsh) else {
+                showError()
+                return
+            }
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -568,26 +549,62 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 self.addKeyStore(xfp, xpub)
             }
             
-        } else if let data = item.data(using: .utf8) {
-                guard let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any],
-                    let xfp = json["xfp"] as? String,
-                    let xpub = json["xpub"] as? String,
-                    let path = json["path"] as? String else {
-                    
-                    showError()
-                    
-                    return
-                }
-                
+        } else if let json = try? JSONSerialization.jsonObject(with: item.utf8, options: []) as? [String:Any] {
+            if let xfp = json["xfp"] as? String,
+               let xpub = json["xpub"] as? String,
+               let path = json["path"] as? String {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
                     self.derivationField.text = path
                     self.addKeyStore(xfp, xpub)
                 }
-                
+            } else {
+                let descriptors = WalletImport(json).descriptors
+                guard !descriptors.isEmpty else {
+                    showError()
+                    return
+                }
+                addCosigners(from: descriptors)
+            }
+            
+        } else if item.contains("Format: ") {
+            let (accountMap, error) = TextFileImport.parse(item)
+            guard let descriptor = accountMap?["descriptor"] as? String else {
+                showAlert(vc: self, title: "Unsupported wallet file.", message: error ?? "Unknown error decoding the text file into a descriptor.")
+                return
+            }
+            addCosigners(from: [descriptor])
+            
         } else {
             showAlert(vc: self, title: "Unrecognized cosigner format.", message: item + " is not a recognized cosigner format. Please reach out to us so that we can add support for this.")
+        }
+    }
+    
+    /// Adds cosigners from imported descriptors: every key of a multisig descriptor, or the
+    /// first cosigner (bip48) key matching the derivation path. A single sig wallet isn't a
+    /// cosigner, so it's refused with an explanation.
+    private func addCosigners(from descriptors: [String]) {
+        let parsed = descriptors.map { Descriptor($0) }
+        
+        if let multisig = parsed.first(where: { $0.isMulti && $0.keysWithPath.count > 1 }) {
+            for key in multisig.keysWithPath {
+                parseDescriptor(Descriptor("wsh(\(key))"))
+            }
+            return
+        }
+        
+        let cosigners = parsed.filter { $0.isCosigner }
+        guard !cosigners.isEmpty else {
+            showAlert(vc: self, title: "Not a cosigner", message: "This is a single sig wallet, not a multisig cosigner. Export the cosigner (BIP48) key from your signer instead.")
+            return
+        }
+        
+        let derivation = (derivationField.text ?? "").replacingOccurrences(of: "h", with: "'")
+        if let match = cosigners.first(where: { $0.derivation.replacingOccurrences(of: "h", with: "'") == derivation }) {
+            parseDescriptor(match)
+        } else {
+            showAlert(vc: self, title: "There was an issue...", message: "It does not look like any of the supplied cosigners match the \(derivationField.text ?? "?") derivation path. For now the multisig creator only supports one derivation path per cosigner.")
         }
     }
 

@@ -19,6 +19,9 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     private let network: BitcoinDevKit.Network
     private let inputs: [Esplora_Utxo]
     private let fxRate: Double?
+    /// Silent payment inputs (saved tweaks): signed with the spend key + tweak and finalized
+    /// locally instead of through BDK, which can't sign them.
+    private let silentPaymentOutputs: [SilentPaymentSpend.OwnedOutput]
     private var savedUtxo: UTXO?
     
     // New: for signed transaction
@@ -56,7 +59,8 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         let amountBtc: Double
     }
     
-    init(psbt: BitcoinDevKit.Psbt?, rawTransaction: BitcoinDevKit.Transaction?, wallet: BitcoinDevKit.Wallet?, signer: SignerStruct? = nil, network: BitcoinDevKit.Network, inputs: [Esplora_Utxo], fxRate: Double?) {
+    init(psbt: BitcoinDevKit.Psbt?, rawTransaction: BitcoinDevKit.Transaction?, wallet: BitcoinDevKit.Wallet?, signer: SignerStruct? = nil, network: BitcoinDevKit.Network, inputs: [Esplora_Utxo], fxRate: Double?, silentPaymentOutputs: [SilentPaymentSpend.OwnedOutput] = []) {
+        self.silentPaymentOutputs = silentPaymentOutputs
         self.psbt = psbt
         self.rawTransaction = rawTransaction
         self.wallet = wallet
@@ -227,7 +231,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                 // These are the inputs we know we selected bc the transaction was created here.
                 for input in inputs {
                     var fiatAmount: String?
-                    let amountBtc = (input.value.doubleValue / 100000000.0)
+                    let amountBtc = (Double(input.value) / 100000000.0)
                     if let fxRate = fxRate {
                         fiatAmount = (amountBtc * fxRate).fiatString
                     }
@@ -416,19 +420,20 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     // MARK: - Helpers
 
     private func requiredSignatures(for input: WalletLogic.BDKPsbtInput) -> Int? {
-        for item in input.tapScripts {
-            if let threshold = parseMultiAThreshold(from: item.value.script) {
-                return threshold
-            }
+        // One shared parser (PSBTInputStatus) so this screen and the transaction verifier agree.
+        // A taproot input is spent through one leaf, so the cheapest leaf is what's required.
+        let leafThresholds = input.tapScripts
+            .map { PSBTInputStatus.extractThreshold(from: [UInt8]($0.value.script.toBytes())) }
+            .filter { $0 > 0 }
+        if let threshold = leafThresholds.min() {
+            return threshold
         }
         
-        if let witnessScript = input.witnessScript,
-           let threshold = parseCheckMultisigThreshold(from: witnessScript) {
-            return threshold
-        }
-        if let redeemScript = input.redeemScript,
-           let threshold = parseCheckMultisigThreshold(from: redeemScript) {
-            return threshold
+        for script in [input.witnessScript, input.redeemScript] {
+            if let script = script {
+                let threshold = PSBTInputStatus.extractThreshold(from: [UInt8](script.toBytes()))
+                if threshold > 0 { return threshold }
+            }
         }
         
         if input.tapInternalKey != nil || input.tapKeySig != nil {
@@ -436,76 +441,6 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         }
         return nil
     }
-
-    private func parseMultiAThreshold(from script: Script) -> Int? {
-        let bytes = script.toBytes()
-        guard bytes.count > 2 else { return nil }
-        
-        var i = 0
-        var lastSmallInt: Int?
-        var sawChecksigAdd = false
-        var sawChecksig = false
-        
-        while i < bytes.count {
-            let op = bytes[i]
-            
-            if (1...75).contains(op) {
-                i += 1 + Int(op)
-                continue
-            }
-            if (0x51...0x60).contains(op) {
-                lastSmallInt = Int(op - 0x50)
-                i += 1
-                continue
-            }
-            if op == 0xac || op == 0xad { // CHECKSIG / VERIFY
-                sawChecksig = true
-                i += 1
-                continue
-            }
-            if op == 0xba { // CHECKSIGADD
-                sawChecksigAdd = true
-                i += 1
-                continue
-            }
-            // NUMEQUAL / NUMEQUALVERIFY — threshold is the small-int just before this
-            if op == 0x9c || op == 0x9d {
-                if let k = lastSmallInt, sawChecksigAdd || sawChecksig {
-                    return k
-                }
-            }
-            i += 1
-        }
-        
-        if sawChecksigAdd, let k = lastSmallInt {
-            return k
-        }
-        if sawChecksig && !sawChecksigAdd {
-            return 1
-        }
-        return nil
-    }
-    
-    /// Classic CHECKMULTISIG script: OP_m <pubkey>… <pubkey> OP_n OP_CHECKMULTISIG
-    private func parseCheckMultisigThreshold(from script: Script) -> Int? {
-        let bytes = script.toBytes()          // adjust to your binding
-        guard bytes.count >= 4 else { return nil }
-        
-        // First opcode is the threshold (OP_1 … OP_16)
-        let first = bytes[0]
-        if first >= 0x51 && first <= 0x60 {   // OP_1 … OP_16
-            return Int(first - 0x50)
-        }
-        
-        // Sometimes it’s a direct push of a small number
-        if first > 0 && first <= 16 {
-            return Int(first)
-        }
-        
-        return nil
-    }
-
-    
 
     private func currentSigsExist(_ lines: [String]) -> Bool {
         lines.contains { !$0.contains("0/") }
@@ -619,11 +554,19 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
             return
         }
         
-        ConnectingView.shared.show(vc: self, description: "Broadcasting...")
+        guard !isShowingActivity else { return }
+        self.showActivity("Broadcasting...", button: broadcastButton)
         
         Task {
-            let result = try await Broadcaster.sharedInstance.broadcastRawTransaction(rawTx: rawTx, network: network)
-            ConnectingView.shared.dismiss()
+            let result: Broadcaster.BroadcastResult
+            do {
+                result = try await Broadcaster.sharedInstance.broadcastRawTransaction(rawTx: rawTx, network: network)
+            } catch {
+                self.hideActivity()
+                showAlert(title: "", message: "Broadcast failed: \(error.localizedDescription)")
+                return
+            }
+            self.hideActivity()
             switch result {
             case .success(let txid):
                 saveNewUtxo(txid: txid)
@@ -631,7 +574,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                 
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
-                    self.showTransactionSuccessAnimation(title: "Transaction broadcast successfully!", subtitle: "TxID: \(txid)")
+                    SuccessView.show(in: self, title: "Transaction sent", subtitle: "Broadcast over Tor. Tap to copy the transaction ID.", detail: txid)
                     self.broadcastButton.isHidden = true
                 }
             case .failure(let msg):
@@ -695,6 +638,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     }
     
     @objc private func signButtonTapped() {
+        guard !isShowingActivity else { return }
         let alert = UIAlertController(
             title: "Passphrase (Optional)",
             message: "Enter your BIP39 passphrase if your wallet uses one.\nLeave blank if none.",
@@ -716,7 +660,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         let signAction = UIAlertAction(title: "Sign", style: .default) { [weak self] _ in
             guard let self = self else { return }
             
-            let passphrase = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let passphrase = alert.textFields?.first?.text ?? ""
             
             // Now proceed with signing using the optional passphrase
             self.performSigning(with: passphrase)
@@ -732,9 +676,13 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     }
 
     private func performSigning(with passphrase: String) {
+        if !silentPaymentOutputs.isEmpty {
+            signSilentPayments(passphrase: passphrase)
+            return
+        }
         // Show loading spinner
         guard let wallet = wallet else { return }
-        ConnectingView.shared.show(vc: self, description: "Signing transaction...")
+        self.showActivity("Signing transaction...", button: signButton)
         
         // Run signing on background thread
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
@@ -758,13 +706,13 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                     guard let self = self else { return }
                     
                     guard let signers = signers else {
-                        ConnectingView.shared.dismiss()
+                        self.hideActivity()
                         showAlert(title: "", message: "No signers to sign with...")
                         return
                     }
                     
                     guard !signers.isEmpty else {
-                        ConnectingView.shared.dismiss()
+                        self.hideActivity()
                         showAlert(title: "", message: "No signers to sign with...")
                         return
                     }
@@ -783,26 +731,18 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     
     private func attemptToSign(signers: [SignerStruct], passphrase: String?, fnWallet: Wallet) {
         guard let psbt = psbt else {
-            ConnectingView.shared.dismiss()
+            self.hideActivity()
             showAlert(title: "", message: "No psbt to sign...")
             return
         }
         
         Signer.shared.sign(fnWallet: fnWallet, psbt: psbt.serialize(), passphrase: passphrase, signers: signers, network: network, parentDesc: fnWallet.receiveDescriptor) { [weak self] (signedPsbt, rawTx, errorMessage) in
             guard let self = self else { return }
-            ConnectingView.shared.dismiss()
+            self.hideActivity()
             
             if let rawTx = rawTx {
                 DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    txStatusLabel.text = "Signatures complete, tap broadcast to send."
-                    txStatusLabel.textColor = .systemGreen
-                    self.signedRawTx = rawTx
-                    self.broadcastButton.isHidden = false
-                    self.signButton.isHidden = true
-                    self.exportButton.setTitle("Export Signed Transaction", for: .normal)
-                    self.showTransactionSuccessAnimation(title: "Transaction signed!", subtitle: "Ready to broadcast")
+                    self?.showSigned(rawTx: rawTx)
                 }
             } else if let signedPsbt = signedPsbt {
                 guard let signedBdkPsbt = try? Psbt(psbtBase64: signedPsbt) else {
@@ -817,110 +757,44 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         }
     }
     
-    private func showTransactionSuccessAnimation(title: String, subtitle: String) {
-        // Background overlay
-        let overlay = UIView()
-        overlay.backgroundColor = UIColor.black.withAlphaComponent(0.9)
-        overlay.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(overlay)
-        
-        // Success container
-        let successView = UIView()
-        successView.backgroundColor = .systemBackground
-        successView.layer.cornerRadius = 20
-        successView.translatesAutoresizingMaskIntoConstraints = false
-        overlay.addSubview(successView)
-        
-        // Checkmark
-        let checkmarkImageView = UIImageView()
-        let config = UIImage.SymbolConfiguration(pointSize: 80, weight: .light)
-        checkmarkImageView.image = UIImage(systemName: "checkmark.circle.fill", withConfiguration: config)
-        checkmarkImageView.tintColor = .systemGreen
-        checkmarkImageView.translatesAutoresizingMaskIntoConstraints = false
-        successView.addSubview(checkmarkImageView)
-        
-        // Title label
-        let titleLabel = UILabel()
-        titleLabel.text = title
-        titleLabel.font = UIFont.boldSystemFont(ofSize: 24)
-        titleLabel.textAlignment = .center
-        titleLabel.textColor = .label
-        titleLabel.lineBreakMode = .byWordWrapping
-        titleLabel.numberOfLines = 0
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        successView.addSubview(titleLabel)
-        
-        // Subtitle
-        let subtitleLabel = UILabel()
-        subtitleLabel.text = subtitle
-        subtitleLabel.font = UIFont.systemFont(ofSize: 18)
-        subtitleLabel.textColor = .secondaryLabel
-        subtitleLabel.lineBreakMode = .byWordWrapping
-        subtitleLabel.numberOfLines = 0
-        subtitleLabel.textAlignment = .center
-        subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        successView.addSubview(subtitleLabel)
-        
-        // Layout
-        NSLayoutConstraint.activate([
-            overlay.topAnchor.constraint(equalTo: view.topAnchor),
-            overlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            overlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            overlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            successView.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
-            successView.centerYAnchor.constraint(equalTo: overlay.centerYAnchor),
-            successView.leadingAnchor.constraint(greaterThanOrEqualTo: overlay.leadingAnchor, constant: 40),
-            successView.trailingAnchor.constraint(lessThanOrEqualTo: overlay.trailingAnchor, constant: -40),
-            successView.widthAnchor.constraint(lessThanOrEqualToConstant: 400),
-            
-            checkmarkImageView.topAnchor.constraint(equalTo: successView.topAnchor, constant: 40),
-            checkmarkImageView.centerXAnchor.constraint(equalTo: successView.centerXAnchor),
-            checkmarkImageView.heightAnchor.constraint(equalToConstant: 120),
-            checkmarkImageView.widthAnchor.constraint(equalToConstant: 120),
-            
-            titleLabel.topAnchor.constraint(equalTo: checkmarkImageView.bottomAnchor, constant: 20),
-            titleLabel.leadingAnchor.constraint(equalTo: successView.leadingAnchor, constant: 30),
-            titleLabel.trailingAnchor.constraint(equalTo: successView.trailingAnchor, constant: -30),
-            
-            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 10),
-            subtitleLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            subtitleLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            subtitleLabel.bottomAnchor.constraint(equalTo: successView.bottomAnchor, constant: -40)
-        ])
-        
-        // Animation sequence
-        successView.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
-        successView.alpha = 0
-        
-        checkmarkImageView.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-        
-        UIView.animate(withDuration: 0.6, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: []) {
-            successView.transform = .identity
-            successView.alpha = 1
-            checkmarkImageView.transform = .identity
+}
+
+extension PsbtReviewViewController {
+    /// Fully signed: ready to broadcast.
+    func showSigned(rawTx: String) {
+        txStatusLabel.text = "Signatures complete, tap broadcast to send."
+        txStatusLabel.textColor = .systemGreen
+        signedRawTx = rawTx
+        broadcastButton.isHidden = false
+        signButton.isHidden = true
+        exportButton.setTitle("Export Signed Transaction", for: .normal)
+        SuccessView.show(in: self, title: "Transaction signed", subtitle: "Ready to broadcast.")
+    }
+
+    /// Signs the silent payment inputs (b_spend from your signers + each saved tweak; the key
+    /// must reproduce the output key) and finalizes the key-path witnesses locally.
+    func signSilentPayments(passphrase: String) {
+        guard let psbt = psbt else {
+            showAlert(title: "", message: "No psbt to sign...")
+            return
         }
-        
-        // Pulse effect on checkmark
-        let pulse = CABasicAnimation(keyPath: "transform.scale")
-        pulse.fromValue = 1.0
-        pulse.toValue = 1.15
-        pulse.duration = 0.4
-        pulse.autoreverses = true
-        checkmarkImageView.layer.add(pulse, forKey: "pulse")
-        
-        // Auto-dismiss after 2.5 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-            UIView.animate(withDuration: 0.4, animations: {
-                overlay.alpha = 0
-            }) { _ in
-                overlay.removeFromSuperview()
+        showActivity("Signing transaction...", button: signButton)
+        SilentPaymentSpend.sign(psbt: psbt.serialize(), outputs: silentPaymentOutputs, passphrase: passphrase.isEmpty ? nil : passphrase) { [weak self] signed, _, errorMessage in
+            guard let self = self else { return }
+            self.hideActivity()
+            guard let signed = signed else {
+                showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "Unknown error.")
+                return
+            }
+            self.signedPsbt = signed
+            do {
+                self.showSigned(rawTx: try SilentPaymentSweep.extractKeyPathTransaction(psbt: signed))
+            } catch {
+                // Some input still unsigned: show where it stands.
+                if let partial = try? Psbt(psbtBase64: signed) { self.analyzePsbt(psbt: partial) }
+                showAlert(vc: self, title: "Not fully signed", message: error.localizedDescription)
             }
         }
-        
-        // Optional: Haptic feedback
-        let feedback = UINotificationFeedbackGenerator()
-        feedback.notificationOccurred(.success)
     }
 }
 
