@@ -45,6 +45,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var isUR = false
     var isPlainText = false
     var passphrase: String?
+    /// The payment request offered a BIP78 payjoin: tried once the payment is fully signed.
+    var payjoin: Payjoin.Endpoint?
+    var payjoinAttempted = false
     /// Silent payment outputs found for inputs of this transaction ("txid:vout" lowercase), so
     /// signing doesn't fetch and scan them again.
     var silentPaymentOwned: [String: SilentPaymentSpend.OwnedOutput] = [:]

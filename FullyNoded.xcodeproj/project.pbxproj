@@ -91,6 +91,8 @@
 		59C8DBCD3065AF490074762F /* SilentPaymentSend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C8DBCC3065AF490074762F /* SilentPaymentSend.swift */; };
 		59C8DBD03065AF490074762F /* SilentPaymentSpend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C8DBCF3065AF490074762F /* SilentPaymentSpend.swift */; };
 		56416BD5B1BC9FE02F872215 /* OfflinePsbt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22D8ED495E20D302AFDEEBC9 /* OfflinePsbt.swift */; };
+		679139481583C260AA3DA6B7 /* Payjoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA0F9643F53DB3539B93122D /* Payjoin.swift */; };
+		A2A079BC18DAF6EB8229D08D /* PayjoinReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44151B2FF414BB9668798EB2 /* PayjoinReceiver.swift */; };
 		59D7BB0D30282D3100530445 /* Security.md in Resources */ = {isa = PBXBuildFile; fileRef = 59D7BB0C30282D3100530445 /* Security.md */; };
 		59DEFD92301497230021F041 /* Timelocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59DEFD91301497230021F041 /* Timelocks.swift */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
@@ -303,6 +305,8 @@
 		59C8DBCC3065AF490074762F /* SilentPaymentSend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilentPaymentSend.swift; sourceTree = "<group>"; };
 		59C8DBCF3065AF490074762F /* SilentPaymentSpend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilentPaymentSpend.swift; sourceTree = "<group>"; };
 		22D8ED495E20D302AFDEEBC9 /* OfflinePsbt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflinePsbt.swift; sourceTree = "<group>"; };
+		EA0F9643F53DB3539B93122D /* Payjoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Payjoin.swift; sourceTree = "<group>"; };
+		44151B2FF414BB9668798EB2 /* PayjoinReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayjoinReceiver.swift; sourceTree = "<group>"; };
 		59D7BB0C30282D3100530445 /* Security.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Security.md; sourceTree = "<group>"; };
 		59DEFD91301497230021F041 /* Timelocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Timelocks.swift; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
@@ -961,6 +965,8 @@
 				59C8DBCC3065AF490074762F /* SilentPaymentSend.swift */,
 				59C8DBCF3065AF490074762F /* SilentPaymentSpend.swift */,
 				22D8ED495E20D302AFDEEBC9 /* OfflinePsbt.swift */,
+				EA0F9643F53DB3539B93122D /* Payjoin.swift */,
+				44151B2FF414BB9668798EB2 /* PayjoinReceiver.swift */,
 				D0855FC922B0CEA800DBBFC2 /* CreatePSBT.swift */,
 				D09A32FE24A8419C009FA0B2 /* KeyHelpers.swift */,
 				D09A330224A86C7C009FA0B2 /* Signer.swift */,
@@ -1283,6 +1289,8 @@
 				59C8DBCD3065AF490074762F /* SilentPaymentSend.swift in Sources */,
 				59C8DBD03065AF490074762F /* SilentPaymentSpend.swift in Sources */,
 				56416BD5B1BC9FE02F872215 /* OfflinePsbt.swift in Sources */,
+				679139481583C260AA3DA6B7 /* Payjoin.swift in Sources */,
+				A2A079BC18DAF6EB8229D08D /* PayjoinReceiver.swift in Sources */,
 				D03968B1246F6CBA0010D821 /* Crypto.swift in Sources */,
 				0ABEC1FD2F02743500092FCE /* NodelessTransactionCreator.swift in Sources */,
 				0A2B4D702716ABCB00B607EE /* WalletImport.swift in Sources */,

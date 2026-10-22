@@ -48,6 +48,15 @@ Want to run a node on your Mac? Download [Fully Noded Server](https://fullynoded
 
 Set up and how it works: [Docs/Nostr-Connect.md](./Docs/Nostr-Connect.md).
 
+## Payjoin (BIP78)
+
+**Pay and get paid with payjoins.** The payer and the receiver both put coins into the transaction, so it doesn't look like a payment and breaks the "all inputs belong to the sender" assumption chain analysis relies on.
+
+* **Pay** any payjoin invoice (`pj=`, e.g. BTCPay Server), over Tor by default. The receiver's proposal is checked against BIP78's sender rules and only your own inputs are signed. If anything fails, your normal payment goes through.
+* **Receive** payjoins straight from your phone: the invoice screen hosts a one-time onion address over Tor while it's open, and adds one of your coins automatically.
+
+How it works: [Docs/Payjoin.md](./Docs/Payjoin.md).
+
 ## Silent Payments (BIP352)
 
 > 🧪 Experimental: in development on the `Silent-Payments` branch. Test with small amounts.

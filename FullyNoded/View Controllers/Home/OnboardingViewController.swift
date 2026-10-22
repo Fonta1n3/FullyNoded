@@ -323,6 +323,8 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
                                            "Multisig, miniscript timelocks, Taproot and silent payments. Keys stay encrypted on this device, or go watch-only and sign elsewhere."))
         content.addArrangedSubview(feature("network.badge.shield.half.filled", "Private by default",
                                            "Built-in Tor reaches your node over onion, from anywhere. Or pair with Fully Noded Server's Nostr Connect for a much faster, end-to-end encrypted link."))
+        content.addArrangedSubview(feature("arrow.triangle.merge", "Payjoin",
+                                           "Pay and get paid with payjoins: both sides add coins, so your payments don't look like payments. Received straight from your phone over Tor."))
 
         setActions(primary: "Get started", secondary: "Learn more at fullynoded.app")
     }

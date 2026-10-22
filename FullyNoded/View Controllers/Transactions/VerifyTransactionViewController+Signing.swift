@@ -88,20 +88,29 @@ extension VerifyTransactionViewController {
             guard let self = self else { return }
             
             if let rawTx = rawTx {
-                self.finishActivity()
-                SuccessView.show(
-                    in: self,
-                    title: "Transaction signed",
-                    subtitle: "Ready to broadcast. The transaction reloads so you can check it first.",
-                    onDismiss: { [weak self] in
+                // A payjoin was offered: try it, keeping this signed payment as the fallback.
+                if let endpoint = self.payjoin, !self.payjoinAttempted, !self.unsignedPsbt.isEmpty {
+                    self.payjoinAttempted = true
+                    self.showActivity("negotiating payjoin...")
+                    Payjoin.attempt(endpoint: endpoint, unsignedPsbt: self.unsignedPsbt, signedRawTx: rawTx,
+                                    passphrase: self.passphrase) { [weak self] result in
                         guard let self = self else { return }
-                        unsignedPsbt = ""
-                        reset()
-                        signedRawTx = rawTx
-                        enableSendButton()
-                        load()
+                        switch result {
+                        case .success(let outcome):
+                            let added = outcome.receiverInputs == 0
+                                ? "The receiver didn't add inputs, so it's an ordinary payment."
+                                : "The receiver added \(outcome.receiverInputs) input\(outcome.receiverInputs == 1 ? "" : "s"), so this payment doesn't look like one to chain analysis."
+                            let fee = outcome.feeContribution > 0 ? " \(outcome.feeContribution) sats of the extra fee came from your change." : ""
+                            self.showSigned(rawTx: outcome.rawTx, title: "Payjoin ready",
+                                            subtitle: "\(added)\(fee) Every check passed. Review it, then broadcast.")
+                        case .failure(let error):
+                            self.showSigned(rawTx: rawTx, kind: .notice, title: "Signed (no payjoin)",
+                                            subtitle: "\(error.errorDescription ?? "The payjoin didn't work.") Your normal payment is signed and ready to broadcast.")
+                        }
                     }
-                )
+                    return
+                }
+                self.showSigned(rawTx: rawTx)
             } else if let signedPsbt = signedPsbt {
                 // Signers only finalize the inputs of their own descriptor, so a transaction mixing
                 // descriptors (e.g. a timelocked output next to ordinary ones) can have every
@@ -124,6 +133,26 @@ extension VerifyTransactionViewController {
                 }
             }
         }
+    }
+
+    /// Fully signed: show it, then reload the screen with the raw transaction.
+    func showSigned(rawTx: String, kind: SuccessView.Kind = .success, title: String = "Transaction signed",
+                    subtitle: String = "Ready to broadcast. The transaction reloads so you can check it first.") {
+        finishActivity()
+        SuccessView.show(
+            in: self,
+            kind: kind,
+            title: title,
+            subtitle: subtitle,
+            onDismiss: { [weak self] in
+                guard let self = self else { return }
+                unsignedPsbt = ""
+                reset()
+                signedRawTx = rawTx
+                enableSendButton()
+                load()
+            }
+        )
     }
 
     /// Partially signed: still celebrate the signature, say how many are missing,

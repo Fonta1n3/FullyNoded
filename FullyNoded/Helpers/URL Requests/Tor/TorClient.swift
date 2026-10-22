@@ -37,6 +37,15 @@ class TorClient: NSObject {
     var isRefreshing = false
     let urlSessionDelegate = UserCertURLSessionDelegate()
     
+    /// Tor's local SOCKS port (other sessions can route through Tor with it).
+    static var socksPort: Int {
+        #if targetEnvironment(simulator)
+        return 19052
+        #else
+        return 19050
+        #endif
+    }
+    
     // The tor url session configuration.
     // Start with default config as fallback.
     private lazy var sessionConfiguration: URLSessionConfiguration = .default
@@ -50,12 +59,7 @@ class TorClient: NSObject {
         weak var weakDelegate = delegate
         state = .started
         
-        var proxyPort = 19050
-        //var dnsPort = 12345
-        #if targetEnvironment(simulator)
-        proxyPort = 19052
-        //dnsPort = 12347
-        #endif
+        let proxyPort = Self.socksPort
         
         sessionConfiguration.connectionProxyDictionary = [kCFProxyTypeKey: kCFProxyTypeSOCKS,
                                                           kCFStreamPropertySOCKSProxyHost: "localhost",
@@ -175,6 +179,46 @@ class TorClient: NSObject {
                     }
                 }
             }
+        }
+    }
+    
+    // MARK: - Onion services (payjoin receiving)
+    
+    struct OnionError: LocalizedError {
+        let errorDescription: String?
+        init(_ message: String) { errorDescription = message }
+    }
+    
+    /// Hosts a one-time onion service: port 80 of a new v3 onion forwards to
+    /// 127.0.0.1:`localPort` in this app. The key is discarded (`DiscardPK`), so the address
+    /// can never be used again once removed. Completion on the main queue with "xxxx.onion".
+    func addOnionService(localPort: UInt16, completion: @escaping (Result<String, Error>) -> Void) {
+        let finish: (Result<String, Error>) -> Void = { result in DispatchQueue.main.async { completion(result) } }
+        guard state == .connected, let controller = controller else {
+            finish(.failure(OnionError("Tor isn't connected.")))
+            return
+        }
+        controller.sendCommand("ADD_ONION",
+                               arguments: ["NEW:ED25519-V3", "Flags=DiscardPK", "Port=80,127.0.0.1:\(localPort)"],
+                               data: nil) { codes, lines, stop -> Bool in
+            stop.pointee = true
+            let text = lines.compactMap { String(data: $0, encoding: .utf8) }
+            guard codes.first?.intValue == 250,
+                  let id = text.first(where: { $0.hasPrefix("ServiceID=") })?.dropFirst("ServiceID=".count) else {
+                finish(.failure(OnionError("Tor couldn't create an onion service: \(text.joined(separator: " "))")))
+                return true
+            }
+            finish(.success("\(id).onion"))
+            return true
+        }
+    }
+    
+    /// Stops hosting an onion created with `addOnionService`.
+    func removeOnionService(_ host: String) {
+        let id = host.replacingOccurrences(of: ".onion", with: "")
+        controller?.sendCommand("DEL_ONION", arguments: [id], data: nil) { _, _, stop -> Bool in
+            stop.pointee = true
+            return true
         }
     }
     

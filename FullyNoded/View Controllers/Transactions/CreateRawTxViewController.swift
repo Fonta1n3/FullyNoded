@@ -13,6 +13,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var fxRate: Double?
     var address = String()
     var outputs: [[String:Any]] = []
+    /// The scanned payment request offered a BIP78 payjoin (handed to the verifier).
+    private var payjoin: Payjoin.Endpoint?
     var inputs: [[String:Any]] = []
     var utxoTotal: Double = 0.0
     let ud = UserDefaults.standard
@@ -611,7 +613,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 vc.signedRawTx = rawTx
             } else if let psbt = psbt {
                 vc.unsignedPsbt = psbt
+                // Tried after signing, only if the transaction still pays the request's address.
+                vc.payjoin = self.payjoin
             }
+            self.payjoin = nil
 
             self.outputs.removeAll()
             self.outputsTable.reloadData()
@@ -847,6 +852,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     /// Fills in the recipient (and amount) from a payment request, then summarises it.
     private func applyPaymentRequest(_ request: AddressParser.PaymentRequest, address: String) {
         addAddress(address.addressExpanded)
+        // Payjoin goes with the regular address (not a silent payment one).
+        payjoin = request.payjoin.flatMap { url in
+            address == request.address
+                ? Payjoin.Endpoint(url: url, address: address, outputSubstitutionDisabled: request.payjoinOutputSubstitutionDisabled)
+                : nil
+        }
 
         guard request.amount != nil || request.label != nil || request.message != nil else { return }
         var amountText = "not specified"
@@ -855,7 +866,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             amountInput.text = Self.formatAmount(amountText.replacingOccurrences(of: ",", with: ""))
             updateFiatAmount()
         }
-        showAlert(vc: self, title: "Payment Request\n", message: "Address: \(address)\n\nAmount: \(amountText) btc\n\nLabel: " + (request.label ?? "no label") + "\n\nMessage: \(request.message ?? "no message")")
+        let payjoinNote = payjoin == nil ? "" : "\n\nPayjoin: supported. After you sign, Fully Noded asks the receiver to add an input (over Tor), and falls back to this normal payment if that doesn't work."
+        showAlert(vc: self, title: "Payment Request\n", message: "Address: \(address)\n\nAmount: \(amountText) btc\n\nLabel: " + (request.label ?? "no label") + "\n\nMessage: \(request.message ?? "no message")" + payjoinNote)
     }
     
     func getRawTx(outputs: [[String: Any]]) {
