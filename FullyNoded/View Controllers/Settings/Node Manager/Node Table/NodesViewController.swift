@@ -8,7 +8,7 @@
 
 import UIKit
 
-/// Node Manager, built in code: every saved node with its transport (Tor / local / LAN)
+/// Node Manager, built in code: every saved node with its transport (Tor / local / LAN / Nostr)
 /// and which one is active. Tap a node to make it active, the pencil to edit it, swipe
 /// to delete, + to add one (manually or by scanning a QR).
 class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate {
@@ -103,6 +103,10 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
 
     private static func row(for node: NodeStruct) -> Row {
+        if node.isNostrConnect {
+            return Row(node: node, host: node.nostrConnectURI?.relaySummary ?? "", transport: "NOSTR")
+        }
+
         var host = ""
         if let encrypted = node.onionAddress, let decrypted = Crypto.decrypt(encrypted) {
             host = decrypted.utf8String ?? ""
@@ -238,11 +242,12 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         showDetail(for: rows[sender.tag].node)
     }
 
-    private func showDetail(for node: NodeStruct?) {
+    private func showDetail(for node: NodeStruct?, justScanned: Bool = false) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             let vc = NodeDetailViewController()
             vc.selectedNode = node
+            vc.justScanned = justScanned
             self.navigationController?.pushViewController(vc, animated: true)
         }
     }
@@ -332,7 +337,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 guard let self = self else { return }
                 let active = (nodes ?? []).map { NodeStruct(dictionary: $0) }.first { $0.isActive && $0.id != nil }
                 self.getNodes()
-                self.showDetail(for: active)
+                self.showDetail(for: active, justScanned: true)
             }
         }
     }

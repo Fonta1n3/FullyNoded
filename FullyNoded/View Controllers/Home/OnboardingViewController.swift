@@ -95,6 +95,8 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
     private var step: Step = .welcome
     private var connectedNodeLabel: String?
     private var nodeWasAddedManually = false
+    /// The node just added is a Nostr Connect pairing (relay, not Tor).
+    private var connectedOverNostr = false
     private var nodeCountBeforeManualEntry: Int?
     private var hasSavedNodes = false
     private var openedSavedNodes = false
@@ -320,7 +322,7 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
         content.addArrangedSubview(feature("key.horizontal", "Serious wallet power",
                                            "Multisig, miniscript timelocks, Taproot and silent payments. Keys stay encrypted on this device, or go watch-only and sign elsewhere."))
         content.addArrangedSubview(feature("network.badge.shield.half.filled", "Private by default",
-                                           "Built-in Tor reaches your node over onion, from anywhere."))
+                                           "Built-in Tor reaches your node over onion, from anywhere. Or pair with Fully Noded Server's Nostr Connect for a much faster, end-to-end encrypted link."))
 
         setActions(primary: "Get started", secondary: "Learn more at fullynoded.app")
     }
@@ -356,6 +358,14 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
         }
 
         content.addArrangedSubview(OptionCard(
+            symbol: "bolt.horizontal.circle",
+            title: "Nostr Connect",
+            detail: "The fast option, with Fully Noded Server. Calls go end-to-end encrypted through a nostr relay instead of Tor, so your node loads in about a second. Scan the pairing QR from its Nostr Connect page.",
+            badge: "FAST",
+            tint: tint,
+            action: { [weak self] in self?.scanQuickConnect() }))
+        content.addArrangedSubview(howNostrConnectWorks())
+        content.addArrangedSubview(OptionCard(
             symbol: "qrcode.viewfinder",
             title: "Scan Quick Connect",
             detail: "Umbrel, Start9, myNode, RaspiBlitz, Parmanode, NODL, BTCPay or Fully Noded Server.",
@@ -379,7 +389,9 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
         if let label = connectedNodeLabel {
             let note = nodeWasAddedManually
                 ? "Add the rpcauth line from the node screen to your bitcoin.conf and restart your node, if you haven't already."
-                : "Tor will connect to it as soon as you finish."
+                : connectedOverNostr
+                    ? "Paired over Nostr Connect: no Tor to wait for, it connects as soon as you finish."
+                    : "Tor will connect to it as soon as you finish."
             content.addArrangedSubview(banner(symbol: "checkmark.circle.fill",
                                               title: nodeWasAddedManually ? "Saved \(label)" : "Connected to \(label)",
                                               detail: note))
@@ -427,7 +439,7 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
         let nodeRow: UIView
         if let activeLabel = activeLabel {
             nodeRow = checklistRow(done: true, title: "Node · \(activeLabel)",
-                                   detail: "Connects over Tor when you open the app.\(others)")
+                                   detail: (connectedOverNostr ? "Connects through Nostr Connect when you open the app." : "Connects over Tor when you open the app.") + others)
         } else if savedNodeCount > 0 {
             nodeRow = checklistRow(done: false,
                                    title: savedNodeCount == 1 ? "1 node saved, not active" : "\(savedNodeCount) nodes saved, none active",
@@ -510,6 +522,7 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
             self.activeNodeLabel { label in
                 self.connectedNodeLabel = label ?? "your node"
                 self.nodeWasAddedManually = false
+                self.connectedOverNostr = url.lowercased().hasPrefix(NostrConnectURI.scheme + "://")
                 self.advancePastConnect()
             }
         }
@@ -711,6 +724,31 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
     }
 
     /// Not a way in from here: Nodeless wallets come from a signer.
+    /// "How Nostr Connect works ›": a short explainer under its option.
+    private func howNostrConnectWorks() -> UIView {
+        let button = UIButton(type: .system)
+        var config = UIButton.Configuration.plain()
+        config.attributedTitle = AttributedString("How Nostr Connect works ›", attributes: AttributeContainer([
+            .font: WalletTheme.mono(12, weight: .semibold), .foregroundColor: tint.accent]))
+        config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 4, bottom: 4, trailing: 0)
+        button.configuration = config
+        button.contentHorizontalAlignment = .leading
+        button.addAction(UIAction { [weak self] _ in self?.explainNostrConnect() }, for: .touchUpInside)
+        return button
+    }
+
+    private func explainNostrConnect() {
+        showAlert(vc: self, title: "Nostr Connect", message: """
+            Fully Noded Server pairs this phone with a one-time QR that holds its own key.
+
+            Each call to your node is encrypted on this phone for your server only (NIP-44) and sent as a short-lived nostr message through a relay. Fully Noded Server decrypts it, asks your node, and sends the encrypted answer back.
+
+            The relay only sees ciphertext, nothing is stored, and only paired phones can use your node. Use the Mac's own relay at home or over a VPN like Tailscale, or a public relay from anywhere.
+
+            Set up: Fully Noded Server › Nostr Connect › Pair Fully Noded, then scan its QR here.
+            """, kind: .notice)
+    }
+
     private func nodelessNote() -> UIView {
         let titleLabel = body("No node? Nodeless works too", size: 13, color: WalletTheme.text)
         titleLabel.font = WalletTheme.mono(13, weight: .bold)

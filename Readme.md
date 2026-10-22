@@ -42,6 +42,12 @@ Want to run a node on your Mac? Download [Fully Noded Server](https://fullynoded
 * **HWW Functionality.** FN Signers tab allows you to add BIP39 mnemonics and passphrases and stores the mnemonic double encrypted locally on your device. It signs transactions locally with no internet connection required.
 
 
+## Nostr Connect
+
+**The fast way to reach your node.** Pair Fully Noded with [Fully Noded Server](https://github.com/Fonta1n3/FullyNoded-Server) and its RPC calls travel through a nostr relay instead of Tor, end-to-end encrypted (NIP-44), so your node loads in about a second at home, over a VPN like Tailscale, or anywhere through a public relay. The relay only ever sees ciphertext, and only paired phones can use your node. The Mac's own relay can also run over `wss://` with a certificate pinned in the pairing link, so others on your network can't even see who's talking.
+
+Set up and how it works: [Docs/Nostr-Connect.md](./Docs/Nostr-Connect.md).
+
 ## Silent Payments (BIP352)
 
 > 🧪 Experimental: in development on the `Silent-Payments` branch. Test with small amounts.
