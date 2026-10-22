@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import CryptoKit
 import BitcoinDevKit
 import P256K
 
@@ -124,10 +125,46 @@ enum Keys {
         return extendedKeyPayload(plainExtendedKey(child.description))?.key.hexString
     }
 
-    static func seedWords() -> String? {
-        guard let entropy = Crypto.secret() else { return nil }
+    /// A new BIP39 mnemonic: 24 words (256 bits of entropy) or 12 words (128 bits).
+    static func seedWords(wordCount: Int = 24) -> String? {
+        guard wordCount == 12 || wordCount == 24, var entropy = Crypto.secret() else { return nil }
+        defer { entropy.secureZero() }
         
-        return try? WalletLogic.BDKMnemonic.fromEntropy(entropy: entropy).description
+        return try? WalletLogic.BDKMnemonic.fromEntropy(entropy: Data(entropy.prefix(wordCount == 12 ? 16 : 32))).description
+    }
+
+    /// Every word that completes `words` (the first 11 or 23 words of a 12 / 24 word phrase)
+    /// into a valid BIP39 mnemonic. The last word's 11 bits are the entropy's final 7 (12
+    /// words) or 3 (24 words) bits followed by the checksum (the first 4 / 8 bits of
+    /// SHA-256(entropy)), so 128 or 8 words fit. Empty if a word isn't in the BIP39 list.
+    static func checksumWords(for words: [String]) -> [String] {
+        guard words.count == 11 || words.count == 23 else { return [] }
+        let list = Words.valid
+        var index: [String: Int] = [:]
+        for (i, word) in list.enumerated() { index[word] = i }
+
+        var bits: [Bool] = []
+        for word in words {
+            guard let i = index[word] else { return [] }
+            bits += (0..<11).map { (i >> (10 - $0)) & 1 == 1 }
+        }
+
+        let checksumBits = words.count == 11 ? 4 : 8
+        let freeBits = 11 - checksumBits
+        var result: [String] = []
+        for free in 0..<(1 << freeBits) {
+            var entropyBits = bits
+            entropyBits += (0..<freeBits).map { (free >> (freeBits - 1 - $0)) & 1 == 1 }
+
+            var entropy = Data(count: entropyBits.count / 8)
+            for (i, bit) in entropyBits.enumerated() where bit {
+                entropy[i / 8] |= 0x80 >> (i % 8)
+            }
+            let checksum = Int(Array(SHA256.hash(data: entropy))[0]) >> (8 - checksumBits)
+            entropy.secureZero()
+            result.append(list[(free << checksumBits) | checksum])
+        }
+        return result
     }
 
     /// Master extended private key (xprv for coin type "0", tprv otherwise) of a BIP39

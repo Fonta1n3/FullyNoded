@@ -70,6 +70,21 @@ func showAlert(vc: UIViewController? = nil, title: String, message: String, kind
     }
 }
 
+/// Asks how long a new seed should be before one is generated: 12 or 24 words.
+func promptForSeedLength(vc: UIViewController, completion: @escaping (Int) -> Void) {
+    DispatchQueue.main.async {
+        let alert = UIAlertController(title: "How many words?",
+                                      message: "12 words are easier to write down and back up. 24 words have more entropy. Both are secure.",
+                                      preferredStyle: .alert)
+        for count in [12, 24] {
+            alert.addAction(UIAlertAction(title: "\(count) words", style: .default) { _ in completion(count) })
+        }
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.popoverPresentationController?.sourceView = vc.view
+        vc.present(alert, animated: true)
+    }
+}
+
 /// Classifies the app's existing alert texts, so the call sites don't change.
 enum AlertKind {
     private static let errorWords = ["error", "fail", "unable", "invalid", "can't", "cannot", "couldn't",

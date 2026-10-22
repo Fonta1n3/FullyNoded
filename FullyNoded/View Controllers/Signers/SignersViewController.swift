@@ -178,8 +178,8 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
             return
         }
         
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "addSignerSegue", sender: vc)
+        DispatchQueue.main.async { [weak self] in
+            self?.navigationController?.pushViewController(AddSignerViewController(), animated: true)
         }
     }
     
