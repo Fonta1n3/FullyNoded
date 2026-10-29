@@ -11,15 +11,16 @@ import Foundation
 
 /// Settings home, built in code. The storyboard scene is only the tab's root shell: it
 /// keeps the navigation-controller relationship and the Security / Currency / App Icon
-/// segues. Node Manager is pushed in code.
+/// segues. Node Manager and Saved Wallets are pushed in code.
 class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     private enum Row {
-        case nodes, security, currency, appIcon
+        case nodes, wallets, security, currency, appIcon
     }
 
     private let sections: [(title: String, rows: [Row])] = [
         ("> NODES", [.nodes]),
+        ("> WALLETS", [.wallets]),
         ("> SECURITY", [.security]),
         ("> DISPLAY", [.currency, .appIcon])
     ]
@@ -27,6 +28,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     private let tableView = UITableView(frame: .zero, style: .grouped)
     private var nodeCount = 0
     private var activeNodeLabel: String?
+    private var walletCount = 0
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,6 +59,18 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         loadNodeSummary()
+        loadWalletCount()
+    }
+
+    /// How many wallets Fully Noded has saved, for the Saved Wallets row.
+    private func loadWalletCount() {
+        CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] wallets in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.walletCount = wallets?.count ?? 0
+                self.tableView.reloadData()
+            }
+        }
     }
 
     /// Node count and the active node's label, for the Node Manager row.
@@ -115,6 +129,12 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             }
             cell.configure(icon: "server.rack", title: "Node Manager", subtitle: subtitle)
 
+        case .wallets:
+            let subtitle = walletCount == 0
+                ? "Wallets you create or import appear here"
+                : "\(walletCount) wallet\(walletCount == 1 ? "" : "s") · descriptors and nodeless spending"
+            cell.configure(icon: "square.stack", title: "Saved Wallets", subtitle: subtitle)
+
         case .security:
             let locked = KeyChain.getData("UnlockPassword") != nil
             cell.configure(icon: "lock.shield",
@@ -157,6 +177,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         switch sections[indexPath.section].rows[indexPath.row] {
         case .nodes:
             navigationController?.pushViewController(NodesViewController(), animated: true)
+        case .wallets:
+            let wallets = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SavedWallets")
+            navigationController?.pushViewController(wallets, animated: true)
         case .security:
             performSegue(withIdentifier: "goToSecurity", sender: self)
         case .currency:
@@ -251,6 +274,7 @@ final class ThemedRowCell: UITableViewCell {
     /// - value: short trailing text (e.g. "USD", "ACTIVE"); `valueIsWarning` shows it in red.
     /// - dimmed: inactive look (dim title and icon).
     /// - action: trailing icon button instead of the chevron.
+    /// - trailingSymbol: replaces the chevron (nil hides it), in the accent when `trailingHighlighted`.
     func configure(icon: String,
                    title: String,
                    subtitle: String?,
@@ -258,7 +282,9 @@ final class ThemedRowCell: UITableViewCell {
                    valueIsWarning: Bool = false,
                    dimmed: Bool = false,
                    tint: WalletTheme.Tint = .settings,
-                   action: (symbol: String, target: Any, selector: Selector, tag: Int)? = nil) {
+                   action: (symbol: String, target: Any, selector: Selector, tag: Int)? = nil,
+                   trailingSymbol: String? = "chevron.right",
+                   trailingHighlighted: Bool = false) {
         self.tint = tint
         let accent = dimmed ? tint.dim : tint.accent
 
@@ -288,8 +314,11 @@ final class ThemedRowCell: UITableViewCell {
             actionButton.addTarget(action.target, action: action.selector, for: .touchUpInside)
         } else {
             actionButton.isHidden = true
-            chevron.isHidden = false
-            chevron.tintColor = tint.dim
+            chevron.isHidden = trailingSymbol == nil
+            chevron.image = trailingSymbol.flatMap { UIImage(systemName: $0) }
+            chevron.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: trailingSymbol == "chevron.right" ? 12 : 18,
+                                                                              weight: .semibold)
+            chevron.tintColor = trailingHighlighted ? tint.accent : tint.dim
         }
     }
 }
