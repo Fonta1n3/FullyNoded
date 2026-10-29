@@ -32,6 +32,8 @@ class ActiveWalletViewController: UIViewController {
     private let barSpinner = UIActivityIndicatorView(style: .medium)
     private var initialLoad = true
     private var backupButton: UIBarButtonItem?
+    /// Shown instead of the wallet when none is active.
+    private var noWalletView: UIView?
     
     @IBOutlet weak private var walletTable: UITableView!
     @IBOutlet weak private var fxRateLabel: UILabel!
@@ -223,8 +225,10 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @IBAction func goToFullyNodedWallets(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToWallets", sender: vc)
+        DispatchQueue.main.async { [weak self] in
+            let vc = WalletSwitcherViewController()
+            vc.hidesBottomBarWhenPushed = true
+            self?.navigationController?.pushViewController(vc, animated: true)
         }
     }
     
@@ -323,10 +327,11 @@ class ActiveWalletViewController: UIViewController {
             guard let wallet = wallet else {
                 guard let walletName = UserDefaults.standard.string(forKey: "walletName") else {
                     self.finishedLoading()
-                    showAlert(vc: self, title: "", message: "No wallet activated, create a wallet by tapping the plus sign in the top left or if you are an expert tap the Advanced button at the bottom of the screen > Bitcoin Core Wallets and tap one to activate it.")
+                    self.showNoWallet()
                     return
                 }
                 
+                self.hideNoWallet()
                 walletLabel = walletName
                 
                 reloadTable()
@@ -336,6 +341,7 @@ class ActiveWalletViewController: UIViewController {
                 return
             }
                                     
+            self.hideNoWallet()
             self.wallet = wallet
             walletLabel = wallet.label
             getWalletBalance()
@@ -348,6 +354,153 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
+    // MARK: - No wallet
+
+    /// Covers the wallet (balances, transactions, Invoice / UTXO's / Send) with ways to get one:
+    /// create or import, activate a saved Fully Noded wallet, or use a Bitcoin Core wallet.
+    private func showNoWallet() {
+        CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] wallets in
+            let saved = wallets?.count ?? 0
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.noWalletView?.removeFromSuperview()
+                let cover = self.makeNoWalletView(savedWallets: saved)
+                cover.alpha = 0
+                self.view.addSubview(cover)
+                NSLayoutConstraint.activate([
+                    cover.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+                    cover.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+                    cover.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+                    cover.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor)
+                ])
+                self.noWalletView = cover
+                self.backupButton?.isEnabled = false
+                UIView.animate(withDuration: 0.25) { cover.alpha = 1 }
+            }
+        }
+    }
+
+    private func hideNoWallet() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, let cover = self.noWalletView else { return }
+            self.noWalletView = nil
+            self.backupButton?.isEnabled = true
+            UIView.animate(withDuration: 0.2, animations: { cover.alpha = 0 }) { _ in cover.removeFromSuperview() }
+        }
+    }
+
+    private func makeNoWalletView(savedWallets: Int) -> UIView {
+        let cover = UIView()
+        cover.backgroundColor = WalletTheme.bg
+        cover.translatesAutoresizingMaskIntoConstraints = false
+
+        let scroll = UIScrollView()
+        scroll.alwaysBounceVertical = true
+        scroll.translatesAutoresizingMaskIntoConstraints = false
+        cover.addSubview(scroll)
+
+        let icon = UIImageView(image: UIImage(systemName: "square.stack.3d.up",
+                                              withConfiguration: UIImage.SymbolConfiguration(pointSize: 34, weight: .semibold)))
+        icon.tintColor = WalletTheme.accent
+        icon.contentMode = .scaleAspectFit
+
+        let title = UILabel()
+        title.text = "No wallet active"
+        title.font = WalletTheme.mono(20, weight: .bold)
+        title.textColor = WalletTheme.text
+        title.textAlignment = .center
+
+        let body = UILabel()
+        body.text = savedWallets > 0
+            ? "Pick up a wallet you've already set up, or create or import a new one."
+            : "Create a new wallet, or import one from a seed, a descriptor or a hardware wallet file. Your balances, transactions and the Invoice and Send buttons appear here once it's active."
+        body.font = WalletTheme.mono(12)
+        body.textColor = WalletTheme.dim
+        body.textAlignment = .center
+        body.numberOfLines = 0
+
+        let header = UIStackView(arrangedSubviews: [icon, title, body])
+        header.axis = .vertical
+        header.alignment = .center
+        header.spacing = 10
+        header.setCustomSpacing(16, after: icon)
+
+        let create = UIButton(type: .system)
+        WalletTheme.styleHero(create, title: "Create or import a wallet", systemImage: "plus")
+        create.addTarget(self, action: #selector(createWallet(_:)), for: .touchUpInside)
+
+        var actions: [UIView] = []
+        if savedWallets > 0 {
+            let saved = UIButton(type: .system)
+            saved.configuration = Self.noWalletButton("Use a saved wallet · \(savedWallets)", systemImage: "checkmark.circle")
+            saved.addTarget(self, action: #selector(goToFullyNodedWallets(_:)), for: .touchUpInside)
+            actions = [saved, create]
+        } else {
+            actions = [create]
+        }
+
+        let core = UIButton(type: .system)
+        core.configuration = Self.noWalletButton("Use a Bitcoin Core wallet", systemImage: "server.rack")
+        core.addTarget(self, action: #selector(openCoreWallets), for: .touchUpInside)
+
+        let buttons = actions + [core]
+        let stack = UIStackView(arrangedSubviews: [header] + buttons)
+        stack.axis = .vertical
+        stack.spacing = 12
+        stack.setCustomSpacing(28, after: header)
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        // All the same size as the hero button.
+        for button in buttons.dropFirst() {
+            button.heightAnchor.constraint(equalTo: buttons[0].heightAnchor).isActive = true
+        }
+        scroll.addSubview(stack)
+
+        NSLayoutConstraint.activate([
+            scroll.topAnchor.constraint(equalTo: cover.topAnchor),
+            scroll.leadingAnchor.constraint(equalTo: cover.leadingAnchor),
+            scroll.trailingAnchor.constraint(equalTo: cover.trailingAnchor),
+            scroll.bottomAnchor.constraint(equalTo: cover.bottomAnchor),
+            stack.leadingAnchor.constraint(equalTo: scroll.frameLayoutGuide.leadingAnchor, constant: 24),
+            stack.trailingAnchor.constraint(equalTo: scroll.frameLayoutGuide.trailingAnchor, constant: -24),
+            stack.topAnchor.constraint(greaterThanOrEqualTo: scroll.contentLayoutGuide.topAnchor, constant: 24),
+            stack.bottomAnchor.constraint(lessThanOrEqualTo: scroll.contentLayoutGuide.bottomAnchor, constant: -24),
+            // Centred while it fits, scrolls when it doesn't (large text sizes).
+            scroll.contentLayoutGuide.heightAnchor.constraint(greaterThanOrEqualTo: scroll.frameLayoutGuide.heightAnchor),
+            stack.centerYAnchor.constraint(equalTo: scroll.contentLayoutGuide.centerYAnchor),
+            icon.heightAnchor.constraint(equalToConstant: 44)
+        ])
+        return cover
+    }
+
+    /// Outlined counterpart of the hero button: same font, insets and icon size.
+    private static func noWalletButton(_ title: String, systemImage: String) -> UIButton.Configuration {
+        var config = UIButton.Configuration.plain()
+        var attributed = AttributedString(title.uppercased())
+        attributed.font = WalletTheme.mono(15, weight: .bold)
+        attributed.kern = 2
+        config.attributedTitle = attributed
+        config.image = UIImage(systemName: systemImage, withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .bold))
+        config.imagePlacement = .trailing
+        config.imagePadding = 10
+        config.contentInsets = NSDirectionalEdgeInsets(top: 14, leading: 18, bottom: 14, trailing: 18)
+        config.titleLineBreakMode = .byTruncatingTail
+        config.baseForegroundColor = WalletTheme.accent
+        config.background.backgroundColor = WalletTheme.card
+        config.background.strokeColor = WalletTheme.accent
+        config.background.strokeWidth = 1
+        config.background.cornerRadius = WalletTheme.radius
+        config.cornerStyle = .fixed
+        return config
+    }
+
+    /// Bitcoin Core Wallets (also under Create › Advanced): activate any wallet on the node.
+    @objc private func openCoreWallets() {
+        impact()
+        let vc = CoreWalletsViewController()
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
+    }
+
     private static func decodeBackup(_ data: Data?) -> WalletBackup? {
         guard let data = data else { return nil }
         let decoder = JSONDecoder()
@@ -700,6 +853,10 @@ class ActiveWalletViewController: UIViewController {
                 // it says how much of it is timelocked). The send screen's "available" is what
                 // can actually be spent now.
                 let spendable = max(0, total - locked)
+                // Remembered for Your Wallets' total, so it needn't fetch this one again.
+                if let name = UserDefaults.standard.string(forKey: "walletName") {
+                    WalletBalanceCache.store(name: name, total: total, locked: locked)
+                }
 
                 DispatchQueue.main.async {
                     self.onchainBalance = total

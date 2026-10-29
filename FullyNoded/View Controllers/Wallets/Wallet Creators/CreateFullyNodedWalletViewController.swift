@@ -128,7 +128,9 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
         
-            performSegue(withIdentifier: "segueToSyncCoreWallet", sender: self)
+            let vc = CoreWalletsViewController()
+            vc.hidesBottomBarWhenPushed = true
+            navigationController?.pushViewController(vc, animated: true)
         }
     }
     
