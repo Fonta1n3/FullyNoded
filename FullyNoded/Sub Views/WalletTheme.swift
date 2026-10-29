@@ -39,7 +39,7 @@ enum WalletTheme {
             case .create:
                 return UIColor(red: 0.30, green: 0.93, blue: 0.96, alpha: 1)   // aqua
             case .settings:
-                return UIColor(red: 1.0, green: 0.78, blue: 0.22, alpha: 1)    // terminal amber
+                return UIColor(red: 0.36, green: 0.58, blue: 1.0, alpha: 1)    // terminal blue
             case .home:
                 return UIColor(red: 0.25, green: 1.0, blue: 0.48, alpha: 1)    // terminal green
             case .signer:
@@ -187,7 +187,7 @@ enum WalletTheme {
 
     /// Cypherpunk tab bar: opaque near-black bar, a faint top hairline, dim icons, and each
     /// tab's selected icon in that section's own accent (home green, wallet teal, signers
-    /// purple, settings amber). The colours are baked into the items' images, so they're
+    /// purple, settings blue). The colours are baked into the items' images, so they're
     /// right however a tab gets selected (including `selectedIndex` set in code). Safe to
     /// call more than once.
     static func styleTabBar(_ tabBarController: UITabBarController) {
@@ -243,7 +243,7 @@ enum WalletTheme {
         case is ActiveWalletViewController: return .wallet
         case is SignersViewController: return .signer
         case is SettingsViewController: return .settings
-        default: return .send   // nodeless wallets: cyan-teal
+        default: return .send
         }
     }
 

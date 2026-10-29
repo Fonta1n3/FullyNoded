@@ -16,6 +16,9 @@ class NodelessWalletsTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        // Opened from Settings › Wallets.
+        navigationItem.title = "Saved Wallets"
+        WalletTheme.styleNavigation(navigationItem, tint: .settings)
         tableView.register(WalletCell.self, forCellReuseIdentifier: WalletCell.reuseIdentifier)
         setupTableHeader()
     }
