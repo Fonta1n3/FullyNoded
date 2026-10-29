@@ -248,8 +248,9 @@ extension VerifyTransactionViewController {
                     guard let self = self else { return }
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     markBroadcast()
-                    SuccessView.show(in: self, title: "Transaction sent",
-                                     subtitle: "Broadcast privately over Tor.", detail: self.txid) { [weak self] in
+                    SuccessView.show(in: self, title: self.payjoinUsed ? "Payjoin sent" : "Transaction sent",
+                                     subtitle: "Broadcast privately over Tor." + (self.payjoinUsed ? " The receiver's coin is in it, so on-chain it doesn't look like a payment from you." : ""),
+                                     detail: self.txid) { [weak self] in
                         self?.navigationController?.popToRootViewController(animated: true)
                     }
                 }
@@ -280,8 +281,9 @@ extension VerifyTransactionViewController {
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     self.finishActivity()
                     
-                    SuccessView.show(in: self, title: "Transaction sent",
-                                     subtitle: "Broadcast with your node.", detail: id) { [weak self] in
+                    SuccessView.show(in: self, title: self.payjoinUsed ? "Payjoin sent" : "Transaction sent",
+                                     subtitle: "Broadcast with your node." + (self.payjoinUsed ? " The receiver's coin is in it, so on-chain it doesn't look like a payment from you." : ""),
+                                     detail: id) { [weak self] in
                         self?.navigationController?.popToRootViewController(animated: true)
                     }
                 } else {

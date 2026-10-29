@@ -48,6 +48,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     /// The payment request offered a BIP78 payjoin: tried once the payment is fully signed.
     var payjoin: Payjoin.Endpoint?
     var payjoinAttempted = false
+    /// The transaction on screen is the receiver's payjoin (for the "sent" message).
+    var payjoinUsed = false
+    /// Top of the table while a payjoin is offered or was tried.
+    var payjoinBanner: PayjoinBanner?
     /// Silent payment outputs found for inputs of this transaction ("txid:vout" lowercase), so
     /// signing doesn't fetch and scan them again.
     var silentPaymentOwned: [String: SilentPaymentSpend.OwnedOutput] = [:]
@@ -91,6 +95,30 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
         WalletTheme.stylePrimary(sendOutlet, tint: .transaction)
         WalletTheme.apply(to: self, tint: .transaction)
+        if let payjoin = payjoin { showPayjoinBanner(.offered(host: payjoin.url.host ?? payjoin.url.absoluteString)) }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        sizePayjoinBanner()
+    }
+
+    func showPayjoinBanner(_ state: PayjoinBanner.State) {
+        let banner = payjoinBanner ?? PayjoinBanner()
+        payjoinBanner = banner
+        banner.update(state)
+        verifyTable.tableHeaderView = banner
+        sizePayjoinBanner(force: true)
+    }
+
+    /// Table header views don't size themselves: fit it to the table's width.
+    private func sizePayjoinBanner(force: Bool = false) {
+        guard let banner = payjoinBanner, verifyTable.bounds.width > 0 else { return }
+        let size = banner.systemLayoutSizeFitting(CGSize(width: verifyTable.bounds.width, height: UIView.layoutFittingCompressedSize.height),
+                                                  withHorizontalFittingPriority: .required, verticalFittingPriority: .fittingSizeLevel)
+        guard force || banner.frame.size != CGSize(width: verifyTable.bounds.width, height: size.height) else { return }
+        banner.frame = CGRect(x: 0, y: 0, width: verifyTable.bounds.width, height: size.height)
+        verifyTable.tableHeaderView = banner
     }
     
     override func viewDidAppear(_ animated: Bool) {

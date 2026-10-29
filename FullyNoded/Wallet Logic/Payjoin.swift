@@ -35,6 +35,12 @@ enum Payjoin {
         let receiverInputs: Int
         /// Extra fee taken from our change, in sats.
         let feeContribution: Int64
+        /// Before and after, for the summary.
+        var originalInputs = 0
+        var originalFee: Int64 = 0
+        var proposalFee: Int64 = 0
+        /// Sats the receiver's coins brought in (they come back to the receiver in the payment output).
+        var receiverAmount: Int64 = 0
     }
 
     struct Failure: LocalizedError {
@@ -42,9 +48,39 @@ enum Payjoin {
         init(_ message: String) { errorDescription = message }
     }
 
+    /// Where a payjoin attempt is, for the progress screen (main queue).
+    enum Stage: Equatable {
+        /// The signed payment, as BIP78's original (it stays the fallback).
+        case original(inputs: Int, fee: Int64, feeRate: Double)
+        /// Sending it to the receiver; waiting for their proposal.
+        case contacting(host: String, overTor: Bool)
+        /// The receiver's proposal arrived.
+        case proposal(inputs: Int, outputs: Int)
+        /// It passed every sender check.
+        case checked(receiverInputs: Int, contribution: Int64)
+        case signing
+        /// The node finalizes it and tests it against the mempool.
+        case nodeCheck
+    }
+
+    /// The sender checks run on every proposal, in order (shown as they pass).
+    static let checklist = [
+        "Version and locktime unchanged",
+        "All your inputs kept, in order",
+        "Sequence numbers unchanged",
+        "No key paths or signatures smuggled in",
+        "Receiver's coins finalized, your script type",
+        "Every output of yours kept, in order",
+        "Payment address and amount unchanged",
+        "Fee never lower",
+        "Fee from your change within your limit"
+    ]
+
     /// The whole sender flow. Completion on the main queue.
     static func attempt(endpoint: Endpoint, unsignedPsbt: String, signedRawTx: String, passphrase: String?,
+                        progress: ((Stage) -> Void)? = nil,
                         completion: @escaping (Result<Outcome, Failure>) -> Void) {
+        let report: (Stage) -> Void = { stage in DispatchQueue.main.async { progress?(stage) } }
         let finish: (Result<Outcome, Failure>) -> Void = { result in
             if case .failure(let error) = result { log("failed: \(error.errorDescription ?? "")") }
             DispatchQueue.main.async { completion(result) }
@@ -58,6 +94,8 @@ enum Payjoin {
             } catch {
                 finish(.failure(Failure(error.localizedDescription))); return
             }
+            report(.original(inputs: original.inputs.count, fee: original.fee, feeRate: original.feeRate))
+            report(.contacting(host: endpoint.url.host ?? "", overTor: TorClient.sharedInstance.state == .connected))
             log("original: \(original.inputs.count) inputs, fee \(original.fee) sats (\(String(format: "%.2f", original.feeRate)) sat/vB), payment output #\(original.paymentIndex)\(original.changeIndex.map { ", change #\($0)" } ?? "")")
 
             post(endpoint.url, psbt: original.psbt.base64EncodedString(), query: original.query) { response in
@@ -69,7 +107,10 @@ enum Payjoin {
                         finish(.failure(Failure("The receiver's reply isn't a PSBT.")))
                         return
                     }
-                    let checked: (psbt: Data, receiverInputs: Int, contribution: Int64)
+                    if let parsed = try? SPPsbt(proposal) {
+                        report(.proposal(inputs: parsed.tx.inputs.count, outputs: parsed.tx.outputs.count))
+                    }
+                    let checked: (psbt: Data, receiverInputs: Int, contribution: Int64, fee: Int64, receiverAmount: Int64)
                     do {
                         checked = try check(proposal, against: original)
                     } catch let error as Failure {
@@ -78,13 +119,20 @@ enum Payjoin {
                         finish(.failure(Failure("The receiver's proposal can't be read: \(error.localizedDescription)"))); return
                     }
                     log("proposal passed every check: \(checked.receiverInputs) receiver input(s), \(checked.contribution) sats from our change")
+                    report(.checked(receiverInputs: checked.receiverInputs, contribution: checked.contribution))
+                    report(.signing)
                     sign(checked.psbt, passphrase: passphrase) { signed in
                         switch signed {
                         case .failure(let error):
                             finish(.failure(error))
                         case .success(let signedPsbt):
+                            report(.nodeCheck)
                             finalize(signedPsbt) { final in
-                                finish(final.map { Outcome(rawTx: $0, receiverInputs: checked.receiverInputs, feeContribution: checked.contribution) })
+                                finish(final.map {
+                                    Outcome(rawTx: $0, receiverInputs: checked.receiverInputs, feeContribution: checked.contribution,
+                                            originalInputs: original.inputs.count, originalFee: original.fee,
+                                            proposalFee: checked.fee, receiverAmount: checked.receiverAmount)
+                                })
                             }
                         }
                     }
@@ -257,7 +305,7 @@ enum Payjoin {
 
     /// The proposal with our derivations restored (ready to sign), how many inputs the receiver
     /// added and how much extra fee came out of our change. Throws on the first failed check.
-    static func check(_ data: Data, against original: Original) throws -> (psbt: Data, receiverInputs: Int, contribution: Int64) {
+    static func check(_ data: Data, against original: Original) throws -> (psbt: Data, receiverInputs: Int, contribution: Int64, fee: Int64, receiverAmount: Int64) {
         var proposal = try SPPsbt(data)
         let tx = proposal.tx
 
@@ -284,6 +332,7 @@ enum Payjoin {
         let senderSet = Set(senderIndices)
         var amounts: [Int64] = []
         var receiverInputs = 0
+        var receiverAmount: Int64 = 0
         for (i, map) in proposal.inputs.enumerated() {
             // No keypaths, no partial signatures anywhere.
             guard !has(map, 0x06, count: 34), !has(map, 0x16, count: 33) else { throw fail("an input carries key paths") }
@@ -303,6 +352,7 @@ enum Payjoin {
                     throw fail("the receiver's input is a different script type")
                 }
                 amounts.append(Int64(OfflinePsbt.amount(prevout)))
+                receiverAmount += Int64(OfflinePsbt.amount(prevout))
                 receiverInputs += 1
             }
         }
@@ -350,7 +400,38 @@ enum Payjoin {
                 proposal.inputs[i].append(entry)
             }
         }
-        return (proposal.serialize(), receiverInputs, contribution)
+        return (proposal.serialize(), receiverInputs, contribution, fee, receiverAmount)
+    }
+
+    // MARK: - Which wallets can payjoin
+
+    /// nil when `wallet` can take part in a payjoin from this device, else why not (shown to
+    /// the user). Either side re-signs during the exchange, at once and with no one else: so a
+    /// single-sig segwit or taproot wallet whose signer is on this device. Multisig would need
+    /// every cosigner to sign again; a watch-only wallet has nothing here to sign with.
+    static func unavailableReason(for wallet: Wallet?, completion: @escaping (String?) -> Void) {
+        guard let wallet = wallet else {
+            completion("Payjoin needs a wallet created or imported with Fully Noded.")
+            return
+        }
+        let descriptor = Descriptor(wallet.receiveDescriptor)
+        if descriptor.isMulti {
+            completion("Payjoin isn't offered for multisig wallets: every cosigner would have to sign again during the exchange.")
+            return
+        }
+        guard descriptor.isP2WPKH || descriptor.isP2TR else {
+            completion("Payjoin is offered for native segwit and taproot wallets only.")
+            return
+        }
+        let descriptors = (wallet.receiveDescriptor + wallet.changeDescriptor).lowercased()
+        CoreDataService.retrieveEntity(entityName: .signers) { signers in
+            let hasSigner = (signers ?? []).map { SignerStruct(dictionary: $0) }.contains { signer in
+                guard signer.words != nil, let encrypted = signer.xfp,
+                      let xfp = Crypto.decrypt(encrypted)?.utf8String?.lowercased() else { return false }
+                return descriptors.contains("[\(xfp)")
+            }
+            completion(hasSigner ? nil : "This wallet is watch-only on this device: payjoin needs its signer here, to sign again during the exchange.")
+        }
     }
 
     // MARK: - Signing and finalizing

@@ -91,23 +91,7 @@ extension VerifyTransactionViewController {
                 // A payjoin was offered: try it, keeping this signed payment as the fallback.
                 if let endpoint = self.payjoin, !self.payjoinAttempted, !self.unsignedPsbt.isEmpty {
                     self.payjoinAttempted = true
-                    self.showActivity("negotiating payjoin...")
-                    Payjoin.attempt(endpoint: endpoint, unsignedPsbt: self.unsignedPsbt, signedRawTx: rawTx,
-                                    passphrase: self.passphrase) { [weak self] result in
-                        guard let self = self else { return }
-                        switch result {
-                        case .success(let outcome):
-                            let added = outcome.receiverInputs == 0
-                                ? "The receiver didn't add inputs, so it's an ordinary payment."
-                                : "The receiver added \(outcome.receiverInputs) input\(outcome.receiverInputs == 1 ? "" : "s"), so this payment doesn't look like one to chain analysis."
-                            let fee = outcome.feeContribution > 0 ? " \(outcome.feeContribution) sats of the extra fee came from your change." : ""
-                            self.showSigned(rawTx: outcome.rawTx, title: "Payjoin ready",
-                                            subtitle: "\(added)\(fee) Every check passed. Review it, then broadcast.")
-                        case .failure(let error):
-                            self.showSigned(rawTx: rawTx, kind: .notice, title: "Signed (no payjoin)",
-                                            subtitle: "\(error.errorDescription ?? "The payjoin didn't work.") Your normal payment is signed and ready to broadcast.")
-                        }
-                    }
+                    self.negotiatePayjoin(endpoint, signedRawTx: rawTx)
                     return
                 }
                 self.showSigned(rawTx: rawTx)
@@ -135,6 +119,38 @@ extension VerifyTransactionViewController {
         }
     }
 
+    /// The payjoin, step by step on its own screen: the normal signed payment is the fallback,
+    /// whatever happens (or if the user skips).
+    func negotiatePayjoin(_ endpoint: Payjoin.Endpoint, signedRawTx rawTx: String) {
+        finishActivity()
+        let negotiation = PayjoinNegotiationViewController(host: endpoint.url.host ?? endpoint.url.absoluteString, fallbackRawTx: rawTx)
+        negotiation.onDone = { [weak self] finalTx, outcome, reason in
+            guard let self = self else { return }
+            if let outcome = outcome {
+                self.payjoinUsed = outcome.receiverInputs > 0
+                self.showPayjoinBanner(.used(receiverInputs: outcome.receiverInputs))
+            } else {
+                self.payjoinUsed = false
+                self.showPayjoinBanner(.fellBack(reason: reason ?? "The payjoin didn't work."))
+            }
+            self.loadSigned(rawTx: finalTx)
+        }
+        present(negotiation, animated: true) {
+            Payjoin.attempt(endpoint: endpoint, unsignedPsbt: self.unsignedPsbt, signedRawTx: rawTx, passphrase: self.passphrase,
+                            progress: { [weak negotiation] stage in negotiation?.advance(stage) },
+                            completion: { [weak negotiation] result in negotiation?.finish(result) })
+        }
+    }
+
+    /// Reloads the screen with a fully signed raw transaction.
+    func loadSigned(rawTx: String) {
+        unsignedPsbt = ""
+        reset()
+        signedRawTx = rawTx
+        enableSendButton()
+        load()
+    }
+
     /// Fully signed: show it, then reload the screen with the raw transaction.
     func showSigned(rawTx: String, kind: SuccessView.Kind = .success, title: String = "Transaction signed",
                     subtitle: String = "Ready to broadcast. The transaction reloads so you can check it first.") {
@@ -145,12 +161,7 @@ extension VerifyTransactionViewController {
             title: title,
             subtitle: subtitle,
             onDismiss: { [weak self] in
-                guard let self = self else { return }
-                unsignedPsbt = ""
-                reset()
-                signedRawTx = rawTx
-                enableSendButton()
-                load()
+                self?.loadSigned(rawTx: rawTx)
             }
         )
     }
