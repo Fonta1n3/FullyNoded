@@ -5,22 +5,34 @@
 //  Created by Peter on 21/03/19.
 //  Copyright © 2019 Fontaine. All rights reserved.
 //
-//  Receive screen, built in code. Either a BIP21 payment request for a fresh address (optional
-//  amount / label / message; Fully Noded wallets can also timelock the address until a date),
-//  or, when the wallet has one, its silent payment address on its own. Requests are never
-//  combined (no BIP321 `sp=`); paying such requests is still supported (AddressParser).
+//  Receive screen, built in code: Receive to (Address / Payjoin / Silent payment), the QR, the
+//  address, a timelock, then the request fields and the BIP21 text. A BIP21 payment request for a
+//  fresh address (optional amount / label / message; Fully Noded wallets can also timelock the
+//  address until a date), the same plus a BIP78 payjoin endpoint, or, when the wallet has one,
+//  its silent payment address on its own. Requests are never combined with `sp=` (BIP321);
+//  paying such requests is still supported (AddressParser).
 //
 
 import UIKit
 
 class InvoiceViewController: UIViewController, UITextFieldDelegate {
 
-    /// What the QR asks to be paid (the choice only appears when the wallet has a silent payment address).
-    private enum Mode: Int {
+    /// What the QR asks to be paid (the choice appears when the wallet can do more than an address).
+    private enum Mode {
         /// `bitcoin:<address>[?amount=…&label=…&message=…]` (BIP21).
         case address
+        /// The same, plus `pj=` to a payjoin endpoint hosted from this phone (BIP78).
+        case payjoin
         /// The `sp1…` / `tsp1…` address alone.
         case silentPayment
+
+        var title: String {
+            switch self {
+            case .address: return "Address"
+            case .payjoin: return "Payjoin"
+            case .silentPayment: return "Silent pay"
+            }
+        }
     }
 
     var wallet: Wallet?
@@ -34,13 +46,16 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     private var silentPaymentAddress: String?
     private var silentPaymentSigner: String?
     private var timelockedUntil: String?
+    private var timelockedDate: Date?
+    /// The tabs in Receive to, in order.
+    private var modes: [Mode] = [.address]
     /// The text in the QR: the BIP21 request or the silent payment address.
     private var requestText = ""
 
     // Views
     private let scrollView = UIScrollView()
     private let stack = UIStackView()
-    private let modeControl = UISegmentedControl(items: ["Address", "Silent payment"])
+    private let modeControl = UISegmentedControl(items: ["Address"])
     private let modeNote = UILabel()
     private var modeCard: UIView!
     private var addressCard: UIView!
@@ -57,23 +72,43 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     private let messageField = UITextField()
     private let requestLabel = UILabel()
     private let timelockButton = UIButton(type: .system)
+    private var timelockPicker: UIView!
+    private var timelockLocked: UIView!
+    private let timelockDateLabel = UILabel()
+    private let timelockCountdownLabel = UILabel()
     private var requestCard: UIView!
     private var uriCard: UIView!
     private var timelockCard: UIView!
-    private var timelockWarningCard: UIView!
-    private let timelockWarningLabel = UILabel()
 
     // Payjoin (BIP78 receiver, hosted on a one-time onion while this screen is open)
+    /// The payjoin panel inside Receive to (shown on the Payjoin tab).
     private var payjoinCard: UIView!
-    private let payjoinSwitch = UISwitch()
+    private let payjoinHeadline = UILabel()
+    private var payjoinBenefits: UIView!
+    private let payjoinButton = UIButton(type: .system)
+    private let payjoinAutoSwitch = UISwitch()
     private let payjoinStatus = UILabel()
     private var payjoinBroadcastButton: UIButton!
+    /// Leaves payjoin (back to the Address tab): Cancel while setting up, Stop once live.
+    private var payjoinQuitButton: UIButton!
+    private var qrCardView: UIView!
     private let payjoinProgress = PayjoinProgressView()
     /// The QR's white frame (it glows while payjoin is live).
     private var qrFrame: UIView?
+    /// "⇄ PAYJOIN" pinned to the top of the QR while the invoice carries an endpoint.
+    private let qrBadge = PaddedLabel()
     private var payjoinSession: PayjoinReceiveSession?
     /// The endpoint in the invoice, once the onion is reachable.
     private var payjoinURL: URL?
+    /// The user wants payjoin on this invoice (stays on across a new address).
+    private var payjoinOn = false
+    /// Whether a signer of this wallet is on this device (nil until checked): it signs the coin we add.
+    private var payjoinHasSigner: Bool?
+    /// Auto-start is tried once per screen, for the first address.
+    private var payjoinAutoTried = false
+    /// Invalidates a pending "waiting for Tor" retry.
+    private var torWaitID = 0
+    private static let payjoinAutoKey = "payjoinAutoStart"
 
     // MARK: Lifecycle
 
@@ -89,11 +124,15 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         updateRequest()
         generateOnchainInvoice()
         loadSilentPaymentAddress()
+        checkPayjoinSigner()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        if isMovingFromParent { stopPayjoin() }
+        if isMovingFromParent || isBeingDismissed || navigationController?.isBeingDismissed == true {
+            payjoinOn = false
+            stopPayjoin()
+        }
     }
 
     // MARK: Layout
@@ -120,31 +159,28 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             stack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -24)
         ])
 
-        // Address or silent payment: only when the wallet has a silent payment address (see
-        // loadSilentPaymentAddress).
+        // Receive to → QR → address → timelock → request. Receive to (with the payjoin panel)
+        // only appears when there's more than a plain address to choose.
+        payjoinCard = makePayjoinCard()
         modeCard = makeModeCard()
         modeCard.isHidden = true
         stack.addArrangedSubview(modeCard)
 
-        stack.addArrangedSubview(qrCard())
+        qrCardView = qrCard()
+        stack.addArrangedSubview(qrCardView)
         addressCard = makeAddressCard()
         stack.addArrangedSubview(addressCard)
         silentPaymentCard = makeSilentPaymentCard()
         silentPaymentCard.isHidden = true
         stack.addArrangedSubview(silentPaymentCard)
+        timelockCard = makeTimelockCard()
+        timelockCard.isHidden = !canTimelock
+        stack.addArrangedSubview(timelockCard)
         requestCard = makeRequestCard()
         stack.addArrangedSubview(requestCard)
         uriCard = makeUriCard()
         stack.addArrangedSubview(uriCard)
-        timelockCard = makeTimelockCard()
-        timelockCard.isHidden = !canTimelock
-        stack.addArrangedSubview(timelockCard)
-        timelockWarningCard = makeTimelockWarningCard()
-        timelockWarningCard.isHidden = true
-        stack.addArrangedSubview(timelockWarningCard)
-        payjoinCard = makePayjoinCard()
-        payjoinCard.isHidden = !canTimelock
-        stack.insertArrangedSubview(payjoinCard, at: stack.arrangedSubviews.firstIndex(of: requestCard) ?? 2)
+        rebuildModes()
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tap.cancelsTouchesInView = false
@@ -189,6 +225,18 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             qrImageView.widthAnchor.constraint(equalTo: qrImageView.heightAnchor),
             frame.widthAnchor.constraint(equalToConstant: 264)
         ])
+        qrBadge.text = "⇄ PAYJOIN"
+        qrBadge.insets = UIEdgeInsets(top: 4, left: 10, bottom: 4, right: 10)
+        qrBadge.font = WalletTheme.mono(11, weight: .heavy)
+        qrBadge.textColor = WalletTheme.bg
+        qrBadge.backgroundColor = tint.accent
+        qrBadge.isHidden = true
+        qrBadge.translatesAutoresizingMaskIntoConstraints = false
+        frame.addSubview(qrBadge)
+        NSLayoutConstraint.activate([
+            qrBadge.centerXAnchor.constraint(equalTo: frame.centerXAnchor),
+            qrBadge.centerYAnchor.constraint(equalTo: frame.topAnchor)
+        ])
         let centered = UIStackView(arrangedSubviews: [UIView(), frame, UIView()])
         centered.distribution = .equalCentering
 
@@ -205,12 +253,41 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
 
     private func makeModeCard() -> UIView {
         WalletTheme.style(modeControl, tint: tint)
-        modeControl.selectedSegmentIndex = Mode.address.rawValue
+        modeControl.selectedSegmentIndex = 0
         modeControl.addTarget(self, action: #selector(modeChanged), for: .valueChanged)
         modeNote.font = WalletTheme.mono(11)
         modeNote.textColor = WalletTheme.dim
         modeNote.numberOfLines = 0
-        return WalletTheme.cardView([WalletTheme.caption("> RECEIVE TO", tint: tint), modeControl, modeNote], tint: tint, spacing: 10)
+        return WalletTheme.cardView([WalletTheme.caption("> RECEIVE TO", tint: tint), modeControl, modeNote, payjoinCard], tint: tint, spacing: 12)
+    }
+
+    /// The tabs: Address always, Payjoin for single-sig segwit / taproot wallets, Silent payment
+    /// when the wallet has a silent payment address.
+    private func rebuildModes() {
+        var modes: [Mode] = [.address]
+        // Only for a wallet that can sign its payjoin here (Payjoin.unavailableReason).
+        if canTimelock, payjoinHasSigner == true { modes.append(.payjoin) }
+        if silentPaymentAddress != nil { modes.append(.silentPayment) }
+        if modes != self.modes || modeControl.numberOfSegments != modes.count {
+            self.modes = modes
+            modeControl.removeAllSegments()
+            for (index, mode) in modes.enumerated() { modeControl.insertSegment(withTitle: mode.title, at: index, animated: false) }
+        }
+        if !modes.contains(mode) { mode = .address }
+        updateModeControl()
+    }
+
+    private func updateModeControl() {
+        modeControl.selectedSegmentIndex = modes.firstIndex(of: mode) ?? 0
+        let locked = timelockedUntil != nil
+        for (index, mode) in modes.enumerated() {
+            let enabled = mode == .address || (!locked && !(mode == .payjoin && payjoinHasSigner == false))
+            modeControl.setEnabled(enabled, forSegmentAt: index)
+        }
+        modeCard.isHidden = modes.count < 2
+        // The card lights up while it's on payjoin.
+        modeCard.layer.borderColor = (mode == .payjoin ? tint.accent : tint.line).cgColor
+        modeCard.backgroundColor = mode == .payjoin ? tint.accent.withAlphaComponent(0.06) : WalletTheme.card
     }
 
     private func makeSilentPaymentCard() -> UIView {
@@ -285,29 +362,108 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         return WalletTheme.cardView([WalletTheme.caption("> PAYMENT REQUEST (BIP21)", tint: tint), requestLabel, actions], tint: tint, spacing: 10)
     }
 
+    /// Unlocked: what a timelock is, quick picks and "Choose a date". Locked: the unlock date,
+    /// a countdown and a way back to a regular address.
     private func makeTimelockCard() -> UIView {
-        let text = UILabel()
-        text.font = WalletTheme.mono(11)
-        text.textColor = WalletTheme.dim
-        text.numberOfLines = 0
-        text.text = "Lock whatever is sent to this address until a date you choose: it can't be spent before then, not even by you. The timelocked address replaces this one and is added to your wallet backup."
-        timelockButton.configuration = WalletTheme.buttonConfiguration(title: "Timelock this address", systemImage: "hourglass", filled: false, tint: .warning)
+        let lockTint: WalletTheme.Tint = .warning
+
+        let icon = UIImageView(image: UIImage(systemName: "hourglass", withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)))
+        icon.tintColor = lockTint.accent
+        icon.contentMode = .scaleAspectFit
+        icon.widthAnchor.constraint(equalToConstant: 28).isActive = true
+        let headline = UILabel()
+        headline.text = "Lock coins until a date"
+        headline.font = WalletTheme.mono(15, weight: .bold)
+        headline.textColor = WalletTheme.text
+        headline.numberOfLines = 0
+        let subtitle = UILabel()
+        subtitle.text = "Whatever is sent can't be spent before then, not even by you."
+        subtitle.font = WalletTheme.mono(11)
+        subtitle.textColor = WalletTheme.dim
+        subtitle.numberOfLines = 0
+        let titles = UIStackView(arrangedSubviews: [headline, subtitle])
+        titles.axis = .vertical
+        titles.spacing = 3
+        let header = UIStackView(arrangedSubviews: [icon, titles])
+        header.spacing = 12
+        header.alignment = .center
+
+        let presets = UIStackView(arrangedSubviews: TimelockViewController.presets.enumerated().map { index, preset in
+            let button = UIButton(type: .system)
+            button.tag = index
+            button.configuration = WalletTheme.chipConfiguration(title: preset.title, tint: lockTint, fontSize: 11, imageSize: 10, imagePadding: 0,
+                                                                 insets: NSDirectionalEdgeInsets(top: 8, leading: 4, bottom: 8, trailing: 4),
+                                                                 clipsTitle: true)
+            button.addTarget(self, action: #selector(timelockPresetTapped(_:)), for: .touchUpInside)
+            return button
+        })
+        presets.spacing = 6
+        presets.distribution = .fillEqually
+        timelockButton.configuration = WalletTheme.buttonConfiguration(title: "Choose a date", systemImage: "calendar", filled: false, tint: lockTint)
         timelockButton.addTarget(self, action: #selector(addTimelock), for: .touchUpInside)
-        return WalletTheme.cardView([WalletTheme.caption("> TIMELOCK", tint: tint), text, timelockButton], tint: tint, spacing: 10)
+        let footer = UILabel()
+        footer.text = "The timelocked address replaces this one and is added to your wallet backup."
+        footer.font = WalletTheme.mono(10)
+        footer.textColor = WalletTheme.dim
+        footer.numberOfLines = 0
+        let picker = UIStackView(arrangedSubviews: [header, presets, timelockButton, footer])
+        picker.axis = .vertical
+        picker.spacing = 12
+        timelockPicker = picker
+
+        let lockIcon = UIImageView(image: UIImage(systemName: "lock.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 22, weight: .bold)))
+        lockIcon.tintColor = lockTint.accent
+        lockIcon.contentMode = .scaleAspectFit
+        lockIcon.widthAnchor.constraint(equalToConstant: 28).isActive = true
+        timelockDateLabel.font = WalletTheme.mono(18, weight: .bold)
+        timelockDateLabel.textColor = lockTint.accent
+        timelockDateLabel.numberOfLines = 0
+        timelockDateLabel.adjustsFontSizeToFitWidth = true
+        timelockDateLabel.minimumScaleFactor = 0.7
+        timelockCountdownLabel.font = WalletTheme.mono(12, weight: .semibold)
+        timelockCountdownLabel.textColor = WalletTheme.text
+        timelockCountdownLabel.numberOfLines = 0
+        let lockTexts = UIStackView(arrangedSubviews: [timelockDateLabel, timelockCountdownLabel])
+        lockTexts.axis = .vertical
+        lockTexts.spacing = 3
+        let lockHeader = UIStackView(arrangedSubviews: [lockIcon, lockTexts])
+        lockHeader.spacing = 12
+        lockHeader.alignment = .center
+        let lockNote = UILabel()
+        lockNote.text = "Funds sent to this address can't be spent before then, not even by you. Payjoin and silent payments are off for it: they'd let the payer bypass the lock."
+        lockNote.font = WalletTheme.mono(11)
+        lockNote.textColor = WalletTheme.dim
+        lockNote.numberOfLines = 0
+        let regular = UIButton(type: .system)
+        regular.configuration = WalletTheme.chipConfiguration(title: "Use a regular address", systemImage: "arrow.uturn.backward", tint: tint, fontSize: 12, imageSize: 11,
+                                                              imagePadding: 5, insets: NSDirectionalEdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
+        regular.addTarget(self, action: #selector(newAddress), for: .touchUpInside)
+        let locked = UIStackView(arrangedSubviews: [lockHeader, lockNote, chipRow([regular])])
+        locked.axis = .vertical
+        locked.spacing = 12
+        locked.isHidden = true
+        timelockLocked = locked
+
+        return WalletTheme.cardView([WalletTheme.caption("> TIMELOCK", tint: lockTint), picker, locked], tint: lockTint, spacing: 12)
     }
 
-    private func makeTimelockWarningCard() -> UIView {
-        let icon = UIImageView(image: UIImage(systemName: "hourglass"))
-        icon.tintColor = WalletTheme.pending
-        icon.contentMode = .scaleAspectFit
-        icon.widthAnchor.constraint(equalToConstant: 22).isActive = true
-        timelockWarningLabel.font = WalletTheme.mono(12, weight: .semibold)
-        timelockWarningLabel.textColor = WalletTheme.pending
-        timelockWarningLabel.numberOfLines = 0
-        let row = UIStackView(arrangedSubviews: [icon, timelockWarningLabel])
-        row.spacing = 10
-        row.alignment = .top
-        return WalletTheme.cardView([row], tint: .warning, background: WalletTheme.pending.withAlphaComponent(0.08))
+    private func updateTimelockCard() {
+        let locked = timelockedUntil != nil
+        timelockPicker.isHidden = locked
+        timelockLocked.isHidden = !locked
+        timelockCard.backgroundColor = locked ? WalletTheme.pending.withAlphaComponent(0.08) : WalletTheme.card
+        timelockCard.layer.borderColor = (locked ? WalletTheme.pending : WalletTheme.Tint.warning.line).cgColor
+        guard locked else { return }
+        if let date = timelockedDate {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .long
+            formatter.timeStyle = .short
+            timelockDateLabel.text = "Locked until \(formatter.string(from: date))"
+            timelockCountdownLabel.text = "Unlocks in \(TimelockViewController.countdown(to: date))"
+        } else {
+            timelockDateLabel.text = "Locked until \(timelockedUntil ?? "")"
+            timelockCountdownLabel.text = nil
+        }
     }
 
     /// Timelocks are created for single-sig taproot and segwit Fully Noded wallets.
@@ -349,24 +505,33 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         let sp = shownSilentPayment
 
         addressLabel.text = addressString.isEmpty ? "Fetching an address…" : addressString.addressExpanded
-        addressCard.isHidden = sp != nil
-        requestCard.isHidden = sp != nil
-        uriCard.isHidden = sp != nil
+        // On Payjoin, the QR and the request only appear once the endpoint is live: a QR shown
+        // before then would be paid without payjoin.
+        let payjoinPending = mode == .payjoin && payjoinURL == nil
+        qrCardView.isHidden = payjoinPending
+        addressCard.isHidden = sp != nil || payjoinPending
+        requestCard.isHidden = sp != nil || payjoinPending
+        uriCard.isHidden = sp != nil || payjoinPending
         silentPaymentCard.isHidden = sp == nil
         silentPaymentLabel.text = sp
-        modeCard.isHidden = silentPaymentAddress == nil
-        modeControl.isEnabled = timelockedUntil == nil
-        modeControl.selectedSegmentIndex = (sp == nil ? Mode.address : Mode.silentPayment).rawValue
+        payjoinCard.isHidden = mode != .payjoin
+        updateModeControl()
 
         if sp != nil {
             modeNote.text = "\(silentPaymentSigner.map { "\($0)'s" } ?? "Your") silent payment address: every payment to it lands on a fresh, unlinkable output. The payer's wallet must support silent payments (BIP352)."
             qrCaption.text = "Silent payment address. Tap the QR to show it full screen."
             requestText = sp!
         } else {
-            modeNote.text = timelockedUntil != nil
-                ? "Timelocked address: a silent payment address would let the payer bypass the lock."
-                : "A regular address, with an optional amount, label and message. Any bitcoin wallet can pay it."
-            qrCaption.text = "Tap the QR to show it full screen."
+            if mode == .payjoin {
+                modeNote.text = "Your address plus a payjoin endpoint hosted from this phone over Tor. A wallet with payjoin adds its coins and yours joins in; any other wallet pays the address normally."
+            } else if timelockedUntil != nil {
+                modeNote.text = "Timelocked address: payjoin and silent payments are off for it."
+            } else {
+                modeNote.text = "A regular address, with an optional amount, label and message. Any bitcoin wallet can pay it."
+            }
+            qrCaption.text = payjoinURL != nil
+                ? "Payjoin invoice: a wallet that supports it joins in, any other pays normally. Tap the QR to show it full screen."
+                : "Tap the QR to show it full screen."
             requestText = Self.bip21(address: addressString, amount: amount,
                                      label: labelField.text ?? "", message: messageField.text ?? "",
                                      payjoin: payjoinURL)
@@ -385,9 +550,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             amountHint.text = "Not a valid amount: it's left out of the request."
         }
 
-        timelockCard.isHidden = sp != nil || !canTimelock || timelockedUntil != nil
-        payjoinCard.isHidden = sp != nil || !canTimelock || timelockedUntil != nil
-        timelockWarningCard.isHidden = timelockedUntil == nil
+        timelockCard.isHidden = sp != nil || mode == .payjoin || !canTimelock
+        updateTimelockCard()
         requestLabel.text = requestText
 
         let text = requestText.isEmpty ? "bitcoin:" : (sp != nil ? requestText.uppercased() : requestText)
@@ -417,9 +581,28 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
 
     @objc private func modeChanged() {
-        mode = Mode(rawValue: modeControl.selectedSegmentIndex) ?? .address
+        let selected = modes.indices.contains(modeControl.selectedSegmentIndex) ? modes[modeControl.selectedSegmentIndex] : .address
+        guard selected != mode else { return }
         view.endEditing(true)
-        updateRequest()
+        setMode(selected)
+    }
+
+    /// Switching to Payjoin turns it on; switching away takes the endpoint down.
+    private func setMode(_ new: Mode) {
+        let old = mode
+        mode = new
+        if old == .payjoin, new != .payjoin, payjoinOn {
+            payjoinOn = false
+            stopPayjoin()
+        }
+        UIView.animate(withDuration: 0.25) {
+            self.updateRequest()
+            self.stack.layoutIfNeeded()
+        }
+        if new == .payjoin, !payjoinOn {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            turnOnPayjoin()
+        }
     }
 
     // MARK: Silent payment address
@@ -447,6 +630,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                     guard let self = self, let found = found else { return }
                     self.silentPaymentAddress = found.address
                     self.silentPaymentSigner = found.label
+                    self.rebuildModes()
                     self.updateRequest()
                 }
             }
@@ -458,6 +642,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     @objc private func newAddress() {
         guard !isShowingActivity else { return }
         timelockedUntil = nil
+        timelockedDate = nil
         generateOnchainInvoice()
     }
 
@@ -493,35 +678,170 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             self.updateRequest()
             self.hideActivity()
             // The payjoin endpoint belongs to one address: start again for the new one.
-            if changed, self.payjoinSwitch.isOn { self.restartPayjoin() }
+            guard changed else { return }
+            if self.payjoinOn {
+                // A timelocked address (or no wallet) can't take a payjoin: the card is hidden.
+                if self.payjoinCard.isHidden {
+                    self.payjoinOn = false
+                    self.stopPayjoin()
+                    self.updatePayjoinControls()
+                } else {
+                    self.restartPayjoin()
+                }
+            } else {
+                self.autoStartPayjoinIfWanted()
+            }
         }
     }
 
     // MARK: Payjoin
 
     private func makePayjoinCard() -> UIView {
-        let title = UILabel()
-        title.text = "Payjoin"
-        title.font = WalletTheme.mono(14, weight: .semibold)
-        title.textColor = WalletTheme.text
-        payjoinSwitch.onTintColor = tint.accent
-        payjoinSwitch.addTarget(self, action: #selector(payjoinToggled), for: .valueChanged)
-        let row = UIStackView(arrangedSubviews: [title, UIView(), payjoinSwitch])
-        row.alignment = .center
+        let icon = UIImageView(image: UIImage(systemName: "arrow.triangle.merge",
+                                              withConfiguration: UIImage.SymbolConfiguration(pointSize: 22, weight: .bold)))
+        icon.tintColor = tint.accent
+        icon.contentMode = .scaleAspectFit
+        icon.widthAnchor.constraint(equalToConstant: 30).isActive = true
+        payjoinHeadline.text = "Get paid privately"
+        payjoinHeadline.font = WalletTheme.mono(17, weight: .bold)
+        payjoinHeadline.textColor = WalletTheme.text
+        payjoinHeadline.numberOfLines = 0
+        let subtitle = UILabel()
+        subtitle.text = "Payjoin (BIP78): you and the payer both put coins in."
+        subtitle.font = WalletTheme.mono(11)
+        subtitle.textColor = WalletTheme.dim
+        subtitle.numberOfLines = 0
+        let titles = UIStackView(arrangedSubviews: [payjoinHeadline, subtitle])
+        titles.axis = .vertical
+        titles.spacing = 3
+        let header = UIStackView(arrangedSubviews: [icon, titles])
+        header.spacing = 12
+        header.alignment = .center
+
+        payjoinBenefits = benefitList([
+            ("eye.slash", "Breaks chain analysis", "Your coin goes in too, so \"all inputs are the payer's\" is wrong."),
+            ("questionmark.square.dashed", "Hides the amount", "The outputs no longer show what was paid."),
+            ("arrow.triangle.2.circlepath", "Consolidates for free", "One of your coins rides along; the payer covers its fee.")
+        ])
+
+        WalletTheme.styleHero(payjoinButton, title: "Try again", systemImage: "arrow.clockwise", tint: tint)
+        payjoinButton.addTarget(self, action: #selector(payjoinTapped), for: .touchUpInside)
+
         payjoinStatus.font = WalletTheme.mono(11)
         payjoinStatus.textColor = WalletTheme.dim
         payjoinStatus.numberOfLines = 0
-        payjoinStatus.text = "The payer's wallet adds its coins and this wallet adds one of yours, so the payment doesn't look like one. Hosted over Tor from this phone while this screen is open."
+        payjoinStatus.text = "Hosted over Tor from this phone, on a one-time onion, while this screen is open. A wallet without payjoin just pays normally."
+        payjoinQuitButton = chip("Cancel payjoin", "xmark", action: #selector(quitPayjoin))
         payjoinBroadcastButton = chip("Broadcast the payer's payment", "paperplane", action: #selector(broadcastPayerPayment))
         payjoinBroadcastButton.isHidden = true
         payjoinProgress.tint = tint
         payjoinProgress.isHidden = true
-        return WalletTheme.cardView([WalletTheme.caption("> PAYJOIN", tint: tint), row, payjoinProgress, payjoinStatus, payjoinBroadcastButton],
-                                    tint: tint, spacing: 10)
+
+        let autoLabel = UILabel()
+        autoLabel.text = "Always open on Payjoin"
+        autoLabel.font = WalletTheme.mono(12, weight: .semibold)
+        autoLabel.textColor = WalletTheme.text
+        payjoinAutoSwitch.onTintColor = tint.accent
+        payjoinAutoSwitch.isOn = UserDefaults.standard.bool(forKey: Self.payjoinAutoKey)
+        payjoinAutoSwitch.addTarget(self, action: #selector(payjoinAutoChanged), for: .valueChanged)
+        let autoRow = UIStackView(arrangedSubviews: [autoLabel, UIView(), payjoinAutoSwitch])
+        autoRow.alignment = .center
+
+        let divider = UIView()
+        divider.backgroundColor = tint.line
+        divider.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        let panel = UIStackView(arrangedSubviews: [divider, header, payjoinBenefits, payjoinProgress, payjoinStatus, payjoinButton,
+                                                   chipRow([payjoinQuitButton, payjoinBroadcastButton]), autoRow])
+        panel.axis = .vertical
+        panel.spacing = 12
+        panel.isHidden = true
+        updatePayjoinControls()
+        return panel
     }
 
-    @objc private func payjoinToggled() {
-        if payjoinSwitch.isOn { startPayjoin() } else { stopPayjoin() }
+    private func benefitList(_ items: [(icon: String, title: String, detail: String)]) -> UIView {
+        let list = UIStackView()
+        list.axis = .vertical
+        list.spacing = 8
+        for item in items {
+            let icon = UIImageView(image: UIImage(systemName: item.icon,
+                                                  withConfiguration: UIImage.SymbolConfiguration(pointSize: 12, weight: .semibold)))
+            icon.tintColor = tint.accent
+            icon.contentMode = .scaleAspectFit
+            icon.widthAnchor.constraint(equalToConstant: 20).isActive = true
+            let text = UILabel()
+            text.numberOfLines = 0
+            let attributed = NSMutableAttributedString(string: item.title + "  ", attributes: [
+                .font: WalletTheme.mono(12, weight: .semibold), .foregroundColor: WalletTheme.text])
+            attributed.append(NSAttributedString(string: item.detail, attributes: [
+                .font: WalletTheme.mono(11), .foregroundColor: WalletTheme.dim]))
+            text.attributedText = attributed
+            let row = UIStackView(arrangedSubviews: [icon, text])
+            row.spacing = 8
+            row.alignment = .firstBaseline
+            list.addArrangedSubview(row)
+        }
+        return list
+    }
+
+    /// Setting up: the pitch while Tor works. Live: progress and status. Failed: Try again.
+    private func updatePayjoinControls() {
+        payjoinBenefits.isHidden = payjoinURL != nil
+        payjoinButton.isHidden = payjoinOn || payjoinHasSigner == false
+        payjoinAutoSwitch.isEnabled = payjoinHasSigner != false
+        payjoinHeadline.text = payjoinURL != nil ? "Payjoin is live" : (payjoinOn ? "Setting up payjoin…" : "Get paid privately")
+        let quit = payjoinURL != nil ? "Stop payjoin" : (payjoinOn ? "Cancel payjoin" : "Use a regular address")
+        payjoinQuitButton.configuration?.title = quit
+        payjoinQuitButton.configuration?.image = UIImage(systemName: payjoinOn ? "xmark" : "arrow.uturn.backward",
+                                                         withConfiguration: UIImage.SymbolConfiguration(pointSize: 11, weight: .semibold))
+    }
+
+    /// Payjoin can only add a coin when a signer of this wallet is on this device.
+    private func checkPayjoinSigner() {
+        guard let wallet = wallet, canTimelock else { return }
+        Payjoin.unavailableReason(for: wallet) { [weak self] reason in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.payjoinHasSigner = reason == nil
+                self.rebuildModes()
+                self.updatePayjoinControls()
+                self.updateRequest()
+                self.autoStartPayjoinIfWanted()
+            }
+        }
+    }
+
+    /// With "Always open on Payjoin", the screen switches to Payjoin by itself once there's an
+    /// address and a signer.
+    private func autoStartPayjoinIfWanted() {
+        guard !payjoinAutoTried, !payjoinOn, mode == .address, modes.contains(.payjoin), timelockedUntil == nil,
+              payjoinHasSigner == true, !addressString.isEmpty,
+              UserDefaults.standard.bool(forKey: Self.payjoinAutoKey) else { return }
+        payjoinAutoTried = true
+        setMode(.payjoin)
+    }
+
+    /// Back to a regular address: takes the endpoint down (setting up or live).
+    @objc private func quitPayjoin() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        setMode(.address)
+        setPayjoinStatus("Hosted over Tor from this phone, on a one-time onion, while this screen is open. A wallet without payjoin just pays normally.", color: WalletTheme.dim)
+    }
+
+    @objc private func payjoinTapped() {
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        turnOnPayjoin()
+    }
+
+    @objc private func payjoinAutoChanged() {
+        UserDefaults.standard.set(payjoinAutoSwitch.isOn, forKey: Self.payjoinAutoKey)
+    }
+
+    private func turnOnPayjoin() {
+        payjoinOn = true
+        payjoinBroadcastButton.isHidden = true
+        updatePayjoinControls()
+        startPayjoin()
     }
 
     private func setPayjoinStatus(_ text: String, color: UIColor = WalletTheme.dim) {
@@ -529,50 +849,70 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         payjoinStatus.textColor = color
     }
 
-    /// Checks this wallet can receive a payjoin (a signer for it on this device, Tor up), asks
-    /// for the passphrase if the prompt is on, then hosts the endpoint.
+    /// Checks this wallet can receive a payjoin (a signer for it on this device, Tor up; waits
+    /// for Tor while it's still connecting), asks for the passphrase if the prompt is on, then
+    /// hosts the endpoint.
     private func startPayjoin() {
+        guard payjoinOn else { return }
         guard let wallet = wallet, !addressString.isEmpty else {
             payjoinFailed("Payjoin needs a Fully Noded wallet and an address.")
             return
         }
-        guard TorClient.sharedInstance.state == .connected else {
-            payjoinFailed("Payjoin is hosted over Tor, which isn't connected yet. Try again in a moment.")
+        guard payjoinHasSigner != false else {
+            payjoinFailed("Payjoin needs this wallet's signer on this device: it signs the coin you add.")
             return
         }
-        let descriptors = (wallet.receiveDescriptor + wallet.changeDescriptor).lowercased()
-        CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
-            let hasSigner = (signers ?? []).map { SignerStruct(dictionary: $0) }.contains { signer in
-                guard signer.words != nil, let encrypted = signer.xfp,
-                      let xfp = Crypto.decrypt(encrypted)?.utf8String?.lowercased() else { return false }
-                return descriptors.contains("[\(xfp)")
-            }
-            DispatchQueue.main.async {
-                guard let self = self else { return }
-                guard hasSigner else {
-                    self.payjoinFailed("Payjoin needs this wallet's signer on this device: it signs the coin you add.")
-                    return
-                }
-                if UserDefaults.standard.object(forKey: "passphrasePrompt") == nil {
-                    self.hostPayjoin(wallet: wallet, passphrase: nil)
-                } else {
-                    self.promptPayjoinPassphrase { [weak self] passphrase in
-                        guard let passphrase = passphrase else { self?.payjoinFailed(nil); return }
-                        self?.hostPayjoin(wallet: wallet, passphrase: passphrase)
-                    }
-                }
+        switch TorClient.sharedInstance.state {
+        case .connected:
+            break
+        case .started, .refreshing:
+            waitForTor(attempt: 0)
+            return
+        default:
+            payjoinFailed("Payjoin is hosted over Tor, which is off. Turn Tor on, then try again.")
+            return
+        }
+        if UserDefaults.standard.object(forKey: "passphrasePrompt") == nil {
+            hostPayjoin(wallet: wallet, passphrase: nil)
+        } else {
+            promptPayjoinPassphrase { [weak self] passphrase in
+                guard let passphrase = passphrase else { self?.payjoinFailed(nil); return }
+                self?.hostPayjoin(wallet: wallet, passphrase: passphrase)
             }
         }
     }
 
+    /// Tor is still connecting (often right after launch): starts as soon as it's up.
+    private func waitForTor(attempt: Int) {
+        torWaitID += 1
+        let id = torWaitID
+        guard payjoinOn else { return }
+        if TorClient.sharedInstance.state == .connected {
+            startPayjoin()
+            return
+        }
+        guard attempt < 90 else {
+            payjoinFailed("Tor didn't connect. Try again once it's connected.")
+            return
+        }
+        setPayjoinStatus("Waiting for Tor to connect… \(attempt)s. Payjoin starts as soon as it's up.", color: WalletTheme.pending)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+            guard let self = self, self.torWaitID == id else { return }
+            self.waitForTor(attempt: attempt + 1)
+        }
+    }
+
     private func hostPayjoin(wallet: Wallet, passphrase: String?) {
+        guard payjoinOn else { return }
         let session = PayjoinReceiveSession(address: addressString, amountSats: amountSats, walletName: wallet.name, passphrase: passphrase)
         session.onStatus = { [weak self] status in self?.payjoinStatusChanged(status) }
         payjoinSession = session
         payjoinBroadcastButton.isHidden = true
         payjoinProgress.reset()
         UIView.animate(withDuration: 0.25) { self.payjoinProgress.isHidden = false }
-        setPayjoinStatus("Building a private payjoin endpoint on this phone. Payers' wallets will reach it over Tor.", color: WalletTheme.dim)
+        setPayjoinStatus("Building a private payjoin endpoint on this phone. Your QR appears as soon as payers can reach it (usually under a minute).", color: WalletTheme.dim)
+        // iOS pauses the listener when the phone locks: stay awake while hosting.
+        UIApplication.shared.isIdleTimerDisabled = true
         session.start()
     }
 
@@ -585,9 +925,14 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         case .ready(let url):
             payjoinURL = url
             payjoinProgress.finish()
-            setPayjoinStatus("✓ LIVE. Your invoice now carries a payjoin address. Keep this screen open until you're paid: a wallet that can't reach it simply pays normally.", color: tint.accent)
-            updateRequest()
+            setPayjoinStatus("Your QR now asks for a payjoin. Keep this screen open until you're paid (the phone stays awake meanwhile). A wallet that can't reach it simply pays normally.", color: tint.accent)
+            UIView.animate(withDuration: 0.3) {
+                self.updateRequest()
+                self.stack.layoutIfNeeded()
+            }
             glowQR(true)
+            showQrBadge(true)
+            updatePayjoinControls()
             UINotificationFeedbackGenerator().notificationOccurred(.success)
         case .handling:
             payjoinProgress.pulse(true)
@@ -601,7 +946,9 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             UINotificationFeedbackGenerator().notificationOccurred(.warning)
         case .sent(let contributed):
             payjoinProgress.pulse(false)
+            payjoinProgress.complete()
             glowQR(false)
+            payjoinHeadline.text = "Payjoin sent ✓"
             setPayjoinStatus("✓ Payjoin sent. The payer now signs and broadcasts it.", color: tint.accent)
             SuccessView.show(in: self, title: "Payjoin complete",
                              subtitle: "Both of you put coins into this payment, so it doesn't look like one on-chain. You added \(Int(contributed).withCommas) sats of your own coin: it comes back to you with the payment.\n\nThe payer's wallet now signs and broadcasts it.")
@@ -616,8 +963,9 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
 
     private func payjoinFailed(_ message: String?) {
+        payjoinOn = false
         stopPayjoin()
-        payjoinSwitch.setOn(false, animated: true)
+        updatePayjoinControls()
         if let message = message {
             setPayjoinStatus(message, color: WalletTheme.danger)
             UINotificationFeedbackGenerator().notificationOccurred(.error)
@@ -628,15 +976,32 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
     }
 
+    /// Takes the endpoint down (`payjoinOn` stays as it is, so a new address can start again).
     private func stopPayjoin() {
+        torWaitID += 1
         payjoinSession?.stop()
         payjoinSession = nil
+        UIApplication.shared.isIdleTimerDisabled = false
         payjoinProgress.reset()
         UIView.animate(withDuration: 0.25) { self.payjoinProgress.isHidden = true }
         glowQR(false)
+        showQrBadge(false)
         if payjoinURL != nil {
             payjoinURL = nil
             updateRequest()
+        }
+    }
+
+    private func showQrBadge(_ on: Bool) {
+        guard on != !qrBadge.isHidden else { return }
+        if on {
+            qrBadge.isHidden = false
+            qrBadge.transform = CGAffineTransform(scaleX: 0.2, y: 0.2)
+            UIView.animate(withDuration: 0.45, delay: 0, usingSpringWithDamping: 0.55, initialSpringVelocity: 0.9) {
+                self.qrBadge.transform = .identity
+            }
+        } else {
+            qrBadge.isHidden = true
         }
     }
 
@@ -830,10 +1195,15 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     // MARK: Timelock
 
     @objc private func addTimelock() {
-        getTimelockedAddress()
+        getTimelockedAddress(initialDate: nil)
     }
 
-    private func getTimelockedAddress() {
+    @objc private func timelockPresetTapped(_ sender: UIButton) {
+        guard TimelockViewController.presets.indices.contains(sender.tag) else { return }
+        getTimelockedAddress(initialDate: TimelockViewController.date(for: TimelockViewController.presets[sender.tag]))
+    }
+
+    private func getTimelockedAddress(initialDate: Date?) {
         showActivity("fetching address...")
 
         guard let wallet = self.wallet, !addressString.isEmpty else {
@@ -858,6 +1228,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 self.hideActivity()
 
                 let timelockVC = TimelockViewController()
+                timelockVC.initialDate = initialDate
 
                 timelockVC.completion = { [weak self] (timestamp, afterFragment, displayDate) in
                     guard let self = self else { return }
@@ -921,7 +1292,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                                                 guard let self = self else { return }
 
                                                 self.timelockedUntil = displayDate
-                                                self.timelockWarningLabel.text = "Timelocked until \(displayDate). Funds sent to this address can't be spent before then, not even by you."
+                                                self.timelockedDate = Date(timeIntervalSince1970: TimeInterval(timestamp))
                                                 self.showAddress(address: timelockedAddress)
                                                 self.backUpNow(displayDate: displayDate)
                                             }
@@ -1047,6 +1418,10 @@ private final class PayjoinProgressView: UIView {
     private var timer: Timer?
     private var publishStarted: Date?
     private var scrambleTimer: Timer?
+    /// Since the endpoint went live, for the "waiting for a payer" clock.
+    private var liveSince: Date?
+    private var liveTimer: Timer?
+    private var payerConnected = false
 
     private static let titles: [PayjoinReceiveSession.Step: String] = [
         .listener: "Private listener on this phone",
@@ -1074,6 +1449,8 @@ private final class PayjoinProgressView: UIView {
         dot.widthAnchor.constraint(equalToConstant: 8).isActive = true
         dot.heightAnchor.constraint(equalToConstant: 8).isActive = true
         header.font = WalletTheme.mono(11, weight: .bold)
+        header.adjustsFontSizeToFitWidth = true
+        header.minimumScaleFactor = 0.7
         let headerRow = UIStackView(arrangedSubviews: [dot, header, UIView()])
         headerRow.spacing = 8
         headerRow.alignment = .center
@@ -1121,6 +1498,8 @@ private final class PayjoinProgressView: UIView {
     func reset() {
         timer?.invalidate()
         scrambleTimer?.invalidate()
+        liveTimer?.invalidate()
+        liveSince = nil
         current = nil
         publishStarted = nil
         pulse(false)
@@ -1215,16 +1594,36 @@ private final class PayjoinProgressView: UIView {
     func finish() {
         for s in PayjoinReceiveSession.Step.allCases { markDone(s) }
         current = nil
-        header.text = "LIVE ON TOR"
         header.textColor = tint.accent
         dot.backgroundColor = tint.accent
         startDotPulse()
+        if liveSince == nil { liveSince = Date() }
+        liveTimer?.invalidate()
+        liveTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in self?.tickLive() }
+        tickLive()
+    }
+
+    /// "LIVE ON TOR · 02:14 · WAITING FOR A PAYER"
+    private func tickLive() {
+        guard let since = liveSince, !payerConnected else { return }
+        let seconds = Int(Date().timeIntervalSince(since))
+        header.text = String(format: "LIVE ON TOR · %02d:%02d · WAITING FOR A PAYER", seconds / 60, seconds % 60)
+    }
+
+    /// The payjoin was proposed: the clock stops.
+    func complete() {
+        liveTimer?.invalidate()
+        dot.layer.removeAllAnimations()
+        header.text = "PAYJOIN SENT TO THE PAYER"
+        header.textColor = tint.accent
+        dot.backgroundColor = tint.accent
     }
 
     /// A payer is connected: the header pulses faster.
     func pulse(_ on: Bool) {
         dot.layer.removeAnimation(forKey: "fast")
-        guard on else { return }
+        payerConnected = on
+        guard on else { tickLive(); return }
         header.text = "PAYER CONNECTED"
         let fast = CABasicAnimation(keyPath: "transform.scale")
         fast.fromValue = 1.0

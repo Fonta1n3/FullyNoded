@@ -830,8 +830,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             // BIP321 with both: the payer picks. A silent payment needs this wallet's signers to
             // hold every input's key; the regular address always works.
             if let sp = request.silentPayment, let fallback = request.address {
+                let payjoinNote = request.payjoin == nil ? "" : " The regular address also offers payjoin (the receiver adds a coin of theirs)."
                 let alert = UIAlertController(title: "Pay to which address?",
-                                              message: "This request accepts a silent payment address (more private: the recipient gets a fresh, unlinkable address) or a regular address. Paying the silent payment address needs your signer to hold the keys of the coins you spend.",
+                                              message: "This request accepts a silent payment address (more private: the recipient gets a fresh, unlinkable address) or a regular address. Paying the silent payment address needs your signer to hold the keys of the coins you spend." + payjoinNote,
                                               preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "Silent payment address", style: .default) { [weak self] _ in
                     self?.applyPaymentRequest(request, address: sp)
@@ -852,22 +853,41 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     /// Fills in the recipient (and amount) from a payment request, then summarises it.
     private func applyPaymentRequest(_ request: AddressParser.PaymentRequest, address: String) {
         addAddress(address.addressExpanded)
-        // Payjoin goes with the regular address (not a silent payment one).
-        payjoin = request.payjoin.flatMap { url in
-            address == request.address
-                ? Payjoin.Endpoint(url: url, address: address, outputSubstitutionDisabled: request.payjoinOutputSubstitutionDisabled)
-                : nil
+        payjoin = nil
+        // Payjoin goes with the regular address (not a silent payment one), from a wallet that
+        // can sign it here (single-sig, signer on this device).
+        guard let url = request.payjoin, address == request.address else {
+            showPaymentRequest(request, address: address, payjoinUnavailable: nil)
+            return
         }
+        activeWallet { [weak self] wallet in
+            Payjoin.unavailableReason(for: wallet) { reason in
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    if reason == nil {
+                        self.payjoin = Payjoin.Endpoint(url: url, address: address,
+                                                        outputSubstitutionDisabled: request.payjoinOutputSubstitutionDisabled)
+                    }
+                    self.showPaymentRequest(request, address: address, payjoinUnavailable: reason)
+                }
+            }
+        }
+    }
 
-        guard request.amount != nil || request.label != nil || request.message != nil else { return }
-        var amountText = "not specified"
+    /// The payment request's summary sheet (amount, label, message, payjoin).
+    private func showPaymentRequest(_ request: AddressParser.PaymentRequest, address: String, payjoinUnavailable: String?) {
+        guard request.amount != nil || request.label != nil || request.message != nil || request.payjoin != nil else { return }
+        var amountText: String?
         if let amount = request.amount {
             amountText = amount.avoidNotation
-            amountInput.text = Self.formatAmount(amountText.replacingOccurrences(of: ",", with: ""))
+            amountInput.text = Self.formatAmount(amountText!.replacingOccurrences(of: ",", with: ""))
             updateFiatAmount()
         }
-        let payjoinNote = payjoin == nil ? "" : "\n\nPayjoin: supported. After you sign, Fully Noded asks the receiver to add an input (over Tor), and falls back to this normal payment if that doesn't work."
-        showAlert(vc: self, title: "Payment Request\n", message: "Address: \(address)\n\nAmount: \(amountText) btc\n\nLabel: " + (request.label ?? "no label") + "\n\nMessage: \(request.message ?? "no message")" + payjoinNote)
+        let sheet = PayjoinRequestSheet(.init(address: address, amount: amountText, label: request.label, message: request.message,
+                                              payjoin: payjoin?.url,
+                                              payjoinSkippedForSilentPayment: request.payjoin != nil && payjoin == nil && payjoinUnavailable == nil,
+                                              payjoinUnavailable: payjoinUnavailable))
+        present(sheet, animated: true)
     }
     
     func getRawTx(outputs: [[String: Any]]) {
