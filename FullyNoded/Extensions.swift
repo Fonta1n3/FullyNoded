@@ -351,6 +351,8 @@ public extension BlockchainInfo {
 public extension Notification.Name {
     static let refreshNode = Notification.Name(rawValue: "refreshNode")
     static let refreshWallet = Notification.Name(rawValue: "refreshWallet")
+    /// Tor finished bootstrapping (posted on the main queue).
+    static let torConnected = Notification.Name(rawValue: "torConnected")
     static let addColdCard = Notification.Name(rawValue: "addColdcard")
     static let refreshUtxos = Notification.Name(rawValue: "refreshUtxos")
     static let importWallet = Notification.Name(rawValue: "importWallet")

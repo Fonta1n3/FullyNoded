@@ -745,7 +745,7 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
 
             Each call to your node is encrypted on this phone for your server only (NIP-44) and sent as a short-lived nostr message through a relay. Fully Noded Server decrypts it, asks your node, and sends the encrypted answer back.
 
-            The relay only sees ciphertext, nothing is stored, and only paired phones can use your node. Use the Mac's own relay at home or over a VPN like Tailscale, or a public relay from anywhere.
+            The relay only sees ciphertext, nothing is stored, and only paired phones can use your node. Use the Mac's own relay at home, and turn on Tailscale Funnel in Fully Noded Server to reach it from anywhere (nothing to install on this phone), or add a public relay.
 
             Set up: Fully Noded Server › Nostr Connect › Pair Fully Noded, then scan its QR here.
             """, kind: .notice)

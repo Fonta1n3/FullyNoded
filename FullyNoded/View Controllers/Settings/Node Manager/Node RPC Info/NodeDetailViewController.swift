@@ -245,12 +245,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             return
         }
         
-        relaysLabel.text = uri.relays.joined(separator: "\n")
+        relaysLabel.text = uri.relays.map { "\($0)\n   \(NostrConnectURI.relayKind($0))" }.joined(separator: "\n")
         relaysLabel.textColor = WalletTheme.text
         networkLabel.text = uri.networkName ?? "—"
         serverKeyLabel.text = "\(uri.bridgePubkey.prefix(12))…\(uri.bridgePubkey.suffix(12))"
         if let pin = uri.certSHA256 {
+            let others = uri.relays.contains { NostrConnectURI.relayKind($0).hasPrefix("Tailscale") || NostrConnectURI.relayKind($0) == "public relay" }
             tlsLabel.text = "Pinned · SHA-256 \(pin.prefix(12))…\(pin.suffix(8))\nwss:// to the Mac's relay accepts only this certificate."
+                + (others ? " Tailscale Funnel and public relays use standard TLS." : "")
         } else {
             tlsLabel.text = uri.relays.contains { $0.lowercased().hasPrefix("ws://") }
                 ? "None: ws:// to the Mac's relay (messages are still end-to-end encrypted)."
@@ -284,8 +286,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     private func repair(with text: String) async {
         guard let node = selectedNode, let id = node.id else { return }
         
-        guard let uri = NostrConnectURI(text) else {
-            showAlert(vc: self, title: "Not a Nostr Connect QR", message: "In Fully Noded Server open Nostr Connect, tap Pair Fully Noded and scan the QR it shows.")
+        guard let uri = NostrConnectURI(text), !uri.isLightning else {
+            showAlert(vc: self, title: "Not a Nostr Connect QR", message: "In Fully Noded Server open Nostr Connect, tap Pair Fully Noded and scan the QR it shows. (Core Lightning pairings are for Plasma.)")
             return
         }
         
@@ -741,7 +743,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         if isNostr {
             showAlert(vc: self,
                       title: "Nostr Connect",
-                      message: "This node is reached through Fully Noded Server's Nostr Connect relay instead of Tor. Requests and responses are end-to-end encrypted, the relay only passes on ciphertext.\n\nThe relay must be reachable from this device: on the same network, over a VPN such as Tailscale, or a public relay added in Fully Noded Server.\n\nTo reconnect or change relays, pair again in Fully Noded Server → Nostr Connect and tap Re-pair here.")
+                      message: "This node is reached through Fully Noded Server's Nostr Connect relay instead of Tor. Requests and responses are end-to-end encrypted, the relay only passes on ciphertext.\n\nThe relay must be reachable from this device: on the same network, over a VPN, through Tailscale Funnel (from anywhere, nothing needed on this phone) or a public relay, both set up in Fully Noded Server.\n\nTo reconnect or change relays, pair again in Fully Noded Server → Nostr Connect and tap Re-pair here.")
             return
         }
         

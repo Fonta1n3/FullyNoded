@@ -282,10 +282,20 @@ class MainMenuViewController: UIViewController {
         torStatusLabel.font = WalletTheme.mono(12, weight: .semibold)
         torStatusLabel.textColor = WalletTheme.dim
         torStatusLabel.text = "TOR …"
-        let torRow = UIStackView(arrangedSubviews: [torDot, torStatusLabel])
+        // Two lines for a Nostr Connect node (relay, then Tor): the dot stays on the first.
+        torStatusLabel.numberOfLines = 0
+        let torDotHolder = UIView()
+        torDotHolder.addSubview(torDot)
+        let torRow = UIStackView(arrangedSubviews: [torDotHolder, torStatusLabel])
         torRow.axis = .horizontal
-        torRow.alignment = .center
+        torRow.alignment = .fill
         torRow.spacing = 8
+        NSLayoutConstraint.activate([
+            torDotHolder.widthAnchor.constraint(equalToConstant: 8),
+            torDot.leadingAnchor.constraint(equalTo: torDotHolder.leadingAnchor),
+            torDot.centerYAnchor.constraint(equalTo: torStatusLabel.firstBaselineAnchor,
+                                            constant: -WalletTheme.mono(12, weight: .semibold).capHeight / 2)
+        ])
         
         nodeDot.translatesAutoresizingMaskIntoConstraints = false
         nodeDot.layer.cornerRadius = 4
@@ -769,6 +779,8 @@ class MainMenuViewController: UIViewController {
     
     private func checkIfNodesChanged(newNodeId: UUID) {
         if newNodeId != existingNodeID {
+            // Remember it, so coming back to the home view doesn't load it a second time.
+            existingNodeID = newNodeId
             loadTableData()
         }
     }
@@ -1050,16 +1062,14 @@ class MainMenuViewController: UIViewController {
     }
     
     /// Tor line of the node card: connected (accent), disconnected (red), or starting.
-    /// A Nostr Connect node doesn't use Tor, so the line shows its relay instead.
+    /// A Nostr Connect node doesn't use Tor, so the line shows its relay, plus Tor's own state
+    /// (still used for exchange rates and payjoin).
     private func updateTorStatus() {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             if let node = activeNode, node.isNostrConnect {
                 torProgressView.isHidden = true
-                let relay = node.nostrConnectURI?.relaySummary ?? ""
-                torStatusLabel.text = relay.isEmpty ? "NOSTR CONNECT" : "NOSTR · \(relay)"
-                torStatusLabel.textColor = WalletTheme.dim
-                torDot.backgroundColor = tint.accent
+                showNostrStatus(node, tor: Self.torSummary(mgr?.state, progress: nil))
                 return
             }
             let state = mgr?.state
@@ -1082,11 +1092,34 @@ class MainMenuViewController: UIViewController {
         }
     }
     
+    /// "NOSTR · relay.example", and under it "TOR ✓" (exchange rates, payjoin).
+    private func showNostrStatus(_ node: NodeStruct, tor: (text: String, ok: Bool?)) {
+        let relay = node.nostrConnectURI?.relaySummary ?? ""
+        let base = relay.isEmpty ? "NOSTR CONNECT" : "NOSTR · \(relay)"
+        let text = NSMutableAttributedString(string: base + "\n", attributes: [.foregroundColor: WalletTheme.dim])
+        let torColor: UIColor = tor.ok == true ? tint.accent : (tor.ok == false ? WalletTheme.danger : WalletTheme.pending)
+        text.append(NSAttributedString(string: tor.text, attributes: [.foregroundColor: torColor]))
+        torStatusLabel.attributedText = text
+        torDot.backgroundColor = tint.accent
+    }
+
+    private static func torSummary(_ state: TorClient.TorState?, progress: Int?) -> (text: String, ok: Bool?) {
+        switch state {
+        case .connected?: return ("TOR ✓", true)
+        case .stopped?: return ("TOR OFF", false)
+        case .started?, .refreshing?: return (progress.map { "TOR \($0)%" } ?? "TOR STARTING…", nil)
+        default: return ("TOR …", nil)
+        }
+    }
+
     private func showTorBootstrapping(progress: Int) {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            // Tor still starts for other traffic, but the node card is about the node's transport.
-            if activeNode?.isNostrConnect == true { return }
+            // Tor still starts for other traffic (exchange rates, payjoin): shown after the relay.
+            if let node = activeNode, node.isNostrConnect {
+                showNostrStatus(node, tor: Self.torSummary(.started, progress: progress))
+                return
+            }
             torProgressView.isHidden = false
             torProgressView.setProgress(Float(progress) / 100, animated: progress > 0)
             torStatusLabel.text = "TOR BOOTSTRAPPING \(progress)%"
@@ -1166,6 +1199,7 @@ extension MainMenuViewController: OnionManagerDelegate {
     }
     
     func torConnFinished() {
+        DispatchQueue.main.async { NotificationCenter.default.post(name: .torConnected, object: nil) }
         if let _ = activeNode {
             loadTable()
         } else {

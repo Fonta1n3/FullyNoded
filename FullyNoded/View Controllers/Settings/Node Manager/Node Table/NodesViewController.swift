@@ -223,16 +223,22 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
 
             self.ud.removeObject(forKey: "walletName")
 
+            let deactivated = DispatchGroup()
             for row in self.rows where row.node.id != id {
                 if let otherId = row.node.id {
-                    CoreDataService.update(id: otherId, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                    deactivated.enter()
+                    CoreDataService.update(id: otherId, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in
+                        deactivated.leave()
+                    }
                 }
             }
 
-            self.getNodes()
-
-            DispatchQueue.main.async {
-                showAlert(vc: self, title: "", message: "\(label.isEmpty ? "Node" : label) is now active. Tap the refresh button on the home view to connect to it.")
+            // Once it's the only active node: the home view connects to it by itself.
+            deactivated.notify(queue: .main) {
+                self.getNodes()
+                NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+                showAlert(vc: self, title: "Switched to \(label.isEmpty ? "node" : label)",
+                          message: "Connecting to it now.", kind: .success)
             }
         }
     }
