@@ -18,14 +18,28 @@ blocks a payment.
 
 ## Paying a payjoin invoice
 
-1. Scan or paste the payment request. If it offers payjoin, the summary says so.
-2. Create and sign the transaction as usual. Your signed payment is kept as the fallback.
-3. Fully Noded sends it to the receiver's payjoin address (over Tor when it's connected, always
-   for `.onion` addresses) and waits up to a minute for their proposal.
-4. **Payjoin ready:** every check passed and the payjoin is signed. Review it, then broadcast.
-   **Signed (no payjoin):** the reason, and your normal payment is ready to broadcast.
+1. **Scan or paste the payment request.** A *Payment request* sheet shows the address, amount,
+   label and message. If it offers payjoin, a **Payjoin supported** card says who the receiver
+   is (their onion or server, and whether it goes over Tor) and what will happen. It also warns
+   when the receiver is an onion and Tor isn't connected yet.
+2. **Create the transaction as usual.** On the review screen, a **⇄ PAYJOIN INVOICE** banner
+   reminds you that signing will ask the receiver to join in.
+3. **Sign.** Your signed payment is kept as the fallback, and a **Payjoin** screen shows each
+   step live:
+   - your signed payment (inputs, fee, fee rate)
+   - asking the receiver, with a clock while they answer (up to a minute)
+   - their proposal (how many coins they added)
+   - the BIP78 safety checks, ticking off one by one
+   - signing your own inputs only
+   - your node's mempool test (`finalizepsbt`, `testmempoolaccept`)
 
-Nothing is broadcast without you tapping Send.
+   **Skip payjoin, pay normally** is there the whole time. A failed step turns red with the
+   reason.
+4. **Review.** On success, a summary shows what changed (inputs before → after, the receiver's
+   coin, the fee before → after and who paid the difference, payment unchanged, all checks
+   passed). Otherwise it says why it fell back. **Review** returns to the transaction, whose
+   banner now reads **PAYJOIN READY** or **NORMAL PAYMENT (NO PAYJOIN)**.
+5. **Send.** Nothing is broadcast before you tap Send. A payjoin is confirmed as **Payjoin sent**.
 
 ### What's checked before you sign
 
@@ -48,27 +62,34 @@ only BIP78's well-known errors, in Fully Noded's own words.
 
 ## Receiving a payjoin
 
-On the **Receive** screen of a single-sig **segwit (P2WPKH)** or **taproot** wallet whose signer is
-on this device:
+On the **Receive** screen of a single-sig **segwit (P2WPKH)** or **taproot** wallet, **Receive to**
+at the top has a **Payjoin** tab (next to Address, and Silent payment when the wallet has one),
+when this wallet's signer is on this device (it signs the coin you add). Multisig and watch-only
+wallets don't get the tab at all. A timelocked address can't take a payjoin either.
 
-1. Turn on **Payjoin**. Fully Noded:
+1. Pick **Payjoin** (or turn on **Always open on Payjoin** to have every Receive screen of such a
+   wallet switch to it by itself). If Tor is still connecting, it waits for Tor; if setting up
+   fails, the reason is shown with **Try again**. Fully Noded:
    - starts a small payjoin listener inside the app (on this phone only),
    - asks Tor for a **one-time onion address** for it (`ADD_ONION … Flags=DiscardPK`: the key is
      thrown away, so the address can never be reused or linked to another invoice),
-   - publishes it, and fetches its own onion through Tor until it answers, so "ready" means payers
+   - publishes it, and fetches its own onion through Tor until it answers, so "live" means payers
      really can reach it (usually under a minute).
-2. The invoice gains `pj=http://<onion>/pj&pjos=0`. Plain `http` is right for an onion: Tor
-   encrypts and authenticates the connection. `pjos=0` tells the payer you won't change the
-   payment output.
-3. **Keep the screen open** until you're paid. iOS pauses the listener in the background; a payer
-   who can't reach it simply pays normally.
+   While it sets up, the QR, address and request are hidden (a QR shown before the endpoint is
+   live would be paid without payjoin), and **Cancel payjoin** goes back to a regular address.
+2. The QR appears with the invoice's `pj=http://<onion>/pj&pjos=0`, a **⇄ PAYJOIN** badge and a
+   glow. **Stop payjoin** returns to a regular address. Plain `http` is right for an onion: Tor encrypts and authenticates the connection.
+   `pjos=0` tells the payer you won't change the payment output.
+3. **Keep the screen open** until you're paid: the card shows how long it's been live, and the
+   phone doesn't auto-lock meanwhile. iOS pauses the listener in the background; a payer who
+   can't reach it simply pays normally.
 4. When a payer connects, Fully Noded checks their payment, adds one of your coins and replies.
    They sign and broadcast the payjoin.
 5. If they never broadcast anything, a **Broadcast the payer's payment** button appears after a
    couple of minutes: it broadcasts their original payment instead (only one of the two can
    confirm).
 
-Leaving the screen removes the onion and stops the listener. A new address gets a new onion.
+Switching back to **Address**, or leaving the screen, removes the onion and stops the listener. A new address gets a new onion.
 
 ### What the receiver checks
 
@@ -98,8 +119,10 @@ others. Any other wallet ignores `pj=` and pays the address normally.
 - A node connection (the node checks and finalizes transactions), and Tor for receiving.
 - Receiving: single-sig P2WPKH or taproot wallets, with the signer on this device. The app must
   stay open while you wait to be paid.
-- Paying: Fully Noded must be able to fully sign the payment by itself; a multisig payment that
-  needs another device's signature is sent normally.
+- Paying: from the same kind of wallet, single-sig P2WPKH or taproot with its signer on this
+  device, since the receiver's proposal has to be signed again on the spot. From a multisig or
+  watch-only wallet, the payment request sheet says the request offers payjoin and that this wallet
+  pays it normally (with the reason), and no payjoin is attempted.
 
 ## Debugging
 
