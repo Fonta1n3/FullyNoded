@@ -831,8 +831,14 @@ public struct List_Unspent: CustomStringConvertible {
     let param:[String:Any]
     init(_ dict: [String:Any]) {
         let minconf = dict["minconf"] as? Int ?? 0
-        //let query_options = ["maximumCount": 100]
-        param = ["minconf": minconf, "include_immature_coinbase": true]
+        var param: [String: Any] = ["minconf": minconf]
+        // include_immature_coinbase is a query_options key (not a top-level named parameter), and
+        // only Core 25+ accepts it: older nodes reject unknown query_options keys.
+        let version = UserDefaults.standard.object(forKey: "version") as? Int ?? 0
+        if dict["include_immature_coinbase"] as? Bool == true, version >= 250000 {
+            param["query_options"] = ["include_immature_coinbase": true]
+        }
+        self.param = param
     }
 }
 
@@ -886,7 +892,10 @@ public struct Load_Wallet: CustomStringConvertible {
     let param: [String:Any]
     init(_ dict: [String:Any]) {
         let filename = dict["filename"] as? String ?? ""
-        param = ["filename": filename, "load_on_startup": true]
+        // Leaves the node's startup list alone unless asked.
+        var param: [String: Any] = ["filename": filename]
+        if let onStartup = dict["load_on_startup"] as? Bool { param["load_on_startup"] = onStartup }
+        self.param = param
     }
 }
 
