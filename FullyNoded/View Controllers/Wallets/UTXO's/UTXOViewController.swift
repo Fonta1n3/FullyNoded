@@ -391,7 +391,7 @@ class UTXOViewController: UIViewController {
     }
 
     private func loadUtxos() {
-        let param: List_Unspent = .init(["minconf": 0])
+        let param: List_Unspent = .init(["minconf": 0, "include_immature_coinbase": true])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .listunspent(param)) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
 
