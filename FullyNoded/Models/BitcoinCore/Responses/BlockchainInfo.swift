@@ -68,17 +68,17 @@ public struct BlockchainInfo: CustomStringConvertible {
     
     init(_ dictionary: [String: Any]) {
         network = dictionary["chain"] as? String ?? ""
-        blockheight = dictionary["blocks"] as? Int ?? 0
+        blockheight = RPCValue.int(dictionary["blocks"]) ?? 0
         UserDefaults.standard.set(blockheight, forKey: "blockheight")
-        difficulty = Int(dictionary["difficulty"] as! Double)
-        size_on_disk = Int(dictionary["size_on_disk"] as! UInt64)
+        difficulty = Int(RPCValue.double(dictionary["difficulty"]) ?? 0)
+        size_on_disk = RPCValue.int(dictionary["size_on_disk"]) ?? 0
         progress = dictionary["progress"] as? String ?? ""
         pruned = dictionary["pruned"] as? Bool ?? false
-        verificationprogress = dictionary["verificationprogress"] as? Double ?? 0.0
-        pruneheight = dictionary["pruneheight"] as? Int ?? 0
+        verificationprogress = RPCValue.double(dictionary["verificationprogress"]) ?? 0.0
+        pruneheight = RPCValue.int(dictionary["pruneheight"]) ?? 0
         chain = dictionary["chain"] as? String ?? ""
         UserDefaults.standard.set(chain, forKey: "chain")
-        blocks = dictionary["blocks"] as? Int ?? 0
+        blocks = RPCValue.int(dictionary["blocks"]) ?? 0
         initialblockdownload = dictionary["initialblockdownload"] as? Bool ?? false
         rawData = dictionary
     }

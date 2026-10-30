@@ -70,17 +70,17 @@ extension UTXO {
         self.rawData = raw
         
         address = raw["address"] as? String
-        confirmations = raw["confirmations"] as? Int
+        confirmations = RPCValue.int(raw["confirmations"])
         desc = raw["desc"] as? String
         label = raw["label"] as? String
         parentDescs = raw["parent_descs"] as? [String]
-        reused = raw["reused"] as? Bool
+        reused = RPCValue.bool(raw["reused"])
         scriptPubKey = raw["scriptPubKey"] as? String
-        solvable = raw["solvable"] as? Bool
-        spendable = raw["spendable"] as? Bool
-        txid = raw["txid"] as! String
-        vout = raw["vout"] as! Int
-        amount = raw["amount"] as! Double
+        solvable = RPCValue.bool(raw["solvable"])
+        spendable = RPCValue.bool(raw["spendable"])
+        txid = raw["txid"] as? String ?? ""
+        vout = RPCValue.int(raw["vout"]) ?? 0
+        amount = RPCValue.double(raw["amount"]) ?? 0
         walletId = raw["walletId"] as? UUID
         lastUpdated = raw["lastUpdated"] as? Date
         witnessScript = raw["witnessScript"] as? String
@@ -105,6 +105,7 @@ extension UTXO {
 
 extension Array where Element == UTXO {
     static func from(rawArray: [[String: Any]]) -> [UTXO] {
-        return rawArray.map { UTXO(from: $0) }
+        // An entry without an outpoint can't be spent or shown, so it's left out.
+        return rawArray.map { UTXO(from: $0) }.filter { !$0.txid.isEmpty }
     }
 }

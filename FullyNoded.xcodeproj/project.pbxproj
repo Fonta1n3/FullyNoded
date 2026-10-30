@@ -80,6 +80,7 @@
 		0AD9490A273C051B00AF83F5 /* ExternalFNWalletsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AD94909273C051B00AF83F5 /* ExternalFNWalletsViewController.swift */; };
 		0AF61BAA2EC2FCB2001CDF34 /* PeersDetailTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BA92EC2FCB2001CDF34 /* PeersDetailTableViewController.swift */; };
 		0AF61BAC2EC450C1001CDF34 /* ListTransactions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BAB2EC450C1001CDF34 /* ListTransactions.swift */; };
+		0AF61BAE2EC450C1001CDF99 /* RPCDecoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BAD2EC450C1001CDF99 /* RPCDecoding.swift */; };
 		0AF61BAE2EC58E3D001CDF34 /* GetTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BAD2EC58E3D001CDF34 /* GetTransaction.swift */; };
 		0AF61BB02EC84B53001CDF34 /* AppIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BAF2EC84B53001CDF34 /* AppIcons.swift */; };
 		0AF61BB42EC8791A001CDF34 /* AppIconSelectorTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF61BB32EC87919001CDF34 /* AppIconSelectorTableViewController.swift */; };
@@ -295,6 +296,7 @@
 		0AD94909273C051B00AF83F5 /* ExternalFNWalletsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalFNWalletsViewController.swift; sourceTree = "<group>"; };
 		0AF61BA92EC2FCB2001CDF34 /* PeersDetailTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeersDetailTableViewController.swift; sourceTree = "<group>"; };
 		0AF61BAB2EC450C1001CDF34 /* ListTransactions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListTransactions.swift; sourceTree = "<group>"; };
+		0AF61BAD2EC450C1001CDF99 /* RPCDecoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RPCDecoding.swift; sourceTree = "<group>"; };
 		0AF61BAD2EC58E3D001CDF34 /* GetTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetTransaction.swift; sourceTree = "<group>"; };
 		0AF61BAF2EC84B53001CDF34 /* AppIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIcons.swift; sourceTree = "<group>"; };
 		0AF61BB32EC87919001CDF34 /* AppIconSelectorTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconSelectorTableViewController.swift; sourceTree = "<group>"; };
@@ -629,6 +631,7 @@
 				0A6B365A27B1AA0B00CD4F3A /* AddressInfo.swift */,
 				0A34073C2EC08A0B008576C7 /* ListUnspent.swift */,
 				0AF61BAB2EC450C1001CDF34 /* ListTransactions.swift */,
+				0AF61BAD2EC450C1001CDF99 /* RPCDecoding.swift */,
 				0AF61BAD2EC58E3D001CDF34 /* GetTransaction.swift */,
 				0A2D4F5C2EE5C69500121667 /* ListDescriptors.swift */,
 				0ABEC2082F0BCFAE00092FCE /* ImportDescriportsResponse.swift */,
@@ -1372,6 +1375,7 @@
 				0A5E7C212F9A00C100AB1234 /* URFountain.swift in Sources */,
 				0ABEC2092F0BCFAE00092FCE /* ImportDescriportsResponse.swift in Sources */,
 				0AF61BAC2EC450C1001CDF34 /* ListTransactions.swift in Sources */,
+				0AF61BAE2EC450C1001CDF99 /* RPCDecoding.swift in Sources */,
 				0A1F111026A2791B00BE2707 /* ModelObjectType.swift in Sources */,
 				0A2EBDEB2EBC62A400AF56CD /* DynamicFooterView.swift in Sources */,
 				0A6E59882C400728007750F2 /* RPCAuth.swift in Sources */,

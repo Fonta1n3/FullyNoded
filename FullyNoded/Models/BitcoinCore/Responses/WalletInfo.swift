@@ -32,19 +32,19 @@ public struct WalletInfo: CustomStringConvertible {
     init(_ dictionary: [String: Any]) {
         //avoid_reuse = dictionary["avoid_reuse"] as? Bool ?? false
         //balance = dictionary["balance"] as? String
-        descriptors = dictionary["descriptors"] as? Int
-        private_keys_enabled = dictionary["private_keys_enabled"] as? Bool
+        descriptors = RPCValue.int(dictionary["descriptors"])
+        private_keys_enabled = RPCValue.bool(dictionary["private_keys_enabled"])
         scanning = (dictionary["scanning"] as? [String:Any] != nil)
-        balance = dictionary["balance"] as? Double
+        balance = RPCValue.double(dictionary["balance"])
 //        if scanning {
 //
 //        } else {
 //            progress = nil
 //        }
-        progress = (dictionary["scanning"] as? [String:Any])?["progress"] as? Double
-        walletname = dictionary["walletname"] as! String
+        progress = RPCValue.double((dictionary["scanning"] as? [String:Any])?["progress"])
+        walletname = dictionary["walletname"] as? String ?? ""
         
-        if let unlockedUntil = dictionary["unlocked_until"] as? Int {
+        if let unlockedUntil = RPCValue.int(dictionary["unlocked_until"]) {
             locked = !(unlockedUntil > 0)
         } else {
             locked = false

@@ -74,11 +74,11 @@ class LockedViewController: UIViewController {
                 }
                 
                 for savedLockedUtxo in savedLockedUtxos {
-                    let savedUtxoOutpoint = savedLockedUtxo["txid"] as! String + "\(savedLockedUtxo["vout"] as! Int)"
+                    let savedUtxoOutpoint = (savedLockedUtxo["txid"] as? String ?? "") + "\(RPCValue.int(savedLockedUtxo["vout"]) ?? 0)"
                     var isSaved = false
                     
                     for (i, utxo) in self.lockedUtxos.enumerated() {
-                        let outpoint = utxo["txid"] as! String + "\(utxo["vout"] as! Int)"
+                        let outpoint = (utxo["txid"] as? String ?? "") + "\(RPCValue.int(utxo["vout"]) ?? 0)"
                         isSaved = outpoint == savedUtxoOutpoint
                         
                         if isSaved {
@@ -94,7 +94,7 @@ class LockedViewController: UIViewController {
     
     private func unlock(_ utxo: [String: Any]) {
         showActivity("unlocking...")
-        let param:Lock_Unspent = .init(["unlock": true, "transactions": [["txid":utxo["txid"] as! String,"vout":utxo["vout"] as! Int]]])
+        let param:Lock_Unspent = .init(["unlock": true, "transactions": [["txid": utxo["txid"] as? String ?? "", "vout": RPCValue.int(utxo["vout"]) ?? 0]]])
         
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .lockunspent(param)) { (response, errorMessage) in
             guard let success = response as? Bool else {
@@ -171,7 +171,7 @@ extension LockedViewController: UITableViewDataSource {
         let unlockButton = cell.viewWithTag(4) as! UIButton
         unlockButton.restorationIdentifier = "\(indexPath.section)"
         unlockButton.addTarget(self, action: #selector(unlockUtxo(_:)), for: .touchUpInside)
-        voutLabel.text = "vout \(utxo["vout"] as! Int)"
+        voutLabel.text = "vout \(RPCValue.int(utxo["vout"]) ?? 0)"
         txid.text = utxo["txid"] as? String ?? ""
         txid.translatesAutoresizingMaskIntoConstraints = true
         txid.sizeToFit()

@@ -716,13 +716,13 @@ class ActiveWalletViewController: UIViewController {
                 return
             }
             
-            guard let listTransactionsResponse = try? ListTransactionsResponse(from: response) else {
+            do {
+                onchainTransactions = try ListTransactionsResponse(from: response)
+            } catch {
                 removeSpinner()
-                showAlert(vc: self, title: "", message: "Failed parsing listtransactions response.")
+                showAlert(vc: self, title: "", message: "Failed parsing listtransactions response: \(error.localizedDescription)")
                 return
             }
-            
-            onchainTransactions = listTransactionsResponse
             
             onchainTransactions?.transactions.removeAll { tx in
                 return tx.confirmations < 0

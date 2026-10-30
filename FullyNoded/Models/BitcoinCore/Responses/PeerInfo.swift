@@ -17,13 +17,12 @@ struct GetPeerInfoResponse {
     var outgoingCount: Int { peers.filter { !$0.inbound }.count }
     
     init(from nsArray: NSArray) throws {
-        guard let arrayOfDicts = nsArray as? [[String: Any]] else {
-            throw NSError(domain: "GetPeerInfo", code: -1, userInfo: [NSLocalizedDescriptionKey: "Expected NSArray of NSDictionary"])
+        guard let items = nsArray as? [Any] else {
+            throw NSError(domain: "GetPeerInfo", code: -1, userInfo: [NSLocalizedDescriptionKey: "Expected a list of peers."])
         }
         
-        let jsonData = try JSONSerialization.data(withJSONObject: arrayOfDicts)
-        self.rawData = arrayOfDicts
-        self.peers = try JSONDecoder().decode([PeerInfo].self, from: jsonData)
+        self.rawData = items.compactMap { $0 as? [String: Any] }
+        self.peers = RPCValue.decodeEach(PeerInfo.self, from: items, context: "getpeerinfo")
     }
 }
 
@@ -41,6 +40,14 @@ struct PeerInfo: Codable {
         case connectionType = "connection_type"
         case network
     }
+    
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        addr = c.lenientString(.addr) ?? "unknown"
+        version = c.lenientInt(.version) ?? 0
+        subver = c.lenientString(.subver) ?? ""
+        inbound = c.lenientBool(.inbound) ?? false
+        connectionType = c.lenientString(.connectionType) ?? "unknown"
+        network = c.lenientString(.network) ?? "unknown"
+    }
 }
-
-

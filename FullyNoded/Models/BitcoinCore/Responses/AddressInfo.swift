@@ -43,12 +43,12 @@ public struct AddressInfo: CustomStringConvertible {
     let rawData: [String: Any]
     
     init(_ dictionary: [String: Any]) {
-        ismine = dictionary["ismine"] as! Bool
+        ismine = RPCValue.bool(dictionary["ismine"]) ?? false
         hdkeypath = dictionary["hdkeypath"] as? String ?? "derivation path unknown"
-        solvable = dictionary["solvable"] as? Bool ?? false
+        solvable = RPCValue.bool(dictionary["solvable"]) ?? false
         desc = dictionary["desc"] as? String ?? "descriptor unknown"
         pubkey = dictionary["pubkey"] as? String
-        scriptPubkey = dictionary["scriptPubKey"] as! String
+        scriptPubkey = dictionary["scriptPubKey"] as? String ?? ""
         witnessProgram = dictionary["witness_program"] as? String
         parent_desc = dictionary["parent_desc"] as? String
         rawData = dictionary

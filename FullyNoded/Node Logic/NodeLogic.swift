@@ -104,12 +104,11 @@ class NodeLogic {
                 return
             }
             
-            guard let listTransactionsResponse = try? ListTransactionsResponse(from: response) else {
-                completion((nil, "Failed parsing listtransactions response."))
-                return
+            do {
+                completion((try ListTransactionsResponse(from: response), nil))
+            } catch {
+                completion((nil, "Failed parsing listtransactions response: \(error.localizedDescription)"))
             }
-            
-            completion((listTransactionsResponse, nil))
         }
     }
     
@@ -135,21 +134,16 @@ class NodeLogic {
     
     private func parseNetworkInfo(networkInfo: [String:Any], completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         var networkInfoToReturn = [String:Any]()
-        let subversion = (networkInfo["subversion"] as! String)
-        networkInfoToReturn["subversion"] = subversion
-        let versionInt = networkInfo["version"] as! Int
-        UserDefaults.standard.set(versionInt, forKey: "version")
+        networkInfoToReturn["subversion"] = networkInfo["subversion"] as? String ?? ""
+        // Only store a version we actually read: other RPCs choose parameters by it.
+        if let versionInt = RPCValue.int(networkInfo["version"]) {
+            UserDefaults.standard.set(versionInt, forKey: "version")
+        }
         
-        let networks = networkInfo["networks"] as! NSArray
+        let networks = networkInfo["networks"] as? [[String: Any]] ?? []
         
-        for network in networks {
-            let dict = network as! [String:Any]
-            let name = dict["name"] as! String
-            
-            if name == "onion" {
-                let reachable = dict["reachable"] as! Bool
-                networkInfoToReturn["reachable"] = reachable
-            }
+        for network in networks where network["name"] as? String == "onion" {
+            networkInfoToReturn["reachable"] = RPCValue.bool(network["reachable"]) ?? false
         }
         
         networkInfoToReturn["rawData"] = networkInfo
