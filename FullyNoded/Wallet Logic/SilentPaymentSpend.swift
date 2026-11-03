@@ -1520,7 +1520,7 @@ enum SilentPaymentChange {
     static func decode(_ psbt: String, completion: @escaping (Tx?, String?) -> Void) {
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .decodepsbt(param: Decode_Psbt(["psbt": psbt]))) { response, error in
             guard let dict = response as? [String: Any],
-                  let tx = dict["tx"] as? [String: Any],
+                  let tx = PSBTVersion.tx(from: dict as NSDictionary) as? [String: Any],
                   let vin = tx["vin"] as? [[String: Any]],
                   let vout = tx["vout"] as? [[String: Any]],
                   let pins = dict["inputs"] as? [[String: Any]], pins.count == vin.count else {

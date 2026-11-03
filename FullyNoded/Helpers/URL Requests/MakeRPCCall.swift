@@ -48,17 +48,29 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
     
     /// `walletName` targets a specific wallet for this one call; when nil the active wallet
     /// (UserDefaults "walletName") is used. Passing it avoids ever touching the active wallet.
-    func executeRPCCommand(method: BTC_CLI_COMMAND, walletName walletOverride: String? = nil, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
+    func executeRPCCommand(method: BTC_CLI_COMMAND, walletName walletOverride: String? = nil, completion done: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
+        // psbt_version only goes to nodes known to take it (Core 32+). If the node rejects it anyway
+        // (the stored version is from another node), stop sending it and try once more without.
+        let params = PSBTVersion.mustRequestV0 ? method.paramDict : PSBTVersion.stripped(method.paramDict)
+        var completion: ((response: Any?, errorDesc: String?)) -> Void = { [weak self] result in
+            if PSBTVersion.sends(params), PSBTVersion.isRejection(result.errorDesc), let self = self {
+                PSBTVersion.nodeRejectedParam = true
+                self.executeRPCCommand(method: method, walletName: walletOverride, completion: done)
+                return
+            }
+            done(result)
+        }
         #if DEBUG
         // Every call, over HTTP / Tor or Nostr Connect: the command, its wallet and arguments
         // going out, and how it came back. No credentials.
         let started = Date()
         let rpcWallet = isWalletRPC(command: method) ? (walletOverride ?? UserDefaults.standard.object(forKey: "walletName") as? String) : nil
-        print("[rpc] → \(method.stringValue)\(rpcWallet.map { " (wallet \($0))" } ?? "") params: \(method.paramDict)")
-        let completion: ((response: Any?, errorDesc: String?)) -> Void = { result in
+        print("[rpc] → \(method.stringValue)\(rpcWallet.map { " (wallet \($0))" } ?? "") params: \(params)")
+        let finish = completion
+        completion = { result in
             let ms = Int(Date().timeIntervalSince(started) * 1000)
             print("[rpc] ← \(method.stringValue) \(result.errorDesc.map { "error: \($0)" } ?? "ok") (\(ms) ms)")
-            completion(result)
+            finish(result)
         }
         #endif
         guard let node = activeNode else {
@@ -78,7 +90,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
                 let allowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
                 path = "/wallet/" + (walletName.addingPercentEncoding(withAllowedCharacters: allowed) ?? walletName)
             }
-            let dict: [String: Any] = ["jsonrpc": "1.0", "id": UUID().uuidString, "method": method.stringValue, "params": method.paramDict]
+            let dict: [String: Any] = ["jsonrpc": "1.0", "id": UUID().uuidString, "method": method.stringValue, "params": params]
             guard let body = try? JSONSerialization.data(withJSONObject: dict) else {
                 completion((nil, "Unable to encode the request."))
                 return
@@ -156,7 +168,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
             "jsonrpc": "1.0",
             "id": id,
             "method": method.stringValue,
-            "params": method.paramDict
+            "params": params
         ]
         
         guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {

@@ -408,7 +408,10 @@ public struct PSBT_Bump_Fee: CustomStringConvertible {
     init(_ dict: [String:Any]) {
         let txid = dict["txid"] as? String ?? ""
         let options:[String:Any] = dict["options"] as? [String:Any] ?? [:]
-        param = ["txid": txid, "options": options]
+        var opts = options
+        // Core 32 makes PSBTv2 by default: FN, its signers and BIP78 read v0.
+        if PSBTVersion.mustRequestV0 { opts["psbt_version"] = 0 }
+        param = ["txid": txid, "options": opts]
     }
 }
 
@@ -661,6 +664,7 @@ public struct Wallet_Create_Funded_Psbt: CustomStringConvertible {
         if let locktime = locktime {
             param["locktime"] = locktime
         }
+        if PSBTVersion.mustRequestV0 { param["psbt_version"] = 0 }
     }
 }
 
@@ -943,6 +947,7 @@ public struct Create_Psbt: CustomStringConvertible {
         if let locktime = dict["locktime"] as? Int, locktime > 0 {
             p["locktime"] = locktime
         }
+        if PSBTVersion.mustRequestV0 { p["psbt_version"] = 0 }
         param = p
     }
 }

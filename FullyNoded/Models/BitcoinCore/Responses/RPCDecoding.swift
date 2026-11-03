@@ -124,3 +124,68 @@ struct LossyArray<Element: Decodable>: Decodable {
         self.elements = elements
     }
 }
+
+/*
+ Core 32 creates PSBT version 2 by default, and decodepsbt of a v2 PSBT has no "tx": the
+ transaction is spread over "tx_version", "fallback_locktime" and per input/output fields.
+ FN asks v32+ nodes for v0 (what its own signing, external signers and BIP78 payjoin read),
+ and reads a v2 decode (a PSBT imported from elsewhere) into the same shape.
+ */
+enum PSBTVersion {
+    /// Set when a node rejected psbt_version (FN's stored version was another node's); cleared
+    /// when the version is read again.
+    static var nodeRejectedParam = false
+
+    /// psbt_version is only a known parameter from Core 32; older nodes reject it.
+    static var mustRequestV0: Bool {
+        !nodeRejectedParam && (UserDefaults.standard.object(forKey: "version") as? Int ?? 0) >= 320000
+    }
+
+    /// Request params without psbt_version (top level for walletcreatefundedpsbt / createpsbt,
+    /// in options for psbtbumpfee).
+    static func stripped(_ params: [String: Any]) -> [String: Any] {
+        var params = params
+        params["psbt_version"] = nil
+        if var options = params["options"] as? [String: Any], options["psbt_version"] != nil {
+            options["psbt_version"] = nil
+            params["options"] = options
+        }
+        return params
+    }
+
+    static func sends(_ params: [String: Any]) -> Bool {
+        params["psbt_version"] != nil || (params["options"] as? [String: Any])?["psbt_version"] != nil
+    }
+
+    /// "Unknown named parameter psbt_version" / "Unexpected key psbt_version".
+    static func isRejection(_ error: String?) -> Bool {
+        error?.contains("psbt_version") == true
+    }
+
+    /// The decodepsbt "tx" object, or one built from a v2 decode's fields (no txid or vsize,
+    /// which v2 doesn't report). nil if the reply has neither.
+    static func tx(from decoded: NSDictionary) -> NSDictionary? {
+        if let tx = decoded["tx"] as? NSDictionary { return tx }
+        guard let inputs = decoded["inputs"] as? [[String: Any]],
+              let outputs = decoded["outputs"] as? [[String: Any]] else { return nil }
+        var vin: [[String: Any]] = []
+        for input in inputs {
+            guard let txid = input["previous_txid"] as? String,
+                  let vout = RPCValue.int(input["previous_vout"]) else { return nil }
+            vin.append(["txid": txid, "vout": vout,
+                        "sequence": RPCValue.int(input["sequence"]) ?? 0xffffffff])
+        }
+        var vout: [[String: Any]] = []
+        for (n, output) in outputs.enumerated() {
+            guard let value = RPCValue.double(output["amount"]),
+                  let script = output["script"] as? [String: Any] else { return nil }
+            vout.append(["value": value, "n": n, "scriptPubKey": script])
+        }
+        return [
+            "version": RPCValue.int(decoded["tx_version"]) ?? 2,
+            "locktime": RPCValue.int(decoded["fallback_locktime"]) ?? 0,
+            "vin": vin,
+            "vout": vout
+        ] as NSDictionary
+    }
+}
