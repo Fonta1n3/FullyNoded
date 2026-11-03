@@ -24,6 +24,13 @@ Want to run a node on your Mac? Download [Fully Noded Server](https://fullynoded
 * Double click `FullyNoded.xcworkspace`
 * Click the play button in the top left bar of Xcode to run the app
 
+### Testing against regtest
+
+The `FullyNodedUITests` target drives the app in the simulator against a local regtest node:
+node setup, wallet creation and recovery, sending, silent payment sends and payjoin between two
+simulators, on every Bitcoin Core / Knots build you have installed. See
+[FullyNodedUITests/regtest/README.md](FullyNodedUITests/regtest/README.md).
+
 
 ## Support the app
 
@@ -82,7 +89,7 @@ Silent payments give you **one static address you can share anywhere**, such as 
 
 * **Receive:** the wallet's *Silent payments* section and the signer detail screen show your `sp1…` address with a QR export, and the Receive screen can show it instead of a normal address. The address and scan key are saved on the signer, so they keep working if you delete its seed words (spending then isn't possible).
 * **Send:** paste an `sp1…` / `tsp1…` address (or a BIP321 request with `sp=`) in the send view, including *send all*. Fully Noded computes the one-time output and the PSBT goes through the normal transaction verifier.
-* **Scan:** in the wallet's *Silent payments* section tap **FN-SERVER LINK** (authentication required) and import it in Fully Noded Server (*Silent Payments* → *Import from Fully Noded*). One link carries the address, scan private key and wallet name. The server watches the chain with your own node and imports what it finds, watch-only, into your Fully Noded wallet.
+* **Scan:** on the wallet's Receive screen, pick *Silent payment* and tap **FN-Server link** (authentication required) and import it in Fully Noded Server (*Silent Payments* → *Import from Fully Noded*). One link carries the address, scan private key and wallet name. The server watches the chain with your own node and imports what it finds, watch-only, into your Fully Noded wallet.
 * **Spend:** the transaction verifier recognises silent payment inputs and signs them with the tweaked key; normal inputs are signed as usual. *Check SP info* on the UTXO screen proves an output is yours and saves its tweak, which also lets you sweep it without your node (*Sweep without node (Nodeless)*, over Tor to Esplora).
 
 For the full technical details see **[SilentPayments.md](./SilentPayments.md)**: key derivation, sending, scanning, rescans and spending, plus current limitations and caveats.

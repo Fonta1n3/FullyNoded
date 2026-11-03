@@ -41,6 +41,29 @@ blocks a payment.
    banner now reads **PAYJOIN READY** or **NORMAL PAYMENT (NO PAYJOIN)**.
 5. **Send.** Nothing is broadcast before you tap Send. A payjoin is confirmed as **Payjoin sent**.
 
+### From a watch-only wallet (signed elsewhere)
+
+A single-sig P2WPKH or taproot wallet that's watch-only on this device (its signer is a hardware
+wallet, Sparrow, another phone…) can pay a payjoin invoice too, by signing twice:
+
+1. The request sheet's payjoin card says **Signing: watch-only here** and lists the steps, and the
+   review screen's banner reads **⇄ PAYJOIN INVOICE · SIGN ELSEWHERE**.
+2. **Export** the PSBT as usual, sign it with the wallet's signer and **import** it on the same
+   screen (QR, paste or file). Importing this payment, fully signed, starts the payjoin; it's kept
+   as the fallback.
+3. The **Payjoin** screen runs as above up to the checks, then waits for your signature:
+   **Export to sign** (animated UR QR, plain QR, text or a `.psbt` file) gives you the receiver's
+   checked version, with your derivations restored so your signer recognises its inputs.
+   **Import signed** takes the signed PSBT or a fully signed transaction back.
+4. Only the signatures for your own inputs are taken from what you import; everything else comes
+   from the checked proposal, so a signer can't change it. A PSBT that isn't this proposal, or
+   that leaves an input of yours unsigned, is refused with the reason and you can import again.
+   Then your node finalizes it and runs `testmempoolaccept`, and you review and Send as usual.
+
+Sign within a couple of minutes: a receiver that waits too long may broadcast your first payment
+instead (BTCPay does). That still pays them, and Fully Noded says so if it happens. Receiving a
+payjoin still needs the signer on this device: the receiver signs its coin while the payer waits.
+
 ### What's checked before you sign
 
 The receiver's proposal is checked against BIP78's sender rules, and refused if any fail:
@@ -62,10 +85,12 @@ only BIP78's well-known errors, in Fully Noded's own words.
 
 ## Receiving a payjoin
 
-On the **Receive** screen of a single-sig **segwit (P2WPKH)** or **taproot** wallet, **Receive to**
-at the top has a **Payjoin** tab (next to Address, and Silent payment when the wallet has one),
-when this wallet's signer is on this device (it signs the coin you add). Multisig and watch-only
-wallets don't get the tab at all. A timelocked address can't take a payjoin either.
+On the **Receive** screen of a Fully Noded wallet, **Receive to** at the top has a **Payjoin** tab
+(next to Address, and Silent payment when the wallet has one). Receiving a payjoin needs a
+single-sig **segwit (P2WPKH)** or **taproot** wallet whose signer is on this device (it signs the
+coin you add). For any other wallet (multisig, watch-only on this device, or another script type)
+the tab explains why payjoin isn't available, with no QR; the Address tab gets paid normally. A timelocked
+address can't take a payjoin either.
 
 1. Pick **Payjoin** (or turn on **Always open on Payjoin** to have every Receive screen of such a
    wallet switch to it by itself). If Tor is still connecting, it waits for Tor; if setting up
@@ -119,10 +144,10 @@ others. Any other wallet ignores `pj=` and pays the address normally.
 - A node connection (the node checks and finalizes transactions), and Tor for receiving.
 - Receiving: single-sig P2WPKH or taproot wallets, with the signer on this device. The app must
   stay open while you wait to be paid.
-- Paying: from the same kind of wallet, single-sig P2WPKH or taproot with its signer on this
-  device, since the receiver's proposal has to be signed again on the spot. From a multisig or
-  watch-only wallet, the payment request sheet says the request offers payjoin and that this wallet
-  pays it normally (with the reason), and no payjoin is attempted.
+- Paying: from a single-sig P2WPKH or taproot wallet, signed on this device or, when it's
+  watch-only here, with its own signer (twice: export, sign, import). From a multisig wallet the
+  payment request sheet says the request offers payjoin and that this wallet pays it normally
+  (with the reason), and no payjoin is attempted.
 
 ## Debugging
 
@@ -132,7 +157,7 @@ Debug builds log every step to Xcode's console as `[payjoin]` lines, and every n
 ## Code
 
 - `Wallet Logic/Payjoin.swift`: the sender (original PSBT, transport over Tor, the checklist,
-  signing).
+  signing here, or `propose` / `complete` for a signer elsewhere) and `eligibility`.
 - `Wallet Logic/PayjoinReceiver.swift`: the receiver (loopback HTTP listener, checks, coin
   selection, proposal) and the per-invoice session.
 - `Helpers/URL Requests/Tor/TorClient.swift`: `addOnionService` / `removeOnionService`.
