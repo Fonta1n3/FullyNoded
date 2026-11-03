@@ -138,6 +138,7 @@ class NodeLogic {
         // Only store a version we actually read: other RPCs choose parameters by it.
         if let versionInt = RPCValue.int(networkInfo["version"]) {
             UserDefaults.standard.set(versionInt, forKey: "version")
+            PSBTVersion.nodeRejectedParam = false
         }
         
         let networks = networkInfo["networks"] as? [[String: Any]] ?? []
