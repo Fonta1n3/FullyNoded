@@ -16,9 +16,26 @@ DD=$WORK/dd
 
 case $1 in
   build)
-    xcodebuild -workspace $ROOT/FullyNoded.xcworkspace -scheme FullyNodedUITests -destination 'generic/platform=iOS Simulator' \
-      -derivedDataPath $DD build-for-testing -quiet 2>&1 | grep -E "error:" | grep -v "exit code 0 but produced no further output" || true
-    ls $DD/Build/Products/*.xctestrun >/dev/null && echo "built";;
+    LOG=$WORK/last-build.log
+    # From the repository root, so wherever this is run from Xcode reuses one cached build plan.
+    build() {
+      (cd $ROOT && xcodebuild -workspace FullyNoded.xcworkspace -scheme FullyNodedUITests -destination 'generic/platform=iOS Simulator' \
+        -derivedDataPath $DD build-for-testing > $LOG 2>&1)
+    }
+    if ! build; then
+      # macOS purges old files under $TMPDIR, which can leave a package's binary framework
+      # (bdk-swift) half deleted. Xcode also caches that in its build plans, so fetching the
+      # packages again isn't enough: start from a clean build.
+      if grep -q "There is no Info.plist found at '.*SourcePackages/artifacts" $LOG; then
+        echo "cached packages are damaged: fetching them again and building from clean (a few minutes)…"
+        rm -rf $DD/SourcePackages $DD/Build
+        build && { echo "built"; exit 0; }
+      fi
+      grep -E "^(/[^ ].*: )?error:" $LOG | grep -v "exit code 0 but produced no further output" | sort -u | head -20
+      echo "build failed, full log: $LOG"
+      exit 1
+    fi
+    echo "built";;
   test)
     DEV=$2; shift 2
     [[ $DEV == *-*-*-*-* ]] && DEST="id=$DEV" || DEST="platform=iOS Simulator,name=$DEV"

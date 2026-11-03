@@ -81,6 +81,6 @@ The commands are listed at the top of `RemoteDriver.swift`.
 
 ## Logs
 
-`$FNUI_WORK/last-test-<device>.log` (full xcodebuild output), `$FNUI_WORK/results/*.xcresult`
+`$FNUI_WORK/last-build.log` (the last `run.sh build`), `$FNUI_WORK/last-test-<device>.log` (full xcodebuild output), `$FNUI_WORK/results/*.xcresult`
 (screenshots of failures), and the node's `debug.log` in `$FNUI_WORK/<build>/regtest/`
 (`debug=rpc` lists every call Fully Noded made).
