@@ -86,7 +86,7 @@ enum EsploraAPI {
     /// through it with CONNECT, which is the path that works reliably to the onion service;
     /// URLSession can't use it for http:// URLs (it sends plain proxied requests, which the
     /// tunnel rejects).
-    static let tunnelProxy = "http://localhost:9080"
+    static var tunnelProxy: String { "http://localhost:\(TorClient.httpTunnelPort)" }
 
     /// BDK's Esplora client for `network`, through the Tor HTTP tunnel.
     static func client(network: WalletLogic.BDKNetwork) throws -> EsploraClient {

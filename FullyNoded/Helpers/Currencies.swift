@@ -9,6 +9,9 @@
 import Foundation
 
 class Currencies {
+    /// The currency codes the app offers, in order.
+    static var codes: [String] { currenciesWithCircle.compactMap { $0.keys.first } }
+
     static let currenciesWithCircle:[[String:String]] = [
         ["USD": "dollarsign.circle"],
         ["GBP": "sterlingsign.circle"],
