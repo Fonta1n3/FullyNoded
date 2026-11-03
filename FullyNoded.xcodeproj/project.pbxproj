@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AB51A0012F0000000000001B /* FNFlows.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB51A0012F0000000000001A /* FNFlows.swift */; };
+		AB51A0012F00000000000019 /* RegtestNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB51A0012F00000000000018 /* RegtestNode.swift */; };
+		AB51A0012F00000000000005 /* FNUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB51A0012F00000000000004 /* FNUI.swift */; };
+		AB51A0012F00000000000007 /* RemoteDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB51A0012F00000000000006 /* RemoteDriver.swift */; };
+		AB51A0012F00000000000009 /* RegtestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB51A0012F00000000000008 /* RegtestTests.swift */; };
 		0A00D6A4271BE51600ECAB22 /* TextFileImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A00D6A3271BE51600ECAB22 /* TextFileImport.swift */; };
 		0A0ABC332EBDBDEE000329E0 /* UTXOCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A0ABC322EBDBDEE000329E0 /* UTXOCell.xib */; };
 		0A0ABC352EBE07F6000329E0 /* TextModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0ABC342EBE07F6000329E0 /* TextModalViewController.swift */; };
@@ -198,6 +203,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		AB51A0012F0000000000000D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D00B9A1C2111427200E8B95A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D00B9A232111427200E8B95A;
+			remoteInfo = FullyNoded;
+		};
 		D00BD9CD2365664600222A37 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D00B9A1C2111427200E8B95A /* Project object */;
@@ -221,6 +233,16 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AB51A0012F0000000000001A /* FNFlows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FNFlows.swift; sourceTree = "<group>"; };
+		AB51A0012F00000000000018 /* RegtestNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegtestNode.swift; sourceTree = "<group>"; };
+		AB51A0012F00000000000002 /* FullyNodedUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FullyNodedUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB51A0012F00000000000004 /* FNUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FNUI.swift; sourceTree = "<group>"; };
+		AB51A0012F00000000000006 /* RemoteDriver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteDriver.swift; sourceTree = "<group>"; };
+		AB51A0012F00000000000008 /* RegtestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegtestTests.swift; sourceTree = "<group>"; };
+		AB51A0012F00000000000014 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		AB51A0012F00000000000015 /* node.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = node.sh; sourceTree = "<group>"; };
+		AB51A0012F00000000000016 /* drive.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = drive.sh; sourceTree = "<group>"; };
+		AB51A0012F00000000000017 /* run.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = run.sh; sourceTree = "<group>"; };
 		021B4B6C9A2B5B2A991ECF6E /* Pods_FullyNoded.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FullyNoded.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A00D6A3271BE51600ECAB22 /* TextFileImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFileImport.swift; sourceTree = "<group>"; };
 		0A0ABC322EBDBDEE000329E0 /* UTXOCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UTXOCell.xib; sourceTree = "<group>"; };
@@ -422,6 +444,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		AB51A0012F0000000000000B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D00B9A212111427200E8B95A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -443,6 +472,30 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AB51A0012F00000000000003 /* FullyNodedUITests */ = {
+			isa = PBXGroup;
+			children = (
+				AB51A0012F00000000000004 /* FNUI.swift */,
+				AB51A0012F0000000000001A /* FNFlows.swift */,
+				AB51A0012F00000000000006 /* RemoteDriver.swift */,
+				AB51A0012F00000000000008 /* RegtestTests.swift */,
+				AB51A0012F00000000000018 /* RegtestNode.swift */,
+				AB51A0012F00000000000012 /* regtest */,
+			);
+			path = FullyNodedUITests;
+			sourceTree = "<group>";
+		};
+		AB51A0012F00000000000012 /* regtest */ = {
+			isa = PBXGroup;
+			children = (
+				AB51A0012F00000000000014 /* README.md */,
+				AB51A0012F00000000000015 /* node.sh */,
+				AB51A0012F00000000000016 /* drive.sh */,
+				AB51A0012F00000000000017 /* run.sh */,
+			);
+			path = regtest;
+			sourceTree = "<group>";
+		};
 		0A1F10CB26A1A25600BE2707 /* UR */ = {
 			isa = PBXGroup;
 			children = (
@@ -713,6 +766,7 @@
 				59D7BB0C30282D3100530445 /* Security.md */,
 				D00B9A262111427200E8B95A /* FullyNoded */,
 				D00BD9C92365664600222A37 /* FullyNodedTests */,
+				AB51A0012F00000000000003 /* FullyNodedUITests */,
 				D00B9A252111427200E8B95A /* Products */,
 				D08C1FBB211147F600B7CA79 /* Frameworks */,
 				B72FFE847BD98E322627D81C /* Pods */,
@@ -724,6 +778,7 @@
 			children = (
 				D00B9A242111427200E8B95A /* FullyNoded.app */,
 				D00BD9C82365664600222A37 /* FullyNodedTests.xctest */,
+				AB51A0012F00000000000002 /* FullyNodedUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1018,6 +1073,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		AB51A0012F00000000000001 /* FullyNodedUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AB51A0012F00000000000011 /* Build configuration list for PBXNativeTarget "FullyNodedUITests" */;
+			buildPhases = (
+				AB51A0012F0000000000000A /* Sources */,
+				AB51A0012F0000000000000B /* Frameworks */,
+				AB51A0012F0000000000000C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AB51A0012F0000000000000E /* PBXTargetDependency */,
+			);
+			name = FullyNodedUITests;
+			productName = FullyNodedUITests;
+			productReference = AB51A0012F00000000000002 /* FullyNodedUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		D00B9A232111427200E8B95A /* FullyNoded */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D00B9A392111427200E8B95A /* Build configuration list for PBXNativeTarget "FullyNoded" */;
@@ -1094,6 +1167,10 @@
 							};
 						};
 					};
+					AB51A0012F00000000000001 = {
+						CreatedOnToolsVersion = 26.0;
+						TestTargetID = D00B9A232111427200E8B95A;
+					};
 					D00BD9C72365664600222A37 = {
 						CreatedOnToolsVersion = 11.1;
 						ProvisioningStyle = Automatic;
@@ -1120,11 +1197,19 @@
 			targets = (
 				D00B9A232111427200E8B95A /* FullyNoded */,
 				D00BD9C72365664600222A37 /* FullyNodedTests */,
+				AB51A0012F00000000000001 /* FullyNodedUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		AB51A0012F0000000000000C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D00B9A222111427200E8B95A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1212,6 +1297,18 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		AB51A0012F0000000000000A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AB51A0012F00000000000005 /* FNUI.swift in Sources */,
+				AB51A0012F0000000000001B /* FNFlows.swift in Sources */,
+				AB51A0012F00000000000007 /* RemoteDriver.swift in Sources */,
+				AB51A0012F00000000000009 /* RegtestTests.swift in Sources */,
+				AB51A0012F00000000000019 /* RegtestNode.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D00B9A202111427200E8B95A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1401,6 +1498,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		AB51A0012F0000000000000E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D00B9A232111427200E8B95A /* FullyNoded */;
+			targetProxy = AB51A0012F0000000000000D /* PBXContainerItemProxy */;
+		};
 		D00BD9CE2365664600222A37 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D00B9A232111427200E8B95A /* FullyNoded */;
@@ -1428,6 +1530,46 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		AB51A0012F0000000000000F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 69FR345CDA;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNodedUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = FullyNoded;
+			};
+			name = Debug;
+		};
+		AB51A0012F00000000000010 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 69FR345CDA;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNodedUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = FullyNoded;
+			};
+			name = Release;
+		};
 		D00B9A372111427200E8B95A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1701,6 +1843,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		AB51A0012F00000000000011 /* Build configuration list for PBXNativeTarget "FullyNodedUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AB51A0012F0000000000000F /* Debug */,
+				AB51A0012F00000000000010 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		D00B9A1F2111427200E8B95A /* Build configuration list for PBXProject "FullyNoded" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
