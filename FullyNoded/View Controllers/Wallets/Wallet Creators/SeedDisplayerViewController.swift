@@ -99,12 +99,24 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             UserDefaults.standard.removeObject(forKey: "walletName")
             self.textView.text = ""
             self.hideActivity()
+            self.setSavedEnabled(true)
             showAlert(vc: self, title: "Error", message: error)
+        }
+    }
+    
+    /// "I saved them" stays off until the wallet is created on the node and saved here: leaving
+    /// earlier would drop the rest of the setup (the node wallet would exist without this app's
+    /// record of it).
+    private func setSavedEnabled(_ enabled: Bool) {
+        DispatchQueue.main.async { [weak self] in
+            self?.savedOutlet.isEnabled = enabled
+            self?.savedOutlet.alpha = enabled ? 1 : 0.4
         }
     }
     
     private func getWords() {
         showActivity("creating Fully Noded wallet...")
+        setSavedEnabled(false)
         
         guard let seed = Keys.seedWords(wordCount: wordCount) else {
             showError(error: "Error deriving seed")
@@ -181,11 +193,13 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
         
         guard accountXpub != "" else {
+            setSavedEnabled(true)
             showAlert(vc: self, title: "", message: "Unable to derive account xpub.")
             return
         }
         
         guard let fingerprint = Keys.fingerprint(masterKey: masterKey) else {
+            setSavedEnabled(true)
             showAlert(vc: self, title: "", message: "Unable to derive fingerprint.")
             return
         }
@@ -246,10 +260,12 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 if self.version >= 210100 {
                     self.importDescriptors(name, fingerprint, self.primDesc, self.changeDesc, mk, completion: completion)
                 } else {
+                    self.setSavedEnabled(true)
                     showAlert(vc: self, title: "", message: "Fully Noded requires at least Bitcoin Core v21, please update and try again.")
                 }
                 
             } else {
+                self.setSavedEnabled(true)
                 if let message = message {
                     self.hideActivity()
                     showAlert(vc: self, title: "Error", message: message)
@@ -365,6 +381,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                 }
+                self.setSavedEnabled(true)
                 
                 //showAlert(vc: self, title: "Success ✓", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!")
                 SuccessView.show(in: self, title: "Wallet created")
