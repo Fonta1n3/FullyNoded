@@ -89,7 +89,7 @@ extension VerifyTransactionViewController {
             
             if let rawTx = rawTx {
                 // A payjoin was offered: try it, keeping this signed payment as the fallback.
-                if let endpoint = self.payjoin, !self.payjoinAttempted, !self.unsignedPsbt.isEmpty {
+                if let endpoint = self.payjoin, !self.payjoinAttempted, !self.payjoinOriginalPsbt.isEmpty {
                     self.payjoinAttempted = true
                     self.negotiatePayjoin(endpoint, signedRawTx: rawTx)
                     return
@@ -119,11 +119,25 @@ extension VerifyTransactionViewController {
         }
     }
 
+    /// A watch-only wallet's payment for a payjoin invoice came back signed (imported): when it's
+    /// this payment, signed, start the payjoin with it. True when it started.
+    func startPayjoinWithImportedPayment() -> Bool {
+        guard let endpoint = payjoin, !payjoinAttempted, !signedRawTx.isEmpty, !payjoinOriginalPsbt.isEmpty,
+              (try? Payjoin.Original(unsignedPsbt: payjoinOriginalPsbt, signedRawTx: signedRawTx, paying: endpoint.address)) != nil else {
+            return false
+        }
+        payjoinAttempted = true
+        negotiatePayjoin(endpoint, signedRawTx: signedRawTx)
+        return true
+    }
+
     /// The payjoin, step by step on its own screen: the normal signed payment is the fallback,
-    /// whatever happens (or if the user skips).
+    /// whatever happens (or if the user skips). A watch-only wallet signs the receiver's version
+    /// with its own signer, from that screen.
     func negotiatePayjoin(_ endpoint: Payjoin.Endpoint, signedRawTx rawTx: String) {
         finishActivity()
-        let negotiation = PayjoinNegotiationViewController(host: endpoint.url.host ?? endpoint.url.absoluteString, fallbackRawTx: rawTx)
+        let negotiation = PayjoinNegotiationViewController(host: endpoint.url.host ?? endpoint.url.absoluteString, fallbackRawTx: rawTx,
+                                                           signedElsewhere: endpoint.signedElsewhere)
         negotiation.onDone = { [weak self] finalTx, outcome, reason in
             guard let self = self else { return }
             if let outcome = outcome {
@@ -135,10 +149,22 @@ extension VerifyTransactionViewController {
             }
             self.loadSigned(rawTx: finalTx)
         }
+        let original = payjoinOriginalPsbt
         present(negotiation, animated: true) {
-            Payjoin.attempt(endpoint: endpoint, unsignedPsbt: self.unsignedPsbt, signedRawTx: rawTx, passphrase: self.passphrase,
-                            progress: { [weak negotiation] stage in negotiation?.advance(stage) },
-                            completion: { [weak negotiation] result in negotiation?.finish(result) })
+            if endpoint.signedElsewhere {
+                Payjoin.propose(endpoint: endpoint, unsignedPsbt: original, signedRawTx: rawTx,
+                                progress: { [weak negotiation] stage in negotiation?.advance(stage) },
+                                completion: { [weak negotiation] result in
+                                    switch result {
+                                    case .success(let pending): negotiation?.awaitSignature(pending)
+                                    case .failure(let error): negotiation?.finish(.failure(error))
+                                    }
+                                })
+            } else {
+                Payjoin.attempt(endpoint: endpoint, unsignedPsbt: original, signedRawTx: rawTx, passphrase: self.passphrase,
+                                progress: { [weak negotiation] stage in negotiation?.advance(stage) },
+                                completion: { [weak negotiation] result in negotiation?.finish(result) })
+            }
         }
     }
 

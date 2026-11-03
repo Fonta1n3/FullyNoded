@@ -536,7 +536,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             let decodeParam: Decode_Psbt = .init(["psbt": psbt1])
             MakeRPCCall.sharedInstance.executeRPCCommand(method: .decodepsbt(param: decodeParam)) { response, _ in
                 let decoded = response as? [String: Any] ?? [:]
-                let txLock = ((decoded["tx"] as? [String: Any])?["locktime"] as? NSNumber)?.uint32Value ?? 0
+                let txLock = (PSBTVersion.tx(from: decoded as NSDictionary)?["locktime"] as? NSNumber)?.uint32Value ?? 0
                 let needed = max(locktime, locktimeFromDecodedPsbt(decoded))
 
                 if needed == 0 || txLock >= needed {
@@ -854,19 +854,24 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     private func applyPaymentRequest(_ request: AddressParser.PaymentRequest, address: String) {
         addAddress(address.addressExpanded)
         payjoin = nil
-        // Payjoin goes with the regular address (not a silent payment one), from a wallet that
-        // can sign it here (single-sig, signer on this device).
+        // Payjoin goes with the regular address (not a silent payment one), from a single-sig
+        // wallet: signed here, or twice with its own signer when it's watch-only here.
         guard let url = request.payjoin, address == request.address else {
             showPaymentRequest(request, address: address, payjoinUnavailable: nil)
             return
         }
         activeWallet { [weak self] wallet in
-            Payjoin.unavailableReason(for: wallet) { reason in
+            Payjoin.eligibility(for: wallet) { eligibility in
                 DispatchQueue.main.async {
                     guard let self = self else { return }
-                    if reason == nil {
+                    var reason: String?
+                    switch eligibility {
+                    case .thisDevice, .externalSigner:
                         self.payjoin = Payjoin.Endpoint(url: url, address: address,
-                                                        outputSubstitutionDisabled: request.payjoinOutputSubstitutionDisabled)
+                                                        outputSubstitutionDisabled: request.payjoinOutputSubstitutionDisabled,
+                                                        signedElsewhere: eligibility == .externalSigner)
+                    case .unavailable(let why):
+                        reason = why
                     }
                     self.showPaymentRequest(request, address: address, payjoinUnavailable: reason)
                 }
@@ -886,7 +891,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         let sheet = PayjoinRequestSheet(.init(address: address, amount: amountText, label: request.label, message: request.message,
                                               payjoin: payjoin?.url,
                                               payjoinSkippedForSilentPayment: request.payjoin != nil && payjoin == nil && payjoinUnavailable == nil,
-                                              payjoinUnavailable: payjoinUnavailable))
+                                              payjoinUnavailable: payjoinUnavailable,
+                                              payjoinSignedElsewhere: payjoin?.signedElsewhere == true))
         present(sheet, animated: true)
     }
     

@@ -26,6 +26,8 @@ enum Payjoin {
         let address: String
         /// `pjos=0`. We disable substitution anyway; kept for the record.
         let outputSubstitutionDisabled: Bool
+        /// Watch-only here: both signatures come from the wallet's own signer (export, import).
+        var signedElsewhere = false
     }
 
     struct Outcome {
@@ -45,7 +47,12 @@ enum Payjoin {
 
     struct Failure: LocalizedError {
         let errorDescription: String?
-        init(_ message: String) { errorDescription = message }
+        /// The payjoin can still go ahead: the user can import a corrected signature.
+        var retryable = false
+        init(_ message: String, retryable: Bool = false) {
+            errorDescription = message
+            self.retryable = retryable
+        }
     }
 
     /// Where a payjoin attempt is, for the progress screen (main queue).
@@ -76,7 +83,28 @@ enum Payjoin {
         "Fee from your change within your limit"
     ]
 
-    /// The whole sender flow. Completion on the main queue.
+    /// A proposal that passed every check, with our derivations restored: ready for our
+    /// signatures (on this device, or exported to the wallet's own signer).
+    struct PendingProposal {
+        let psbt: Data
+        /// Where our inputs sit in the proposal: the only ones signatures are taken for.
+        let senderInputs: [Int]
+        let receiverInputs: Int
+        let contribution: Int64
+        let fee: Int64
+        let receiverAmount: Int64
+        let originalInputs: Int
+        let originalFee: Int64
+
+        var base64: String { psbt.base64EncodedString() }
+
+        func outcome(rawTx: String) -> Outcome {
+            Outcome(rawTx: rawTx, receiverInputs: receiverInputs, feeContribution: contribution,
+                    originalInputs: originalInputs, originalFee: originalFee, proposalFee: fee, receiverAmount: receiverAmount)
+        }
+    }
+
+    /// The whole sender flow, signing with this device's signers. Completion on the main queue.
     static func attempt(endpoint: Endpoint, unsignedPsbt: String, signedRawTx: String, passphrase: String?,
                         progress: ((Stage) -> Void)? = nil,
                         completion: @escaping (Result<Outcome, Failure>) -> Void) {
@@ -85,14 +113,50 @@ enum Payjoin {
             if case .failure(let error) = result { log("failed: \(error.errorDescription ?? "")") }
             DispatchQueue.main.async { completion(result) }
         }
+        negotiate(endpoint: endpoint, unsignedPsbt: unsignedPsbt, signedRawTx: signedRawTx, report: report) { negotiated in
+            switch negotiated {
+            case .failure(let error):
+                finish(.failure(error))
+            case .success(let pending):
+                report(.signing)
+                sign(pending.psbt, passphrase: passphrase) { signed in
+                    switch signed {
+                    case .failure(let error):
+                        finish(.failure(error))
+                    case .success(let signedPsbt):
+                        report(.nodeCheck)
+                        finalize(signedPsbt) { final in finish(final.map { pending.outcome(rawTx: $0) }) }
+                    }
+                }
+            }
+        }
+    }
+
+    /// The sender flow up to a checked proposal, for a wallet whose signer isn't on this device:
+    /// the user signs `PendingProposal.psbt` elsewhere, then `complete(_:signed:)` finishes it.
+    /// Completion on the main queue.
+    static func propose(endpoint: Endpoint, unsignedPsbt: String, signedRawTx: String,
+                        progress: ((Stage) -> Void)? = nil,
+                        completion: @escaping (Result<PendingProposal, Failure>) -> Void) {
+        let report: (Stage) -> Void = { stage in DispatchQueue.main.async { progress?(stage) } }
+        negotiate(endpoint: endpoint, unsignedPsbt: unsignedPsbt, signedRawTx: signedRawTx, report: report) { result in
+            if case .failure(let error) = result { log("failed: \(error.errorDescription ?? "")") }
+            DispatchQueue.main.async { completion(result) }
+        }
+    }
+
+    /// Original → receiver → proposal → checks. Completion on a background queue.
+    private static func negotiate(endpoint: Endpoint, unsignedPsbt: String, signedRawTx: String,
+                                  report: @escaping (Stage) -> Void,
+                                  completion: @escaping (Result<PendingProposal, Failure>) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
             let original: Original
             do {
                 original = try Original(unsignedPsbt: unsignedPsbt, signedRawTx: signedRawTx, paying: endpoint.address)
             } catch let error as Failure {
-                finish(.failure(error)); return
+                completion(.failure(error)); return
             } catch {
-                finish(.failure(Failure(error.localizedDescription))); return
+                completion(.failure(Failure(error.localizedDescription))); return
             }
             report(.original(inputs: original.inputs.count, fee: original.fee, feeRate: original.feeRate))
             report(.contacting(host: endpoint.url.host ?? "", overTor: TorClient.sharedInstance.state == .connected))
@@ -101,40 +165,24 @@ enum Payjoin {
             post(endpoint.url, psbt: original.psbt.base64EncodedString(), query: original.query) { response in
                 switch response {
                 case .failure(let error):
-                    finish(.failure(error))
+                    completion(.failure(error))
                 case .success(let proposalText):
                     guard let proposal = Data(base64Encoded: proposalText.trimmingCharacters(in: .whitespacesAndNewlines)) else {
-                        finish(.failure(Failure("The receiver's reply isn't a PSBT.")))
+                        completion(.failure(Failure("The receiver's reply isn't a PSBT.")))
                         return
                     }
                     if let parsed = try? SPPsbt(proposal) {
                         report(.proposal(inputs: parsed.tx.inputs.count, outputs: parsed.tx.outputs.count))
                     }
-                    let checked: (psbt: Data, receiverInputs: Int, contribution: Int64, fee: Int64, receiverAmount: Int64)
                     do {
-                        checked = try check(proposal, against: original)
+                        let pending = try check(proposal, against: original)
+                        log("proposal passed every check: \(pending.receiverInputs) receiver input(s), \(pending.contribution) sats from our change")
+                        report(.checked(receiverInputs: pending.receiverInputs, contribution: pending.contribution))
+                        completion(.success(pending))
                     } catch let error as Failure {
-                        finish(.failure(error)); return
+                        completion(.failure(error))
                     } catch {
-                        finish(.failure(Failure("The receiver's proposal can't be read: \(error.localizedDescription)"))); return
-                    }
-                    log("proposal passed every check: \(checked.receiverInputs) receiver input(s), \(checked.contribution) sats from our change")
-                    report(.checked(receiverInputs: checked.receiverInputs, contribution: checked.contribution))
-                    report(.signing)
-                    sign(checked.psbt, passphrase: passphrase) { signed in
-                        switch signed {
-                        case .failure(let error):
-                            finish(.failure(error))
-                        case .success(let signedPsbt):
-                            report(.nodeCheck)
-                            finalize(signedPsbt) { final in
-                                finish(final.map {
-                                    Outcome(rawTx: $0, receiverInputs: checked.receiverInputs, feeContribution: checked.contribution,
-                                            originalInputs: original.inputs.count, originalFee: original.fee,
-                                            proposalFee: checked.fee, receiverAmount: checked.receiverAmount)
-                                })
-                            }
-                        }
+                        completion(.failure(Failure("The receiver's proposal can't be read: \(error.localizedDescription)")))
                     }
                 }
             }
@@ -305,7 +353,7 @@ enum Payjoin {
 
     /// The proposal with our derivations restored (ready to sign), how many inputs the receiver
     /// added and how much extra fee came out of our change. Throws on the first failed check.
-    static func check(_ data: Data, against original: Original) throws -> (psbt: Data, receiverInputs: Int, contribution: Int64, fee: Int64, receiverAmount: Int64) {
+    static func check(_ data: Data, against original: Original) throws -> PendingProposal {
         var proposal = try SPPsbt(data)
         let tx = proposal.tx
 
@@ -400,27 +448,37 @@ enum Payjoin {
                 proposal.inputs[i].append(entry)
             }
         }
-        return (proposal.serialize(), receiverInputs, contribution, fee, receiverAmount)
+        return PendingProposal(psbt: proposal.serialize(), senderInputs: senderIndices, receiverInputs: receiverInputs,
+                               contribution: contribution, fee: fee, receiverAmount: receiverAmount,
+                               originalInputs: original.inputs.count, originalFee: original.fee)
     }
 
     // MARK: - Which wallets can payjoin
 
-    /// nil when `wallet` can take part in a payjoin from this device, else why not (shown to
-    /// the user). Either side re-signs during the exchange, at once and with no one else: so a
-    /// single-sig segwit or taproot wallet whose signer is on this device. Multisig would need
-    /// every cosigner to sign again; a watch-only wallet has nothing here to sign with.
-    static func unavailableReason(for wallet: Wallet?, completion: @escaping (String?) -> Void) {
+    /// Who can sign this wallet's side of a payjoin.
+    enum Eligibility: Equatable {
+        /// A signer for it is on this device: signed on the spot.
+        case thisDevice
+        /// Watch-only here: it can pay a payjoin invoice by signing twice with its own signer
+        /// (the payment, then the receiver's version). Receiving can't wait for that.
+        case externalSigner
+        case unavailable(String)
+    }
+
+    /// Either side re-signs during the exchange: a single-sig segwit or taproot wallet, signed
+    /// here or (to pay only) with its own signer. Multisig would need every cosigner twice.
+    static func eligibility(for wallet: Wallet?, completion: @escaping (Eligibility) -> Void) {
         guard let wallet = wallet else {
-            completion("Payjoin needs a wallet created or imported with Fully Noded.")
+            completion(.unavailable("Payjoin needs a wallet created or imported with Fully Noded."))
             return
         }
         let descriptor = Descriptor(wallet.receiveDescriptor)
         if descriptor.isMulti {
-            completion("Payjoin isn't offered for multisig wallets: every cosigner would have to sign again during the exchange.")
+            completion(.unavailable("Payjoin isn't offered for multisig wallets: every cosigner would have to sign again during the exchange."))
             return
         }
         guard descriptor.isP2WPKH || descriptor.isP2TR else {
-            completion("Payjoin is offered for native segwit and taproot wallets only.")
+            completion(.unavailable("Payjoin is offered for native segwit and taproot wallets only."))
             return
         }
         let descriptors = (wallet.receiveDescriptor + wallet.changeDescriptor).lowercased()
@@ -430,8 +488,91 @@ enum Payjoin {
                       let xfp = Crypto.decrypt(encrypted)?.utf8String?.lowercased() else { return false }
                 return descriptors.contains("[\(xfp)")
             }
-            completion(hasSigner ? nil : "This wallet is watch-only on this device: payjoin needs its signer here, to sign again during the exchange.")
+            completion(hasSigner ? .thisDevice : .externalSigner)
         }
+    }
+
+    /// nil when `wallet` can receive a payjoin on this device, else why not (shown to the user).
+    /// Receiving signs the added coin while the payer waits, so the signer must be here.
+    static func unavailableReason(for wallet: Wallet?, completion: @escaping (String?) -> Void) {
+        eligibility(for: wallet) { eligibility in
+            switch eligibility {
+            case .thisDevice:
+                completion(nil)
+            case .externalSigner:
+                completion("This wallet is watch-only on this device. Receiving a payjoin means signing your added coin within seconds, while the payer waits, so its signer has to be here. You can still pay payjoin invoices from it with your own signer.")
+            case .unavailable(let reason):
+                completion(reason)
+            }
+        }
+    }
+
+    // MARK: - Signing with the wallet's own signer
+
+    /// Finishes a payjoin signed outside Fully Noded. `signed` is what the signer gave back: a
+    /// PSBT (base64) or a fully signed transaction (hex). It must be exactly the checked
+    /// proposal; only signatures for our own inputs are taken from it, so nothing else the
+    /// signer changed is used. Then the node finalizes and tests it. Completion on the main queue.
+    static func complete(_ pending: PendingProposal, signed: String, completion: @escaping (Result<Outcome, Failure>) -> Void) {
+        let finish: (Result<Outcome, Failure>) -> Void = { result in
+            if case .failure(let error) = result { log("external signature: \(error.errorDescription ?? "")") }
+            DispatchQueue.main.async { completion(result) }
+        }
+        let text = signed.components(separatedBy: .whitespacesAndNewlines).joined()
+        guard let proposal = try? SPPsbt(pending.psbt) else {
+            finish(.failure(Failure("The receiver's proposal can't be read."))); return
+        }
+
+        if let data = Data(base64Encoded: text), let imported = try? SPPsbt(data) {
+            guard imported.global.first(where: { $0.key == [SPPsbt.globalUnsignedTx] })?.value
+                    == proposal.global.first(where: { $0.key == [SPPsbt.globalUnsignedTx] })?.value else {
+                finish(.failure(Failure("That PSBT isn't the receiver's version of this payment. Sign the one exported from this screen.", retryable: true)))
+                return
+            }
+            // Signatures (and finalized scripts) for our inputs only.
+            let signatureTypes: Set<UInt8> = [0x02, 0x07, 0x08, 0x13, 0x14]
+            var merged = proposal
+            var signedInputs = 0
+            for i in pending.senderInputs {
+                let signatures = imported.inputs[i].filter { signatureTypes.contains($0.key.first ?? 0) }
+                guard !signatures.isEmpty else { continue }
+                merged.inputs[i].removeAll { signatureTypes.contains($0.key.first ?? 0) }
+                merged.inputs[i] += signatures
+                signedInputs += 1
+            }
+            guard signedInputs == pending.senderInputs.count else {
+                let missing = pending.senderInputs.count - signedInputs
+                finish(.failure(Failure("\(missing) of your input\(missing == 1 ? " isn't" : "s aren't") signed in that PSBT. Sign it with this wallet's signer, then import it again.", retryable: true)))
+                return
+            }
+            log("external signer: signatures for \(signedInputs) input(s)")
+            finalize(merged.serialize()) { final in
+                switch final {
+                case .success(let hex):
+                    finish(.success(pending.outcome(rawTx: hex)))
+                case .failure(let error) where error.errorDescription?.hasPrefix("The payjoin couldn't be fully signed") == true:
+                    finish(.failure(Failure("Your node couldn't complete it with those signatures. Check it was signed by this wallet's signer, then import it again.", retryable: true)))
+                case .failure(let error):
+                    finish(.failure(error))
+                }
+            }
+            return
+        }
+
+        if let bytes = SPHexFN.decode(text), let tx = try? SignedTx([UInt8](bytes)) {
+            let expected = proposal.tx
+            guard tx.version == expected.version, tx.locktime == expected.locktime,
+                  tx.inputs.count == expected.inputs.count, tx.outputs.count == expected.outputs.count,
+                  zip(tx.inputs, expected.inputs).allSatisfy({ $0.outpoint == $1.outpoint && $0.sequence == $1.sequence }),
+                  zip(tx.outputs, expected.outputs).allSatisfy({ $0.serialized == $1.serialized }) else {
+                finish(.failure(Failure("That transaction isn't the receiver's version of this payment. Sign the PSBT exported from this screen.", retryable: true)))
+                return
+            }
+            mempoolTest(SPHexFN.encode(bytes)) { result in finish(result.map { pending.outcome(rawTx: $0) }) }
+            return
+        }
+
+        finish(.failure(Failure("That isn't a signed PSBT or transaction.", retryable: true)))
     }
 
     // MARK: - Signing and finalizing
@@ -486,16 +627,26 @@ enum Payjoin {
                 completion(.failure(Failure("The payjoin couldn't be fully signed on this device\(error.map { ": \($0)" } ?? ".")")))
                 return
             }
-            let test = Test_Mempool_Accept(["rawtxs": [hex]])
-            MakeRPCCall.sharedInstance.executeRPCCommand(method: .testmempoolaccept(test)) { response, error in
-                let result = (response as? [[String: Any]])?.first
-                guard result?["allowed"] as? Bool == true else {
-                    let reason = result?["reject-reason"] as? String ?? error ?? "unknown"
-                    completion(.failure(Failure("Your node wouldn't accept the payjoin transaction (\(reason)).")))
+            mempoolTest(hex, completion: completion)
+        }
+    }
+
+    /// It must be accepted by the node's mempool before we hand it over.
+    static func mempoolTest(_ hex: String, completion: @escaping (Result<String, Failure>) -> Void) {
+        let test = Test_Mempool_Accept(["rawtxs": [hex]])
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .testmempoolaccept(test)) { response, error in
+            let result = (response as? [[String: Any]])?.first
+            guard result?["allowed"] as? Bool == true else {
+                let reason = result?["reject-reason"] as? String ?? error ?? "unknown"
+                // The receiver may broadcast the original while the user signs elsewhere.
+                if reason.contains("conflict") || reason.contains("missingorspent") {
+                    completion(.failure(Failure("Your original payment was already broadcast (most likely by the receiver, who does that when a payjoin takes too long), so the payjoin can't replace it. You've paid: nothing else to do.")))
                     return
                 }
-                completion(.success(hex))
+                completion(.failure(Failure("Your node wouldn't accept the payjoin transaction (\(reason)).")))
+                return
             }
+            completion(.success(hex))
         }
     }
 

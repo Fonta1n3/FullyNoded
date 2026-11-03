@@ -482,11 +482,13 @@ final class PayjoinReceiveSession {
         }
         let configuration = URLSessionConfiguration.ephemeral
         configuration.timeoutIntervalForRequest = 20
+        // An attempt that never completes would stall the whole wait: cap each one.
+        configuration.timeoutIntervalForResource = 30
         configuration.connectionProxyDictionary = [kCFProxyTypeKey: kCFProxyTypeSOCKS,
                                                    kCFStreamPropertySOCKSProxyHost: "localhost",
                                                    kCFStreamPropertySOCKSProxyPort: TorClient.socksPort]
         let session = URLSession(configuration: configuration)
-        session.dataTask(with: url) { [weak self] _, response, _ in
+        session.dataTask(with: url) { [weak self] _, response, error in
             session.finishTasksAndInvalidate()
             DispatchQueue.main.async {
                 guard let self = self, !self.stopped else { return }
@@ -495,6 +497,7 @@ final class PayjoinReceiveSession {
                     self.report(.step(.reachable))
                     self.report(.ready(pj))
                 } else {
+                    Payjoin.log("onion not reachable yet (attempt \(attempt + 1)): \(error?.localizedDescription ?? "status \((response as? HTTPURLResponse)?.statusCode ?? 0)")")
                     DispatchQueue.main.asyncAfter(deadline: .now() + 4) { self.waitUntilReachable(host, attempt: attempt + 1) }
                 }
             }

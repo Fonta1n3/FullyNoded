@@ -91,6 +91,8 @@ final class PayjoinRequestSheet: UIViewController {
         let payjoinSkippedForSilentPayment: Bool
         /// The request offers payjoin but this wallet can't take part (why), so it pays normally.
         var payjoinUnavailable: String? = nil
+        /// Watch-only here: signed twice with the wallet's own signer.
+        var payjoinSignedElsewhere = false
     }
 
     private let details: Details
@@ -177,14 +179,26 @@ final class PayjoinRequestSheet: UIViewController {
         let route = onion ? "over Tor, to the receiver's onion" : (tor ? "over Tor, to the receiver's server" : "directly over HTTPS (Tor isn't connected)")
         let endpoint = PayjoinUI.row("Receiver", "\(PayjoinUI.shortHost(host))\n\(route)", valueColor: tint.accent)
 
-        let steps = PayjoinUI.numbered([
-            "Make and sign the transaction as usual. That signed payment is kept: it's your fallback.",
-            "Fully Noded sends it to the receiver, who adds a coin of theirs and sends it back.",
-            "Their version is checked against BIP78's rules: same address, same amount, a fee you allow. Only then are your inputs signed again.",
-            "You review it and tap Send. Nothing is broadcast before that."
-        ])
+        let steps = details.payjoinSignedElsewhere
+            ? PayjoinUI.numbered([
+                "Make the transaction, export the PSBT to this wallet's signer, sign it and import it. That signed payment is kept: it's your fallback.",
+                "Fully Noded sends it to the receiver, who adds a coin of theirs and sends it back.",
+                "Their version is checked against BIP78's rules: same address, same amount, a fee you allow.",
+                "Export that version to your signer, sign it and import it (within a couple of minutes: the receiver may broadcast your first payment if it takes too long).",
+                "You review it and tap Send. Nothing is broadcast before that."
+            ])
+            : PayjoinUI.numbered([
+                "Make and sign the transaction as usual. That signed payment is kept: it's your fallback.",
+                "Fully Noded sends it to the receiver, who adds a coin of theirs and sends it back.",
+                "Their version is checked against BIP78's rules: same address, same amount, a fee you allow. Only then are your inputs signed again.",
+                "You review it and tap Send. Nothing is broadcast before that."
+            ])
 
-        var rows: [UIView] = [WalletTheme.caption("> PAYJOIN", tint: tint), header, endpoint, steps]
+        var rows: [UIView] = [WalletTheme.caption("> PAYJOIN", tint: tint), header, endpoint]
+        if details.payjoinSignedElsewhere {
+            rows.append(PayjoinUI.row("Signing", "Watch-only here: your own signer signs twice", valueColor: tint.accent))
+        }
+        rows.append(steps)
         if onion && !tor {
             rows.append(PayjoinUI.label("⚠︎ Tor isn't connected yet. If it still isn't when you sign, this is paid normally.", size: 11, weight: .semibold, color: WalletTheme.pending))
         }
@@ -204,6 +218,8 @@ final class PayjoinRequestSheet: UIViewController {
 final class PayjoinBanner: UIView {
     enum State {
         case offered(host: String)
+        /// Watch-only here: sign with the wallet's own signer, then import it.
+        case offeredSignElsewhere(host: String)
         case used(receiverInputs: Int)
         case fellBack(reason: String)
     }
@@ -258,6 +274,11 @@ final class PayjoinBanner: UIView {
             icon.image = UIImage(systemName: "arrow.triangle.merge")
             title.text = "⇄ PAYJOIN INVOICE"
             detail.text = "When you sign, Fully Noded asks \(PayjoinUI.shortHost(host)) to add a coin, checks their version and signs it. Your normal signed payment stays as the fallback."
+        case .offeredSignElsewhere(let host):
+            color = PayjoinUI.tint.accent
+            icon.image = UIImage(systemName: "arrow.triangle.merge")
+            title.text = "⇄ PAYJOIN INVOICE · SIGN ELSEWHERE"
+            detail.text = "Export this PSBT, sign it with this wallet's signer and import it here. Fully Noded then asks \(PayjoinUI.shortHost(host)) to add a coin, checks their version and gives it to you to sign once more. Your first signed payment stays as the fallback."
         case .used(let receiverInputs):
             color = WalletTheme.Tint.home.accent
             icon.image = UIImage(systemName: "checkmark.seal.fill")
@@ -283,7 +304,7 @@ final class PayjoinBanner: UIView {
 /// Full screen while a payjoin is negotiated: each step with a spinner, then a check or a cross;
 /// the BIP78 checks ticking off; a clock while the receiver answers; Skip. It ends with a
 /// summary (payjoin) or the reason it fell back (normal payment), and one button to review.
-final class PayjoinNegotiationViewController: UIViewController {
+final class PayjoinNegotiationViewController: UIViewController, UIDocumentPickerDelegate {
     /// Tapped Review (or Skip): the transaction to load, and the outcome if it's the payjoin.
     var onDone: ((_ rawTx: String, _ outcome: Payjoin.Outcome?, _ fallbackReason: String?) -> Void)?
 
@@ -327,10 +348,17 @@ final class PayjoinNegotiationViewController: UIViewController {
     private var payjoinRawTx: String?
     private var outcome: Payjoin.Outcome?
     private var fallbackReason: String?
+    /// Watch-only here: the receiver's version is exported, signed elsewhere and imported.
+    private let signedElsewhere: Bool
+    private var pending: Payjoin.PendingProposal?
+    private let signBox = UIStackView()
+    private let signError = UILabel()
+    private var importing = false
 
-    init(host: String, fallbackRawTx: String) {
+    init(host: String, fallbackRawTx: String, signedElsewhere: Bool = false) {
         self.host = host
         self.fallbackRawTx = fallbackRawTx
+        self.signedElsewhere = signedElsewhere
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = .overFullScreen
         modalTransitionStyle = .crossDissolve
@@ -408,7 +436,7 @@ final class PayjoinNegotiationViewController: UIViewController {
             row.spinner.hidesWhenStopped = true
             row.spinner.color = tint.accent
             row.spinner.translatesAutoresizingMaskIntoConstraints = false
-            row.title.text = step.title
+            row.title.text = step == .signing && signedElsewhere ? "Signing with your signer" : step.title
             row.title.font = WalletTheme.mono(13, weight: .semibold)
             row.title.textColor = WalletTheme.dim
             row.title.numberOfLines = 0
@@ -449,6 +477,10 @@ final class PayjoinNegotiationViewController: UIViewController {
         resultBox.spacing = 10
         resultBox.isHidden = true
         stack.addArrangedSubview(resultBox)
+
+        signBox.axis = .vertical
+        signBox.isHidden = true
+        stack.addArrangedSubview(signBox)
 
         skipButton.configuration = WalletTheme.buttonConfiguration(title: "Skip payjoin, pay normally", systemImage: "forward.fill", filled: false, tint: tint)
         skipButton.addTarget(self, action: #selector(skip), for: .touchUpInside)
@@ -584,6 +616,7 @@ final class PayjoinNegotiationViewController: UIViewController {
         finished = true
         clock?.invalidate()
         skipButton.isHidden = true
+        signBox.isHidden = true
         switch result {
         case .success(let outcome):
             done(.node)
@@ -645,6 +678,176 @@ final class PayjoinNegotiationViewController: UIViewController {
             PayjoinUI.label("Your normal payment is signed and ready: same address, same amount, the fee you chose. Review it and tap Send.", size: 11, color: WalletTheme.text)
         ], tint: .warning, spacing: 10, background: WalletTheme.pending.withAlphaComponent(0.07))
         resultBox.addArrangedSubview(card)
+    }
+
+    // MARK: Signing elsewhere
+
+    /// The receiver's version passed every check: hand it to the wallet's own signer.
+    func awaitSignature(_ pending: Payjoin.PendingProposal) {
+        guard !finished, isViewLoaded else { return }
+        self.pending = pending
+        start(.signing)
+        setHeader("WAITING FOR YOUR SIGNATURE", color: WalletTheme.pending, pulse: true)
+        let started = Date()
+        let tick = { [weak self] in
+            guard let self = self, !self.importing else { return }
+            let seconds = Int(Date().timeIntervalSince(started))
+            self.setDetail(.signing, "Your inputs only: the receiver signed theirs. Waiting \(seconds / 60):\(String(format: "%02d", seconds % 60))")
+        }
+        tick()
+        clock?.invalidate()
+        clock = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in tick() }
+
+        let exportButton = UIButton(type: .system)
+        WalletTheme.styleHero(exportButton, title: "Export to sign", systemImage: "square.and.arrow.up", tint: tint)
+        exportButton.menu = UIMenu(children: [
+            UIAction(title: "Animated QR (UR)", image: UIImage(systemName: "qrcode")) { [weak self] _ in self?.showQr(ur: true) },
+            UIAction(title: "Plain text QR", image: UIImage(systemName: "qrcode")) { [weak self] _ in self?.showQr(ur: false) },
+            UIAction(title: "Copy text", image: UIImage(systemName: "doc.on.doc")) { [weak self] _ in self?.copyPsbt() },
+            UIAction(title: "Share file", image: UIImage(systemName: "doc")) { [weak self] _ in self?.sharePsbtFile() }
+        ])
+        exportButton.showsMenuAsPrimaryAction = true
+
+        let importButton = UIButton(type: .system)
+        importButton.configuration = WalletTheme.buttonConfiguration(title: "Import signed", systemImage: "square.and.arrow.down", filled: false, tint: tint)
+        importButton.menu = UIMenu(children: [
+            UIAction(title: "Scan QR", image: UIImage(systemName: "qrcode.viewfinder")) { [weak self] _ in self?.scanSigned() },
+            UIAction(title: "Paste", image: UIImage(systemName: "doc.on.clipboard")) { [weak self] _ in self?.pasteSigned() },
+            UIAction(title: "File", image: UIImage(systemName: "folder")) { [weak self] _ in self?.pickSignedFile() }
+        ])
+        importButton.showsMenuAsPrimaryAction = true
+
+        signError.font = WalletTheme.mono(11, weight: .semibold)
+        signError.textColor = WalletTheme.danger
+        signError.numberOfLines = 0
+        signError.isHidden = true
+
+        let card = WalletTheme.cardView([
+            WalletTheme.caption("> SIGN THE RECEIVER'S VERSION", tint: tint),
+            PayjoinUI.label("It passed every check: same address, same amount to them, a fee you allow. This wallet is watch-only here, so sign it with its own signer.", size: 12, color: WalletTheme.text),
+            PayjoinUI.numbered([
+                "Export it to your signer.",
+                "Sign it there. Your inputs are the only ones left to sign.",
+                "Import the signed PSBT (or transaction) here."
+            ]),
+            PayjoinUI.label("Do it within a couple of minutes: a receiver that waits too long may broadcast your first payment instead. That still pays them; it just isn't a payjoin.", size: 11, color: WalletTheme.dim),
+            exportButton, importButton, signError
+        ], tint: tint, spacing: 12, background: tint.accent.withAlphaComponent(0.06))
+        card.layer.borderColor = tint.accent.cgColor
+        signBox.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        signBox.addArrangedSubview(card)
+        signBox.alpha = 0
+        signBox.isHidden = false
+        UIView.animate(withDuration: 0.3) { self.signBox.alpha = 1 }
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+    }
+
+    private func showQr(ur: Bool) {
+        guard let pending = pending,
+              let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "QRDisplayer") as? QRDisplayerViewController else { return }
+        vc.psbt = pending.base64
+        vc.isUR = ur
+        vc.tint = .transaction
+        vc.headerIcon = UIImage(systemName: "arrow.triangle.merge")
+        vc.headerText = "Payjoin to sign"
+        vc.descriptionText = "The receiver's version of your payment. Sign it with this wallet's signer, then import it on the payjoin screen."
+        present(vc, animated: true)
+    }
+
+    private func copyPsbt() {
+        guard let pending = pending else { return }
+        UIPasteboard.general.string = pending.base64
+        SuccessView.toast("PSBT copied", in: self)
+    }
+
+    private func sharePsbtFile() {
+        guard let pending = pending else { return }
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("payjoin-to-sign.psbt")
+        do { try pending.psbt.write(to: url) } catch { return }
+        let share = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        share.popoverPresentationController?.sourceView = view
+        share.popoverPresentationController?.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 1, height: 1)
+        present(share, animated: true)
+    }
+
+    private func scanSigned() {
+        guard let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "QRScanner") as? QRScannerViewController else { return }
+        vc.fromSignAndVerify = true
+        vc.onDoneBlock = { [weak self] text in
+            guard let text = text else { return }
+            self?.importSigned(text)
+        }
+        present(vc, animated: true)
+    }
+
+    private func pasteSigned() {
+        guard let text = UIPasteboard.general.string, !text.isEmpty else {
+            showSignError("Nothing to paste: copy the signed PSBT (or transaction) first.")
+            return
+        }
+        importSigned(text)
+    }
+
+    private func pickSignedFile() {
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
+        picker.delegate = self
+        present(picker, animated: true)
+    }
+
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let url = urls.first, let data = try? Data(contentsOf: url) else {
+            showSignError("That file can't be read.")
+            return
+        }
+        // A binary .psbt file, or a text one (base64 PSBT or hex transaction).
+        if data.starts(with: [0x70, 0x73, 0x62, 0x74, 0xFF]) {
+            importSigned(data.base64EncodedString())
+        } else if let text = String(data: data, encoding: .utf8) {
+            importSigned(text)
+        } else {
+            showSignError("That file isn't a signed PSBT or transaction.")
+        }
+    }
+
+    /// UR QRs come back from the scanner as UR text: turn them into a base64 PSBT.
+    private static func normalized(_ text: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let upper = trimmed.uppercased()
+        if upper.hasPrefix("UR:CRYPTO-PSBT") || upper.hasPrefix("UR:PSBT"), let ur = URHelper.ur(trimmed),
+           let psbt = URHelper.psbtUrToBase64Text(ur) {
+            return psbt
+        }
+        if upper.hasPrefix("UR:BYTES"), let ur = URHelper.ur(trimmed), let data = URHelper.bytesToData(ur) {
+            return data.base64EncodedString()
+        }
+        return trimmed
+    }
+
+    private func importSigned(_ text: String) {
+        guard let pending = pending, !finished, !importing else { return }
+        importing = true
+        signError.isHidden = true
+        setDetail(.signing, "Checking your signatures…")
+        Payjoin.complete(pending, signed: Self.normalized(text)) { [weak self] result in
+            guard let self = self else { return }
+            self.importing = false
+            if case .failure(let error) = result, error.retryable {
+                self.showSignError(error.errorDescription ?? "That can't be used.")
+                return
+            }
+            self.clock?.invalidate()
+            self.done(.signing)
+            self.setDetail(.signing, "Signed by your signer. Only your inputs' signatures were taken from it.")
+            self.start(.node)
+            self.setDetail(.node, "finalizepsbt and testmempoolaccept: would the network accept it?")
+            self.finish(result)
+        }
+    }
+
+    private func showSignError(_ message: String) {
+        signError.text = "✕ " + message
+        signError.isHidden = false
+        UINotificationFeedbackGenerator().notificationOccurred(.error)
     }
 
     // MARK: Actions

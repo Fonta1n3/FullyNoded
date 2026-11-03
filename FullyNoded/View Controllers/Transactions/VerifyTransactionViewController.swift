@@ -48,6 +48,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     /// The payment request offered a BIP78 payjoin: tried once the payment is fully signed.
     var payjoin: Payjoin.Endpoint?
     var payjoinAttempted = false
+    /// The unsigned payment the payjoin is built from (BIP78's original, before signing).
+    var payjoinOriginalPsbt = ""
     /// The transaction on screen is the receiver's payjoin (for the "sent" message).
     var payjoinUsed = false
     /// Top of the table while a payjoin is offered or was tried.
@@ -95,7 +97,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
         WalletTheme.stylePrimary(sendOutlet, tint: .transaction)
         WalletTheme.apply(to: self, tint: .transaction)
-        if let payjoin = payjoin { showPayjoinBanner(.offered(host: payjoin.url.host ?? payjoin.url.absoluteString)) }
+        if let payjoin = payjoin {
+            let host = payjoin.url.host ?? payjoin.url.absoluteString
+            showPayjoinBanner(payjoin.signedElsewhere ? .offeredSignElsewhere(host: host) : .offered(host: host))
+            // Kept apart from unsignedPsbt, which importing the signed payment clears.
+            payjoinOriginalPsbt = unsignedPsbt
+        }
     }
 
     override func viewDidLayoutSubviews() {

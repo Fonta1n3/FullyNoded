@@ -29,6 +29,8 @@ extension VerifyTransactionViewController {
     }
 
     func load() {
+        // The signed payment for a payjoin invoice was imported (signed elsewhere): that starts it.
+        if startPayjoinWithImportedPayment() { return }
         showActivity("analyzing transaction...")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -115,19 +117,23 @@ extension VerifyTransactionViewController {
                 }
             }
             
-            if let txDict = dict["tx"] as? NSDictionary {
-                
-                if let size = txDict["vsize"] as? Int {
-                    self.txSize = size
-                }
-                
-                if let id = txDict["txid"] as? String {
-                    self.txid = id
-                    self.loadLabelAndMemo()
-                }
-                
-                self.parseTransaction(tx: txDict)
+            guard let txDict = PSBTVersion.tx(from: dict) else {
+                // Never leave the spinner up on a reply this screen can't read.
+                self.finishActivity()
+                displayAlert(viewController: self, isError: true, message: "Couldn't read the decoded psbt (version \(RPCValue.int(dict["psbt_version"]) ?? 0)).")
+                return
             }
+            
+            if let size = txDict["vsize"] as? Int {
+                self.txSize = size
+            }
+            
+            if let id = txDict["txid"] as? String {
+                self.txid = id
+                self.loadLabelAndMemo()
+            }
+            
+            self.parseTransaction(tx: txDict)
         }
     }
 
