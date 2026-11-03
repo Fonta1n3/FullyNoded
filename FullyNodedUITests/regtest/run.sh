@@ -23,11 +23,13 @@ case $1 in
         -derivedDataPath $DD build-for-testing > $LOG 2>&1)
     }
     if ! build; then
-      # macOS purges old files under $TMPDIR, which can leave a package's binary framework
-      # (bdk-swift) half deleted. Xcode also caches that in its build plans, so fetching the
-      # packages again isn't enough: start from a clean build.
-      if grep -q "There is no Info.plist found at '.*SourcePackages/artifacts" $LOG; then
-        echo "cached packages are damaged: fetching them again and building from clean (a few minutes)…"
+      # Two kinds of damaged build folder, both fixed by a clean build:
+      # - macOS purges old files under $TMPDIR, which can leave a package's binary framework
+      #   (bdk-swift) half deleted, and Xcode caches that in its build plans.
+      # - Built for one specific simulator as well as for any simulator, the Tor pod's link
+      #   step fails ("can't link a dylib with itself").
+      if grep -q "There is no Info.plist found at '.*SourcePackages/artifacts\|can't link a dylib with itself" $LOG; then
+        echo "the build folder is damaged: building from clean (a few minutes)…"
         rm -rf $DD/SourcePackages $DD/Build
         build && { echo "built"; exit 0; }
       fi

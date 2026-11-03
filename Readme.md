@@ -24,12 +24,17 @@ Want to run a node on your Mac? Download [Fully Noded Server](https://fullynoded
 * Double click `FullyNoded.xcworkspace`
 * Click the play button in the top left bar of Xcode to run the app
 
-### Testing against regtest
+### Testing
 
-The `FullyNodedUITests` target drives the app in the simulator against a local regtest node:
-node setup, wallet creation and recovery, sending, silent payment sends and payjoin between two
-simulators, on every Bitcoin Core / Knots build you have installed. See
-[FullyNodedUITests/regtest/README.md](FullyNodedUITests/regtest/README.md).
+* **Unit tests** check everything Fully Noded does with private keys (seed words, key derivation,
+  encryption at rest, PSBT signing, silent payment keys) against the published BIP test vectors, plus
+  timelocked addresses and wallet recovery (from seed words, descriptors and wallet backups).
+  Pick the **FullyNodedTests** scheme and press ⌘U. No node needed.
+* **UI tests** drive the app in the simulator against a local regtest node: node setup, wallet creation
+  and recovery, sending, silent payment sends and payjoin between two simulators, on every Bitcoin Core /
+  Knots build you have installed.
+
+How to run both, what they cover and how to add tests: [Docs/Testing.md](Docs/Testing.md).
 
 
 ## Support the app

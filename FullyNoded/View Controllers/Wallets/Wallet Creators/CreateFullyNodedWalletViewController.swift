@@ -112,7 +112,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
-    private func isDescriptor(_ lowercased: String) -> Bool {
+    static func isDescriptor(_ lowercased: String) -> Bool {
         // With the "(": seed words can start with these letters too ("short …", "shift …"
         // would otherwise be read as an sh() descriptor and never offered as a seed).
         let functions = ["wsh(", "pkh(", "sh(", "combo(", "wpkh(", "addr(", "multi(", "sortedmulti(", "tr(", "rawtr("]
@@ -622,8 +622,9 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
 
     // MARK: - Recovering a wallet backup
     //
-    // 1. createwallet (watch-only, blank, descriptors) named after the receive descriptor,
-    //    so recovering the same backup twice lands in the same Core wallet.
+    // 1. createwallet (watch-only, blank, descriptors) named after the receive descriptor, the
+    //    same way a wallet created from a seed or descriptor is, so the recovery lands in the
+    //    Core wallet it had before.
     // 2. Pruned node: move timestamps that predate the prune height up to it.
     // 3. importdescriptors for every descriptor the node's wallet doesn't already have.
     // 4. Save (or update) the Fully Noded wallet record with the backup attached.
@@ -637,7 +638,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         guard let backupData = try? backup.jsonData() else { return }
         showActivity("Recovering wallet...")
 
-        let name = "FullyNoded-" + Crypto.sha256hash(String(pair.receive.split(separator: "#")[0]))
+        let name = ImportWallet.walletName(receiveDescriptor: pair.receive)
         let fnWallet: [String: Any] = [
             "id": UUID(),
             "name": name,
@@ -826,7 +827,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             
             showAlert(vc: self, title: "Not supported.", message: "Xpub importing is not supported, you need to import an output descriptor.")
             
-        } else if self.isDescriptor(lowercased) {
+        } else if Self.isDescriptor(lowercased) {
             showDescriptorImport(item)
             
         } else if lowercased.hasPrefix("ur:") {

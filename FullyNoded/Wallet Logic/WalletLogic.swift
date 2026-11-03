@@ -664,6 +664,7 @@ class WalletLogic {
             let isLock =
                 type == "AFTER" ||
                 type == "TIMELOCK" ||
+                type == "ABSOLUTETIMELOCK" ||   // BDK's policies() name for after(N)
                 type == "ABSOLUTELOCKTIME" ||
                 type == "CHECKLOCKTIME" ||
                 type.contains("LOCKTIME")

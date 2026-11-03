@@ -143,8 +143,8 @@ extension UTXOTraits.Timelock {
         case .height(let n):
             let title = "Timelocked until block \(n.formatted())"
             guard let tip = tip else { return .unknown(title: title, detail: unknownDetail) }
-            // Spendable in the block at height n, i.e. once the tip is n - 1 (same rule as the
-            // wallet's timelocked balance, which waits for the tip to reach n).
+            // A transaction with locktime n can go in block n + 1, so it's spendable once the tip
+            // reaches n (same rule as the wallet's timelocked balance).
             if n <= tip.height {
                 return .open(title: "Timelock passed", detail: "Was locked until block \(n.formatted()). It can be spent now.")
             }

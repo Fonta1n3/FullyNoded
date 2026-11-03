@@ -18,7 +18,6 @@ class ImportWallet {
     class func accountMap(_ accountMap: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
         let password = accountMap["password"] as? String ?? ""
         var wallet = [String:Any]()
-        var prefix = "FullyNoded"
         var primDescriptor = accountMap["descriptor"] as! String
         let blockheight = accountMap["blockheight"] as? Int ?? 0
         let label = accountMap["label"] as! String
@@ -26,8 +25,7 @@ class ImportWallet {
         wallet["id"] = UUID()
         wallet["blockheight"] = Int64(blockheight)
         
-        var descStruct = Descriptor(primDescriptor)
-        isHot = descStruct.isHot
+        isHot = Descriptor(primDescriptor).isHot
         
         guard let version = UserDefaults.standard.object(forKey: "version") as? Int else {
             completion((false, "Version unknown. In order to create a wallet we need to know which version of Bitcoin Core you are running, please go the the home screen and refresh then try to create this wallet again."))
@@ -37,10 +35,81 @@ class ImportWallet {
         
         self.version = version
         
-        primDescriptor = primDescriptor.replacingOccurrences(of: "'", with: "h")
+        primDescriptor = normalizedDescriptor(primDescriptor)
+        
+        /// The wallet becomes the active wallet only once everything has succeeded.
+        func saveAndActivate(_ wallet: [String: Any]) {
+            saveLocally(wallet: wallet) { (success, errorDescription) in
+                if success, let name = wallet["name"] as? String {
+                    UserDefaults.standard.set(name, forKey: "walletName")
+                }
+                completion((success, errorDescription))
+            }
+        }
+        
+        func createWalletNow(_ recDesc: String, _ changeDesc: String, _ password: String) {
+            let walletName = ImportWallet.walletName(receiveDescriptor: primDescriptor)
+            
+            createWallet(walletName, password) { (name, errorMessage) in
+                guard let name = name else {
+                    completion((false, "error creatig wallet: \(errorMessage ?? "unknown error")"))
+                    return
+                }
+                
+                wallet["name"] = name
+                
+                if version >= 210100 {
+                    importPrimaryDescriptors(recDesc, changeDesc, walletName: name) { (success, errorMessage) in
+                        guard success else {
+                                    completion((false, "error importing descriptor: \(errorMessage ?? "unknown error")"))
+                            return
+                        }
+                        
+                        saveAndActivate(wallet)
+                    }
+                } else {
+                    completion((false, "Fully Noded works with Bitcoin Core 0.21 minimum."))
+                }
+            }
+        }
+        
+        getDescriptorInfo(desc: primDescriptor) { (recDesc, errorMessage) in
+            guard let recDesc = recDesc else {
+                completion((false, errorMessage ?? "error getting descriptor info"))
+                return
+            }
+            
+            wallet["receiveDescriptor"] = recDesc.replacingOccurrences(of: "'", with: "h")
+            
+            getDescriptorInfo(desc: primDescriptor.replacingOccurrences(of: "/0/*", with: "/1/*")) { (changeDesc, errorMessage) in
+                guard let changeDesc = changeDesc else {
+                    completion((false, errorMessage ?? "error getting change descriptor info"))
+                    return
+                }
+                
+                wallet["changeDescriptor"] = changeDesc.replacingOccurrences(of: "'", with: "h")
+                let hash = Crypto.sha256hash(primDescriptor)
+                
+                walletExistsOnNode(hash) { existingWallet in
+                    guard let existingWallet = existingWallet else {
+                        createWalletNow(recDesc, changeDesc, password)
+                        return
+                    }
+                    
+                    wallet["name"] = existingWallet
+                    saveAndActivate(wallet)
+                }
+            }
+        }
+    }
+    
+    /// The descriptor as Fully Noded imports and names it: "h" for hardened steps, no checksum,
+    /// and multisig keys sorted.
+    class func normalizedDescriptor(_ descriptor: String) -> String {
+        var primDescriptor = descriptor.replacingOccurrences(of: "'", with: "h")
         let arr = primDescriptor.split(separator: "#")
         primDescriptor = "\(arr[0])"
-        descStruct = Descriptor(primDescriptor)
+        let descStruct = Descriptor(primDescriptor)
             
         // If the descriptor is multisig, we sort the keys lexicographically, even if using sortedmulti as BDK does not support
         // sortedmulti_a.
@@ -112,71 +181,16 @@ class ImportWallet {
             }
         }
         
-        /// The wallet becomes the active wallet only once everything has succeeded.
-        func saveAndActivate(_ wallet: [String: Any]) {
-            saveLocally(wallet: wallet) { (success, errorDescription) in
-                if success, let name = wallet["name"] as? String {
-                    UserDefaults.standard.set(name, forKey: "walletName")
-                }
-                completion((success, errorDescription))
-            }
-        }
-        
-        func createWalletNow(_ recDesc: String, _ changeDesc: String, _ password: String) {
-            // Use the sha256 hash of the checksum-less primary receive keypool desc as the wallet name so it has a deterministic identifier
-            let walletName = "\(prefix)-\(Crypto.sha256hash(primDescriptor))"
-            
-            createWallet(walletName, password) { (name, errorMessage) in
-                guard let name = name else {
-                    completion((false, "error creatig wallet: \(errorMessage ?? "unknown error")"))
-                    return
-                }
-                
-                wallet["name"] = name
-                
-                if version >= 210100 {
-                    importPrimaryDescriptors(recDesc, changeDesc, walletName: name) { (success, errorMessage) in
-                        guard success else {
-                                    completion((false, "error importing descriptor: \(errorMessage ?? "unknown error")"))
-                            return
-                        }
-                        
-                        saveAndActivate(wallet)
-                    }
-                } else {
-                    completion((false, "Fully Noded works with Bitcoin Core 0.21 minimum."))
-                }
-            }
-        }
-        
-        getDescriptorInfo(desc: primDescriptor) { (recDesc, errorMessage) in
-            guard let recDesc = recDesc else {
-                completion((false, errorMessage ?? "error getting descriptor info"))
-                return
-            }
-            
-            wallet["receiveDescriptor"] = recDesc.replacingOccurrences(of: "'", with: "h")
-            
-            getDescriptorInfo(desc: primDescriptor.replacingOccurrences(of: "/0/*", with: "/1/*")) { (changeDesc, errorMessage) in
-                guard let changeDesc = changeDesc else {
-                    completion((false, errorMessage ?? "error getting change descriptor info"))
-                    return
-                }
-                
-                wallet["changeDescriptor"] = changeDesc.replacingOccurrences(of: "'", with: "h")
-                let hash = Crypto.sha256hash(primDescriptor)
-                
-                walletExistsOnNode(hash) { existingWallet in
-                    guard let existingWallet = existingWallet else {
-                        createWalletNow(recDesc, changeDesc, password)
-                        return
-                    }
-                    
-                    wallet["name"] = existingWallet
-                    saveAndActivate(wallet)
-                }
-            }
-        }
+        return primDescriptor
+    }
+    
+    /// Name of the node wallet for a receive descriptor: "FullyNoded-" + SHA-256 of the descriptor
+    /// without its checksum, hardened steps written "h". Deterministic, so recovering a wallet
+    /// (from its seed, its descriptor or a backup, whichever Core version printed it) finds the
+    /// node wallet it had before.
+    class func walletName(receiveDescriptor: String) -> String {
+        let checksumless = receiveDescriptor.replacingOccurrences(of: "'", with: "h").components(separatedBy: "#")[0]
+        return "FullyNoded-\(Crypto.sha256hash(checksumless))"
     }
     
     class func coldcard(dict: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
