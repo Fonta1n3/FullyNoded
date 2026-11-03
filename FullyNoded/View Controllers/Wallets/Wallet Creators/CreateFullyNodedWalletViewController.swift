@@ -113,11 +113,10 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func isDescriptor(_ lowercased: String) -> Bool {
-        if lowercased.hasPrefix("wsh") || lowercased.hasPrefix("pkh") || lowercased.hasPrefix("sh") || lowercased.hasPrefix("combo") || lowercased.hasPrefix("wpkh") || lowercased.hasPrefix("addr") || lowercased.hasPrefix("multi") || lowercased.hasPrefix("sortedmulti") || lowercased.hasPrefix("tr(") {
-            return true
-        } else {
-            return false
-        }
+        // With the "(": seed words can start with these letters too ("short …", "shift …"
+        // would otherwise be read as an sh() descriptor and never offered as a seed).
+        let functions = ["wsh(", "pkh(", "sh(", "combo(", "wpkh(", "addr(", "multi(", "sortedmulti(", "tr(", "rawtr("]
+        return functions.contains { lowercased.hasPrefix($0) }
     }
     
     private func processPastedString(_ string: String) {
