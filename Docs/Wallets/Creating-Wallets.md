@@ -31,12 +31,23 @@ control.
 
 <img src="../Images/app-multisig.jpg" alt="Multisig creator" width="300"/>
 
-1. Pick **Segwit** or **Taproot**.
-2. Add each cosigner: **Derive from signer** (a signer on this phone), scan a QR, paste, or type
-   the fingerprint, path and xpub and tap **Add cosigner**.
-3. Tap **Create wallet** and choose how many signatures are required to spend.
-4. Save the wallet export it shows. A multisig can't be recovered without every cosigner's
-   xpub, so this backup matters as much as the seeds.
+1. **Script**: **Segwit** works with almost every hardware wallet; **Taproot** gives smaller,
+   more private spends but every cosigner must support it. Keep the default path unless your
+   devices use another (**Edit**).
+2. **Cosigners**: add one key per cosigner.
+   - **This phone**: derive it from one of your signers.
+   - **New key**: make a new 12 word signer. Write the words down when they're shown.
+   - **Scan** or **Paste** a hardware wallet's multisig export, an xpub or a descriptor.
+   - **Type** a fingerprint and xpub.
+
+   Remove a key with ⓧ. The same key can't be added twice.
+3. **Signatures required**: **−** / **+**. It starts at a majority (2 of 3, 3 of 5) and warns
+   you about 1 of n (any single key can spend) and n of n (lose one key and the funds are stuck).
+4. Tap **Create**. Then **Export file** or **Show QR** and give the wallet file to every
+   cosigner. A multisig can't be recovered without every cosigner's xpub, so this backup
+   matters as much as the seeds.
+
+<img src="../Images/app-multisig-done.jpg" alt="Multisig created" width="300"/>
 
 ## Import
 

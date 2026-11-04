@@ -265,8 +265,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             currentController = presentedController
         }
         
-        multisigCreator.modalPresentationStyle = .fullScreen
-        currentController.present(multisigCreator, animated: true, completion: nil)
+        // In a navigation controller, for its title, close button and pushed screens.
+        let navigationController = UINavigationController(rootViewController: multisigCreator)
+        navigationController.modalPresentationStyle = .fullScreen
+        currentController.present(navigationController, animated: true, completion: nil)
     }
     
     private func presentWalletCreator(coldCard: [String:Any]) {

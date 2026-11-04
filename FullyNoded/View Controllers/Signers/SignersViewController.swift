@@ -330,48 +330,9 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
         if !isCreatingMsig {
             seeDetails(indexPath.row)
         } else {
-            promptToDeriveFromSigner(rows[indexPath.row].signer)
-        }
-    }
-    
-    private func promptToDeriveFromSigner(_ signer: SignerStruct) {
-        
-        DispatchQueue.main.async { [unowned vc = self] in
-            var alertStyle = UIAlertController.Style.actionSheet
-            if (UIDevice.current.userInterfaceIdiom == .pad) {
-              alertStyle = UIAlertController.Style.alert
-            }
-            
-            guard var encryptedWords = signer.words,
-                    var words = Crypto.decrypt(encryptedWords),
-                    var arr = words.utf8String?.split(separator: " ") else { return }
-            
-            defer {
-                encryptedWords.secureZero()
-                words.secureZero()
-                arr.removeAll()
-            }
-            
-            for (i, _) in arr.enumerated() {
-                if i > 0 && i < arr.count - 1 {
-                    arr[i] = "******"
-                }
-            }
-            
-            let alert = UIAlertController(title: "Derive xpub from this signer?", message: arr.joined(separator: " "), preferredStyle: alertStyle)
-            
-            alert.addAction(UIAlertAction(title: "Derive xpub", style: .default, handler: { action in
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.signerSelected!(signer)
-                    self.navigationController?.popViewController(animated: true)
-                }
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true, completion: nil)
+            // Create Multisig derives the key once it's back on screen, so its alerts can show.
+            signerSelected?(rows[indexPath.row].signer)
+            navigationController?.popViewController(animated: true)
         }
     }
     
