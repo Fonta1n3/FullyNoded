@@ -1,26 +1,35 @@
 # How does it work?
 
-Bitcoin Core includes a ton of functionality that is not shown to the user in the [GUI](https://www.computerhope.com/jargon/g/gui.htm), this functionality must be accessed by using the [command line](https://en.wikipedia.org/wiki/Command-line_interface) aka CLI, doing so can be quite tedious where tiny typos will return errors. Fully Noded does the hard work of issuing the CLI commands to your node in a programmatic and reliable way powered by the taps you make on your iPhone. The purpose of Fully Noded is to allow users a secure and private way to connect to and control their node, unlocking all the powerful features Bitcoin Core has to offer without needing to use CLI.
-
-Fully Noded needs to connect to the computer that your node is running on in order to issue commands to your node. It does this using [Tor](https://lifehacker.com/what-is-tor-and-should-i-use-it-1527891029).
-
-Connecting to your nodes computer is the first part, once connected Fully Noded then needs to be able to issue [RPC commands](https://en.bitcoin.it/wiki/API_reference_(JSON-RPC)) to your node. It issues these commands to your [local host](https://whatismyipaddress.com/localhost) over [curl](https://curl.haxx.se). In order to be able to do that Fully Noded needs to know your RPC credentials,  `rpcusername` and  `rpcpassword`.
-
-Once Fully Noded is connected it will start issuing commands one at a time, here are some from the home table:
+Bitcoin Core can do far more than its own app shows: almost everything is behind its RPC
+interface (`bitcoin-cli`). Fully Noded is a phone interface to that RPC, plus an offline signer.
 
 ```
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "listwallets", "params":[] }' -H 'content-type: text/plain;' http://user:password@nwfwjfwjbefiu.onion:18443/
-
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getbalance", "params":["*", 0, false] }' -H 'content-type: text/plain;' http://user:password@wfwjfwjbefiu.onion:18443/
-
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "listtransactions", "params":["*", 50, 0, true] }' -H 'content-type: text/plain;' http://user:password@wfwjfwjbefiu.onion:18443/
+iPhone (Fully Noded)                          Your computer
+┌─────────────────────┐   Tor / Nostr / LAN   ┌──────────────┐
+│ seed words (signer) │ ────── RPC ─────────▶ │ Bitcoin Core │
+│ signs PSBTs offline │ ◀──── results ─────── │ watch-only   │
+└─────────────────────┘                       └──────────────┘
 ```
 
-The `method` is a `bitcoin-cli` command and you can use [this great resource](https://chainquery.com/bitcoin-cli) to dive deeper into what they all do.
+**Connecting.** Fully Noded sends JSON-RPC requests to your node, authenticated with your RPC
+username and password, over one of:
 
-[This is the code in Fully Noded from the Node Logic class](https://github.com/Fonta1n3/FullyNoded/tree/master/BitSense/Node%20Logic) which issues the above commands, if you look at it you will see a lot of commands that look like this:
+- **Tor**: to your node's onion address, from anywhere. Tor runs inside Fully Noded.
+- **Nostr Connect**: end-to-end encrypted through a relay to Fully Noded Server
+  ([details](./Nostr-Connect.md)).
+- **Your local network** or a VPN.
 
-`reducer.makeCommand(command: .listunspent, param: "0", completion: getResult)`
+**Wallets.** When you create a wallet, Fully Noded makes the seed words and keeps them. It gives
+your node only the public keys (descriptors), so your node's wallet is watch-only. Your node finds
+your coins, tracks your balance and builds unsigned transactions (PSBTs).
 
-The `.listunspent` directly represents the `bitcoin-cli` commands we linked to just above and the `params` represent the options you can pass with those commands.  You can get the same functionality copying and pasting these commands into a terminal or using the Bitcoin-Qt console.
+**Signing.** Fully Noded signs the PSBT on your phone with the seed, then your node checks and
+broadcasts it. Private keys never leave the phone.
 
+Every call is a normal Bitcoin Core command. For example, the home screen uses
+`getblockchaininfo`, `getnetworkinfo`, `getpeerinfo` and `getmempoolinfo`. Tap a tile to see the
+raw response:
+
+<img src="./Images/app-raw-rpc.jpg" alt="Raw RPC response" width="300"/>
+
+Anything Fully Noded does, you could do with `bitcoin-cli`. Fully Noded just makes it a tap.

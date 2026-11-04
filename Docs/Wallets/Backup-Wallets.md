@@ -1,8 +1,27 @@
-# Backup Wallets
+# Back up a wallet
 
-When creating a single signature wallet Fully Noded will always display 12 BIP39 seed words you should **write down** and store safely. You may at anytime recover the wallet by simply adding them as a signer to the app. If you are completely recovering the wallet from scratch you can create a "Recovery Wallet" using those BIP39 words.
+A wallet needs two things to be fully recovered:
 
-There are many sources to learn and practise smart custodianship for your seed words, for example:
+1. **The seed words**: they spend. Write them down on paper or metal when you create the wallet.
+2. **The wallet's public keys (descriptors)**: they find your coins. For a single-sig wallet the
+   seed words alone are enough, since Fully Noded derives the same descriptors from them. A
+   multisig or timelocked wallet also needs its descriptors.
 
- - [The Smart Custody Book](https://github.com/BlockchainCommons/SmartCustodyBook)
- - Several articles by Pamela Morgan on Medium [here](https://medium.com/@pamelawjd)
+## Exporting the descriptors
+
+Open the wallet tab → ⓘ:
+
+<img src="../Images/app-wallet-detail.jpg" alt="Wallet detail" width="300"/>
+
+- **Wallet export**: a QR code (UR or JSON) with the wallet's descriptors. Scan it to import the
+  wallet into Fully Noded or another wallet. **Format** switches the encoding, **Enlarge** shows it
+  full screen.
+- **Backup file**: all of the wallet's descriptors as read from your node, including any timelocks.
+  This is the most complete backup. Recover it with **+ → Import by pasting text** or **Import a
+  wallet file**.
+
+Neither contains private keys, but both reveal your whole balance and history to anyone who sees
+them. Keep them private.
+
+Learn more about keeping seeds safe:
+[The Smart Custody Book](https://github.com/BlockchainCommons/SmartCustodyBook).

@@ -3,7 +3,7 @@
 
 <img src="./Images/fn_logo.png" alt="" width="100"/> <br/> [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586) <br/>
 
-<img src="./Images/home.png" alt="home" width="400"/> <img src="./Images/wallet.png" alt="home" width="400"/> <br/>
+<img src="./Images/home.png" alt="Home screen" width="300"/> <img src="./Images/wallet.png" alt="Wallet" width="300"/> <br/>
 
 Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own [Bitcoin Core](https://github.com/bitcoin/bitcoin) node as a backend. Providing an easy to use interface to interact with your node. Fully Noded wallets are powered by PSBT's and descriptors. Fully Noded acts as an offline signer using your node as a watch-only wallet as well as giving you access to your nodes existing wallets.
 
@@ -14,15 +14,19 @@ Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own 
 Want to run a node on your Mac? Download [Fully Noded Server](https://fullynoded.app/wp-content/uploads/2025/11/fullynoded-server-v0.2.1.zip), it installs and configures Bitcoin Core, Knots, Join Market and Tor to make getting Fully Noded a breeze.
 
 
+## Guides
+
+Connecting your node, creating a wallet, receiving, sending, backups and recovery, with
+screenshots: **[Docs](./Docs/README.md)**.
+
 ## Build from source
 
-<br/><img src="./Images/build_from_source.png" alt="" width="400"/><br/>
-* Download Xcode
+* Install Xcode and [CocoaPods](https://cocoapods.org)
 * `git clone https://github.com/Fonta1n3/FullyNoded.git`
 * `cd FullyNoded`
-* `pod update`
-* Double click `FullyNoded.xcworkspace`
-* Click the play button in the top left bar of Xcode to run the app
+* `pod install`
+* Open `FullyNoded.xcworkspace`
+* Pick the **FullyNoded** scheme and press ▶︎
 
 ### Testing
 

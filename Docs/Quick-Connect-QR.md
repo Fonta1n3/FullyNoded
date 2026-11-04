@@ -1,25 +1,32 @@
 # Quick Connect QR
 
-Fully Noded has uri deep links registered with the following prefixes  `btcstandup://`, `btcrpc://` for connecting Bitcoin Core and `clightning-rpc://` for you guessed it C-Lightning.
+Fully Noded adds a node from a single link, scanned as a QR (**Settings → Node Manager → + →
+Scan QR**) or tapped on the phone.
 
-If you are a node manufacturer you can embed such a link to your web based UI that allows a user who has Fully Noded installed on their device to add and connect to their node with a single tap from the web based UI.
+## `btcrpc://`: connect over Tor or your network
 
-The url can also be displayed as a QR Code and a user can simply scan it when they go to add a node in Fully Noded.
+```
+btcrpc://<rpcuser>:<rpcpassword>@<host>:<port>?label=<optional label>
+```
 
-The format of the URI is:
+Example:
 
-`btcrpc://<rpcuser>:<rpcpassword>@<hidden service hostname>:<hidden service port>?label=<optional node label>`
+```
+btcrpc://fullynoded:aStrongPassword@abc…xyz.onion:8332?label=My%20Node
+```
 
-Example with node label:
+- `host` is an onion address, or a LAN address or hostname.
+- `port` is the RPC port (`8332` mainnet, `18332` testnet3, `48332` testnet4, `38332` signet,
+  `18443` regtest).
+- URL-encode the label. Keep the username and password to letters and numbers, so the link stays
+  valid.
 
-`btcrpc://rpcuser:rpcpassword@kjhfefe.onion:8332?label=Your%20Nodes%20Name`
+If you make node software, show this link as a QR (or a tappable link on iOS) so your users can
+connect in one step. `btcstandup://` is accepted as an older name for the same format.
 
-Example without node label:
+## `nostr+fullynoded://`: Nostr Connect
 
-`btcrpc://rpcuser:rpcpassword@kjhfefe.onion:8332?`
+Pairing links made by Fully Noded Server's **Nostr Connect → Pair Fully Noded**. Each one is
+single-use and holds a key for one phone. See [Nostr-Connect.md](./Nostr-Connect.md).
 
-For C-Lightning simply specify the correct prefix and FN will do the rest:<br/>
-`clightning-rpc://rpcuser:rpcpassword@xxxx.onion:8080?label=BTCPay%20C-Lightning`
-For more info on supporting c-lightning see [Lightning.md](./Docs/Lightning.md)
-
-**The rpcuser and rpcpassword are the http-user (lightning by default) and http-pass you specify in the clightning config when using the supported c-lightning http [plugin](https://github.com/Start9Labs/c-lightning-http-plugin), 1312 is the HS port, again you may customize the port with http-port in the lightning config in conjunction with the http plugin.**
+**Treat both kinds of link like a password**: anyone who has one can use your node.
