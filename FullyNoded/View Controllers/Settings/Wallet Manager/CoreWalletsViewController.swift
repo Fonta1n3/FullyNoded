@@ -292,17 +292,21 @@ final class CoreWalletsViewController: UIViewController, UITableViewDelegate, UI
                              note: "It has no matching change descriptor, so some features are limited.")
             return
         }
-        let dict: [String: Any] = [
-            "blockheight": 0,
-            "changeDescriptor": changeDescriptor,
-            "id": UUID(),
-            "label": wallet.name,
-            "name": wallet.name,
-            "receiveDescriptor": receive.string
-        ]
-        CoreDataService.saveEntity(dict: dict, entityName: .wallets) { [weak self] saved in
-            self?.finishActivation(wallet.name, label: wallet.title,
-                                   note: saved ? "Saved in Fully Noded as \(receive.scriptType)." : "Couldn't save it in Fully Noded, so some features are limited.")
+        presentImportReview(ImportReview(title: "Add wallet", source: "Wallet on your node: \(wallet.name)",
+                                         receiveDescriptor: receive.string, changeDescriptor: changeDescriptor,
+                                         label: wallet.name, confirmTitle: "Add wallet")) { label in
+            let dict: [String: Any] = [
+                "blockheight": 0,
+                "changeDescriptor": changeDescriptor,
+                "id": UUID(),
+                "label": label,
+                "name": wallet.name,
+                "receiveDescriptor": receive.string
+            ]
+            CoreDataService.saveEntity(dict: dict, entityName: .wallets) { [weak self] saved in
+                self?.finishActivation(wallet.name, label: wallet.title,
+                                       note: saved ? "Saved in Fully Noded as \(receive.scriptType)." : "Couldn't save it in Fully Noded, so some features are limited.")
+            }
         }
     }
 

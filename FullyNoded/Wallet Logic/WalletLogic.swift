@@ -806,6 +806,20 @@ class WalletLogic {
         return trimmed
     }
     
+    /// Receive and change addresses `from ..< from + count`, derived on this device: no node,
+    /// nothing saved. Throws if BDK can't parse the descriptors for the active node's network.
+    func previewAddresses(receive: String, change: String, from: Int, count: Int) throws -> (receive: [String], change: [String]) {
+        guard let network = bdkNetwork() else { throw WalletCreateError.unableToGetNetwork }
+        let kind = networkKind(network: network)
+        let wallet = try BDKWallet(descriptor: try BDKDescriptor(descriptor: receive, networkKind: kind),
+                                   changeDescriptor: try BDKDescriptor(descriptor: change, networkKind: kind),
+                                   network: network,
+                                   persister: try Persister.newInMemory())
+        let indexes = (from ..< from + count).map(UInt32.init)
+        return (indexes.map { wallet.peekAddress(keychain: .external, index: $0).address.description },
+                indexes.map { wallet.peekAddress(keychain: .internal, index: $0).address.description })
+    }
+
     func bdkWalletFromDescriptors(recDesc: String, changeDesc: String) throws -> BDKWallet {
         guard let network = WalletLogic.shared.bdkNetwork() else {
             throw WalletCreateError.unableToGetNetwork

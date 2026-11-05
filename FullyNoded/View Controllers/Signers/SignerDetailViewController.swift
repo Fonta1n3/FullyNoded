@@ -924,6 +924,14 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     }
 
     private func importAccountMap(_ descriptor: String, _ label: String, _ password: String) {
+        hideActivity()
+        presentImportReview(ImportReview(title: "Create wallet", source: "Signer: \(signer.label)",
+                                         receiveDescriptor: descriptor, label: label, confirmTitle: "Create wallet")) { [weak self] label in
+            self?.createWalletNow(descriptor, label, password)
+        }
+    }
+    
+    private func createWalletNow(_ descriptor: String, _ label: String, _ password: String) {
         showActivity("creating wallet...")
         
         OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in

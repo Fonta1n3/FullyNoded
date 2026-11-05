@@ -197,11 +197,31 @@ extension FNUI {
         openWalletCreator()
         step("Paste text")
         step(type)
-        require("First 5 addresses derived", timeout: 30, "Reading the pasted seed")
-        let create = app.buttons.matching(NSPredicate(format: "label == %@", "Create Wallet")).allElementsBoundByIndex.last
-        if let create { press(create) }
+        confirmImportReview()
         require("Descriptor wallet created", timeout: 120, "Recreating the wallet on the node")
         dismissCard()
+    }
+
+    /// The import review: waits until its addresses are derived here and checked by the node
+    /// (Import is enabled only then), and that they matched, then imports.
+    func confirmImportReview(file: StaticString = #filePath, line: UInt = #line) {
+        let confirm = app.buttons["importReview.confirm"]
+        guard confirm.waitForExistence(timeout: 30) else {
+            XCTFail("The import review never appeared.\n\(visibleText())", file: file, line: line)
+            return
+        }
+        let enabled = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isEnabled == true"), object: confirm)
+        guard XCTWaiter.wait(for: [enabled], timeout: 60) == .completed else {
+            XCTFail("Import stayed disabled (addresses didn't check out).\n\(visibleText())", file: file, line: line)
+            return
+        }
+        // For a look at the screen after the run: <shared dir>/import-review.png.
+        if let dir = FNUIEnv.sharedDir {
+            try? app.screenshot().pngRepresentation.write(to: URL(fileURLWithPath: "\(dir)/import-review.png"))
+        }
+        XCTAssertTrue(screenText().contains("your node derives the same addresses"),
+                      "This device and the node should derive the same addresses.\n\(visibleText())", file: file, line: line)
+        press(confirm)
     }
 
     /// Wallet tab: the onchain balance in BTC, after a refresh.

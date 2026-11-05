@@ -283,16 +283,8 @@ class ActiveWalletViewController: UIViewController {
     @objc func createWallet(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            // An import there posts .refreshWallet and shows its own confirmation.
             let vc = CreateFullyNodedWalletViewController()
-            vc.onDoneBlock = { [weak self] success in
-                guard let self = self else { return }
-                
-                if success {
-                    self.refreshWallet()
-                    
-                    SuccessView.show(in: self, title: "Wallet imported", subtitle: "It's now the active wallet.")
-                }
-            }
             self.navigationController?.pushViewController(vc, animated: true)
         }
     }
@@ -329,52 +321,46 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
+    /// A wallet file opened in Fully Noded, or a saved wallet being recovered: reviewed first.
     @objc func importWallet(_ notification: NSNotification) {
-        showActivity("Creating your wallet, this can take a minute...")
-        
-        guard let accountMap = notification.userInfo as? [String:Any] else {
-            self.hideActivity()
+        guard let accountMap = notification.userInfo as? [String:Any], let descriptor = accountMap["descriptor"] as? String else {
             showAlert(vc: self, title: "", message: "That file does not seem to be a compatible wallet import, please raise an issue on the github so we can add support for it.")
             return
         }
-        
-        ImportWallet.accountMap(accountMap) { [weak self] (success, errorDescription) in
-            guard let self = self else { return }
-            
-            guard success else {
-                self.hideActivity()
-                showAlert(vc: self, title: "Error importing wallet", message: errorDescription ?? "unknown")
-                return
-            }
-            
-            self.hideActivity()
-            OnchainUtils.rescan { _ in }
-            SuccessView.show(in: self, title: "Wallet created", subtitle: "It has been activated and is refreshing now. A rescan has been started, so balances and history may take a while to appear.")
-            self.refreshWallet()
-        }
+        reviewAndImport(accountMap, descriptor: descriptor, source: accountMap["importSource"] as? String ?? "Wallet file")
     }
     
     @objc func addColdcard(_ notification: NSNotification) {
-        showActivity("creating your Coldcard wallet, this can take a minute...")
-        
-        guard let coldCard = notification.userInfo as? [String:Any] else {
-            self.hideActivity()
+        guard let coldCard = notification.userInfo as? [String:Any],
+              let accountMap = ImportWallet.coldcardAccountMap(coldCard),
+              let descriptor = accountMap["descriptor"] as? String else {
             showAlert(vc: self, title: "Ooops", message: "That file does not seem to be a compatible wallet import, please raise an issue on the github so we can add support for it.")
             return
         }
-        
-        ImportWallet.coldcard(dict: coldCard) { [weak self] (success, errorDescription) in
+        reviewAndImport(accountMap, descriptor: descriptor, source: "Coldcard file")
+    }
+    
+    private func reviewAndImport(_ accountMap: [String: Any], descriptor: String, source: String) {
+        var details: [(String, String)] = []
+        if let height = accountMap["blockheight"] as? Int, height > 0 { details.append(("Rescan", "From block \(height)")) }
+        presentImportReview(ImportReview(title: "Import wallet", source: source, receiveDescriptor: descriptor,
+                                         label: accountMap["label"] as? String ?? "Wallet import", details: details)) { [weak self] label in
             guard let self = self else { return }
-            
-            guard success else {
+            var map = accountMap
+            map["label"] = label
+            map["importSource"] = nil
+            self.showActivity("Creating your wallet, this can take a minute...")
+            ImportWallet.accountMap(map) { [weak self] (success, errorDescription) in
+                guard let self = self else { return }
                 self.hideActivity()
-                showAlert(vc: self, title: "Error creating Coldcard wallet", message: errorDescription ?? "unknown")
-                return
+                guard success else {
+                    showAlert(vc: self, title: "Error importing wallet", message: errorDescription ?? "unknown")
+                    return
+                }
+                OnchainUtils.rescan { _ in }
+                SuccessView.show(in: self, title: "Wallet created", subtitle: "It has been activated and is refreshing now. A rescan has been started, so balances and history may take a while to appear.")
+                self.refreshWallet()
             }
-            
-            self.hideActivity()
-            SuccessView.show(in: self, title: "Coldcard wallet imported", subtitle: "It has been activated and is refreshing now.")
-            self.refreshWallet()
         }
     }
     

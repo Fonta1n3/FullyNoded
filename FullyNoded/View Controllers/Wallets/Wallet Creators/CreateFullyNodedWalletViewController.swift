@@ -17,7 +17,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     /// Set only when the current recovery itself created the Core wallet (never for one that
     /// already existed), so a failed recovery can unload exactly what it made.
     private var walletCreatedByRecovery: String?
-    var onDoneBlock:(((Bool)) -> Void)?
     var ccXfp = ""
     var xpub = ""
     var deriv = ""
@@ -270,12 +269,12 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     /// The descriptor import screen, which shows the descriptor and its addresses first.
-    private func showDescriptorImport(_ descriptor: String) {
+    private func showDescriptorImport(_ descriptor: String, source: String = "Descriptor") {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             self.descriptor = Descriptor(descriptor)
-            self.showDescriptorImporter()
+            self.showDescriptorImporter(source: source)
         }
     }
     
@@ -414,19 +413,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func promptToImportUnchained(_ dict: [String:Any]) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let alert = UIAlertController(title: "Import your Unchained Capital multi sig wallet?", message: "Looks like you selected a multi sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { action in
-                self.importAccountMap(dict)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true, completion: nil)
-        }
+        importAccountMap(dict, source: "Unchained wallet file")
     }
     
     private func promptToImportCoboSingleSig(_ dict: [String:Any]) {
@@ -453,41 +440,15 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
         
         let accountMap = ["descriptor": desc, "blockheight": 0, "watching": [] as [String], "label": "Wallet import"] as [String : Any]
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let alert = UIAlertController(title: "Import single sig?", message: "Looks like you selected a single sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { action in
-                self.importAccountMap(accountMap)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true, completion: nil)
-        }
+        importAccountMap(accountMap, source: "Cobo wallet file")
     }
     
     private func promptToImportElectrumMsig(_ dict: [String:Any]) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let alert = UIAlertController(title: "Import your Electrum multisig wallet?", message: "Looks like you selected an Electrum wallet backup file. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { action in
-                guard let accountMap = self.convertElectrumToAccountMap(dict) else {
-                    showAlert(vc: self, title: "Uh oh", message: "We had an issue converting that backup file to a wallet... Please reach out on Telegram, Github or Twitter so we can fix it.")
-                    return
-                }
-                
-                self.importAccountMap(accountMap)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true, completion: nil)
+        guard let accountMap = convertElectrumToAccountMap(dict) else {
+            showAlert(vc: self, title: "Uh oh", message: "We had an issue converting that backup file to a wallet... Please reach out on Telegram, Github or Twitter so we can fix it.")
+            return
         }
+        importAccountMap(accountMap, source: "Electrum backup file")
     }
     
     private func convertElectrumToAccountMap(_ dict: [String:Any]) -> [String:Any]? {
@@ -595,80 +556,78 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func promptToImportColdcardSingleSig(_ coldcard: [String:Any]) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Create a single sig?", message: "You have uploaded a single sig file.", preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { action in
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .addColdCard, object: nil, userInfo: coldcard)
-                    vc.navigationController?.popViewController(animated: true)
+        guard let accountMap = ImportWallet.coldcardAccountMap(coldcard) else {
+            showAlert(vc: self, title: "Unsupported Coldcard file", message: "It has no BIP84 (native segwit) account to import.")
+            return
+        }
+        importAccountMap(accountMap, source: "Coldcard file")
+    }
+    
+    /// Every wallet file and export ends here: connect its node if it brings one, then the
+    /// import review, then the import.
+    private func importAccountMap(_ accountMap: [String:Any], source: String) {
+        func review() {
+            if let descriptor = accountMap["descriptor"] as? String {
+                var details: [(String, String)] = []
+                let height = accountMap["blockheight"] as? Int ?? Int(accountMap["blockheight"] as? Int64 ?? 0)
+                if height > 0 { details.append(("Rescan", "From block \(height)")) }
+                presentImportReview(ImportReview(title: "Import wallet", source: source, receiveDescriptor: descriptor,
+                                                 label: accountMap["label"] as? String ?? "Wallet import", details: details)) { [weak self] label in
+                    var map = accountMap
+                    map["label"] = label
+                    map["blockheight"] = height
+                    self?.runImport(map)
                 }
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true, completion: nil)
+            } else if accountMap["ExtPubKey"] is String {
+                promptToImportCoboSingleSig(accountMap)
+            } else {
+                showAlert(vc: self, title: "Unsupported wallet file", message: "It doesn't contain a descriptor to import.")
+            }
+        }
+        
+        guard let url = accountMap["quickConnect"] as? String else {
+            review()
+            return
+        }
+        showActivity("connecting your node...")
+        QuickConnect.addNode(url: url) { [weak self] (success, errorMessage) in
+            guard let self = self else { return }
+            self.hideActivity()
+            guard success else {
+                showAlert(vc: self, title: "Node connection issue:", message: errorMessage ?? "unknown error")
+                return
+            }
+            review()
         }
     }
     
-    private func importAccountMap(_ accountMap: [String:Any]) {
-        showActivity("importing...")
-        
-        func importAccount() {
-            if let _ = accountMap["descriptor"] as? String {
-                if (accountMap["blockheight"] as? Int) != nil || (accountMap["blockheight"] as? Int64) != nil {
-                    /// It is an Account Map.
-                    ImportWallet.accountMap(accountMap) { (success, errorDescription) in
-                        if success {
-                            DispatchQueue.main.async {
-                                self.hideActivity()
-                                self.onDoneBlock!(true)
-                                self.navigationController?.popViewController(animated: true)
-                            }
-                        } else {
-                            self.hideActivity()
-                            showAlert(vc: self, title: "Error", message: "There was an error importing your wallet: \(errorDescription ?? "unknown")")
-                        }
-                    }
-                }
-            } else if let _ = accountMap["ExtPubKey"] as? String {
-                hideActivity()
-                promptToImportCoboSingleSig(accountMap)
+    /// Imports a reviewed account map, then goes back to the wallet (which refreshes).
+    private func runImport(_ accountMap: [String: Any]) {
+        showActivity("Importing your wallet, this can take a minute...")
+        ImportWallet.accountMap(accountMap) { [weak self] (success, errorDescription) in
+            guard let self = self else { return }
+            guard success else {
+                self.hideActivity()
+                showAlert(vc: self, title: "Error", message: "There was an error importing your wallet: \(errorDescription ?? "unknown")")
+                return
             }
-        }
-        
-        if let url = accountMap["quickConnect"] as? String {
-            QuickConnect.addNode(url: url) { (success, errorMessage) in
-                guard success else {
-                    self.hideActivity()
-                    showAlert(vc: self, title: "Node connection issue:", message: errorMessage ?? "unknown error")
-                    return
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                self.hideActivity()
+                SuccessView.show(in: self, title: "Descriptor wallet created",
+                                 subtitle: "Your wallet is rescanning the blockchain, which can take a while. Balances and history appear once it's done; pull to refresh on the Wallet tab to check progress.") { [weak self] in
+                    self?.navigationController?.popToRootViewController(animated: true)
                 }
-                
-                importAccount()
             }
-        } else {
-            importAccount()
         }
     }
     
     private func promptToImportAccountMap(dict: [String:Any]) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Import wallet?", message: "Looks like you have selected a valid wallet format ✓", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { [unowned vc = self] action in
-                vc.importAccountMap(dict)
-            }))
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true, completion: nil)
-        }
+        importAccountMap(dict, source: "Wallet file")
     }
     
-    private func setPrimDesc(descriptors: [String], descriptorToUseIndex: Int) {
-        var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [] as [String], "label": "Wallet Import"]
+    private func setPrimDesc(descriptors: [String], descriptorToUseIndex: Int, source: String) {
         let primDesc = descriptors[descriptorToUseIndex]
-        accountMap["descriptor"] = primDesc
-        
         let desc = Descriptor("\(primDesc)")
         self.isTaproot = desc.isTaproot
         
@@ -687,12 +646,12 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 guard let self = self else { return }
                 
                 self.descriptor = desc
-                self.showDescriptorImporter()
+                self.showDescriptorImporter(source: source)
             }
         }
     }
     
-    private func prompToChoosePrimaryDesc(descriptors: [String]) {
+    private func prompToChoosePrimaryDesc(descriptors: [String], source: String) {
         DispatchQueue.main.async { [unowned vc = self] in
             let alert = UIAlertController(title: "Choose an address format.", message: "", preferredStyle: .alert)
             
@@ -702,7 +661,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 alert.addAction(UIAlertAction(title: descStr.scriptType, style: .default, handler: { [weak self] action in
                     guard let self = self else { return }
                     
-                    self.setPrimDesc(descriptors: descriptors, descriptorToUseIndex: i)
+                    self.setPrimDesc(descriptors: descriptors, descriptorToUseIndex: i, source: source)
                 }))
             }
             
@@ -717,25 +676,21 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func promptToImport(backup: WalletBackup) {
-        let date = backup.lastUpdate.formatted(date: .abbreviated, time: .shortened)
-        let count = backup.descriptors.count
-                
-        let alert = UIAlertController(
-            title: "Recover Wallet Backup?",
-            message: """
-            Backup details:
-            • Last updated: \(date)
-            • Descriptors: \(count)
-            """,
-            preferredStyle: .alert
-        )
-        
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Create Wallet", style: .default) { [weak self] _ in
-            self?.performImport(backup: backup)
-        })
-        
-        present(alert, animated: true)
+        guard let pair = backup.walletDescriptors() else {
+            showAlert(title: "Can't recover this backup",
+                      message: "It has no active HD (ranged) receive descriptor, so there's no wallet to recreate.")
+            return
+        }
+        var details = [("Updated", backup.lastUpdate.formatted(date: .abbreviated, time: .shortened)),
+                       ("Contents", "\(backup.descriptors.count) descriptor\(backup.descriptors.count == 1 ? "" : "s")")]
+        if let birthday = backup.birthday, birthday > 0 {
+            details.append(("Birthday", Date(timeIntervalSince1970: TimeInterval(birthday)).formatted(date: .abbreviated, time: .omitted)))
+        }
+        presentImportReview(ImportReview(title: "Recover wallet", source: "Fully Noded wallet backup",
+                                         receiveDescriptor: pair.receive, changeDescriptor: pair.change,
+                                         label: "Recovered wallet", details: details, confirmTitle: "Recover wallet")) { [weak self] label in
+            self?.performImport(backup: backup, label: label)
+        }
     }
 
     // MARK: - Recovering a wallet backup
@@ -747,7 +702,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     // 3. importdescriptors for every descriptor the node's wallet doesn't already have.
     // 4. Save (or update) the Fully Noded wallet record with the backup attached.
 
-    private func performImport(backup: WalletBackup) {
+    private func performImport(backup: WalletBackup, label: String) {
         guard let pair = backup.walletDescriptors() else {
             showAlert(title: "Can't recover this backup",
                       message: "It has no active HD (ranged) receive descriptor, so there's no wallet to recreate.")
@@ -760,7 +715,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         let fnWallet: [String: Any] = [
             "id": UUID(),
             "name": name,
-            "label": "Recovered wallet",
+            "label": label,
             "receiveDescriptor": pair.receive,
             "changeDescriptor": pair.change,
             "walletBackup": backupData,
@@ -968,7 +923,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 }
                 
                 if descriptors.count > 1 {
-                    self.prompToChoosePrimaryDesc(descriptors: descriptors)
+                    self.prompToChoosePrimaryDesc(descriptors: descriptors, source: "UR QR code")
                 } else {
                     let desc = Descriptor("\(descriptors[0])")
                     if desc.isCosigner {
@@ -983,7 +938,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         }
                     } else {
                         // Same as a pasted descriptor: show it and its addresses before importing.
-                        self.showDescriptorImport(descriptors[0])
+                        self.showDescriptorImport(descriptors[0], source: "UR QR code")
                     }
                 }
             }
@@ -1012,7 +967,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                     return
                 }
                 
-                self.prompToChoosePrimaryDesc(descriptors: [bip84!, bip86!, segwitCosigner!, taprootCosigner!])
+                self.prompToChoosePrimaryDesc(descriptors: [bip84!, bip86!, segwitCosigner!, taprootCosigner!], source: "Seed words")
             }
             
         } else if let coldcardSparrowExport = try? jsonDecoder.decode(ColdcardSparrowExport.self, from: item.utf8),
@@ -1041,7 +996,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                     descriptors.append(desc)
                 }
                 
-                self.prompToChoosePrimaryDesc(descriptors: descriptors)
+                self.prompToChoosePrimaryDesc(descriptors: descriptors, source: "Coldcard / Sparrow export")
             }
             
         } else if let coldcardMultisigExport = try? jsonDecoder.decode(ColdcardMultiSigExport.self, from: item.utf8),
@@ -1056,20 +1011,20 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
 
         } else if let dict = try? JSONSerialization.jsonObject(with: item.utf8, options: []) as? [String:Any],
                   dict["desc"] is String || !WalletImport(dict).descriptors.isEmpty {
-            if dict["desc"] is String {
-                self.importAccountMap(dict)
+            if let desc = dict["desc"] as? String {
+                showDescriptorImport(desc, source: "Wallet export")
             } else {
                 let descriptors = WalletImport(dict).descriptors
                 if descriptors.count == 1 {
-                    showDescriptorImport(descriptors[0])
+                    showDescriptorImport(descriptors[0], source: "Wallet export")
                 } else {
-                    self.prompToChoosePrimaryDesc(descriptors: descriptors)
+                    self.prompToChoosePrimaryDesc(descriptors: descriptors, source: "Wallet export")
                 }
             }
 
         } else if let accountMap = TextFileImport.parse(item).accountMap,
                   let descriptor = accountMap["descriptor"] as? String {
-            showDescriptorImport(descriptor)
+            showDescriptorImport(descriptor, source: "Wallet text file")
             
         } else if item.contains("Format: "), let error = TextFileImport.parse(item).errMessage {
             showAlert(vc: self, title: "Unsupported wallet file.", message: error)
@@ -1116,9 +1071,9 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         navigationController?.pushViewController(vc, animated: true)
     }
     
-    private func showDescriptorImporter() {
-        let vc = ImportXpubViewController()
-        vc.descriptor = descriptor
-        navigationController?.pushViewController(vc, animated: true)
+    private func showDescriptorImporter(source: String) {
+        guard let descriptor = descriptor else { return }
+        importAccountMap(["descriptor": descriptor.string, "blockheight": 0, "watching": [] as [String], "label": "Descriptor import"],
+                         source: source)
     }
 }

@@ -165,7 +165,7 @@
 		D0A7CF73227967F900B683A0 /* AddressParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A7CF72227967F900B683A0 /* AddressParser.swift */; };
 		D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */; };
 		D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */; };
-		D0B80A892516020A006B88F0 /* ImportXpubViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B80A882516020A006B88F0 /* ImportXpubViewController.swift */; };
+		D0B80A892516020A006B88F0 /* ImportReviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B80A882516020A006B88F0 /* ImportReviewViewController.swift */; };
 		D0C1F9152531E71F0079C2B8 /* URHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C1F9142531E71F0079C2B8 /* URHelper.swift */; };
 		D0C20ED224A6DB9D00C62AA4 /* BlockchainInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED124A6DB9D00C62AA4 /* BlockchainInfo.swift */; };
 		D0C20ED424A6DFE600C62AA4 /* PeerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED324A6DFE500C62AA4 /* PeerInfo.swift */; };
@@ -391,7 +391,7 @@
 		D0AC9D31234D079000290550 /* FullyNoded.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FullyNoded.entitlements; sourceTree = "<group>"; };
 		D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRawTxViewController.swift; sourceTree = "<group>"; };
-		D0B80A882516020A006B88F0 /* ImportXpubViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportXpubViewController.swift; sourceTree = "<group>"; };
+		D0B80A882516020A006B88F0 /* ImportReviewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportReviewViewController.swift; sourceTree = "<group>"; };
 		D0C1F9142531E71F0079C2B8 /* URHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URHelper.swift; sourceTree = "<group>"; };
 		D0C20ED124A6DB9D00C62AA4 /* BlockchainInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockchainInfo.swift; sourceTree = "<group>"; };
 		D0C20ED324A6DFE500C62AA4 /* PeerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerInfo.swift; sourceTree = "<group>"; };
@@ -515,7 +515,7 @@
 				D088E9D724FBA4E00097D755 /* CreateMultisigViewController.swift */,
 				D0C20EE624A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift */,
 				D09A330024A848DA009FA0B2 /* SeedDisplayerViewController.swift */,
-				D0B80A882516020A006B88F0 /* ImportXpubViewController.swift */,
+				D0B80A882516020A006B88F0 /* ImportReviewViewController.swift */,
 			);
 			path = "Wallet Creators";
 			sourceTree = "<group>";
@@ -1288,7 +1288,7 @@
 				0A1F110526A2783000BE2707 /* UseInfo.swift in Sources */,
 				D02094F02257FB78002E8E7A /* FirstTime.swift in Sources */,
 				D0C1F9152531E71F0079C2B8 /* URHelper.swift in Sources */,
-				D0B80A892516020A006B88F0 /* ImportXpubViewController.swift in Sources */,
+				D0B80A892516020A006B88F0 /* ImportReviewViewController.swift in Sources */,
 				0A1F10D826A1A54E00BE2707 /* ChildIndex.swift in Sources */,
 				D0C20EE024A6EF3800C62AA4 /* Balances.swift in Sources */,
 				D08A92B7233E113B00409D6E /* LockedViewController.swift in Sources */,

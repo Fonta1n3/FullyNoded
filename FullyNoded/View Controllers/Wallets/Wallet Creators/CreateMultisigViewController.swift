@@ -561,8 +561,6 @@ class CreateMultisigViewController: UIViewController {
             return
         }
 
-        showActivity("creating multisig wallet...")
-
         let path = derivationPath.replacingOccurrences(of: "m/", with: "")
         let descriptorKeys = cosigners.map { "[\($0.fingerprint)/\(path)]\($0.xpub)/0/*" }.joined(separator: ",")
         let n = cosigners.count
@@ -576,20 +574,27 @@ class CreateMultisigViewController: UIViewController {
         if isTaproot {
             // create a dummy key for the internal key so its a true multisig.
             guard let dummyKey = WalletLogic.shared.dummyKey() else {
-                hideActivity()
                 showAlert(vc: self, title: "", message: "Unable to derive a dummy key for taproot multisig.")
                 return
             }
             rawPrimDesc = "tr(\(dummyKey),multi_a(\(m),\(descriptorKeys)))"
         }
 
-        let accountMap = ["descriptor": rawPrimDesc, "label": "\(m) of \(n)", "blockheight": blockheight] as [String: Any]
+        let review = ImportReview(title: "Create \(m) of \(n) multisig", source: "Multisig creator · \(n) cosigners",
+                                  receiveDescriptor: rawPrimDesc, label: "\(m) of \(n)", confirmTitle: "Create wallet")
+        let blockheight = self.blockheight
+        presentImportReview(review) { [weak self] label in
+            self?.createNow(["descriptor": rawPrimDesc, "label": label, "blockheight": blockheight], mofn: "\(m) of \(n)")
+        }
+    }
 
+    private func createNow(_ accountMap: [String: Any], mofn: String) {
+        showActivity("creating multisig wallet...")
         ImportWallet.accountMap(accountMap) { [weak self] (success, errorDescription) in
             guard let self = self else { return }
 
             if success {
-                self.showCreated(mofn: "\(m) of \(n)")
+                self.showCreated(mofn: mofn)
             } else {
                 self.hideActivity()
                 showAlert(vc: self, title: "There was an error!", message: "Something went wrong during the wallet creation process: \(errorDescription ?? "unknown error")")

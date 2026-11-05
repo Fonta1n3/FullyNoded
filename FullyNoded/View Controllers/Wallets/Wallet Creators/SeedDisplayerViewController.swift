@@ -185,24 +185,6 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
     }
         
-    private func importAccountMap(_ accountMap: [String:Any]) {
-        ImportWallet.accountMap(accountMap) { (success, errorDescription) in
-            if success {
-                self.hideActivity()
-                
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                }
-                
-               // showAlert(vc: self, title: "Success ✓", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!\n\nFully Noded encrypts and stores your signer, you can access it and delete it in the Signer view, if you delete the signer Fully Noded will not be able to sign transactions.")
-                SuccessView.show(in: self, title: "Wallet created")
-            } else {
-                UserDefaults.standard.removeObject(forKey: "walletName")
-                self.showError(error: "Error creating wallet: \(errorDescription ?? "Unknown error.")")
-            }
-        }
-    }
-    
     private func getMasterKey(seed: String) {
         if let masterKey = Keys.masterKey(words: seed, coinType: coinType, passphrase: "") {
             getAccountXpub(masterKey: masterKey)

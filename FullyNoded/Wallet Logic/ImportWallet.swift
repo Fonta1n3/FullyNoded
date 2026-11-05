@@ -11,7 +11,6 @@ import Foundation
 class ImportWallet {
     
     static var index = 0
-    static var isColdcard = false
     static var version: Int = 0
     static var isHot = false
             
@@ -193,22 +192,14 @@ class ImportWallet {
         return "FullyNoded-\(Crypto.sha256hash(checksumless))"
     }
     
-    class func coldcard(dict: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
-        isColdcard = true
-        
-        var wallet = [String:Any]()
-        wallet["type"] = "Single-Sig"
-        wallet["label"] = "Coldcard"
-        wallet["id"] = UUID()
-        wallet["blockheight"] = 0
-        
-        let fingerprint = dict["xfp"] as! String
-        let bip84 = dict["bip84"] as! NSDictionary
-        let bipr84deriv = (bip84["deriv"] as! String).replacingOccurrences(of: "m", with: fingerprint)
-        let bip84Xpub = (bip84["xpub"] as! String)
-        let bip84DescPrim = "wpkh([\(bipr84deriv.replacingOccurrences(of: "'", with: "h"))]\(bip84Xpub)/0/*)"
-        wallet["descriptor"] = bip84DescPrim
-        accountMap(wallet, completion: completion)
+    /// A Coldcard skeleton export (its BIP84 account) as an account map. nil if it has none.
+    class func coldcardAccountMap(_ dict: [String:Any]) -> [String:Any]? {
+        guard let fingerprint = dict["xfp"] as? String,
+              let bip84 = dict["bip84"] as? [String: Any],
+              let deriv = bip84["deriv"] as? String,
+              let xpub = bip84["xpub"] as? String else { return nil }
+        let origin = deriv.replacingOccurrences(of: "m", with: fingerprint).replacingOccurrences(of: "'", with: "h")
+        return ["descriptor": "wpkh([\(origin)]\(xpub)/0/*)", "label": "Coldcard", "blockheight": 0]
     }
     
     class func createWallet(_ walletName: String, _ password: String, completion: @escaping ((name: String?, errorMessage: String?)) -> Void) {

@@ -84,7 +84,9 @@ final class SuccessView: UIView {
                      secondaryTitle: String?,
                      onSecondary: (() -> Void)?) {
         DispatchQueue.main.async {
-            show(on: viewController.view.window ?? viewController.view, kind: kind, title: title, subtitle: subtitle,
+            // A controller that's off screen (under a pushed one, or already dismissed) has
+            // no window: its view would hide the card and hold up every card queued after it.
+            show(on: viewController.view.window ?? keyWindow ?? viewController.view, kind: kind, title: title, subtitle: subtitle,
                  detail: detail, onDismiss: onDismiss, secondaryTitle: secondaryTitle, onSecondary: onSecondary)
         }
     }
@@ -145,6 +147,12 @@ final class SuccessView: UIView {
         } else {
             queue.removeFirst()()
         }
+    }
+
+    private static var keyWindow: UIWindow? {
+        UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.windows.first { $0.isKeyWindow } }
+            .first
     }
 
     /// Small confirmation that disappears by itself. Safe from any thread.
