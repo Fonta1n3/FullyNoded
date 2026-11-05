@@ -305,8 +305,7 @@ final class WalletSwitcherViewController: UIViewController, UITableViewDelegate,
             select(wallet)
         case .external:
             impact()
-            guard let vc = storyboard?.instantiateViewController(withIdentifier: "ExternalWallets") as? ExternalFNWalletsViewController
-                ?? UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ExternalWallets") as? ExternalFNWalletsViewController else { return }
+            let vc = ExternalFNWalletsViewController()
             vc.externalWallets = external
             navigationController?.pushViewController(vc, animated: true)
         }
@@ -352,7 +351,7 @@ final class WalletSwitcherViewController: UIViewController, UITableViewDelegate,
     }
 
     private func showDetails(_ wallet: Wallet) {
-        guard let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "WalletDetail") as? WalletDetailViewController else { return }
+        let vc = WalletDetailViewController()
         vc.walletId = wallet.id
         navigationController?.pushViewController(vc, animated: true)
     }

@@ -35,8 +35,7 @@ public struct Create_Wallet_Param: CustomStringConvertible {
       6. descriptors             (boolean, optional, default=true) Create a native descriptor wallet. The wallet will use descriptors internally to handle address creation
       7. load_on_startup         (boolean, optional) Save wallet name to persistent settings and load on startup. True to add wallet to startup list, false to remove, null to leave unchanged.
       8. external_signer          (boolean, optional, default=false) Use an external signer such as a hardware wallet. Requires -signer to be configured. Wallet creation will fail if keys cannot be fetched. Requires disable_private_keys and descriptors set to true.
-      
-     
+
      {\"wallet_name\":\"\(walletName)\",\"avoid_reuse\":true,\"descriptors\":true,\"load_on_startup\":true,\"disable_private_keys\":true}"
      */
     
@@ -151,41 +150,6 @@ public struct Import_Descriptors: CustomStringConvertible {
         
         let requests = dict["requests"] as! [[String:Any]]
         
-        //var parts:[[String:Any]] = []
-//        for request in requests {
-//            let desc = request["desc"] as? String ?? ""
-//            let active = request["active"] as? Bool ?? false
-//            let range = request["range"] as? [Int]
-//            let next_index = request["next_index"] as? Int
-//            let timestamp = request["timestamp"] as? String ?? "now"
-//            let internal_ = request["internal"] as? Bool
-//            let label = request["label"] as? String ?? ""
-//            
-//            if range.count > 0 {
-//                let part = [
-//                    "desc":desc,
-//                    "active":active,
-//                    "range":range,
-//                    "next_index":next_index,
-//                    "timestamp":timestamp,
-//                    "internal":internal_,
-//                ] as [String:Any]
-//                
-//                parts.append(part)
-//            } else {
-//                let part = [
-//                    "desc":desc,
-//                    "active":active,
-//                    "range":range,
-//                    "next_index":next_index,
-//                    "timestamp":timestamp,
-//                    "internal":internal_,
-//                    "label": label
-//                ] as [String:Any]
-//                
-//                parts.append(part)
-//            }
-//        }
         param = [
             "requests": requests
         ]
@@ -464,7 +428,6 @@ public struct Decode_Raw_Tx: CustomStringConvertible {
     let param:[String:Any]
     init(_ dict: [String:Any]) {
         let hexstring = dict["hexstring"] as? String ?? ""
-        //let iswitness = dict["iswitness"] as? Bool
         param = ["hexstring": hexstring]
     }
 }
@@ -716,7 +679,6 @@ public struct Encrypt_Wallet: CustomStringConvertible {
     }
 }
 
-
 public struct Wallet_Change_Passphrase: CustomStringConvertible {
     public var description: String {
         return ""
@@ -733,7 +695,6 @@ public struct Wallet_Change_Passphrase: CustomStringConvertible {
         param = ["oldpassphrase": oldpassphrase, "newpassphrase": newpassphrase]
     }
 }
-
 
 public struct List_Transactions: CustomStringConvertible {
     public var description: String {
@@ -754,7 +715,6 @@ public struct List_Transactions: CustomStringConvertible {
         param = ["count": count, "include_watchonly": include_watchonly]
     }
 }
-
 
 public struct Rescan_Blockchain: CustomStringConvertible {
     public var description: String {
@@ -808,7 +768,6 @@ public struct Set_Ban: CustomStringConvertible {
     }
 }
 
-
 public struct List_Unspent: CustomStringConvertible {
     public var description: String {
         return ""
@@ -846,7 +805,6 @@ public struct List_Unspent: CustomStringConvertible {
     }
 }
 
-
 public struct Join_Psbt: CustomStringConvertible {
     public var description: String {
         return ""
@@ -865,7 +823,6 @@ public struct Join_Psbt: CustomStringConvertible {
         param = ["txs": txs]
     }
 }
-
 
 public struct Finalize_Psbt: CustomStringConvertible {
     public var description: String {
@@ -951,7 +908,6 @@ public struct Create_Psbt: CustomStringConvertible {
         param = p
     }
 }
-
 
 public struct Utxo_Update_Psbt: CustomStringConvertible {
      /*
@@ -1058,18 +1014,4 @@ public struct Scan_Tx_Out: CustomStringConvertible {
     }
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

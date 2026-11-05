@@ -390,7 +390,6 @@ extension VerifyTransactionViewController {
                     let labels = dict["labels"] as? NSArray ?? ["no label"]
                     let desc = dict["desc"] as? String ?? "no descriptor"
                     if let parentDesc = dict["parent_desc"] as? String {
-                        //let parentFnDesc = Descriptor(parentDesc)
                         self.inputTableArray[self.index]["parent_desc"] = parentDesc
                     }
                     var isChange = dict["ischange"] as? Bool ?? false
@@ -412,8 +411,7 @@ extension VerifyTransactionViewController {
                     // Raw wallet facts, for silent payment detection without extra RPCs.
                     self.inputTableArray[self.index]["isMine"] = dict["ismine"] as? Bool ?? false
                     self.inputTableArray[self.index]["walletLabels"] = labels.compactMap { $0 as? String }
-                    
-                    
+
                     if script == "multisig" && self.signedRawTx == "" {
                         self.inputTableArray[self.index]["sigsrequired"] = sigsrequired
                         self.inputTableArray[self.index]["pubkeys"] = pubkeys
@@ -503,7 +501,6 @@ extension VerifyTransactionViewController {
                         self.outputArray[self.index]["label"] = labelsText
                         self.outputArray[self.index]["fingerprint"] = fingerprint
                         self.outputArray[self.index]["desc"] = desc
-                        //self.outputArray[self.index]["parent_desc"] = parentDesc
                         
                         // Currently only verify address if the node knows about it.. otherwise we have to brute force 200k addresses...
                         // will add a dedicated verify button for unsolvable to cross check against all wallets
@@ -629,9 +626,8 @@ extension VerifyTransactionViewController {
             self?.finishActivity()
             self?.announceCreatedTransactionIfNeeded()
         }
-        
-        
-        guard let _ = KeyChain.getData("UnlockPassword") else {
+
+        guard AppAuthentication.hasAppPassword else {
             showAlert(vc: self, title: "You are not using the app securely...", message: "Anyone who gets access to this device will be able to spend your Bitcoin, we urge you to add a lock password via the lock button on the home screen.")
             
             return
@@ -653,8 +649,7 @@ extension VerifyTransactionViewController {
                 self.parsePrevTxOutput(outputs: outputs, vout: vout, txid: txid)
             }
         }
-        
-        
+
         func getRawTx() {
             updateLabel("fetching inputs previous output...")
             MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (response, errorMessage) in
@@ -866,7 +861,7 @@ extension VerifyTransactionViewController {
                                                  desc: input["desc"] as? String ?? "",
                                                  labels: labels)
         }
-        return SilentPaymentSpend.Candidate(txid: txid, vout: vout, outputKey: SPHexFN.encode(decoded.2), info: info)
+        return SilentPaymentSpend.Candidate(txid: txid, vout: vout, outputKey: Hex.encode(decoded.2), info: info)
     }
 
     /// Wallet info per input ("txid:vout" lowercase), so signing doesn't look it up again.

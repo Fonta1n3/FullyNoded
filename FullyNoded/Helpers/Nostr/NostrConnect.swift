@@ -113,35 +113,6 @@ enum NostrSecp {
     #endif
 }
 
-// MARK: - Hex
-
-enum NostrHex {
-    static func encode<D: Sequence>(_ bytes: D) -> String where D.Element == UInt8 {
-        bytes.map { String(format: "%02x", $0) }.joined()
-    }
-
-    static func decode(_ hex: String) -> Data? {
-        let chars = Array(hex.lowercased().utf8)
-        guard chars.count % 2 == 0 else { return nil }
-        var out = Data(capacity: chars.count / 2)
-        var i = 0
-        while i < chars.count {
-            guard let hi = nibble(chars[i]), let lo = nibble(chars[i + 1]) else { return nil }
-            out.append(hi << 4 | lo)
-            i += 2
-        }
-        return out
-    }
-
-    private static func nibble(_ c: UInt8) -> UInt8? {
-        switch c {
-        case 48...57: return c - 48
-        case 97...102: return c - 87
-        default: return nil
-        }
-    }
-}
-
 // MARK: - Keys
 
 /// A nostr identity: 32-byte secret and its x-only public key (hex, as nostr writes it).
@@ -152,11 +123,11 @@ struct NostrKeys {
     init?(secret: Data) {
         guard secret.count == 32, let xonly = NostrSecp.xonlyPublicKey(secret: secret) else { return nil }
         self.secret = secret
-        self.publicKey = NostrHex.encode(xonly)
+        self.publicKey = Hex.encode(xonly)
     }
 
     init?(secretHex: String) {
-        guard let data = NostrHex.decode(secretHex) else { return nil }
+        guard let data = Hex.decode(secretHex) else { return nil }
         self.init(secret: data)
     }
 
@@ -167,7 +138,7 @@ struct NostrKeys {
         return NostrKeys(secret: Data(bytes))
     }
 
-    var secretHex: String { NostrHex.encode(secret) }
+    var secretHex: String { Hex.encode(secret) }
 }
 
 // MARK: - NIP-44 v2
@@ -189,7 +160,7 @@ enum NIP44 {
 
     /// HKDF-extract(salt: "nip44-v2", IKM: x of secret·Pub).
     static func conversationKey(secret: Data, publicKey: String) throws -> Data {
-        guard let x = NostrHex.decode(publicKey), x.count == 32,
+        guard let x = Hex.decode(publicKey), x.count == 32,
               let sharedX = NostrSecp.sharedX(secret: secret, xonly: x) else {
             throw Failure.invalidKey
         }
@@ -313,26 +284,26 @@ struct NostrEvent: Codable, Equatable {
     static func computeID(pubkey: String, createdAt: Int, kind: Int, tags: [[String]], content: String) -> String? {
         let array: [Any] = [0, pubkey, createdAt, kind, tags, content]
         guard let data = try? JSONSerialization.data(withJSONObject: array, options: [.withoutEscapingSlashes]) else { return nil }
-        return NostrHex.encode(CryptoKit.SHA256.hash(data: data))
+        return Hex.encode(CryptoKit.SHA256.hash(data: data))
     }
 
     /// A signed event from `keys`.
     static func make(keys: NostrKeys, kind: Int, tags: [[String]], content: String, createdAt: Int = Int(Date().timeIntervalSince1970)) -> NostrEvent? {
         guard let id = computeID(pubkey: keys.publicKey, createdAt: createdAt, kind: kind, tags: tags, content: content),
-              let message = NostrHex.decode(id).map(Array.init) else { return nil }
+              let message = Hex.decode(id).map(Array.init) else { return nil }
         var aux = [UInt8](repeating: 0, count: 32)
         guard SecRandomCopyBytes(kSecRandomDefault, 32, &aux) == errSecSuccess,
               let sig = NostrSecp.sign(message: message, secret: keys.secret, auxRand: aux) else { return nil }
         return NostrEvent(id: id, pubkey: keys.publicKey, created_at: createdAt, kind: kind, tags: tags,
-                          content: content, sig: NostrHex.encode(sig))
+                          content: content, sig: Hex.encode(sig))
     }
 
     /// The id matches the content and the signature is the author's.
     var isValid: Bool {
         guard id == Self.computeID(pubkey: pubkey, createdAt: created_at, kind: kind, tags: tags, content: content),
-              let pub = NostrHex.decode(pubkey), pub.count == 32,
-              let sigData = NostrHex.decode(sig), sigData.count == 64,
-              let message = NostrHex.decode(id).map(Array.init) else { return false }
+              let pub = Hex.decode(pubkey), pub.count == 32,
+              let sigData = Hex.decode(sig), sigData.count == 64,
+              let message = Hex.decode(id).map(Array.init) else { return false }
         return NostrSecp.verify(signature: sigData, message: message, xonly: pub)
     }
 
@@ -408,7 +379,7 @@ struct NostrConnectURI: Equatable {
         let s = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let c = URLComponents(string: s), let scheme = c.scheme?.lowercased(),
               scheme == Self.scheme || scheme == Self.lightningScheme,
-              let host = c.host?.lowercased(), host.count == 64, NostrHex.decode(host) != nil else { return nil }
+              let host = c.host?.lowercased(), host.count == 64, Hex.decode(host) != nil else { return nil }
         let items = c.queryItems ?? []
         let relays = items.filter { $0.name == "relay" }.compactMap { $0.value }
             .filter { $0.lowercased().hasPrefix("ws://") || $0.lowercased().hasPrefix("wss://") }
@@ -416,7 +387,7 @@ struct NostrConnectURI: Equatable {
               let secret = items.first(where: { $0.name == "secret" })?.value?.lowercased(),
               NostrKeys(secretHex: secret) != nil else { return nil }
         let cert = items.first { $0.name == "cert" }?.value?.lowercased()
-        guard cert == nil || (cert!.count == 64 && NostrHex.decode(cert!) != nil) else { return nil }
+        guard cert == nil || (cert!.count == 64 && Hex.decode(cert!) != nil) else { return nil }
         self.init(bridgePubkey: host, relays: relays, clientSecret: secret,
                   label: items.first { $0.name == "label" }?.value,
                   chain: items.first { $0.name == "chain" }?.value,
@@ -431,7 +402,7 @@ struct NostrConnectURI: Equatable {
 enum NostrTLS {
     /// SHA-256 (hex) of a certificate's DER bytes.
     static func fingerprint(_ certificate: SecCertificate) -> String {
-        NostrHex.encode(SHA256.hash(data: SecCertificateCopyData(certificate) as Data))
+        Hex.encode(SHA256.hash(data: SecCertificateCopyData(certificate) as Data))
     }
 
     static func evaluate(_ challenge: URLAuthenticationChallenge, pin: String?) -> (URLSession.AuthChallengeDisposition, URLCredential?) {

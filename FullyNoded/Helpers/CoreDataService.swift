@@ -12,174 +12,113 @@ import UIKit
 
 class CoreDataService {
     
+    /// The app's Core Data context. Only used on the main queue.
+    private static var context: NSManagedObjectContext? {
+        (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext
+    }
+    
+    private static func save(_ context: NSManagedObjectContext) -> Bool {
+        do {
+            try context.save()
+            return true
+        } catch {
+            return false
+        }
+    }
+    
+    /// The saved objects of `entity` whose "id" is `id`.
+    private static func objects(id: UUID, entity: ENTITY, in context: NSManagedObjectContext) -> [NSManagedObject] {
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entity.rawValue)
+        fetchRequest.returnsObjectsAsFaults = false
+        let results = (try? context.fetch(fetchRequest)) ?? []
+        return results.filter { $0.value(forKey: "id") as? UUID == id }
+    }
+    
     class func saveEntity(dict: [String:Any], entityName: ENTITY, completion: @escaping ((Bool)) -> Void) {
         DispatchQueue.main.async {
-
-            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
-                completion(false)
-                return
-            }
-            
-            let context = appDelegate.persistentContainer.viewContext
-
-            guard let entity = NSEntityDescription.entity(forEntityName: entityName.rawValue, in: context) else {
+            guard !dict.isEmpty, let context = context,
+                  let entity = NSEntityDescription.entity(forEntityName: entityName.rawValue, in: context) else {
                 completion(false)
                 return
             }
 
-            let credential = NSManagedObject(entity: entity, insertInto: context)
-            var success = false
-
+            let object = NSManagedObject(entity: entity, insertInto: context)
             for (key, value) in dict {
-                credential.setValue(value, forKey: key)
-                do {
-                    try context.save()
-                    success = true
-                } catch {
-                }
+                object.setValue(value, forKey: key)
             }
-            completion(success)
+            completion(save(context))
         }
     }
     
     class func retrieveEntity(entityName: ENTITY, completion: @escaping (([[String:Any]]?)) -> Void) {
         DispatchQueue.main.async {
-            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            guard let context = context else {
                 completion(nil)
                 return
             }
             
-            let context = appDelegate.persistentContainer.viewContext
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName.rawValue)
             fetchRequest.returnsObjectsAsFaults = false
             fetchRequest.resultType = .dictionaryResultType
-            
-            do {
-                if let results = try context.fetch(fetchRequest) as? [[String:Any]] {
-                    completion(results)
-                }
-            } catch {
-                completion(nil)
-            }
+            completion((try? context.fetch(fetchRequest)) as? [[String:Any]])
         }
     }
     
     class func deleteAllData(entity: ENTITY, completion: @escaping ((Bool)) -> Void) {
         DispatchQueue.main.async {
-            
-            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            guard let context = context else {
                 completion(false)
                 return
             }
             
-            let managedContext = appDelegate.persistentContainer.viewContext
-            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entity.rawValue)
-            fetchRequest.returnsObjectsAsFaults = false
-            
-            do {
-                let stuff = try managedContext.fetch(fetchRequest)
-                for thing in stuff as! [NSManagedObject] {
-                    managedContext.delete(thing)
-                }
-                try managedContext.save()
-                completion(true)
-            } catch {
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entity.rawValue)
+            guard let objects = try? context.fetch(fetchRequest) else {
                 completion(false)
+                return
             }
+            objects.forEach(context.delete)
+            completion(save(context))
         }
     }
     
-    class func update(id: UUID, keyToUpdate: String, newValue: Any, entity: ENTITY, completion: @escaping ((Bool)) -> Void) {
+    /// Sets `keyToUpdate` on the object with this id; nil clears it.
+    /// `completion(false)` if there's no such object.
+    class func update(id: UUID, keyToUpdate: String, newValue: Any?, entity: ENTITY, completion: @escaping ((Bool)) -> Void) {
         DispatchQueue.main.async {
-            
-            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            guard let context = context else {
                 completion(false)
                 return
             }
             
-            let context = appDelegate.persistentContainer.viewContext
-            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entity.rawValue)
-            fetchRequest.returnsObjectsAsFaults = false
-            
-            guard let results = try? context.fetch(fetchRequest) as [NSManagedObject], results.count > 0 else {
+            let matches = objects(id: id, entity: entity, in: context)
+            guard !matches.isEmpty else {
                 completion(false)
                 return
             }
-            
-            for data in results {
-                if id == data.value(forKey: "id") as? UUID {
-                    data.setValue(newValue, forKey: keyToUpdate)
-                    do {
-                        try context.save()
-                        completion(true)
-                    } catch {
-                        completion(false)
-                    }
-                }
-            }
+            matches.forEach { $0.setValue(newValue, forKey: keyToUpdate) }
+            completion(save(context))
         }
     }
     
     class func deleteValue(id: UUID, keyToDelete: String, entity: ENTITY, completion: @escaping ((Bool)) -> Void) {
-        DispatchQueue.main.async {
-            
-            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
-                completion(false)
-                return
-            }
-            
-            let context = appDelegate.persistentContainer.viewContext
-            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entity.rawValue)
-            fetchRequest.returnsObjectsAsFaults = false
-            
-            guard let results = try? context.fetch(fetchRequest) as [NSManagedObject], results.count > 0 else {
-                completion(false)
-                return
-            }
-            
-            for data in results {
-                if id == data.value(forKey: "id") as? UUID {
-                    data.setValue(nil, forKey: keyToDelete)
-                    do {
-                        try context.save()
-                        completion(true)
-                    } catch {
-                        completion(false)
-                    }
-                }
-            }
-        }
+        update(id: id, keyToUpdate: keyToDelete, newValue: nil, entity: entity, completion: completion)
     }
     
+    /// `completion(false)` if there's no object with this id.
     class func deleteEntity(id: UUID, entityName: ENTITY, completion: @escaping ((Bool)) -> Void) {
         DispatchQueue.main.async {
-            
-            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            guard let context = context else {
                 completion(false)
                 return
             }
             
-            let context = appDelegate.persistentContainer.viewContext
-            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName.rawValue)
-            fetchRequest.returnsObjectsAsFaults = false
-            
-            guard let results = try? context.fetch(fetchRequest) as [NSManagedObject], results.count > 0 else {
+            let matches = objects(id: id, entity: entityName, in: context)
+            guard !matches.isEmpty else {
                 completion(false)
                 return
             }
-            
-            for (index, data) in results.enumerated() {
-                if id == data.value(forKey: "id") as? UUID {
-                    context.delete(results[index] as NSManagedObject)
-                    do {
-                        try context.save()
-                        completion(true)
-                    } catch {
-                        completion(false)
-                    }
-                }
-            }
+            matches.forEach(context.delete)
+            completion(save(context))
         }
     }
-    
 }

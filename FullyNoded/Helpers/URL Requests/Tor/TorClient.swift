@@ -68,7 +68,6 @@ class TorClient: NSObject {
     
     // Start the tor client.
     func start(delegate: OnionManagerDelegate?) {
-        //session.delegate = self
         weak var weakDelegate = delegate
         state = .started
         
@@ -111,11 +110,8 @@ class TorClient: NSObject {
                     "DisableDebuggerAttachment": "1",
                     "SafeLogging": "1",
                     "HTTPTunnelPort": "\(Self.httpTunnelPort)"
-                    //"ExcludeExitNodes": "1",
-                    //"StrictNodes": "1"
                 ]
                 
-                //self?.config.arguments = ["--defaults-torrc \(NSTemporaryDirectory()).torrc"]
                 self.config.cookieAuthentication = true
                 self.config.dataDirectory = URL(fileURLWithPath: self.torPath())
                 self.config.controlSocket = self.config.dataDirectory?.appendingPathComponent("cp")
@@ -286,8 +282,7 @@ class TorClient: NSObject {
             return "\(NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? "")/tor"
         #endif
     }
-        
-    
+
     private func createAuthDirectory() -> String {
         // Create tor v3 auth directory if it does not yet exist
         let authPath = URL(fileURLWithPath: self.torPath(), isDirectory: true).appendingPathComponent("onion_auth", isDirectory: true).path
@@ -360,7 +355,4 @@ class TorClient: NSObject {
         }
     }
     
-    func turnedOff() -> Bool {
-        return false
-    }
 }

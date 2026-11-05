@@ -11,10 +11,11 @@ import UIKit
 
 /// Shows a QR (static, or an animated UR for PSBTs and long payloads) with copy / share.
 ///
-/// The storyboard scene ("QRDisplayer") only supplies the class; the layout is built in code
-/// in the app's cypherpunk theme. Callers set `text` / `psbt` / `txn`, `headerText`,
+/// Built in code in the app's cypherpunk theme. Callers set `text` / `psbt` / `txn`, `headerText`,
 /// `headerIcon`, `descriptionText` and optionally `isUR` before it appears, as before.
 class QRDisplayerViewController: UIViewController {
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
 
     var text = ""
     var psbt = ""
@@ -23,7 +24,6 @@ class QRDisplayerViewController: UIViewController {
     var descriptionText = ""
     var headerIcon: UIImage!
     let qrGenerator = QRGenerator()
-    //var isBbqr = false
     var isUR = false
     /// Accent for this screen (the signer screens use their purple).
     var tint: WalletTheme.Tint = .wallet
@@ -36,13 +36,6 @@ class QRDisplayerViewController: UIViewController {
     private var isPaused = false
 
     private var originalQrText = ""
-
-    // Storyboard outlets: still connected (the scene sets them), but the scene's views are
-    // replaced by the layout below.
-    @IBOutlet weak var imageView: UIImageView!
-    @IBOutlet weak var textView: UITextView!
-    @IBOutlet weak var headerLabel: UILabel!
-    @IBOutlet weak var headerImage: UIImageView!
 
     private let qrImageView = UIImageView()
     private let qrFrame = UIView()
@@ -64,9 +57,7 @@ class QRDisplayerViewController: UIViewController {
 
         buildLayout()
 
-        /*if isBbqr {
-            ...
-        } else */if isUR {
+        if isUR {
             showActivity("loading...")
 
             if psbt != "" {
@@ -124,7 +115,6 @@ class QRDisplayerViewController: UIViewController {
         text = ""
         psbt = ""
         txn = ""
-        //isBbqr = false
         isUR = false
         partIndex = 0
         parts.removeAll()
@@ -140,8 +130,6 @@ class QRDisplayerViewController: UIViewController {
         view.backgroundColor = WalletTheme.bg
         view.tintColor = tint.accent
         WalletTheme.styleNavigation(navigationItem, tint: tint)
-        // The scene's own views are replaced by this layout.
-        view.subviews.forEach { $0.removeFromSuperview() }
 
         // Header: icon + title.
         iconView.image = (headerIcon ?? UIImage(systemName: "qrcode"))?.withRenderingMode(.alwaysTemplate)
@@ -386,7 +374,7 @@ class QRDisplayerViewController: UIViewController {
         present(viewer, animated: true)
     }
 
-    @IBAction func closeAction(_ sender: Any) {
+    @objc func closeAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             self?.dismiss(animated: true, completion: nil)
         }

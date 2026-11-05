@@ -204,8 +204,7 @@ extension VerifyTransactionViewController {
             addressQrButton.restorationIdentifier = inputAddress
             getAddressInfoButton.restorationIdentifier = inputAddress
             signButton.restorationIdentifier = parentDesc
-            
-            
+
             copyAddressButton.addTarget(self, action: #selector(copyAddress(_:)), for: .touchUpInside)
             copyDescButton.addTarget(self, action: #selector(copyDesc(_:)), for: .touchUpInside)
             addressQrButton.addTarget(self, action: #selector(showAddressQr(_:)), for: .touchUpInside)
@@ -257,8 +256,6 @@ extension VerifyTransactionViewController {
                 
             } else {
                 inputTypeLabel.text = "Unknown type."
-                //backgroundView2.backgroundColor = .systemGray
-                //backgroundView1.backgroundColor = .systemGray
                 inputIsOursImage.image = UIImage(systemName: "questionmark.circle")
                 isChangeImageView.image = UIImage(systemName: "questionmark.circle")
                 inputIsOursImage.tintColor = .systemRed
@@ -350,23 +347,19 @@ extension VerifyTransactionViewController {
                 verifiedByFnLabel.text = "Owned by \(walletLabel)."
                 verifiedByFnImageView.image = UIImage(systemName: "checkmark.circle")
                 verifiedByFnImageView.tintColor = .systemGreen
-                //verifiedByFnBackgroundView.backgroundColor = .systemGreen
             } else {
                 verifyOwnerButton.alpha = 1
                 verifiedByFnLabel.text = "Not verified by Fully Noded."
                 verifiedByFnImageView.image = UIImage(systemName: "questionmark.circle")
                 verifiedByFnImageView.tintColor = .systemRed
-                //verifiedByFnBackgroundView.backgroundColor = .systemGray
             }
             
             if signable {
                 signableImageView.image = UIImage(systemName: "signature")
-                //signableBackgroundView.backgroundColor = .systemGreen
                 signerLabel.text = "Signable by \(signer)"
                 signableImageView.tintColor = .systemGreen
             } else {
                 signableImageView.image = UIImage(systemName: "signature")
-                //signableBackgroundView.backgroundColor = .systemRed
                 signerLabel.text = "Unable to determine."
                 signableImageView.tintColor = .systemOrange
             }
@@ -577,7 +570,6 @@ extension VerifyTransactionViewController {
         let label = labelCell.viewWithTag(1) as! UILabel
         let button = labelCell.viewWithTag(2) as! UIButton
         button.addTarget(self, action: #selector(updateLabelMemoAction), for: .touchUpInside)
-        //button.showsTouchWhenHighlighted = true
         label.text = labelText
         label.textColor = .label
         return labelCell
@@ -795,8 +787,7 @@ extension VerifyTransactionViewController {
 
 // MARK: - Programmatic cells
 //
-// The cells keep the view tags the storyboard prototypes used, so the cell builders above
-// look their subviews up exactly as before. New: tag 30 (dust text) on inputs and outputs,
+// The cell builders above look the cells' subviews up by tag. New: tag 30 (dust text) on inputs and outputs,
 // and tags 31 / 32 (signable icon / signer text) on inputs.
 
 enum VerifyCellTag {

@@ -9,7 +9,9 @@
 import UIKit
 
 final class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UINavigationControllerDelegate {
-    
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
+
     private let detailTable = UITableView(frame: .zero, style: .grouped)
     
     var walletId: UUID!
@@ -423,8 +425,7 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
             }
         }
     }
-    
-    
+
     private func applyLocalWallet(_ walletStruct: Wallet) {
         wallet = walletStruct
         originalLabel = wallet.label
@@ -657,14 +658,24 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     }
     
     private func showQr() {
-        //let vc = QRDisplayerViewController()
-        
-        //navigationController?.pushViewController(vc, animated: true)
-        
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.performSegue(withIdentifier: "segueToAccountMap", sender: self)
+            let vc = QRDisplayerViewController()
+            vc.text = self.textToShow
+            
+            if self.outputDescFormat {
+                vc.headerText = "UR Wallet Export Descriptor"
+                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                vc.isUR = true
+            }
+            
+            if self.urBytesFormat {
+                vc.headerText = "Wallet Export UR Bytes"
+                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                vc.isUR = true
+            }
+            self.navigationController?.pushViewController(vc, animated: true)
         }
     }
     
@@ -808,7 +819,6 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         let label = UILabel()
         label.text = "This wallet backup file export is for Fully Noded usage only. It is your wallet's descriptors in JSON data format, encoded as a hex string."
         label.numberOfLines = 0
-        //label.font = .systemFont(ofSize: 15)
         label.font = Cypher.mono(13)
         label.textColor = Cypher.text//.label
 
@@ -831,7 +841,6 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     private func filenameContent() -> UIView {
         let label = UILabel()
         label.text = wallet.name + ".dat"
-        //label.tintColor = Cypher.text
         label.textColor = Cypher.text
         label.numberOfLines = 0
         label.lineBreakMode = .byWordWrapping
@@ -929,37 +938,8 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         return styledCard([field])
     }
     
-    private func textExportContent(_ text: String, section: Section, showExport: Bool) -> UIView {
-        let tv = makeTextView(text)
-        tv.isScrollEnabled = false
-        tv.textContainerInset = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
-        tv.setContentCompressionResistancePriority(.required, for: .vertical)
-
-        var views: [UIView] = [tv]
-        if showExport {
-            let export = makeExportButton()
-            export.tag = section.rawValue
-            export.setContentHuggingPriority(.required, for: .horizontal)
-
-            let exportRow = UIStackView(arrangedSubviews: [UIView(), export])
-            exportRow.axis = .horizontal
-            exportRow.alignment = .center
-            views.append(exportRow)
-        }
-
-        let stack = UIStackView(arrangedSubviews: views)
-        stack.axis = .vertical
-        stack.spacing = 8
-        stack.alignment = .fill
-
-        return styledCard([stack])
-    }
-    
     private func descriptorContent(_ text: String, section: Section, isActive: Bool) -> UIView {
         let status = UILabel()
-        //status.font = .systemFont(ofSize: 15, weight: .medium)
-        //status.text = isActive ? "Active" : "Inactive"
-        //status.textColor = isActive ? Cypher.text : .secondaryLabel
         status.setContentCompressionResistancePriority(.required, for: .vertical)
         status.font = Cypher.mono(13, weight: .semibold)
         status.text = isActive ? "ACTIVE" : "INACTIVE"
@@ -1373,37 +1353,6 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         case .externalRange: return ("Receive address range", UIImage(systemName: "list.number")!)
         case .internalRange: return ("Change address range", UIImage(systemName: "list.number")!)
         case .addressExplorer: return ("Address explorer", UIImage(systemName: "list.number")!)
-        }
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-        switch segue.identifier {
-        case "segueToAccountMap":
-            if let vc = segue.destination as? QRDisplayerViewController {
-                vc.text = textToShow
-                
-                if outputDescFormat {
-                    vc.headerText = "UR Wallet Export Descriptor"
-                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                    vc.isUR = true
-                }
-                
-                if urBytesFormat {
-                    vc.headerText = "Wallet Export UR Bytes"
-                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                    vc.isUR = true
-                }
-            }
-        case"segueToNodelessFromWalletDetail":
-            guard let vc = segue.destination as? NodelessTableViewController else { fallthrough }
-            
-            vc.primaryDescriptor = wallet.receiveDescriptor
-            vc.changeDescriptor = wallet.changeDescriptor
-            
-        default:
-            break
         }
     }
 }

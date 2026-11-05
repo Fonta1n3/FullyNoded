@@ -12,6 +12,33 @@ class Currencies {
     /// The currency codes the app offers, in order.
     static var codes: [String] { currenciesWithCircle.compactMap { $0.keys.first } }
 
+    /// Each currency's text symbol, shown before amounts ("CHF" after them, see `fiatString`).
+    static let symbols: [String: String] = [
+        "USD": "$",
+        "GBP": "£",
+        "EUR": "€",
+        "AUD": "$",
+        "BRL": "R$",
+        "CAD": "$",
+        "CHF": "CHF ",
+        "CLP": "$",
+        "CNY": "¥",
+        "DKK": "kr",
+        "HKD": "$",
+        "INR": "₹",
+        "ISK": "kr",
+        "JPY": "¥",
+        "KRW": "₩",
+        "NZD": "$",
+        "PLN": "zł",
+        "RUB": "₽",
+        "SEK": "kr",
+        "SGD": "$",
+        "THB": "฿",
+        "TRY": "₺",
+        "TWD": "NT$"
+    ]
+
     static let currenciesWithCircle:[[String:String]] = [
         ["USD": "dollarsign.circle"],
         ["GBP": "sterlingsign.circle"],
@@ -36,31 +63,5 @@ class Currencies {
         ["THB": "bahtsign.circle"],
         ["TRY": "turkishlirasign.circle"],
         ["TWD": "dollarsign.circle"]
-    ]
-    
-    static let currenciesWithoutCircle:[[String:String]] = [
-        ["USD": "dollarsign"],
-        ["GBP": "sterlingsign"],
-        ["EUR": "eurosign"],
-        ["AUD":"dollarsign"],
-        ["BRL": "brazilianrealsign"],
-        ["CAD": "dollarsign"],
-        ["CHF": "francsign"],
-        ["CLP": "dollarsign"],
-        ["CNY": "yensign"],
-        ["DKK": "k"],
-        ["HKD": "dollarsign"],
-        ["INR": "indianrupeesign"],
-        ["ISK": "k"],
-        ["JPY": "yensign"],
-        ["KRW": "wonsign"],
-        ["NZD": "dollarsign"],
-        ["PLN": "z"],
-        ["RUB": "rublesign"],
-        ["SEK": "k"],
-        ["SGD": "dollarsign"],
-        ["THB": "bahtsign"],
-        ["TRY": "turkishlirasign"],
-        ["TWD": "dollarsign"]
     ]
 }

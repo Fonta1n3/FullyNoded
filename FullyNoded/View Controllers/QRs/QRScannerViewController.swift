@@ -13,17 +13,16 @@ import UIKit
 /// connect, addresses, xpubs / descriptors, and animated PSBT / transaction QRs (UR, BBQr,
 /// Specter) for signing and verifying.
 ///
-/// The storyboard scene ("QRScanner") only supplies the class and outlets; the layout is
-/// built in code in the app's cypherpunk theme: live preview, a dimmed surround with a
+/// Built in code in the app's cypherpunk theme: live preview, a dimmed surround with a
 /// bracketed scan window and sweeping line, a hint, a progress card for animated QRs, and
 /// torch / photo buttons.
-@available(macCatalyst 14.0, *)
 class QRScannerViewController: UIViewController {
-    
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
+
     var isImporting = false
     private var hasScanned = false
     private let avCaptureSession = AVCaptureSession()
-    private var stringToReturn = ""
     private let imagePicker = UIImagePickerController()
     private var qrString = ""
     private let uploadButton = UIButton(type: .system)
@@ -41,12 +40,6 @@ class QRScannerViewController: UIViewController {
     /// The last code that was rejected (so the same QR isn't reported every frame).
     private var lastRejected: String?
     
-    // Storyboard outlets (still connected; their views are replaced by the layout below).
-    @IBOutlet weak private var scannerView: UIImageView!
-    @IBOutlet weak private var progressDescriptionLabel: UILabel!
-    @IBOutlet weak private var progressView: UIProgressView!
-    @IBOutlet weak var backgroundView: UIVisualEffectView!
-    
     private let tint = WalletTheme.Tint.wallet
     private let previewView = UIView()
     private let previewLayer = AVCaptureVideoPreviewLayer()
@@ -61,10 +54,14 @@ class QRScannerViewController: UIViewController {
     private let permissionCard = UIView()
     private var scanRect: CGRect = .zero
     
-    override func awakeFromNib() {
-        super.awakeFromNib()
+    init() {
+        super.init(nibName: nil, bundle: nil)
         // Edge to edge camera (a sheet would leave the parent showing above it).
         modalPresentationStyle = .fullScreen
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func viewDidLoad() {
@@ -92,7 +89,7 @@ class QRScannerViewController: UIViewController {
     
     override var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
     
-    @IBAction func closeAction(_ sender: Any) {
+    @objc func closeAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -144,8 +141,6 @@ class QRScannerViewController: UIViewController {
         overrideUserInterfaceStyle = .dark
         view.backgroundColor = .black
         view.tintColor = tint.accent
-        // The scene's own views are replaced by this layout.
-        view.subviews.forEach { $0.removeFromSuperview() }
         
         previewView.backgroundColor = .black
         previewView.translatesAutoresizingMaskIntoConstraints = false
@@ -408,10 +403,6 @@ class QRScannerViewController: UIViewController {
         }
     }
     
-    private func didPickImage() {
-        process(text: qrString)
-    }
-    
     @objc func chooseQRCodeFromLibrary() {
         present(imagePicker, animated: true, completion: nil)
     }
@@ -555,7 +546,8 @@ class QRScannerViewController: UIViewController {
         }
     }
     
-    func continousJoiner(parts: [String]) throws -> ((psbt: String?, descriptor: String?)) {
+    /// Joins the BBQr parts read so far, and finishes once they're complete.
+    private func joinBBQr(_ parts: [String]) throws {
         let joiner = BBQR.Joiner()
         
         for part in parts {
@@ -580,15 +572,11 @@ class QRScannerViewController: UIViewController {
                 }
             }
         }
-
-        return ((nil, nil))
     }
     
     private func processBBQr(text: String) {
         let numberOfQrsBase36 = "\(text[4..<6])"
-        //let qrNumberBase36 = "\(text[6..<8])"
         let numberOfQrs = strtoul(numberOfQrsBase36, nil, 36)
-        //let qrNumber = strtoul(qrNumberBase36, nil, 36)
         
         if !bbqrParts.contains(text) {
             bbqrParts.append(text)
@@ -603,11 +591,7 @@ class QRScannerViewController: UIViewController {
             updateProgress(percentageComplete, number)
         }
         
-        guard let result = try? continousJoiner(parts: bbqrParts) else { return }
-        
-        #if DEBUG
-        print("BBQr result: \(result)")
-        #endif
+        try? joinBBQr(bbqrParts)
     }
     
     private func process(text: String) {
@@ -679,26 +663,10 @@ class QRScannerViewController: UIViewController {
     }
     
     private func toggleTorch(on: Bool) {
-        guard let device = AVCaptureDevice.default(for: AVMediaType.video) else { return }
-        
-        if device.hasTorch {
-            do {
-                try device.lockForConfiguration()
-                
-                if on {
-                    device.torchMode = .on
-                } else {
-                    device.torchMode = .off
-                }
-                
-                device.unlockForConfiguration()
-            } catch {
-                print("Torch could not be used")
-            }
-            
-        } else {
-            print("Torch is not available")
-        }
+        guard let device = AVCaptureDevice.default(for: .video), device.hasTorch,
+              (try? device.lockForConfiguration()) != nil else { return }
+        device.torchMode = on ? .on : .off
+        device.unlockForConfiguration()
     }
     
     private func scanQRCode() {
@@ -739,32 +707,20 @@ class QRScannerViewController: UIViewController {
         }
     }
     
+    // Off the main thread: starting and stopping the session blocks.
     private func stopScanner() {
-        DispatchQueue.background(delay: 0.0, completion:  { [weak self] in
-            guard let self = self else { return }
-            self.avCaptureSession.stopRunning()
-        })
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.avCaptureSession.stopRunning()
+        }
     }
     
     private func startScanner() {
-        DispatchQueue.background(delay: 0.0, completion:  { [weak self] in
-            guard let self = self else { return }
-            self.avCaptureSession.startRunning()
-        })
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.avCaptureSession.startRunning()
+        }
     }
 }
 
-// Helper function inserted by Swift 4.2 migrator.
-fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
-    return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
-}
-
-// Helper function inserted by Swift 4.2 migrator.
-fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
-    return input.rawValue
-}
-
-@available(macCatalyst 14.0, *)
 extension QRScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
     
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
@@ -787,14 +743,10 @@ extension QRScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
     }
 }
 
-@available(macCatalyst 14.0, *)
 extension QRScannerViewController: UIImagePickerControllerDelegate {
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        // Local variable inserted by Swift 4.2 migrator.
-        let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
-        
-        guard let pickedImage = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.originalImage)] as? UIImage,
+        guard let pickedImage = info[.originalImage] as? UIImage,
             let detector:CIDetector = CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: [CIDetectorAccuracy:CIDetectorAccuracyHigh]),
             let ciImage:CIImage = CIImage(image:pickedImage),
             let features = detector.features(in: ciImage) as? [CIQRCodeFeature],
@@ -832,18 +784,6 @@ extension QRScannerViewController: UIImagePickerControllerDelegate {
     
 }
 
-extension DispatchQueue {
-
-    static func background(delay: Double = 0.0, background: (()->Void)? = nil, completion: (() -> Void)? = nil) {
-        DispatchQueue.global(qos: .background).async {
-            background?()
-            if let completion = completion {
-                    completion()
-            }
-        }
-    }
-}
-
 extension String {
 
     var length: Int {
@@ -852,14 +792,6 @@ extension String {
 
     subscript (i: Int) -> String {
         return self[i ..< i + 1]
-    }
-
-    func substring(fromIndex: Int) -> String {
-        return self[min(fromIndex, length) ..< length]
-    }
-
-    func substring(toIndex: Int) -> String {
-        return self[0 ..< max(0, toIndex)]
     }
 
     subscript (r: Range<Int>) -> String {
@@ -871,5 +803,4 @@ extension String {
     }
 }
 
-@available(macCatalyst 14.0, *)
 extension QRScannerViewController: UINavigationControllerDelegate {}

@@ -12,8 +12,8 @@ import UIKit
 /// Same structure as the green `Cypher` palette (home, wallet detail) and the purple
 /// `SignerTheme` (signers).
 ///
-/// Most screens are storyboard-built, so instead of rewriting each one the theme walks a
-/// view hierarchy and restyles standard UIKit controls in place:
+/// Screens build plain UIKit controls, and the theme walks the view hierarchy and restyles
+/// them in place:
 ///  - `WalletTheme.apply(to: self, tint:)` at the end of `viewDidLoad`
 ///  - `WalletTheme.styleCell(_:tint:)` from `tableView(_:willDisplay:forRowAt:)`
 ///  - `WalletTheme.styleHeader(_:tint:)` from `tableView(_:willDisplayHeaderView:forSection:)`
@@ -205,9 +205,7 @@ enum WalletTheme {
             layout.selected.titleTextAttributes = [.foregroundColor: Tint.home.accent, .font: mono(10, weight: .semibold)]
         }
         tabBar.standardAppearance = appearance
-        if #available(iOS 15.0, *) {
-            tabBar.scrollEdgeAppearance = appearance
-        }
+        tabBar.scrollEdgeAppearance = appearance
         tabBar.tintColor = Tint.home.accent
         tabBar.unselectedItemTintColor = dim
 
@@ -215,7 +213,7 @@ enum WalletTheme {
         for controller in tabBarController.viewControllers ?? [] {
             guard let item = controller.tabBarItem else { continue }
             let tint = tabTint(for: controller)
-            // Keep the storyboard symbol as the template, so restyling never re-tints a tinted copy.
+            // Keep the original symbol as the template, so restyling never re-tints a tinted copy.
             let base: UIImage?
             if let stored = objc_getAssociatedObject(item, tabImageKey) as? UIImage {
                 base = stored
@@ -347,7 +345,7 @@ enum WalletTheme {
         table.separatorStyle = .none
         table.indicatorStyle = .white
         table.layer.cornerRadius = 0
-        if #available(iOS 15.0, *) { table.sectionHeaderTopPadding = 0 }
+        table.sectionHeaderTopPadding = 0
         if table.style == .grouped, table.tableHeaderView == nil {
             // Grouped tables otherwise add ~35pt of empty space at the top.
             table.tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: CGFloat.leastNonzeroMagnitude))
@@ -428,7 +426,7 @@ enum WalletTheme {
         let isPrimary = button.layer.name == primaryMarker
 
         if var config = button.configuration {
-            // Only real, visible text counts as a title: storyboard / xib icon buttons can carry
+            // Only real, visible text counts as a title: icon buttons can carry
             // an empty attributed title, and those must stay borderless icons.
             let plainTitle = config.title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             let attributedTitle = config.attributedTitle.map { String($0.characters) }?
@@ -736,7 +734,7 @@ enum WalletTheme {
         return background
     }
 
-    /// Restyles a table cell (storyboard, xib or code) as a card. Call it from
+    /// Restyles a table cell as a card. Call it from
     /// `tableView(_:willDisplay:forRowAt:)` so it runs after the cell is configured.
     static func styleCell(_ cell: UITableViewCell, in tableView: UITableView? = nil, tint: Tint = .wallet) {
         // Full-width cards in grouped / plain tables (the table itself is inset); a small

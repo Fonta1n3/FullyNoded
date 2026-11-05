@@ -743,8 +743,8 @@ final class PayjoinNegotiationViewController: UIViewController, UIDocumentPicker
     }
 
     private func showQr(ur: Bool) {
-        guard let pending = pending,
-              let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "QRDisplayer") as? QRDisplayerViewController else { return }
+        guard let pending = pending else { return }
+        let vc = QRDisplayerViewController()
         vc.psbt = pending.base64
         vc.isUR = ur
         vc.tint = .transaction
@@ -771,7 +771,7 @@ final class PayjoinNegotiationViewController: UIViewController, UIDocumentPicker
     }
 
     private func scanSigned() {
-        guard let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "QRScanner") as? QRScannerViewController else { return }
+        let vc = QRScannerViewController()
         vc.fromSignAndVerify = true
         vc.onDoneBlock = { [weak self] text in
             guard let text = text else { return }

@@ -269,8 +269,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     /// Scans a new pairing from Fully Noded Server and swaps it in for this node.
     @objc private func repairAction(_ sender: Any) {
-        guard let vc = UIStoryboard(name: "Main", bundle: nil)
-                .instantiateViewController(withIdentifier: "QRScanner") as? QRScannerViewController else { return }
+        let vc = QRScannerViewController()
         
         vc.isQuickConnect = true
         vc.onDoneBlock = { [weak self] text in
@@ -403,7 +402,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
-    @IBAction func pasteCertAction(_ sender: Any) {
+    @objc func pasteCertAction(_ sender: Any) {
         if let pasted = UIPasteboard.general.string {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -414,7 +413,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
-    @IBAction func deleteCertAction(_ sender: Any) {
+    @objc func deleteCertAction(_ sender: Any) {
         guard let node = selectedNode else { return }
         
         guard let id = node.id, let _ = node.cert else {
@@ -469,11 +468,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         self.present(alert, animated: true)
     }
         
-    @IBAction func showRpcAuthInfoAction(_ sender: Any) {
+    @objc func showRpcAuthInfoAction(_ sender: Any) {
         showAlert(vc: self, title: "RPC Auth", message: "RPC Authentication is much more secure then storing your rpc password in your bitcoin.conf. An attacker can not access your node or derive your rpc password from this text. The rpcauth text displayed in Fully Noded is dynamic, you may see it change and that is OK. If you edit your rpcuser or rpcpassword you will need to export the rpcauth to your bitcoin.conf and restart your node to connect.")
     }
     
-    @IBAction func createRpcPass(_ sender: Any) {
+    @objc func createRpcPass(_ sender: Any) {
         guard let data = Crypto.secret() else { return }
         rpcPassword.text = data.hex
         DispatchQueue.main.async { [weak self] in
@@ -487,7 +486,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
-    @IBAction func exportRpcAuth(_ sender: Any) {
+    @objc func exportRpcAuth(_ sender: Any) {
         guard let rpcAuthText = rpcAuthLabel.text, rpcAuthText != "" else { return }
         
         DispatchQueue.main.async { [weak self] in
@@ -503,8 +502,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             self.present(activityViewController, animated: true) {}
         }
     }
-    
-    
+
     @objc func textFieldDidChange(_ textField: UITextField) {
         if textField == rpcUserField || textField == rpcPassword {
             if rpcUserField.text != "" && rpcPassword.text != "" {
@@ -518,12 +516,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
         }
     }
-        
-    private func hash(_ text: String) -> Data? {
-        return Data(hexString: Crypto.sha256hash(text))
-    }
     
-    @IBAction func showGuideAction(_ sender: Any) {
+    @objc func showGuideAction(_ sender: Any) {
         guard let url = URL(string: "https://github.com/Fonta1n3/FullyNoded/blob/master/Docs/Bitcoin-Core/Connect.md") else {
             showAlert(vc: self, title: "", message: "The web page is not reachable.")
             
@@ -532,9 +526,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         UIApplication.shared.open(url)
     }
-    
-    
-    @IBAction func copyRpcAuthAction(_ sender: Any) {
+
+    @objc func copyRpcAuthAction(_ sender: Any) {
         guard let auth = rpcAuthLabel.text else { return }
         
         UIPasteboard.general.string = auth
@@ -542,18 +535,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         SuccessView.toast("Rpc auth copied", in: self)
     }
     
-    private func encryptCert(_ certText: String) -> Data? {
-        let certData = Data(certText.utf8)
-         
-         guard let encryptedCert = Crypto.encrypt(certData) else {
-             showAlert(vc: self, title: "Error", message: "Unable to encrypt your cert data.")
-             return nil
-         }
-        
-        return encryptedCert
-    }
-    
-    @IBAction func save(_ sender: Any) {
+    @objc func save(_ sender: Any) {
         Task { @MainActor in
             if isNostr {
                 await saveNostrLabel()
@@ -739,7 +721,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
-    @IBAction func showHelpAction(_ sender: Any) {
+    @objc func showHelpAction(_ sender: Any) {
         if isNostr {
             showAlert(vc: self,
                       title: "Nostr Connect",
@@ -751,8 +733,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                   title: "How to connect?",
                   message: "Step 1: Add an rpc user, password (tap the refresh button to create a secure rpc password).\n\nStep 2: Add the address for your node (xxxx.onion:8332 or localhost:8332), tap save.\n\nStep 3: Export the rpc auth text to your bitcoin.conf, save your bitcoin.conf.\n\nStep 4: Restart your node.\n\nStep 5: Ensure the node is activated by tapping it on the Node Manager view. Navigate back to the home screen and tap refresh to connect to your node.")
     }
-    
-    
+
     func configureTapGesture() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard(_:)))
         tapGesture.numberOfTapsRequired = 1
@@ -865,7 +846,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         present(picker, animated: true)
     }
     
-    @IBAction func showFilePickerAction(_ sender: Any) {
+    @objc func showFilePickerAction(_ sender: Any) {
         showCertificatePicker()
     }
 }

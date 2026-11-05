@@ -221,7 +221,7 @@ extension Payjoin {
             // Broadcastable (the node finalizes and accepts it): defends against UTXO probing.
             MakeRPCCall.sharedInstance.executeRPCCommand(method: .finalizepsbt(Finalize_Psbt(["psbt": originalBase64])), walletName: walletName) { response, _ in
                 guard let dict = response as? [String: Any], dict["complete"] as? Bool == true, let originalHex = dict["hex"] as? String,
-                      let signed = try? Payjoin.SignedTx([UInt8](SPHexFN.decode(originalHex) ?? Data())) else {
+                      let signed = try? Payjoin.SignedTx([UInt8](Hex.decode(originalHex) ?? Data())) else {
                     completion(.failure(.rejected("The payment isn't fully signed.")))
                     return
                 }
@@ -267,7 +267,7 @@ extension Payjoin {
                     guard let txid = u["txid"] as? String, let vout = u["vout"] as? Int,
                           let amount = u["amount"] as? Double, let spk = u["scriptPubKey"] as? String,
                           (u["solvable"] as? Bool) == true, (u["desc"] as? String)?.hasPrefix(prefix) == true,
-                          !excluding.contains("\(txid):\(vout)"), let script = SPHexFN.decode(spk) else { return nil }
+                          !excluding.contains("\(txid):\(vout)"), let script = Hex.decode(spk) else { return nil }
                     let sats = Int64((amount * 100_000_000).rounded())
                     return sats >= 10_000 ? Coin(txid: txid, vout: vout, sats: sats, script: [UInt8](script)) : nil
                 }
@@ -308,7 +308,7 @@ extension Payjoin {
             // The new transaction: same version, locktime and sequence; our input at a random spot.
             let ourIndex = Int.random(in: 0...tx.inputs.count)
             let sequence = tx.inputs.first?.sequence ?? [0xFD, 0xFF, 0xFF, 0xFF]
-            let ourOutpoint = Array([UInt8](SPHexFN.decode(coin.txid) ?? Data()).reversed()) + SPWriter.le32(UInt32(coin.vout))
+            let ourOutpoint = Array([UInt8](Hex.decode(coin.txid) ?? Data()).reversed()) + SPWriter.le32(UInt32(coin.vout))
             var inputs = tx.inputs.map { (outpoint: $0.outpoint, sequence: $0.sequence) }
             inputs.insert((ourOutpoint, sequence), at: ourIndex)
             var unsigned = tx.version + SPWriter.compactSize(inputs.count)

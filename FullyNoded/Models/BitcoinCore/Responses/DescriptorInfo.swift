@@ -25,7 +25,6 @@ public struct DescriptorInfo: CustomStringConvertible {
     let issolvable: Bool
     let isrange: Bool
     let descriptor: String
-    //let desc_with_h_checksum: String
     
     init(_ dictionary: [String: Any]) {
         hasprivatekeys = RPCValue.bool(dictionary["hasprivatekeys"]) ?? false

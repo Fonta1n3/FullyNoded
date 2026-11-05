@@ -14,6 +14,8 @@ import Foundation
 import UIKit
 
 class TextModalViewController: UIViewController {
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
 
     private let data: [String: Any]
     private let viewTitle: String
@@ -377,8 +379,4 @@ private enum JSONHighlighter {
 }
 
 extension NSLayoutConstraint {
-    func withPriority(_ priority: UILayoutPriority) -> NSLayoutConstraint {
-        self.priority = priority
-        return self
-    }
 }

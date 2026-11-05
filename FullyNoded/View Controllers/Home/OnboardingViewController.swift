@@ -435,7 +435,7 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
         content.addArrangedSubview(WalletTheme.caption("> STEP 3 OF 3 · DONE", tint: tint))
         content.addArrangedSubview(title("You're all set"))
 
-        let hasLock = KeyChain.getData("UnlockPassword") != nil
+        let hasLock = AppAuthentication.hasAppPassword
         let activeLabel = connectedNodeLabel ?? savedActiveNodeLabel
         let others = savedNodeCount > 1 ? " \(savedNodeCount) nodes saved." : ""
         let nodeRow: UIView
@@ -497,13 +497,12 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
             close(addedNode: connectedNodeLabel != nil)
             return
         }
-        render(KeyChain.getData("UnlockPassword") == nil ? .secure : .done)
+        render(!AppAuthentication.hasAppPassword ? .secure : .done)
     }
 
     private func scanQuickConnect() {
-        guard !isShowingActivity,
-              let scanner = UIStoryboard(name: "Main", bundle: nil)
-                .instantiateViewController(withIdentifier: "QRScanner") as? QRScannerViewController else { return }
+        guard !isShowingActivity else { return }
+        let scanner = QRScannerViewController()
         scanner.isQuickConnect = true
         scanner.onDoneBlock = { [weak self] url in
             guard let self = self, let url = url else { return }
@@ -590,9 +589,7 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
             showAlert(vc: self, title: "Passwords don't match", message: "Enter the same password in both fields.")
             return
         }
-        // Same storage as AppPasswordViewController: sha256 of the password, in the keychain.
-        guard let data = Data(hexString: Crypto.sha256hash(password)),
-              KeyChain.set(data, forKey: "UnlockPassword") else {
+        guard AppAuthentication.setAppPassword(password) else {
             showAlert(vc: self, title: "Error", message: "We couldn't save your password.")
             return
         }

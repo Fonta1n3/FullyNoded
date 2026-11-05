@@ -25,11 +25,9 @@ class WalletLogic {
     typealias BDKDerivationPath = BitcoinDevKit.DerivationPath
     typealias BDKAddress = BitcoinDevKit.Address
     typealias BDKTransaction = BitcoinDevKit.Transaction
-    typealias BDKTxInput = BitcoinDevKit.TxIn
     typealias BDKPsbtInput = BitcoinDevKit.Input
     typealias BDKKeyChain = BitcoinDevKit.KeychainKind
-       
-    
+
     /// BIP341 NUMS point H (x-only, even Y): lift_x(SHA256(G uncompressed)). Nobody
     /// knows its private key.
     static let numsH = "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
@@ -55,7 +53,7 @@ class WalletLogic {
         defer { r.secureZero() }
 
         // K = H + r·G (compressed). Fails only if r ≥ n or K is infinity (negligible).
-        guard let hData = SPHex.decode("02" + WalletLogic.numsH),
+        guard let hData = Hex.decode("02" + WalletLogic.numsH),
               let h = try? P256K.Signing.PublicKey(dataRepresentation: hData, format: .compressed),
               let k = try? h.add(Array(r)) else { return nil }
         let key = Data(k.dataRepresentation)
@@ -604,7 +602,6 @@ class WalletLogic {
         try? WalletLogic.shared.securelyDeleteWallet(name: "temp_wallet")
         return psbt
     }
-    
 
     /// Reveals (up to) the address paying `spk` in `wallet`, so its coins count as the wallet's.
     /// `hint` is the coin's descriptor from listunspent (`…/0/5]…` → external index 5); without
@@ -770,11 +767,6 @@ class WalletLogic {
     enum TimelockedAddressError: Error {
         case unableToGenerateDummyPubkey
         case unsupportedTimelockFormat
-    }
-    
-    enum TimelockedSigningError: Error {
-        case didNotSign
-        case timelockNotMet
     }
     
     /// Verifies LOCALLY (no node involved) that `address` is derived from `fnWallet`'s
@@ -1010,8 +1002,7 @@ class WalletLogic {
         }
         return pk
     }
-    
-    
+
     func extractTimelockPolicyValues(from policyString: String?, hotXfp: String?) -> (topID: String?, subID: String?, timelock: UInt64?, hotFingerprint: String?) {
         guard let policyString,
               let jsonStart = policyString.range(of: "{")?.lowerBound,
@@ -1111,7 +1102,6 @@ class WalletLogic {
         return keys.scanPrivHex
     }
     
-    //enum SilentPaymentFromMnemonic {
     func silentPaymentAddressFromMnemonic(
         mnemonic: String,
         passphrase: String? = nil,
@@ -1141,40 +1131,11 @@ class WalletLogic {
         
         return (
             address: address,
-            scanPrivHex: SPHex.encode(scanPriv),
-            spendPrivHex: SPHex.encode(spendPriv),
-            scanPubHex: SPHex.encode(scanPub),
-            spendPubHex: SPHex.encode(spendPub)
+            scanPrivHex: Hex.encode(scanPriv),
+            spendPrivHex: Hex.encode(spendPriv),
+            scanPubHex: Hex.encode(scanPub),
+            spendPubHex: Hex.encode(spendPub)
         )
-    }
-    //}
-    
-    enum SPHex {
-        static func decode(_ hex: String) -> Data? {
-            let s = hex.trimmingCharacters(in: .whitespacesAndNewlines)
-                .replacingOccurrences(of: "0x", with: "")
-                .lowercased()
-            guard s.count % 2 == 0 else { return nil }
-            var data = Data()
-            data.reserveCapacity(s.count / 2)
-            var idx = s.startIndex
-            while idx < s.endIndex {
-                let next = s.index(idx, offsetBy: 2)
-                guard let b = UInt8(s[idx..<next], radix: 16) else { return nil }
-                data.append(b)
-                idx = next
-            }
-            return data
-        }
-
-        static func encode(_ data: Data) -> String {
-            data.map { String(format: "%02x", $0) }.joined()
-        }
-
-        static func reverse(_ hex: String) -> String? {
-            guard let d = decode(hex) else { return nil }
-            return encode(Data(d.reversed()))
-        }
     }
     
     struct SPError: LocalizedError {

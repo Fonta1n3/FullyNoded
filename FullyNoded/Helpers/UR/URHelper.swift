@@ -61,37 +61,12 @@ class URHelper {
             
         case _ where lowercased.hasPrefix("ur:crypto-output"):
             return parseCryptoOutput(urString)
-            
-//        case _ where lowercased.hasPrefix("ur:crypto-seed"):
-//            guard let words = cryptoSeedToMnemonic(urString) else { return (nil, "Error deriving descriptors from cytpo-seed.") }
-//            
-//            let (bip84, bip86, segwitCosigner, taprootCosigner, message) = Keys.descriptorsFromSigner(signer: words, passphrase: nil)
-//            
-//            guard message == nil else {
-//                //showAlert(vc: self, title: "", message: message!)
-//                return (nil, message)
-//            }
-//            
-//            return ([bip84!, bip86!, segwitCosigner!, taprootCosigner!], nil)
-        
+
         default:
             return (nil, "Unsupported UR type. Please let us know about it on Twitter, Telegram or Github.")
         }
     }
-    
-//    static func cryptoSeedToMnemonic(_ cryptoSeed: String) -> String? {
-//        guard let data = URHelper.urToEntropy(urString: cryptoSeed).data,
-//              let words = Keys.dataToSigner(data) else { return nil }
-//        
-//        return words
-//    }
-    
-//    static func mnemonicToCryptoSeed(_ words: String) -> String? {
-//        guard let entropy = Keys.wordsToEntropy(words) else { return nil }
-//        
-//        return URHelper.entropyToUr(data: entropy.data)
-//    }
-    
+
     static func entropyToUr(data: Data) -> String? {
         let wrapper:CBOR = .map([
             CBOR.unsigned(1) : data.cborData
@@ -184,8 +159,6 @@ class URHelper {
     }
     
     static func parseWPKHCbor(taggedCbor: CBOR) -> (descriptors: [String]?, error: String?) {
-        print("taggedCbor: \(taggedCbor)")
-        
         guard let key = try? HDKey_(taggedCBOR: taggedCbor),
               let origin = key.origin,
               let extKey = key.base58 else {
@@ -682,8 +655,7 @@ class URHelper {
         
         return CBOR.tagged(303, cbor)
     }
-    
-    
+
     static func descriptorToUrHdkey(_ descriptor: Descriptor) -> String? {
         guard let cbor = descriptorToHdKeyCbor(descriptor),
               let rawUr = try? UR(type: "crypto-hdkey", cbor: cbor) else {

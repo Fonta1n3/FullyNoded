@@ -100,9 +100,7 @@ enum Keys {
             
             return (bip84, bip86, segwitCosigner, trCosigner, nil)
         }
-    
-    
-    
+
     // MARK: - Extended keys (BitcoinDevKit)
 
     /// A random receive address (0/0…0/99) of the donation xpub.
@@ -290,7 +288,6 @@ enum Keys {
     static func addressSignable(parentDesc: String, passphrase: String?, completion: @escaping ((signable: Bool, signer: String?)) -> Void) {
         // no path supplied for multisig.
         let fnParentDesc = Descriptor(parentDesc)
-        //let parentDescDerivationArray = fnParentDesc.derivationArray
         var signable = false
         var signerLabel: String?
         
@@ -301,8 +298,7 @@ enum Keys {
                 
                 CoreDataService.retrieveEntity(entityName: .signers) { signers in
                     guard let signers = signers, signers.count > 0 else { completion((false, nil)); return }
-                    
-                    
+
                     for (i, signer) in signers.enumerated() {
                         let signerStruct = SignerStruct(dictionary: signer)
                         
@@ -332,7 +328,6 @@ enum Keys {
                             let plainXpub = Descriptor(derivedAccountXpubDesc).accountXpub
                             
                             if parentDesc.contains(plainXpub) {
-                                //completion((true, signerStruct.label))
                                 signerLabel = signerStruct.label
                                 signable = true
                             }
@@ -351,8 +346,7 @@ enum Keys {
             
             CoreDataService.retrieveEntity(entityName: .signers) { signers in
                 guard let signers = signers, signers.count > 0 else { completion((false, nil)); return }
-                
-                
+
                 for (i, signer) in signers.enumerated() {
                     let signerStruct = SignerStruct(dictionary: signer)
                     
@@ -382,7 +376,6 @@ enum Keys {
                         let plainXpub = Descriptor(derivedAccountXpubDesc).accountXpub
                         
                         if parentDesc.contains(plainXpub) {
-                            //completion((true, signerStruct.label))
                             signerLabel = signerStruct.label
                             signable = true
                         }

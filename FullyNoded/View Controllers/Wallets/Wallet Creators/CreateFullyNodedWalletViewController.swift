@@ -8,16 +8,11 @@
 
 import UIKit
 
-
+/// Create Wallet, built in code (teal WalletTheme, like Create Multisig).
 class CreateFullyNodedWalletViewController: UIViewController, UINavigationControllerDelegate, UIDocumentPickerDelegate {
-    
-    @IBOutlet weak var multiSigOutlet: UIButton!
-    @IBOutlet weak var singleSigOutlet: UIButton!
-    @IBOutlet weak var coreWalletOutlet: UIButton!
-    @IBOutlet weak var pasteOutlet: UIButton!
-    @IBOutlet weak var importFileOutlet: UIButton!
-    @IBOutlet weak var scanQrOutlet: UIButton!
-    
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
+
     var cosigner:Descriptor?
     /// Set only when the current recovery itself created the Core wallet (never for one that
     /// already existed), so a failed recovery can unload exactly what it made.
@@ -28,30 +23,230 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     var deriv = ""
     var descriptor: Descriptor?
     let jsonDecoder = JSONDecoder()
-    var isSegwit = false
+    var isSegwit = true
     var isTaproot = false
     /// Length of the seed the single sig creator generates (12 or 24 words).
-    private var seedWordCount = 24
+    private var seedWordCount = 12
+
+    private let tint = WalletTheme.Tint.create
+    private let scriptControl = UISegmentedControl(items: ["Segwit", "Taproot"])
+    private let wordsControl = UISegmentedControl(items: ["12 words", "24 words"])
+    private let singleSigHint = UILabel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.delegate = self
-        coreWalletOutlet.clipsToBounds = true
-        pasteOutlet.clipsToBounds = true
-        importFileOutlet.clipsToBounds = true
-        scanQrOutlet.clipsToBounds = true
-        coreWalletOutlet.layer.cornerRadius = 8
-        pasteOutlet.layer.cornerRadius = 8
-        importFileOutlet.layer.cornerRadius = 8
-        scanQrOutlet.layer.cornerRadius = 8
-        singleSigOutlet.layer.cornerRadius = 8
-        multiSigOutlet.layer.cornerRadius = 8
+        navigationItem.title = "Create Wallet"
         
         // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
         WalletTheme.apply(to: self, tint: .create)
+        setupUI()
+        refreshSingleSig()
     }
+
+    // MARK: - Layout
+
+    private func setupUI() {
+        let scrollView = UIScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.alwaysBounceVertical = true
+        view.addSubview(scrollView)
+
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 12
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(stack)
+
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+            stack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 12),
+            stack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -16),
+            stack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -32),
+            stack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -32)
+        ])
+
+        // SINGLE SIG: script and seed length picked here, then one button.
+        WalletTheme.style(scriptControl, tint: tint)
+        WalletTheme.style(wordsControl, tint: tint)
+        scriptControl.selectedSegmentIndex = isTaproot ? 1 : 0
+        wordsControl.selectedSegmentIndex = seedWordCount == 24 ? 1 : 0
+        scriptControl.accessibilityIdentifier = "create.script"
+        wordsControl.accessibilityIdentifier = "create.words"
+        scriptControl.addTarget(self, action: #selector(singleSigOptionsChanged), for: .valueChanged)
+        wordsControl.addTarget(self, action: #selector(singleSigOptionsChanged), for: .valueChanged)
+        prepareHint(singleSigHint)
+        let createSingleSig = UIButton(type: .system)
+        WalletTheme.styleHero(createSingleSig, title: "Create single sig wallet", systemImage: "key", tint: tint)
+        createSingleSig.accessibilityIdentifier = "create.singleSig"
+        createSingleSig.accessibilityLabel = "Create single sig wallet"
+        createSingleSig.addTarget(self, action: #selector(automaticAction), for: .touchUpInside)
+        stack.addArrangedSubview(WalletTheme.cardView([
+            WalletTheme.caption("> SINGLE SIG", tint: tint),
+            title("One seed, kept encrypted on this phone. The simplest wallet to use and back up."),
+            scriptControl,
+            wordsControl,
+            singleSigHint,
+            createSingleSig
+        ], tint: tint, spacing: 10))
+
+        // MULTISIG
+        let createMultisig = UIButton(type: .system)
+        createMultisig.configuration = WalletTheme.buttonConfiguration(title: "Set up multisig", systemImage: "person.3", filled: false, tint: tint)
+        createMultisig.accessibilityIdentifier = "create.multisig"
+        createMultisig.addTarget(self, action: #selector(createMultiSigAction), for: .touchUpInside)
+        stack.addArrangedSubview(WalletTheme.cardView([
+            WalletTheme.caption("> MULTISIG", tint: tint),
+            title("Several keys, any m of n can spend. For savings or funds shared with others."),
+            hint("Keys can come from this phone, hardware wallets or other people."),
+            createMultisig
+        ], tint: tint, spacing: 10))
+
+        // IMPORT OR RECOVER
+        stack.setCustomSpacing(20, after: stack.arrangedSubviews.last ?? stack)
+        stack.addArrangedSubview(WalletTheme.caption("> IMPORT OR RECOVER", tint: tint))
+        stack.addArrangedSubview(optionRow(icon: "qrcode.viewfinder",
+                                           title: "Scan a QR code",
+                                           subtitle: "A wallet export or backup QR, including animated UR codes.",
+                                           id: "create.scan",
+                                           action: #selector(scanQrAction)))
+        stack.addArrangedSubview(optionRow(icon: "doc.on.clipboard",
+                                           title: "Paste text",
+                                           subtitle: "Seed words, a descriptor, a Fully Noded backup or a wallet export.",
+                                           id: "create.paste",
+                                           action: #selector(pasteTextAction)))
+        stack.addArrangedSubview(optionRow(icon: "folder",
+                                           title: "Open a file",
+                                           subtitle: "Fully Noded backups, Coldcard, Sparrow, Electrum and Unchained files.",
+                                           id: "create.file",
+                                           action: #selector(importFileAction)))
+        stack.addArrangedSubview(optionRow(icon: "server.rack",
+                                           title: "Bitcoin Core wallets",
+                                           subtitle: "Use a wallet that's already on your node.",
+                                           id: "create.core",
+                                           action: #selector(syncCoreWalletAction)))
+
+        let footer = hint("Private keys stay encrypted on this phone. Your node only gets public keys, so it can watch the wallet and build transactions.")
+        footer.textAlignment = .center
+        stack.setCustomSpacing(16, after: stack.arrangedSubviews.last ?? stack)
+        stack.addArrangedSubview(footer)
+    }
+
+    @objc private func singleSigOptionsChanged() {
+        isTaproot = scriptControl.selectedSegmentIndex == 1
+        isSegwit = !isTaproot
+        seedWordCount = wordsControl.selectedSegmentIndex == 1 ? 24 : 12
+        refreshSingleSig()
+    }
+
+    private func refreshSingleSig() {
+        let script = isTaproot
+            ? "Taproot (BIP86, bc1p…): cheaper, more private spends. Some older wallets and services can't pay to it."
+            : "Segwit (BIP84, bc1q…): works with every wallet and exchange."
+        let words = seedWordCount == 24
+            ? "24 words: more entropy."
+            : "12 words: easier to write down. Just as secure in practice."
+        singleSigHint.text = script + "\n" + words
+    }
+
+    /// Tappable card: bordered icon tile, title, one line on what it takes, chevron.
+    private func optionRow(icon: String, title: String, subtitle: String, id: String, action: Selector) -> UIView {
+        let control = UIControl()
+        control.backgroundColor = WalletTheme.card
+        control.layer.borderWidth = 1
+        control.layer.borderColor = tint.line.cgColor
+        control.addTarget(self, action: action, for: .touchUpInside)
+        control.addTarget(self, action: #selector(rowTouchDown(_:)), for: [.touchDown, .touchDragEnter])
+        control.addTarget(self, action: #selector(rowTouchUp(_:)), for: [.touchUpInside, .touchUpOutside, .touchCancel, .touchDragExit])
+        control.isAccessibilityElement = true
+        control.accessibilityLabel = title
+        control.accessibilityHint = subtitle
+        control.accessibilityTraits = .button
+        control.accessibilityIdentifier = id
+
+        let iconTile = UIView()
+        iconTile.layer.borderWidth = 1
+        iconTile.layer.borderColor = tint.line.cgColor
+        let iconView = UIImageView(image: UIImage(systemName: icon))
+        iconView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
+        iconView.tintColor = tint.accent
+        iconView.contentMode = .scaleAspectFit
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+        iconTile.addSubview(iconView)
+
+        let titleLabel = UILabel()
+        titleLabel.text = title
+        titleLabel.font = WalletTheme.mono(15, weight: .semibold)
+        titleLabel.textColor = WalletTheme.text
+        let subtitleLabel = hint(subtitle)
+
+        let texts = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
+        texts.axis = .vertical
+        texts.spacing = 3
+
+        let chevron = UIImageView(image: UIImage(systemName: "chevron.right"))
+        chevron.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 12, weight: .semibold)
+        chevron.tintColor = tint.dim
+        chevron.setContentHuggingPriority(.required, for: .horizontal)
+
+        let row = UIStackView(arrangedSubviews: [iconTile, texts, chevron])
+        row.alignment = .center
+        row.spacing = 12
+        row.isUserInteractionEnabled = false
+        row.translatesAutoresizingMaskIntoConstraints = false
+        control.addSubview(row)
+
+        NSLayoutConstraint.activate([
+            row.topAnchor.constraint(equalTo: control.topAnchor, constant: 12),
+            row.leadingAnchor.constraint(equalTo: control.leadingAnchor, constant: 12),
+            row.trailingAnchor.constraint(equalTo: control.trailingAnchor, constant: -12),
+            row.bottomAnchor.constraint(equalTo: control.bottomAnchor, constant: -12),
+            iconTile.widthAnchor.constraint(equalToConstant: 36),
+            iconTile.heightAnchor.constraint(equalToConstant: 36),
+            iconView.centerXAnchor.constraint(equalTo: iconTile.centerXAnchor),
+            iconView.centerYAnchor.constraint(equalTo: iconTile.centerYAnchor)
+        ])
+        return control
+    }
+
+    @objc private func rowTouchDown(_ sender: UIControl) {
+        sender.backgroundColor = tint.accent.withAlphaComponent(0.12)
+    }
+
+    @objc private func rowTouchUp(_ sender: UIControl) {
+        UIView.animate(withDuration: 0.2) { sender.backgroundColor = WalletTheme.card }
+    }
+
+    private func title(_ text: String) -> UILabel {
+        let label = UILabel()
+        label.text = text
+        label.font = WalletTheme.mono(13)
+        label.textColor = WalletTheme.text
+        label.numberOfLines = 0
+        return label
+    }
+
+    private func prepareHint(_ label: UILabel) {
+        label.font = WalletTheme.mono(11)
+        label.textColor = WalletTheme.dim
+        label.numberOfLines = 0
+    }
+
+    private func hint(_ text: String) -> UILabel {
+        let label = UILabel()
+        label.text = text
+        prepareHint(label)
+        return label
+    }
+
+    // MARK: - Actions
     
-    @IBAction func pasteTextAction(_ sender: Any) {
+    @objc private func pasteTextAction() {
         if let data = UIPasteboard.general.data(forPasteboardType: "com.apple.traditional-mac-plain-text") {
             guard let string = String(bytes: data, encoding: .utf8) else {
                 showAlert(vc: self, title: "", message: "Looks like you do not have valid text on your clipboard.")
@@ -65,34 +260,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             showAlert(vc: self, title: "", message: "Not a supported import item. Please let us know about it so we can add it.")
         }
     }
-    
-    private func promptForSingleSigFormat() {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                let alert = UIAlertController(title: "Choose a single sig wallet type.", message: "", preferredStyle: .alert)
-                
-                alert.addAction(UIAlertAction(title: "Segwit (BIP84)", style: .default, handler: { [weak self] action in
-                    guard let self = self else { return }
-                    
-                    isSegwit = true
-                    isTaproot = false
-                    promptForSeedLengthThenCreate()
-                }))
-                
-                alert.addAction(UIAlertAction(title: "Taproot (BIP86)", style: .default, handler: { [weak self] action in
-                    guard let self = self else { return }
-                    
-                    isTaproot = true
-                    isSegwit = false
-                    promptForSeedLengthThenCreate()
-                }))
-                
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-                alert.popoverPresentationController?.sourceView = view
-                present(alert, animated: true, completion: nil)
-            }
-        }
     
     private func isExtendedKey(_ lowercased: String) -> Bool {
         if lowercased.hasPrefix("xprv") || lowercased.hasPrefix("tprv") || lowercased.hasPrefix("vprv") || lowercased.hasPrefix("yprv") || lowercased.hasPrefix("zprv") || lowercased.hasPrefix("uprv") || lowercased.hasPrefix("xpub") || lowercased.hasPrefix("tpub") || lowercased.hasPrefix("vpub") || lowercased.hasPrefix("ypub") || lowercased.hasPrefix("zpub") || lowercased.hasPrefix("upub") {
@@ -108,7 +275,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             guard let self = self else { return }
             
             self.descriptor = Descriptor(descriptor)
-            self.performSegue(withIdentifier: "segueToImportDescriptor", sender: self)
+            self.showDescriptorImporter()
         }
     }
     
@@ -123,7 +290,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         processImportedString(string)
     }
     
-    @IBAction func syncCoreWalletAction(_ sender: Any) {
+    @objc private func syncCoreWalletAction() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
         
@@ -133,73 +300,42 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
-    
-    @IBAction func importFileAction(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Upload a file?", message: "Here you can upload files from your Hardware Wallets to easily create Fully Noded Wallet's", preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Upload", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                var documentPicker:UIDocumentPickerViewController!
-                
-                if #available(iOS 14.0, *) {
-                    documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
-                } else {
-                    documentPicker = UIDocumentPickerViewController(documentTypes: ["public.item"], in: .import)
-                }
-                
-                documentPicker.delegate = self
-                documentPicker.modalPresentationStyle = .formSheet
-                self.present(documentPicker, animated: true, completion: nil)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true, completion: nil)
-        }
+    @objc private func importFileAction() {
+        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
+        documentPicker.delegate = self
+        documentPicker.modalPresentationStyle = .formSheet
+        present(documentPicker, animated: true, completion: nil)
     }
     
-    @IBAction func scanQrAction(_ sender: Any) {
+    @objc private func scanQrAction() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.performSegue(withIdentifier: "segueToScanner", sender: self)
+            self.showScanner()
         }
     }
     
-    @IBAction func automaticAction(_ sender: Any) {
-        promptForSingleSigFormat()
-    }
-        
-    private func promptForSeedLengthThenCreate() {
-        promptForSeedLength(vc: self) { [weak self] wordCount in
-            self?.seedWordCount = wordCount
-            self?.segueToSingleSigCreator()
-        }
+    @objc private func automaticAction() {
+        // Imports can change isTaproot: the seed screen gets what the card shows.
+        singleSigOptionsChanged()
+        segueToSingleSigCreator()
     }
     
     private func segueToSingleSigCreator() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.performSegue(withIdentifier: "segueToSeedWords", sender: self)
+            self.showSeedWords()
         }
     }
     
-    @IBAction func manualAction(_ sender: Any) {
+    @objc private func createMultiSigAction() {
+        // A fresh multisig: no cosigner left over from an earlier import.
+        cosigner = nil
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.performSegue(withIdentifier: "seguToManualCreation", sender: self)
-        }
-    }
-    
-    @IBAction func createMultiSigAction(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.performSegue(withIdentifier: "segueToCreateMultiSig", sender: self)
+            self.showMultisigCreator()
         }
     }
     
@@ -264,8 +400,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             let origin = deriv.replacingOccurrences(of: "m", with: xfp)
             let descriptor = "wsh([\(origin)]\(p2wsh)/0/*)"
             promptToImportColdcardMsig(Descriptor(descriptor))
-            
-            
+
         } else if let _ = dict["wallet_type"] as? String {
             /// We think its an Electrum wallet
             promptToImportElectrumMsig(dict)
@@ -283,22 +418,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             guard let self = self else { return }
             
             let alert = UIAlertController(title: "Import your Unchained Capital multi sig wallet?", message: "Looks like you selected a multi sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { action in
-                self.importAccountMap(dict)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true, completion: nil)
-        }
-    }
-    
-    private func promptToImportMultiSig(_ dict: [String:Any]) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let alert = UIAlertController(title: "Import your multi sig wallet?", message: "Looks like you selected a multi sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { action in
                 self.importAccountMap(dict)
@@ -465,7 +584,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { action in
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.cosigner = desc
-                    vc.performSegue(withIdentifier: "segueToCreateMultiSig", sender: vc)
+                    vc.showMultisigCreator()
                 }
             }))
             
@@ -561,15 +680,14 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
-                self.performSegue(withIdentifier: "segueToCreateMultiSig", sender: self)
+                self.showMultisigCreator()
             }
         } else {
-            //self.importAccountMap(accountMap)
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
                 self.descriptor = desc
-                self.performSegue(withIdentifier: "segueToImportDescriptor", sender: self)
+                self.showDescriptorImporter()
             }
         }
     }
@@ -861,7 +979,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         DispatchQueue.main.async { [weak self] in
                             guard let self = self else { return }
                             
-                            self.performSegue(withIdentifier: "segueToCreateMultiSig", sender: self)
+                            self.showMultisigCreator()
                         }
                     } else {
                         // Same as a pasted descriptor: show it and its addresses before importing.
@@ -935,8 +1053,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             let origin = deriv.replacingOccurrences(of: "m", with: xfp)
             let descriptor = "wsh([\(origin)]\(xpub)/0/*)"
             promptToImportColdcardMsig(Descriptor(descriptor))
-            
-            
+
         } else if let dict = try? JSONSerialization.jsonObject(with: item.utf8, options: []) as? [String:Any],
                   dict["desc"] is String || !WalletImport(dict).descriptors.isEmpty {
             if dict["desc"] is String {
@@ -964,52 +1081,44 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     // MARK: - Navigation
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-        switch segue.identifier {
+    private func showSeedWords() {
+        let vc = SeedDisplayerViewController()
+        vc.isSegwit = isSegwit
+        vc.isTaproot = isTaproot
+        vc.wordCount = seedWordCount
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    private func showScanner() {
+        let vc = QRScannerViewController()
+        vc.isImporting = true
+        vc.onDoneBlock = { [weak self] item in
+            guard let self = self else { return }
             
-        case "segueToSeedWords":
-            guard let vc = segue.destination as? SeedDisplayerViewController else { fallthrough }
-            
-            vc.isSegwit = isSegwit
-            vc.isTaproot = isTaproot
-            vc.wordCount = seedWordCount
-            
-        case "segueToScanner":
-            if #available(macCatalyst 14.0, *) {
-                guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
-                
-                vc.isImporting = true
-                vc.onDoneBlock = { [weak self] item in
-                    guard let self = self else { return }
-                    
-                    guard let item = item else {
-                        return
-                    }
-                    
-                    #if(DEBUG)
-                    print("item: \(item)")
-                    #endif
-                    
-                    self.processImportedString(item)
-                }
+            guard let item = item else {
+                return
             }
             
-        case "segueToCreateMultiSig":
-            guard let vc = segue.destination as? CreateMultisigViewController else { fallthrough }
+            #if(DEBUG)
+            print("item: \(item)")
+            #endif
             
-            vc.cosigner = cosigner
-            vc.isTaproot = isTaproot
-            
-        case "segueToImportDescriptor":
-            guard let vc = segue.destination as? ImportXpubViewController else { fallthrough }
-            
-            vc.descriptor = descriptor
-            
-        default:
-            break
+            self.processImportedString(item)
         }
+        present(vc, animated: true)
+    }
+    
+    private func showMultisigCreator() {
+        let vc = CreateMultisigViewController()
+        // The multisig creator picks its own script (or takes it from the cosigner), not
+        // from the single sig card.
+        vc.cosigner = cosigner
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    private func showDescriptorImporter() {
+        let vc = ImportXpubViewController()
+        vc.descriptor = descriptor
+        navigationController?.pushViewController(vc, animated: true)
     }
 }

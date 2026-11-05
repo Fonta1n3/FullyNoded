@@ -12,6 +12,8 @@ import UIKit
 /// signer on this phone, a new key, a QR, the clipboard or by hand), choose how many
 /// signatures are needed, create. Then export the wallet file for the other cosigners.
 class CreateMultisigViewController: UIViewController {
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
 
     /// One cosigner's account key.
     private struct Cosigner {
@@ -385,7 +387,7 @@ class CreateMultisigViewController: UIViewController {
             showAlert(vc: self, title: "Custom path", message: "Keys from this phone's signers use the standard path. Tap Edit → Default first.")
             return
         }
-        performSegue(withIdentifier: "segueToChooseSignerToDeriveXpub", sender: self)
+        showSignerPicker()
     }
 
     /// Makes a new 12 word signer on this phone and adds its cosigner key. The words are
@@ -462,7 +464,7 @@ class CreateMultisigViewController: UIViewController {
 
     @objc private func scanAction() {
         pendingSource = "Scanned"
-        performSegue(withIdentifier: "segueToScanXpubMsigCreator", sender: self)
+        showXpubScanner()
     }
 
     @objc private func typeAction() {
@@ -673,7 +675,7 @@ class CreateMultisigViewController: UIViewController {
             return
         }
         qrToExport = ur.qrString
-        performSegue(withIdentifier: "segueToExportMsig", sender: self)
+        showExport()
     }
 
     @objc private func doneAction() {
@@ -875,39 +877,32 @@ class CreateMultisigViewController: UIViewController {
 
     // MARK: - Navigation
 
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        switch segue.identifier {
-        case "segueToScanXpubMsigCreator":
-            if #available(macCatalyst 14.0, *) {
-                guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
-                vc.isImporting = true
+    private func showXpubScanner() {
+        let vc = QRScannerViewController()
+        vc.isImporting = true
+        vc.onDoneBlock = { [weak self] xpub in
+            guard let self = self, let xpub = xpub else { return }
 
-                vc.onDoneBlock = { [weak self] xpub in
-                    guard let self = self, let xpub = xpub else { return }
-
-                    self.parseImportedString(xpub)
-                }
-            }
-
-        case "segueToChooseSignerToDeriveXpub":
-            guard let vc = segue.destination as? SignersViewController else { fallthrough }
-
-            vc.isCreatingMsig = true
-
-            vc.signerSelected = { [weak self] signer in
-                self?.pendingSigner = signer
-            }
-
-        case "segueToExportMsig":
-            guard let vc = segue.destination as? QRDisplayerViewController else { return }
-
-            vc.text = self.qrToExport
-            vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-            vc.headerText = "Multisig Wallet UR Bytes"
-
-        default:
-            break
+            self.parseImportedString(xpub)
         }
+        present(vc, animated: true)
+    }
+
+    private func showSignerPicker() {
+        let vc = SignersViewController()
+        vc.isCreatingMsig = true
+        vc.signerSelected = { [weak self] signer in
+            self?.pendingSigner = signer
+        }
+        navigationController?.pushViewController(vc, animated: true)
+    }
+
+    private func showExport() {
+        let vc = QRDisplayerViewController()
+        vc.text = self.qrToExport
+        vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+        vc.headerText = "Multisig Wallet UR Bytes"
+        navigationController?.pushViewController(vc, animated: true)
     }
 
 }

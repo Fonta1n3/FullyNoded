@@ -42,27 +42,12 @@ extension UIViewController {
             alert.addAction(confirmAction)
             alert.addAction(cancelAction)
             
-            // Optional: make confirm button bold in iOS 15+
-            if #available(iOS 15.0, *) {
-                alert.preferredAction = confirmAction
-            }
+            alert.preferredAction = confirmAction
             
             self.present(alert, animated: true)
         }
     }
     
-    func topMostViewController() -> UIViewController {
-        if let presented = self.presentedViewController {
-            return presented.topMostViewController()
-        }
-        if let nav = self as? UINavigationController {
-            return nav.visibleViewController?.topMostViewController() ?? nav
-        }
-        if let tab = self as? UITabBarController {
-            return tab.selectedViewController?.topMostViewController() ?? tab
-        }
-        return self
-    }
 }
 
 public extension Date {
@@ -72,10 +57,6 @@ public extension Date {
         return dateFormatter.string(from: self)
     }
     
-    var secondsSince: Int {
-        return Int(Date().timeIntervalSince(self))
-    }
-    
     var formattedDate: String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -83,29 +64,6 @@ public extension Date {
         formatter.locale = Locale.current
         return formatter.string(from: self)
     }
-    
-}
-
-
-
-public extension UITextView {
-  func addHyperLinksToText(originalText: String, hyperLinks: [String: String]) {
-    let style = NSMutableParagraphStyle()
-    style.alignment = .left
-    let attributedOriginalText = NSMutableAttributedString(string: originalText)
-    for (hyperLink, urlString) in hyperLinks {
-        let linkRange = attributedOriginalText.mutableString.range(of: hyperLink)
-        let fullRange = NSRange(location: 0, length: attributedOriginalText.length)
-        attributedOriginalText.addAttribute(NSAttributedString.Key.link, value: urlString, range: linkRange)
-        attributedOriginalText.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: fullRange)
-        attributedOriginalText.addAttribute(NSAttributedString.Key.font, value: UIFont.systemFont(ofSize: 17), range: fullRange)
-        attributedOriginalText.addAttribute(.foregroundColor, value: UIColor.white, range: fullRange)
-    }
-    self.linkTextAttributes = [
-        NSAttributedString.Key.foregroundColor: UIColor.systemTeal
-    ]
-    self.attributedText = attributedOriginalText
-  }
 }
 
 public extension Dictionary {
@@ -117,37 +75,12 @@ public extension Dictionary {
     }
 }
 
-extension Array where Element: Hashable {
-    func duplicates() -> Array {
-        let groups = Dictionary(grouping: self, by: {$0})
-        let duplicateGroups = groups.filter {$1.count > 1}
-        let duplicates = Array(duplicateGroups.keys)
-        return duplicates
-    }
-}
-
 public extension Array {
     func json() -> String? {
         guard let json = try? JSONSerialization.data(withJSONObject: self, options: []),
               let jsonString = String(data: json, encoding: .utf8) else { return nil }
         
         return jsonString
-    }
-    
-    var processedInputs: String {
-        var inputs = self.description
-        inputs = inputs.replacingOccurrences(of: "[\"", with: "[")
-        inputs = inputs.replacingOccurrences(of: "\"]", with: "]")
-        inputs = inputs.replacingOccurrences(of: "\"{", with: "{")
-        inputs = inputs.replacingOccurrences(of: "}\"", with: "}")
-        inputs = inputs.replacingOccurrences(of: "\\", with: "")
-        return inputs
-    }
-    
-    var processedOutputs: String {
-        var outputsString = self.description
-        outputsString = outputsString.replacingOccurrences(of: "[", with: "")
-        return outputsString.replacingOccurrences(of: "]", with: "")
     }
 }
 
@@ -229,10 +162,6 @@ public extension String {
         self = ""
     }
     
-    var pong: String {
-        return self.replacingOccurrences(of: "PING", with: "PONG")
-    }
-    
     var btc: String {
         return self + " btc"
     }
@@ -279,10 +208,6 @@ public extension String {
         return self.replacingOccurrences(of: " ", with: "")
     }
     
-    var isAlphanumeric: Bool {
-        return !isEmpty && range(of: "[^a-zA-Z0-9]", options: .regularExpression) == nil
-    }
-    
     static let numberFormatter = NumberFormatter()
     
     var doubleValue: Double {
@@ -301,27 +226,6 @@ public extension String {
         return 0
     }
     
-    var satsToBtc: Double {
-        var processed = "\(self)".replacingOccurrences(of: ",", with: "")
-        processed = processed.replacingOccurrences(of: ".", with: "")
-        processed = processed.replacingOccurrences(of: "-", with: "")
-        processed = processed.replacingOccurrences(of: "+", with: "")
-        processed = processed.replacingOccurrences(of: "sats", with: "").condenseWhitespace()
-        let btc = Double(processed)! / 100000000.0
-        return btc
-    }
-    
-    var sha256Hash: String {
-        return Crypto.sha256hash(self)
-    }
-    
-    var msatToSat: Double {
-        return Double(self)! / 1000.0
-    }
-    
-    var btcToSats: String {
-        return (Int(self.doubleValue * 100000000.0)).avoidNotation
-    }
 }
 
 extension Bool {
@@ -343,9 +247,6 @@ public extension BlockchainInfo {
         }
     }
     
-    var diffString: String {
-        return "Difficulty \(Int(self.difficulty / 1000000000000).withCommas) trillion"
-    }
 }
 
 public extension Notification.Name {
@@ -354,7 +255,6 @@ public extension Notification.Name {
     /// Tor finished bootstrapping (posted on the main queue).
     static let torConnected = Notification.Name(rawValue: "torConnected")
     static let addColdCard = Notification.Name(rawValue: "addColdcard")
-    static let refreshUtxos = Notification.Name(rawValue: "refreshUtxos")
     static let importWallet = Notification.Name(rawValue: "importWallet")
     static let broadcastTxn = Notification.Name(rawValue: "broadcastTxn")
     static let signPsbt = Notification.Name(rawValue: "signPsbt")
@@ -401,46 +301,37 @@ public extension Data {
         return String(utf16CodeUnits: hexChars, count: hexChars.count)
         
     }
-    
-    static func decodeUrlSafeBase64(_ value: String) throws -> Data {
-        var stringtoDecode = value.condenseWhitespace()
         
-        stringtoDecode = value.replacingOccurrences(of: "-", with: "+")
-        stringtoDecode = stringtoDecode.replacingOccurrences(of: "_", with: "/")
-        
-        switch (stringtoDecode.utf8.count % 4) {
-            case 2:
-                stringtoDecode += "=="
-            case 3:
-                stringtoDecode += "="
-            default:
-                break
-        }
-        
-        guard let data = Data(base64Encoded: stringtoDecode, options: [.ignoreUnknownCharacters]) else {
-            
-            throw NSError(domain: "decodeUrlSafeBase64", code: 1,
-                          userInfo: [NSLocalizedDescriptionKey: "Can't decode base64 string"])
-        }
-        
-        return data
-    }
-    
-    static func random(_ len: Int) -> Data {
-        let values = (0 ..< len).map { _ in UInt8.random(in: 0 ... 255) }
-        return Data(values)
-    }
-
-    var bytes: [UInt8] {
-        var b: [UInt8] = []
-        b.append(contentsOf: self)
-        return b
-    }
-    
     var urlSafeB64String: String {
         return self.base64EncodedString().replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "").replacingOccurrences(of: "+", with: "-")
     }
          
+}
+
+/// Lowercase hex for keys, hashes and scripts.
+enum Hex {
+    static func encode<D: Sequence>(_ bytes: D) -> String where D.Element == UInt8 {
+        bytes.map { String(format: "%02x", $0) }.joined()
+    }
+
+    /// Accepts surrounding whitespace, a "0x" prefix and uppercase. nil unless every
+    /// character pair is a hex byte.
+    static func decode(_ hex: String) -> Data? {
+        let s = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "0x", with: "")
+            .lowercased()
+        guard s.count % 2 == 0 else { return nil }
+        var data = Data()
+        data.reserveCapacity(s.count / 2)
+        var idx = s.startIndex
+        while idx < s.endIndex {
+            let next = s.index(idx, offsetBy: 2)
+            guard let b = UInt8(s[idx..<next], radix: 16) else { return nil }
+            data.append(b)
+            idx = next
+        }
+        return data
+    }
 }
 
 public extension Double {
@@ -475,15 +366,6 @@ public extension Double {
         return numberFormatter.string(for: self) ?? ""
     }
     
-    var satsToBtc: String {
-        var processed = "\(self)".replacingOccurrences(of: ",", with: "")
-        processed = processed.replacingOccurrences(of: "-", with: "")
-        processed = processed.replacingOccurrences(of: "+", with: "")
-        processed = processed.replacingOccurrences(of: "sats", with: "").condenseWhitespace()
-        let btc = processed.doubleValue / 100000000.0
-        return btc.avoidNotation
-    }
-    
     var sats: String {
         let sats = self * 100000000.0
         
@@ -504,59 +386,15 @@ public extension Double {
         }
     }
     
-    var balanceText: String {
-        let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
-        
-        var symbol = "$"
-        
-        for curr in currencies {
-            for (key, value) in curr {
-                if key == currency {
-                    symbol = value
-                }
-            }
-        }
-        
-        var dbl = self
-        
-        if dbl < 0 {
-            dbl = dbl * -1.0
-        }
-        
-        if dbl < 1.0 {
-            return "\(symbol)\(dbl.avoidNotation)"
-        } else {
-            return "\(symbol)\(dbl.rounded(toPlaces: 2).withCommas)"
-        }
-    }
-    
     var exchangeRate: String {
         let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
-        
-        var symbol = "$"
-        
-        for curr in currencies {
-            for (key, value) in curr {
-                if key == currency {
-                    symbol = value
-                }
-            }
-        }
-        
+        let symbol = Currencies.symbols[currency] ?? "$"
         return "\(symbol)\(self.withCommas) / btc"
     }
     
     var fiatString: String {
         let currencyCode = UserDefaults.standard.string(forKey: "currency") ?? "USD"
-        
-        var symbol = currencyCode
-        
-        for dict in currencies {
-            if let foundSymbol = dict[currencyCode] {
-                symbol = foundSymbol
-                break
-            }
-        }
+        let symbol = Currencies.symbols[currencyCode] ?? currencyCode
         
         // Always format to 2 decimal places using NumberFormatter for reliability
         let formatter = NumberFormatter()
@@ -576,10 +414,6 @@ public extension Double {
         } else {
             return "\(symbol)\(formattedAmount)"
         }
-    }
-    
-    var satsToBtcDouble: Double {
-        return self / 100000000.0
     }
     
     var isWholeNumber: Bool {
@@ -644,10 +478,6 @@ public extension Int {
         return numberFormatter.string(for: self) ?? ""
     }
     
-    var satsToBtcDouble: Double {
-        return Double(self) / 100000000.0
-    }
-    
     var withCommas: String {
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = NumberFormatter.Style.decimal
@@ -655,27 +485,10 @@ public extension Int {
         return numberFormatter.string(from: NSNumber(value:self))!
     }
     
+    /// A Unix timestamp (seconds) as a medium date and time in the user's locale.
     var dateFromUnixTimestampInt: String {
-        // 1. Create a Date object from the Unix epoch timestamp.
-        // The Unix epoch is in seconds, so cast the Int to TimeInterval.
-        let date = Date(timeIntervalSince1970: TimeInterval(self))
-        
-        // 2. Create a DateFormatter instance.
-        let dateFormatter = DateFormatter()
-        
-        // 3. Set the date style and time style to use the device's locale defaults.
-        // This will automatically adapt the format to the user's regional settings.
-        dateFormatter.dateStyle = .medium // Or .short, .long, .full
-        dateFormatter.timeStyle = .medium // Or .short, .long, .full
-        
-        // 4. Optionally, set the locale explicitly if you need a specific locale,
-        // otherwise, it defaults to the user's current locale.
-        // dateFormatter.locale = Locale(identifier: "en_US")
-        
-        // 5. Convert the Date object to a string using the formatter.
-        return dateFormatter.string(from: date)
+        Date(timeIntervalSince1970: TimeInterval(self)).formattedDate
     }
-    
 }
 
  public extension Encodable {
@@ -687,17 +500,6 @@ public extension Int {
      }
  }
  
-//public extension Encodable {
-//
-//    /// Encode into JSON and return `Data`
-//    func jsonData() throws -> Data {
-//        let encoder = JSONEncoder()
-//        encoder.outputFormatting = .prettyPrinted
-//        encoder.dateEncodingStrategy = .iso8601
-//        return try encoder.encode(self)
-//    }
-//}
-
 public extension UIView {
     #if targetEnvironment(macCatalyst)
     @objc(_focusRingType)
@@ -797,12 +599,6 @@ public extension Data {
         self = Data()
     }
 
-    func copyToUnsafeMutableBytes<T>(of value: inout T) {
-        _ = Swift.withUnsafeMutableBytes(of: &value) { ptr in
-            ptr.copyBytes(from: self.prefix(ptr.count))
-        }
-    }
-    
     init?(hexString: String) {
         let len = hexString.count / 2
         var data = Data(capacity: len)

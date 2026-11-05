@@ -9,7 +9,9 @@
 import UIKit
 
 class PeersDetailTableViewController: UITableViewController {
-    
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
+
     private var isRefreshing = false
     private var refreshButton: UIBarButtonItem!
     private var spinner: UIActivityIndicatorView!
@@ -208,7 +210,6 @@ class PeerCell: UITableViewCell {
     static let identifier = "PeerCell"
     var onBanTapped: (() -> Void)?
     
-    //private let icon = UIView()
     private let subverLabel = UILabel()
     private let networkBadge = UILabel()
     private let banButton = UIButton(type: .system)

@@ -316,9 +316,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
 
     private func scanNode() {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self,
-                  let vc = UIStoryboard(name: "Main", bundle: nil)
-                    .instantiateViewController(withIdentifier: "QRScanner") as? QRScannerViewController else { return }
+            guard let self = self else { return }
+            let vc = QRScannerViewController()
 
             vc.isQuickConnect = true
             vc.onDoneBlock = { [weak self] url in

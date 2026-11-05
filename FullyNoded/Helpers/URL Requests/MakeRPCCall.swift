@@ -15,11 +15,8 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
     private override init() {}
     
     let torClient = TorClient.sharedInstance
-    var connected: Bool = false
-    var onDoneBlock: (((response: Any?, errorDesc: String?)) -> Void)?
     var activeNode: NodeStruct?
     let delegate = UserCertURLSessionDelegate()
-    
     
     func getActiveNode(completion: @escaping ((NodeStruct?) -> Void)) {
         CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
@@ -27,15 +24,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
                 completion((nil))
                 return
             }
-            var activeNode: [String:Any]?
-            for node in nodes {
-                if let isActive = node["isActive"] as? Bool {
-                    if isActive {
-                        activeNode = node
-                    }
-                }
-            }
-            guard let active = activeNode else {
+            guard let active = nodes.last(where: { $0["isActive"] as? Bool == true }) else {
                 completion((nil))
                 return
             }
@@ -78,24 +67,25 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
             return
         }
         
+        let walletName = walletOverride ?? UserDefaults.standard.object(forKey: "walletName") as? String
+        var walletPath = ""
+        if isWalletRPC(command: method), let walletName = walletName {
+            let allowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
+            walletPath = "/wallet/" + (walletName.addingPercentEncoding(withAllowedCharacters: allowed) ?? walletName)
+        }
+        
         // Nostr Connect node: the same JSON-RPC request, through Fully Noded Server's relay.
         if let encryptedLink = node.nostrConnect {
             guard let link = Crypto.decrypt(encryptedLink)?.utf8String else {
                 completion((nil, "error decrypting node credentials"))
                 return
             }
-            let walletName = walletOverride ?? UserDefaults.standard.object(forKey: "walletName") as? String
-            var path = ""
-            if isWalletRPC(command: method), let walletName = walletName {
-                let allowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
-                path = "/wallet/" + (walletName.addingPercentEncoding(withAllowedCharacters: allowed) ?? walletName)
-            }
             let dict: [String: Any] = ["jsonrpc": "1.0", "id": UUID().uuidString, "method": method.stringValue, "params": params]
             guard let body = try? JSONSerialization.data(withJSONObject: dict) else {
                 completion((nil, "Unable to encode the request."))
                 return
             }
-            NostrRPC.shared.send(body: body, path: path, timeout: timeout(for: method), link: link) { [weak self] result in
+            NostrRPC.shared.send(body: body, path: walletPath, timeout: timeout(for: method), link: link) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
                 case .success(let response):
@@ -108,15 +98,8 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
             return
         }
         
-        var encryptedCert: Data?
-        var decryptedCert: String?
-        var cert: SecCertificate?
-        
-        if let _ = node.cert {
-            encryptedCert = node.cert!
-            decryptedCert = decryptedValue(encryptedCert!)
-            cert = CertificateManager.shared.base64ToCert(base64: decryptedCert!)
-        }
+        let decryptedCert = node.cert.map(decryptedValue) ?? ""
+        let cert = decryptedCert.isEmpty ? nil : CertificateManager.shared.base64ToCert(base64: decryptedCert)
         
         guard let encAddress = node.onionAddress,
               let encUser = node.rpcuser,
@@ -134,17 +117,8 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
             return
         }
         
-        var walletUrl = "http://\(rpcusername):\(rpcpassword)@\(onionAddress)"
-        
-        if decryptedCert != "" && decryptedCert != nil {
-            walletUrl = "https://\(rpcusername):\(rpcpassword)@\(onionAddress)"
-        }
-                        
-        let walletName = walletOverride ?? UserDefaults.standard.object(forKey: "walletName") as? String
-        
-        if isWalletRPC(command: method), let walletName = walletName {
-            walletUrl += "/wallet/" + walletName
-        }
+        let scheme = decryptedCert.isEmpty ? "http" : "https"
+        let walletUrl = "\(scheme)://\(rpcusername):\(rpcpassword)@\(onionAddress)\(walletPath)"
         
         guard let url = URL(string: walletUrl) else {
             completion((nil, "url error"))
@@ -172,14 +146,11 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         ]
         
         guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
-            #if DEBUG
-            print("Converting to jsonData failing...")
-            #endif
+            completion((nil, "Unable to encode the request."))
             return
         }
         
         request.httpBody = jsonData
-        
         
         var sesh = URLSession(configuration: .default)
         
@@ -285,21 +256,3 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         }
     }
 }
-
-extension String {
-    func split(by length: Int) -> [String] {
-        var startIndex = self.startIndex
-        var results = [Substring]()
-        
-        while startIndex < self.endIndex {
-            let endIndex = self.index(startIndex, offsetBy: length, limitedBy: self.endIndex) ?? self.endIndex
-            results.append(self[startIndex..<endIndex])
-            startIndex = endIndex
-        }
-        
-        return results.map { String($0) }
-    }
-}
-
-
-

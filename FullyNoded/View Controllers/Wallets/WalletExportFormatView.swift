@@ -225,13 +225,6 @@ final class WalletExportFormatView: UIView {
         }
     }
 
-    @objc private func buttonTouchUp(_ gesture: UITapGestureRecognizer) {
-        guard let view = gesture.view else { return }
-        UIView.animate(withDuration: 0.15) {
-            view.alpha = 1.0
-        }
-    }
-    
     private func setupActions() {
         closeButton.addAction(UIAction { [weak self] _ in
             self?.dismiss(with: nil)

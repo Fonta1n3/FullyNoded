@@ -66,7 +66,7 @@ final class OfflineSeedKeys: OfflineKeySource {
         guard let mnemonic = try? Mnemonic.fromString(mnemonic: words) else { return nil }
         master = DescriptorSecretKey(networkKind: .main, mnemonic: mnemonic, password: passphrase.isEmpty ? nil : passphrase)
         guard let pub = try? P256K.Signing.PrivateKey(dataRepresentation: master.secretBytes()).publicKey else { return nil }
-        fingerprint = SPHexFN.encode(SPHashFN.hash160(pub.dataRepresentation).prefix(4))
+        fingerprint = Hex.encode(SPHashFN.hash160(pub.dataRepresentation).prefix(4))
     }
 
     func privateKey(at path: [UInt32]) -> Data? {
@@ -216,7 +216,7 @@ enum OfflinePsbt {
     static func decode(_ text: String) -> Data? {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         if let raw = Data(base64Encoded: trimmed), raw.starts(with: [0x70, 0x73, 0x62, 0x74, 0xFF]) { return raw }
-        if trimmed.lowercased().hasPrefix("70736274ff"), let raw = SPHexFN.decode(trimmed.lowercased()) { return raw }
+        if trimmed.lowercased().hasPrefix("70736274ff"), let raw = Hex.decode(trimmed.lowercased()) { return raw }
         return nil
     }
 
@@ -795,7 +795,7 @@ enum OfflinePsbt {
         let path = stride(from: 4, to: value.count, by: 4).map {
             UInt32(value[$0]) | UInt32(value[$0 + 1]) << 8 | UInt32(value[$0 + 2]) << 16 | UInt32(value[$0 + 3]) << 24
         }
-        return Origin(fingerprint: SPHexFN.encode(value[0..<4]), path: path)
+        return Origin(fingerprint: Hex.encode(value[0..<4]), path: path)
     }
 
     /// compactSize n || n × leaf hash || key origin

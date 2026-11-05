@@ -35,11 +35,13 @@ class ActiveWalletViewController: UIViewController {
     /// Shown instead of the wallet when none is active.
     private var noWalletView: UIView?
     
-    @IBOutlet weak private var walletTable: UITableView!
-    @IBOutlet weak private var fxRateLabel: UILabel!
+    private let walletTable = UITableView(frame: .zero, style: .grouped)
+    private let fxRateLabel = UILabel()
+    private let actionRow = UIStackView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        buildLayout()
         
         if UserDefaults.standard.object(forKey: "hasPromptedToRescan") == nil {
             UserDefaults.standard.setValue(false, forKey: "hasPromptedToRescan")
@@ -52,13 +54,60 @@ class ActiveWalletViewController: UIViewController {
         if let savedRate = UserDefaults.standard.object(forKey: "fxRate") as? Double {
             fxRate = savedRate
         }
-        // The storyboard's export (backup) button. Kept next to the refresh/spinner item
-        // instead of being replaced by it.
-        backupButton = navigationItem.rightBarButtonItems?.first(where: { $0.action != nil })
         applyTheme()
         setNotifications()
         sectionZeroLoaded = false
         addNavBarSpinner()
+    }
+    
+    // MARK: - Layout
+    
+    /// fx rate, the balances / transactions table, and Invoice / UTXO's / Send under it.
+    private func buildLayout() {
+        navigationItem.title = "Wallet"
+        
+        let create = barItem("plus.rectangle", label: "Create wallet", action: #selector(createWallet(_:)))
+        let wallets = barItem("square.stack.3d.down.right", label: "Wallets", action: #selector(goToFullyNodedWallets(_:)))
+        let detail = barItem("info.circle", label: "Wallet info", action: #selector(getWalletDetail(_:)))
+        navigationItem.leftBarButtonItems = [create, wallets, detail]
+        // Export (backup) button, kept next to the refresh/spinner item (setRightBarItem).
+        let backup = barItem("square.and.arrow.up", label: "Back up wallet", action: #selector(loadBackupTapped(_:)))
+        backupButton = backup
+        navigationItem.rightBarButtonItems = [backup]
+        
+        fxRateLabel.text = " "
+        
+        actionRow.distribution = .fillEqually
+        actionRow.spacing = 8
+        for (title, action) in [("Invoice", #selector(invoiceAction(_:))),
+                                ("UTXO's", #selector(goToUtxos(_:))),
+                                ("Send", #selector(sendAction(_:)))] {
+            // A configuration title, not setTitle(_:for:), which would override the
+            // theme's configuration (styleActionButtons).
+            let button = UIButton(configuration: .plain())
+            button.configuration?.title = title
+            button.addTarget(self, action: action, for: .touchUpInside)
+            button.heightAnchor.constraint(equalToConstant: 50).isActive = true
+            actionRow.addArrangedSubview(button)
+        }
+        
+        let column = UIStackView(arrangedSubviews: [fxRateLabel, walletTable, actionRow])
+        column.axis = .vertical
+        column.spacing = 8
+        column.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(column)
+        NSLayoutConstraint.activate([
+            column.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
+            column.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 8),
+            column.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -8),
+            column.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
+        ])
+    }
+    
+    private func barItem(_ systemName: String, label: String, action: Selector) -> UIBarButtonItem {
+        let item = UIBarButtonItem(image: UIImage(systemName: systemName), style: .plain, target: self, action: action)
+        item.accessibilityLabel = label
+        return item
     }
     
     // MARK: - Theme
@@ -82,25 +131,21 @@ class ActiveWalletViewController: UIViewController {
         walletTable.indicatorStyle = .white
         walletTable.layer.cornerRadius = 0
         walletTable.estimatedRowHeight = 120
-        // The storyboard table is now "grouped" (not inset-grouped): inset-grouped tables
-        // round and clip each section's corners, which hid the card borders' corners.
-        // Grouped draws nothing of its own, so the square cards are fully visible.
+        // Grouped, not inset-grouped: inset-grouped tables round and clip each section's
+        // corners, which hid the card borders' corners.
         walletTable.separatorStyle = .none
         walletTable.tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: CGFloat.leastNonzeroMagnitude))
         walletTable.tableFooterView = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: CGFloat.leastNonzeroMagnitude))
-        if #available(iOS 15.0, *) { walletTable.sectionHeaderTopPadding = 0 }
+        walletTable.sectionHeaderTopPadding = 0
         walletTable.register(WalletBalanceCell.self, forCellReuseIdentifier: WalletBalanceCell.reuseId)
         walletTable.register(WalletTransactionCell.self, forCellReuseIdentifier: WalletTransactionCell.reuseId)
         
         styleActionButtons()
     }
     
-    /// Restyles the storyboard's Invoice / UTXO's / Send buttons (the row under the table).
+    /// Styles the Invoice / UTXO's / Send buttons (the row under the table).
     private func styleActionButtons() {
-        guard let column = walletTable.superview as? UIStackView,
-              let row = column.arrangedSubviews.last as? UIStackView else { return }
-        
-        for case let button as UIButton in row.arrangedSubviews {
+        for case let button as UIButton in actionRow.arrangedSubviews {
             let title = (button.configuration?.title ?? button.title(for: .normal) ?? "")
                 .trimmingCharacters(in: .whitespaces)
             let key = title.lowercased()
@@ -133,12 +178,15 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    @IBAction func getWalletDetail(_ sender: Any) {
+    @objc func getWalletDetail(_ sender: Any) {
         if let _ = wallet?.id {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
-                performSegue(withIdentifier: "segueToActiveWalletDetail", sender: self)
+                guard let walletId = self.wallet?.id else { return }
+                let vc = WalletDetailViewController()
+                vc.walletId = walletId
+                self.navigationController?.pushViewController(vc, animated: true)
             }
         } else {
             showAlert(vc: self, title: "", message: "Fully Noded can only show wallet details for wallets created or imported with Fully Noded. ")
@@ -224,7 +272,7 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    @IBAction func goToFullyNodedWallets(_ sender: Any) {
+    @objc func goToFullyNodedWallets(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             let vc = WalletSwitcherViewController()
             vc.hidesBottomBarWhenPushed = true
@@ -232,19 +280,34 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    @IBAction func createWallet(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "createFullyNodedWallet", sender: vc)
+    @objc func createWallet(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let vc = CreateFullyNodedWalletViewController()
+            vc.onDoneBlock = { [weak self] success in
+                guard let self = self else { return }
+                
+                if success {
+                    self.refreshWallet()
+                    
+                    SuccessView.show(in: self, title: "Wallet imported", subtitle: "It's now the active wallet.")
+                }
+            }
+            self.navigationController?.pushViewController(vc, animated: true)
         }
     }
     
-    @IBAction func sendAction(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "spendFromWallet", sender: vc)
+    @objc func sendAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let vc = CreateRawTxViewController()
+            vc.balance = self.onchainSpendableBtc.isEmpty ? self.onchainBalanceBtc : self.onchainSpendableBtc
+            vc.fxRate = self.fxRate
+            self.navigationController?.pushViewController(vc, animated: true)
         }
     }
     
-    @IBAction func invoiceAction(_ sender: Any) {
+    @objc func invoiceAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             let vc = InvoiceViewController()
@@ -255,7 +318,7 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    @IBAction func goToUtxos(_ sender: Any) {
+    @objc func goToUtxos(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             let vc = UTXOViewController()
@@ -529,7 +592,7 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    @IBAction func loadBackupTapped(_ sender: Any) {
+    @objc func loadBackupTapped(_ sender: Any) {
         exportBackup()
     }
     
@@ -615,8 +678,7 @@ class ActiveWalletViewController: UIViewController {
             finishedLoading()
         }
     }
-    
-    
+
     /// Opens the transaction at `index` (index into `onchainTransactions.transactions`).
     private func showTransactionDetail(at index: Int) {
         guard let onchainTransactions = onchainTransactions,
@@ -952,42 +1014,6 @@ class ActiveWalletViewController: UIViewController {
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
             alert.popoverPresentationController?.sourceView = self.view
             self.present(alert, animated: true, completion: nil)
-        }
-    }
-
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        switch segue.identifier {
-            
-        case "spendFromWallet":
-            guard let vc = segue.destination as? CreateRawTxViewController else { fallthrough }
-            
-            vc.balance = onchainSpendableBtc.isEmpty ? onchainBalanceBtc : onchainSpendableBtc
-            vc.fxRate = fxRate
-        
-        case "segueToActiveWalletDetail":
-            guard let vc = segue.destination as? WalletDetailViewController else { fallthrough }
-            
-            guard let idDetail = self.wallet?.id else {
-                return
-            }
-                        
-            vc.walletId = idDetail
-            
-        case "createFullyNodedWallet":
-            guard let vc = segue.destination as? CreateFullyNodedWalletViewController else { fallthrough }
-            
-            vc.onDoneBlock = { [weak self] success in
-                guard let self = self else { return }
-                
-                if success {
-                    self.refreshWallet()
-                    
-                    SuccessView.show(in: self, title: "Wallet imported", subtitle: "It's now the active wallet.")
-                }
-            }
-                    
-        default:
-            break
         }
     }
 }

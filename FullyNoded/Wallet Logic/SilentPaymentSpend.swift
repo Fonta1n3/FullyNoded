@@ -162,12 +162,12 @@ enum SilentPaymentSpend {
             }
 
             // d = b_spend + t_k (+ label_m) mod n.
-            guard let tk = SPHexFN.decode(out.tweakHex), SPScalar.isValid(tk) else {
+            guard let tk = Hex.decode(out.tweakHex), SPScalar.isValid(tk) else {
                 throw WalletLogic.SPError("Invalid tweak for \(out.txid):\(out.vout).")
             }
             var d = SPScalar.add(bSpend, tk)
             if let lh = out.labelTweakHex {
-                guard let label = SPHexFN.decode(lh), SPScalar.isValid(label) else {
+                guard let label = Hex.decode(lh), SPScalar.isValid(label) else {
                     throw WalletLogic.SPError("Invalid label tweak for \(out.txid):\(out.vout).")
                 }
                 d = SPScalar.add(d, label)
@@ -230,7 +230,6 @@ enum SilentPaymentSpend {
         init(_ message: String) { errorDescription = message }
     }
 }
-
 
 // MARK: - Minimal PSBT v0 (BIP174)
 
@@ -306,7 +305,6 @@ struct SPPsbt {
     }
 }
 
-
 // MARK: - Transaction parsing
 
 struct SPTx {
@@ -318,7 +316,7 @@ struct SPTx {
             UInt32(outpoint[32]) | UInt32(outpoint[33]) << 8 | UInt32(outpoint[34]) << 16 | UInt32(outpoint[35]) << 24
         }
         // Txid in RPC display order (hex).
-        var txidDisplay: String { SPHexFN.encode(Data(outpoint[0..<32].reversed())) }
+        var txidDisplay: String { Hex.encode(Data(outpoint[0..<32].reversed())) }
     }
     struct Output {
         let amount: [UInt8]   // 8 bytes LE
@@ -366,7 +364,6 @@ struct SPTx {
     }
 }
 
-
 // MARK: - BIP341 signature hash (key path, no annex)
 
 enum SPSighash {
@@ -392,7 +389,6 @@ enum SPSighash {
         return SPHashFN.tagged("TapSighash", Data(msg))
     }
 }
-
 
 // MARK: - Byte reader / writer
 
@@ -491,7 +487,7 @@ enum SilentPaymentSweep {
         var tx: [UInt8] = SPWriter.le32(2)
         tx += SPWriter.compactSize(inputs.count)
         for input in inputs {
-            guard let txid = SPHexFN.decode(input.txid), txid.count == 32 else {
+            guard let txid = Hex.decode(input.txid), txid.count == 32 else {
                 throw WalletLogic.SPError("Invalid txid \(input.txid).")
             }
             tx += [UInt8](txid.reversed()) + SPWriter.le32(UInt32(input.vout))
@@ -535,7 +531,7 @@ enum SilentPaymentSweep {
         for output in tx.outputs { out += output.serialized }
         for sig in witnesses { out += [0x01] + SPWriter.compactSize(sig.count) + sig }
         out += tx.locktime
-        return SPHexFN.encode(Data(out))
+        return Hex.encode(Data(out))
     }
 }
 
@@ -548,7 +544,6 @@ enum SilentPaymentSweep {
      // psbt has PSBT_IN_TAP_KEY_SIG for `signed` inputs → finalizepsbt → broadcast
  }
 */
-
 
 // MARK: - Detecting silent payment inputs
 //
@@ -657,29 +652,6 @@ extension SilentPaymentSpend {
         var info: WalletInfo?
     }
 
-    /// The Core wallet label FN-Server gives every output it imports:
-    /// "sp scan=<B_scan hex> k=<k> [m=<label m>] [t=<t_k hex>]". Outputs imported before
-    /// FN-Server added `t=` have no tweak.
-    struct WalletLabel {
-        let scanPub: String
-        let m: UInt32?
-        let tweakHex: String?
-
-        init?(_ label: String) {
-            let fields = label.split(separator: " ")
-            guard fields.first == "sp" else { return nil }
-            var values: [String: String] = [:]
-            for field in fields.dropFirst() {
-                let parts = field.split(separator: "=", maxSplits: 1)
-                if parts.count == 2 { values[String(parts[0])] = String(parts[1]).lowercased() }
-            }
-            guard let scan = values["scan"], scan.count == 66 else { return nil }
-            scanPub = scan
-            m = values["m"].flatMap { UInt32($0) }
-            tweakHex = values["t"].flatMap { $0.count == 64 ? $0 : nil }
-        }
-    }
-
     /// Finds which inputs of `psbt` are silent payment outputs paid to one of your
     /// signers, in the ACTIVE wallet. Only taproot inputs the wallet holds as a bare key
     /// (FN-Server's `rawtr()` imports) are considered; see `detect(candidates:)`.
@@ -715,7 +687,7 @@ extension SilentPaymentSpend {
             }
             candidates.append(Candidate(txid: input.txidDisplay,
                                         vout: Int(input.vout),
-                                        outputKey: SPHexFN.encode(s[2..<34]),
+                                        outputKey: Hex.encode(s[2..<34]),
                                         info: knownInfo[outpoint]))
         }
 
@@ -811,7 +783,7 @@ extension SilentPaymentSpend {
             }
             var candidate = remaining.removeFirst()
             guard candidate.info == nil,
-                  let key = SPHexFN.decode(candidate.outputKey),
+                  let key = Hex.decode(candidate.outputKey),
                   let address = try? SPAddress.p2tr(xonly: key) else {
                 result.append(candidate)
                 next()
@@ -831,12 +803,6 @@ extension SilentPaymentSpend {
         }
 
         next()
-    }
-
-    /// B_scan (hex, compressed) of a scan key pair.
-    static func scanPublicKey(of keys: ScanKeys) -> String? {
-        guard let key = try? P256K.Signing.PrivateKey(dataRepresentation: keys.bScan) else { return nil }
-        return SPHexFN.encode(Data(key.publicKey.dataRepresentation))
     }
 
     /// One owned output found by `match`.
@@ -941,7 +907,7 @@ extension SilentPaymentSpend {
                 return
             }
             fundingTransactionHex(txid: parsed.tx.inputs[i].txidDisplay) { hex in
-                if let hex, let bytes = SPHexFN.decode(hex), (try? SPTx([UInt8](bytes))) != nil {
+                if let hex, let bytes = Hex.decode(hex), (try? SPTx([UInt8](bytes))) != nil {
                     parsed.inputs[i].append((key: [SPPsbt.inNonWitnessUtxo], value: [UInt8](bytes)))
                     added = true
                 }
@@ -998,7 +964,7 @@ extension SilentPaymentSpend {
                 let signer = SignerStruct(dictionary: dict)
                 guard signer.words == nil,
                       let info = SignerSilentPayment.saved(signer, mainnet: SPAddress.isMainnet),
-                      let bScan = SPHexFN.decode(info.scanKey), bScan.count == 32,
+                      let bScan = Hex.decode(info.scanKey), bScan.count == 32,
                       let bSpendPub = SignerSilentPayment.spendPublicKey(address: info.address) else { continue }
                 result.append(ScanKeys(bScan: bScan, bSpendPub: bSpendPub, signerLabel: signer.label))
             }
@@ -1045,7 +1011,7 @@ extension SilentPaymentSpend {
     /// Saves a proven silent payment output's tweak (and label tweak) on its cached UTXO row,
     /// encrypted with the app key. Completion (main queue): whether it was saved.
     static func saveTweak(_ output: OwnedOutput, utxoId: UUID, completion: @escaping (Bool) -> Void) {
-        guard let tweak = SPHexFN.decode(output.tweakHex), tweak.count == 32,
+        guard let tweak = Hex.decode(output.tweakHex), tweak.count == 32,
               let encrypted = Crypto.encrypt(tweak) else {
             DispatchQueue.main.async { completion(false) }
             return
@@ -1056,7 +1022,7 @@ extension SilentPaymentSpend {
                 return
             }
             guard let labelHex = output.labelTweakHex,
-                  let label = SPHexFN.decode(labelHex), label.count == 32,
+                  let label = Hex.decode(labelHex), label.count == 32,
                   let encryptedLabel = Crypto.encrypt(label) else {
                 DispatchQueue.main.async { completion(true) }
                 return
@@ -1069,16 +1035,16 @@ extension SilentPaymentSpend {
 
     /// The x-only output key (hex) B_spend (+ label tweak·G) + t_k·G, as BIP352 defines it.
     static func outputKey(spendPub: Data, output: OwnedOutput) -> String? {
-        guard let tk = SPHexFN.decode(output.tweakHex), SPScalar.isValid(tk),
+        guard let tk = Hex.decode(output.tweakHex), SPScalar.isValid(tk),
               var base = try? P256K.Signing.PublicKey(dataRepresentation: spendPub, format: .compressed),
               let tkPoint = try? P256K.Signing.PrivateKey(dataRepresentation: tk).publicKey else { return nil }
         if let labelHex = output.labelTweakHex {
-            guard let label = SPHexFN.decode(labelHex), SPScalar.isValid(label),
+            guard let label = Hex.decode(labelHex), SPScalar.isValid(label),
                   let labeled = try? base.add(Array(label)) else { return nil }
             base = labeled
         }
         guard let key = try? base.combine([tkPoint], format: .compressed) else { return nil }
-        return SPHexFN.encode(Data(key.xonly.bytes))
+        return Hex.encode(Data(key.xonly.bytes))
     }
 
     /// The candidates with a saved tweak that one of your signers' spend keys turns into
@@ -1147,7 +1113,7 @@ extension SilentPaymentSpend {
         for vin in vins {
             if let prevTxid = vin["txid"] as? String,
                let n = (vin["vout"] as? NSNumber)?.uint32Value,
-               let txidBytes = SPHexFN.decode(prevTxid), txidBytes.count == 32 {
+               let txidBytes = Hex.decode(prevTxid), txidBytes.count == 32 {
                 var le = n.littleEndian
                 outpoints.append(Data(txidBytes.reversed()) + Data(bytes: &le, count: 4))
             }
@@ -1191,14 +1157,14 @@ extension SilentPaymentSpend {
                 var hit = false
                 for base in bases {
                     guard let output = try? base.point.combine([tkPoint], format: .compressed) else { continue }
-                    let xonly = SPHexFN.encode(Data(output.xonly.bytes))
+                    let xonly = Hex.encode(Data(output.xonly.bytes))
                     guard remaining.remove(xonly) != nil else { continue }
 
                     hit = true
                     if xonly == targetXonly {
                         return OwnedOutput(txid: txid, vout: target,
-                                           tweakHex: SPHexFN.encode(tk),
-                                           labelTweakHex: base.labelTweak.map { SPHexFN.encode($0) })
+                                           tweakHex: Hex.encode(tk),
+                                           labelTweakHex: base.labelTweak.map { Hex.encode($0) })
                     }
                 }
 
@@ -1229,7 +1195,7 @@ enum SPDetect {
 
     /// Witness program of version 2…16 (exactly OP_n <2…40-byte push>).
     static func isSegwitV2Plus(_ hex: String) -> Bool {
-        guard let s = SPHexFN.decode(hex).map({ [UInt8]($0) }), s.count >= 4, s.count <= 42 else { return false }
+        guard let s = Hex.decode(hex).map({ [UInt8]($0) }), s.count >= 4, s.count <= 42 else { return false }
         let pushLen = Int(s[1])
         guard (2...40).contains(pushLen), s.count == pushLen + 2 else { return false }
         return (0x52...0x60).contains(s[0])
@@ -1244,7 +1210,7 @@ enum SPDetect {
 
         func compressed(_ hex: String) -> Data? {
             guard hex.count == 66, hex.hasPrefix("02") || hex.hasPrefix("03") else { return nil }
-            return SPHexFN.decode(hex)
+            return Hex.decode(hex)
         }
 
         // P2TR: even-Y output key, unless a script-path spend with the NUMS internal key.
@@ -1255,7 +1221,7 @@ enum SPDetect {
                String(control.dropFirst(2).prefix(64)) == numsH {
                 return nil
             }
-            return SPHexFN.decode("02" + String(spk.dropFirst(4)))
+            return Hex.decode("02" + String(spk.dropFirst(4)))
         }
         // P2WPKH: witness [sig, pubkey].
         if SPDetect.isP2WPKH(spk) {
@@ -1268,8 +1234,8 @@ enum SPDetect {
         }
         // P2PKH: last 33-byte window of the scriptSig whose HASH160 matches.
         if SPDetect.isP2PKH(spk) {
-            guard let want = SPHexFN.decode(String(spk.dropFirst(6).prefix(40))),
-                  let sig = SPHexFN.decode(scriptSig) else { return nil }
+            guard let want = Hex.decode(String(spk.dropFirst(6).prefix(40))),
+                  let sig = Hex.decode(scriptSig) else { return nil }
             let bytes = [UInt8](sig)
             var end = bytes.count
             while end >= 33 {
@@ -1424,7 +1390,7 @@ enum SilentPaymentChange {
     /// Same size as a real silent payment output. Never signed or broadcast.
     static let placeholderScript = "5120" + SPDetect.numsH
     static func placeholderAddress() -> String? {
-        guard let nums = SPHexFN.decode(SPDetect.numsH) else { return nil }
+        guard let nums = Hex.decode(SPDetect.numsH) else { return nil }
         return try? SPAddress.p2tr(xonly: nums)
     }
 
@@ -1497,7 +1463,7 @@ enum SilentPaymentChange {
 
         // 36-byte outpoint: txid (internal byte order) || vout LE.
         var outpoint: Data {
-            var d = Data((SPHexFN.decode(txid) ?? Data()).reversed())
+            var d = Data((Hex.decode(txid) ?? Data()).reversed())
             var le = UInt32(vout).littleEndian
             d.append(Data(bytes: &le, count: 4))
             return d
@@ -1572,7 +1538,7 @@ enum SilentPaymentChange {
         if SPDetect.isSegwitV2Plus(spk) { return (.segwitV2Plus, nil) }
 
         let derivPubs: [Data] = (pin["bip32_derivs"] as? [[String: Any]] ?? [])
-            .compactMap { ($0["pubkey"] as? String).flatMap(SPHexFN.decode) }
+            .compactMap { ($0["pubkey"] as? String).flatMap(Hex.decode) }
             .filter { $0.count == 33 && ($0.first == 0x02 || $0.first == 0x03) }
 
         // P2TR: even-Y output key, unless it's spent via script path with the NUMS
@@ -1580,27 +1546,27 @@ enum SilentPaymentChange {
         if SPDetect.isP2TR(spk) {
             let internalKey = (pin["taproot_internal_key"] as? String)?.lowercased()
             if internalKey == SPDetect.numsH { return (.p2trNums, nil) }
-            return (.p2tr, SPHexFN.decode("02" + String(spk.dropFirst(4))))
+            return (.p2tr, Hex.decode("02" + String(spk.dropFirst(4))))
         }
         // P2WPKH
         if SPDetect.isP2WPKH(spk) {
-            let program = SPHexFN.decode(String(spk.dropFirst(4)))
+            let program = Hex.decode(String(spk.dropFirst(4)))
             if let pub = derivPubs.first(where: { SPHashFN.hash160($0) == program }) { return (.p2wpkh, pub) }
             return (.unknown, nil)
         }
         // P2SH: only P2SH-P2WPKH is eligible.
         if SPDetect.isP2SH(spk) {
             guard let redeemHex = ((pin["redeem_script"] as? [String: Any])?["hex"] as? String)?.lowercased(),
-                  let redeem = SPHexFN.decode(redeemHex) else { return (.unknown, nil) }
+                  let redeem = Hex.decode(redeemHex) else { return (.unknown, nil) }
             guard SPDetect.isP2WPKH(redeemHex) else { return (.ineligible, nil) }
-            let program = SPHexFN.decode(String(redeemHex.dropFirst(4)))
-            guard SPHexFN.decode(String(spk.dropFirst(4).prefix(40))) == SPHashFN.hash160(redeem),
+            let program = Hex.decode(String(redeemHex.dropFirst(4)))
+            guard Hex.decode(String(spk.dropFirst(4).prefix(40))) == SPHashFN.hash160(redeem),
                   let pub = derivPubs.first(where: { SPHashFN.hash160($0) == program }) else { return (.unknown, nil) }
             return (.p2shP2wpkh, pub)
         }
         // P2PKH (compressed keys only)
         if SPDetect.isP2PKH(spk) {
-            let hash = SPHexFN.decode(String(spk.dropFirst(6).prefix(40)))
+            let hash = Hex.decode(String(spk.dropFirst(6).prefix(40)))
             if let pub = derivPubs.first(where: { SPHashFN.hash160($0) == hash }) { return (.p2pkh, pub) }
             return (.unknown, nil)
         }
@@ -1657,7 +1623,7 @@ enum SilentPaymentChange {
             do {
                 let xonly = try changeKey(inputs: tx.inputs, keys: keys, k: k)
                 let address = try SPAddress.p2tr(xonly: xonly)
-                let script = "5120" + SPHexFN.encode(xonly)
+                let script = "5120" + Hex.encode(xonly)
                 // Our own receiver scan (the code FN-Server mirrors and the verifier
                 // uses) must find it, exactly as the transaction will be broadcast.
                 var scripts = finalScripts
@@ -1814,7 +1780,7 @@ enum SilentPaymentChange {
             var entry: [String: Any] = ["txid": input.txid,
                                         "vout": NSNumber(value: input.vout),
                                         "prevout": ["scriptPubKey": ["hex": input.script]]]
-            let pub = input.pubkey.map { SPHexFN.encode($0) } ?? ""
+            let pub = input.pubkey.map { Hex.encode($0) } ?? ""
             switch input.kind {
             case .p2tr:
                 entry["txinwitness"] = [schnorrSig]
@@ -1823,7 +1789,7 @@ enum SilentPaymentChange {
             case .p2wpkh:
                 entry["txinwitness"] = [ecdsaSig, pub]
             case .p2shP2wpkh:
-                let program = input.pubkey.map { SPHexFN.encode(SPHashFN.hash160($0)) } ?? ""
+                let program = input.pubkey.map { Hex.encode(SPHashFN.hash160($0)) } ?? ""
                 entry["scriptSig"] = ["hex": "160014" + program]
                 entry["txinwitness"] = [ecdsaSig, pub]
             case .p2pkh:

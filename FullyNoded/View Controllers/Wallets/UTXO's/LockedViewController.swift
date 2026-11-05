@@ -9,17 +9,26 @@
 import UIKit
 
 class LockedViewController: UIViewController {
-    
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
+
     private var lockedUtxos: [[String: Any]] = []
-    var selectedVout = Int()
-    var selectedTxid = ""
-    @IBOutlet var tableView: UITableView!
+    let tableView = UITableView(frame: .zero, style: .grouped)
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationItem.title = "Locked UTXO's"
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(tableView)
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.register(UINib(nibName: UTXOCell.identifier, bundle: nil), forCellReuseIdentifier: UTXOCell.identifier)
+        tableView.register(LockedCell.self, forCellReuseIdentifier: "lockedCell")
         tableView.tableFooterView = UIView(frame: .zero)
         showActivity("Getting Locked UTXO's")
         // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
@@ -134,31 +143,7 @@ class LockedViewController: UIViewController {
     }
 }
 
-// MARK: UTXOCellDelegate
-
-//extension LockedViewController: UTXOCellDelegate {
-//    
-//    func didTapToLock(_ utxo: Utxo) {
-//        unlock(utxo)
-//    }
-//    
-//    func didTapToEditLabel(_ utxo: Utxo) {}
-//    
-//    func didTapToFetchOrigin(_ utxo: Utxo) {}
-//    
-//    func didTapToMix(_ utxo: Utxo) {}
-//    
-//    func didTapDonateChange(_ utxo: Utxo) {}
-//    
-//    func didTapFidelity(_ utxo: Utxo) {}
-//    
-////    func didTapInfoFor(_ utxo: Utxo) {
-////        performSegue(withIdentifier: "getUTXOinfo", sender: utxo)
-////    }
-//    
-//}
-
-// Mark: UITableViewDataSource
+// MARK: UITableViewDataSource
 
 extension LockedViewController: UITableViewDataSource {
     
@@ -213,10 +198,36 @@ extension LockedViewController: UITableViewDelegate {
 extension LockedViewController {
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         WalletTheme.styleCell(cell, in: tableView, tint: .utxo)
-        (cell as? UTXOCell)?.flattenIconButtons()   // only Nodeless keeps a border
     }
 
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         WalletTheme.styleHeader(view, tint: .utxo)
     }
+}
+
+/// Unlock button (tag 4), vout (tag 2) and txid (tag 3), stacked.
+private final class LockedCell: UITableViewCell {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        let unlock = UIButton(type: .system)
+        unlock.tag = 4
+        unlock.configuration = .plain()
+        unlock.configuration?.title = "Unlock"
+        unlock.contentHorizontalAlignment = .trailing
+        let vout = UILabel()
+        vout.tag = 2
+        let txid = UILabel()
+        txid.tag = 3
+        let stack = UIStackView(arrangedSubviews: [unlock, vout, txid])
+        stack.axis = .vertical
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            stack.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
+            stack.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor)
+        ])
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 }

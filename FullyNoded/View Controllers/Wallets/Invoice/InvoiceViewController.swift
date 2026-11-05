@@ -1294,7 +1294,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         guard let signer = silentPaymentSignerStruct, let wallet = wallet else { return }
         // Same rule as the signer's export: without an app password there's nothing to check
         // (the prompt could never succeed), so say what's needed instead.
-        guard KeyChain.getData("UnlockPassword") != nil else {
+        guard AppAuthentication.hasAppPassword else {
             showAlert(vc: self, title: "Add an app lock first", message: "The FN-Server link contains your scan private key, so it needs your app password (or Face ID / Touch ID). Tap the lock button on the home screen to add a password, then come back here.")
             return
         }
@@ -1307,8 +1307,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 return
             }
             DispatchQueue.main.async {
-                guard let vc = UIStoryboard(name: "Main", bundle: nil)
-                        .instantiateViewController(withIdentifier: "QRDisplayer") as? QRDisplayerViewController else { return }
+                let vc = QRDisplayerViewController()
                 vc.headerIcon = UIImage(systemName: "eye")
                 vc.headerText = "Fully Noded Server"
                 vc.descriptionText = "In Fully Noded Server, open Silent Payments and use Import from Fully Noded: Paste link (tap Copy Text here; Universal Clipboard brings it to your Mac) or QR image… (Share QR, then save or AirDrop the image). It sets up silent payment scanning for \"\(wallet.label)\" in one step: the silent payment address and scan private key of \(signer.label) (\(mainnet ? "mainnet" : "testnet / signet")), and this wallet's name on your node. It can't spend your bitcoin, but it reveals every silent payment you receive. Only use it with a server you control."
@@ -1346,9 +1345,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
 
     @objc private func showQrFullScreen() {
-        guard !requestText.isEmpty,
-              let vc = UIStoryboard(name: "Main", bundle: nil)
-                .instantiateViewController(withIdentifier: "QRDisplayer") as? QRDisplayerViewController else { return }
+        guard !requestText.isEmpty else { return }
+        let vc = QRDisplayerViewController()
         let silentPayment = shownSilentPayment != nil
         vc.headerIcon = UIImage(systemName: silentPayment ? "eye.slash" : "qrcode")
         vc.headerText = silentPayment ? "Silent Payment Address" : "Payment Request"
@@ -1562,17 +1560,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
     }
 }
-
-extension Date {
-    var unixTimestamp: Int {
-        return Int(self.timeIntervalSince1970)
-    }
-
-    var unixTimestampUInt32: UInt32 {
-        return UInt32(self.timeIntervalSince1970)
-    }
-}
-
 
 // MARK: - Payjoin progress
 

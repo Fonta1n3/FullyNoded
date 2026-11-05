@@ -9,11 +9,13 @@
 import UIKit
 
 class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate {
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
     
-    @IBOutlet weak var importOutlet: UIButton!
-    @IBOutlet weak var labelField: UITextField!
-    @IBOutlet weak var descriptorField: UILabel!
-    @IBOutlet var addressTableView: UITableView!
+    let importOutlet = UIButton(type: .system)
+    let labelField = UITextField()
+    let descriptorField = UILabel()
+    let addressTableView = UITableView(frame: .zero, style: .plain)
     
     var addresses: [String] = []
     var onDoneBlock:(((Bool)) -> Void)?
@@ -21,6 +23,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        buildLayout()
         
         addressTableView.delegate = self
         addressTableView.dataSource = self
@@ -44,6 +47,64 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
         WalletTheme.apply(to: self, tint: .create)
     }
     
+    private func buildLayout() {
+        let scan = UIBarButtonItem(image: UIImage(systemName: "qrcode.viewfinder"), style: .plain,
+                                   target: self, action: #selector(scanQrAction(_:)))
+        scan.accessibilityLabel = "Scan descriptor"
+        navigationItem.rightBarButtonItem = scan
+
+        func caption(_ text: String) -> UILabel {
+            let label = UILabel()
+            label.text = text
+            label.numberOfLines = 0
+            label.textColor = .secondaryLabel
+            return label
+        }
+        func spacer() -> UIView {
+            let view = UIView()
+            view.heightAnchor.constraint(equalToConstant: 12).isActive = true
+            return view
+        }
+
+        labelField.placeholder = "optional label"
+        labelField.font = .systemFont(ofSize: 14)
+        labelField.backgroundColor = .secondarySystemFill
+        labelField.autocorrectionType = .no
+        labelField.spellCheckingType = .no
+        labelField.smartDashesType = .no
+        labelField.smartQuotesType = .no
+        labelField.smartInsertDeleteType = .no
+        labelField.keyboardAppearance = .dark
+        labelField.heightAnchor.constraint(equalToConstant: 34).isActive = true
+
+        descriptorField.numberOfLines = 0
+
+        addressTableView.register(DerivedAddressCell.self, forCellReuseIdentifier: "addressCell")
+        addressTableView.backgroundColor = .clear
+
+        importOutlet.setTitle("Create Wallet", for: .normal)
+        importOutlet.backgroundColor = .systemFill
+        importOutlet.heightAnchor.constraint(equalToConstant: 43).isActive = true
+        importOutlet.addTarget(self, action: #selector(importAction(_:)), for: .touchUpInside)
+
+        let stack = UIStackView(arrangedSubviews: [
+            caption("Give your wallet a name:"), labelField, spacer(),
+            caption("The descriptor you pasted:"), descriptorField, spacer(),
+            caption("First 5 addresses derived from  the descriptor, confirm they are correct:"),
+            addressTableView, importOutlet
+        ])
+        stack.axis = .vertical
+        stack.spacing = 4
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 14),
+            stack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            stack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
+        ])
+    }
+    
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         labelField.resignFirstResponder()
     }
@@ -55,16 +116,16 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
         return !touched.isDescendant(of: labelField)
     }
     
-    @IBAction func importAction(_ sender: Any) {
+    @objc func importAction(_ sender: Any) {
         guard !isShowingActivity else { return }
         guard let desc = self.descriptor else { return }
         
         importDescriptor(desc.string)
     }
     
-    @IBAction func scanQrAction(_ sender: Any) {
+    @objc func scanQrAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
-            self?.performSegue(withIdentifier: "segueToScanDescriptor", sender: self)
+            self?.showDescriptorScanner()
         }
     }
     
@@ -168,25 +229,43 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
     
     // MARK: - Navigation
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "segueToScanDescriptor" {
-            if let vc = segue.destination as? QRScannerViewController {
-                vc.isScanningAddress = true
-                vc.onDoneBlock = { [weak self] descriptor in
-                    guard let self = self else { return }
-                    
-                    guard let desc = descriptor else { return }
-                    
-                    self.descriptor = Descriptor(desc)
-                    addDescriptorToLabel(self.descriptor!)
-                    self.addresses.removeAll()
-                    self.addressTableView.reloadData()
-                    loadAddresses(self.descriptor!)
-                }
-            }
+    private func showDescriptorScanner() {
+        let vc = QRScannerViewController()
+        vc.isScanningAddress = true
+        vc.onDoneBlock = { [weak self] descriptor in
+            guard let self = self else { return }
+            
+            guard let desc = descriptor else { return }
+            
+            self.descriptor = Descriptor(desc)
+            addDescriptorToLabel(self.descriptor!)
+            self.addresses.removeAll()
+            self.addressTableView.reloadData()
+            loadAddresses(self.descriptor!)
         }
+        present(vc, animated: true)
     }
+}
+
+/// One derived address (tag 1).
+private final class DerivedAddressCell: UITableViewCell {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        backgroundColor = .clear
+        let label = UILabel()
+        label.tag = 1
+        label.numberOfLines = 0
+        label.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.topAnchor.constraint(equalTo: contentView.layoutMarginsGuide.topAnchor),
+            label.bottomAnchor.constraint(equalTo: contentView.layoutMarginsGuide.bottomAnchor),
+            label.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
+            label.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor)
+        ])
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 }
 
 // MARK: - Theme

@@ -96,22 +96,6 @@ class NodeLogic {
         }
     }
     
-    func listOnchainTransactions(completion: @escaping ((response: ListTransactionsResponse?, errorMessage: String?)) -> Void) {
-        let param:List_Transactions = .init(["count": 100])
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listtransactions(param)) { (response, errorMessage) in
-            guard let response = response as? NSArray else {
-                completion((nil, errorMessage ?? "Unable to cast listransactions rsponse as an NSArray."))
-                return
-            }
-            
-            do {
-                completion((try ListTransactionsResponse(from: response), nil))
-            } catch {
-                completion((nil, "Failed parsing listtransactions response: \(error.localizedDescription)"))
-            }
-        }
-    }
-    
     // MARK: Parsers
     
     private func parseMiningInfo(miningInfo: [String:Any], completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {

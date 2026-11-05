@@ -515,10 +515,10 @@ class UTXOViewController: UIViewController {
                 dict["witnessScript"] = witnessScript
             }
             // Silent payment tweaks stay encrypted at rest.
-            if let tweak = utxo.spTweakHex.flatMap({ SPHexFN.decode($0) }), let encrypted = Crypto.encrypt(tweak) {
+            if let tweak = utxo.spTweakHex.flatMap({ Hex.decode($0) }), let encrypted = Crypto.encrypt(tweak) {
                 dict["spTweak"] = encrypted
             }
-            if let label = utxo.spLabelTweakHex.flatMap({ SPHexFN.decode($0) }), let encrypted = Crypto.encrypt(label) {
+            if let label = utxo.spLabelTweakHex.flatMap({ Hex.decode($0) }), let encrypted = Crypto.encrypt(label) {
                 dict["spLabelTweak"] = encrypted
             }
             group.enter()
@@ -587,8 +587,7 @@ class UTXOViewController: UIViewController {
     // MARK: Actions
 
     private func spend(_ utxos: [UTXO]) {
-        guard let vc = UIStoryboard(name: "Main", bundle: nil)
-            .instantiateViewController(withIdentifier: "CreateRawTx") as? CreateRawTxViewController else { return }
+        let vc = CreateRawTxViewController()
         vc.inputs = utxos.map { ["txid": $0.txid, "vout": $0.vout, "sequence": 1] }
         vc.utxoTotal = utxos.reduce(0) { $0 + $1.amount }
         vc.address = ""
@@ -598,8 +597,7 @@ class UTXOViewController: UIViewController {
     }
 
     @objc private func showLocked() {
-        guard let vc = UIStoryboard(name: "Main", bundle: nil)
-            .instantiateViewController(withIdentifier: "LockedUtxos") as? LockedViewController else { return }
+        let vc = LockedViewController()
         navigationController?.pushViewController(vc, animated: true)
     }
 

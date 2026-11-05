@@ -79,7 +79,12 @@ class NodelessWalletsTableViewController: UITableViewController {
     
     private func goToNodeless() {
         DispatchQueue.main.async { [weak self] in
-            self?.performSegue(withIdentifier: "segueFromWalletsToNodeless", sender: self)
+            guard let self = self, let wallet = self.wallet else { return }
+            let vc = NodelessTableViewController(style: .plain)
+            vc.primaryDescriptor = wallet.receiveDescriptor
+            vc.changeDescriptor = wallet.changeDescriptor
+            vc.walletName = wallet.label
+            self.navigationController?.pushViewController(vc, animated: true)
         }
     }
     
@@ -116,16 +121,7 @@ class NodelessWalletsTableViewController: UITableViewController {
         headerView.frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: height)
         tableView.tableHeaderView = headerView
     }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        guard let vc = segue.destination as? NodelessTableViewController else { return }
-        guard let wallet = wallet else { return }
-        vc.primaryDescriptor = wallet.receiveDescriptor
-        vc.changeDescriptor = wallet.changeDescriptor
-        vc.walletName = wallet.label
-    }
 }
-
 
 class WalletCell: UITableViewCell {
     static let reuseIdentifier = "WalletCell"
@@ -368,9 +364,7 @@ class WalletCell: UITableViewCell {
             expiryConfig.background.backgroundColor = UIColor.systemPink.withAlphaComponent(0.18)
             expiryBadge.configuration = expiryConfig
             expiryBadge.alpha = 1
-            //nodelessButton.alpha = 0
         } else {
-            //nodelessButton.alpha = 1
             expiryBadge.alpha = 0
         }
         
@@ -440,8 +434,7 @@ class WalletCell: UITableViewCell {
         }
 
         networkLabel.configuration = networkConfig
-        
-        
+
     }
         
     @objc private func goNodeless() {

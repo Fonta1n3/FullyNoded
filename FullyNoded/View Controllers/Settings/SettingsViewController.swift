@@ -9,9 +9,7 @@
 import UIKit
 import Foundation
 
-/// Settings home, built in code. The storyboard scene is only the tab's root shell: it
-/// keeps the navigation-controller relationship and the Security / Currency / App Icon
-/// segues. Node Manager and Saved Wallets are pushed in code.
+/// Settings home, built in code: the Settings tab's root.
 class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     private enum Row {
@@ -136,7 +134,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             cell.configure(icon: "square.stack", title: "Saved Wallets", subtitle: subtitle)
 
         case .security:
-            let locked = KeyChain.getData("UnlockPassword") != nil
+            let locked = AppAuthentication.hasAppPassword
             cell.configure(icon: "lock.shield",
                            title: "Security Center",
                            subtitle: locked ? "App lock on" : "No app lock set",
@@ -178,14 +176,13 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         case .nodes:
             navigationController?.pushViewController(NodesViewController(), animated: true)
         case .wallets:
-            let wallets = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SavedWallets")
-            navigationController?.pushViewController(wallets, animated: true)
+            navigationController?.pushViewController(NodelessWalletsTableViewController(style: .plain), animated: true)
         case .security:
-            performSegue(withIdentifier: "goToSecurity", sender: self)
+            navigationController?.pushViewController(SecurityCenterViewController(), animated: true)
         case .currency:
-            performSegue(withIdentifier: "segueToCurrencies", sender: self)
+            navigationController?.pushViewController(CurrenciesTableViewController(style: .plain), animated: true)
         case .appIcon:
-            performSegue(withIdentifier: "segueToAppIconSelector", sender: self)
+            navigationController?.pushViewController(AppIconSelectorTableViewController(style: .plain), animated: true)
         }
     }
 

@@ -8,7 +8,6 @@
 
 import UIKit
 
-@available(iOS 13.0, *)
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     weak var mgr = TorClient.sharedInstance
@@ -17,95 +16,71 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private var blacked = UIView()
     
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
-        // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
-        // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        guard let _ = (scene as? UIWindowScene) else { return }
+        guard let windowScene = scene as? UIWindowScene else { return }
 
+        let window = UIWindow(windowScene: windowScene)
+        let tabBarController = Self.makeTabBarController()
         // Cypherpunk tab bar (WalletTheme in ActiveWalletViewController.swift).
-        if let tabBarController = window?.rootViewController as? UITabBarController {
-            WalletTheme.styleTabBar(tabBarController)
+        WalletTheme.styleTabBar(tabBarController)
+        window.rootViewController = tabBarController
+        self.window = window
+        window.makeKeyAndVisible()
+    }
+    
+    /// Home, Wallet, Signers and Settings, each in its own navigation controller. The tabs
+    /// are icons only, with the names as their accessibility labels.
+    private static func makeTabBarController() -> UITabBarController {
+        let tabs: [(root: UIViewController, symbol: String, label: String)] = [
+            (MainMenuViewController(), "desktopcomputer", "Home"),
+            (ActiveWalletViewController(), "bitcoinsign.square", "Wallet"),
+            (SignersViewController(), "signature", "Signers"),
+            (SettingsViewController(), "gear", "Settings")
+        ]
+        let tabBarController = UITabBarController()
+        tabBarController.tabBar.barStyle = .black
+        tabBarController.viewControllers = tabs.enumerated().map { index, tab in
+            let navigationController = UINavigationController(rootViewController: tab.root)
+            let item = UITabBarItem(title: nil, image: UIImage(systemName: tab.symbol), tag: index)
+            item.accessibilityLabel = tab.label
+            navigationController.tabBarItem = item
+            return navigationController
         }
-    }
-
-    func sceneDidDisconnect(_ scene: UIScene) {
-        // Called as the scene is being released by the system.
-        // This occurs shortly after the scene enters the background, or when its session is discarded.
-        // Release any resources associated with this scene that can be re-created the next time the scene connects.
-        // The scene may re-connect later, as its session was not neccessarily discarded (see `application:didDiscardSceneSessions` instead).
-    }
-
-    func sceneDidBecomeActive(_ scene: UIScene) {
-        // Called when the scene has moved from an inactive state to an active state.
-        // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
-    }
-
-    func sceneWillResignActive(_ scene: UIScene) {
-        // Called when the scene will move from an active state to an inactive state.
-        // This may occur due to temporary interruptions (ex. an incoming phone call).
-        
+        return tabBarController
     }
 
     func sceneWillEnterForeground(_ scene: UIScene) {
         self.blacked.removeFromSuperview()
         guard !isBooting else { isBooting = !isBooting; return }
         
-        guard KeyChain.getData("UnlockPassword") != nil else {
-            DispatchQueue.background(delay: 0.2, completion:  {
-                //                MakeRPCCall.sharedInstance.connectToRelay(node: <#NodeStruct#>)
-                //                MakeRPCCall.sharedInstance.eoseReceivedBlock = { _ in }
-            })
-            if !isBooting && mgr?.state != .started && mgr?.state != .connected  {
-                //mgr?.start(delegate: nil)
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .startTorFromAppDelegate, object: nil, userInfo: nil)
-                }
-            } else {
-                isBooting = false
-            }
+        guard AppAuthentication.hasAppPassword else {
+            startTorIfNeeded()
             return
         }
         
-        if #available(iOS 14.0, *) {
-            if !ProcessInfo.processInfo.isiOSAppOnMac {
-                let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                
-                guard let loginVC = storyboard.instantiateViewController(identifier: "LogIn") as? LogInViewController,
-                      let topVC = self.window?.rootViewController?.topViewController(),
-                      topVC.restorationIdentifier != "LogIn" else {
-                    return
-                }
-                
-                DispatchQueue.main.async {
-                    loginVC.modalPresentationStyle = .fullScreen
-                    topVC.present(loginVC, animated: true, completion: nil)
-                }
-                
-                loginVC.onDoneBlock = { [weak self] in
-                    guard let self = self else { return }
-                    
-                    //            DispatchQueue.background(delay: 0.2, completion:  {
-                    //                //MakeRPCCall.sharedInstance.connectToRelay(node: )
-                    ////                MakeRPCCall.sharedInstance.eoseReceivedBlock = { subscribed in
-                    ////                    if subscribed {
-                    ////                        DispatchQueue.main.async {
-                    ////                            NotificationCenter.default.post(name: .refreshNode, object: nil)
-                    ////                        }
-                    ////                    }
-                    ////                }
-                    //            })
-                    
-                    if !self.isBooting && self.mgr?.state != .started && self.mgr?.state != .connected  {
-                        //self.mgr?.start(delegate: nil)
-                        DispatchQueue.main.async {
-                            NotificationCenter.default.post(name: .startTorFromAppDelegate, object: nil, userInfo: nil)
-                        }
-                    } else {
-                        self.isBooting = false
-                    }
-                }
+        // On a Mac the app isn't locked when it comes back.
+        guard !ProcessInfo.processInfo.isiOSAppOnMac,
+              let topVC = self.window?.rootViewController?.topViewController(),
+              topVC.restorationIdentifier != "LogIn" else {
+            return
+        }
+        let loginVC = LogInViewController()
+        loginVC.onDoneBlock = { [weak self] in
+            self?.startTorIfNeeded()
+        }
+        
+        DispatchQueue.main.async {
+            loginVC.modalPresentationStyle = .fullScreen
+            topVC.present(loginVC, animated: true, completion: nil)
+        }
+    }
+    
+    private func startTorIfNeeded() {
+        if !isBooting && mgr?.state != .started && mgr?.state != .connected {
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .startTorFromAppDelegate, object: nil, userInfo: nil)
             }
-            
+        } else {
+            isBooting = false
         }
     }
 
@@ -113,17 +88,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Save changes in the application's managed object context when the application transitions to the background.
         (UIApplication.shared.delegate as? AppDelegate)?.saveContext()
         
-        MakeRPCCall.sharedInstance.connected = false
-        
-        if mgr?.state != .stopped && mgr?.state != TorClient.TorState.none  {
-            if #available(iOS 14.0, *) {
-                if !ProcessInfo.processInfo.isiOSAppOnMac {
-                    mgr?.state = .refreshing
-                    mgr?.resign()
-                } else {
-                    print("running on mac, not quitting tor.")
-                }
-            }
+        // On a Mac Tor keeps running in the background.
+        if mgr?.state != .stopped && mgr?.state != TorClient.TorState.none && !ProcessInfo.processInfo.isiOSAppOnMac {
+            mgr?.state = .refreshing
+            mgr?.resign()
         }
         
         if let window = self.window {
@@ -229,66 +197,40 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
         
     private func presentSigner(psbt: String) {
-        guard let tabBarController = self.window!.rootViewController as? UITabBarController else { return }
-        
-        tabBarController.selectedIndex = 1
-        
-        DispatchQueue.main.async {
-            NotificationCenter.default.post(name: .signPsbt, object: nil, userInfo: ["psbt":psbt])
-        }
+        showWalletTab(posting: .signPsbt, userInfo: ["psbt": psbt])
     }
     
     private func presentBroadcaster(txn: String) {
-       guard let tabBarController = self.window!.rootViewController as? UITabBarController else { return }
-        
-        tabBarController.selectedIndex = 1
-        
-        DispatchQueue.main.async {
-            NotificationCenter.default.post(name: .broadcastTxn, object: nil, userInfo: ["txn":txn])
-        }
+        showWalletTab(posting: .broadcastTxn, userInfo: ["txn": txn])
     }
     
     private func presentMultisigCreator(cosigner: Descriptor) {
-        let storyBoard = UIStoryboard(name: "Main", bundle: nil)
-        
-        guard let multisigCreator = storyBoard.instantiateViewController(identifier: "MultisigCreator") as? CreateMultisigViewController,
-            let window = self.window,
-            let rootViewController = window.rootViewController else {
-            return
-        }
-        
+        guard let topViewController = window?.rootViewController?.topViewController() else { return }
+        let multisigCreator = CreateMultisigViewController()
         multisigCreator.cosigner = cosigner
-        
-        var currentController = rootViewController
-        
-        while let presentedController = currentController.presentedViewController {
-            currentController = presentedController
-        }
         
         // In a navigation controller, for its title, close button and pushed screens.
         let navigationController = UINavigationController(rootViewController: multisigCreator)
         navigationController.modalPresentationStyle = .fullScreen
-        currentController.present(navigationController, animated: true, completion: nil)
+        topViewController.present(navigationController, animated: true, completion: nil)
     }
     
     private func presentWalletCreator(coldCard: [String:Any]) {
-        guard let tabBarController = self.window!.rootViewController as? UITabBarController else { return }
-        
-        tabBarController.selectedIndex = 1
-        
-        DispatchQueue.main.async {
-            NotificationCenter.default.post(name: .addColdCard, object: nil, userInfo: coldCard)
-        }
+        showWalletTab(posting: .addColdCard, userInfo: coldCard)
     }
     
     private func presentWalletImporter(accountMap: [String:Any]) {
-        guard let tabBarController = self.window!.rootViewController as? UITabBarController else { return }
+        showWalletTab(posting: .importWallet, userInfo: accountMap)
+    }
+    
+    /// Switches to the Wallet tab, which handles `name`.
+    private func showWalletTab(posting name: Notification.Name, userInfo: [String: Any]) {
+        guard let tabBarController = window?.rootViewController as? UITabBarController else { return }
         
         tabBarController.selectedIndex = 1
         
         DispatchQueue.main.async {
-            NotificationCenter.default.post(name: .importWallet, object: nil, userInfo: accountMap)
+            NotificationCenter.default.post(name: name, object: nil, userInfo: userInfo)
         }
     }
-    
 }

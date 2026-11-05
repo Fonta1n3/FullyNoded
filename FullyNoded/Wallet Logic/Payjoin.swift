@@ -227,7 +227,7 @@ enum Payjoin {
 
         init(unsignedPsbt: String, signedRawTx: String, paying address: String) throws {
             guard let unsignedData = Data(base64Encoded: unsignedPsbt.trimmingCharacters(in: .whitespacesAndNewlines)),
-                  let rawBytes = SPHexFN.decode(signedRawTx.trimmingCharacters(in: .whitespacesAndNewlines)) else {
+                  let rawBytes = Hex.decode(signedRawTx.trimmingCharacters(in: .whitespacesAndNewlines)) else {
                 throw Failure("The signed payment can't be read.")
             }
             let psbt = try SPPsbt(unsignedData)
@@ -559,7 +559,7 @@ enum Payjoin {
             return
         }
 
-        if let bytes = SPHexFN.decode(text), let tx = try? SignedTx([UInt8](bytes)) {
+        if let bytes = Hex.decode(text), let tx = try? SignedTx([UInt8](bytes)) {
             let expected = proposal.tx
             guard tx.version == expected.version, tx.locktime == expected.locktime,
                   tx.inputs.count == expected.inputs.count, tx.outputs.count == expected.outputs.count,
@@ -568,7 +568,7 @@ enum Payjoin {
                 finish(.failure(Failure("That transaction isn't the receiver's version of this payment. Sign the PSBT exported from this screen.", retryable: true)))
                 return
             }
-            mempoolTest(SPHexFN.encode(bytes)) { result in finish(result.map { pending.outcome(rawTx: $0) }) }
+            mempoolTest(Hex.encode(bytes)) { result in finish(result.map { pending.outcome(rawTx: $0) }) }
             return
         }
 

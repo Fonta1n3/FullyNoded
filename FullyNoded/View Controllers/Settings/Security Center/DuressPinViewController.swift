@@ -9,17 +9,18 @@
 import UIKit
 
 class DuressPinViewController: UIViewController, UITextFieldDelegate {
-    
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
+
     private var pinHash = ""
     
-    @IBOutlet weak var duressPinTextField: UITextField!
-    @IBOutlet weak var saveButtonOutlet: UIButton!
-    
+    let duressPinTextField = UITextField()
+    let saveButtonOutlet = UIButton(type: .system)
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+        navigationItem.title = "Duress PIN"
+        buildLayout()
         duressPinTextField.delegate = self
         configureTapGesture()
         // Cypherpunk look (WalletTheme in ActiveWalletViewController.swift).
@@ -27,11 +28,46 @@ class DuressPinViewController: UIViewController, UITextFieldDelegate {
         WalletTheme.apply(to: self, tint: .settings)
     }
     
-    @IBAction func saveDuressPinAction(_ sender: Any) {
+    private func buildLayout() {
+        let title = UILabel()
+        title.text = "Duress PIN"
+        title.font = .systemFont(ofSize: 25)
+
+        duressPinTextField.borderStyle = .roundedRect
+        duressPinTextField.placeholder = "duress PIN"
+        duressPinTextField.font = .systemFont(ofSize: 14)
+        duressPinTextField.isSecureTextEntry = true
+        duressPinTextField.autocorrectionType = .no
+        duressPinTextField.spellCheckingType = .no
+        duressPinTextField.smartDashesType = .no
+        duressPinTextField.smartQuotesType = .no
+        duressPinTextField.smartInsertDeleteType = .no
+
+        let warning = UILabel()
+        warning.numberOfLines = 0
+        warning.textColor = .secondaryLabel
+        warning.text = "Setting a duress PIN means the app will PERMANENTLY DELETE ALL nodes, wallets and signers when this PIN is used to unlock the app."
+
+        saveButtonOutlet.setTitle("Save Duress PIN", for: .normal)
+        saveButtonOutlet.addTarget(self, action: #selector(saveDuressPinAction(_:)), for: .touchUpInside)
+
+        let stack = UIStackView(arrangedSubviews: [title, duressPinTextField, warning, saveButtonOutlet])
+        stack.axis = .vertical
+        stack.spacing = 8
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
+            stack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16)
+        ])
+    }
+    
+    @objc func saveDuressPinAction(_ sender: Any) {
         if pinHash == "" {
             guard let originalPIN = duressPinTextField.text else { return }
             
-            pinHash = sha256(originalPIN.utf8).hexString
+            pinHash = Crypto.sha256hash(originalPIN)
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -43,7 +79,7 @@ class DuressPinViewController: UIViewController, UITextFieldDelegate {
         } else {
             guard let confirmedPIN = duressPinTextField.text else { return }
             
-            let confirmedPINHash = sha256(confirmedPIN.utf8).hexString
+            let confirmedPINHash = Crypto.sha256hash(confirmedPIN)
             
             if confirmedPINHash == pinHash {
                 UserDefaults.standard.set(pinHash, forKey: "DuressPIN")
@@ -69,16 +105,5 @@ class DuressPinViewController: UIViewController, UITextFieldDelegate {
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
         duressPinTextField.resignFirstResponder()
     }
-    
-    
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }

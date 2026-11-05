@@ -10,37 +10,19 @@ import Foundation
 
 public struct WalletInfo: CustomStringConvertible {
     
-    //let avoid_reuse: Bool
     let balance: Double?
     let descriptors: Int?
-    //let format: String?
-    //let hdseedid: String
-    //let immature_balance: Double?
-    //let keypoololdest:Date
-    //let keypoolsize: Int
-    //let keypoolsize_hd_internal: Int
-    //let paytxfee: Int
     let private_keys_enabled: Bool?
     let scanning: Bool
-    //let txcount: Int
-    //let unconfirmed_balance: Double?
     let locked: Bool
     let walletname: String
-    //let walletversion: Int
     let progress: Double?
     
     init(_ dictionary: [String: Any]) {
-        //avoid_reuse = dictionary["avoid_reuse"] as? Bool ?? false
-        //balance = dictionary["balance"] as? String
         descriptors = RPCValue.int(dictionary["descriptors"])
         private_keys_enabled = RPCValue.bool(dictionary["private_keys_enabled"])
         scanning = (dictionary["scanning"] as? [String:Any] != nil)
         balance = RPCValue.double(dictionary["balance"])
-//        if scanning {
-//
-//        } else {
-//            progress = nil
-//        }
         progress = RPCValue.double((dictionary["scanning"] as? [String:Any])?["progress"])
         walletname = dictionary["walletname"] as? String ?? ""
         

@@ -8,9 +8,7 @@
 
 import UIKit
 
-/// Home: a dashboard for the active node, built in code. The storyboard scene is only
-/// the tab's root shell (navigation item with the lock button, and the segues to the
-/// lock screen, first-run flow, unlock password and peer detail).
+/// Home: a dashboard for the active node, built in code.
 ///
 ///   ┌ > NODE ──────────────────────── MAIN ┐
 ///   │ My Node                              │
@@ -175,7 +173,11 @@ class MainMenuViewController: UIViewController {
                                     target: self, action: #selector(showOnboarding))
         guide.tintColor = tint.accent
         guide.accessibilityLabel = "Setup guide"
-        navigationItem.leftBarButtonItems = (navigationItem.leftBarButtonItems ?? []) + [guide]
+        let lock = UIBarButtonItem(image: UIImage(systemName: "lock"), style: .plain,
+                                   target: self, action: #selector(lockAction(_:)))
+        lock.accessibilityLabel = "Lock"
+        navigationItem.title = "Fully Noded"
+        navigationItem.leftBarButtonItems = [lock, guide]
 
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.alwaysBounceVertical = true
@@ -663,7 +665,7 @@ class MainMenuViewController: UIViewController {
         if mgr?.state != .started && mgr?.state != .connected  {
             showTorBootstrapping(progress: 0)
             
-            if KeyChain.getData("UnlockPassword") != nil {
+            if AppAuthentication.hasAppPassword {
                 if isUnlocked {
                     mgr?.start(delegate: self)
                 }
@@ -692,20 +694,19 @@ class MainMenuViewController: UIViewController {
             OnboardingViewController.presentAddNode(from: self.tabBarController ?? self, force: force)
         }
     }
-    
-        
+
     @objc private func showOnboarding() {
         OnboardingViewController.replay(from: tabBarController ?? self)
     }
 
-    @IBAction func lockAction(_ sender: Any) {
-        if KeyChain.getData("UnlockPassword") != nil {
+    @objc func lockAction(_ sender: Any) {
+        if AppAuthentication.hasAppPassword {
             showUnlockScreen()
         } else {
             DispatchQueue.main.async {[weak self] in
                 guard let self = self else { return }
                 
-                self.performSegue(withIdentifier: "segueToCreateUnlockPassword", sender: self)
+                self.navigationController?.pushViewController(AppPasswordViewController(), animated: true)
             }
         }
     }
@@ -817,9 +818,9 @@ class MainMenuViewController: UIViewController {
     }
     
     func showUnlockScreen() {
-        if KeyChain.getData("UnlockPassword") != nil {
+        if AppAuthentication.hasAppPassword {
             DispatchQueue.main.async { [weak self] in
-                self?.performSegue(withIdentifier: "lockScreen", sender: self)
+                self?.presentLockScreen()
             }
         }
     }
@@ -1135,38 +1136,27 @@ class MainMenuViewController: UIViewController {
         }
     }
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-        switch segue.identifier {
+    private func presentLockScreen() {
+        let vc = LogInViewController()
+        vc.modalPresentationStyle = .fullScreen
+        vc.onDoneBlock = { [weak self] in
+            guard let self = self else { return }
             
-        case "segueToPeerInfo":
-            guard let vc = segue.destination as? PeersDetailTableViewController else { fallthrough }
+            self.isUnlocked = true                
             
-            vc.peerResponse = peerInfo
-            
-        case "lockScreen":
-            guard let vc = segue.destination as? LogInViewController else { fallthrough }
-            
-            vc.onDoneBlock = { [weak self] in
-                guard let self = self else { return }
+            if self.mgr?.state != .started && self.mgr?.state != .connected  {
+                self.mgr?.start(delegate: self)
                 
-                self.isUnlocked = true                
-                
-                if self.mgr?.state != .started && self.mgr?.state != .connected  {
-                    self.mgr?.start(delegate: self)
-                    
-                    if let node = self.activeNode {
-                        if isNotAnOnion() {
-                            loadNode(node: node)
-                        }
-                    } else {
-                        self.alertToAddNode()
+                if let node = self.activeNode {
+                    if isNotAnOnion() {
+                        loadNode(node: node)
                     }
+                } else {
+                    self.alertToAddNode()
                 }
             }
-        default:
-            break
         }
+        present(vc, animated: true)
     }
     
     //MARK: Helpers
@@ -1178,7 +1168,9 @@ class MainMenuViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            performSegue(withIdentifier: "segueToPeerInfo", sender: self)
+            let vc = PeersDetailTableViewController(style: .insetGrouped)
+            vc.peerResponse = peerInfo
+            navigationController?.pushViewController(vc, animated: true)
         }
     }
     

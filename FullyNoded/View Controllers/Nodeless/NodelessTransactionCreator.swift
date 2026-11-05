@@ -286,24 +286,15 @@ class SweepViewController: UIViewController {
         isScanningAddress: Bool = false,
         completion: @escaping (String) -> Void
     ) {
-        let scannerVC = ScanQRViewController()
-        
-        // Configure based on your use case
+        let scannerVC = QRScannerViewController()
         scannerVC.fromSignAndVerify = fromSignAndVerify
         scannerVC.isQuickConnect = isQuickConnect
         scannerVC.isScanningAddress = isScanningAddress
-        
-        // This is called when scanning completes successfully
-        scannerVC.onCompletion = { resultString in
-            // Handle the scanned result here (e.g., process PSBT, address, etc.)
-            completion(resultString)
+        scannerVC.onDoneBlock = { result in
+            guard let result = result else { return }
+            completion(result)
         }
-        
-        // Modal presentation style (full screen on iPhone, sheet on iPad)
-        scannerVC.modalPresentationStyle = .fullScreen
-        
-        // Present it
-        self.present(scannerVC, animated: true, completion: nil)
+        present(scannerVC, animated: true, completion: nil)
     }
     
     @objc private func pastePressed() {
@@ -411,7 +402,7 @@ class SweepViewController: UIViewController {
                     }
                     let expectedScript = try WalletLogic.BDKAddress(address: address, network: network).scriptPubkey().toBytes()
                     let onChain = try await EsploraAPI.output(txid: utxo.txid, vout: utxo.vout, network: network)
-                    guard SPHexFN.decode(onChain.scriptPubKey) == expectedScript else {
+                    guard Hex.decode(onChain.scriptPubKey) == expectedScript else {
                         throw WalletLogic.SPError("\(utxo.txid):\(utxo.vout) on chain doesn't pay \(address). Refresh your utxos.")
                     }
                     guard onChain.value == utxo.value else {
@@ -524,21 +515,5 @@ enum NodelessSweep {
                 done(.failure(error))
             }
         }
-    }
-}
-
-// Helper extension for formatting large numbers
-extension Formatter {
-    static let withSeparator: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.groupingSeparator = ","
-        return formatter
-    }()
-}
-
-extension Numeric {
-    func formattedWithSeparator() -> String {
-        return Formatter.withSeparator.string(from: self as? NSNumber ?? 0) ?? "\(self)"
     }
 }

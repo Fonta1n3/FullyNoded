@@ -9,9 +9,11 @@
 import UIKit
 
 class ExternalFNWalletsViewController: UIViewController {
-    
-    @IBOutlet weak private var externWalletsTable: UITableView!
-    @IBOutlet weak var segmentedControl: UISegmentedControl!
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
+
+    private let externWalletsTable = UITableView(frame: .zero, style: .grouped)
+    let segmentedControl = UISegmentedControl(items: ["main", "test"])
     
     var externalWallets = [Wallet]()
     var mainnetWallets = [Wallet]()
@@ -22,9 +24,9 @@ class ExternalFNWalletsViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+        buildLayout()
         externWalletsTable.delegate = self
+        externWalletsTable.dataSource = self
         
         let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? "main"
         if chain != "main" {
@@ -50,12 +52,40 @@ class ExternalFNWalletsViewController: UIViewController {
         reloadTableData()
     }
     
-    @IBAction func switchSegmentedControlAction(_ sender: Any) {
+    private func buildLayout() {
+        segmentedControl.addTarget(self, action: #selector(switchSegmentedControlAction(_:)), for: .valueChanged)
+
+        let note = UILabel()
+        note.numberOfLines = 0
+        note.text = "The Fully Noded wallets which do *NOT* exist on the active node."
+
+        externWalletsTable.backgroundColor = .clear
+        externWalletsTable.register(UITableViewCell.self, forCellReuseIdentifier: "externalWalletCell")
+
+        for subview in [segmentedControl, note, externWalletsTable] as [UIView] {
+            subview.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(subview)
+        }
+        let guide = view.safeAreaLayoutGuide
+        NSLayoutConstraint.activate([
+            segmentedControl.topAnchor.constraint(equalTo: guide.topAnchor, constant: 2),
+            segmentedControl.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            segmentedControl.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            note.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor, constant: 8),
+            note.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            note.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            externWalletsTable.topAnchor.constraint(equalTo: note.bottomAnchor, constant: 8),
+            externWalletsTable.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            externWalletsTable.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            externWalletsTable.bottomAnchor.constraint(equalTo: guide.bottomAnchor, constant: -20)
+        ])
+    }
+    
+    @objc func switchSegmentedControlAction(_ sender: Any) {
         network = segmentedControl.selectedSegmentIndex
         reloadTableData()
     }
-    
-    
+
     private func reloadTableData() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -84,8 +114,7 @@ class ExternalFNWalletsViewController: UIViewController {
     }
     
     private func deleteNow(_ wallet: Wallet, _ index: Int) {
-        CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] utxos in
-            guard let self = self else { return }
+        CoreDataService.retrieveEntity(entityName: .utxos) { utxos in
             guard let utxos = utxos else { return }
             for utxo in utxos {
                 let utxoStr = UTXO(from: utxo)
@@ -144,7 +173,7 @@ class ExternalFNWalletsViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.performSegue(withIdentifier: "segueToShowExternalWalletDetail", sender: self)
+            self.showWalletDetail()
         }
     }
     
@@ -209,21 +238,10 @@ class ExternalFNWalletsViewController: UIViewController {
         return recoverButton
     }
     
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-        
-        switch segue.identifier {
-        case "segueToShowExternalWalletDetail":
-            guard let vc = segue.destination as? WalletDetailViewController else { fallthrough }
-            
-            vc.walletId = walletToView
-        default:
-            break
-        }
+    private func showWalletDetail() {
+        let vc = WalletDetailViewController()
+        vc.walletId = walletToView
+        navigationController?.pushViewController(vc, animated: true)
     }
 
 }
@@ -257,9 +275,6 @@ extension ExternalFNWalletsViewController: UITableViewDataSource {
         }
         
         cell.textLabel?.text = wallet.label
-        //cell.layer.borderColor = UIColor.lightGray.cgColor
-        //cell.layer.borderWidth = 0.5
-        //cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         cell.textLabel?.textColor = .secondaryLabel
         cell.textLabel?.numberOfLines = 0
         cell.textLabel?.lineBreakMode = .byWordWrapping
@@ -292,8 +307,7 @@ extension ExternalFNWalletsViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 50
     }
-    
-    
+
 }
 
 // MARK: - Theme

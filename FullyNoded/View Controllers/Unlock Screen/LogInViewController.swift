@@ -25,7 +25,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate, UIGestureRecog
     var secondsRemaining = 2
     var tapGesture:UITapGestureRecognizer!
     var resetButton = UIButton(type: .system)
-    var isRessetting = false
     var initialLoad = true
 
     private let tint = WalletTheme.Tint.home
@@ -47,7 +46,8 @@ class LogInViewController: UIViewController, UITextFieldDelegate, UIGestureRecog
         super.viewDidLoad()
         overrideUserInterfaceStyle = .dark
         view.backgroundColor = WalletTheme.bg
-        view.subviews.forEach { $0.removeFromSuperview() }   // storyboard placeholder content
+        // SceneDelegate checks this so it never stacks a second lock screen.
+        restorationIdentifier = "LogIn"
 
         tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
@@ -314,10 +314,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate, UIGestureRecog
         }
     }
 
-    @objc func present2fa() {
-        self.promptToReset()
-    }
-
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -389,18 +385,17 @@ class LogInViewController: UIViewController, UITextFieldDelegate, UIGestureRecog
     }
 
     func checkPassword(password: String) {
-        guard let passwordData = KeyChain.getData("UnlockPassword") else { return }
+        guard let passwordData = KeyChain.getData(AppAuthentication.passwordKey) else { return }
 
         let retrievedPassword = passwordData.utf8String
 
         let hashedPassword = Crypto.sha256hash(password)
 
-        guard let hexData = Data(hexString: hashedPassword) else { return }
-
         let duressPINHash = UserDefaults.standard.object(forKey: "DuressPIN") as? String
 
         if password == retrievedPassword {
-            let _ = KeyChain.set(hexData, forKey: "UnlockPassword")
+            // A plain-text password from a very old install: store its hash instead.
+            _ = AppAuthentication.setAppPassword(password)
             unlock()
 
         } else if let duressPINHash = duressPINHash, hashedPassword == duressPINHash {
@@ -412,7 +407,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate, UIGestureRecog
             }
 
         } else {
-            if hexData.hexString == passwordData.hexString {
+            if AppAuthentication.passwordHash(password) == passwordData {
                 unlock()
 
             } else {
@@ -493,46 +488,16 @@ class LogInViewController: UIViewController, UITextFieldDelegate, UIGestureRecog
     }
 
     func evaluatePolicyFailErrorMessageForLA(errorCode: Int) -> String {
-        var message = ""
-
-        if #available(iOS 11.0, macOS 10.13, *) {
-
-            switch errorCode {
-
-            case LAError.biometryNotAvailable.rawValue:
-                message = "Authentication could not start because the device does not support biometric authentication."
-
-            case LAError.biometryLockout.rawValue:
-                message = "Authentication could not continue because the user has been locked out of biometric authentication, due to failing authentication too many times."
-
-            case LAError.biometryNotEnrolled.rawValue:
-                message = "Authentication could not start because the user has not enrolled in biometric authentication."
-
-            default:
-                message = "Did not find error code on LAError object"
-            }
-
-        } else {
-
-            switch errorCode {
-
-            case LAError.touchIDLockout.rawValue:
-                message = "Too many failed attempts."
-
-            case LAError.touchIDNotAvailable.rawValue:
-                message = "TouchID is not available on the device"
-
-            case LAError.touchIDNotEnrolled.rawValue:
-                message = "TouchID is not enrolled on the device"
-
-            default:
-                message = "Did not find error code on LAError object"
-            }
-
+        switch errorCode {
+        case LAError.biometryNotAvailable.rawValue:
+            return "Authentication could not start because the device does not support biometric authentication."
+        case LAError.biometryLockout.rawValue:
+            return "Authentication could not continue because the user has been locked out of biometric authentication, due to failing authentication too many times."
+        case LAError.biometryNotEnrolled.rawValue:
+            return "Authentication could not start because the user has not enrolled in biometric authentication."
+        default:
+            return "Did not find error code on LAError object"
         }
-
-        return message
-
     }
 
     func evaluateAuthenticationPolicyMessageForLA(errorCode: Int) -> String {
@@ -572,37 +537,20 @@ class LogInViewController: UIViewController, UITextFieldDelegate, UIGestureRecog
 }
 
 extension UIViewController {
-
-    func topViewController() -> UIViewController! {
-
-        if self.isKind(of: UITabBarController.self) {
-
-            let tabbarController =  self as! UITabBarController
-
-            return tabbarController.selectedViewController!.topViewController()
-
-        } else if (self.isKind(of: UINavigationController.self)) {
-
-            let navigationController = self as! UINavigationController
-
-            return navigationController.visibleViewController!.topViewController()
-
-        } else if ((self.presentedViewController) != nil) {
-
-            let controller = self.presentedViewController
-
-            return controller!.topViewController()
-
-        } else {
-
-            return self
-
+    /// The controller on screen: the top of any modals, tabs and navigation stacks.
+    func topViewController() -> UIViewController {
+        if let presented = presentedViewController {
+            return presented.topViewController()
         }
-
+        if let nav = self as? UINavigationController {
+            return nav.visibleViewController?.topViewController() ?? nav
+        }
+        if let tab = self as? UITabBarController {
+            return tab.selectedViewController?.topViewController() ?? tab
+        }
+        return self
     }
-
 }
-
 
 /// App authentication shared by the unlock screen and sensitive screens (e.g. showing
 /// seed words).
@@ -623,10 +571,7 @@ enum AppAuthentication {
         #if targetEnvironment(macCatalyst)
         return false
         #else
-        if #available(iOS 14.0, *) {
-            return !ProcessInfo.processInfo.isiOSAppOnMac
-        }
-        return true
+        return !ProcessInfo.processInfo.isiOSAppOnMac
         #endif
     }
 
@@ -755,15 +700,25 @@ enum AppAuthentication {
         SecItemDelete(query as CFDictionary)
     }
 
-    /// True if `password` is the app password (stored as its SHA-256 in the keychain;
-    /// very old installs stored it in plain text).
-    static func verifyAppPassword(_ password: String) -> Bool {
-        guard !password.isEmpty, let stored = KeyChain.getData("UnlockPassword") else { return false }
+    /// Keychain key of the app password: its SHA-256 (very old installs stored it in plain text).
+    static let passwordKey = "UnlockPassword"
 
-        if let hashed = Data(hexString: Crypto.sha256hash(password)), hashed == stored {
-            return true
-        }
-        return stored.utf8String == password
+    static var hasAppPassword: Bool { KeyChain.getData(passwordKey) != nil }
+
+    /// What the keychain stores for `password`.
+    static func passwordHash(_ password: String) -> Data {
+        Crypto.sha256hash(Data(password.utf8))
+    }
+
+    /// Stores `password` as the app password.
+    static func setAppPassword(_ password: String) -> Bool {
+        KeyChain.set(passwordHash(password), forKey: passwordKey)
+    }
+
+    /// True if `password` is the app password.
+    static func verifyAppPassword(_ password: String) -> Bool {
+        guard !password.isEmpty, let stored = KeyChain.getData(passwordKey) else { return false }
+        return passwordHash(password) == stored || stored.utf8String == password
     }
 
     /// Biometrics if enabled, otherwise (or if they fail) the app password in an alert.
