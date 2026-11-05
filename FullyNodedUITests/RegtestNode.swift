@@ -60,10 +60,18 @@ struct RegtestNode {
     var blockCount: Int { (try? call("getblockcount")) as? Int ?? 0 }
 
     func ensureMiner() throws {
-        if (try? call("getwalletinfo", wallet: "miner")) != nil { return }
-        if (try? call("loadwallet", ["miner"])) != nil { return }
-        try call("createwallet", ["miner"])
-        try mine(150)
+        // The two payjoin simulators share this node and can get here in the same second: the
+        // one that loses the load/create race finds the wallet loaded by the other on a retry.
+        for attempt in 0..<5 {
+            if (try? call("getwalletinfo", wallet: "miner")) != nil { return }
+            if (try? call("loadwallet", ["miner"])) != nil { return }
+            if attempt == 0, (try? call("createwallet", ["miner"])) != nil {
+                try mine(150)
+                return
+            }
+            Thread.sleep(forTimeInterval: 1)
+        }
+        throw RPCError(description: "miner wallet: couldn't load or create it")
     }
 
     func mine(_ blocks: Int = 1) throws {

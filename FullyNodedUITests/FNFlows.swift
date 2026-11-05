@@ -72,6 +72,17 @@ extension FNUI {
         press(element(text))
     }
 
+    /// Closes a SuccessView card. A tap while the card is still animating in is dropped
+    /// (UIKit ignores touches on animating views), so tap again until it's gone.
+    func dismissCard(_ button: String = "DONE", file: StaticString = #filePath, line: UInt = #line) {
+        require(button, timeout: 30, "Tapping \"\(button)\"", file: file, line: line)
+        let target = element(button)
+        for _ in 0..<4 where target.exists {
+            press(target)
+            if target.waitForNonExistence(timeout: 1.5) { return }
+        }
+    }
+
     // MARK: Node
 
     /// Launches the app and connects it to the regtest node (once per simulator).
@@ -83,7 +94,7 @@ extension FNUI {
         _ = connected.waitForExistence(timeout: 20) || addNode.waitForExistence(timeout: 1)
         if addNode.exists {
             step("Enter details manually")
-            if waitThrough("RPC credentials created", timeout: 5) { step("DONE") }
+            if waitThrough("RPC credentials created", timeout: 5) { dismissCard() }
             type("Regtest", into: "My Node", clear: true)
             type(FNUIEnv.rpcAddress, into: "xxxx.onion:8332", clear: true)
             type(FNUIEnv.rpcUser, into: "FullyNoded", clear: true)
@@ -91,7 +102,7 @@ extension FNUI {
             // Ends editing so the keyboard doesn't cover Save.
             step("> RPC CREDENTIALS")
             step("SAVE NODE")
-            if waitThrough("Node saved", timeout: 10) { step("DONE") }
+            if waitThrough("Node saved", timeout: 10) { dismissCard() }
             step("Back")
         }
         require("REGTEST", timeout: 60, "Connecting to the regtest node")
@@ -118,7 +129,7 @@ extension FNUI {
 
     /// The wallet tab, backing out of pushed screens first (they hide the tab bar).
     func openWalletTab() {
-        let tab = app.tabBars.buttons["bitcoinsign.square"]
+        let tab = app.tabBars.buttons["Wallet"]
         var backs = 0
         while !(tab.exists && tab.isHittable) && backs < 5 {
             dismissInterstitials()
@@ -128,7 +139,8 @@ extension FNUI {
             Thread.sleep(forTimeInterval: 0.8)
             backs += 1
         }
-        step("bitcoinsign.square")
+        _ = tab.waitForExistence(timeout: 15)
+        press(tab)
     }
 
     /// The Create Wallet screen: the empty state's button, or + while a wallet is active (a tap
@@ -140,22 +152,22 @@ extension FNUI {
             if screen.contains("CREATE OR IMPORT A WALLET") {
                 step("CREATE OR IMPORT A WALLET")
             } else {
-                step("Add Slide")
+                step("Create wallet")
             }
-            if waitThrough(" Create single-sig", timeout: 8) { return }
+            if waitThrough("Create single sig wallet", timeout: 8) { return }
         }
     }
 
     /// Creates a single-sig wallet with 12 seed words and returns them.
     @discardableResult
-    func createWallet(type: String = "Segwit (BIP84)") -> [String] {
+    func createWallet(type: String = "Segwit") -> [String] {
         openWalletCreator()
-        step(" Create single-sig")
         step(type)
         step("12 words")
+        step("Create single sig wallet")
         // "I saved them" only works once the wallet is made on the node and saved.
         require("Wallet created", timeout: 120, "Creating the wallet")
-        step("DONE")
+        dismissCard()
         let words = seedWords()
         step("I saved them")
         require("> Single sig", timeout: 30, "The new wallet becoming active")
@@ -183,13 +195,13 @@ extension FNUI {
     func recoverWallet(words: [String], type: String = "Segwit single-sig") {
         UIPasteboard.general.string = words.joined(separator: " ")
         openWalletCreator()
-        step(" Import by pasting text")
+        step("Paste text")
         step(type)
         require("First 5 addresses derived", timeout: 30, "Reading the pasted seed")
         let create = app.buttons.matching(NSPredicate(format: "label == %@", "Create Wallet")).allElementsBoundByIndex.last
         if let create { press(create) }
         require("Descriptor wallet created", timeout: 120, "Recreating the wallet on the node")
-        step("DONE")
+        dismissCard()
     }
 
     /// Wallet tab: the onchain balance in BTC, after a refresh.
@@ -206,14 +218,15 @@ extension FNUI {
 
     // MARK: Receiving
 
-    /// Invoice → Address: the address in the BIP21 request.
+    /// Invoice → Address: the address under "> ADDRESS" (shown grouped with dashes).
     func receiveAddress() -> String {
         openWalletTab()
         step("INVOICE")
         step("Address")
-        let request = elements("bitcoin:bcrt1").firstMatch
-        _ = request.waitForExistence(timeout: 20)
-        return request.label.replacingOccurrences(of: "bitcoin:", with: "").components(separatedBy: "?").first ?? ""
+        let address = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'bcrt'")).firstMatch
+        // A just-created wallet can take a while (the node is busy importing it).
+        guard address.waitForExistence(timeout: 90) else { return "" }
+        return address.label.replacingOccurrences(of: "-", with: "")
     }
 
     /// Invoice → Silent pay: acknowledges the heads-up if needed and returns the address.
@@ -268,7 +281,7 @@ extension FNUI {
         dismissInterstitials()
         step("CREATE TRANSACTION")
         require("PSBT created", timeout: 120, "Creating and decoding the PSBT", file: file, line: line)
-        step("DONE")
+        dismissCard()
         step("Sign")
         if payjoin {
             require("REVIEW PAYJOIN", timeout: 150, "Payjoin negotiation", file: file, line: line)
@@ -277,7 +290,7 @@ extension FNUI {
             XCTAssertTrue(summary.contains("PAYJOIN READY"), "Payjoin fell back:\n\(summary)", file: file, line: line)
         } else {
             require("Transaction signed", timeout: 60, "Signing", file: file, line: line)
-            step("DONE")
+            dismissCard()
         }
         require("Signatures complete.", timeout: 60, "Fully signed review", file: file, line: line)
         step("send")
@@ -285,7 +298,7 @@ extension FNUI {
         require(payjoin ? "Payjoin sent" : "Transaction sent", timeout: 60, "Broadcasting", file: file, line: line)
         let copy = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Copy '")).firstMatch
         let txid = copy.exists ? String(copy.label.dropFirst("Copy ".count)) : ""
-        step("DONE")
+        dismissCard()
         return txid.isEmpty ? nil : Sent(txid: txid, payjoin: payjoin)
     }
 }
