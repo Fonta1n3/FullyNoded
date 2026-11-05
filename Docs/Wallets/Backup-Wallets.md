@@ -17,8 +17,7 @@ Open the wallet tab → ⓘ:
   wallet into Fully Noded or another wallet. **Format** switches the encoding, **Enlarge** shows it
   full screen.
 - **Backup file**: all of the wallet's descriptors as read from your node, including any timelocks.
-  This is the most complete backup. Recover it with **+ → Import by pasting text** or **Import a
-  wallet file**.
+  This is the most complete backup. Recover it with **+ → Paste text** or **Open a file**.
 
 Neither contains private keys, but both reveal your whole balance and history to anyone who sees
 them. Keep them private.

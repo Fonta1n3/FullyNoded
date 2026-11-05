@@ -72,4 +72,4 @@ Client side software needs to deduce the how the change keys will be derived fro
 - [Specter Desktop](https://github.com/cryptoadvance/specter-desktop)
 
 In Fully Noded: wallet tab → ⓘ → **Wallet export** shows this QR. Import one with wallet tab →
-**+** → **Import by scanning a QR code**.
+**+** → **Scan a QR code**.

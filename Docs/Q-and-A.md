@@ -34,7 +34,7 @@ Yes, Segwit or Taproot, with cosigners from this phone, other devices or other p
 [Create a wallet](./Wallets/Creating-Wallets.md#multi-sig).
 
 **Can I use my node's existing wallets?**
-Yes: wallet tab → **+** → **Bitcoin Core Wallets**.
+Yes: wallet tab → **+** → **Bitcoin Core wallets**.
 
 **Why is my balance zero after recovering?**
 Your node is rescanning the blockchain. Wait, then pull down to refresh.

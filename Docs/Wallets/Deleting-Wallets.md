@@ -4,7 +4,7 @@ Wallet tab → ⓘ → 🗑 (top right) → **Remove**.
 
 This only makes Fully Noded forget the wallet. It is **not** deleted:
 
-- **Your node keeps it.** Re-add it any time with **+ → Bitcoin Core Wallets**, or by recovering
+- **Your node keeps it.** Re-add it any time with **+ → Bitcoin Core wallets**, or by recovering
   from the seed or a backup (Fully Noded finds the existing node wallet).
 - **The signer stays** in the Signers tab. Delete the seed words there separately, only if you
   have them backed up.

@@ -13,8 +13,10 @@ Open the **wallet tab** (₿) and tap **+**:
 
 ## Single-sig
 
-1. **Create single-sig**, then pick **Segwit (BIP84)** or **Taproot (BIP86)**.
-2. Fully Noded makes 12 seed words and creates the wallet on your node.
+1. In the **Single sig** card pick **Segwit** (works everywhere) or **Taproot** (cheaper, more
+   private spends), and **12** or **24 words**.
+2. Tap **Create single sig wallet**. Fully Noded makes the seed words and creates the wallet on
+   your node.
 3. **Write the words down** on paper, then tap **I saved them**. They are the only way to recover
    your bitcoin. See [Backups](./Backup-Wallets.md).
 
@@ -27,7 +29,7 @@ control.
 
 ## Multi-sig
 
-**Create multi-sig** opens the multisig creator:
+**Set up multisig** opens the multisig creator:
 
 <img src="../Images/app-multisig.jpg" alt="Multisig creator" width="300"/>
 
@@ -53,10 +55,10 @@ control.
 
 | Option | For |
 |---|---|
-| **Import by pasting text** | Seed words, a descriptor, an xpub, or a Fully Noded backup |
-| **Import a wallet file** | Coldcard (single and multisig), Electrum multisig, Unchained and Fully Noded backup files |
-| **Import by scanning a QR code** | A wallet export QR (UR or JSON), e.g. from Specter or another Fully Noded |
-| **Bitcoin Core Wallets** | Use a wallet that already exists on your node |
+| **Scan a QR code** | A wallet export or backup QR (UR or JSON), e.g. from Specter or another Fully Noded |
+| **Paste text** | Seed words, a descriptor, a Fully Noded backup or a wallet export |
+| **Open a file** | Fully Noded backups, Coldcard (single and multisig), Sparrow, Electrum multisig and Unchained files |
+| **Bitcoin Core wallets** | Use a wallet that already exists on your node |
 
 Importing seed words also adds them as a signer, so the wallet can spend. Importing public
 keys only gives a watch-only wallet: sign elsewhere, or add the seed as a signer later.

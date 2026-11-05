@@ -1,15 +1,15 @@
 # Recover a wallet
 
-Wallet tab → **+** → **Import by pasting text** (copy what you want to recover first). Fully Noded
+Wallet tab → **+** → **Paste text** (copy what you want to recover first). Fully Noded
 recognises:
 
 | Pasted | Result |
 |---|---|
 | **BIP39 seed words** | Choose **Segwit** or **Taproot** single-sig. Check the first addresses it shows, then tap **Create Wallet**. The words are also saved as a signer, so the wallet can spend. |
 | **A backup file's text** | Every descriptor in the backup is imported, including timelocks. |
-| **A descriptor or xpub** | A watch-only wallet. Add the seed as a [signer](./Signers.md) to spend. |
+| **A descriptor** | A watch-only wallet (a bare xpub isn't enough: paste its descriptor). Add the seed as a [signer](./Signers.md) to spend. |
 
-Or use **Import a wallet file** / **Import by scanning a QR code** with a backup file or a wallet
+Or use **Open a file** / **Scan a QR code** with a backup file or a wallet
 export QR.
 
 ## What happens on your node
