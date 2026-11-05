@@ -200,6 +200,9 @@ final class PayjoinTests: XCTestCase {
         }
         let tx = try XCTUnwrap(payjoin, "Nothing paid \(address) within 10 minutes")
         XCTAssertGreaterThanOrEqual((tx["vin"] as? [Any])?.count ?? 0, 2, "Paid without payjoin (only the payer's inputs)")
+        // The receiver's own confirmation, after the "signed" card.
+        if fn.waitThrough("Payjoin signed", timeout: 5) { fn.dismissCard() }
+        fn.require("Payjoin broadcast", timeout: 60, "Seeing the payjoin broadcast on the receiver")
         try? FileManager.default.removeItem(atPath: path)
     }
 

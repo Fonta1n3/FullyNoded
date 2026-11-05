@@ -409,6 +409,9 @@ final class PayjoinReceiveSession {
         /// A payer's payment was refused (our own reason, safe to show); still live for others.
         case refused(String)
         case sent(contributedSats: Int64)
+        /// Seen by the node: the payjoin (`payjoin`, exactly as we signed it: our signature
+        /// covers the whole transaction) or the payer's original payment instead.
+        case broadcast(txid: String, payjoin: Bool)
         case failed(String)
     }
 
@@ -426,6 +429,8 @@ final class PayjoinReceiveSession {
     private var answered: (original: String, proposal: String)?
     /// The payer's payment, if a payjoin was proposed (to broadcast if the payer doesn't).
     private(set) var originalHex: String?
+    /// Set once the node has the payjoin or the original.
+    private(set) var broadcastTxid: String?
 
     init(address: String, amountSats: Int64?, walletName: String, passphrase: String?) {
         self.address = address
@@ -537,6 +542,7 @@ final class PayjoinReceiveSession {
                         Payjoin.log("→ proposal sent, contributed \(payjoin.contributedSats) sats")
                         respond(200, "text/plain", payjoin.proposal)
                         self.report(.sent(contributedSats: payjoin.contributedSats))
+                        self.watchForBroadcast(proposal: payjoin.proposal, originalHex: payjoin.originalHex)
                     case .failure(let error):
                         Payjoin.log("→ refused: \(error.code) (\(error.message))")
                         respond(error.code == "unavailable" ? 503 : 400, "application/json", Self.errorJSON(error.code, error.message))
@@ -545,6 +551,59 @@ final class PayjoinReceiveSession {
                 }
             }
         }
+    }
+
+    /// Asks the node every few seconds, while the invoice is open, whether it has the payjoin
+    /// or the payer's original (they spend the same coins, so only one can be broadcast).
+    private func watchForBroadcast(proposal: String, originalHex: String) {
+        guard let payjoinTxid = Self.unsignedTxid(psbtBase64: proposal),
+              let originalTxid = Hex.decode(originalHex).flatMap({ Self.txid([UInt8]($0)) }) else {
+            Payjoin.log("can't watch for the broadcast: no txids")
+            return
+        }
+        Payjoin.log("watching for payjoin \(payjoinTxid) or original \(originalTxid)")
+        func poll() {
+            guard !stopped, broadcastTxid == nil else { return }
+            known(payjoinTxid) { [weak self] found in
+                guard let self = self else { return }
+                if found { self.broadcastSeen(payjoinTxid, payjoin: true); return }
+                self.known(originalTxid) { [weak self] found in
+                    guard let self = self else { return }
+                    if found { self.broadcastSeen(originalTxid, payjoin: false); return }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 5) { poll() }
+                }
+            }
+        }
+        poll()
+    }
+
+    private func broadcastSeen(_ txid: String, payjoin: Bool) {
+        guard broadcastTxid == nil else { return }
+        broadcastTxid = txid
+        Payjoin.log("broadcast seen: \(payjoin ? "payjoin" : "original") \(txid)")
+        report(.broadcast(txid: txid, payjoin: payjoin))
+    }
+
+    /// Whether the receiving wallet has `txid` (in the mempool or confirmed). Main queue.
+    private func known(_ txid: String, completion: @escaping (Bool) -> Void) {
+        let param = Get_Tx(["txid": txid, "include_watchonly": true])
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .gettransaction(param), walletName: walletName) { response, _ in
+            DispatchQueue.main.async { completion(response is [String: Any]) }
+        }
+    }
+
+    /// txid (RPC display order) of a serialized transaction.
+    static func txid(_ bytes: [UInt8]) -> String? {
+        (try? OfflinePsbt.txidInternal(bytes)).map { Hex.encode($0.reversed()) }
+    }
+
+    /// txid of a version 0 PSBT's unsigned transaction. For segwit inputs (all a payjoin here
+    /// has) signing doesn't change it.
+    static func unsignedTxid(psbtBase64: String) -> String? {
+        guard let data = Data(base64Encoded: psbtBase64.trimmingCharacters(in: .whitespacesAndNewlines)),
+              let psbt = try? SPPsbt(data),
+              let unsigned = psbt.global.first(where: { $0.key == [SPPsbt.globalUnsignedTx] })?.value else { return nil }
+        return txid(unsigned)
     }
 
     /// Broadcasts the payer's original payment (when the payer broadcast nothing).

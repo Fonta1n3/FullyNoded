@@ -1025,14 +1025,31 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             payjoinProgress.complete()
             glowQR(false)
             payjoinHeadline.text = "Payjoin sent ✓"
-            setPayjoinStatus("✓ Payjoin sent. The payer now signs and broadcasts it.", color: tint.accent)
-            SuccessView.show(in: self, title: "Payjoin complete",
-                             subtitle: "Both of you put coins into this payment, so it doesn't look like one on-chain. You added \(Int(contributed).withCommas) sats of your own coin: it comes back to you with the payment.\n\nThe payer's wallet now signs and broadcasts it.")
+            setPayjoinStatus("✓ Payjoin sent. Waiting for the payer to sign and broadcast it: keep this screen open to see it arrive.", color: tint.accent)
+            SuccessView.show(in: self, title: "Payjoin signed",
+                             subtitle: "Both of you put coins into this payment, so it doesn't look like one on-chain. You added \(Int(contributed).withCommas) sats of your own coin: it comes back to you with the payment.\n\nThe payer's wallet now signs and broadcasts it. You'll get a confirmation here when it does.")
             DispatchQueue.main.asyncAfter(deadline: .now() + 120) { [weak self] in
-                guard let self = self, self.payjoinSession?.originalHex != nil else { return }
+                guard let self = self, self.payjoinSession?.originalHex != nil, self.payjoinSession?.broadcastTxid == nil else { return }
                 self.payjoinBroadcastButton.setHiddenIfNeeded(false)
                 self.setPayjoinStatus("If the payer hasn't broadcast anything, broadcast their original payment yourself (it replaces the payjoin; only one can confirm).", color: WalletTheme.dim)
             }
+        case .broadcast(let txid, let isPayjoin):
+            payjoinBroadcastButton.setHiddenIfNeeded(true)
+            UIApplication.shared.isIdleTimerDisabled = false
+            if isPayjoin {
+                payjoinHeadline.text = "Payjoin broadcast ✓"
+                setPayjoinStatus("✓ The payer broadcast the payjoin exactly as you signed it. You've been paid.", color: tint.accent)
+                SuccessView.show(in: self, title: "Payjoin broadcast",
+                                 subtitle: "Your node has the payjoin, exactly as you signed it (your signature covers the whole transaction, so it can't be changed). You've been paid; it confirms like any other payment.",
+                                 detail: txid)
+            } else {
+                payjoinHeadline.text = "Paid without payjoin"
+                setPayjoinStatus("The payer broadcast their original payment instead of the payjoin. You were paid in full and your coin wasn't used.", color: WalletTheme.pending)
+                SuccessView.show(in: self, kind: .notice, title: "Paid, without payjoin",
+                                 subtitle: "Your node has the payer's original payment, not the payjoin. You were paid in full; your own coin wasn't spent.",
+                                 detail: txid)
+            }
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
         case .failed(let text):
             payjoinFailed(text)
         }
