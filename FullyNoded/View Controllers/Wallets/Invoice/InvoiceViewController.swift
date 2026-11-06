@@ -930,8 +930,13 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     /// hosts the endpoint.
     private func startPayjoin() {
         guard payjoinOn else { return }
-        guard let wallet = wallet, !addressString.isEmpty else {
-            payjoinFailed("Payjoin needs a Fully Noded wallet and an address.")
+        guard let wallet = wallet else {
+            payjoinFailed("Payjoin needs a Fully Noded wallet.")
+            return
+        }
+        guard !addressString.isEmpty else {
+            // showAddress starts payjoin again as soon as the address arrives.
+            setPayjoinStatus("Getting your address from the node…")
             return
         }
         guard payjoinHasSigner != false else {

@@ -1168,7 +1168,7 @@ class MainMenuViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let vc = PeersDetailTableViewController(style: .insetGrouped)
+            let vc = PeersDetailTableViewController(style: .grouped)
             vc.peerResponse = peerInfo
             navigationController?.pushViewController(vc, animated: true)
         }

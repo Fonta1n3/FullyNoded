@@ -11,6 +11,7 @@
 		AB52B0012F00000000000108 /* WalletRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB52B0012F00000000000008 /* WalletRecoveryTests.swift */; };
 		AB52B0012F00000000000101 /* KeyTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB52B0012F00000000000001 /* KeyTestCase.swift */; };
 		AB52B0012F00000000000102 /* SeedWordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB52B0012F00000000000002 /* SeedWordTests.swift */; };
+		4B2C1D32DA337AE18E0063AC /* PeerInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3671EE8832C093F1930BDCC /* PeerInfoTests.swift */; };
 		AB52B0012F00000000000103 /* KeyDerivationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB52B0012F00000000000003 /* KeyDerivationTests.swift */; };
 		AB52B0012F00000000000104 /* EncryptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB52B0012F00000000000004 /* EncryptionTests.swift */; };
 		AB52B0012F00000000000105 /* PsbtSigningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB52B0012F00000000000005 /* PsbtSigningTests.swift */; };
@@ -225,6 +226,7 @@
 		AB52B0012F00000000000008 /* WalletRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletRecoveryTests.swift; sourceTree = "<group>"; };
 		AB52B0012F00000000000001 /* KeyTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyTestCase.swift; sourceTree = "<group>"; };
 		AB52B0012F00000000000002 /* SeedWordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedWordTests.swift; sourceTree = "<group>"; };
+		D3671EE8832C093F1930BDCC /* PeerInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerInfoTests.swift; sourceTree = "<group>"; };
 		AB52B0012F00000000000003 /* KeyDerivationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyDerivationTests.swift; sourceTree = "<group>"; };
 		AB52B0012F00000000000004 /* EncryptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionTests.swift; sourceTree = "<group>"; };
 		AB52B0012F00000000000005 /* PsbtSigningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PsbtSigningTests.swift; sourceTree = "<group>"; };
@@ -777,6 +779,7 @@
 			children = (
 				AB52B0012F00000000000001 /* KeyTestCase.swift */,
 				AB52B0012F00000000000002 /* SeedWordTests.swift */,
+				D3671EE8832C093F1930BDCC /* PeerInfoTests.swift */,
 				AB52B0012F00000000000003 /* KeyDerivationTests.swift */,
 				AB52B0012F00000000000004 /* EncryptionTests.swift */,
 				AB52B0012F00000000000005 /* PsbtSigningTests.swift */,
@@ -1436,6 +1439,7 @@
 			files = (
 				AB52B0012F00000000000101 /* KeyTestCase.swift in Sources */,
 				AB52B0012F00000000000102 /* SeedWordTests.swift in Sources */,
+				4B2C1D32DA337AE18E0063AC /* PeerInfoTests.swift in Sources */,
 				AB52B0012F00000000000103 /* KeyDerivationTests.swift in Sources */,
 				AB52B0012F00000000000104 /* EncryptionTests.swift in Sources */,
 				AB52B0012F00000000000105 /* PsbtSigningTests.swift in Sources */,

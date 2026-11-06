@@ -757,8 +757,7 @@ public struct Set_Ban: CustomStringConvertible {
     let param: [String: Any]
     
     init(dict: [String : Any]) {
-        let subnet = dict["subnet"] as! String
-        let ip = subnet.components(separatedBy: ":")[0]
+        let ip = PeerInfo.host(of: dict["subnet"] as? String ?? "")
         let now = Date()
         let oneHundredYears: TimeInterval = 100 * 365.2425 * 24 * 60 * 60
         let futureDate = now.addingTimeInterval(oneHundredYears)
