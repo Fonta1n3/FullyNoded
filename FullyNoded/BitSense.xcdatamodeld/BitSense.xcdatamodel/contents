@@ -10,6 +10,7 @@
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="isActive" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="label" optional="YES" attributeType="String"/>
+        <attribute name="nostrConnect" optional="YES" attributeType="Binary"/>
         <attribute name="onionAddress" optional="YES" attributeType="Binary"/>
         <attribute name="rpcpassword" optional="YES" attributeType="Binary"/>
         <attribute name="rpcuser" optional="YES" attributeType="Binary"/>
@@ -27,6 +28,10 @@
         <attribute name="passphrase" optional="YES" attributeType="Binary"/>
         <attribute name="rootTpub" optional="YES" attributeType="Binary"/>
         <attribute name="rootXpub" optional="YES" attributeType="Binary"/>
+        <attribute name="spAddress" optional="YES" attributeType="Binary"/>
+        <attribute name="spAddressTest" optional="YES" attributeType="Binary"/>
+        <attribute name="spScanKey" optional="YES" attributeType="Binary"/>
+        <attribute name="spScanKeyTest" optional="YES" attributeType="Binary"/>
         <attribute name="words" optional="YES" attributeType="Binary"/>
         <attribute name="xfp" optional="YES" attributeType="Binary"/>
     </entity>
@@ -60,6 +65,8 @@
         <attribute name="scriptPubKey" optional="YES" attributeType="String"/>
         <attribute name="solvable" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="spendable" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="spLabelTweak" optional="YES" attributeType="Binary"/>
+        <attribute name="spTweak" optional="YES" attributeType="Binary"/>
         <attribute name="txid" optional="YES" attributeType="String"/>
         <attribute name="vout" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="walletId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>

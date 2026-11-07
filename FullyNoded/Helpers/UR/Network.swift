@@ -6,8 +6,6 @@
 //
 
 import SwiftUI
-import URKit
-import LibWally
 
 enum Network_: UInt32, Identifiable, CaseIterable {
     case mainnet = 0
@@ -26,15 +24,6 @@ enum Network_: UInt32, Identifiable, CaseIterable {
         self = a
     }
     
-    var wallyNetwork: LibWally.Network {
-        switch self {
-        case .mainnet:
-            return .mainnet
-        case .testnet:
-            return .testnet
-        }
-    }
-    
     var image: Image {
         switch self {
         case .mainnet:
@@ -43,13 +32,7 @@ enum Network_: UInt32, Identifiable, CaseIterable {
             return Image("network.test")
         }
     }
-    
-//    var icon: AnyView {
-//        image
-//            .accessibility(label: Text(self.name))
-//            //.eraseToAnyView()
-//    }
-    
+
     var name: String {
         switch self {
         case .mainnet:
@@ -58,18 +41,7 @@ enum Network_: UInt32, Identifiable, CaseIterable {
             return "TestNet"
         }
     }
-    
-//    var textSuffix: Text {
-//        return Text(" ") + Text(image)
-//    }
-    
-//    var iconWithName: some View {
-//        HStack {
-//            icon
-//            Text(name)
-//        }
-//    }
-    
+
     var id: String {
         "network-\(description)"
     }
@@ -85,16 +57,7 @@ enum Network_: UInt32, Identifiable, CaseIterable {
         }
     }
 
-//    var subtype: ModelSubtype {
-//        ModelSubtype(id: id, icon: icon)
-//    }
 }
-
-//extension Network: Segment {
-//    var label: AnyView {
-//        makeSegmentLabel(title: name, icon: icon)
-//    }
-//}
 
 extension Network_: CustomStringConvertible {
     var description: String {

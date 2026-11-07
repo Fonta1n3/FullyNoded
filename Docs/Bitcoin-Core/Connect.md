@@ -1,72 +1,64 @@
-# Connect Your Node
+# Connect your node
 
-## [Lightning]
+Fully Noded needs a Bitcoin Core (or Knots) node. Pick one way to reach it:
 
-Please see [this document](https://github.com/Fonta1n3/FullyNoded/blob/master/Docs/Lightning.md) for connecting your lightning nodes.
+| Way | Best for |
+|---|---|
+| [Fully Noded Server](#fully-noded-server-easiest) | A Mac. It installs and configures everything for you. |
+| [Nostr Connect](#nostr-connect-fastest) | Fast remote access (about a second) via Fully Noded Server. |
+| [Tor](#tor-any-node) | Any node, from anywhere, private. |
+| [Local network](#local-network) | Your node is on the same Wi-Fi or VPN (e.g. Tailscale). |
 
-## [Bitcoin Core](https://bitcoincore.org/en/releases/)
+Once connected, the home screen shows your node:
 
-- On your mac you can install Bitcoin Core or you can configure a Tor hidden service that controls your nodes `rpcport`, for details on how to do that see this [guide](../Tor/Tor.md)
-- Find your `bitcoin.conf` which by default can be found in these locations:
-    - Linux: `~/.bitcoin/bitcoin.conf`
-    - macOS: `~/Library/Application Support/Bitcoin/bitcoin.conf`
-    - Windows: `%APPDATA%\Bitcoin\bitcoin.conf`
-    - Input your `rpcuser` and `rpcpassword` and a label into the app. **Compatible with [rpcauth](https://github.com/bitcoin/bitcoin/tree/master/share/rpcauth)**. If none exists add them, you can see an example `bitcoin.conf` [here](./bitcoin-conf.md). You always need to restart your node after editing your `bitcoin.conf` for the changes to take effect.
-- Back to Fully Noded
-- If connecting to a node running on the same mac just input `127.0.0.1:8332` as the address and ignore the next step.
-- If connecting via Tor remotely input the hidden service hostname with the port at the end `njcnewicnweiun.onion:8332`.
-- Tap `save`, you will be alerted it if was saved successfully, FN will automatically start connecting to it, go to the home screen and watch the magic 🤩
+<img src="../Images/app-home.jpg" alt="Home screen" width="300"/>
 
-## [BTCPayServer](https://btcpayserver.org)
+Tap any tile to see the raw RPC response behind it.
 
-- In BTCPay go to `Server Settings` > `Services` > click on `Full Node RPC`
-<img src="./Images/btcpay.png" alt="" width="500"/>
+## Fully Noded Server (easiest)
 
-- In Fully Noded go to `Settings` > `Node Manager` > `+` > `Scan Quick Connect QR`
-- Once you have scanned the QR the app will automatically connect and start loading the home screen, to ensure its working go home and see the table load. To troubleshoot any connection issue reboot your BTCPayServer and force quit and reopen Fully Noded.
+[Fully Noded Server](https://github.com/Fonta1n3/FullyNoded-Server) installs Bitcoin Core or Knots
+and Tor on your Mac. On the node's page, open **Quick Connect** to show a QR.
 
-## [Nodl](https://www.nodl.it)
+1. In Fully Noded: **Settings → Node Manager → + → Scan QR**.
+2. Scan the QR from Fully Noded Server.
 
-- In Nodl go to the Tor tile settings pane which will dsiplay:
-<img src="./Images/nodl_1.JPG" alt="" width="250"/>
+## Nostr Connect (fastest)
 
-- Click `Details and settings`
-<img src="./Images/nodl_2.JPG" alt="" width="250"/>
+In Fully Noded Server open **Nostr Connect → Pair Fully Noded**, then scan its QR the same way
+(**Settings → Node Manager → + → Scan QR**). Details: [Nostr-Connect.md](../Nostr-Connect.md).
 
-- If you are on your iPhone or iPad you can click `BTCRPC Link` and it will automatically launch Fully Noded and connect your node.
-- If you are accessing the Nodl gui via a computer click `QR-Code`:
-<img src="./Images/nodl_3.jpeg" alt="" width="250"/>
+## Tor (any node)
 
-- In Fully Noded go to `Settings` > `Node Manager` > `+` > `Scan Quick Connect QR`
-- Once you have scanned the QR the app will automatically connect and start loading the home screen, to ensure its working go home and see the table load. To troubleshoot any connection issue reboot Tor on your Nodl and force quit and reopen Fully Noded.
+1. Set up a Tor hidden service for your node's RPC port: [Tor setup](../Tor/Tor.md).
+2. Add the node manually (below) with the onion address, e.g. `abc…xyz.onion:8332`.
 
-You can always do this manually by inputting your `rpcuser` and `rpcpassword` along with the Tor hidden service url in Fully Noded. Just add `:8332` to the end of the onion url.
+Many node packages (Umbrel, Start9, myNode, RaspiBlitz, BTCPay Server) show a Fully Noded
+or "BTC RPC" QR code that does this for you: scan it with **Node Manager → + → Scan QR**.
 
-## [Raspiblitz](https://shop.fulmo.org/raspiblitz/)
+## Local network
 
-In Raspiblitz:
-- Ensure Tor is running
-- SSH-MAINMENU > FULLY_NODED
-- follow the simple instructions
+Add the node manually with its local address, e.g. `192.168.1.20:8332` or `127.0.0.1:8332`.
+If your node's RPC uses TLS, paste or import its certificate in **SSL certificate**.
 
-## [Embassy](https://start9labs.com)
+## Adding a node manually
 
-- In Fully Noded go to `Settings` > `Node Manager` > `+` > `manually`
-- Simply add the Tor onion url with `:8332` appended to it and your rpc username/password
+**Settings → Node Manager → + → Manually**
 
-## [myNode](http://www.mynodebtc.com)
+<img src="../Images/app-add-node.jpg" alt="Add Node" width="300"/>
 
-- In myNode:
-<img src="./Images/myNode_1.png" alt="" width="250"/>
+1. **Label**: any name.
+2. **Address**: `host:port`. The RPC port is `8332` on mainnet, `18332` on testnet3, `48332` on testnet4,
+   `38332` on signet and `18443` on regtest.
+3. **RPC credentials**: Fully Noded creates a username and a strong password for you.
+4. **RPC auth**: tap **Copy** or **Export** and add that `rpcauth=…` line to your node's
+   [bitcoin.conf](./bitcoin-conf.md), then restart your node. (Using your own `rpcuser` and
+   `rpcpassword` also works: type them in instead.)
+5. Tap **Save Node**.
 
-1. From your dashboard, navigate to the Tor page
-<img src="./Images/myNode_2.png" alt="" width="250"/>
+The node becomes active and the home screen loads. You can save several nodes and switch between
+them in the Node Manager:
 
-2. At the bottom of the Tor page your will see the Fully Nodes button, press it.
-<img src="./Images/myNode_3.png" alt="" width="250"/>
+<img src="../Images/app-node-manager.jpg" alt="Node Manager" width="300"/>
 
-3. You will now see your connection QR.
-This is for premium myNode users only.
-- In Fully Noded go to `Settings` > `Node Manager` > `+` > `Scan Quick Connect QR` and scan the QR
-
-Non premium users can simply get their Tor V3 url for the RPC port add `:8332` to the end so it looks like `ufiuh2if2ibdd.onion:8332` and get your `rpcuser` and `rpcpassword` and add them all manually in Fully Noded:  `Settings` > `Node Manager` > `+` > `manually`
+Can't connect? See [Troubleshooting](../Troubleshooting.md).

@@ -37,6 +37,28 @@ class TorClient: NSObject {
     var isRefreshing = false
     let urlSessionDelegate = UserCertURLSessionDelegate()
     
+    /// Tor's local SOCKS port (other sessions can route through Tor with it).
+    static var socksPort: Int {
+        #if targetEnvironment(simulator)
+        return 19052 + simulatorPortOffset
+        #else
+        return 19050
+        #endif
+    }
+    
+    /// Tor's HTTP tunnel port (BDK's Esplora client tunnels through it).
+    static var httpTunnelPort: Int { 9080 + simulatorPortOffset }
+    
+    /// Simulators share the Mac's ports: launch a second one with `-simTorPortOffset 10` so its
+    /// Tor doesn't collide with the first's.
+    private static var simulatorPortOffset: Int {
+        #if targetEnvironment(simulator)
+        return UserDefaults.standard.integer(forKey: "simTorPortOffset")
+        #else
+        return 0
+        #endif
+    }
+    
     // The tor url session configuration.
     // Start with default config as fallback.
     private lazy var sessionConfiguration: URLSessionConfiguration = .default
@@ -46,16 +68,10 @@ class TorClient: NSObject {
     
     // Start the tor client.
     func start(delegate: OnionManagerDelegate?) {
-        //session.delegate = self
         weak var weakDelegate = delegate
         state = .started
         
-        var proxyPort = 19050
-        //var dnsPort = 12345
-        #if targetEnvironment(simulator)
-        proxyPort = 19052
-        //dnsPort = 12347
-        #endif
+        let proxyPort = Self.socksPort
         
         sessionConfiguration.connectionProxyDictionary = [kCFProxyTypeKey: kCFProxyTypeSOCKS,
                                                           kCFStreamPropertySOCKSProxyHost: "localhost",
@@ -93,88 +109,147 @@ class TorClient: NSObject {
                     "NumCPUs": "2",
                     "DisableDebuggerAttachment": "1",
                     "SafeLogging": "1",
-                    "HTTPTunnelPort": "9080"
-                    //"ExcludeExitNodes": "1",
-                    //"StrictNodes": "1"
+                    "HTTPTunnelPort": "\(Self.httpTunnelPort)"
                 ]
                 
-                //self?.config.arguments = ["--defaults-torrc \(NSTemporaryDirectory()).torrc"]
                 self.config.cookieAuthentication = true
                 self.config.dataDirectory = URL(fileURLWithPath: self.torPath())
                 self.config.controlSocket = self.config.dataDirectory?.appendingPathComponent("cp")
-                self.thread = TorThread(configuration: self.config)
+                
+                // Tor runs once per process (a second TorThread asserts, or aborts in Tor in
+                // release builds). If the last one is still running, for example because an
+                // earlier start gave up on the controller too soon, attach to it instead.
+                if let running = TorThread.active, !running.isFinished {
+                    self.thread = running
+                } else {
+                    self.thread = TorThread(configuration: self.config)
+                    self.thread?.start()
+                }
                 
                 // Initiate the controller.
                 if self.controller == nil {
                     self.controller = TorController(socketURL: self.config.controlSocket!)
                 }
                 
-                // Start a tor thread.
-                self.thread?.start()
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-                    guard let self = self else { return }
-                    // Connect Tor controller.
+                self.connectController(delegate: weakDelegate, attempt: 0)
+            }
+        }
+    }
+    
+    /// Connects the controller and authenticates with Tor's cookie. Tor writes its control socket
+    /// and cookie a moment after it starts (longer on a busy device), so this retries for a while
+    /// before reporting difficulties.
+    private func connectController(delegate weakDelegate: OnionManagerDelegate?, attempt: Int) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+            guard let self = self else { return }
+            // Connect Tor controller.
+            do {
+                if !(self.controller?.isConnected ?? false) {
                     do {
-                        if !(self.controller?.isConnected ?? false) {
-                            do {
-                                try self.controller?.connect()
-                            } catch {
-                                print("error=\(error)")
-                            }
-                        }
-                        
-                        let cookie = try Data(
-                            contentsOf: self.config.dataDirectory!.appendingPathComponent("control_auth_cookie"),
-                            options: NSData.ReadingOptions(rawValue: 0)
-                        )
-                        
-                        self.controller?.authenticate(with: cookie) { [weak self] (success, error) in
-                            guard let self = self else { return }
-                            
-                            if let error = error {
-                                print("error = \(error.localizedDescription)")
-                                return
-                            }
-                            
-                            var progressObs: Any? = nil
-                            
-                            progressObs = self.controller?.addObserver(forStatusEvents: { [weak self]
-                                (type: String, severity: String, action: String, arguments: [String : String]?) -> Bool in
-                                guard let self = self else { return false }
-                                
-                                guard let arguments = arguments, let progress = arguments["PROGRESS"], let progressInt = Int(progress) else { return false }
-                                
-                                weakDelegate?.torConnProgress(progressInt)
-                                
-                                if progressInt >= 100 {
-                                    self.controller?.removeObserver(progressObs)
-                                }
-                                
-                                return true
-                            })
-                            
-                            var observer: Any? = nil
-                            observer = self.controller?.addObserver(forCircuitEstablished: { [weak self] established in
-                                guard let self = self else { return }
-                                if established {
-                                    self.state = .connected
-                                    weakDelegate?.torConnFinished()
-                                    self.controller?.removeObserver(observer)
-                                    
-                                } else if self.state == .refreshing {
-                                    self.state = .connected
-                                    weakDelegate?.torConnFinished()
-                                    self.controller?.removeObserver(observer)
-                                }
-                            })
-                        }
+                        try self.controller?.connect()
                     } catch {
-                        weakDelegate?.torConnDifficulties()
-                        self.state = .none
+                        print("error=\(error)")
                     }
                 }
+                
+                let cookie: Data
+                do {
+                    cookie = try Data(
+                        contentsOf: self.config.dataDirectory!.appendingPathComponent("control_auth_cookie"),
+                        options: NSData.ReadingOptions(rawValue: 0)
+                    )
+                } catch {
+                    if attempt < 10 {
+                        self.connectController(delegate: weakDelegate, attempt: attempt + 1)
+                        return
+                    }
+                    throw error
+                }
+                
+                self.controller?.authenticate(with: cookie) { [weak self] (success, error) in
+                    guard let self = self else { return }
+                    
+                    if let error = error {
+                        print("error = \(error.localizedDescription)")
+                        return
+                    }
+                    
+                    var progressObs: Any? = nil
+                    
+                    progressObs = self.controller?.addObserver(forStatusEvents: { [weak self]
+                        (type: String, severity: String, action: String, arguments: [String : String]?) -> Bool in
+                        guard let self = self else { return false }
+                        
+                        guard let arguments = arguments, let progress = arguments["PROGRESS"], let progressInt = Int(progress) else { return false }
+                        
+                        weakDelegate?.torConnProgress(progressInt)
+                        
+                        if progressInt >= 100 {
+                            self.controller?.removeObserver(progressObs)
+                        }
+                        
+                        return true
+                    })
+                    
+                    var observer: Any? = nil
+                    observer = self.controller?.addObserver(forCircuitEstablished: { [weak self] established in
+                        guard let self = self else { return }
+                        if established {
+                            self.state = .connected
+                            weakDelegate?.torConnFinished()
+                            self.controller?.removeObserver(observer)
+                            
+                        } else if self.state == .refreshing {
+                            self.state = .connected
+                            weakDelegate?.torConnFinished()
+                            self.controller?.removeObserver(observer)
+                        }
+                    })
+                }
+            } catch {
+                weakDelegate?.torConnDifficulties()
+                self.state = .none
             }
+        }
+    }
+    
+    // MARK: - Onion services (payjoin receiving)
+    
+    struct OnionError: LocalizedError {
+        let errorDescription: String?
+        init(_ message: String) { errorDescription = message }
+    }
+    
+    /// Hosts a one-time onion service: port 80 of a new v3 onion forwards to
+    /// 127.0.0.1:`localPort` in this app. The key is discarded (`DiscardPK`), so the address
+    /// can never be used again once removed. Completion on the main queue with "xxxx.onion".
+    func addOnionService(localPort: UInt16, completion: @escaping (Result<String, Error>) -> Void) {
+        let finish: (Result<String, Error>) -> Void = { result in DispatchQueue.main.async { completion(result) } }
+        guard state == .connected, let controller = controller else {
+            finish(.failure(OnionError("Tor isn't connected.")))
+            return
+        }
+        controller.sendCommand("ADD_ONION",
+                               arguments: ["NEW:ED25519-V3", "Flags=DiscardPK", "Port=80,127.0.0.1:\(localPort)"],
+                               data: nil) { codes, lines, stop -> Bool in
+            stop.pointee = true
+            let text = lines.compactMap { String(data: $0, encoding: .utf8) }
+            guard codes.first?.intValue == 250,
+                  let id = text.first(where: { $0.hasPrefix("ServiceID=") })?.dropFirst("ServiceID=".count) else {
+                finish(.failure(OnionError("Tor couldn't create an onion service: \(text.joined(separator: " "))")))
+                return true
+            }
+            finish(.success("\(id).onion"))
+            return true
+        }
+    }
+    
+    /// Stops hosting an onion created with `addOnionService`.
+    func removeOnionService(_ host: String) {
+        let id = host.replacingOccurrences(of: ".onion", with: "")
+        controller?.sendCommand("DEL_ONION", arguments: [id], data: nil) { _, _, stop -> Bool in
+            stop.pointee = true
+            return true
         }
     }
     
@@ -200,13 +275,14 @@ class TorClient: NSObject {
     private func torPath() -> String {
         #if targetEnvironment(simulator)
             let path = NSSearchPathForDirectoriesInDomains(.applicationDirectory, .userDomainMask, true).first ?? ""
-            return "\(path.split(separator: Character("/"))[0..<2].joined(separator: "/"))/.tor_tmp"
+            // One data directory per simulator (they share the Mac's home folder).
+            let device = ProcessInfo.processInfo.environment["SIMULATOR_UDID"].map { "-\($0)" } ?? ""
+            return "\(path.split(separator: Character("/"))[0..<2].joined(separator: "/"))/.tor_tmp\(device)"
         #else
             return "\(NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? "")/tor"
         #endif
     }
-        
-    
+
     private func createAuthDirectory() -> String {
         // Create tor v3 auth directory if it does not yet exist
         let authPath = URL(fileURLWithPath: self.torPath(), isDirectory: true).appendingPathComponent("onion_auth", isDirectory: true).path
@@ -279,7 +355,4 @@ class TorClient: NSObject {
         }
     }
     
-    func turnedOff() -> Bool {
-        return false
-    }
 }

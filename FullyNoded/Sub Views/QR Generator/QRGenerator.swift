@@ -24,7 +24,6 @@ class QRGenerator: UIView {
         filter.setValue(data, forKey: "inputMessage")
         
         // Scale it up (because it is generated as a tiny image)
-        //let scale = UIScreen.main.scale
         let transform = CGAffineTransform(scaleX: 10, y: 10)
         guard let output = filter.outputImage?.transformed(by: transform) else { return imageToReturn }
         
@@ -40,13 +39,9 @@ class QRGenerator: UIView {
         
         func renderedImage(uiImage: UIImage) -> UIImage? {
             let image = uiImage
-            if #available(iOS 10.0, *) {
-                return UIGraphicsImageRenderer(size: image.size,
-                                               format: image.imageRendererFormat).image { _ in
-                                                image.draw(in: CGRect(origin: .zero, size: image.size))
-                }
-            } else {
-                return nil
+            return UIGraphicsImageRenderer(size: image.size,
+                                           format: image.imageRendererFormat).image { _ in
+                image.draw(in: CGRect(origin: .zero, size: image.size))
             }
         }
         

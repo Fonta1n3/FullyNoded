@@ -1,22 +1,34 @@
 # bitcoin.conf
 
-These are the recommended settings for Fully Noded functionality.
+Fully Noded only needs your node's RPC server on, and a user it can log in with.
+
+`bitcoin.conf` is in your node's data folder:
+
+- macOS: `~/Library/Application Support/Bitcoin/bitcoin.conf`
+- Linux: `~/.bitcoin/bitcoin.conf`
+- Windows: `%LOCALAPPDATA%\Bitcoin\bitcoin.conf`
 
 ```
-#forces your node to accept rpc commands
+# Accept RPC commands
 server=1
 
-# Up to you if you want to prune or not, FN will work just the same. A pruned node is a Full Node!
-# 1000 means the node will only take up around 1gb of space
-prune=1000
+# The line Fully Noded shows when you add a node (Node Manager → + → Manually → RPC auth → Copy).
+# It stores a salted hash, never the password itself.
+rpcauth=FullyNoded:<salt>$<hash>
 
-#Choose any username or password, make the password very strong **DO NOT USE SPECIAL CHARACTERS**, it will break the uri to your node that FN uses.
-rpcuser=yourUserName
-rpcpassword=aVeryStrongPasswordSuchAs128dnc849vn9n7gSS
+# Optional. A pruned node works with Fully Noded too.
+# prune=1000
 
-# This is redundant but only allows your computer to access your node
-rpcallowip=127.0.0.1
-
-# For a faster IBD use dbcach=half your ram - for 8gb ram set dbcache to 4000
-dbcache=4000
+# Optional: faster initial sync, set to about half your RAM in MB.
+# dbcache=4000
 ```
+
+Restart your node after editing it.
+
+Prefer a plain username and password? Use `rpcuser=` and `rpcpassword=` instead of `rpcauth=`,
+and type the same values into Fully Noded. Letters and numbers only.
+
+Your node only accepts RPC from the same computer by default, which is what Tor and Fully Noded
+Server need. To connect over your local network, also add `rpcbind=` and `rpcallowip=` for that
+network (for example `rpcbind=0.0.0.0` and `rpcallowip=192.168.1.0/24`), and only on a network you
+trust.

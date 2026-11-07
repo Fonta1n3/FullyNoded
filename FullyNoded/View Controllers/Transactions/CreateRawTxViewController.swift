@@ -9,51 +9,55 @@
 import UIKit
 
 class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
-    
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
+
     var fxRate: Double?
-    var spendable = Double()
-    var rawTx: String?
     var address = String()
-    var amount = String()
     var outputs: [[String:Any]] = []
+    /// The scanned payment request offered a BIP78 payjoin (handed to the verifier).
+    private var payjoin: Payjoin.Endpoint?
     var inputs: [[String:Any]] = []
-    var txt = ""
     var utxoTotal: Double = 0.0
     let ud = UserDefaults.standard
-    var index = 0
     var invoice:[String:Any]?
-    var invoiceString = ""
-    let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     var balance = ""
-    var psbt: String?
     var utxoToSweep: UTXO?
+    /// The coin-control notice is shown once, not every time the screen reappears.
+    private var shownCoinControlNotice = false
+
+    /// The address label's placeholder (the label is never empty).
+    private static let addressPlaceholder = "Paste or scan an address or invoice."
+
+    /// The entered recipient, without the display dashes; nil when none has been entered.
+    private var recipientAddress: String? {
+        let text = (addressInput.text ?? "").replacingOccurrences(of: "-", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, addressInput.text != Self.addressPlaceholder else { return nil }
+        return text
+    }
     
     
-    @IBOutlet weak private var addressInput: UILabel!
-    @IBOutlet weak private var createOutlet: UIButton!
-    @IBOutlet weak private var balanceLabel: UILabel!
-    @IBOutlet weak private var batchOutlet: UIButton!
-    @IBOutlet weak private var miningTargetLabel: UILabel!
-    @IBOutlet weak private var satPerByteLabel: UILabel!
-    @IBOutlet weak private var fiatButtonOutlet: UIButton!
-    @IBOutlet weak private var fxRateLabel: UILabel!
-    @IBOutlet weak private var denominationImage: UIImageView!
-    @IBOutlet weak private var slider: UISlider!
-    @IBOutlet weak private var addOutputOutlet: UIBarButtonItem!
-    @IBOutlet weak private var playButtonOutlet: UIBarButtonItem!
-    @IBOutlet weak private var amountInput: UITextField!
-    @IBOutlet weak private var amountLabel: UILabel!
-    @IBOutlet weak private var actionOutlet: UIButton!
-    @IBOutlet weak private var scanOutlet: UIButton!
-    @IBOutlet weak private var receivingLabel: UILabel!
-    @IBOutlet weak private var outputsTable: UITableView!
-    @IBOutlet weak private var feeRateInputField: UITextField!
+    private let addressInput = UILabel()
+    private let createOutlet = UIButton(type: .custom)
+    private let balanceLabel = UILabel()
+    private let batchOutlet = UIButton(type: .system)
+    private let miningTargetLabel = UILabel()
+    private let satPerByteLabel = UILabel()
+    private let slider = UISlider()
+    private let amountInput = UITextField()
+    private let outputsTable = UITableView(frame: .zero, style: .plain)
+    private let feeRateInputField = UITextField()
+    /// The three cards (AMOUNT / RECIPIENT / FEE).
+    private let mainStack = UIStackView()
     
-    let spinner = ConnectingView.shared
-    var spendableBalance = Double()
+    /// "≈ $1,234.56" under the amount, updated live as the BTC amount is typed
+    /// (display / reference only, never used to build the transaction).
+    private let fiatAmountLabel = UILabel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        buildLayout()
         amountInput.delegate = self
         outputsTable.delegate = self
         feeRateInputField.delegate = self
@@ -61,10 +65,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         outputsTable.tableFooterView = UIView(frame: .zero)
         outputsTable.alpha = 0
         slider.isContinuous = false
-        createOutlet.layer.cornerRadius = 8
-        createOutlet.clipsToBounds = true
         
-        if let fxRate = fxRate {
+        if balance.condenseWhitespace().isEmpty {
+            balanceLabel.text = "—"          // balance not loaded (no active wallet)
+        } else if let fxRate = fxRate {
             balanceLabel.text = balance + " btc" + " / " + (fxRate * balance.condenseWhitespace().doubleValue).fiatString
         } else {
             balanceLabel.text = balance + " btc"
@@ -94,9 +98,15 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         if address != "" {
             addAddress(address)
         }
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .send)
+        styleCards()
+        flattenInfoButtons()
+        configureCreateButton()
     }
     
-    @IBAction func sendToWalletAction(_ sender: Any) {
+    @objc func sendToWalletAction(_ sender: Any) {
+        guard !isShowingActivity else { return }
         CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] wallets in
             guard let self = self else { return }
             
@@ -151,9 +161,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func getAddressFromWallet(_ walletToFetchFrom: Wallet) {
-        spinner.show(vc: self, description: "getting address from \(walletToFetchFrom.label)...")
-        
         guard let currentActiveWallet = UserDefaults.standard.object(forKey: "walletName") else { return }
+        
+        showActivity("getting address from \(walletToFetchFrom.label)...")
         
         // Temporarily set the active wallet to the wallet we are deriving an address from.
         UserDefaults.standard.set(walletToFetchFrom.name, forKey: "walletName")
@@ -166,7 +176,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             guard let self = self else { return }
             
             UserDefaults.standard.set(currentActiveWallet, forKey: "walletName")
-            spinner.dismiss()
+            hideActivity()
             
             guard let response = response as? String else {
                 showAlert(vc: self, title: "", message: errorDesc ?? "Unknown error fetching a new address.")
@@ -182,20 +192,20 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             guard let self = self else { return }
             
             self.addAddress("\(address.addressExpanded)")
-            showAlert(vc: self, title: "Address added from \(wallet.label) ✓", message: "Tap the info button to get more details.")
+            SuccessView.toast("Address added from \(wallet.label)", in: self)
         }
     }
     
-    @IBAction func showAddressInfoAction(_ sender: Any) {
-        guard let address = addressInput.text, address != "", address != "Paste or scan an address or invoice." else {
+    @objc func showAddressInfoAction(_ sender: Any) {
+        guard let address = recipientAddress else {
             showAlert(vc: self, title: "", message: "Not a valid address or invoice.")
             return
         }
-        spinner.show(vc: self, description: "")
-        OnchainUtils.getAddressInfo(address: address.replacingOccurrences(of: "-", with: "")) { [weak self] (addressInfo, message) in
+        showActivity("getting address info...")
+        OnchainUtils.getAddressInfo(address: address) { [weak self] (addressInfo, message) in
             guard let self = self else { return }
             
-            spinner.dismiss()
+            hideActivity()
             
             guard let addressInfo = addressInfo else {
                 showAlert(vc: self, title: "Error getting address info.", message: message ?? "Unknown.")
@@ -214,7 +224,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         present(nav, animated: true)
     }
     
-    @IBAction func closeFeeRate(_ sender: Any) {
+    @objc func closeFeeRate(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -227,7 +237,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    @IBAction func donateAction(_ sender: Any) {
+    @objc func donateAction(_ sender: Any) {
         guard let donationAddress = Keys.donationAddress() else {
             return
         }
@@ -240,40 +250,21 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     
-    @IBAction func pasteAction(_ sender: Any) {
+    @objc func pasteAction(_ sender: Any) {
         guard let item = UIPasteboard.general.string else { return }
         
         processBIP21(url: item)
     }
     
-    @IBAction func createOnchainAction(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.amountInput.resignFirstResponder()
-            self.addressInput.resignFirstResponder()
-        }
-        
-        guard let _ = addressInput.text?.replacingOccurrences(of: "-", with: "") else {
-            showAlert(vc: self, title: "", message: "Enter an address or invoice.")
-            return
-        }
-        
-        guard let _ = convertedAmount() else {
-            if !self.outputs.isEmpty {
-                tryRaw()
-            } else {
-                spinner.dismiss()
-                showAlert(vc: self, title: "", message: "No amount or address.")
-            }
-            return
-        }
-        
+    @objc func createOnchainAction(_ sender: Any) {
+        guard !isShowingActivity else { return }
+        view.endEditing(true)
         tryRaw()
     }
     
     private func convertedAmount() -> String? {
-        guard let amount = amountInput.text, amount != "" else { return nil }
+        // The field shows spaces between digit groups; strip them before parsing.
+        guard let amount = amountInput.text?.condenseWhitespace(), amount != "" else { return nil }
         
         let dblAmount = amount.doubleValue
         
@@ -285,8 +276,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         return "\(dblAmount.avoidNotation)"
     }
     
-    @IBAction func addToBatchAction(_ sender: Any) {
-        guard let address = addressInput.text, address != "", let amount = convertedAmount() else {
+    @objc func addToBatchAction(_ sender: Any) {
+        guard let address = recipientAddress, let amount = convertedAmount() else {
             
             showAlert(vc: self,
                       title: "",
@@ -294,13 +285,14 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             return
         }
         
-        outputs.append([address.replacingOccurrences(of: "-", with: ""):amount])
+        outputs.append([address: amount])
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             self.outputsTable.alpha = 1
             self.amountInput.text = ""
+            self.updateFiatAmount()
             self.addressInput.text = ""
             self.outputsTable.reloadData()
         }
@@ -308,7 +300,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     
     override func viewDidAppear(_ animated: Bool) {
-        if inputs.count > 0 {
+        super.viewDidAppear(animated)
+        if inputs.count > 0, !shownCoinControlNotice {
+            shownCoinControlNotice = true
             
             if let fxRate = fxRate {
                 balanceLabel.text = utxoTotal.btcBalanceWithSpaces + " / " + (fxRate * utxoTotal).fiatString
@@ -320,12 +314,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    @IBAction func createPsbt(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToCreatePsbt", sender: vc)
-        }
-    }
-    
     private func addAddress(_ address: String) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -334,9 +322,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    @IBAction func scanNow(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToScannerToGetAddress", sender: vc)
+    @objc func scanNow(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            self?.showAddressScanner()
         }
     }
     
@@ -349,34 +337,18 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         estimateSmartFee()
     }
     
+    /// "Target: 6 blocks ~1 hours" for the slider, and remembers the target.
     func updateFeeLabel(label: UILabel, numberOfBlocks: Int) {
-        let seconds = ((numberOfBlocks * 10) * 60)
-        
-        func updateFeeSetting() {
-            ud.set(numberOfBlocks, forKey: "feeTarget")
+        ud.set(numberOfBlocks, forKey: "feeTarget")
+        let seconds = numberOfBlocks * 10 * 60
+        let eta: String
+        switch seconds {
+        case ..<3600: eta = "\(seconds / 60) minutes"
+        case ..<86400: eta = "\(seconds / 3600) hours"
+        default: eta = "\(seconds / 86400) days"
         }
-        
         DispatchQueue.main.async {
-            if seconds < 86400 {
-                //less then a day
-                if seconds < 3600 {
-                    DispatchQueue.main.async {
-                        //less then an hour
-                        label.text = "Target: \(numberOfBlocks) blocks ~\(seconds / 60) minutes"
-                    }
-                } else {
-                    DispatchQueue.main.async {
-                        //more then an hour
-                        label.text = "Target: \(numberOfBlocks) blocks ~\(seconds / 3600) hours"
-                    }
-                }
-            } else {
-                DispatchQueue.main.async {
-                    //more then a day
-                    label.text = "Target: \(numberOfBlocks) blocks ~\(seconds / 86400) days"
-                }
-            }
-            updateFeeSetting()
+            label.text = "Target: \(numberOfBlocks) blocks ~\(eta)"
         }
     }
     
@@ -405,6 +377,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             cell.textLabel?.text = ""
         }
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        guard editingStyle == .delete, outputs.indices.contains(indexPath.row) else { return }
+        outputs.remove(at: indexPath.row)
+        tableView.deleteRows(at: [indexPath], with: .automatic)
+        if outputs.isEmpty { tableView.alpha = 0 }
     }
     
     func addTapGesture() {
@@ -450,7 +429,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             amount += utxo.amount
 
             guard let confirmations = utxo.confirmations, confirmations > 0 else {
-                spinner.dismiss()
+                hideActivity()
                 showAlert(vc: self, title: "", message: "You have unconfirmed utxo's, wait till they get a confirmation before trying to sweep them.")
                 return
             }
@@ -463,6 +442,24 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             var input = utxo.input
             input["sequence"] = 1
             inputArray.append(input)
+        }
+
+        // To a silent payment address: its output depends on these inputs' keys, so it's built
+        // by SilentPaymentSend (placeholder output carrying the total, fee subtracted from it).
+        if SilentPaymentSend.isSilentPaymentAddress(receivingAddress) {
+            SilentPaymentSend.create(spAddress: receivingAddress,
+                                     amount: "\(rounded(number: amount))",
+                                     inputs: inputArray,
+                                     sweep: true) { [weak self] psbt, errorMessage in
+                guard let self else { return }
+                self.hideActivity()
+                guard let psbt else {
+                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "Unable to create the silent payment.")
+                    return
+                }
+                self.openVerifier(psbt: psbt)
+            }
+            return
         }
 
         func buildParams(lock: UInt32) -> [String: Any] {
@@ -491,11 +488,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletprocesspsbt(param: processParam)) { [weak self] response, errorMessage in
                 guard let self else { return }
                 guard let dict = response as? NSDictionary, let processedPSBT = dict["psbt"] as? String else {
-                    spinner.dismiss()
+                    hideActivity()
                     displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                     return
                 }
-                goVerifyPsbt(psbt: processedPSBT)
+                openVerifier(psbt: processedPSBT)
             }
         }
 
@@ -526,7 +523,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletcreatefundedpsbt(param: param)) { [weak self] response, errorMessage in
                 guard let self else { return }
                 guard let result = response as? NSDictionary, let psbt = result["psbt"] as? String else {
-                    spinner.dismiss()
+                    hideActivity()
                     displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                     completion(nil)
                     return
@@ -541,7 +538,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             let decodeParam: Decode_Psbt = .init(["psbt": psbt1])
             MakeRPCCall.sharedInstance.executeRPCCommand(method: .decodepsbt(param: decodeParam)) { response, _ in
                 let decoded = response as? [String: Any] ?? [:]
-                let txLock = ((decoded["tx"] as? [String: Any])?["locktime"] as? NSNumber)?.uint32Value ?? 0
+                let txLock = (PSBTVersion.tx(from: decoded as NSDictionary)?["locktime"] as? NSNumber)?.uint32Value ?? 0
                 let needed = max(locktime, locktimeFromDecodedPsbt(decoded))
 
                 if needed == 0 || txLock >= needed {
@@ -557,78 +554,104 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
         
+    /// Sends everything: the one coin passed in from the UTXO screen, the coins selected
+    /// there (coin control), or the whole wallet.
     private func sweepWallet(_ receivingAddress: String) {
-        guard inputs.count == 0, utxoToSweep == nil else {
-            sweepUtxos(utxosToSweep: [utxoToSweep!], receivingAddress: receivingAddress)
-            return
-        }
-        
+        let selected = Set(inputs.compactMap { input -> String? in
+            guard let txid = input["txid"] as? String, let vout = input["vout"] as? Int else { return nil }
+            return "\(txid):\(vout)"
+        })
+        let single = utxoToSweep
+
         let param: List_Unspent = .init(["minconf": 0])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .listunspent(param)) { [weak self] response, errorDesc in
             guard let self else { return }
 
             guard let response = response as? [[String: Any]] else {
-                spinner.dismiss()
+                hideActivity()
                 displayAlert(viewController: self, isError: true, message: errorDesc ?? "error fetching utxo's")
                 return
             }
 
-            let utxos = [UTXO].from(rawArray: response)
+            var utxos = [UTXO].from(rawArray: response)
+            if let single = single {
+                utxos = [single]
+            } else if !selected.isEmpty {
+                utxos = utxos.filter { selected.contains("\($0.txid):\($0.vout)") }
+            }
+            guard !utxos.isEmpty else {
+                hideActivity()
+                showAlert(vc: self, title: "Nothing to send", message: "There are no coins to send.")
+                return
+            }
             sweepUtxos(utxosToSweep: utxos, receivingAddress: receivingAddress)
         }
     }
     
-    private func goVerifyPsbt(psbt: String) {
-        self.psbt = psbt
-        showRaw()
-    }
-    
     private func sweep() {
-        guard let receivingAddress = addressInput.text,
-              receivingAddress != "" else {
+        guard let receivingAddress = recipientAddress else {
             showAlert(vc: self, title: "Add an address first", message: "")
             return
         }
-        spinner.show(vc: self, description: "sweeping wallet...")
-        sweepWallet(receivingAddress.replacingOccurrences(of: "-", with: ""))
+        showActivity("sweeping wallet...", button: createOutlet)
+        sweepWallet(receivingAddress)
     }
     
-    @IBAction func sweep(_ sender: Any) {
+    @objc func sweep(_ sender: Any) {
+        guard !isShowingActivity else { return }
         promptToSweep()
     }
     
-    func showRaw() {
+    /// Pushes the (programmatic) transaction verifier with what was just created, and
+    /// clears the form (batch, coin control, address, amount). Safe from any thread.
+    private func openVerifier(psbt: String? = nil, rawTx: String? = nil) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
-            self.performSegue(withIdentifier: "segueToBroadcaster", sender: self)
+            self.hideActivity()
+            let vc = VerifyTransactionViewController()
+            vc.fxRate = self.fxRate
+            vc.announceCreatedTransaction = true
+            if let rawTx = rawTx {
+                vc.signedRawTx = rawTx
+            } else if let psbt = psbt {
+                vc.unsignedPsbt = psbt
+                // Tried after signing, only if the transaction still pays the request's address.
+                vc.payjoin = self.payjoin
+            }
+            self.payjoin = nil
+
+            self.outputs.removeAll()
+            self.outputsTable.reloadData()
+            self.inputs.removeAll()
+            self.utxoToSweep = nil
+            self.addressInput.text = Self.addressPlaceholder
+            self.amountInput.text = ""
+            self.updateFiatAmount()
+
+            self.navigationController?.pushViewController(vc, animated: true)
         }
     }
     
+    /// Builds the transaction for the batch, or for the single recipient on screen. The
+    /// batch itself is only cleared once a transaction has been created.
     @objc func tryRaw() {
-        spinner.show(vc: self, description: "creating psbt...")
-        
-        if outputs.count == 0 {
-            if let amount = convertedAmount(), self.addressInput.text != "" {
-                outputs.append([self.addressInput.text!.replacingOccurrences(of: "-", with: ""):amount])
-                getRawTx()
-                
-            } else {
-                spinner.dismiss()
-                showAlert(vc: self, title: "", message: "You need to fill out an amount and a recipient")
+        let hasAmount = !(amountInput.text ?? "").condenseWhitespace().isEmpty
+        let recipients: [[String: Any]]
+        if outputs.isEmpty {
+            guard let address = recipientAddress, hasAmount, let amount = convertedAmount() else {
+                showAlert(vc: self, title: "", message: "You need to fill out an amount and a recipient.")
+                return
             }
-            
-        } else if outputs.count > 0 && self.amountInput.text != "" || self.amountInput.text != "0.0" && self.addressInput.text != "" {
-            spinner.dismiss()
-            displayAlert(viewController: self, isError: true, message: "If you want to add multiple recipients please tap the \"+\" and add them all first.")
-            
-        } else if outputs.count > 0 {
-            getRawTx()
-            
+            recipients = [[address: amount]]
         } else {
-            spinner.dismiss()
-            showAlert(vc: self, title: "This is not right...", message: "Please reach out and let us know about this so we can fix it.")
+            guard !hasAmount, recipientAddress == nil else {
+                displayAlert(viewController: self, isError: true, message: "To add this recipient to the batch, tap \"Batch\" first. Or clear the amount and address to send the batch as it is.")
+                return
+            }
+            recipients = outputs
         }
+        showActivity("creating psbt...", button: createOutlet)
+        getRawTx(outputs: recipients)
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
@@ -640,24 +663,70 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     //MARK: Textfield methods
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        guard textField == amountInput, let text = textField.text, string != "" else { return true }
+        guard textField == amountInput else { return true }
         
-        guard text.contains(".") else { return true }
+        // The amount is shown grouped like balances ("0.01 234 567"), so edits are applied
+        // to the raw digits (typing / pasting appends, backspace removes the last digit)
+        // and the field is reformatted. Max 8 whole digits and 8 decimals.
+        var raw = (textField.text ?? "").condenseWhitespace()
+        if string.isEmpty {
+            if !raw.isEmpty { raw.removeLast() }
+        } else {
+            raw += string.replacingOccurrences(of: ",", with: ".")
+        }
+        textField.text = Self.formatAmount(raw)
+        // Live fiat reference. (Returning false means no editingChanged event fires,
+        // so it's updated here, on every keystroke.)
+        updateFiatAmount()
+        return false
+    }
+    
+    /// "1234.01234567" → "1 234.01 234 567". Keeps only digits and the first ".", drops
+    /// leading zeros, caps whole digits at 8 (21 000 000) and decimals at 8. Decimals are
+    /// grouped 2-3-3 like `btcBalanceWithSpaces`; whole digits in threes.
+    static func formatAmount(_ input: String) -> String {
+        var whole = ""
+        var fraction = ""
+        var hasPoint = false
+        for c in input {
+            if c == "." {
+                hasPoint = true
+            } else if c.isASCII, c.isNumber {
+                if hasPoint {
+                    if fraction.count < 8 { fraction.append(c) }
+                } else if whole.count < 8 {
+                    whole.append(c)
+                }
+            }
+        }
+        // No leading zeros ("007" → "7"), but "0" before a decimal point.
+        while whole.count > 1 && whole.hasPrefix("0") { whole.removeFirst() }
+        if whole.isEmpty && hasPoint { whole = "0" }
+        guard !whole.isEmpty else { return "" }
         
-        let arr = text.components(separatedBy: ".")
+        // Whole part in threes from the right.
+        var groupedWhole = ""
+        for (i, c) in whole.reversed().enumerated() {
+            if i > 0 && i % 3 == 0 { groupedWhole.append(" ") }
+            groupedWhole.append(c)
+        }
+        groupedWhole = String(groupedWhole.reversed())
+        guard hasPoint else { return groupedWhole }
         
-        guard arr.count > 0 else { return true }
-        
-        return arr[1].count < 8
+        // Decimals: 2, then 3, then 3 ("01 234 567").
+        var groupedFraction = ""
+        for (i, c) in fraction.enumerated() {
+            if i == 2 || i == 5 { groupedFraction.append(" ") }
+            groupedFraction.append(c)
+        }
+        return groupedWhole + "." + groupedFraction
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         textField.resignFirstResponder()
         
-        if textField == addressInput && addressInput.text != "" {
-            let address = addressInput.text!
-            addressInput.text = address.addressExpanded
-            processBIP21(url: address)
+        if textField == amountInput {
+            updateFiatAmount()
         }
         
         if textField == feeRateInputField {
@@ -680,7 +749,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 return
             }
             
-            guard let int = Int(text) else { return }
+            guard let int = Int(text.trimmingCharacters(in: .whitespaces)) else {
+                showAlert(vc: self, title: "Whole sats per vbyte", message: "Enter the fee rate as a whole number of sats per vbyte (e.g. 3). Your fee setting hasn't changed.")
+                return
+            }
             
             guard int > 0 else {
                 DispatchQueue.main.async { [weak self] in
@@ -732,7 +804,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         if UserDefaults.standard.object(forKey: "feeRate") == nil {
             estimateSmartFee()
         } else {
-            let feeRate = UserDefaults.standard.object(forKey: "feeRate") as! Int
+            guard let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int else {
+                UserDefaults.standard.removeObject(forKey: "feeRate")
+                estimateSmartFee()
+                return
+            }
             self.slider.alpha = 0
             self.miningTargetLabel.alpha = 0
             self.feeRateInputField.text = "\(feeRate)"
@@ -741,60 +817,217 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     func processBIP21(url: String) {
-        let (address, amount, label, message) = AddressParser.sharedInstance.parse(url: url)
-        
+        let request = AddressParser.sharedInstance.parseRequest(url: url)
+
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
+
             self.amountInput.resignFirstResponder()
-            
-            guard let address = address else {
-                showAlert(vc: self, title: "", message: "Not a valid address or BIP21 invoice.")
+
+            guard let request = request else {
+                showAlert(vc: self, title: "", message: "Not a valid address or payment request.")
                 return
             }
-            
-            self.addAddress(address.addressExpanded)
-            
-            if amount != nil || label != nil || message != nil {
-                var amountText = "not specified"
-                
-                if amount != nil {
-                    amountText = amount!.avoidNotation
-                    self.amountInput.text = amountText
-                    self.ud.set("btc", forKey: "unit")
+
+            // BIP321 with both: the payer picks. A silent payment needs this wallet's signers to
+            // hold every input's key; the regular address always works.
+            if let sp = request.silentPayment, let fallback = request.address {
+                let payjoinNote = request.payjoin == nil ? "" : " The regular address also offers payjoin (the receiver adds a coin of theirs)."
+                let alert = UIAlertController(title: "Pay to which address?",
+                                              message: "This request accepts a silent payment address (more private: the recipient gets a fresh, unlinkable address) or a regular address. Paying the silent payment address needs your signer to hold the keys of the coins you spend." + payjoinNote,
+                                              preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Silent payment address", style: .default) { [weak self] _ in
+                    self?.applyPaymentRequest(request, address: sp)
+                })
+                alert.addAction(UIAlertAction(title: "Regular address", style: .default) { [weak self] _ in
+                    self?.applyPaymentRequest(request, address: fallback)
+                })
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+                self.present(alert, animated: true)
+                return
+            }
+
+            guard let address = request.silentPayment ?? request.address else { return }
+            self.applyPaymentRequest(request, address: address)
+        }
+    }
+
+    /// Fills in the recipient (and amount) from a payment request, then summarises it.
+    private func applyPaymentRequest(_ request: AddressParser.PaymentRequest, address: String) {
+        addAddress(address.addressExpanded)
+        payjoin = nil
+        // Payjoin goes with the regular address (not a silent payment one), from a single-sig
+        // wallet: signed here, or twice with its own signer when it's watch-only here.
+        guard let url = request.payjoin, address == request.address else {
+            showPaymentRequest(request, address: address, payjoinUnavailable: nil)
+            return
+        }
+        activeWallet { [weak self] wallet in
+            Payjoin.eligibility(for: wallet) { eligibility in
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    var reason: String?
+                    switch eligibility {
+                    case .thisDevice, .externalSigner:
+                        self.payjoin = Payjoin.Endpoint(url: url, address: address,
+                                                        outputSubstitutionDisabled: request.payjoinOutputSubstitutionDisabled,
+                                                        signedElsewhere: eligibility == .externalSigner)
+                    case .unavailable(let why):
+                        reason = why
+                    }
+                    self.showPaymentRequest(request, address: address, payjoinUnavailable: reason)
                 }
-                
-                showAlert(vc: self, title: "BIP21 Invoice\n", message: "Address: \(address)\n\nAmount: \(amountText) btc\n\nLabel: " + (label ?? "no label") + "\n\nMessage: \((message ?? "no message"))")
             }
         }
     }
+
+    /// The payment request's summary sheet (amount, label, message, payjoin).
+    private func showPaymentRequest(_ request: AddressParser.PaymentRequest, address: String, payjoinUnavailable: String?) {
+        guard request.amount != nil || request.label != nil || request.message != nil || request.payjoin != nil else { return }
+        var amountText: String?
+        if let amount = request.amount {
+            amountText = amount.avoidNotation
+            amountInput.text = Self.formatAmount(amountText!.replacingOccurrences(of: ",", with: ""))
+            updateFiatAmount()
+        }
+        let sheet = PayjoinRequestSheet(.init(address: address, amount: amountText, label: request.label, message: request.message,
+                                              payjoin: payjoin?.url,
+                                              payjoinSkippedForSilentPayment: request.payjoin != nil && payjoin == nil && payjoinUnavailable == nil,
+                                              payjoinUnavailable: payjoinUnavailable,
+                                              payjoinSignedElsewhere: payjoin?.signedElsewhere == true))
+        present(sheet, animated: true)
+    }
     
-    func getRawTx() {
-        CreatePSBT.create(inputs: self.inputs, outputs: self.outputs) { [weak self] (psbt, rawTx, errorMessage) in
+    func getRawTx(outputs: [[String: Any]]) {
+        // Silent payment recipient (sp1… / tsp1…): the output key depends on the inputs
+        // and their private keys, so SilentPaymentSend builds the psbt. It comes back
+        // UNSIGNED and goes to VerifyTransactionViewController like any other psbt,
+        // where the normal sign / broadcast flow happens.
+        if outputs.contains(where: { $0.keys.contains(where: { SilentPaymentSend.isSilentPaymentAddress($0) }) }) {
+            guard outputs.count == 1, let entry = outputs.first?.first else {
+                hideActivity()
+                showAlert(vc: self, title: "Silent payments", message: "A silent payment address must be the only recipient in the transaction.")
+                return
+            }
+
+            createSilentPayment(to: entry.key, amount: "\(entry.value)", change: .wallet)
+            return
+        }
+
+        CreatePSBT.create(inputs: self.inputs, outputs: outputs) { [weak self] (psbt, rawTx, errorMessage) in
             guard let self = self else { return }
             
-            self.spinner.dismiss()
-            
             if let rawTx = rawTx {
-                self.rawTx = rawTx
-                self.showRaw()
+                self.openVerifier(rawTx: rawTx)
                 
             } else if let psbt = psbt {
-                self.psbt = psbt
-                self.showRaw()
-                
-            } else {
-                self.outputs.removeAll()
-                DispatchQueue.main.async {
-                    self.outputsTable.reloadData()
+                // Spending silent payment outputs? Ask where the change should go.
+                self.offerSilentPaymentChange(psbt: psbt, recipients: outputs.count) { [weak self] pinnedInputs in
+                    self?.createWithSilentPaymentChange(inputs: pinnedInputs, outputs: outputs)
                 }
                 
+            } else {
+                // The batch is kept: fix it (swipe to remove a recipient) and try again.
+                self.hideActivity()
                 showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error creating transaction")
             }
         }
     }
     
-    @IBAction func pasteAddressAction(_ sender: Any) {
+    // MARK: - Silent payment change
+    
+    /// Silent payment recipient: SilentPaymentSend builds the (unsigned) psbt.
+    /// Built with the wallet's own change (Fully Noded wallets always have a change
+    /// descriptor). If it spends silent payment outputs, ask whether the change goes to
+    /// your silent payment address or stays with the wallet. Silent payment change uses
+    /// k = 1 automatically when you pay your own address (BIP352 numbering).
+    /// - inputs: coin-control inputs (nil = the screen's selection).
+    private func createSilentPayment(to address: String,
+                                     amount: String,
+                                     change: SilentPaymentChange.Destination,
+                                     inputs pinned: [[String: Any]]? = nil) {
+        showActivity("creating silent payment...", button: createOutlet)
+        SilentPaymentSend.create(spAddress: address, amount: amount, inputs: pinned ?? inputs, change: change) { [weak self] psbt, errorMessage in
+            guard let self = self else { return }
+            
+            self.hideActivity()
+            
+            if let psbt = psbt {
+                guard case .wallet = change else {
+                    self.openVerifier(psbt: psbt)
+                    return
+                }
+                self.offerSilentPaymentChange(psbt: psbt, recipients: 1) { [weak self] pinnedInputs in
+                    self?.createSilentPayment(to: address, amount: amount, change: .silentPayment, inputs: pinnedInputs)
+                }
+                
+            } else {
+                showAlert(vc: self, title: "Silent payment error", message: errorMessage ?? "unknown error creating silent payment transaction")
+            }
+        }
+    }
+    
+    /// After building with the wallet's own change: if the transaction spends silent
+    /// payment outputs (detected exactly as the verifier does) and has a change output,
+    /// ask whether the change should go to your silent payment address instead.
+    /// - rebuildWithSilentPaymentChange: gets the same inputs, pinned, so the change is
+    ///   computed for exactly the coins that were chosen.
+    private func offerSilentPaymentChange(psbt: String,
+                                          recipients: Int,
+                                          rebuildWithSilentPaymentChange: @escaping ([[String: Any]]) -> Void) {
+        let useAsIs: () -> Void = { [weak self] in
+            self?.openVerifier(psbt: psbt)
+        }
+        
+        showActivity("checking for silent payment inputs...", button: createOutlet)
+        SilentPaymentSpend.detectInputs(psbt: psbt, passphrase: nil) { owned in
+            guard !owned.isEmpty else {
+                useAsIs()
+                return
+            }
+            SilentPaymentChange.decode(psbt) { [weak self] tx, _ in
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    // No change output (exact amount): nothing to decide.
+                    guard let tx = tx, tx.outputs.count > recipients else {
+                        useAsIs()
+                        return
+                    }
+                    self.hideActivity()
+                    
+                    let pinned: [[String: Any]] = tx.inputs.map { ["txid": $0.txid, "vout": $0.vout] }
+                    let alert = UIAlertController(
+                        title: "Change",
+                        message: "This transaction spends silent payment outputs. Send the change to your silent payment address, or to this wallet's normal change address?",
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: "My silent payment address", style: .default) { _ in
+                        rebuildWithSilentPaymentChange(pinned)
+                    })
+                    alert.addAction(UIAlertAction(title: "Wallet change address", style: .default) { _ in
+                        useAsIs()
+                    })
+                    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+                    self.present(alert, animated: true)
+                }
+            }
+        }
+    }
+    
+    private func createWithSilentPaymentChange(inputs: [[String: Any]], outputs: [[String: Any]]) {
+        showActivity("creating psbt with silent payment change...", button: createOutlet)
+        SilentPaymentChange.create(inputs: inputs, outputs: outputs) { [weak self] psbt, errorMessage in
+            guard let self = self else { return }
+            guard let psbt = psbt else {
+                self.hideActivity()
+                showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error creating transaction")
+                return
+            }
+            self.openVerifier(psbt: psbt)
+        }
+    }
+    
+    @objc func pasteAddressAction(_ sender: Any) {
         guard let pasteBoardContents = UIPasteboard.general.string else {
             showAlert(vc: self, title: "", message: "Nothing on your clipboard. You can paste addresses or BIP21 invoices here.")
             return
@@ -806,38 +1039,420 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        switch segue.identifier {
-        case "segueToScannerToGetAddress":
-            guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
+    private func showAddressScanner() {
+        let vc = QRScannerViewController()
+        vc.isScanningAddress = true
+        vc.onDoneBlock = { addrss in
+            guard let addrss = addrss else { return }
             
-            vc.isScanningAddress = true
-            
-            vc.onDoneBlock = { addrss in
-                guard let addrss = addrss else { return }
-                
-                DispatchQueue.main.async { [unowned thisVc = self] in
-                    thisVc.processBIP21(url: addrss)
+            DispatchQueue.main.async { [unowned thisVc = self] in
+                thisVc.processBIP21(url: addrss)
+            }
+        }
+        present(vc, animated: true)
+    }
+}
+
+// MARK: - Theme
+
+extension CreateRawTxViewController {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .send)
+    }
+
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        WalletTheme.styleHeader(view, tint: .send)
+    }
+}
+
+extension CreateRawTxViewController {
+    /// The address info button is an icon: keep it borderless (only the text buttons such as
+    /// Paste, Wallet, Batch, Send all and Donate are outlined).
+    fileprivate func flattenInfoButtons() {
+        var stack: [UIView] = [view]
+        while let current = stack.popLast() {
+            if let button = current as? UIButton {
+                let actions = button.actions(forTarget: self, forControlEvent: .touchUpInside) ?? []
+                if actions.contains("showAddressInfoAction:") {
+                    WalletTheme.styleIconButton(button, tint: .send)
                 }
+            } else {
+                stack.append(contentsOf: current.subviews)
             }
-            
-        case "segueToBroadcaster":
-            guard let vc = segue.destination as? VerifyTransactionViewController else { fallthrough }
-            
-            vc.fxRate = fxRate
-            
-            if let rawTx = rawTx {
-                vc.signedRawTx = rawTx
-            } else if let psbt = psbt {
-                vc.unsignedPsbt = psbt
-            }
-            outputs.removeAll()
-            inputs.removeAll()
-            addressInput.text = ""
-            amountInput.text = ""
-            
-        default:
-            break
         }
     }
+}
+
+extension CreateRawTxViewController {
+    /// "Create transaction": a full-width hero button lined up with the outputs table.
+    fileprivate func configureCreateButton() {
+        WalletTheme.styleHero(createOutlet, title: "Create transaction", tint: .send)
+
+        NSLayoutConstraint.activate([
+            createOutlet.leadingAnchor.constraint(equalTo: outputsTable.leadingAnchor),
+            createOutlet.trailingAnchor.constraint(equalTo: outputsTable.trailingAnchor),
+            createOutlet.heightAnchor.constraint(equalToConstant: 52)
+        ])
+    }
+}
+
+// MARK: - Layout: AMOUNT / RECIPIENT / FEE cards
+
+/// Three cards, then the batching table (hidden until something is added) and the
+/// Create button:
+///
+///   > AMOUNT
+///     [ amount field                 ]  max
+///     ≈ <fiat value of the amount>   (live, reference only)
+///     AVAILABLE
+///     <balance btc / fiat>
+///   > RECIPIENT ………………………………… (i)
+///     <address>
+///     [PASTE] [WALLET] [+ BATCH] [DONATE]
+///   > FEE ………………………………… <n s/vB>
+///     ─────────○──────────  (ETA slider)
+///     Target: 2 blocks ~20 minutes
+///     [ custom sat/vB          ] (x)
+extension CreateRawTxViewController {
+
+    private static let cardTag = 0x5E4D
+    // Unique tags, so the caption styling below finds only these labels.
+    private static let captionTag = 0x5E4E
+    private static let availableTag = 0x5E4F
+    /// Every card caption ("> AMOUNT", "> RECIPIENT", "> FEE") is exactly this.
+    private static let captionFont = WalletTheme.mono(11, weight: .bold)
+    private static let captionRowHeight: CGFloat = 24
+
+    /// Buttons, found by the action they trigger.
+    private func button(withAction action: String, in root: UIView) -> UIButton? {
+        var stack: [UIView] = [root]
+        while let current = stack.popLast() {
+            if let button = current as? UIButton,
+               (button.actions(forTarget: self, forControlEvent: .touchUpInside) ?? []).contains(action) {
+                return button
+            }
+            stack.append(contentsOf: current.subviews)
+        }
+        return nil
+    }
+
+    private func textButton(_ title: String, action: Selector) -> UIButton {
+        // A configuration title, not setTitle(_:for:), which would override the chip
+        // configurations set in styleCards.
+        let button = UIButton(configuration: .plain())
+        button.configuration?.title = title
+        button.addTarget(self, action: action, for: .touchUpInside)
+        return button
+    }
+
+    fileprivate func buildLayout() {
+        navigationItem.title = "Send"
+        let scan = UIBarButtonItem(image: UIImage(systemName: "qrcode.viewfinder"), style: .plain,
+                                   target: self, action: #selector(scanNow(_:)))
+        scan.accessibilityLabel = "Scan invoice"
+        // "document.on.clipboard" is iOS 18+.
+        let pasteImage = UIImage(systemName: "document.on.clipboard") ?? UIImage(systemName: "doc.on.clipboard")
+        let paste = UIBarButtonItem(image: pasteImage, style: .plain,
+                                    target: self, action: #selector(pasteAction(_:)))
+        paste.accessibilityLabel = "Paste"
+        navigationItem.rightBarButtonItems = [scan, paste]
+
+        // AMOUNT
+        amountInput.borderStyle = .roundedRect
+        amountInput.minimumFontSize = 10
+        amountInput.keyboardType = .decimalPad
+        amountInput.autocorrectionType = .no
+        amountInput.spellCheckingType = .no
+        amountInput.smartDashesType = .no
+        amountInput.smartQuotesType = .no
+        amountInput.smartInsertDeleteType = .no
+        amountInput.keyboardAppearance = .dark
+        let amountRow = UIStackView(arrangedSubviews: [amountInput, textButton("Send all", action: #selector(sweep(_:)))])
+        amountRow.spacing = 8
+
+        // The available balance gets its own full-width line under the field.
+        let available = UILabel()
+        available.text = "AVAILABLE"
+        available.tag = Self.availableTag
+        available.setContentHuggingPriority(.required, for: .horizontal)
+        available.setContentCompressionResistancePriority(.required, for: .horizontal)
+        balanceLabel.numberOfLines = 0
+        balanceLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+        // "AVAILABLE" on one line, the balance itself on the next.
+        let availableRow = UIStackView(arrangedSubviews: [available, balanceLabel])
+        availableRow.axis = .vertical
+        availableRow.alignment = .leading
+        availableRow.spacing = 2
+        let amountCaption = captionRow("> AMOUNT", trailing: [])
+
+        // Fiat value of the entered amount (hidden until there's an amount and a rate).
+        fiatAmountLabel.isHidden = true
+        fiatAmountLabel.numberOfLines = 0
+
+        // RECIPIENT
+        addressInput.text = Self.addressPlaceholder
+        addressInput.numberOfLines = 0
+        addressInput.lineBreakMode = .byCharWrapping
+        addressInput.heightAnchor.constraint(greaterThanOrEqualToConstant: 34).isActive = true
+        let infoButton = UIButton(type: .system)
+        infoButton.configuration = .plain()
+        infoButton.configuration?.image = UIImage(systemName: "info.circle")
+        infoButton.accessibilityLabel = "Address info"
+        infoButton.addTarget(self, action: #selector(showAddressInfoAction(_:)), for: .touchUpInside)
+        let recipientCaption = captionRow("> RECIPIENT", trailing: [infoButton])
+
+        // Chips: Paste, Wallet, Batch, Donate.
+        batchOutlet.configuration = .plain()
+        batchOutlet.configuration?.title = "Batch"
+        batchOutlet.addTarget(self, action: #selector(addToBatchAction(_:)), for: .touchUpInside)
+        let actionsRow = UIStackView(arrangedSubviews: [
+            textButton("Paste", action: #selector(pasteAddressAction(_:))),
+            textButton("Wallet", action: #selector(sendToWalletAction(_:))),
+            batchOutlet,
+            textButton("Donate", action: #selector(donateAction(_:)))
+        ])
+        actionsRow.distribution = .fillEqually
+        actionsRow.spacing = 6
+
+        // FEE
+        satPerByteLabel.textAlignment = .right
+        let feeCaption = captionRow("> FEE", trailing: [satPerByteLabel])
+        let sliderRow = UIStackView(arrangedSubviews: [slider])
+        feeRateInputField.borderStyle = .roundedRect
+        feeRateInputField.font = .systemFont(ofSize: 14)
+        feeRateInputField.keyboardType = .numberPad
+        feeRateInputField.autocorrectionType = .no
+        feeRateInputField.spellCheckingType = .no
+        feeRateInputField.smartDashesType = .no
+        feeRateInputField.smartQuotesType = .no
+        feeRateInputField.smartInsertDeleteType = .no
+        feeRateInputField.keyboardAppearance = .dark
+        let closeFee = UIButton(type: .close)
+        closeFee.addTarget(self, action: #selector(closeFeeRate(_:)), for: .touchUpInside)
+        let manualRow = UIStackView(arrangedSubviews: [feeRateInputField, closeFee])
+        manualRow.spacing = 8
+
+        mainStack.axis = .vertical
+        mainStack.spacing = 12
+        mainStack.addArrangedSubview(card([amountCaption, amountRow, fiatAmountLabel, availableRow]))
+        mainStack.addArrangedSubview(card([recipientCaption, addressInput, actionsRow]))
+        mainStack.addArrangedSubview(card([feeCaption, sliderRow, miningTargetLabel, manualRow]))
+
+        outputsTable.register(OutputCell.self, forCellReuseIdentifier: "cell")
+        outputsTable.backgroundColor = .clear
+
+        createOutlet.addTarget(self, action: #selector(createOnchainAction(_:)), for: .touchUpInside)
+
+        for subview in [mainStack, outputsTable, createOutlet] as [UIView] {
+            subview.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(subview)
+        }
+        let guide = view.safeAreaLayoutGuide
+        NSLayoutConstraint.activate([
+            // A little air between the navigation bar's bottom border and the first card.
+            mainStack.topAnchor.constraint(equalTo: guide.topAnchor, constant: 12),
+            mainStack.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 8),
+            mainStack.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -8),
+            outputsTable.topAnchor.constraint(equalTo: mainStack.bottomAnchor, constant: 8),
+            outputsTable.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            outputsTable.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            createOutlet.topAnchor.constraint(equalTo: outputsTable.bottomAnchor, constant: 8),
+            createOutlet.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            createOutlet.bottomAnchor.constraint(equalTo: guide.bottomAnchor, constant: -19)
+        ])
+    }
+
+    /// "> CAPTION ……… trailing views"
+    private func captionRow(_ title: String, trailing: [UIView]) -> UIStackView {
+        let caption = UILabel()
+        caption.text = title
+        caption.tag = Self.captionTag
+        caption.font = Self.captionFont
+        caption.textColor = WalletTheme.Tint.send.accent
+        caption.setContentHuggingPriority(.required, for: .horizontal)
+        let spacer = UIView()
+        spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        let row = UIStackView(arrangedSubviews: [caption, spacer] + trailing)
+        row.axis = .horizontal
+        row.alignment = .center
+        row.spacing = 6
+        // Same height for every caption row, whatever sits on the right (the info button,
+        // the fee rate, or nothing), so all three headers look identical.
+        let height = row.heightAnchor.constraint(equalToConstant: Self.captionRowHeight)
+        height.priority = .required
+        height.isActive = true
+        for view in trailing {
+            view.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+            if let button = view as? UIButton {
+                // Fit the icon to the row: no content insets (a plain configuration pads
+                // it, which clipped the symbol in a 24pt frame) and a
+                // symbol sized for the row. Later theme passes only recolour it.
+                if var config = button.configuration {
+                    config.contentInsets = .zero
+                    config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 15, weight: .regular)
+                    config.title = nil
+                    config.attributedTitle = nil
+                    button.configuration = config
+                }
+                button.clipsToBounds = false
+                button.widthAnchor.constraint(equalToConstant: Self.captionRowHeight + 4).isActive = true
+                button.heightAnchor.constraint(equalToConstant: Self.captionRowHeight).isActive = true
+            }
+        }
+        return row
+    }
+
+    /// Bordered card (square corners) holding `rows` (shared WalletTheme card).
+    private func card(_ rows: [UIView]) -> UIView {
+        let card = WalletTheme.cardView(rows, tint: .send)
+        card.tag = Self.cardTag
+        return card
+    }
+
+    /// Typography / chip styling on top of the theme (runs after WalletTheme.apply).
+    fileprivate func styleCards() {
+        let tint = WalletTheme.Tint.send
+        let main = mainStack
+
+        var stack: [UIView] = [main]
+        while let current = stack.popLast() {
+            if let label = current as? UILabel {
+                switch label.tag {
+                case Self.captionTag:   // captions (re-applied after the theme walker)
+                    label.font = Self.captionFont
+                    label.textColor = tint.accent
+                case Self.availableTag: // "AVAILABLE"
+                    label.font = WalletTheme.mono(10, weight: .semibold)
+                    label.textColor = WalletTheme.dim
+                default:
+                    break
+                }
+            }
+            stack.append(contentsOf: current.subviews)
+        }
+
+        balanceLabel.font = WalletTheme.mono(12)
+        balanceLabel.textColor = WalletTheme.text
+        balanceLabel.numberOfLines = 0             // wraps instead of clipping
+        balanceLabel.lineBreakMode = .byWordWrapping
+        balanceLabel.textAlignment = .left
+
+        // The amount is the hero of the screen: large, bold, grouped like balances, with a
+        // "BTC" unit tag. Large amounts shrink to fit instead of clipping.
+        let amountFont = WalletTheme.mono(30, weight: .bold)
+        amountInput.font = amountFont
+        amountInput.textColor = tint.accent
+        amountInput.keyboardType = .decimalPad
+        amountInput.adjustsFontSizeToFitWidth = true
+        amountInput.minimumFontSize = 14
+        amountInput.attributedPlaceholder = NSAttributedString(string: "0.00 000 000",
+                                                               attributes: [.foregroundColor: WalletTheme.dim.withAlphaComponent(0.6),
+                                                                            .font: amountFont])
+        amountInput.heightAnchor.constraint(greaterThanOrEqualToConstant: 60).isActive = true
+        amountInput.layer.borderColor = tint.accent.withAlphaComponent(0.7).cgColor
+        amountInput.backgroundColor = WalletTheme.bg
+        
+        let unit = UILabel()
+        unit.text = "BTC "
+        unit.font = WalletTheme.mono(13, weight: .bold)
+        unit.textColor = WalletTheme.dim
+        unit.sizeToFit()
+        amountInput.rightView = unit
+        amountInput.rightViewMode = .always
+        
+        // Re-group any amount already in the field (e.g. set before the view loaded).
+        if let text = amountInput.text, !text.isEmpty {
+            amountInput.text = Self.formatAmount(text.condenseWhitespace().replacingOccurrences(of: ",", with: ""))
+        }
+        
+        fiatAmountLabel.font = WalletTheme.mono(14, weight: .semibold)
+        fiatAmountLabel.textColor = WalletTheme.text
+        updateFiatAmount()
+
+        addressInput.font = WalletTheme.mono(13)
+        addressInput.textColor = WalletTheme.text
+
+        satPerByteLabel.font = WalletTheme.mono(13, weight: .semibold)
+        satPerByteLabel.textColor = tint.accent
+        miningTargetLabel.font = WalletTheme.mono(11)
+        miningTargetLabel.textColor = WalletTheme.dim
+
+        feeRateInputField.font = WalletTheme.mono(13)
+        feeRateInputField.attributedPlaceholder = NSAttributedString(string: "custom sat/vB (optional)",
+                                                                     attributes: [.foregroundColor: WalletTheme.dim,
+                                                                                  .font: WalletTheme.mono(13)])
+
+        // Compact chips.
+        let chips: [(action: String, title: String, symbol: String)] = [
+            ("pasteAddressAction:", "PASTE", "doc.on.clipboard"),
+            ("sendToWalletAction:", "WALLET", "wallet.pass"),
+            ("addToBatchAction:", "BATCH", "plus.rectangle.on.rectangle"),
+            ("donateAction:", "DONATE", "heart")
+        ]
+        for chip in chips {
+            guard let button = button(withAction: chip.action, in: main) else { continue }
+            button.configuration = chipConfiguration(title: chip.title, symbol: chip.symbol, tint: tint)
+        }
+
+        // MAX: a quiet text link beside the amount, not a full-height button.
+        if let maxButton = button(withAction: "sweep:", in: main) {
+            maxButton.configuration = maxConfiguration()
+            maxButton.setContentHuggingPriority(.required, for: .horizontal)
+            maxButton.setContentCompressionResistancePriority(.required, for: .horizontal)
+            (maxButton.superview as? UIStackView)?.alignment = .center
+        }
+    }
+
+    private func maxConfiguration() -> UIButton.Configuration {
+        var config = UIButton.Configuration.plain()
+        config.title = "MAX"
+        config.titleLineBreakMode = .byClipping
+        config.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 6, bottom: 4, trailing: 2)
+        config.baseForegroundColor = WalletTheme.dim
+        config.background.backgroundColor = .clear
+        config.background.strokeWidth = 0
+        config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var attributes = incoming
+            attributes.font = WalletTheme.mono(11, weight: .semibold)
+            return attributes
+        }
+        return config
+    }
+
+    /// Shows "≈ <fiat>" for the entered BTC amount (reference only), or hides the line when
+    /// there's no amount or no exchange rate.
+    func updateFiatAmount() {
+        let btc = (amountInput.text ?? "").condenseWhitespace().doubleValue
+        guard btc > 0, let rate = fxRate, rate > 0 else {
+            fiatAmountLabel.text = nil
+            fiatAmountLabel.isHidden = true
+            return
+        }
+        fiatAmountLabel.text = "≈ " + (btc * rate).fiatString
+        fiatAmountLabel.isHidden = false
+    }
+
+    private func chipConfiguration(title: String, symbol: String, tint: WalletTheme.Tint) -> UIButton.Configuration {
+        WalletTheme.chipConfiguration(title: title,
+                                      systemImage: symbol,
+                                      tint: tint,
+                                      fontSize: 10,
+                                      imageSize: 10,
+                                      imagePadding: 4,
+                                      insets: NSDirectionalEdgeInsets(top: 7, leading: 6, bottom: 7, trailing: 6),
+                                      background: WalletTheme.bg,
+                                      clipsTitle: true)
+    }
+}
+
+/// One batched output: up to 8 lines of small text.
+private final class OutputCell: UITableViewCell {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: .default, reuseIdentifier: reuseIdentifier)
+        selectionStyle = .none
+        textLabel?.numberOfLines = 8
+        textLabel?.font = UIFont(name: "HiraginoSans-W3", size: 11) ?? .systemFont(ofSize: 11)
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 }

@@ -17,6 +17,7 @@ class TextFileImport {
         var keys = [String]()
         var descriptor = ""
         var errorMessage:String?
+        var format = ""
         
         for item in myStrings {
             if item.contains("Name: ") {
@@ -26,9 +27,7 @@ class TextFileImport {
                 let arr = policy.split(separator: " ")
                 sigsRequired = "\(arr[0])"
             } else if item.contains("Format: ") {
-                guard item.contains("P2WSH") else {
-                    return (nil, "Unsupported policy. Currently we only support p2wsh multisig imports.")
-                }
+                format = item.replacingOccurrences(of: "Format: ", with: "").condenseWhitespace().uppercased()
             } else if item.contains("Derivation: ") {
                 deriv = item.replacingOccurrences(of: "Derivation: ", with: "")
             } else if item.hasPrefix("seed: ") && !item.hasPrefix("#") {
@@ -40,6 +39,32 @@ class TextFileImport {
                     keys.append(processed.replacingOccurrences(of: " ", with: ""))
                 }
             }
+        }
+        
+        // Single sig (as Fully Noded's own wallet export writes it): "Policy: Single Sig",
+        // "Format: P2WPKH" and one "xfp:xpub" line.
+        let singleSigScripts = ["P2WPKH": ("wpkh(", ")"), "P2SH-P2WPKH": ("sh(wpkh(", "))"), "P2PKH": ("pkh(", ")"), "P2TR": ("tr(", ")")]
+        if let (open, close) = singleSigScripts[format] {
+            guard keys.count == 1 else {
+                return (nil, "A single sig wallet file should hold exactly one key.")
+            }
+            let arr = keys[0].split(separator: ":")
+            guard arr.count == 2, !deriv.isEmpty else {
+                return (nil, "This does not seem to be a supported import type. Please let us know about it so we can add support.")
+            }
+            var xpub = "\(arr[1])"
+            if !xpub.hasPrefix("xpub") && !xpub.hasPrefix("tpub") {
+                guard let converted = XpubConverter.convert(extendedKey: xpub) else {
+                    return (nil, "There was a problem converting your extended key to an xpub.")
+                }
+                xpub = converted
+            }
+            let path = deriv.replacingOccurrences(of: "m/", with: "")
+            return (["descriptor": "\(open)[\(arr[0])/\(path)]\(xpub)/0/*\(close)", "blockheight": Int64(0), "watching": [], "label": name] as [String : Any], nil)
+        }
+        
+        guard format.isEmpty || format == "P2WSH" else {
+            return (nil, "Unsupported policy. Currently we only support p2wsh multisig and single sig imports.")
         }
         
         descriptor = "wsh(sortedmulti(\(sigsRequired),"
@@ -58,7 +83,7 @@ class TextFileImport {
                     descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(xpub)/0/*"
                 }
                 
-                if i < keys.count {
+                if i < keys.count - 1 {
                     descriptor += ","
                 } else {
                     descriptor += "))"
@@ -115,6 +140,19 @@ class TextFileImport {
         }
         
         return (["descriptor": descriptor, "blockheight": Int64(0), "watching": [], "label": name] as [String : Any], errorMessage)
+    }
+    
+    /// A text file holding one descriptor among comments and blank lines (as Sparrow and Coldcard
+    /// export them) → that descriptor.
+    class func singleDescriptor(in text: String) -> String? {
+        let allLines = text.components(separatedBy: .newlines)
+        let lines = allLines
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty && !$0.hasPrefix("#") }
+        guard lines.count == 1, lines.count < allLines.count else { return nil }
+        let line = lines[0]
+        let scripts = ["wpkh(", "sh(", "pkh(", "wsh(", "tr(", "combo(", "addr(", "multi(", "sortedmulti("]
+        return scripts.contains(where: { line.lowercased().hasPrefix($0) }) ? line : nil
     }
     
     class func saveSigner(encryptedSigner: Data, completion: @escaping ((Bool)) -> Void) {

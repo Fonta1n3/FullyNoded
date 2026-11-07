@@ -48,7 +48,7 @@ The maintainer will acknowledge valid reports, coordinate fixes, and credit repo
 - Anywhere private keys or seeds are handled we do our best to wipe memory using the extensions `secureZero()` and `secureWipe()` found in `Extensions.swift`.
 
 ### Network & Node Communication
-- Preferred path: Tor hidden service (onion) to the user’s Bitcoin Core RPC.
+- Preferred path: Tor hidden service (onion) to the user’s Bitcoin Core RPC, or Nostr Connect (NIP-44 end-to-end encrypted, through a relay to the user's Fully Noded Server; see `Docs/Nostr-Connect.md`).
 - Optional **Tor v3 client authentication** (x25519) for strong mutual authentication.
 - RPC credentials are stored encrypted and used only for authenticated calls.
 - Localhost / LAN connections are supported but reduce privacy guarantees, SSL cert can be added in node credentials for this purpose.
@@ -79,7 +79,7 @@ Follow the project’s existing documentation (especially `Docs/Security-Best-Pr
 2. Enable the strong unlock password.
 3. Prefer disabling biometrics under elevated threat models.
 4. Back up signers offline (paper/metal) in multiple secure locations. Test recovery.
-5. Use a strong, offline-saved passphrase for iCloud encryption; consider a dedicated 12-word dummy signer.
+5. Turn on the passphrase prompt if your seeds use BIP39 passphrases, so they aren't stored on the device.
 6. Encrypt any exported wallet files (GPG or equivalent).
 7. Keep the device OS and the app updated.
 8. Verify release signatures and hashes.

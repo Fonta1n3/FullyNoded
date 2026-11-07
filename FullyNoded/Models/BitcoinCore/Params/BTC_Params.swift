@@ -35,8 +35,7 @@ public struct Create_Wallet_Param: CustomStringConvertible {
       6. descriptors             (boolean, optional, default=true) Create a native descriptor wallet. The wallet will use descriptors internally to handle address creation
       7. load_on_startup         (boolean, optional) Save wallet name to persistent settings and load on startup. True to add wallet to startup list, false to remove, null to leave unchanged.
       8. external_signer          (boolean, optional, default=false) Use an external signer such as a hardware wallet. Requires -signer to be configured. Wallet creation will fail if keys cannot be fetched. Requires disable_private_keys and descriptors set to true.
-      
-     
+
      {\"wallet_name\":\"\(walletName)\",\"avoid_reuse\":true,\"descriptors\":true,\"load_on_startup\":true,\"disable_private_keys\":true}"
      */
     
@@ -151,41 +150,6 @@ public struct Import_Descriptors: CustomStringConvertible {
         
         let requests = dict["requests"] as! [[String:Any]]
         
-        //var parts:[[String:Any]] = []
-//        for request in requests {
-//            let desc = request["desc"] as? String ?? ""
-//            let active = request["active"] as? Bool ?? false
-//            let range = request["range"] as? [Int]
-//            let next_index = request["next_index"] as? Int
-//            let timestamp = request["timestamp"] as? String ?? "now"
-//            let internal_ = request["internal"] as? Bool
-//            let label = request["label"] as? String ?? ""
-//            
-//            if range.count > 0 {
-//                let part = [
-//                    "desc":desc,
-//                    "active":active,
-//                    "range":range,
-//                    "next_index":next_index,
-//                    "timestamp":timestamp,
-//                    "internal":internal_,
-//                ] as [String:Any]
-//                
-//                parts.append(part)
-//            } else {
-//                let part = [
-//                    "desc":desc,
-//                    "active":active,
-//                    "range":range,
-//                    "next_index":next_index,
-//                    "timestamp":timestamp,
-//                    "internal":internal_,
-//                    "label": label
-//                ] as [String:Any]
-//                
-//                parts.append(part)
-//            }
-//        }
         param = [
             "requests": requests
         ]
@@ -408,7 +372,10 @@ public struct PSBT_Bump_Fee: CustomStringConvertible {
     init(_ dict: [String:Any]) {
         let txid = dict["txid"] as? String ?? ""
         let options:[String:Any] = dict["options"] as? [String:Any] ?? [:]
-        param = ["txid": txid, "options": options]
+        var opts = options
+        // Core 32 makes PSBTv2 by default: FN, its signers and BIP78 read v0.
+        if PSBTVersion.mustRequestV0 { opts["psbt_version"] = 0 }
+        param = ["txid": txid, "options": opts]
     }
 }
 
@@ -461,7 +428,6 @@ public struct Decode_Raw_Tx: CustomStringConvertible {
     let param:[String:Any]
     init(_ dict: [String:Any]) {
         let hexstring = dict["hexstring"] as? String ?? ""
-        //let iswitness = dict["iswitness"] as? Bool
         param = ["hexstring": hexstring]
     }
 }
@@ -514,7 +480,12 @@ public struct Get_Raw_Tx: CustomStringConvertible {
     let param:[String:Any]
     init(_ dict: [String:Any]) {
         let txid = dict["txid"] as? String ?? ""
-        param = ["txid": txid]
+        var p: [String: Any] = ["txid": txid]
+        // Optional, only sent when given: verbosity 2 adds each input's prevout
+        // (Core >= 25); blockhash lets it work without -txindex.
+        if let verbosity = dict["verbosity"] as? Int { p["verbosity"] = verbosity }
+        if let blockhash = dict["blockhash"] as? String { p["blockhash"] = blockhash }
+        param = p
     }
 }
 
@@ -656,6 +627,7 @@ public struct Wallet_Create_Funded_Psbt: CustomStringConvertible {
         if let locktime = locktime {
             param["locktime"] = locktime
         }
+        if PSBTVersion.mustRequestV0 { param["psbt_version"] = 0 }
     }
 }
 
@@ -707,7 +679,6 @@ public struct Encrypt_Wallet: CustomStringConvertible {
     }
 }
 
-
 public struct Wallet_Change_Passphrase: CustomStringConvertible {
     public var description: String {
         return ""
@@ -724,7 +695,6 @@ public struct Wallet_Change_Passphrase: CustomStringConvertible {
         param = ["oldpassphrase": oldpassphrase, "newpassphrase": newpassphrase]
     }
 }
-
 
 public struct List_Transactions: CustomStringConvertible {
     public var description: String {
@@ -745,7 +715,6 @@ public struct List_Transactions: CustomStringConvertible {
         param = ["count": count, "include_watchonly": include_watchonly]
     }
 }
-
 
 public struct Rescan_Blockchain: CustomStringConvertible {
     public var description: String {
@@ -788,8 +757,7 @@ public struct Set_Ban: CustomStringConvertible {
     let param: [String: Any]
     
     init(dict: [String : Any]) {
-        let subnet = dict["subnet"] as! String
-        let ip = subnet.components(separatedBy: ":")[0]
+        let ip = PeerInfo.host(of: dict["subnet"] as? String ?? "")
         let now = Date()
         let oneHundredYears: TimeInterval = 100 * 365.2425 * 24 * 60 * 60
         let futureDate = now.addingTimeInterval(oneHundredYears)
@@ -798,7 +766,6 @@ public struct Set_Ban: CustomStringConvertible {
         param = ["subnet": ip, "command": "add", "absolute": true, "bantime": aCenturyInUnixEpochTime]
     }
 }
-
 
 public struct List_Unspent: CustomStringConvertible {
     public var description: String {
@@ -826,11 +793,16 @@ public struct List_Unspent: CustomStringConvertible {
     let param:[String:Any]
     init(_ dict: [String:Any]) {
         let minconf = dict["minconf"] as? Int ?? 0
-        //let query_options = ["maximumCount": 100]
-        param = ["minconf": minconf, "include_immature_coinbase": true]
+        var param: [String: Any] = ["minconf": minconf]
+        // include_immature_coinbase is a query_options key (not a top-level named parameter), and
+        // only Core 25+ accepts it: older nodes reject unknown query_options keys.
+        let version = UserDefaults.standard.object(forKey: "version") as? Int ?? 0
+        if dict["include_immature_coinbase"] as? Bool == true, version >= 250000 {
+            param["query_options"] = ["include_immature_coinbase": true]
+        }
+        self.param = param
     }
 }
-
 
 public struct Join_Psbt: CustomStringConvertible {
     public var description: String {
@@ -850,7 +822,6 @@ public struct Join_Psbt: CustomStringConvertible {
         param = ["txs": txs]
     }
 }
-
 
 public struct Finalize_Psbt: CustomStringConvertible {
     public var description: String {
@@ -881,7 +852,10 @@ public struct Load_Wallet: CustomStringConvertible {
     let param: [String:Any]
     init(_ dict: [String:Any]) {
         let filename = dict["filename"] as? String ?? ""
-        param = ["filename": filename, "load_on_startup": true]
+        // Leaves the node's startup list alone unless asked.
+        var param: [String: Any] = ["filename": filename]
+        if let onStartup = dict["load_on_startup"] as? Bool { param["load_on_startup"] = onStartup }
+        self.param = param
     }
 }
 
@@ -924,10 +898,15 @@ public struct Create_Psbt: CustomStringConvertible {
     init(_ dict:[String:Any]) {
         inputs = dict["inputs"] as? [[String:Any]] ?? [[:]]
         outputs = dict["outputs"] as? [[String:Any]] ?? [[:]]
-        param = ["inputs": inputs, "outputs": outputs, "replaceable": true]
+        var p: [String: Any] = ["inputs": inputs, "outputs": outputs, "replaceable": true]
+        // Optional raw locktime (kept when rebuilding a funded transaction).
+        if let locktime = dict["locktime"] as? Int, locktime > 0 {
+            p["locktime"] = locktime
+        }
+        if PSBTVersion.mustRequestV0 { p["psbt_version"] = 0 }
+        param = p
     }
 }
-
 
 public struct Utxo_Update_Psbt: CustomStringConvertible {
      /*
@@ -1034,18 +1013,4 @@ public struct Scan_Tx_Out: CustomStringConvertible {
     }
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

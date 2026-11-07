@@ -9,11 +9,12 @@
 import UIKit
 
 class SeedDisplayerViewController: UIViewController, UINavigationControllerDelegate {
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
 
-    @IBOutlet weak var savedOutlet: UIButton!
-    @IBOutlet weak var textView: UITextView!
+    let savedOutlet = UIButton(type: .system)
+    let textView = UITextView()
     
-    let spinner = ConnectingView.shared
     var primDesc = ""
     var changeDesc = ""
     var name = ""
@@ -23,9 +24,13 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     var dict = [String:Any]()
     var isTaproot = false
     var isSegwit = false
+    /// 12 or 24, chosen before this screen opens.
+    var wordCount = 24
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationItem.title = "Seed Words"
+        buildLayout()
         
         navigationController?.delegate = self
         textView.layer.cornerRadius = 8
@@ -34,6 +39,42 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         textView.textColor = .systemGreen
         savedOutlet.layer.cornerRadius = 8
         setCoinType()
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.stylePrimary(savedOutlet, tint: .create)
+        WalletTheme.apply(to: self, tint: .create)
+    }
+    
+    private func buildLayout() {
+        textView.isEditable = false
+        textView.font = .systemFont(ofSize: 17)
+        textView.backgroundColor = .clear
+
+        let warning = UILabel()
+        warning.numberOfLines = 8
+        warning.text = "In order to recover this wallet or to spend from this wallet you will need these seed words! Write them down and store them safely. Anyone who has these words will be able to spend your bitcoin."
+
+        savedOutlet.setTitle("I saved them", for: .normal)
+        savedOutlet.backgroundColor = .systemFill
+        savedOutlet.addTarget(self, action: #selector(savedAction(_:)), for: .touchUpInside)
+
+        for subview in [textView, warning, savedOutlet] as [UIView] {
+            subview.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(subview)
+        }
+        let guide = view.safeAreaLayoutGuide
+        NSLayoutConstraint.activate([
+            textView.topAnchor.constraint(equalTo: guide.topAnchor, constant: 25),
+            textView.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            textView.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            textView.heightAnchor.constraint(equalToConstant: 211),
+            warning.topAnchor.constraint(equalTo: textView.bottomAnchor, constant: 8),
+            warning.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 21),
+            warning.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -21),
+            savedOutlet.topAnchor.constraint(equalTo: warning.bottomAnchor, constant: 8),
+            savedOutlet.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            savedOutlet.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            savedOutlet.heightAnchor.constraint(equalToConstant: 42)
+        ])
     }
     
     private func setCoinType() {
@@ -46,7 +87,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             self.blockheight = Int64(blockheight)
             
         } else {
-            spinner.show(vc: self, description: "fetching chain type...")
+            showActivity("fetching chain type...")
             
             OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
                 guard let self = self else { return }
@@ -73,7 +114,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         
         // check if version is at least 0.21.0 to use native descriptors
         guard let version = UserDefaults.standard.object(forKey: "version") as? Int else {
-            self.spinner.dismiss()
+            self.hideActivity()
             showAlert(vc: self, title: "Version unknown.", message: "In order to create a wallet we need to know which version of Bitcoin Core you are running, please go the the home screen and refresh then try to create this wallet again.")
             
             return
@@ -83,7 +124,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         getWords()
     }
     
-    @IBAction func savedAction(_ sender: Any) {
+    @objc func savedAction(_ sender: Any) {
         textView.text = ""
         navigationController?.popToRootViewController(animated: true)
     }
@@ -94,15 +135,27 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             
             UserDefaults.standard.removeObject(forKey: "walletName")
             self.textView.text = ""
-            self.spinner.dismiss()
+            self.hideActivity()
+            self.setSavedEnabled(true)
             showAlert(vc: self, title: "Error", message: error)
         }
     }
     
+    /// "I saved them" stays off until the wallet is created on the node and saved here: leaving
+    /// earlier would drop the rest of the setup (the node wallet would exist without this app's
+    /// record of it).
+    private func setSavedEnabled(_ enabled: Bool) {
+        DispatchQueue.main.async { [weak self] in
+            self?.savedOutlet.isEnabled = enabled
+            self?.savedOutlet.alpha = enabled ? 1 : 0.4
+        }
+    }
+    
     private func getWords() {
-        spinner.show(vc: self, description: "creating Fully Noded wallet...")
+        showActivity("creating Fully Noded wallet...")
+        setSavedEnabled(false)
         
-        guard let seed = Keys.seedWords() else {
+        guard let seed = Keys.seedWords(wordCount: wordCount) else {
             showError(error: "Error deriving seed")
             return
         }
@@ -123,8 +176,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             for (i, word) in wordArray.enumerated() {
                 wordsToShow += "\(i + 1). \(word)  "
             }
-            
-            
+
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
@@ -133,24 +185,6 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
     }
         
-    private func importAccountMap(_ accountMap: [String:Any]) {
-        ImportWallet.accountMap(accountMap) { (success, errorDescription) in
-            if success {
-                self.spinner.dismiss()
-                
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                }
-                
-               // showAlert(vc: self, title: "Success ✓", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!\n\nFully Noded encrypts and stores your signer, you can access it and delete it in the Signer view, if you delete the signer Fully Noded will not be able to sign transactions.")
-                SuccessView.show(in: self, title: "Wallet created")
-            } else {
-                UserDefaults.standard.removeObject(forKey: "walletName")
-                self.showError(error: "Error creating wallet: \(errorDescription ?? "Unknown error.")")
-            }
-        }
-    }
-    
     private func getMasterKey(seed: String) {
         if let masterKey = Keys.masterKey(words: seed, coinType: coinType, passphrase: "") {
             getAccountXpub(masterKey: masterKey)
@@ -177,11 +211,13 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
         
         guard accountXpub != "" else {
+            setSavedEnabled(true)
             showAlert(vc: self, title: "", message: "Unable to derive account xpub.")
             return
         }
         
         guard let fingerprint = Keys.fingerprint(masterKey: masterKey) else {
+            setSavedEnabled(true)
             showAlert(vc: self, title: "", message: "Unable to derive fingerprint.")
             return
         }
@@ -242,12 +278,14 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 if self.version >= 210100 {
                     self.importDescriptors(name, fingerprint, self.primDesc, self.changeDesc, mk, completion: completion)
                 } else {
+                    self.setSavedEnabled(true)
                     showAlert(vc: self, title: "", message: "Fully Noded requires at least Bitcoin Core v21, please update and try again.")
                 }
                 
             } else {
+                self.setSavedEnabled(true)
                 if let message = message {
-                    self.spinner.dismiss()
+                    self.hideActivity()
                     showAlert(vc: self, title: "Error", message: message)
                 }
             }
@@ -294,7 +332,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                     ]
                 ] as [String:Any])
                 
-                OnchainUtils.importDescriptors(params) { [weak self] (imported, message) in
+                OnchainUtils.importDescriptors(params, walletName: name) { [weak self] (imported, message) in
                     guard let self = self else { return }
                     
                     guard imported else {
@@ -328,11 +366,17 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             return
         }
         
-        saveSigner(encryptedSigner: encryptedWords, completion: completion)
+        saveSigner(encryptedSigner: encryptedWords, words: words, completion: completion)
     }
     
-    private func saveSigner(encryptedSigner: Data, completion: @escaping ((Bool)) -> Void) {
-        let dict = ["id":UUID(), "words":encryptedSigner, "added": Date(), "label": "Single Sig"] as [String:Any]
+    private func saveSigner(encryptedSigner: Data, words: String, completion: @escaping ((Bool)) -> Void) {
+        var dict = ["id":UUID(), "words":encryptedSigner, "added": Date(), "label": "Single Sig"] as [String:Any]
+        // Store the fingerprint now so the verifier can match this signer without an app relaunch.
+        if let mk = Keys.masterKey(words: words, coinType: "0", passphrase: ""),
+           let xfp = Keys.fingerprint(masterKey: mk),
+           let encryptedXfp = Crypto.encrypt(xfp.utf8) {
+            dict["xfp"] = encryptedXfp
+        }
         CoreDataService.saveEntity(dict: dict, entityName: .signers) { success in
             completion(success)
         }
@@ -350,31 +394,21 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             guard let self = self else { return }
             
             if success {
-                self.spinner.dismiss()
+                self.hideActivity()
                 
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                 }
+                self.setSavedEnabled(true)
                 
-                //showAlert(vc: self, title: "Success ✓", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!")
                 SuccessView.show(in: self, title: "Wallet created")
                 
             } else {
                 UserDefaults.standard.removeObject(forKey: "walletName")
-                self.spinner.dismiss()
+                self.hideActivity()
                 self.showError(error: "Error saving your wallet to the device")
             }
         }
     }
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }

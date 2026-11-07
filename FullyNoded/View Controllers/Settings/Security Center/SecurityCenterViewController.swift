@@ -9,22 +9,31 @@
 import UIKit
 
 class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
-    
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
+
     let ud = UserDefaults.standard
-    let lockView = UIView()
     let passwordInput = UITextField()
-    let textInput = UITextField()
     let nextButton = UIButton()
-    let alertView = UIView()
-    let labelTitle = UILabel()
     var firstPassword = String()
-    var secondPassword = String()
-    @IBOutlet var securityTable: UITableView!
+    let securityTable = UITableView(frame: .zero, style: .grouped)
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationItem.title = "Security"
+        securityTable.translatesAutoresizingMaskIntoConstraints = false
+        securityTable.register(SecurityCell.self, forCellReuseIdentifier: "securityCell")
+        view.addSubview(securityTable)
+        NSLayoutConstraint.activate([
+            securityTable.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
+            securityTable.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            securityTable.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            securityTable.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        ])
         securityTable.delegate = self
         securityTable.dataSource = self
+        // Cypherpunk look (WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .settings)
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -52,33 +61,24 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         cell.selectionStyle = .none
         let label = cell.viewWithTag(2) as! UILabel
         let icon = cell.viewWithTag(1) as! UIImageView
-        icon.tintColor = .systemBlue
-        //let background = cell.viewWithTag(3)!
-        //background.clipsToBounds = true
-        //background.layer.cornerRadius = 8
+        icon.tintColor = WalletTheme.Tint.settings.accent
         
         cell.clipsToBounds = true
-        //cell.layer.cornerRadius = 8
-        //cell.layer.borderWidth = 0.5
-        //cell.layer.borderColor = UIColor.lightGray.cgColor
         
         switch indexPath.section {
         case 0:
             icon.image = UIImage(systemName: "lock.shield")
             label.text = "V3 Authentication Key"
-            //background.backgroundColor = .systemGreen
             
         case 1:
-            if KeyChain.getData("UnlockPassword") != nil {
+            if AppAuthentication.hasAppPassword {
                 label.text = "Reset"
                 icon.image = UIImage(systemName: "arrow.clockwise")
             } else {
                 label.text = "Set"
                 icon.image = UIImage(systemName: "plus")
             }
-            
-            //background.backgroundColor = .systemBlue
-            
+
         case 2:
             switch indexPath.row {
             case 0: label.text = "Set Passphrase"; icon.image = UIImage(systemName: "plus"); //background.backgroundColor = .systemPink
@@ -98,20 +98,16 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                 label.textColor = .label
                 icon.image = UIImage(systemName: "eye")
             }
-            
-            //background.backgroundColor = .systemPurple
-            
+
         case 4:
             if ud.object(forKey: "passphrasePrompt") != nil {
                 label.text = "On"
                 label.textColor = .label
                 icon.image = UIImage(systemName: "checkmark.circle")
-                //background.backgroundColor = .systemGreen
             } else {
                 label.text = "Off"
                 label.textColor = .secondaryLabel
                 icon.image = UIImage(systemName: "xmark.circle")
-                //background.backgroundColor = .systemRed
             }
             
         case 5:
@@ -168,12 +164,12 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         
         case 0:
             DispatchQueue.main.async { [unowned vc = self] in
-                vc.performSegue(withIdentifier: "segueToTorAuth", sender: vc)
+                vc.navigationController?.pushViewController(TorAuthViewController(), animated: true)
             }
             
         case 1:
             DispatchQueue.main.async { [unowned vc = self] in
-                vc.performSegue(withIdentifier: "addPasswordSegue", sender: vc)
+                vc.navigationController?.pushViewController(AppPasswordViewController(), animated: true)
             }
             
         case 2:
@@ -218,7 +214,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
-                performSegue(withIdentifier: "segueToDuressPin", sender: self)
+                navigationController?.pushViewController(DuressPinViewController(), animated: true)
             }
             
         default:
@@ -226,45 +222,36 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         }
     }
     
-    private func exisitingPassword() -> Data? {
-        return KeyChain.getData("UnlockPassword")
-    }
-    
-    private func hash(_ text: String) -> Data? {
-        return Data(hexString: Crypto.sha256hash(text))
-    }
-        
     func executNodeCommand(method: BTC_CLI_COMMAND) {
-        let connectingView = ConnectingView.shared
-        connectingView.show(vc: self, description: "")
+        showActivity("updating wallet encryption...")
         MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             if errorMessage == nil {
                 switch method {
                 case .encryptwallet:
-                    connectingView.dismiss()
+                    hideActivity()
                     if let result = response as? String {
                         showAlert(vc: self, title: "", message: result)
                     }
                     
                 case .walletlock:
                     showAlert(vc: self, title: "", message: "Wallet encrypted 🔐")
-                    connectingView.dismiss()
+                    hideActivity()
                     
                 case .walletpassphrase:
                     showAlert(vc: self, title: "", message: "Wallet decrypted 🔓 for 10 minutes.")
-                    connectingView.dismiss()
+                    hideActivity()
                     
                 case .walletpassphrasechange:
-                    showAlert(vc: self, title: "", message: "Passphrase updated ✓")
-                    connectingView.dismiss()
+                    SuccessView.toast("Passphrase updated", in: self)
+                    hideActivity()
                     
                 default:
                     break
                 }
             } else {
-                connectingView.dismiss()
+                hideActivity()
                 displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
             }
         }
@@ -371,4 +358,49 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             vc.present(alert, animated:true, completion: nil)
         }
     }
+}
+
+// MARK: - Theme
+
+extension SecurityCenterViewController {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .settings)
+    }
+
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        WalletTheme.styleHeader(view, tint: .settings)
+    }
+}
+
+/// Icon (tag 1), title (tag 2) and a chevron.
+private final class SecurityCell: UITableViewCell {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        let icon = UIImageView()
+        icon.tag = 1
+        icon.contentMode = .scaleAspectFit
+        let label = UILabel()
+        label.tag = 2
+        let chevron = UIImageView(image: UIImage(systemName: "chevron.right"))
+        chevron.contentMode = .scaleAspectFit
+        for subview in [icon, label, chevron] as [UIView] {
+            subview.translatesAutoresizingMaskIntoConstraints = false
+            contentView.addSubview(subview)
+        }
+        NSLayoutConstraint.activate([
+            icon.widthAnchor.constraint(equalToConstant: 25),
+            icon.heightAnchor.constraint(equalToConstant: 25),
+            icon.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
+            icon.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            label.leadingAnchor.constraint(equalTo: icon.trailingAnchor, constant: 8),
+            label.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            chevron.widthAnchor.constraint(equalToConstant: 15),
+            chevron.heightAnchor.constraint(equalToConstant: 15),
+            chevron.leadingAnchor.constraint(greaterThanOrEqualTo: label.trailingAnchor, constant: 8),
+            chevron.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
+            chevron.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+        ])
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 }

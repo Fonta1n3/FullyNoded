@@ -68,13 +68,14 @@ struct ListTransactionsResponse {
     var rawData: [[String: Any]]
     
     init(from nsArray: NSArray) throws {
-        guard let arrayOfDicts = nsArray as? [[String: Any]] else {
-            throw NSError(domain: "listtransactions", code: -1, userInfo: [NSLocalizedDescriptionKey: "Expected NSArray of NSDictionary"])
+        guard let items = nsArray as? [Any] else {
+            throw NSError(domain: "listtransactions", code: -1, userInfo: [NSLocalizedDescriptionKey: "Expected a list of transactions."])
         }
         
-        let jsonData = try JSONSerialization.data(withJSONObject: arrayOfDicts)
-        self.rawData = arrayOfDicts
-        self.transactions = try JSONDecoder().decode([TransactionInfo].self, from: jsonData).sorted(by: { $0.confirmations < $1.confirmations })
+        self.rawData = items.compactMap { $0 as? [String: Any] }
+        // One unreadable entry is dropped rather than failing the whole list.
+        self.transactions = RPCValue.decodeEach(TransactionInfo.self, from: items, context: "listtransactions")
+            .sorted(by: { $0.confirmations < $1.confirmations })
     }
 }
 
@@ -86,14 +87,35 @@ struct TransactionInfo: Codable {
     let txid: String
     let time: Int
     let timereceived: Int
-    let bip125Replaceable: String
+    /// Deprecated in Core v32, which omits it unless -deprecatedrpc asks for it.
+    let bip125Replaceable: String?
     // Used for convenience, not from Core.
     var label: String?
     var originRate: Double?
     
     enum CodingKeys: String, CodingKey {
-        case address, amount, fee, confirmations, txid, time, timereceived, label
+        case address, amount, fee, confirmations, txid, time, timereceived, label, originRate
         case bip125Replaceable = "bip125-replaceable"
     }
+    
+    /// Only the txid is required; everything else falls back so a field Core adds, renames or
+    /// drops in a new release can't hide the wallet's history.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        guard let txid = c.lenientString(.txid), !txid.isEmpty else {
+            throw DecodingError.keyNotFound(CodingKeys.txid, .init(codingPath: c.codingPath, debugDescription: "Transaction has no txid."))
+        }
+        self.txid = txid
+        address = c.lenientString(.address)
+        amount = c.lenientDouble(.amount) ?? 0
+        fee = c.lenientDouble(.fee)
+        confirmations = c.lenientInt(.confirmations) ?? 0
+        let time = c.lenientInt(.time)
+        let timereceived = c.lenientInt(.timereceived)
+        self.time = time ?? timereceived ?? 0
+        self.timereceived = timereceived ?? time ?? 0
+        bip125Replaceable = c.lenientString(.bip125Replaceable)
+        label = c.lenientString(.label)
+        originRate = c.lenientDouble(.originRate)
+    }
 }
-

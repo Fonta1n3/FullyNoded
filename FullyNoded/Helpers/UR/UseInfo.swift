@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import URKit
 
 // https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-007-hdkey.md#cddl-for-coin-info
 struct UseInfo {
@@ -31,34 +30,17 @@ struct UseInfo {
             case .testnet:
                 return 1
             }
-//        case .eth:
-//            switch network {
-//            case .mainnet:
-//                return Asset.eth.rawValue
-//            case .testnet:
-//                return 1
-//            }
         }
-//        case .bch:
-//            switch network {
-//            case .mainnet:
-//                return Asset.bch.rawValue
-//            case .testnet:
-//                return 1
-//            }
-//        }
     }
 
     var cbor: CBOR {
         var a: Map = [:]
         
         if asset != .btc {
-            //a.append(.init(key: 1, value: asset.cbor))
             a.insert(CBOR.unsigned(1), asset.cbor)
         }
         
         if network != .mainnet {
-            //a.append(.init(key: 2, value: network.cbor))
             a.insert(CBOR.unsigned(2), network.cbor)
         }
         

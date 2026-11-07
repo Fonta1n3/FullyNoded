@@ -9,15 +9,21 @@
 import UIKit
 
 class TorAuthViewController: UIViewController, UITextFieldDelegate {
-    
-    @IBOutlet weak var textField: UITextField!
-    @IBOutlet weak var publickKeyLabel: UILabel!
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
+
+    let textField = UITextField()
+    let publickKeyLabel = UILabel()
     var text = "Add"
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationItem.title = "Tor Auth"
+        buildLayout()
         textField.delegate = self
         publickKeyLabel.text = ""
+        // Cypherpunk look (WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .settings)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         view.addGestureRecognizer(tapGesture)
@@ -35,23 +41,89 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    @IBAction func copyAction(_ sender: Any) {
+    private func buildLayout() {
+        let privateTitle = UILabel()
+        privateTitle.text = "Private Key"
+        let publicTitle = UILabel()
+        publicTitle.text = "Public Key"
+
+        textField.borderStyle = .roundedRect
+        textField.font = .systemFont(ofSize: 14)
+        textField.isSecureTextEntry = true
+        textField.autocorrectionType = .no
+        textField.spellCheckingType = .no
+        textField.smartDashesType = .no
+        textField.smartQuotesType = .no
+        textField.smartInsertDeleteType = .no
+        textField.returnKeyType = .next
+        textField.keyboardAppearance = .dark
+
+        publickKeyLabel.numberOfLines = 0
+        publickKeyLabel.textColor = .secondaryLabel
+
+        let note = UILabel()
+        note.numberOfLines = 0
+        note.font = .systemFont(ofSize: 12)
+        note.textColor = .tertiaryLabel
+        note.text = "You will need to add this public key in its current format to your tor \"authorized_clients\" directory and save it as a file with a \".auth\" extension. Once added to your node's machine make sure you restart Tor."
+
+        let refresh = iconButton("arrow.clockwise", label: "Refresh auth keys", action: #selector(refreshAction(_:)))
+        let copy = iconButton("doc.on.doc", label: "Copy public key", action: #selector(copyAction(_:)))
+        let export = iconButton("square.and.arrow.up", label: "Export public key", action: #selector(exportAction(_:)))
+        let publicButtons = UIStackView(arrangedSubviews: [copy, export])
+        publicButtons.spacing = 13
+
+        for subview in [privateTitle, refresh, textField, publicTitle, publicButtons, publickKeyLabel, note] as [UIView] {
+            subview.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(subview)
+        }
+        let guide = view.safeAreaLayoutGuide
+        NSLayoutConstraint.activate([
+            privateTitle.topAnchor.constraint(equalTo: guide.topAnchor, constant: 8),
+            privateTitle.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            refresh.centerYAnchor.constraint(equalTo: privateTitle.centerYAnchor),
+            refresh.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            textField.topAnchor.constraint(equalTo: privateTitle.bottomAnchor, constant: 8),
+            textField.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            textField.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            textField.heightAnchor.constraint(equalToConstant: 45),
+            publicTitle.topAnchor.constraint(equalTo: textField.bottomAnchor, constant: 30),
+            publicTitle.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            publicButtons.centerYAnchor.constraint(equalTo: publicTitle.centerYAnchor),
+            publicButtons.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            publickKeyLabel.topAnchor.constraint(equalTo: publicTitle.bottomAnchor, constant: 8),
+            publickKeyLabel.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            publickKeyLabel.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            note.topAnchor.constraint(equalTo: publickKeyLabel.bottomAnchor, constant: 8),
+            note.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            note.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16)
+        ])
+    }
+
+    private func iconButton(_ systemName: String, label: String, action: Selector) -> UIButton {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: systemName), for: .normal)
+        button.accessibilityLabel = label
+        button.addTarget(self, action: action, for: .touchUpInside)
+        return button
+    }
+    
+    @objc func copyAction(_ sender: Any) {
         guard let pubkey = publickKeyLabel.text else { return }
         
         UIPasteboard.general.string = pubkey
-        showAlert(vc: self, title: "", message: "Pubkey copied ✓")
+        SuccessView.toast("Pubkey copied", in: self)
     }
-    
-    
+
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
         textField.resignFirstResponder()
     }
     
-    @IBAction func refreshAction(_ sender: Any) {
+    @objc func refreshAction(_ sender: Any) {
         promptToRefreshAuth()
     }
     
-    @IBAction func exportAction(_ sender: Any) {
+    @objc func exportAction(_ sender: Any) {
         if publickKeyLabel.text != "" {
             exportPublicKey()
         }
@@ -85,7 +157,6 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
                 if success {
                     CoreDataService.update(id: authKeysStr.id, keyToUpdate: "publicKey", newValue: "user supplied keys", entity: .authKeys) { [unowned vc = self] success in
                         if success {
-                            //displayAlert(viewController: vc, isError: false, message: "Updated auth keys")
                             showAlert(vc: vc, title: "", message: "Updated autyh keys.")
                         } else {
                             showAlert(vc: vc, title: "Error", message: "Error saving user added public key")

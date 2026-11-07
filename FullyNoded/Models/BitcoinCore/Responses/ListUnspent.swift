@@ -51,6 +51,11 @@ struct UTXO {
     let lastUpdated: Date?
     var walletId: UUID?
     let witnessScript: String?
+    /// Silent payment tweak t_k (hex), saved on this device by "Check SP info" once the BIP352
+    /// scan proved the output is yours. Stored encrypted in Core Data; nil until checked.
+    var spTweakHex: String?
+    /// Label tweak (hex) for outputs paid to a labeled silent payment address (e.g. change).
+    var spLabelTweakHex: String?
     
     let rawData: [String: Any]
     
@@ -65,27 +70,42 @@ extension UTXO {
         self.rawData = raw
         
         address = raw["address"] as? String
-        confirmations = raw["confirmations"] as? Int
+        confirmations = RPCValue.int(raw["confirmations"])
         desc = raw["desc"] as? String
         label = raw["label"] as? String
         parentDescs = raw["parent_descs"] as? [String]
-        reused = raw["reused"] as? Bool
+        reused = RPCValue.bool(raw["reused"])
         scriptPubKey = raw["scriptPubKey"] as? String
-        solvable = raw["solvable"] as? Bool
-        spendable = raw["spendable"] as? Bool
-        txid = raw["txid"] as! String
-        vout = raw["vout"] as! Int
-        amount = raw["amount"] as! Double
+        solvable = RPCValue.bool(raw["solvable"])
+        spendable = RPCValue.bool(raw["spendable"])
+        txid = raw["txid"] as? String ?? ""
+        vout = RPCValue.int(raw["vout"]) ?? 0
+        amount = RPCValue.double(raw["amount"]) ?? 0
         walletId = raw["walletId"] as? UUID
         lastUpdated = raw["lastUpdated"] as? Date
         witnessScript = raw["witnessScript"] as? String
         id = raw["id"] as? UUID
-        
+        spTweakHex = Self.decryptedHex(raw["spTweak"])
+        spLabelTweakHex = Self.decryptedHex(raw["spLabelTweak"])
+    }
+
+    /// Encrypted 32 bytes (Core Data) → hex.
+    private static func decryptedHex(_ value: Any?) -> String? {
+        guard let encrypted = value as? Data,
+              let data = Crypto.decrypt(encrypted), data.count == 32 else { return nil }
+        return data.map { String(format: "%02x", $0) }.joined()
+    }
+
+    /// The saved silent payment data, ready for signing (nil until "Check SP info" saved it).
+    var silentPaymentOutput: SilentPaymentSpend.OwnedOutput? {
+        guard let tweak = spTweakHex else { return nil }
+        return SilentPaymentSpend.OwnedOutput(txid: txid, vout: vout, tweakHex: tweak, labelTweakHex: spLabelTweakHex)
     }
 }
 
 extension Array where Element == UTXO {
     static func from(rawArray: [[String: Any]]) -> [UTXO] {
-        return rawArray.map { UTXO(from: $0) }
+        // An entry without an outpoint can't be spent or shown, so it's left out.
+        return rawArray.map { UTXO(from: $0) }.filter { !$0.txid.isEmpty }
     }
 }

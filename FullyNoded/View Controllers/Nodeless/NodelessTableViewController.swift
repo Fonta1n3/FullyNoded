@@ -8,16 +8,16 @@
 
 import UIKit
 
-
 class NodelessTableViewController: UITableViewController, UIDocumentPickerDelegate {
-    
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
+
     var savedUtxos: [UTXO] = []
     var addresses: [AddressStruct] = []
     var signer: SignerStruct?
     var addressToExport = ""
     var derivationToExport = ""
     var network: WalletLogic.BDKNetwork!
-    let spinner = ConnectingView.shared
     var primaryDescriptor = ""
     var changeDescriptor: String?
     var watchOnlyBdkWallet: WalletLogic.BDKWallet?
@@ -28,6 +28,7 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        configureNavigation()
 
         tableView.register(BitcoinAddressCell.self, forCellReuseIdentifier: "BitcoinCell")
         setupTableHeader()
@@ -43,6 +44,21 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
             load()
             initialLoad = false
         }
+    }
+    
+    private func configureNavigation() {
+        navigationItem.title = "Nodeless"
+        let refresh = UIBarButtonItem(image: UIImage(systemName: "arrow.clockwise"), style: .plain,
+                                      target: self, action: #selector(refreshAction(_:)))
+        refresh.accessibilityLabel = "Refresh"
+        let importItem = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down"), style: .plain,
+                                         target: self, action: #selector(importTransaction(_:)))
+        importItem.accessibilityLabel = "Import"
+        let delete = UIBarButtonItem(image: UIImage(systemName: "trash.circle"), style: .plain,
+                                     target: self, action: #selector(deleteCacheAction(_:)))
+        delete.tintColor = .systemPink
+        delete.accessibilityLabel = "Delete cache"
+        navigationItem.rightBarButtonItems = [refresh, importItem, delete]
     }
     
     private func setupTableHeader() {
@@ -116,7 +132,7 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
         load()
     }
     
-    @IBAction func importTransaction(_ sender: Any) {
+    @objc func importTransaction(_ sender: Any) {
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -273,37 +289,22 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
         isScanningAddress: Bool = false,
         completion: @escaping (String) -> Void
     ) {
-        let scannerVC = ScanQRViewController()
-        
-        // Configure based on your use case
+        let scannerVC = QRScannerViewController()
         scannerVC.fromSignAndVerify = fromSignAndVerify
         scannerVC.isQuickConnect = isQuickConnect
         scannerVC.isScanningAddress = isScanningAddress
-        
-        // This is called when scanning completes successfully
-        scannerVC.onCompletion = { resultString in
-            // Handle the scanned result here (e.g., process PSBT, address, etc.)
-            completion(resultString)
+        scannerVC.onDoneBlock = { result in
+            guard let result = result else { return }
+            completion(result)
         }
-        
-        // Modal presentation style (full screen on iPhone, sheet on iPad)
-        scannerVC.modalPresentationStyle = .fullScreen
-        
-        // Present it
-        self.present(scannerVC, animated: true, completion: nil)
+        present(scannerVC, animated: true, completion: nil)
     }
     
     private func presentUploader() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            var documentPicker:UIDocumentPickerViewController!
-            
-            if #available(iOS 14.0, *) {
-                documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
-            } else {
-                documentPicker = UIDocumentPickerViewController(documentTypes: ["public.item"], in: .import)
-            }
+            let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
             documentPicker.delegate = self
             documentPicker.modalPresentationStyle = .formSheet
             self.present(documentPicker, animated: true, completion: nil)
@@ -314,7 +315,7 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
         guard let text = try? String(contentsOf: urls[0].absoluteURL) else {
             
             guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
-                spinner.dismiss()
+                hideActivity()
                 showAlert(vc: self, title: "Invalid File", message: "That is not a recognized format, generally it will be a .psbt or .txn file.")
                 return
             }
@@ -332,11 +333,11 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
         processString(string: text)
     }
     
-    @IBAction func refreshAction(_ sender: Any) {
+    @objc func refreshAction(_ sender: Any) {
         load()
     }
     
-    @IBAction func deleteCacheAction(_ sender: Any) {
+    @objc func deleteCacheAction(_ sender: Any) {
         Task {
             await deleteItem()
         }
@@ -368,7 +369,7 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
     }
     
     func load() {
-        spinner.show(vc: self, description: "Loading...")
+        showActivity("Loading...")
         savedUtxos.removeAll()
         addresses.removeAll()
         
@@ -405,25 +406,25 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
         }
                 
         guard let bdkPrimDesc = try? WalletLogic.BDKDescriptor(descriptor: primaryDescriptor, networkKind: WalletLogic.shared.networkKind(network: network)) else {
-            spinner.dismiss()
+            hideActivity()
             showAlert(vc: self, title: "", message: "Unable to derive BDK primary descriptor.")
             return
         }
         
         guard let bdkChangeDesc = try? WalletLogic.BDKDescriptor(descriptor: changeDesc, networkKind: WalletLogic.shared.networkKind(network: network)) else {
-            spinner.dismiss()
+            hideActivity()
             showAlert(vc: self, title: "", message: "Unable to derive BDK change descriptor.")
             return
         }
         
         guard let persister = WalletLogic.shared.persistor() else {
-            spinner.dismiss()
+            hideActivity()
             showAlert(vc: self, title: "", message: "Unable to create persistor.")
             return
         }
         
         guard let bdkWallet = try? WalletLogic.BDKWallet(descriptor: bdkPrimDesc, changeDescriptor: bdkChangeDesc, network: network, persister: persister) else {
-            spinner.dismiss()
+            hideActivity()
             showAlert(vc: self, title: "", message: "Unable to derive BDK wallet.")
             return
         }
@@ -597,7 +598,7 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
             guard let self = self else { return }
             
             tableView.reloadData()
-            spinner.dismiss()
+            hideActivity()
         }
     }
 
@@ -611,7 +612,6 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
         return addresses.count
     }
 
-    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "BitcoinCell", for: indexPath) as! BitcoinAddressCell
         let addressStr = addresses[indexPath.row]
@@ -785,28 +785,11 @@ class NodelessTableViewController: UITableViewController, UIDocumentPickerDelega
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            performSegue(withIdentifier: "segueToShowAddressQrFromNodeless", sender: self)
-        }
-    }
-
-    
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-        switch segue.identifier {
-        case "segueToShowAddressQrFromNodeless":
-            guard let vc = segue.destination as? QRDisplayerViewController else { fallthrough }
-            
+            let vc = QRDisplayerViewController()
             vc.headerText = "Address"
             vc.text = self.addressToExport
             vc.descriptionText = self.derivationToExport + "\n\(self.addressToExport.addressExpanded)"
-        default:
-            break
+            navigationController?.pushViewController(vc, animated: true)
         }
     }
-    
-
 }

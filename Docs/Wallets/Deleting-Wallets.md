@@ -1,20 +1,24 @@
-# Deleting Wallets
+# Remove a wallet
 
-There are differences in *Fully Noded Wallets* versus *Bitcoin Core Wallets*, you can read a detailed explanation on the website [here](https://fullynoded.app/faq/#How-Do-I-Delete-a-Wallet).
+Wallet tab → ⓘ → 🗑 (top right) → **Remove**.
 
-You can not completely delete a *Bitcoin Core Wallet* from the Fully Noded app, you must do it on your node.
+This only makes Fully Noded forget the wallet. It is **not** deleted:
 
-For *Fully Noded Wallets* you can delete the apps database for the wallet by tapping the "trash" button from the "Wallet Detail" view which will cause the app to forget about the wallet, however it can still be accessed as a *Bitcoin Core Wallet* by tapping `advanced` > `Bitcoin Core Wallets`.
+- **Your node keeps it.** Re-add it any time with **+ → Bitcoin Core wallets**, or by recovering
+  from the seed or a backup (Fully Noded finds the existing node wallet).
+- **The signer stays** in the Signers tab. Delete the seed words there separately, only if you
+  have them backed up.
 
-To delete the `Bitcoin Core Wallet` you need to navigate to your nodes wallets directory which can generally be found in your Bitcoin Core's default data directory:
-* Linux: `~/.bitcoin/wallets`
-* macOS: `~/Library/Application Support/Bitcoin/wallets`
-* Windows: `%APPDATA%\Bitcoin\wallets`
+## Deleting it from your node
 
-<br/><img src="./Images/fn_filename.png" alt="" width="400"/><br/>
+Fully Noded can't delete a wallet from your node. To do that, unload it and delete its folder
+from your node's `wallets` directory:
 
-You can cross reference *Fully Noded Wallets* by tapping the "info" button from the "Active Wallet" tab and looking for the `Filename` field.
+- macOS: `~/Library/Application Support/Bitcoin/wallets`
+- Linux: `~/.bitcoin/wallets`
+- Windows: `%LOCALAPPDATA%\Bitcoin\wallets`
 
-<br/><img src="./Images/bitcoincore_filenames.png" alt="" width="400"/><br/>
+The folder's name is the wallet's file name, shown on the wallet detail screen (wallet tab → ⓘ),
+for example `FullyNoded-0f35aa52…`.
 
-You can cross reference *Bitcoin Core Wallets* filenames by navigating to `advanced` > `Bitcoin Core Wallets`, the text you see is the wallets filename.
+**Only delete it if you have the seed words and a backup.**

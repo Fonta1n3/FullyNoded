@@ -68,7 +68,8 @@ Client side software needs to deduce the how the change keys will be derived fro
 <img src="./Images/msig_map.png" alt="" width="400"/>
 
 ### Supported by
-- [Gordian Wallet](https://testflight.apple.com/join/RNvBmjB3)
-- [Specter-Desktop](https://github.com/cryptoadvance/specter-desktop)
 - [Fully Noded](https://apps.apple.com/us/app/fully-noded/id1436425586)
-- [Magical Bitcoin Wallet](https://github.com/MagicalBitcoin/magical-bitcoin-wallet)
+- [Specter Desktop](https://github.com/cryptoadvance/specter-desktop)
+
+In Fully Noded: wallet tab → ⓘ → **Wallet export** shows this QR. Import one with wallet tab →
+**+** → **Scan a QR code**.

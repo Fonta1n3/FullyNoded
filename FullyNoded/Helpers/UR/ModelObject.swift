@@ -7,7 +7,6 @@
 
 import SwiftUI
 //import LifeHash
-import URKit
 
 struct ModelSubtype: Identifiable, Hashable {
     var id: String
@@ -48,12 +47,6 @@ extension ModelObject {
 extension ModelObject {
     var subtypes: [ModelSubtype] { [] }
     var instanceDetail: String? { nil }
-//    func printPages(model: Model) -> [AnyView] {
-//        [
-//            Text("No print page provided.")
-//                .eraseToAnyView()
-//        ]
-//    }
 
     var urString: String {
         ur.string
@@ -64,6 +57,6 @@ extension ModelObject {
     }
     
     var sizeLimitedURString: String {
-        UREncoder.encode(sizeLimitedUR)
+        sizeLimitedUR.string
     }
 }

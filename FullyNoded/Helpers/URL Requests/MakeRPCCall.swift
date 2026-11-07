@@ -15,11 +15,8 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
     private override init() {}
     
     let torClient = TorClient.sharedInstance
-    var connected: Bool = false
-    var onDoneBlock: (((response: Any?, errorDesc: String?)) -> Void)?
     var activeNode: NodeStruct?
     let delegate = UserCertURLSessionDelegate()
-    
     
     func getActiveNode(completion: @escaping ((NodeStruct?) -> Void)) {
         CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
@@ -27,15 +24,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
                 completion((nil))
                 return
             }
-            var activeNode: [String:Any]?
-            for node in nodes {
-                if let isActive = node["isActive"] as? Bool {
-                    if isActive {
-                        activeNode = node
-                    }
-                }
-            }
-            guard let active = activeNode else {
+            guard let active = nodes.last(where: { $0["isActive"] as? Bool == true }) else {
                 completion((nil))
                 return
             }
@@ -46,21 +35,71 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         }
     }
     
-    func executeRPCCommand(method: BTC_CLI_COMMAND, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
+    /// `walletName` targets a specific wallet for this one call; when nil the active wallet
+    /// (UserDefaults "walletName") is used. Passing it avoids ever touching the active wallet.
+    func executeRPCCommand(method: BTC_CLI_COMMAND, walletName walletOverride: String? = nil, completion done: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
+        // psbt_version only goes to nodes known to take it (Core 32+). If the node rejects it anyway
+        // (the stored version is from another node), stop sending it and try once more without.
+        let params = PSBTVersion.mustRequestV0 ? method.paramDict : PSBTVersion.stripped(method.paramDict)
+        var completion: ((response: Any?, errorDesc: String?)) -> Void = { [weak self] result in
+            if PSBTVersion.sends(params), PSBTVersion.isRejection(result.errorDesc), let self = self {
+                PSBTVersion.nodeRejectedParam = true
+                self.executeRPCCommand(method: method, walletName: walletOverride, completion: done)
+                return
+            }
+            done(result)
+        }
+        #if DEBUG
+        // Every call, over HTTP / Tor or Nostr Connect: the command, its wallet and arguments
+        // going out, and how it came back. No credentials.
+        let started = Date()
+        let rpcWallet = isWalletRPC(command: method) ? (walletOverride ?? UserDefaults.standard.object(forKey: "walletName") as? String) : nil
+        print("[rpc] → \(method.stringValue)\(rpcWallet.map { " (wallet \($0))" } ?? "") params: \(params)")
+        let finish = completion
+        completion = { result in
+            let ms = Int(Date().timeIntervalSince(started) * 1000)
+            print("[rpc] ← \(method.stringValue) \(result.errorDesc.map { "error: \($0)" } ?? "ok") (\(ms) ms)")
+            finish(result)
+        }
+        #endif
         guard let node = activeNode else {
             completion((nil, "No active Bitcoin Core node."))
             return
         }
         
-        var encryptedCert: Data?
-        var decryptedCert: String?
-        var cert: SecCertificate?
-        
-        if let _ = node.cert {
-            encryptedCert = node.cert!
-            decryptedCert = decryptedValue(encryptedCert!)
-            cert = CertificateManager.shared.base64ToCert(base64: decryptedCert!)
+        let walletName = walletOverride ?? UserDefaults.standard.object(forKey: "walletName") as? String
+        var walletPath = ""
+        if isWalletRPC(command: method), let walletName = walletName {
+            let allowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
+            walletPath = "/wallet/" + (walletName.addingPercentEncoding(withAllowedCharacters: allowed) ?? walletName)
         }
+        
+        // Nostr Connect node: the same JSON-RPC request, through Fully Noded Server's relay.
+        if let encryptedLink = node.nostrConnect {
+            guard let link = Crypto.decrypt(encryptedLink)?.utf8String else {
+                completion((nil, "error decrypting node credentials"))
+                return
+            }
+            let dict: [String: Any] = ["jsonrpc": "1.0", "id": UUID().uuidString, "method": method.stringValue, "params": params]
+            guard let body = try? JSONSerialization.data(withJSONObject: dict) else {
+                completion((nil, "Unable to encode the request."))
+                return
+            }
+            NostrRPC.shared.send(body: body, path: walletPath, timeout: timeout(for: method), link: link) { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success(let response):
+                    self.handleResponse(response.body, statusCode: response.status, method: method, walletName: walletName,
+                                        walletOverride: walletOverride, completion: completion)
+                case .failure(let error):
+                    completion((nil, error.localizedDescription))
+                }
+            }
+            return
+        }
+        
+        let decryptedCert = node.cert.map(decryptedValue) ?? ""
+        let cert = decryptedCert.isEmpty ? nil : CertificateManager.shared.base64ToCert(base64: decryptedCert)
         
         guard let encAddress = node.onionAddress,
               let encUser = node.rpcuser,
@@ -78,17 +117,8 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
             return
         }
         
-        var walletUrl = "http://\(rpcusername):\(rpcpassword)@\(onionAddress)"
-        
-        if decryptedCert != "" && decryptedCert != nil {
-            walletUrl = "https://\(rpcusername):\(rpcpassword)@\(onionAddress)"
-        }
-                        
-        let walletName = UserDefaults.standard.object(forKey: "walletName") as? String
-        
-        if isWalletRPC(command: method), let walletName = walletName {
-            walletUrl += "/wallet/" + walletName
-        }
+        let scheme = decryptedCert.isEmpty ? "http" : "https"
+        let walletUrl = "\(scheme)://\(rpcusername):\(rpcpassword)@\(onionAddress)\(walletPath)"
         
         guard let url = URL(string: walletUrl) else {
             completion((nil, "url error"))
@@ -96,18 +126,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         }
         
         var request = URLRequest(url: url)
-        var timeout = 60.0
-        
-        switch method {
-        case .gettxoutsetinfo:
-            timeout = 1000.0
-            
-        case .importdescriptors:
-            timeout = 180.0
-            
-        default:
-            break
-        }
+        let timeout = self.timeout(for: method)
         
         let loginString = String(format: "%@:%@", rpcusername, rpcpassword)
         let loginData = loginString.data(using: String.Encoding.utf8)!
@@ -123,22 +142,15 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
             "jsonrpc": "1.0",
             "id": id,
             "method": method.stringValue,
-            "params": method.paramDict
+            "params": params
         ]
         
         guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
-            #if DEBUG
-            print("Converting to jsonData failing...")
-            #endif
+            completion((nil, "Unable to encode the request."))
             return
         }
         
         request.httpBody = jsonData
-        
-        #if DEBUG
-        print("url = \(url)")
-        print("request: \(dict)")
-        #endif
         
         var sesh = URLSession(configuration: .default)
         
@@ -159,7 +171,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         }
         
         let task = sesh.dataTask(with: request as URLRequest) { [weak self] (data, response, error) in
-            guard let _ = self else { return }
+            guard let self = self else { return }
             
             guard error == nil else {
                 completion((nil, error!.localizedDescription))
@@ -171,79 +183,76 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
                 return
             }
             
-            guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: .mutableLeaves) as? NSDictionary else {
-                if let httpResponse = response as? HTTPURLResponse {
-                    switch httpResponse.statusCode {
-                    case 401:
-                        completion((nil, "Looks like your rpc credentials are incorrect, please double check them. If you changed your rpc creds in your bitcoin.conf you need to restart your node for the changes to take effect."))
-                    case 403:
-                        completion((nil, "The bitcoin-cli \(method) command has not been added to your rpcwhitelist, add \(method) to your bitcoin.conf rpcwhitelsist, reboot Bitcoin Core and try again."))
-                    default:
-                        completion((nil, "Unable to decode the response from your node, http status code: \(httpResponse.statusCode)"))
-                    }
-                } else {
-                    completion((nil, "Unable to decode the response from your node..."))
-                }
-                return
-            }
-            
-            #if DEBUG
-            print("json: \(json)")
-            #endif
-            
-            guard let errorCheck = json["error"] as? NSDictionary else {
-                completion((json["result"], nil))
-                return
-            }
-            
-            guard let errorMessage = errorCheck["message"] as? String else {
-                completion((nil, "Uknown error from bitcoind"))
-                return
-            }
-            
-            if errorMessage.hasPrefix("Wallet file not specified") {
-                completion((nil, "No active wallet, either select one via the wallets button (squares) on the wallt view or the plus button to create one."))
-                
-            } else if errorMessage.contains("Requested wallet does not exist or is not loaded"), let walletName = walletName {
-                let p = Load_Wallet(["filename": walletName])
-                MakeRPCCall.sharedInstance.executeRPCCommand(method: .loadwallet(p)) { [weak self] (response, _) in
-                    guard let self = self else { return }
-                    
-                    guard let response = response as? [String: Any] else {
-                        completion((nil, errorMessage))
-                        return
-                    }
-                    
-                    guard let name = response["name"] as? String, name == walletName else {
-                        completion((nil, errorMessage))
-                        return
-                    }
-                    
-                    executeRPCCommand(method: method, completion: completion)
-                }
-            } else {
-                completion((nil, errorMessage))
-            }
+            self.handleResponse(urlContent, statusCode: (response as? HTTPURLResponse)?.statusCode, method: method,
+                                walletName: walletName, walletOverride: walletOverride, completion: completion)
         }
         
         task.resume()
     }
-}
-
-extension String {
-    func split(by length: Int) -> [String] {
-        var startIndex = self.startIndex
-        var results = [Substring]()
-        
-        while startIndex < self.endIndex {
-            let endIndex = self.index(startIndex, offsetBy: length, limitedBy: self.endIndex) ?? self.endIndex
-            results.append(self[startIndex..<endIndex])
-            startIndex = endIndex
+    
+    private func timeout(for method: BTC_CLI_COMMAND) -> Double {
+        switch method {
+        case .gettxoutsetinfo: return 1000.0
+        case .importdescriptors: return 180.0
+        default: return 60.0
+        }
+    }
+    
+    /// Bitcoin Core's JSON-RPC response (over HTTP or Nostr Connect) → result or error message.
+    private func handleResponse(_ urlContent: Data, statusCode: Int?, method: BTC_CLI_COMMAND, walletName: String?,
+                                walletOverride: String?, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
+        guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: .mutableLeaves) as? NSDictionary else {
+            if let statusCode = statusCode {
+                switch statusCode {
+                case 401:
+                    completion((nil, "Looks like your rpc credentials are incorrect, please double check them. If you changed your rpc creds in your bitcoin.conf you need to restart your node for the changes to take effect."))
+                case 403:
+                    completion((nil, "The bitcoin-cli \(method) command has not been added to your rpcwhitelist, add \(method) to your bitcoin.conf rpcwhitelsist, reboot Bitcoin Core and try again."))
+                default:
+                    completion((nil, "Unable to decode the response from your node, http status code: \(statusCode)"))
+                }
+            } else {
+                completion((nil, "Unable to decode the response from your node..."))
+            }
+            return
         }
         
-        return results.map { String($0) }
+        #if DEBUG
+        print("json: \(json)")
+        #endif
+        
+        guard let errorCheck = json["error"] as? NSDictionary else {
+            completion((json["result"], nil))
+            return
+        }
+        
+        guard let errorMessage = errorCheck["message"] as? String else {
+            completion((nil, "Uknown error from bitcoind"))
+            return
+        }
+        
+        if errorMessage.hasPrefix("Wallet file not specified") {
+            completion((nil, "No active wallet, either select one via the wallets button (squares) on the wallt view or the plus button to create one."))
+            
+        } else if errorMessage.contains("Requested wallet does not exist or is not loaded"), let walletName = walletName {
+            let p = Load_Wallet(["filename": walletName])
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .loadwallet(p)) { [weak self] (response, _) in
+                guard let self = self else { return }
+                
+                guard let response = response as? [String: Any] else {
+                    completion((nil, errorMessage))
+                    return
+                }
+                
+                guard let name = response["name"] as? String, name == walletName else {
+                    completion((nil, errorMessage))
+                    return
+                }
+                
+                executeRPCCommand(method: method, walletName: walletOverride, completion: completion)
+            }
+        } else {
+            completion((nil, errorMessage))
+        }
     }
 }
-
-
-

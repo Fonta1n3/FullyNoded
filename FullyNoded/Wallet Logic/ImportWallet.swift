@@ -11,14 +11,12 @@ import Foundation
 class ImportWallet {
     
     static var index = 0
-    static var isColdcard = false
     static var version: Int = 0
     static var isHot = false
             
     class func accountMap(_ accountMap: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
         let password = accountMap["password"] as? String ?? ""
         var wallet = [String:Any]()
-        var prefix = "FullyNoded"
         var primDescriptor = accountMap["descriptor"] as! String
         let blockheight = accountMap["blockheight"] as? Int ?? 0
         let label = accountMap["label"] as! String
@@ -26,8 +24,7 @@ class ImportWallet {
         wallet["id"] = UUID()
         wallet["blockheight"] = Int64(blockheight)
         
-        var descStruct = Descriptor(primDescriptor)
-        isHot = descStruct.isHot
+        isHot = Descriptor(primDescriptor).isHot
         
         guard let version = UserDefaults.standard.object(forKey: "version") as? Int else {
             completion((false, "Version unknown. In order to create a wallet we need to know which version of Bitcoin Core you are running, please go the the home screen and refresh then try to create this wallet again."))
@@ -37,10 +34,81 @@ class ImportWallet {
         
         self.version = version
         
-        primDescriptor = primDescriptor.replacingOccurrences(of: "'", with: "h")
+        primDescriptor = normalizedDescriptor(primDescriptor)
+        
+        /// The wallet becomes the active wallet only once everything has succeeded.
+        func saveAndActivate(_ wallet: [String: Any]) {
+            saveLocally(wallet: wallet) { (success, errorDescription) in
+                if success, let name = wallet["name"] as? String {
+                    UserDefaults.standard.set(name, forKey: "walletName")
+                }
+                completion((success, errorDescription))
+            }
+        }
+        
+        func createWalletNow(_ recDesc: String, _ changeDesc: String, _ password: String) {
+            let walletName = ImportWallet.walletName(receiveDescriptor: primDescriptor)
+            
+            createWallet(walletName, password) { (name, errorMessage) in
+                guard let name = name else {
+                    completion((false, "error creatig wallet: \(errorMessage ?? "unknown error")"))
+                    return
+                }
+                
+                wallet["name"] = name
+                
+                if version >= 210100 {
+                    importPrimaryDescriptors(recDesc, changeDesc, walletName: name) { (success, errorMessage) in
+                        guard success else {
+                                    completion((false, "error importing descriptor: \(errorMessage ?? "unknown error")"))
+                            return
+                        }
+                        
+                        saveAndActivate(wallet)
+                    }
+                } else {
+                    completion((false, "Fully Noded works with Bitcoin Core 0.21 minimum."))
+                }
+            }
+        }
+        
+        getDescriptorInfo(desc: primDescriptor) { (recDesc, errorMessage) in
+            guard let recDesc = recDesc else {
+                completion((false, errorMessage ?? "error getting descriptor info"))
+                return
+            }
+            
+            wallet["receiveDescriptor"] = recDesc.replacingOccurrences(of: "'", with: "h")
+            
+            getDescriptorInfo(desc: primDescriptor.replacingOccurrences(of: "/0/*", with: "/1/*")) { (changeDesc, errorMessage) in
+                guard let changeDesc = changeDesc else {
+                    completion((false, errorMessage ?? "error getting change descriptor info"))
+                    return
+                }
+                
+                wallet["changeDescriptor"] = changeDesc.replacingOccurrences(of: "'", with: "h")
+                let hash = Crypto.sha256hash(primDescriptor)
+                
+                walletExistsOnNode(hash) { existingWallet in
+                    guard let existingWallet = existingWallet else {
+                        createWalletNow(recDesc, changeDesc, password)
+                        return
+                    }
+                    
+                    wallet["name"] = existingWallet
+                    saveAndActivate(wallet)
+                }
+            }
+        }
+    }
+    
+    /// The descriptor as Fully Noded imports and names it: "h" for hardened steps, no checksum,
+    /// and multisig keys sorted.
+    class func normalizedDescriptor(_ descriptor: String) -> String {
+        var primDescriptor = descriptor.replacingOccurrences(of: "'", with: "h")
         let arr = primDescriptor.split(separator: "#")
         primDescriptor = "\(arr[0])"
-        descStruct = Descriptor(primDescriptor)
+        let descStruct = Descriptor(primDescriptor)
             
         // If the descriptor is multisig, we sort the keys lexicographically, even if using sortedmulti as BDK does not support
         // sortedmulti_a.
@@ -112,86 +180,26 @@ class ImportWallet {
             }
         }
         
-        func createWalletNow(_ recDesc: String, _ changeDesc: String, _ password: String) {
-            // Use the sha256 hash of the checksum-less primary receive keypool desc as the wallet name so it has a deterministic identifier
-            let walletName = "\(prefix)-\(Crypto.sha256hash(primDescriptor))"
-            
-            createWallet(walletName, password) { (name, errorMessage) in
-                guard let name = name else {
-                    UserDefaults.standard.removeObject(forKey: "walletName")
-                    completion((false, "error creatig wallet: \(errorMessage ?? "unknown error")"))
-                    return
-                }
-                
-                wallet["name"] = name
-                UserDefaults.standard.set(wallet["name"] as! String, forKey: "walletName")
-                
-                if version >= 210100 {
-                    importPrimaryDescriptors(recDesc, changeDesc) { (success, errorMessage) in
-                        guard success else {
-                            UserDefaults.standard.removeObject(forKey: "walletName")
-                            completion((false, "error importing descriptor: \(errorMessage ?? "unknown error")"))
-                            return
-                        }
-                        
-                        saveLocally(wallet: wallet, completion: completion)
-                    }
-                } else {
-                    completion((false, "Fully Noded works with Bitcoin Core 0.21 minimum."))
-                }
-            }
-        }
-        
-        getDescriptorInfo(desc: primDescriptor) { (recDesc, errorMessage) in
-            guard let recDesc = recDesc else {
-                UserDefaults.standard.removeObject(forKey: "walletName")
-                completion((false, errorMessage ?? "error getting descriptor info"))
-                return
-            }
-            
-            wallet["receiveDescriptor"] = recDesc.replacingOccurrences(of: "'", with: "h")
-            
-            getDescriptorInfo(desc: primDescriptor.replacingOccurrences(of: "/0/*", with: "/1/*")) { (changeDesc, errorMessage) in
-                guard let changeDesc = changeDesc else {
-                    UserDefaults.standard.removeObject(forKey: "walletName")
-                    completion((false, errorMessage ?? "error getting change descriptor info"))
-                    return
-                }
-                
-                wallet["changeDescriptor"] = changeDesc.replacingOccurrences(of: "'", with: "h")
-                let hash = Crypto.sha256hash(primDescriptor)
-                
-                walletExistsOnNode(hash) { existingWallet in
-                    guard let existingWallet = existingWallet else {
-                        createWalletNow(recDesc, changeDesc, password)
-                        return
-                    }
-                    
-                    wallet["name"] = existingWallet
-                    UserDefaults.standard.set(wallet["name"] as! String, forKey: "walletName")
-                    
-                    saveLocally(wallet: wallet, completion: completion)
-                }
-            }
-        }
+        return primDescriptor
     }
     
-    class func coldcard(dict: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
-        isColdcard = true
-        
-        var wallet = [String:Any]()
-        wallet["type"] = "Single-Sig"
-        wallet["label"] = "Coldcard"
-        wallet["id"] = UUID()
-        wallet["blockheight"] = 0
-        
-        let fingerprint = dict["xfp"] as! String
-        let bip84 = dict["bip84"] as! NSDictionary
-        let bipr84deriv = (bip84["deriv"] as! String).replacingOccurrences(of: "m", with: fingerprint)
-        let bip84Xpub = (bip84["xpub"] as! String)
-        let bip84DescPrim = "wpkh([\(bipr84deriv.replacingOccurrences(of: "'", with: "h"))]\(bip84Xpub)/0/*)"
-        wallet["descriptor"] = bip84DescPrim
-        accountMap(wallet, completion: completion)
+    /// Name of the node wallet for a receive descriptor: "FullyNoded-" + SHA-256 of the descriptor
+    /// without its checksum, hardened steps written "h". Deterministic, so recovering a wallet
+    /// (from its seed, its descriptor or a backup, whichever Core version printed it) finds the
+    /// node wallet it had before.
+    class func walletName(receiveDescriptor: String) -> String {
+        let checksumless = receiveDescriptor.replacingOccurrences(of: "'", with: "h").components(separatedBy: "#")[0]
+        return "FullyNoded-\(Crypto.sha256hash(checksumless))"
+    }
+    
+    /// A Coldcard skeleton export (its BIP84 account) as an account map. nil if it has none.
+    class func coldcardAccountMap(_ dict: [String:Any]) -> [String:Any]? {
+        guard let fingerprint = dict["xfp"] as? String,
+              let bip84 = dict["bip84"] as? [String: Any],
+              let deriv = bip84["deriv"] as? String,
+              let xpub = bip84["xpub"] as? String else { return nil }
+        let origin = deriv.replacingOccurrences(of: "m", with: fingerprint).replacingOccurrences(of: "'", with: "h")
+        return ["descriptor": "wpkh([\(origin)]\(xpub)/0/*)", "label": "Coldcard", "blockheight": 0]
     }
     
     class func createWallet(_ walletName: String, _ password: String, completion: @escaping ((name: String?, errorMessage: String?)) -> Void) {
@@ -207,9 +215,8 @@ class ImportWallet {
         
         OnchainUtils.createWallet(param: .init(param)) { (name, message) in
             if password != "" {
-                UserDefaults.standard.setValue(name, forKey: "walletName")
                 let param:Wallet_Passphrase = .init(["passphrase":password, "timeout":600])
-                MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletpassphrase(param: param)) { (response, errorMessage) in
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .walletpassphrase(param: param), walletName: name ?? walletName) { (response, errorMessage) in
                     if errorMessage == nil {
                         completion((name, message))
                     } else {
@@ -222,7 +229,7 @@ class ImportWallet {
         }
     }
     
-    class func importPrimaryDescriptors(_ recDesc: String, _ changeDesc: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+    class func importPrimaryDescriptors(_ recDesc: String, _ changeDesc: String, walletName: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
         var recDescIsActive = true
         var changeDescIsActive = true
         
@@ -255,11 +262,11 @@ class ImportWallet {
                 ]
         ] as [String:Any])
         
-        importDescriptors(params, completion: completion)
+        importDescriptors(params, walletName: walletName, completion: completion)
     }
     
-    class func importDescriptors(_ params: Import_Descriptors, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        OnchainUtils.importDescriptors(params) { (imported, message) in
+    class func importDescriptors(_ params: Import_Descriptors, walletName: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+        OnchainUtils.importDescriptors(params, walletName: walletName) { (imported, message) in
             completion((imported, message))
         }        
     }

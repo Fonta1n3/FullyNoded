@@ -1,13 +1,45 @@
-# Receiving
+# Receive
 
-<img src="./Images/invoice.png" alt="invoice" width="600"/><br/>
+On the wallet tab tap **Invoice**. Pick what to receive to:
 
-Receiving is as simple as tapping "invoice" from the "Active Wallet" tab.
+| Option | What the payer gets |
+|---|---|
+| **Address** | A new address from your node. Any wallet can pay it. |
+| **Payjoin** | The address plus a payjoin endpoint hosted from your phone over Tor. |
+| **Silent pay** | Your reusable silent payment (`sp1…`) address. |
 
-An address will be fetched from your node using `bitcoin-cli getnewaddress` for the "Active Wallet".
+Tap the QR to show it full screen, or use **Copy** / **Share**. The refresh button (top right)
+gets a new address.
 
-By default these invoices are BIP21 compatible, you may add a BIP21 amount and label by filling out the respective text fields.
+## Address
 
-If you have added a c-lightning node you can tap the ⚡️ button to create a bolt11 invoice, editing the amount and label for lightning invoices does not happen in "real time" like the bitcoin invoices do. To edit the label and amount you will need to always tap the ⚡️ for the new values to take effect by creating a new invoice. By default lightning invoices are "any" types meaning no amount is specified. Some lightning wallets are not compatible with "any" invoices, so if you have an issue specify an amount then tap the ⚡️ button. Amounts will always get converted to milli satoshis on the backend, so you may either select btc or satoshis and the app will convert the amount accordingly.
+<img src="../Images/app-invoice.jpg" alt="Receive to an address" width="300"/>
 
-Advanced users have the option to derive different address scripts by navigating to "Active Wallet" tab > `advanced` > `Address script type` however this should be used with caution, it is compatible with your nodes default wallet, Fully Noded single signature wallets and Coldcard single signature wallets. It will also always work if your wallet has a Fully Noded signer associated with it. **IF IN DOUBT STICK WITH THE DEFAULTS**
+Under **Request** you can add an amount, label and message. They're added to the payment request
+(BIP21), so the payer's wallet fills them in.
+
+## Payjoin
+
+<img src="../Images/app-invoice-payjoin.jpg" alt="Receive a payjoin" width="300"/>
+
+Fully Noded starts a one-time onion address on your phone and adds it to the QR. A wallet that
+supports payjoin (BIP78) adds one of your coins to the payment, which breaks the "all inputs are
+the payer's" assumption chain analysis relies on. Any other wallet just pays the address.
+
+Keep the screen open until you're paid. More: [Payjoin.md](../Payjoin.md).
+
+## Silent payments
+
+<img src="../Images/app-invoice-sp.jpg" alt="Silent payment address" width="300"/>
+
+One address you can post anywhere, yet every payment lands on a new, unlinkable output. Your node
+can't spot these payments on its own: set up scanning once with Fully Noded Server (tap
+**FN-Server link** on this screen) and keep it running. Payments then show in this wallet like any
+other. More: [SilentPayments.md](../../SilentPayments.md).
+
+## Timelock
+
+Under **Timelock** on the Address screen you can lock coins until a date (1 month to 4 years, or
+any date). The address shown is replaced by a timelocked one, and whatever is sent to it can't be
+spent before that date, not even by you. The timelock is added to your wallet backup: export a
+fresh one when asked.

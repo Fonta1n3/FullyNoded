@@ -8,13 +8,11 @@
 
 enum FirstTime {
     
+    /// Ensures the master encryption key exists. It's created only if the keychain says
+    /// it doesn't exist; an unreadable keychain (e.g. device locked) returns false
+    /// without touching anything.
     static func firstTimeHere() -> Bool {
-        if KeyChain.getData("privateKey") == nil {
-            /// Sets a new encryption key.
-            return KeyChain.set(Crypto.privateKey(), forKey: "privateKey")
-        } else {
-            return true
-        }
+        return Crypto.encryptionKey() != nil
     }
     
 }
