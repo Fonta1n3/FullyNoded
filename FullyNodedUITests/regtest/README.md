@@ -24,6 +24,10 @@ problems):
 ./matrix.sh <simulator A UDID> <simulator B UDID>
 ```
 
+`RegtestTests` runs on one simulator after the other, since both share the node: one mining
+would confirm a transaction the other is checking for in the mempool. A simulator that has
+never run Fully Noded is fine: the tests go through the welcome guide and the paste prompt.
+
 `xcrun simctl list devices available` lists simulator UDIDs.
 
 ## What's tested
@@ -36,6 +40,9 @@ problems):
 | `test2_SendNormally` | Send → create, decode, sign, `testmempoolaccept`, broadcast; the tx is in the mempool and pays the recipient |
 | `test3_SendToSilentPaymentAddress` | the wallet's own `tsp1…` address (after the heads-up), send to it; the tx has the taproot output |
 | `test4_RecoverAfterDeletingWallet` | remove the wallet in Fully Noded, unload and delete it on the node, recover from the seed; same node wallet, same balance |
+| `test5_BlockExplorer` | a new block arrives while watching, its block map opens, and a transaction in it is traced back to its source |
+| `test6_ChainDashboard` | the dashboard's difficulty, fee ladder, pulse, health and peer race load from the node |
+| `test7_WalletInsights` | an incoming payment to a reused address in the balance, "Will it confirm?", "Since you last looked", what coins cost to spend, the privacy checkup, and **Your coins** in the explorer |
 
 `PayjoinTests` (two simulators at once, `run.sh payjoin <receiver> <payer>`):
 `testReceive` publishes a payjoin invoice from the receive screen and waits for the payment;

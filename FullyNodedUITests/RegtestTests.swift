@@ -25,8 +25,8 @@ final class RegtestTests: XCTestCase {
         continueAfterFailure = false
         node = try RegtestNode()
         if !Self.pasteAllowed {
-            FNUI.allowPasteFromOtherApps()
-            Self.pasteAllowed = true
+            // Tried again before the next test on a new install, once the app has launched.
+            Self.pasteAllowed = FNUI.allowPasteFromOtherApps()
         }
         fn = FNUI()
     }
@@ -127,6 +127,87 @@ final class RegtestTests: XCTestCase {
             Thread.sleep(forTimeInterval: 5)
         }
         XCTAssertEqual(try XCTUnwrap(after), before, accuracy: 0.000_000_01, "Balance after recovery")
+    }
+
+    /// A new block arrives while watching, then a transaction in it is traced back to its source.
+    func test5_BlockExplorer() throws {
+        fn.connectNode()
+        fn.step("Block explorer")
+        fn.require("NEXT", timeout: 30, "Opening the explorer")
+
+        // Mines a block with this payment in it.
+        let txid = try node.pay(try node.newMinerAddress(), 0.01)
+        fn.require("MINED", timeout: 40, "Seeing the new block")
+
+        // Below the block's stats and map.
+        fn.require("Block map of", timeout: 30, "Loading the block map")
+        fn.app.swipeUp()
+        fn.step(txid, timeout: 30)
+        fn.require("> INPUTS", timeout: 20, "Opening the transaction")
+        let vin = try node.decode(txid)["vin"] as? [[String: Any]]
+        let parent = try XCTUnwrap(vin?.first?["txid"] as? String)
+
+        fn.step("from ", timeout: 20)
+        fn.require(parent, timeout: 20, "Tracing the input back to its source")
+    }
+
+    func test6_ChainDashboard() {
+        fn.connectNode()
+        fn.step("Dashboard")
+        fn.require("Halving at", timeout: 30, "Loading the difficulty period and halving")
+        fn.require("Next block", timeout: 30, "Loading the fee ladder")
+        fn.require("Verified", timeout: 30, "Loading chain health")
+        fn.require("Bringing blocks", timeout: 30, "Loading the peer race")
+    }
+
+    /// An unconfirmed payment shows outside the balance and says whether it will confirm; once
+    /// mined the wallet says what's new; and an address paid twice shows as reused.
+    func test7_WalletInsights() throws {
+        let notes = try loadNotes()
+        let address = try XCTUnwrap(notes["address"] as? String)
+        fn.connectNode()
+        fn.openWalletTab()
+
+        let txid = try node.pay(address, 0.25, confirm: false)
+        XCTAssertTrue(try node.mempool().contains(txid))
+        // A tap while the last refresh is still running changes nothing, so keep asking.
+        refreshUntilShown("incoming, unconfirmed")
+        fn.step("+0.25", timeout: 30)
+        fn.require("> WILL IT CONFIRM?", timeout: 30, "The unconfirmed transaction's outlook")
+        fn.app.navigationBars.buttons.firstMatch.tap()
+
+        try node.mine()
+        refreshUntilShown("Since you last looked")
+
+        try node.ensureFeeEstimate()
+        fn.step("UTXO'S")
+        fn.require("to spend", timeout: 30, "What the coins cost to spend")
+        fn.app.navigationBars.buttons.firstMatch.tap()
+
+        fn.step("Privacy checkup", timeout: 30)
+        fn.require("> REUSED ADDRESSES", timeout: 20, "The privacy screen")
+        fn.require(address, timeout: 30, "The address test 1 paid twice")
+
+        // Skipping to a block holding this wallet's coins, then tracing one.
+        fn.connectNode()
+        fn.step("Block explorer")
+        fn.step("Explorer tools", timeout: 30)
+        fn.step("Your coins", timeout: 10)
+        let block = fn.app.cells.matching(NSPredicate(format: "label BEGINSWITH 'BLOCK '")).firstMatch
+        XCTAssertTrue(block.waitForExistence(timeout: 30), "The blocks holding the wallet's coins")
+        let height = String(block.label.prefix { $0 != "," }).replacingOccurrences(of: "BLOCK ", with: "")
+        fn.press(block)
+        fn.require("BLOCK \(height)", timeout: 20, "The strip moving to that block")
+        fn.require("Block map of", timeout: 30, "That block's details")
+    }
+
+    private func refreshUntilShown(_ text: String, file: StaticString = #filePath, line: UInt = #line) {
+        for _ in 0..<8 {
+            if fn.exists(text) { return }
+            if fn.waitThrough("Refresh", timeout: 15) { fn.press(fn.element("Refresh")) }
+            if fn.waitThrough(text, timeout: 6) { return }
+        }
+        XCTFail("\"\(text)\" never appeared after refreshing.", file: file, line: line)
     }
 
     /// Start of the version the home screen shows, e.g. "Satoshi:32.1" for "/Satoshi:32.1.0/".

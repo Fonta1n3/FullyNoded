@@ -65,6 +65,8 @@ start() {
     while [[ -f $other ]]; do sleep 0.5; done
   done
   up || $B/bitcoind -datadir=$D -daemon >/dev/null
+  # bitcoin-cli's -rpcwait doesn't wait for a cookie file that isn't there yet.
+  for i in {1..120}; do [[ -f $D/regtest/.cookie ]] && break; sleep 0.5; done
   echo $NAME > $WORK/current
   $CLI getnetworkinfo | python3 -c 'import sys,json;d=json.load(sys.stdin);print("up",d["version"],d["subversion"])'
 }

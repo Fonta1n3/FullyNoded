@@ -89,6 +89,8 @@ extension FNUI {
     func connectNode() {
         launch()
         unlockIfNeeded()
+        // The first launch on this simulator opens on the welcome screen.
+        if elements("GET STARTED").firstMatch.waitForExistence(timeout: 3) { step("GET STARTED") }
         let connected = elements("BLOCK ").firstMatch
         let addNode = elements("Enter details manually").firstMatch
         _ = connected.waitForExistence(timeout: 20) || addNode.waitForExistence(timeout: 1)
@@ -104,6 +106,9 @@ extension FNUI {
             step("SAVE NODE")
             if waitThrough("Node saved", timeout: 10) { dismissCard() }
             step("Back")
+            // The rest of the first launch's guide.
+            if elements("STEP 2 OF 3").firstMatch.waitForExistence(timeout: 5) { step("Not now") }
+            if elements("OPEN FULLY NODED").firstMatch.waitForExistence(timeout: 5) { step("OPEN FULLY NODED") }
         }
         require("REGTEST", timeout: 60, "Connecting to the regtest node")
         require("BLOCK ", timeout: 60, "Loading the node")
@@ -191,11 +196,22 @@ extension FNUI {
         require("No wallet active", timeout: 20, "Removing the wallet")
     }
 
+    /// iOS's "Allow Paste" prompt, which blocks the app while it's up. Settings usually allows
+    /// pastes already (FNUI.allowPasteFromOtherApps), but not on an install that hadn't launched yet.
+    func allowPasteIfAsked() {
+        // The system's first: while the prompt is up the app can't answer a query at all.
+        for owner in [XCUIApplication(bundleIdentifier: "com.apple.springboard"), app] {
+            let allow = owner.buttons["Allow Paste"]
+            if allow.waitForExistence(timeout: 1.5) { allow.tap(); return }
+        }
+    }
+
     /// Wallet tab → Import by pasting text, with the seed on the pasteboard.
     func recoverWallet(words: [String], type: String = "Segwit single-sig") {
         UIPasteboard.general.string = words.joined(separator: " ")
         openWalletCreator()
         step("Paste text")
+        allowPasteIfAsked()
         step(type)
         confirmImportReview()
         require("Descriptor wallet created", timeout: 120, "Recreating the wallet on the node")
@@ -287,6 +303,7 @@ extension FNUI {
         step("SEND")
         type(amount, into: "0.00 000 000", clear: true)
         step("Paste")
+        allowPasteIfAsked()
         let payjoin = recipient.contains("pj=")
         if payjoin {
             require("Payjoin supported", timeout: 10, "Payment request sheet", file: file, line: line)
@@ -302,6 +319,11 @@ extension FNUI {
         step("CREATE TRANSACTION")
         require("PSBT created", timeout: 120, "Creating and decoding the PSBT", file: file, line: line)
         dismissCard()
+        // Not while a payjoin banner has the top of the screen.
+        if !payjoin { require("> NEXT STEP", timeout: 20, "What the PSBT needs next", file: file, line: line) }
+        // Below the top of the screen on a small phone: not yet there to find, and looking for
+        // "Sign" without it would match "Needs signing" instead.
+        for _ in 0..<3 where !app.buttons["Sign"].exists { app.swipeUp() }
         step("Sign")
         if payjoin {
             require("REVIEW PAYJOIN", timeout: 150, "Payjoin negotiation", file: file, line: line)

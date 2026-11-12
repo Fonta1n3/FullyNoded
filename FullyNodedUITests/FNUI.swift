@@ -161,7 +161,9 @@ struct FNUI {
 
     /// Settings → Fully Noded → Paste from Other Apps → Allow. Without it every paste (the
     /// recipient on the Send screen) asks, and that prompt blocks the app while it's up.
-    static func allowPasteFromOtherApps() {
+    /// False if it couldn't: Settings has no such option until the app has launched once.
+    @discardableResult
+    static func allowPasteFromOtherApps() -> Bool {
         let settings = XCUIApplication(bundleIdentifier: "com.apple.Preferences")
         settings.terminate()
         settings.launch()
@@ -175,18 +177,20 @@ struct FNUI {
             // Older layouts list apps at the bottom of the root page.
             for _ in 0..<12 where !app.exists { settings.swipeUp() }
         }
-        guard app.exists else { return }
+        guard app.exists else { return false }
         app.tap()
         let paste = settings.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS[c] %@", "Paste from Other Apps")).firstMatch
-        guard paste.waitForExistence(timeout: 5) else { return }
+        guard paste.waitForExistence(timeout: 5) else { return false }
         if (paste.value as? String)?.contains("Allow") == true && !((paste.value as? String)?.contains("Ask") ?? false) {
             settings.terminate()
-            return
+            return true
         }
         paste.tap()
         let allow = settings.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "Allow")).firstMatch
-        if allow.waitForExistence(timeout: 5) { allow.tap() }
+        let allowed = allow.waitForExistence(timeout: 5)
+        if allowed { allow.tap() }
         settings.terminate()
+        return allowed
     }
 
     /// Answers a system alert (notifications, camera…) if one is up.

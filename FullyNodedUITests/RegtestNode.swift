@@ -89,6 +89,18 @@ struct RegtestNode {
         return txid
     }
 
+    /// A new chain has no fee history, so `estimatesmartfee` has no answer until it has seen
+    /// transactions confirm: makes some, a few to a block, until it does.
+    func ensureFeeEstimate(target: Int = 6) throws {
+        for _ in 0..<60 {
+            let estimate = try call("estimatesmartfee", [target]) as? [String: Any]
+            if estimate?["feerate"] != nil { return }
+            for _ in 0..<3 { try pay(try newMinerAddress(), 0.001, confirm: false) }
+            try mine()
+        }
+        throw RPCError(description: "estimatesmartfee still has no answer after 60 blocks")
+    }
+
     func newMinerAddress() throws -> String {
         try ensureMiner()
         return try call("getnewaddress", wallet: "miner") as! String

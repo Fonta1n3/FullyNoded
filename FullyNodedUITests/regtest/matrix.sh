@@ -3,7 +3,8 @@
 #
 #   matrix.sh <simulator A> <simulator B> [build …]     (default: every build node.sh lists)
 #
-# For each build: a fresh regtest chain, RegtestTests on both simulators at once, then
+# For each build: a fresh regtest chain, RegtestTests on each simulator in turn (they share the
+# node, and one mining would confirm a transaction the other expects in the mempool), then
 # payjoin both ways (A receives from B, B receives from A). A summary is printed at the end
 # and kept in $FNUI_WORK/matrix-<time>.txt; full logs and .xcresult bundles in $FNUI_WORK.
 set -e
@@ -16,9 +17,8 @@ $HERE/run.sh build
 for b in $BUILDS; do
   echo "=== $b" | tee -a $OUT
   FNUI_FNS_RPCAUTH=${FNUI_FNS_RPCAUTH:-0} $HERE/node.sh $b fresh | tee -a $OUT
-  $HERE/run.sh test $A RegtestTests > $WORK/single-A.txt &
-  FNUI_TOR_PORT_OFFSET=10 $HERE/run.sh test $B RegtestTests > $WORK/single-B.txt &
-  wait
+  $HERE/run.sh test $A RegtestTests > $WORK/single-A.txt || true
+  FNUI_TOR_PORT_OFFSET=10 $HERE/run.sh test $B RegtestTests > $WORK/single-B.txt || true
   { echo "-- simulator A"; grep -E "Test Case.*(passed|failed|skipped)|error:" $WORK/single-A.txt
     echo "-- simulator B"; grep -E "Test Case.*(passed|failed|skipped)|error:" $WORK/single-B.txt; } | tee -a $OUT
   echo "-- payjoin: A receives, B pays" | tee -a $OUT
