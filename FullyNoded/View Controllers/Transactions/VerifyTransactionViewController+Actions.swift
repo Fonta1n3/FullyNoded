@@ -293,7 +293,7 @@ extension VerifyTransactionViewController {
             guard let self = self else { return }
             
             let alert = UIAlertController(title: "Broadcast transaction?",
-                                          message: "You can broadcast with your node or via Blockstreams Esplora onion. Broadcasting with Esplora is more private.",
+                                          message: "You can broadcast with your node or via your Esplora server's onion (Settings ▸ Esplora). Broadcasting with Esplora is more private.",
                                           preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Via my node", style: .default, handler: { action in

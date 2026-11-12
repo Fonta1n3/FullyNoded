@@ -104,7 +104,11 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         rescan.tintColor = Cypher.green
         rescan.setTitleTextAttributes([.font: Cypher.mono(13, weight: .semibold)], for: .normal)
 
-        navigationItem.rightBarButtonItems = [delete, rescan, info]
+        let privacy = UIBarButtonItem(image: UIImage(systemName: "checkmark.shield"), style: .plain, target: self, action: #selector(privacyAction))
+        privacy.tintColor = Cypher.green
+        privacy.accessibilityLabel = "Privacy checkup"
+
+        navigationItem.rightBarButtonItems = [delete, rescan, info, privacy]
     }
     
     private func configureTable() {
@@ -212,6 +216,10 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         }
     }
     
+    @objc private func privacyAction() {
+        navigationController?.pushViewController(WalletPrivacyViewController(), animated: true)
+    }
+
     @objc func rescanAction() {
         promptToRescan()
     }

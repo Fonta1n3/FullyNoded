@@ -13,6 +13,9 @@ class ActiveWalletViewController: UIViewController {
     private var onchainBalanceBtc = ""
     private var onchainBalanceFiat = ""
     private var onchainLockedBtc = ""
+    /// What the headline leaves out: unconfirmed payments from others, maturing mining rewards.
+    private var onchainBalanceParts: WalletBalanceParts?
+    private let changesBanner = WalletChangesBanner()
     /// Balance minus timelocked coins: what the send screen can use now.
     private var onchainSpendableBtc = ""
     private var onchainBalance: Double?
@@ -91,7 +94,8 @@ class ActiveWalletViewController: UIViewController {
             actionRow.addArrangedSubview(button)
         }
         
-        let column = UIStackView(arrangedSubviews: [fxRateLabel, walletTable, actionRow])
+        changesBanner.isHidden = true
+        let column = UIStackView(arrangedSubviews: [fxRateLabel, changesBanner, walletTable, actionRow])
         column.axis = .vertical
         column.spacing = 8
         column.translatesAutoresizingMaskIntoConstraints = false
@@ -695,7 +699,8 @@ class ActiveWalletViewController: UIViewController {
             onchainBalanceBtc = "0"
         }
         
-        cell.configure(btc: onchainBalanceBtc.withCommas, fiat: onchainBalanceFiat, locked: onchainLockedBtc.withCommas)
+        cell.configure(btc: onchainBalanceBtc.withCommas, fiat: onchainBalanceFiat, locked: onchainLockedBtc.withCommas, parts: onchainBalanceParts)
+        cell.onPrivacyCheckup = { [weak self] in self?.openPrivacy() }
         return cell
     }
         
@@ -916,11 +921,63 @@ class ActiveWalletViewController: UIViewController {
                     self.sectionZeroLoaded = true
                     self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
                     self.loadTransactions()
+                    self.loadBalanceParts()
+                    self.checkChangesSinceLastLook()
                 }
             }
         }
     }
     
+    @objc private func openPrivacy() {
+        impact()
+        navigationController?.pushViewController(WalletPrivacyViewController(), animated: true)
+    }
+
+    private func loadBalanceParts() {
+        let name = UserDefaults.standard.string(forKey: "walletName")
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getbalances) { [weak self] balances, _ in
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .listunspent(List_Unspent(["minconf": 0]))) { utxos, _ in
+                DispatchQueue.main.async {
+                    guard let self = self, UserDefaults.standard.string(forKey: "walletName") == name,
+                          let balances = balances as? [String: Any], let utxos = utxos as? [[String: Any]] else { return }
+                    self.onchainBalanceParts = WalletBalanceParts(balances: balances, utxos: utxos)
+                    self.walletTable.reloadData()
+                }
+            }
+        }
+    }
+
+    /// Tells the user what's new in blocks since the wallet last looked. The first time it just
+    /// notes where the chain is.
+    private func checkChangesSinceLastLook() {
+        guard let name = UserDefaults.standard.string(forKey: "walletName") else { return }
+        let key = "walletLastSeenBlock." + name
+        if changesBanner.walletName != name { changesBanner.dismiss() }
+
+        func rememberTip() {
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .getblockchaininfo) { response, _ in
+                guard let hash = (response as? [String: Any])?["bestblockhash"] as? String else { return }
+                UserDefaults.standard.set(hash, forKey: key)
+            }
+        }
+        guard let lastSeen = UserDefaults.standard.string(forKey: key) else {
+            rememberTip()
+            return
+        }
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listsinceblock(List_Since_Block(blockhash: lastSeen))) { [weak self] response, _ in
+            guard let changes = (response as? [String: Any]).flatMap({ WalletChangesSince(response: $0) }) else {
+                // That block is gone, or this node never had it (another network or node).
+                rememberTip()
+                return
+            }
+            UserDefaults.standard.set(changes.lastBlock, forKey: key)
+            DispatchQueue.main.async {
+                guard !changes.isEmpty, UserDefaults.standard.string(forKey: "walletName") == name else { return }
+                self?.changesBanner.show(changes.summary, walletName: name)
+            }
+        }
+    }
+
     private func addNavBarSpinner() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -964,6 +1021,7 @@ class ActiveWalletViewController: UIViewController {
         onchainBalanceFiat = ""
         onchainBalanceBtc = ""
         onchainLockedBtc = ""
+        onchainBalanceParts = nil
         onchainSpendableBtc = ""
         onchainBalance = nil
         onchainTransactions?.transactions.removeAll()
@@ -1106,6 +1164,52 @@ extension ActiveWalletViewController: UITableViewDataSource {
 
 // MARK: - Cells
 
+/// "Since you last looked", above the wallet's table until dismissed.
+private final class WalletChangesBanner: UIView {
+    private(set) var walletName: String?
+    private let label = UILabel()
+
+    init() {
+        super.init(frame: .zero)
+        backgroundColor = WalletTheme.card
+        layer.borderWidth = 1
+        layer.borderColor = WalletTheme.Tint.wallet.line.cgColor
+        label.font = WalletTheme.mono(12)
+        label.textColor = WalletTheme.text
+        label.numberOfLines = 0
+        let close = UIButton(type: .system)
+        close.setImage(UIImage(systemName: "xmark"), for: .normal)
+        close.tintColor = WalletTheme.dim
+        close.accessibilityLabel = "Dismiss"
+        close.setContentHuggingPriority(.required, for: .horizontal)
+        close.widthAnchor.constraint(greaterThanOrEqualToConstant: 44).isActive = true
+        close.addAction(UIAction { [weak self] _ in self?.dismiss() }, for: .touchUpInside)
+        let row = UIStackView(arrangedSubviews: [label, close])
+        row.alignment = .center
+        row.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(row)
+        NSLayoutConstraint.activate([
+            row.topAnchor.constraint(equalTo: topAnchor, constant: 6),
+            row.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -6),
+            row.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            row.trailingAnchor.constraint(equalTo: trailingAnchor)
+        ])
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    func show(_ summary: String, walletName: String) {
+        self.walletName = walletName
+        label.text = "Since you last looked: " + summary
+        isHidden = false
+    }
+
+    func dismiss() {
+        walletName = nil
+        isHidden = true
+    }
+}
+
 /// Balance card: caption, large BTC balance, fiat value.
 private final class WalletBalanceCell: UITableViewCell {
     static let reuseId = "WalletBalanceCell"
@@ -1114,6 +1218,8 @@ private final class WalletBalanceCell: UITableViewCell {
     private let btcLabel = UILabel()
     private let fiatLabel = UILabel()
     private let lockedLabel = UILabel()
+    private let partsLabel = UILabel()
+    var onPrivacyCheckup: (() -> Void)?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -1145,7 +1251,25 @@ private final class WalletBalanceCell: UITableViewCell {
         lockedLabel.textAlignment = .center
         lockedLabel.isHidden = true
 
-        let stack = UIStackView(arrangedSubviews: [caption, btcLabel, fiatLabel, lockedLabel])
+        partsLabel.font = WalletTheme.mono(12)
+        partsLabel.textColor = WalletTheme.pending
+        partsLabel.textAlignment = .center
+        partsLabel.numberOfLines = 0
+        partsLabel.isHidden = true
+
+        // An invitation, not a warning: it looks the same whatever the checkup would find.
+        let checkup = UIButton(type: .system)
+        checkup.configuration = WalletTheme.chipConfiguration(title: "Privacy checkup", systemImage: "checkmark.shield", tint: .wallet, fontSize: 12, imageSize: 13,
+                                                              imagePadding: 6, insets: NSDirectionalEdgeInsets(top: 7, leading: 12, bottom: 7, trailing: 12),
+                                                              background: .clear)
+        // No border: a quiet link under the balance, not another card.
+        checkup.configuration?.background.strokeWidth = 0
+        checkup.addAction(UIAction { [weak self] _ in self?.onPrivacyCheckup?() }, for: .touchUpInside)
+        let checkupRow = UIStackView(arrangedSubviews: [checkup])
+        checkupRow.axis = .vertical
+        checkupRow.alignment = .center
+
+        let stack = UIStackView(arrangedSubviews: [caption, btcLabel, fiatLabel, lockedLabel, partsLabel, checkupRow])
         stack.axis = .vertical
         stack.spacing = 6
         stack.translatesAutoresizingMaskIntoConstraints = false
@@ -1165,7 +1289,12 @@ private final class WalletBalanceCell: UITableViewCell {
         layer.cornerRadius = WalletTheme.radius   // override the inset-grouped section rounding
     }
 
-    func configure(btc: String, fiat: String, locked: String = "") {
+    func configure(btc: String, fiat: String, locked: String = "", parts: WalletBalanceParts? = nil) {
+        var lines: [String] = []
+        if let incoming = parts?.incoming, incoming > 0 { lines.append("+ \(incoming.btcBalanceWithSpaces) BTC incoming, unconfirmed") }
+        if let immature = parts?.immature, immature > 0 { lines.append("+ \(immature.btcBalanceWithSpaces) BTC immature mining reward") }
+        partsLabel.text = lines.joined(separator: "\n")
+        partsLabel.isHidden = lines.isEmpty
         btcLabel.text = "\(btc) BTC"
         fiatLabel.text = fiat.isEmpty ? " " : "≈ \(fiat)"
         lockedLabel.isHidden = locked.isEmpty

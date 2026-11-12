@@ -946,7 +946,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         switch TorClient.sharedInstance.state {
         case .connected:
             break
-        case .started, .refreshing:
+        case .started:
             waitForTor(attempt: 0)
             return
         default:

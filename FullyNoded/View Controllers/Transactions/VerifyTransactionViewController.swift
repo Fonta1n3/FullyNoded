@@ -54,12 +54,17 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var payjoinUsed = false
     /// Top of the table while a payjoin is offered or was tried.
     var payjoinBanner: PayjoinBanner?
+    /// Top of the table otherwise: will it confirm, or what a PSBT needs next (+Insight).
+    var insightCard: WalletInsightCard?
+    let insightService = BlockExplorerService()
     /// Silent payment outputs found for inputs of this transaction ("txid:vout" lowercase), so
     /// signing doesn't fetch and scan them again.
     var silentPaymentOwned: [String: SilentPaymentSpend.OwnedOutput] = [:]
     var initialLoad = true
     /// Set by the Send screen: show what to do next once the new transaction has loaded.
     var announceCreatedTransaction = false
+    /// Inputs (by index) whose unknown amounts are being asked of Esplora (+Analysis).
+    var esploraLookupsRunning = Set<Int>()
     /// Whether each bottom button should be enabled, regardless of activity.
     private var wantsEnabled: [ObjectIdentifier: Bool] = [:]
     /// True while a request is running: Send and Export are held disabled.
@@ -107,7 +112,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        sizePayjoinBanner()
+        sizeTableHeader()
     }
 
     func showPayjoinBanner(_ state: PayjoinBanner.State) {
@@ -115,12 +120,13 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         payjoinBanner = banner
         banner.update(state)
         verifyTable.tableHeaderView = banner
-        sizePayjoinBanner(force: true)
+        insightCard = nil
+        sizeTableHeader(force: true)
     }
 
     /// Table header views don't size themselves: fit it to the table's width.
-    private func sizePayjoinBanner(force: Bool = false) {
-        guard let banner = payjoinBanner, verifyTable.bounds.width > 0 else { return }
+    func sizeTableHeader(force: Bool = false) {
+        guard let banner: UIView = payjoinBanner ?? insightCard, verifyTable.bounds.width > 0 else { return }
         let size = banner.systemLayoutSizeFitting(CGSize(width: verifyTable.bounds.width, height: UIView.layoutFittingCompressedSize.height),
                                                   withHorizontalFittingPriority: .required, verticalFittingPriority: .fittingSizeLevel)
         guard force || banner.frame.size != CGSize(width: verifyTable.bounds.width, height: size.height) else { return }
@@ -164,6 +170,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         txid = ""
         inputArray.removeAll()
         inputTableArray.removeAll()
+        esploraLookupsRunning.removeAll()
         silentPaymentOwned.removeAll()
         outputArray.removeAll()
         index = 0

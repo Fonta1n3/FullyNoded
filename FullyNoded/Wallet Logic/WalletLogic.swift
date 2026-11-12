@@ -515,7 +515,7 @@ class WalletLogic {
         }
         
         guard EsploraAPI.apiBase(network: network) != nil else {
-            throw CustomError.networkFailed(reason: "Nodeless transaction creation does not work on regtest.")
+            throw CustomError.networkFailed(reason: EsploraAPI.APIError.unsupportedNetwork.localizedDescription)
         }
         
         // 1. Funding transactions (once per txid), checked against the cache.

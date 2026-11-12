@@ -8,6 +8,7 @@
 //
 
 import UIKit
+import BitcoinDevKit
 
 extension VerifyTransactionViewController {
 
@@ -31,6 +32,7 @@ extension VerifyTransactionViewController {
     func load() {
         // The signed payment for a payjoin invoice was imported (signed elsewhere): that starts it.
         if startPayjoinWithImportedPayment() { return }
+        clearInsight()
         showActivity("analyzing transaction...")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -245,6 +247,7 @@ extension VerifyTransactionViewController {
                     let outputDict:[String:Any] = [
                         "index": number,
                         "amount": amountString,
+                        "amountBtc": amount,
                         "address": addressString,
                         "isChange": isChange,
                         "isOursBitcoind": false,// Hardcode at this stage and update before displaying
@@ -304,6 +307,7 @@ extension VerifyTransactionViewController {
                             if let amount = output["value"] as? Double {
                                 inputTotal += amount
                                 self.inputTableArray[index]["amount"] = amountString(amount)
+                                self.inputTableArray[index]["amountBtc"] = amount
                                 self.inputTableArray[index]["address"] = addressString
                                 self.inputTableArray[index]["isDust"] = amount < 0.00020000
                                 self.inputTableArray[index]["txid"] = txid
@@ -322,21 +326,89 @@ extension VerifyTransactionViewController {
             
         } else if index + 1 == inputArray.count {
             index = 0
-            txFee = inputTotal - outputTotal
-            
-            if inputTotal > 0.0 {
-                let txfeeString = txFee.avoidNotation
-                if fxRate != nil {
-                    self.miningFee = "\(txfeeString) btc / \(fiatAmount(btc: self.txFee))"
-                } else {
-                    self.miningFee = "\(txfeeString) btc / error fetching fx rate"
-                }
-            } else {
-                self.miningFee = "No fee data. Your node may be pruned."
-            }
-            
+            updateMiningFee()
             verifyInputs()
         }
+    }
+
+    func updateMiningFee() {
+        txFee = inputTotal - outputTotal
+
+        if inputTotal > 0.0 {
+            let txfeeString = txFee.avoidNotation
+            if fxRate != nil {
+                self.miningFee = "\(txfeeString) btc / \(fiatAmount(btc: self.txFee))"
+            } else {
+                self.miningFee = "\(txfeeString) btc / error fetching fx rate"
+            }
+        } else {
+            self.miningFee = "No fee data. Your node may be pruned."
+        }
+    }
+
+    // MARK: - Esplora lookup
+
+    /// Inputs whose amount the node couldn't find (not the wallet's, and spent in a block on a
+    /// node without -txindex), when the network has an Esplora server to ask instead.
+    var inputsEsploraCanLookUp: [Int] {
+        guard let network = WalletLogic.shared.bdkNetwork(), EsploraAPI.apiBase(network: network) != nil else { return [] }
+        return inputTableArray.indices.filter {
+            inputTableArray[$0]["amountBtc"] == nil && inputArray.indices.contains($0) && inputArray[$0]["vout"] is Int
+        }
+    }
+
+    /// Only on the user's tap, for that one input: it tells Esplora which transaction the input
+    /// comes from. Over Tor, on Esplora's own circuits.
+    @objc func lookUpInputWithEsplora(_ sender: UIButton) {
+        guard let index = sender.restorationIdentifier.flatMap(Int.init),
+              inputsEsploraCanLookUp.contains(index), !esploraLookupsRunning.contains(index),
+              let network = WalletLogic.shared.bdkNetwork(),
+              let prevTxid = inputArray[index]["txid"] as? String,
+              let vout = inputArray[index]["vout"] as? Int else { return }
+        esploraLookupsRunning.insert(index)
+        reloadInput(index)
+        let lookingUp = txid
+        Task { @MainActor [weak self] in
+            let result: Result<EsploraAPI.TxOutput, Error>
+            do {
+                result = .success(try await EsploraAPI.output(txid: prevTxid, vout: vout, network: network))
+            } catch {
+                result = .failure(error)
+            }
+            // A different transaction loaded meanwhile: this isn't one of its inputs.
+            guard let self = self, self.txid == lookingUp, self.esploraLookupsRunning.remove(index) != nil else { return }
+            switch result {
+            case .success(let output):
+                self.applyEsploraOutput(output, at: index, network: network)
+            case .failure(let error):
+                self.reloadInput(index)
+                showAlert(vc: self, title: "Esplora couldn't find this input", message: error.localizedDescription)
+            }
+        }
+    }
+
+    private func reloadInput(_ index: Int) {
+        let path = IndexPath(row: index, section: 3)
+        guard path.section < verifyTable.numberOfSections, path.row < verifyTable.numberOfRows(inSection: 3) else { return }
+        verifyTable.reloadRows(at: [path], with: .none)
+    }
+
+    private func applyEsploraOutput(_ output: EsploraAPI.TxOutput, at index: Int, network: WalletLogic.BDKNetwork) {
+        guard inputTableArray.indices.contains(index) else { return }
+        let amount = Double(output.value) / 100_000_000
+        let address = Data(hexString: output.scriptPubKey).flatMap {
+            try? Address.fromScript(script: Script(rawOutputScript: $0), network: network).description
+        } ?? "Unknown address."
+        inputTotal += amount
+        inputTableArray[index]["amount"] = amountString(amount)
+        inputTableArray[index]["amountBtc"] = amount
+        inputTableArray[index]["address"] = address
+        inputTableArray[index]["isDust"] = amount < 0.00020000
+        inputTableArray[index]["txid"] = inputArray[index]["txid"]
+        inputTableArray[index]["vout"] = inputArray[index]["vout"]
+        updateMiningFee()
+        verifyTable.reloadData()
+        loadInsight()
     }
 
     /// When the PSBT carries no script saying how many signatures an input needs (e.g. a bare
@@ -496,6 +568,7 @@ extension VerifyTransactionViewController {
                         }
                         
                         self.outputArray[self.index]["isOursBitcoind"] = solvable
+                        self.outputArray[self.index]["isMine"] = dict["ismine"] as? Bool ?? false
                         self.outputArray[self.index]["hdKeyPath"] = keypath
                         self.outputArray[self.index]["isChange"] = isChange
                         self.outputArray[self.index]["label"] = labelsText
@@ -625,6 +698,7 @@ extension VerifyTransactionViewController {
             self?.verifyTable.reloadData()
             self?.finishActivity()
             self?.announceCreatedTransactionIfNeeded()
+            self?.loadInsight()
         }
 
         guard AppAuthentication.hasAppPassword else {
@@ -650,12 +724,29 @@ extension VerifyTransactionViewController {
             }
         }
 
+        /// Not a wallet transaction (e.g. an input from someone else's multisig): the chain's UTXO
+        /// set has the output while it's unspent there (an unbroadcast or mempool transaction),
+        /// else the node finds its transaction in the mempool or, with -txindex, in a block.
+        func lookUpOutsideWallet() {
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .gettxout(Get_Tx_Out(txid: txid, n: vout, includeMempool: false))) { [weak self] response, _ in
+                guard let self = self else { return }
+                if var output = response as? [String: Any], output["value"] != nil {
+                    output["n"] = vout
+                    self.parsePrevTxOutput(outputs: [output as NSDictionary], vout: vout, txid: txid)
+                    return
+                }
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .getrawtransaction(param: Get_Raw_Tx(["txid": txid, "verbosity": 1]))) { [weak self] parent, _ in
+                    self?.parsePrevTxOutput(outputs: (parent as? NSDictionary)?["vout"] as? NSArray ?? [], vout: vout, txid: txid)
+                }
+            }
+        }
+
         func getRawTx() {
             updateLabel("fetching inputs previous output...")
             MakeRPCCall.sharedInstance.executeRPCCommand(method: method) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 guard let response = response as? [String:Any] else {
-                    self.parsePrevTxOutput(outputs: [], vout: 0, txid: txid)
+                    lookUpOutsideWallet()
                     return
                 }
                 
@@ -671,7 +762,7 @@ extension VerifyTransactionViewController {
                     let param_get_tx:Get_Tx = .init(["txid":txid, "verbose": true])
                     MakeRPCCall.sharedInstance.executeRPCCommand(method: .gettransaction(param_get_tx)) { (response, errorMessage) in
                         guard let dict = response as? NSDictionary, let hexToParse = dict["hex"] as? String else {
-                            self.parsePrevTxOutput(outputs: [], vout: 0, txid: txid)
+                            lookUpOutsideWallet()
                             return
                         }
                         
