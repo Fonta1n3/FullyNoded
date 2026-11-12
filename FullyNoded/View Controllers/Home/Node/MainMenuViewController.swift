@@ -201,6 +201,16 @@ class MainMenuViewController: UIViewController {
         ])
         
         contentStack.addArrangedSubview(nodeCard())
+        let explorer = UIButton(type: .system)
+        explorer.configuration = WalletTheme.buttonConfiguration(title: "Block explorer", systemImage: "cube", filled: false, tint: tint)
+        explorer.addTarget(self, action: #selector(explorerTapped), for: .touchUpInside)
+        let dashboard = UIButton(type: .system)
+        dashboard.configuration = WalletTheme.buttonConfiguration(title: "Dashboard", systemImage: "chart.xyaxis.line", filled: false, tint: tint)
+        dashboard.addTarget(self, action: #selector(dashboardTapped), for: .touchUpInside)
+        let tools = UIStackView(arrangedSubviews: [explorer, dashboard])
+        tools.spacing = 12
+        tools.distribution = .fillEqually
+        contentStack.addArrangedSubview(tools)
         contentStack.addArrangedSubview(WalletTheme.caption("> NETWORK STATS", tint: tint))
         contentStack.setCustomSpacing(8, after: contentStack.arrangedSubviews.last!)
         
@@ -545,6 +555,24 @@ class MainMenuViewController: UIViewController {
     }
     
     // MARK: - Tile actions (raw RPC responses)
+    
+    @objc private func explorerTapped() {
+        guard activeNode != nil else {
+            showAlert(vc: self, title: "No node", message: "Connect a node to explore its blocks.", kind: .notice)
+            return
+        }
+        impact()
+        navigationController?.pushViewController(BlockExplorerViewController(), animated: true)
+    }
+    
+    @objc private func dashboardTapped() {
+        guard activeNode != nil else {
+            showAlert(vc: self, title: "No node", message: "Connect a node to see its dashboard.", kind: .notice)
+            return
+        }
+        impact()
+        navigationController?.pushViewController(ChainDashboardViewController(), animated: true)
+    }
     
     @objc private func peersTapped() {
         guard peerInfo != nil else { return }
@@ -1083,7 +1111,7 @@ class MainMenuViewController: UIViewController {
                 torStatusLabel.text = "TOR DISCONNECTED"
                 torStatusLabel.textColor = WalletTheme.danger
                 torDot.backgroundColor = WalletTheme.danger
-            } else if state == .started || state == .refreshing {
+            } else if state == .started {
                 if torProgressView.isHidden {
                     torStatusLabel.text = "TOR STARTING…"
                 }
@@ -1108,7 +1136,7 @@ class MainMenuViewController: UIViewController {
         switch state {
         case .connected?: return ("TOR ✓", true)
         case .stopped?: return ("TOR OFF", false)
-        case .started?, .refreshing?: return (progress.map { "TOR \($0)%" } ?? "TOR STARTING…", nil)
+        case .started?: return (progress.map { "TOR \($0)%" } ?? "TOR STARTING…", nil)
         default: return ("TOR …", nil)
         }
     }

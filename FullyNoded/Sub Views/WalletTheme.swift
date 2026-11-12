@@ -20,9 +20,9 @@ import UIKit
 ///  - `WalletTheme.stylePrimary(_:tint:)` for a screen's main action button
 enum WalletTheme {
 
-    /// Per-screen accent, all within the teal family so the wallet flow reads as one place.
+    /// Per-screen accent. The wallet flow stays within the teal family so it reads as one place.
     enum Tint {
-        case wallet, send, receive, utxo, create, transaction, settings, home, signer
+        case wallet, send, receive, utxo, create, transaction, settings, home, signer, explorer, dashboard, peers
         /// Status colours for alert cards (SuccessView): amber notices, red errors.
         case warning, danger
 
@@ -42,6 +42,12 @@ enum WalletTheme {
                 return UIColor(red: 0.36, green: 0.58, blue: 1.0, alpha: 1)    // terminal blue
             case .home:
                 return UIColor(red: 0.25, green: 1.0, blue: 0.48, alpha: 1)    // terminal green
+            case .explorer:
+                return UIColor(red: 0.47, green: 0.76, blue: 1.0, alpha: 1)    // ice blue
+            case .dashboard:
+                return UIColor(red: 0.74, green: 0.64, blue: 1.0, alpha: 1)    // soft lavender
+            case .peers:
+                return UIColor(red: 1.0, green: 0.48, blue: 0.80, alpha: 1)    // network magenta
             case .signer:
                 return SignerTheme.accent                                      // deep purple
             case .warning:
@@ -250,6 +256,12 @@ enum WalletTheme {
     static func styleNavigation(_ item: UINavigationItem, tint: Tint = .wallet) {
         let appearance = navigationAppearance(background: bg, line: tint.line, accent: tint.accent)
         appearance.doneButtonAppearance = appearance.buttonAppearance
+        // These share Home's navigation controller, whose bar tint would colour the chevron.
+        if tint == .explorer || tint == .dashboard,
+           let chevron = UIImage(systemName: "chevron.backward", withConfiguration: UIImage.SymbolConfiguration(pointSize: 17, weight: .medium))?
+            .withTintColor(tint.accent, renderingMode: .alwaysOriginal) {
+            appearance.setBackIndicatorImage(chevron, transitionMaskImage: chevron)
+        }
         setNavigationAppearance(appearance, on: item)
     }
 
@@ -658,6 +670,28 @@ enum WalletTheme {
             stack.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -12)
         ])
         return card
+    }
+
+    /// "TITLE  value" on one line: a fixed-width dim title, then the value wrapping beside it.
+    /// Read by VoiceOver as one element.
+    static func infoRow(_ title: String, _ value: String, titleWidth: CGFloat = 104, wrapByCharacter: Bool = false) -> UIView {
+        let titleLabel = UILabel()
+        titleLabel.text = title.uppercased()
+        titleLabel.font = mono(10, weight: .bold)
+        titleLabel.textColor = dim
+        titleLabel.widthAnchor.constraint(equalToConstant: titleWidth).isActive = true
+        let valueLabel = UILabel()
+        valueLabel.text = value
+        valueLabel.font = mono(13)
+        valueLabel.textColor = text
+        valueLabel.numberOfLines = 0
+        if wrapByCharacter { valueLabel.lineBreakMode = .byCharWrapping }
+        let row = UIStackView(arrangedSubviews: [titleLabel, valueLabel])
+        row.spacing = 8
+        row.alignment = .firstBaseline
+        row.isAccessibilityElement = true
+        row.accessibilityLabel = "\(title): \(value)"
+        return row
     }
 
     /// Small accent icon button for section headers.

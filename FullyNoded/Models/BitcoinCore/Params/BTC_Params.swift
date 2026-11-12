@@ -660,8 +660,75 @@ public struct Get_Block: CustomStringConvertible {
     let param:[String:Any]
     init(_ dict: [String:Any]) {
         let blockhash = dict["blockhash"] as? String ?? ""
-        param = ["blockhash": blockhash]
+        var p: [String: Any] = ["blockhash": blockhash]
+        // Optional, only sent when given: 1 lists txids (~250 KB), 2 adds every transaction (~12 MB).
+        if let verbosity = dict["verbosity"] as? Int { p["verbosity"] = verbosity }
+        param = p
     }
+}
+
+public struct Get_Block_Header: CustomStringConvertible {
+    public var description: String { "getblockheader" }
+    let param: [String: Any]
+    init(blockhash: String) { param = ["blockhash": blockhash, "verbose": true] }
+}
+
+public struct Get_Block_Stats: CustomStringConvertible {
+    public var description: String { "getblockstats" }
+    let param: [String: Any]
+    /// Needs the block's undo data, so it fails on pruned blocks and the genesis block.
+    init(height: Int, stats: [String]) { param = ["hash_or_height": height, "stats": stats] }
+}
+
+public struct Get_Block_Template: CustomStringConvertible {
+    public var description: String { "getblocktemplate" }
+    let param: [String: Any]
+    /// A signet node refuses a template request without the signet rule.
+    init(signet: Bool = false) { param = ["template_request": ["rules": signet ? ["segwit", "signet"] : ["segwit"]]] }
+}
+
+public struct Get_Tx_Out: CustomStringConvertible {
+    public var description: String { "gettxout" }
+    let param: [String: Any]
+    init(txid: String, n: Int, includeMempool: Bool = true) { param = ["txid": txid, "n": n, "include_mempool": includeMempool] }
+}
+
+public struct Get_Network_Hash_PS: CustomStringConvertible {
+    public var description: String { "getnetworkhashps" }
+    let param: [String: Any]
+    init(blocks: Int, height: Int) { param = ["nblocks": blocks, "height": height] }
+}
+
+public struct Get_Mempool_Entry: CustomStringConvertible {
+    public var description: String { "getmempoolentry" }
+    let param: [String: Any]
+    init(txid: String) { param = ["txid": txid] }
+}
+
+public struct List_Received_By_Address: CustomStringConvertible {
+    public var description: String { "listreceivedbyaddress" }
+    /// Addresses that received anything, unconfirmed and watch-only included.
+    let param: [String: Any] = ["minconf": 0, "include_empty": false, "include_watchonly": true]
+}
+
+public struct List_Since_Block: CustomStringConvertible {
+    public var description: String { "listsinceblock" }
+    let param: [String: Any]
+    init(blockhash: String) {
+        param = ["blockhash": blockhash, "target_confirmations": 1, "include_watchonly": true, "include_removed": true]
+    }
+}
+
+public struct Abandon_Transaction: CustomStringConvertible {
+    public var description: String { "abandontransaction" }
+    let param: [String: Any]
+    init(txid: String) { param = ["txid": txid] }
+}
+
+public struct Get_Tx_Spending_Prevout: CustomStringConvertible {
+    public var description: String { "gettxspendingprevout" }
+    let param: [String: Any]
+    init(txid: String, vout: Int) { param = ["outputs": [["txid": txid, "vout": vout]]] }
 }
 
 public struct Encrypt_Wallet: CustomStringConvertible {
@@ -996,20 +1063,16 @@ public struct Scan_Tx_Out: CustomStringConvertible {
      }
      */
     
-    let action: String
-    var scanobjects: [[String:Any]] = [[:]]
-    let descriptor: String
-    let scanObject: [String:Any]
     let param: [String:Any]
     public var description: String {
         return ""
     }
+    /// "scanobjects" is only for "start": "abort" and "status" take none.
     init(_ dict: [String:Any]) {
-        action = dict["action"] as! String
-        descriptor = dict["descriptor"] as! String
-        scanObject = ["desc": descriptor, "range": [50001,100000]]
-        scanobjects[0] = scanObject
-        param = ["action": action, "scanobjects": scanobjects]
+        var param: [String:Any] = [:]
+        param["action"] = dict["action"] as? String
+        param["scanobjects"] = dict["scanobjects"] as? [Any]
+        self.param = param
     }
     
 }

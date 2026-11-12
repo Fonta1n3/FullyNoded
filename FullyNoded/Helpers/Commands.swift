@@ -9,6 +9,20 @@
 public enum BTC_CLI_COMMAND {
     case getblock(_ param: Get_Block)
     case getblockhash(_ param: Get_Block_Hash)
+    case getblockheader(_ param: Get_Block_Header)
+    case getblockstats(_ param: Get_Block_Stats)
+    case getblocktemplate(_ param: Get_Block_Template)
+    case gettxout(_ param: Get_Tx_Out)
+    case getnettotals
+    case getbalances
+    case listaddressgroupings
+    case listreceivedbyaddress(_ param: List_Received_By_Address)
+    case listsinceblock(_ param: List_Since_Block)
+    case abandontransaction(_ param: Abandon_Transaction)
+    case getchaintips
+    case getnetworkhashps(_ param: Get_Network_Hash_PS)
+    case getmempoolentry(_ param: Get_Mempool_Entry)
+    case gettxspendingprevout(_ param: Get_Tx_Spending_Prevout)
     case listdescriptors
     case setban(_ param: Set_Ban)
     case scantxoutset(_ param: Scan_Tx_Out)
@@ -68,6 +82,34 @@ public enum BTC_CLI_COMMAND {
             return "getblock"
         case .getblockhash:
             return "getblockhash"
+        case .getblockheader:
+            return "getblockheader"
+        case .getblockstats:
+            return "getblockstats"
+        case .getblocktemplate:
+            return "getblocktemplate"
+        case .gettxout:
+            return "gettxout"
+        case .getnettotals:
+            return "getnettotals"
+        case .getbalances:
+            return "getbalances"
+        case .listaddressgroupings:
+            return "listaddressgroupings"
+        case .listreceivedbyaddress:
+            return "listreceivedbyaddress"
+        case .listsinceblock:
+            return "listsinceblock"
+        case .abandontransaction:
+            return "abandontransaction"
+        case .getchaintips:
+            return "getchaintips"
+        case .getnetworkhashps:
+            return "getnetworkhashps"
+        case .getmempoolentry:
+            return "getmempoolentry"
+        case .gettxspendingprevout:
+            return "gettxspendingprevout"
         case .listdescriptors:
             return "listdescriptors"
         case .setban:
@@ -181,6 +223,26 @@ public enum BTC_CLI_COMMAND {
             return getBlock.param
         case .getblockhash(param: let getBlockhash):
             return getBlockhash.param
+        case .getblockheader(let p):
+            return p.param
+        case .getblockstats(let p):
+            return p.param
+        case .getblocktemplate(let p):
+            return p.param
+        case .gettxout(let p):
+            return p.param
+        case .getnetworkhashps(let p):
+            return p.param
+        case .getmempoolentry(let p):
+            return p.param
+        case .listreceivedbyaddress(let p):
+            return p.param
+        case .listsinceblock(let p):
+            return p.param
+        case .abandontransaction(let p):
+            return p.param
+        case .gettxspendingprevout(let p):
+            return p.param
         case .setban(param: let setBan):
             return setBan.param
         case .setlabel(param: let setLabel):
