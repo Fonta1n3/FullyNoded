@@ -18,7 +18,7 @@ class PeersDetailTableViewController: UITableViewController {
     private enum Section: Int, CaseIterable { case summary, peers }
     private enum Filter: Int { case all, outbound, inbound }
 
-    private let tint = WalletTheme.Tint.home
+    private let tint = WalletTheme.Tint.peers
     private var filter = Filter.all
     private var rows: [PeerInfo] = []
     private var isRefreshing = false
@@ -155,7 +155,7 @@ final class PeerDetailViewController: UIViewController {
 
     private let peer: PeerInfo
     private let raw: [String: Any]?
-    private let tint = WalletTheme.Tint.home
+    private let tint = WalletTheme.Tint.peers
 
     init(peer: PeerInfo, raw: [String: Any]?) {
         self.peer = peer
@@ -533,7 +533,7 @@ private final class PeerCell: UITableViewCell {
     private let addressLabel = UILabel()
     private let statsLabel = UILabel()
     private let badgeHolder = UIStackView()
-    private var tintValue = WalletTheme.Tint.home
+    private var tintValue = WalletTheme.Tint.peers
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
