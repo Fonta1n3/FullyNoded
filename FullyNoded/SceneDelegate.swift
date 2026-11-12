@@ -88,10 +88,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Save changes in the application's managed object context when the application transitions to the background.
         (UIApplication.shared.delegate as? AppDelegate)?.saveContext()
         
-        // On a Mac Tor keeps running in the background.
+        // On a Mac Tor stays awake in the background.
         if mgr?.state != .stopped && mgr?.state != TorClient.TorState.none && !ProcessInfo.processInfo.isiOSAppOnMac {
-            mgr?.state = .refreshing
-            mgr?.resign()
+            mgr?.pause()
         }
         
         if let window = self.window {
