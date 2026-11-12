@@ -11,17 +11,19 @@ import Foundation
 class FiatConverter {
     static let sharedInstance = FiatConverter()
     
-    private init() {}
+    private init() {
+        Currencies.dropUnsupportedSelection()
+    }
     
     let torClient = TorClient.sharedInstance
     var task: URLSessionDataTask? = nil
     
     /// Tor's proxy settings, but not torClient.session itself: its delegate trusts only the
-    /// node's pinned certificate and cancels every other TLS host. These are ordinary public
-    /// APIs, checked with normal certificate validation. One long-lived session: creating and
+    /// node's pinned certificate and cancels every other TLS host. One long-lived session: creating and
     /// tearing down a proxied session per request crashed inside CFNetwork (freeing its proxy
     /// options) during wallet refreshes. Made on first use, after Tor set its proxy settings.
-    private lazy var fxSession = URLSession(configuration: torClient.session.configuration)
+    /// Its own circuits, apart from the node's.
+    private lazy var fxSession = URLSession(configuration: torClient.configuration(for: .exchangeRate))
     
     /// A source of the BTC price: where to ask, and how to read the rate for a currency.
     private struct Source {
@@ -32,27 +34,13 @@ class FiatConverter {
         let rate: (Any, String) -> Double?
     }
 
-    /// Ordered by how well they answer over Tor (checked October 2026): blockchain.info refuses
-    /// Tor exits (HTTP 403), so it's last; mempool.space is asked at its onion, never via an exit.
+    /// Onion services only: like every third-party API Fully Noded uses, never a clearnet site
+    /// through a Tor exit. mempool.space's is the one onion with prices (the currencies in
+    /// `Currencies`).
     private static let sources: [Source] = [
-        Source(name: "Coinbase", url: "https://api.coinbase.com/v2/exchange-rates?currency=BTC", currencies: nil) { json, currency in
-            RPCValue.double(((json as? [String: Any])?["data"] as? [String: Any]).flatMap { ($0["rates"] as? [String: Any])?[currency] })
-        },
-        Source(name: "CoinGecko", url: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=" + Currencies.codes.joined(separator: ",").lowercased(), currencies: nil) { json, currency in
-            RPCValue.double(((json as? [String: Any])?["bitcoin"] as? [String: Any])?[currency.lowercased()])
-        },
-        Source(name: "Yadio", url: "https://api.yadio.io/exrates/BTC", currencies: nil) { json, currency in
-            RPCValue.double(((json as? [String: Any])?["BTC"] as? [String: Any])?[currency])
-        },
         Source(name: "mempool.space", url: "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/api/v1/prices",
                currencies: ["USD", "EUR", "GBP", "CAD", "CHF", "AUD", "JPY"]) { json, currency in
             RPCValue.double((json as? [String: Any])?[currency])
-        },
-        Source(name: "BitPay", url: "https://bitpay.com/api/rates", currencies: nil) { json, currency in
-            RPCValue.double((json as? [[String: Any]])?.first { $0["code"] as? String == currency }?["rate"])
-        },
-        Source(name: "blockchain.info", url: "https://blockchain.info/ticker", currencies: nil) { json, currency in
-            RPCValue.double(((json as? [String: Any])?[currency] as? [String: Any])?["15m"])
         }
     ]
 
@@ -98,7 +86,7 @@ class FiatConverter {
         switch torClient.state {
         case .connected:
             then(true)
-        case .started, .refreshing:
+        case .started:
             var token: NSObjectProtocol?
             var finished = false
             let finish: (Bool) -> Void = { connected in

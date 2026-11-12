@@ -39,29 +39,23 @@ class Currencies {
         "TWD": "NT$"
     ]
 
+    /// The currencies mempool.space's onion has prices for (exchange rates only ever come from
+    /// onion services, see FiatConverter).
     static let currenciesWithCircle:[[String:String]] = [
         ["USD": "dollarsign.circle"],
         ["GBP": "sterlingsign.circle"],
         ["EUR": "eurosign.circle"],
         ["AUD":"dollarsign.circle"],
-        ["BRL": "brazilianrealsign.circle"],
         ["CAD": "dollarsign.circle"],
         ["CHF": "francsign.circle"],
-        ["CLP": "dollarsign.circle"],
-        ["CNY": "yensign.circle"],
-        ["DKK": "k.circle"],
-        ["HKD": "dollarsign.circle"],
-        ["INR": "indianrupeesign.circle"],
-        ["ISK": "k.circle"],
-        ["JPY": "yensign.circle"],
-        ["KRW": "wonsign.circle"],
-        ["NZD": "dollarsign.circle"],
-        ["PLN": "z.circle"],
-        ["RUB": "rublesign.circle"],
-        ["SEK": "k.circle"],
-        ["SGD": "dollarsign.circle"],
-        ["THB": "bahtsign.circle"],
-        ["TRY": "turkishlirasign.circle"],
-        ["TWD": "dollarsign.circle"]
+        ["JPY": "yensign.circle"]
     ]
+
+    /// A currency picked before the list was cut to these has no rate any more: back to USD.
+    static func dropUnsupportedSelection() {
+        let defaults = UserDefaults.standard
+        if let currency = defaults.string(forKey: "currency"), !codes.contains(currency) {
+            defaults.set("USD", forKey: "currency")
+        }
+    }
 }
