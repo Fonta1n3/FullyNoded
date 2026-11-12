@@ -1,6 +1,6 @@
 # Fully Noded guides
 
-Short, current guides to using Fully Noded. Screenshots are from a regtest node on an iPhone 15 Pro.
+Short, current guides to using Fully Noded. Screenshots are from a regtest node on an iPhone 15 Pro or 15 Pro Max.
 
 ## Getting started
 
@@ -9,6 +9,8 @@ Short, current guides to using Fully Noded. Screenshots are from a regtest node 
 3. [Receive](./Wallets/Receiving.md): addresses, payjoin, silent payments, timelocks
 4. [Send](./Wallets/Sending.md): create, check, sign, broadcast, bump the fee
 5. [Back up](./Wallets/Backup-Wallets.md) and [recover](./Wallets/Recovery.md) a wallet
+6. [Understand your wallet](./Wallets/Wallet-Insights.md): what's outside the balance, privacy checkup, coins not worth spending
+7. [Block explorer](./Block-Explorer.md): every block and transaction from your own node, and the chain dashboard
 
 ## More
 

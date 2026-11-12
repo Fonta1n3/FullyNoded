@@ -47,9 +47,12 @@ Keychain and settings code as the app. They put the app's network setting back w
 | [PsbtSigningTests](../FullyNodedTests/PsbtSigningTests.swift) | Signing a PSBT the way the transaction verifier does, with and without a passphrase; a wrong passphrase or another seed signs nothing |
 | [SilentPaymentKeyTests](../FullyNodedTests/SilentPaymentKeyTests.swift) | Silent payment address and scan key from a seed (the exported scan key is never the spend key); sending, finding and spending a silent payment; key arithmetic |
 | [TimelockTests](../FullyNodedTests/TimelockTests.swift) | Timelocked addresses for segwit, taproot and multisig wallets (right key, right lock, address matches its descriptor); spending a timelocked coin; reading the lock back from scripts and wallet policies; when a coin shows as locked (block height, date, relative, lock on only one spending path) |
+| [BlockExplorerTests](../FullyNodedTests/BlockExplorerTests.swift) | Reading the node's replies into blocks and transactions, the block map's layout, formats, miner tags, solo wins, transaction categories |
+| [ExplorerDataDecoderTests](../FullyNodedTests/ExplorerDataDecoderTests.swift) | Decoding OP_RETURN protocols, inscriptions and data in bare multisig, from real and constructed samples |
+| [WalletInsightsTests](../FullyNodedTests/WalletInsightsTests.swift) | The balance breakdown, mempool position and effective fee rate, what coins cost to spend, linked and reused addresses, the privacy rating, self transfers, changes since last opened, what a PSBT needs next |
 | [WalletRecoveryTests](../FullyNodedTests/WalletRecoveryTests.swift) | Recovering from seed words, a descriptor, an account map or a wallet backup gives the same wallet and finds the node wallet it had before (whatever checksum, hardened notation or multisig key order); backups survive export and import; only missing descriptors are imported, rescanning from the right time; timelocked addresses come back with their labels; seeds starting "sh…"/"tr…" aren't mistaken for descriptors |
 
-Expected values come from the published test vectors, so the tests check Fully Noded against the standards,
+Expected values for keys and signing come from the published test vectors, so the tests check Fully Noded against the standards,
 not against itself:
 [BIP39](https://github.com/trezor/python-mnemonic/blob/master/vectors.json),
 [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#test-vectors),

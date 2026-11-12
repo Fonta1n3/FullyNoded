@@ -47,8 +47,35 @@ Tap ⓘ (top right) for the raw `decodepsbt` output from your node.
 Check the **Mining fee**, then tap **Send** and choose:
 
 - **Via my node**, or
-- **Via Esplora (Tor)**: Blockstream's server over Tor. More private, since your node doesn't
-  announce your own transaction first.
+- **Via Esplora (Tor)**: mempool.space's onion service, or your own (Settings ▸ Esplora). More
+  private, since your node doesn't announce your own transaction first.
+
+## Read it before you sign
+
+<img src="../Images/app-verify-flow.jpg" alt="Flow and privacy rating" width="300"/>
+
+The top of the verifier shows:
+
+- **Flow**: where the money goes. The amber ribbon is the fee. Tap a ribbon to go to that input or
+  output.
+- **Self transfer**: when every output comes back to this wallet, so only the fee leaves it.
+- **Next step**: for a PSBT, what it still needs and how many signatures are missing.
+- **Privacy**: a grade from common chain-analysis assumptions, such as spending several addresses
+  together or a change output that can be told apart. Tap it for the reasons. A good grade doesn't make
+  a transaction private, and how you broadcast it matters too.
+
+An input with no **Sign** button is one no signer on this device can sign.
+
+## Will it confirm?
+
+Tap an unconfirmed transaction to see its effective fee rate, counting any unconfirmed parents and
+children, and how that compares with your node's estimates and the block it would build now. On
+Core 32 or later it uses the rate miners actually work from (its chunk rate).
+
+If your node no longer has it in its mempool, it may never confirm unless it's broadcast again. If
+it's your wallet's, you can **Abandon** it, so the wallet stops counting it and can spend its coins
+again. That doesn't cancel it: another node may still have it, and it can still confirm unless you
+spend those coins in a new transaction first.
 
 ## Bump the fee (RBF)
 
