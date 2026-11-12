@@ -15,8 +15,39 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
     private override init() {}
     
     let torClient = TorClient.sharedInstance
-    var activeNode: NodeStruct?
+    var activeNode: NodeStruct? {
+        didSet {
+            let isOnion = activeNode.map(Self.isOnion) ?? false
+            guard isOnion != activeNodeIsOnion else { return }
+            activeNodeIsOnion = isOnion
+            torClient.syncOnionOnly()
+        }
+    }
+    /// The active node is reached at its onion: Tor goes onion only (TorClient.onionOnly).
+    private(set) var activeNodeIsOnion = false
+
+    private static func isOnion(_ node: NodeStruct) -> Bool {
+        guard node.nostrConnect == nil, let address = node.onionAddress.flatMap({ Crypto.decrypt($0)?.utf8String }) else { return false }
+        return address.lowercased().contains(".onion")
+    }
     let delegate = UserCertURLSessionDelegate()
+    // One session per kind of connection. A session per call leaves its idle connections open, and
+    // new calls then wait for them to time out: seconds apart, on a local node.
+    private let plainSession = URLSession(configuration: .default)
+    private var certSession: (cert: String, session: URLSession)?
+    /// Calls start on any queue (often a previous call's completion), so `certSession` is guarded.
+    private let sessionLock = NSLock()
+
+    /// The session for a node with this self-signed cert, made once per cert.
+    private func session(forCert decryptedCert: String) -> URLSession {
+        sessionLock.lock()
+        defer { sessionLock.unlock() }
+        if let current = certSession, current.cert == decryptedCert { return current.session }
+        certSession?.session.finishTasksAndInvalidate()
+        let session = URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: .main)
+        certSession = (decryptedCert, session)
+        return session
+    }
     
     func getActiveNode(completion: @escaping ((NodeStruct?) -> Void)) {
         CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
@@ -152,7 +183,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         
         request.httpBody = jsonData
         
-        var sesh = URLSession(configuration: .default)
+        var sesh = plainSession
         
         if onionAddress.contains("onion") {
             sesh = self.torClient.session
@@ -166,7 +197,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
                     return
                 }
                 
-                sesh = URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: .main)
+                sesh = session(forCert: decryptedCert)
             }
         }
         
@@ -193,6 +224,10 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
     private func timeout(for method: BTC_CLI_COMMAND) -> Double {
         switch method {
         case .gettxoutsetinfo: return 1000.0
+        // Reads the whole UTXO set: over a minute on a fast node, more on a small one.
+        case .scantxoutset: return 600.0
+        // A full block or template is many megabytes, slow over Tor.
+        case .getblock, .getblocktemplate: return 300.0
         case .importdescriptors: return 180.0
         default: return 60.0
         }
@@ -218,7 +253,8 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         }
         
         #if DEBUG
-        print("json: \(json)")
+        // Whole blocks are tens of megabytes: printing one stalls the app.
+        if urlContent.count < 100_000 { print("json: \(json)") }
         #endif
         
         guard let errorCheck = json["error"] as? NSDictionary else {

@@ -23,7 +23,6 @@ class TorClient: NSObject {
         case started
         case connected
         case stopped
-        case refreshing
     }
     
     public var state: TorState = .none
@@ -34,16 +33,113 @@ class TorClient: NSObject {
     private var thread: TorThread?
     private var controller: TorController?
     private var authDirPath = ""
-    var isRefreshing = false
+    /// Attached to a Tor that was put to sleep by `pause`: wake it once authenticated.
+    private var isResuming = false
     let urlSessionDelegate = UserCertURLSessionDelegate()
     
-    /// Tor's local SOCKS port (other sessions can route through Tor with it).
+    /// What a connection through Tor is for. Each purpose has its own SOCKS port, and Tor never
+    /// puts streams from different ports on one circuit, so a relay or server that sees one kind
+    /// of traffic can't link it to the others.
+    enum Purpose: Int, CaseIterable {
+        /// RPC calls to your node's onion (`session`).
+        case node
+        /// Exchange rates.
+        case exchangeRate
+        /// Payjoin requests, and checking the receiver's own onion is up.
+        case payjoin
+        /// Esplora requests made with URLSession (BDK's client uses the HTTP tunnel, a listener
+        /// of its own and so already apart).
+        case esplora
+    }
+
+    /// Tor's first local SOCKS port, for `.node`; each other purpose uses the next one up.
     static var socksPort: Int {
         #if targetEnvironment(simulator)
         return 19052 + simulatorPortOffset
         #else
         return 19050
         #endif
+    }
+
+    static func socksPort(for purpose: Purpose) -> Int { socksPort + purpose.rawValue }
+
+    /// A URLSessionConfiguration's `connectionProxyDictionary` for `purpose`.
+    static func proxy(for purpose: Purpose) -> [AnyHashable: Any] {
+        [kCFProxyTypeKey: kCFProxyTypeSOCKS,
+         kCFStreamPropertySOCKSProxyHost: "localhost",
+         kCFStreamPropertySOCKSProxyPort: socksPort(for: purpose)]
+    }
+
+    /// Tor's proxy settings for `purpose`, with the rest of `session`'s configuration.
+    func configuration(for purpose: Purpose) -> URLSessionConfiguration {
+        let configuration = session.configuration
+        configuration.connectionProxyDictionary = Self.proxy(for: purpose)
+        configuration.httpAdditionalHeaders = Self.anonymousHeaders
+        return configuration
+    }
+
+    /// Sent with every request over Tor in place of iOS's own, which name the app, its build and
+    /// the iOS version, and the device's languages. The same for every Fully Noded user, and
+    /// nothing a server could tell apart from many other clients.
+    static let anonymousHeaders: [AnyHashable: Any] = [
+        "User-Agent": "Mozilla/5.0",
+        "Accept-Language": "en"
+    ]
+
+    // MARK: Onion only
+
+    /// Onion only, automatic for a node reached at its onion: while it's active, Tor refuses
+    /// every destination but onion services on its SOCKS ports, and a payjoin is only tried with
+    /// receivers that have an onion. Third-party APIs are onion services in any case. A local,
+    /// LAN or Nostr Connect node isn't held to it.
+    static var onionOnly: Bool { MakeRPCCall.sharedInstance.activeNodeIsOnion }
+
+    /// Whether `url` may be fetched over Tor: anything, or with onion only an onion service.
+    static func allows(_ url: URL?) -> Bool {
+        !onionOnly || url?.host?.lowercased().hasSuffix(".onion") == true
+    }
+
+    /// The onion only state Tor's SOCKS ports are in.
+    private var appliedOnionOnly: Bool?
+
+    /// Brings Tor's SOCKS ports in line with `onionOnly`: when another node becomes active (or
+    /// its address changes), and once Tor is up.
+    func syncOnionOnly() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, let controller = self.controller, controller.isConnected else { return }
+            let wanted = Self.onionOnly
+            guard wanted != self.appliedOnionOnly else { return }
+            self.appliedOnionOnly = wanted
+            self.applySocksPorts()
+        }
+    }
+
+    /// Each SocksPort's value, with OnionTrafficOnly when onion only is on.
+    private static var socksPortValues: [String] {
+        Purpose.allCases.map { "\(socksPort(for: $0))" + (onionOnly ? " OnionTrafficOnly" : "") }
+    }
+
+    /// Reconfigures the running Tor's SOCKS ports for the onion only setting (Tor runs once per
+    /// process, so it can't be restarted with new options). Started later, it reads the setting.
+    /// The ports are closed first: Tor keeps a listener whose port didn't change, flags and all.
+    private func applySocksPorts() {
+        guard let controller = controller else { return }
+        let ports = Self.socksPortValues.map { "SocksPort=\"\($0)\"" }
+        let report: (String, [NSNumber], [Data]) -> Void = { step, codes, lines in
+            if codes.first?.intValue != 250 {
+                print("[tor] couldn't \(step) for onion only: \(lines.compactMap { String(data: $0, encoding: .utf8) })")
+            }
+        }
+        controller.sendCommand("SETCONF", arguments: ["SocksPort=0"], data: nil) { codes, lines, stop -> Bool in
+            stop.pointee = true
+            report("close the SOCKS ports", codes, lines)
+            controller.sendCommand("SETCONF", arguments: ports, data: nil) { codes, lines, stop -> Bool in
+                stop.pointee = true
+                report("reopen the SOCKS ports", codes, lines)
+                return true
+            }
+            return true
+        }
     }
     
     /// Tor's HTTP tunnel port (BDK's Esplora client tunnels through it).
@@ -71,11 +167,8 @@ class TorClient: NSObject {
         weak var weakDelegate = delegate
         state = .started
         
-        let proxyPort = Self.socksPort
-        
-        sessionConfiguration.connectionProxyDictionary = [kCFProxyTypeKey: kCFProxyTypeSOCKS,
-                                                          kCFStreamPropertySOCKSProxyHost: "localhost",
-                                                          kCFStreamPropertySOCKSProxyPort: proxyPort]
+        sessionConfiguration.connectionProxyDictionary = Self.proxy(for: .node)
+        sessionConfiguration.httpAdditionalHeaders = Self.anonymousHeaders
         
         session = URLSession(configuration: sessionConfiguration, delegate: urlSessionDelegate, delegateQueue: .main)
         
@@ -96,10 +189,12 @@ class TorClient: NSObject {
             self.addAuthKeysToAuthDirectory {
                 
                 self.thread = nil
-                
+
+                // One SocksPort per purpose (options can only hold one value per key).
+                self.config.arguments = NSMutableArray(array: Self.socksPortValues.flatMap { ["--SocksPort", $0] })
+                self.appliedOnionOnly = Self.onionOnly
                 self.config.options = [
                     "AutomapHostsOnResolve": "1",
-                    "SocksPort": "\(proxyPort)",//OnionTrafficOnly
                     "AvoidDiskWrites": "1",
                     "ClientOnionAuthDir": "\(self.authDirPath)",
                     "LearnCircuitBuildTimeout": "1",
@@ -109,7 +204,10 @@ class TorClient: NSObject {
                     "NumCPUs": "2",
                     "DisableDebuggerAttachment": "1",
                     "SafeLogging": "1",
-                    "HTTPTunnelPort": "\(Self.httpTunnelPort)"
+                    "HTTPTunnelPort": "\(Self.httpTunnelPort)",
+                    // Tor saves `pause`'s dormant state and would otherwise start dormant, never
+                    // connecting, when iOS ended the app while it was paused.
+                    "DormantCanceledByStartup": "1"
                 ]
                 
                 self.config.cookieAuthentication = true
@@ -121,6 +219,7 @@ class TorClient: NSObject {
                 // earlier start gave up on the controller too soon, attach to it instead.
                 if let running = TorThread.active, !running.isFinished {
                     self.thread = running
+                    self.isResuming = true
                 } else {
                     self.thread = TorThread(configuration: self.config)
                     self.thread?.start()
@@ -174,6 +273,11 @@ class TorClient: NSObject {
                         return
                     }
                     
+                    if self.isResuming {
+                        self.isResuming = false
+                        self.wake(delegate: weakDelegate)
+                    }
+                    
                     var progressObs: Any? = nil
                     
                     progressObs = self.controller?.addObserver(forStatusEvents: { [weak self]
@@ -193,17 +297,13 @@ class TorClient: NSObject {
                     
                     var observer: Any? = nil
                     observer = self.controller?.addObserver(forCircuitEstablished: { [weak self] established in
-                        guard let self = self else { return }
-                        if established {
-                            self.state = .connected
-                            weakDelegate?.torConnFinished()
-                            self.controller?.removeObserver(observer)
-                            
-                        } else if self.state == .refreshing {
-                            self.state = .connected
-                            weakDelegate?.torConnFinished()
-                            self.controller?.removeObserver(observer)
-                        }
+                        guard let self = self, established else { return }
+                        self.controller?.removeObserver(observer)
+                        // `wake` may have reported it already.
+                        guard self.state != .connected else { return }
+                        self.state = .connected
+                        self.syncOnionOnly()
+                        weakDelegate?.torConnFinished()
                     })
                 }
             } catch {
@@ -253,13 +353,59 @@ class TorClient: NSObject {
         }
     }
     
-    func resign() {
-        controller?.disconnect()
-        controller = nil
-        thread?.cancel()
+    /// For the app going to the background: Tor sleeps, and stays running.
+    ///
+    /// Tor must never be shut down while the process lives. Its shutdown (`tor_free_all`) races
+    /// with its own worker threads and aborts the app: a worker releases a mutex being destroyed
+    /// (seen in `tor_mutex_release` and `worker_thread_has_work`). `TORController.disconnect()`
+    /// is that shutdown, it sends SIGNAL SHUTDOWN, so don't call it. Releasing the controller
+    /// only closes its connection. `start` attaches to the running Tor again.
+    func pause() {
+        if let controller = controller {
+            self.controller = nil
+            // The block keeps the controller until Tor has the signal.
+            controller.sendCommand("SIGNAL DORMANT", arguments: nil, data: nil) { _, _, stop -> Bool in
+                _ = controller
+                stop.pointee = true
+                return true
+            }
+        }
         thread = nil
         clearAuthKeys {}
         state = .stopped
+    }
+    
+    /// Back from `pause`: the network may have changed while asleep, so reload (which also reads
+    /// the onion auth keys again) and use new circuits.
+    private func wake(delegate weakDelegate: OnionManagerDelegate?) {
+        controller?.sendCommand("SIGNAL ACTIVE", arguments: nil, data: nil) { _, _, stop -> Bool in
+            stop.pointee = true
+            return true
+        }
+        controller?.resetConnection(nil)
+        reportCircuit(delegate: weakDelegate, attempt: 0)
+    }
+    
+    /// A Tor that already has a circuit never sends the "established" event a fresh start waits
+    /// for, so ask it.
+    private func reportCircuit(delegate weakDelegate: OnionManagerDelegate?, attempt: Int) {
+        controller?.sendCommand("GETINFO", arguments: ["status/circuit-established"], data: nil) { _, lines, stop -> Bool in
+            stop.pointee = true
+            let established = lines.contains { String(data: $0, encoding: .utf8)?.hasSuffix("=1") == true }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, self.state == .started else { return }
+                if established {
+                    self.state = .connected
+                    self.syncOnionOnly()
+                    weakDelegate?.torConnFinished()
+                } else if attempt < 30 {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+                        self?.reportCircuit(delegate: weakDelegate, attempt: attempt + 1)
+                    }
+                }
+            }
+            return true
+        }
     }
     
     private func createTorDirectory() {
