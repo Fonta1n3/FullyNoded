@@ -14,6 +14,11 @@ class AppIconSelectorTableViewController: UITableViewController {
 
     var currentIcon: String? = nil
 
+    /// The picture of whichever icon the app is using now (nil is the app's original icon).
+    static var currentIconImage: UIImage? {
+        UIImage(named: UIApplication.shared.alternateIconName == nil ? "Original_Icon" : "Default_Icon")
+    }
+
     var appIcons: [[String?: UIImage]] = [
         ["AppIcon-6": UIImage(named: "Default_Icon")!],
         [nil: UIImage(named: "Original_Icon")!]

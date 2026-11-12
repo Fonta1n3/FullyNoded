@@ -372,7 +372,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @objc private func addressDidChange(_ sender: UITextField) {
         updateTransportHint()
     }
-    
+
     /// How the app will reach the node, from the address.
     private func updateTransportHint() {
         if isNostr {
@@ -388,7 +388,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             transportHint.text = "Use your node's onion address, or localhost / a LAN IP with its port."
             transportHint.textColor = WalletTheme.dim
         } else if address.contains(".onion") {
-            transportHint.text = "TOR · traffic is routed over Tor."
+            transportHint.text = "TOR · traffic is routed over Tor. While this node is active, Tor connects only to onion services."
             transportHint.textColor = WalletTheme.Tint.settings.accent
         } else if address.hasPrefix("localhost:") || address.hasPrefix("127.0.0.1:") {
             transportHint.text = "LOCAL · connects to this device."
