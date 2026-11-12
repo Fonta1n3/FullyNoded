@@ -489,9 +489,8 @@ final class PayjoinReceiveSession {
         configuration.timeoutIntervalForRequest = 20
         // An attempt that never completes would stall the whole wait: cap each one.
         configuration.timeoutIntervalForResource = 30
-        configuration.connectionProxyDictionary = [kCFProxyTypeKey: kCFProxyTypeSOCKS,
-                                                   kCFStreamPropertySOCKSProxyHost: "localhost",
-                                                   kCFStreamPropertySOCKSProxyPort: TorClient.socksPort]
+        configuration.connectionProxyDictionary = TorClient.proxy(for: .payjoin)
+        configuration.httpAdditionalHeaders = TorClient.anonymousHeaders
         let session = URLSession(configuration: configuration)
         session.dataTask(with: url) { [weak self] _, response, error in
             session.finishTasksAndInvalidate()

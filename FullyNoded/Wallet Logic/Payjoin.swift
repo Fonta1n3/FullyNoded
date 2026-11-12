@@ -666,6 +666,10 @@ enum Payjoin {
         }
 
         let isOnion = endpoint.host?.lowercased().hasSuffix(".onion") == true
+        guard TorClient.allows(endpoint) else {
+            completion(.failure(Failure("Your node is an onion service, so Fully Noded connects only to onion services, and this receiver's payjoin service isn't one.")))
+            return
+        }
         let useTor = TorClient.sharedInstance.state == .connected
         guard useTor || !isOnion else {
             completion(.failure(Failure("This payjoin needs Tor, which isn't connected yet.")))
@@ -676,9 +680,8 @@ enum Payjoin {
         configuration.timeoutIntervalForRequest = 60
         configuration.timeoutIntervalForResource = 90
         if useTor {
-            configuration.connectionProxyDictionary = [kCFProxyTypeKey: kCFProxyTypeSOCKS,
-                                                       kCFStreamPropertySOCKSProxyHost: "localhost",
-                                                       kCFStreamPropertySOCKSProxyPort: TorClient.socksPort]
+            configuration.connectionProxyDictionary = TorClient.proxy(for: .payjoin)
+            configuration.httpAdditionalHeaders = TorClient.anonymousHeaders
         }
         let session = URLSession(configuration: configuration)
         var request = URLRequest(url: url)
