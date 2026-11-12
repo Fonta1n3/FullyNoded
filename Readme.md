@@ -32,11 +32,12 @@ screenshots: **[Docs](./Docs/README.md)**.
 
 * **Unit tests** check everything Fully Noded does with private keys (seed words, key derivation,
   encryption at rest, PSBT signing, silent payment keys) against the published BIP test vectors, plus
-  timelocked addresses and wallet recovery (from seed words, descriptors and wallet backups).
+  timelocked addresses, wallet recovery (from seed words, descriptors and wallet backups), the block
+  explorer's data and the wallet's privacy and fee checks.
   Pick the **FullyNodedTests** scheme and press ⌘U. No node needed.
 * **UI tests** drive the app in the simulator against a local regtest node: node setup, wallet creation
-  and recovery, sending, silent payment sends and payjoin between two simulators, on every Bitcoin Core /
-  Knots build you have installed.
+  and recovery, sending, silent payment sends, the block explorer and payjoin between two simulators, on
+  every Bitcoin Core / Knots build you have installed.
 
 How to run both, what they cover and how to add tests: [Docs/Testing.md](Docs/Testing.md).
 
@@ -57,6 +58,17 @@ How to run both, what they cover and how to add tests: [Docs/Testing.md](Docs/Te
 * **Output Descriptor Support.** You can import any descriptor into FN and it should work seamlessly. Multisig, miniscript, segwit, taproot and more.
 * **HWW Functionality.** FN Signers tab allows you to add BIP39 mnemonics and passphrases and stores the mnemonic double encrypted locally on your device. It signs transactions locally with no internet connection required.
 
+
+## Block explorer
+
+**See the chain through your own node.** Every block and transaction comes from your node, so nothing
+you look at reaches anyone else's server: a live strip of blocks, the block map, where a transaction's
+money goes, what kind of transaction it looks like, embedded data decoded, your own coins by block, and
+the chain's vitals. The verifier shows a transaction's flow and a privacy rating before you sign it.
+
+<img src="./Docs/Images/app-explorer.jpg" alt="Block explorer" width="300"/> <img src="./Docs/Images/app-explorer-tx.jpg" alt="A transaction" width="300"/>
+
+Guides: [Block explorer](./Docs/Block-Explorer.md), [Understanding your wallet](./Docs/Wallets/Wallet-Insights.md).
 
 ## Nostr Connect
 
