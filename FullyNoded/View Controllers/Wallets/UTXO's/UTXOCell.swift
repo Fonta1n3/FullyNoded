@@ -219,3 +219,28 @@ class UTXOCell: UITableViewCell {
     
     
 }
+
+// MARK: - Theme
+
+extension UTXOCell {
+    /// Only the Nodeless button keeps a bordered look; every other button in the cell
+    /// (info, copy, lock, spend, edit...) is a bare icon. Call after `WalletTheme.styleCell`.
+    func flattenIconButtons() {
+        var stack: [UIView] = [contentView]
+        while let view = stack.popLast() {
+            if let button = view as? UIButton {
+                guard button !== nodelessButton else { continue }
+                if var config = button.configuration {
+                    config.background.backgroundColor = .clear
+                    config.background.strokeWidth = 0
+                    config.background.strokeColor = .clear
+                    button.configuration = config
+                }
+                button.backgroundColor = .clear
+                button.layer.borderWidth = 0
+            } else {
+                stack.append(contentsOf: view.subviews)
+            }
+        }
+    }
+}

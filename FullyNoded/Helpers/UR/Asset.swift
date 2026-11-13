@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import URKit
 
 enum Asset: UInt32, Identifiable, CaseIterable {
     // Values from [SLIP44] with high bit turned off

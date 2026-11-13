@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
+class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate {
     
     @IBOutlet weak var importOutlet: UIButton!
     @IBOutlet weak var labelField: UITextField!
@@ -16,7 +16,6 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
     @IBOutlet var addressTableView: UITableView!
     
     var addresses: [String] = []
-    let spinner = ConnectingView.shared
     var onDoneBlock:(((Bool)) -> Void)?
     var descriptor: Descriptor?
 
@@ -32,20 +31,32 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
         tapGesture.numberOfTapsRequired = 1
+        tapGesture.cancelsTouchesInView = false
+        tapGesture.delegate = self
         view.addGestureRecognizer(tapGesture)
-        labelField.removeGestureRecognizer(tapGesture)
         
         if let desc = descriptor {
             addDescriptorToLabel(desc)
             loadAddresses(desc)
         }
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.stylePrimary(importOutlet, tint: .create)
+        WalletTheme.apply(to: self, tint: .create)
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         labelField.resignFirstResponder()
     }
+
+    /// Taps on the label field must not trigger the dismiss gesture, otherwise the field
+    /// resigns first responder as soon as it gains it and typing goes nowhere.
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        guard let touched = touch.view else { return true }
+        return !touched.isDescendant(of: labelField)
+    }
     
     @IBAction func importAction(_ sender: Any) {
+        guard !isShowingActivity else { return }
         guard let desc = self.descriptor else { return }
         
         importDescriptor(desc.string)
@@ -76,7 +87,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
     }
         
     private func importDescriptor(_ desc: String) {
-        spinner.show(vc: self, description: "importing descriptor wallet, this can take a minute...")
+        showActivity("importing descriptor wallet, this can take a minute...", button: importOutlet)
         
         let defaultLabel = "Descriptor import"
         
@@ -92,9 +103,9 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
             guard let self = self else { return }
             
             if success {
-                self.doneAlert("Descriptor wallet created ✓", "Tap done to go back and the home screen will refresh, your wallet is rescanning the blockchain, this can take awhile, to monitor rescan progress tap the refresh button on the \"Active Wallet\" tab. You will not see your balances or transaction history until the rescan completes.")
+                self.doneAlert("Descriptor wallet created", "Tap done to go back and the home screen will refresh, your wallet is rescanning the blockchain, this can take awhile, to monitor rescan progress tap the refresh button on the \"Active Wallet\" tab. You will not see your balances or transaction history until the rescan completes.")
             } else {
-                self.spinner.dismiss()
+                self.hideActivity()
                 showAlert(vc: self, title: "", message: errorDescription ?? "unknown error")
             }
         }
@@ -104,8 +115,30 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            descriptorField.text = descriptor.string
+            descriptorField.attributedText = descriptorText(descriptor.string)
         }
+    }
+    
+    /// The descriptor, then its checksum (computed here, so it can be compared with the
+    /// signer's or wallet's display), with a warning if the checksum written on it disagrees.
+    private func descriptorText(_ descriptor: String) -> NSAttributedString {
+        let font = descriptorField.font ?? .systemFont(ofSize: 17)
+        let color = descriptorField.textColor ?? .label
+        let text = NSMutableAttributedString(string: descriptor, attributes: [.font: font, .foregroundColor: color])
+        
+        guard let checksum = Descriptor.checksum(of: descriptor) else {
+            text.append(NSAttributedString(string: "\n\nChecksum: invalid characters in descriptor", attributes: [.font: font, .foregroundColor: UIColor.systemRed]))
+            return text
+        }
+        
+        let mono = UIFont.monospacedSystemFont(ofSize: font.pointSize, weight: .semibold)
+        text.append(NSAttributedString(string: "\n\nChecksum: ", attributes: [.font: font, .foregroundColor: UIColor.secondaryLabel]))
+        text.append(NSAttributedString(string: checksum, attributes: [.font: mono, .foregroundColor: color]))
+        
+        if let stated = Descriptor.statedChecksum(of: descriptor), stated != checksum {
+            text.append(NSAttributedString(string: "\n⚠️ The descriptor says #\(stated), it should be #\(checksum). It may have been altered or mistyped.", attributes: [.font: font, .foregroundColor: UIColor.systemRed]))
+        }
+        return text
     }
     
     private func doneAlert(_ title: String, _ message: String) {
@@ -114,18 +147,10 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
             
             NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
             
-            self.spinner.dismiss()
-            
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
-                DispatchQueue.main.async {
-                    self.navigationController?.popToRootViewController(animated: true)
-                }
-            }))
-            
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true) {}
+            self.hideActivity()
+            SuccessView.show(in: self, title: title, subtitle: message) { [weak self] in
+                self?.navigationController?.popToRootViewController(animated: true)
+            }
         }
     }
     
@@ -136,7 +161,8 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "addressCell", for: indexPath)
         let label = cell.viewWithTag(1) as! UILabel
-        label.text = "#\(indexPath.row + 1) " + addresses[indexPath.row].addressExpanded
+        // Index as derived (the range starts at 0), matching the wallet's address list.
+        label.text = "#\(indexPath.row) " + addresses[indexPath.row].addressExpanded
         return cell
     }
     
@@ -154,8 +180,23 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate, UITableVi
                     
                     self.descriptor = Descriptor(desc)
                     addDescriptorToLabel(self.descriptor!)
+                    self.addresses.removeAll()
+                    self.addressTableView.reloadData()
+                    loadAddresses(self.descriptor!)
                 }
             }
         }
+    }
+}
+
+// MARK: - Theme
+
+extension ImportXpubViewController {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .create)
+    }
+
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        WalletTheme.styleHeader(view, tint: .create)
     }
 }

@@ -22,6 +22,9 @@ class DuressPinViewController: UIViewController, UITextFieldDelegate {
         // Do any additional setup after loading the view.
         duressPinTextField.delegate = self
         configureTapGesture()
+        // Cypherpunk look (WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.stylePrimary(saveButtonOutlet, tint: .settings)
+        WalletTheme.apply(to: self, tint: .settings)
     }
     
     @IBAction func saveDuressPinAction(_ sender: Any) {
@@ -51,7 +54,7 @@ class DuressPinViewController: UIViewController, UITextFieldDelegate {
                     saveButtonOutlet.setTitle("Save Duress PIN", for: .normal)
                     duressPinTextField.text = ""
                     pinHash = ""
-                    showAlert(vc: self, title: "Saved ✓", message: "Duress PIN has been saved. Once used there is no going back!")
+                    SuccessView.show(in: self, title: "Duress PIN saved", subtitle: "Entering it at the lock screen wipes the app. Once used there is no going back.")
                 }
             }
         }

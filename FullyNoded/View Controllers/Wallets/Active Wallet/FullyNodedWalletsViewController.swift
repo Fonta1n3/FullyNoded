@@ -23,8 +23,8 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     var totalBtcBalance = 0.0
     var fxRate = 0.0
     var bitcoinCoreWallets = [String]()
-    let spinner = ConnectingView.shared
     var initialLoad = true
+    private var isLoading = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,6 +41,8 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         fxRateLabel.text = ""
         existingActiveWalletName = UserDefaults.standard.object(forKey: "walletName") as? String ?? ""
         initialLoad = true
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .wallet)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -58,8 +60,37 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         }
     }
     
+    /// Starts a load: spinner on, and navigation disabled so the load can't be cancelled
+    /// half way. Balances are read per wallet name, so the active wallet is never changed.
+    private func beginLoading() {
+        isLoading = true
+        showActivity("loading balances...")
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.navigationItem.hidesBackButton = true
+            self.navigationController?.interactivePopGestureRecognizer?.isEnabled = false
+            self.tabBarController?.tabBar.isUserInteractionEnabled = false
+            self.walletsTable.isUserInteractionEnabled = false
+        }
+    }
+    
+    /// The single exit for every path: re-enables the UI and stops the spinner.
+    private func finishLoading() {
+        isLoading = false
+        initialLoad = false
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.navigationItem.hidesBackButton = false
+            self.navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+            self.tabBarController?.tabBar.isUserInteractionEnabled = true
+            self.walletsTable.isUserInteractionEnabled = true
+            self.walletsTable.reloadData()
+        }
+        hideActivity()
+    }
+    
     private func getBitcoinCoreWallets() {
-        //spinner.show(vc: self, description: "getting total balance...")
+        beginLoading()
         bitcoinCoreWallets.removeAll()
         wallets.removeAll()
         externalWallets.removeAll()
@@ -73,8 +104,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
-                    self.spinner.dismiss()
-                    self.initialLoad = false
+                    self.finishLoading()
                     displayAlert(viewController: self, isError: true, message: "error getting wallets: \(message ?? "")")
                 }
                 return
@@ -85,7 +115,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func parseWallets(wallets: [String]) {
-        guard !wallets.isEmpty else { self.spinner.dismiss(); return }
+        guard !wallets.isEmpty else { self.finishLoading(); return }
         
         for (i, walletName) in wallets.enumerated() {
             bitcoinCoreWallets.append(walletName)
@@ -104,7 +134,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
             guard let self = self else { return }
             
             guard let ws = ws, ws.count > 0 else {
-                self.spinner.dismiss()
+                self.finishLoading()
                 let title = "No Fully Noded Wallets"
                 let message = "Looks like you have not yet created any Fully Noded wallets, on the active wallet tab you can tap the plus sign (top left) to create a Fully Noded wallet."
                 self.initialLoad = false
@@ -152,14 +182,14 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
         
         guard TorClient.sharedInstance.state == .connected  else {
-            self.spinner.dismiss();  self.getTotals(); return
+            self.getTotals(); return
         }
         
         FiatConverter.sharedInstance.getFxRate(currency: fiatCurrency) { [weak self] fxRate in
             guard let self = self else { return }
 
-            guard let fxRate = fxRate else { self.spinner.dismiss();  self.getTotals(); return }
-            guard self.wallets.count > 0 else { self.spinner.dismiss(); return }
+            guard let fxRate = fxRate else { self.getTotals(); return }
+            guard self.wallets.count > 0 else { self.finishLoading(); return }
             self.fxRate = fxRate
             self.getTotals()
         }
@@ -169,29 +199,27 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         if index < wallets.count {
             let wallet = wallets[index]
             let walletStruct = Wallet(dictionary: wallet)
-            UserDefaults.standard.set(walletStruct.name, forKey: "walletName")
-            
-            OnchainUtils.getBalance { [weak self] (balance, message) in
+            // Targets this wallet for the call only; the active wallet is never touched.
+            OnchainUtils.getBalanceBreakdown(walletName: walletStruct.name) { [weak self] (total, locked, message) in
+                let balance = total.map { max(0, $0 - locked) }
                 guard let self = self else { return }
                 
                 guard let balance = balance else {
-                    self.spinner.dismiss()
+                    // Restore the original active wallet before anything else.
+                    self.finishLoading()
                     
                     guard let message = message else {
                         showAlert(vc: self, title: "", message: "There was an unknown error getting your balances.")
-                        UserDefaults.standard.set(self.existingActiveWalletName, forKey: "walletName")
-                        self.initialLoad = false
                         return
                     }
                     if !message.contains("is already loaded") {
                         showAlert(vc: self, title: "", message: "There was an error getting your balances: \(message).")
                     }
-                    UserDefaults.standard.set(self.existingActiveWalletName, forKey: "walletName")
-                    self.initialLoad = false
                     return
                 }
                 
                 self.wallets[self.index]["balance"] = balance
+                self.wallets[self.index]["locked"] = locked
                 self.index += 1
                 self.totalBtcBalance += balance
                 self.getTotals()
@@ -199,8 +227,6 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         } else {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                
-                UserDefaults.standard.set(self.existingActiveWalletName, forKey: "walletName")
                 
                 let roundedFiat = self.totalBtcBalance * self.fxRate
                 
@@ -210,9 +236,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                 self.fxRateLabel.alpha = 1
                 self.balanceFiatLabel.text = roundedFiat.fiatString
                 self.balanceFiatLabel.alpha = 1
-                self.initialLoad = false
-                self.walletsTable.reloadData()
-                self.spinner.dismiss()
+                self.finishLoading()
             }
         }
     }
@@ -223,7 +247,9 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 54
+        // A third line is shown when part of the balance is timelocked.
+        let locked = wallets.indices.contains(indexPath.row) ? (wallets[indexPath.row]["locked"] as? Double ?? 0) : 0
+        return locked > 0 ? 74 : 54
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -246,7 +272,8 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         let wallet = wallets[indexPath.row]
         let btcBalance = (wallet["balance"] as? Double ?? 0.0)
         let walletStruct = Wallet(dictionary: wallet)
-        label.text = walletStruct.label + "\n\(btcBalance.btc) / \((btcBalance * fxRate).balanceText)"
+        let locked = wallet["locked"] as? Double ?? 0
+        label.text = walletStruct.label + "\n\(btcBalance.btc) / \((btcBalance * fxRate).balanceText)" + (locked > 0 ? "\n+ \(locked.btc) timelocked" : "")
         button.restorationIdentifier = "\(indexPath.row)"
        // toggle.restorationIdentifier = "\(indexPath.section)"
         button.addTarget(self, action: #selector(goToDetail(_:)), for: .touchUpInside)
@@ -330,5 +357,17 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         default:
             break
         }
+    }
+}
+
+// MARK: - Theme
+
+extension FullyNodedWalletsViewController {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        WalletTheme.styleCell(cell, in: tableView, tint: .wallet)
+    }
+
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        WalletTheme.styleHeader(view, tint: .wallet)
     }
 }

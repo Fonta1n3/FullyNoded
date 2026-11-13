@@ -51,6 +51,11 @@ struct UTXO {
     let lastUpdated: Date?
     var walletId: UUID?
     let witnessScript: String?
+    /// Silent payment tweak t_k (hex), saved on this device by "Check SP info" once the BIP352
+    /// scan proved the output is yours. Stored encrypted in Core Data; nil until checked.
+    var spTweakHex: String?
+    /// Label tweak (hex) for outputs paid to a labeled silent payment address (e.g. change).
+    var spLabelTweakHex: String?
     
     let rawData: [String: Any]
     
@@ -80,7 +85,21 @@ extension UTXO {
         lastUpdated = raw["lastUpdated"] as? Date
         witnessScript = raw["witnessScript"] as? String
         id = raw["id"] as? UUID
-        
+        spTweakHex = Self.decryptedHex(raw["spTweak"])
+        spLabelTweakHex = Self.decryptedHex(raw["spLabelTweak"])
+    }
+
+    /// Encrypted 32 bytes (Core Data) → hex.
+    private static func decryptedHex(_ value: Any?) -> String? {
+        guard let encrypted = value as? Data,
+              let data = Crypto.decrypt(encrypted), data.count == 32 else { return nil }
+        return data.map { String(format: "%02x", $0) }.joined()
+    }
+
+    /// The saved silent payment data, ready for signing (nil until "Check SP info" saved it).
+    var silentPaymentOutput: SilentPaymentSpend.OwnedOutput? {
+        guard let tweak = spTweakHex else { return nil }
+        return SilentPaymentSpend.OwnedOutput(txid: txid, vout: vout, tweakHex: tweak, labelTweakHex: spLabelTweakHex)
     }
 }
 

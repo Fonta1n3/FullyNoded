@@ -46,7 +46,9 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         }
     }
     
-    func executeRPCCommand(method: BTC_CLI_COMMAND, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
+    /// `walletName` targets a specific wallet for this one call; when nil the active wallet
+    /// (UserDefaults "walletName") is used. Passing it avoids ever touching the active wallet.
+    func executeRPCCommand(method: BTC_CLI_COMMAND, walletName walletOverride: String? = nil, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
         guard let node = activeNode else {
             completion((nil, "No active Bitcoin Core node."))
             return
@@ -84,7 +86,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
             walletUrl = "https://\(rpcusername):\(rpcpassword)@\(onionAddress)"
         }
                         
-        let walletName = UserDefaults.standard.object(forKey: "walletName") as? String
+        let walletName = walletOverride ?? UserDefaults.standard.object(forKey: "walletName") as? String
         
         if isWalletRPC(command: method), let walletName = walletName {
             walletUrl += "/wallet/" + walletName
@@ -219,7 +221,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
                         return
                     }
                     
-                    executeRPCCommand(method: method, completion: completion)
+                    executeRPCCommand(method: method, walletName: walletOverride, completion: completion)
                 }
             } else {
                 completion((nil, errorMessage))

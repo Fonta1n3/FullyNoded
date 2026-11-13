@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import URKit
 
 struct DerivationStep {
     let childIndexSpec: ChildIndexSpec

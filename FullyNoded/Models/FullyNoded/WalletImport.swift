@@ -40,6 +40,11 @@ import Foundation
  }
  */
 
+// MARK: BlueWallet single sig (Passport, Keystone, Jade "BlueWallet" export)
+/*
+ {"ExtPubKey": "zpub...", "MasterFingerprint": "73C5DA0A", "AccountKeyPath": "84'/0'/0'"}
+ */
+
 public struct WalletImport: CustomStringConvertible {
     
     let bip49:String?
@@ -48,60 +53,88 @@ public struct WalletImport: CustomStringConvertible {
     let bip48:String?
     let bip86:String?
     
+    /// Every descriptor found, in the order offered to the user.
+    var descriptors: [String] {
+        [bip44, bip49, bip84, bip48, bip86].compactMap { $0 }
+    }
+    
     init(_ dictionary: [String: Any]) {
+        var bip44: String?
+        var bip49: String?
+        var bip84: String?
+        var bip48: String?
+        var bip86: String?
         
         if let xfp = dictionary["xfp"] as? String,
-           let bip49Dict = dictionary["bip49"] as? [String:Any],
-           let bip44Dict = dictionary["bip44"] as? [String:Any],
-           let bip84Dict = dictionary["bip84"] as? [String:Any],
-           let bip48Dict = dictionary["bip48_2"] as? [String:Any],
-           let bip49Xpub = bip49Dict["xpub"] as? String,
-           let bip44Xpub = bip44Dict["xpub"] as? String,
-           let bip84Xpub = bip84Dict["xpub"] as? String,
-           let bip48Xpub = bip48Dict["xpub"] as? String {
-            
-            bip49 = "sh(wpkh([\(xfp)/49h/0h/0h]\(bip49Xpub)/0/*))"
-            bip44 =  "pkh([\(xfp)/44h/0h/0h]\(bip44Xpub)/0/*)"
-            bip84 = "wpkh([\(xfp)/84h/0h/0h]\(bip84Xpub)/0/*)"
-            bip48 = "wsh([\(xfp)/48h/0h/0h/2h]\(bip48Xpub)/0/*)"
-            
-            if let bip86Dict = dictionary["bip86"] as? [String:Any],
-                let bip86Xpub = bip86Dict["xpub"] as? String {
-                bip86 = "tr([\(xfp)/86h/0h/0h]\(bip86Xpub)/0/*)"
-            } else {
-                bip86 = nil
+           ["bip44", "bip49", "bip84", "bip48_2", "bip86"].contains(where: { dictionary[$0] is [String:Any] }) {
+            // Coldcard / Passport generic JSON, with any subset of the accounts (a single sig
+            // export may carry only one). Each account's own "xfp" is its parent's, not the master's.
+            func account(_ key: String, _ defaultPath: String) -> String? {
+                guard let account = dictionary[key] as? [String:Any],
+                      let xpub = Self.xpub(account["xpub"] as? String) else { return nil }
+                let path = Self.origin(account["deriv"] as? String) ?? defaultPath
+                return "[\(xfp)/\(path)]\(xpub)/0/*"
             }
+            bip44 = account("bip44", "44h/0h/0h").map { "pkh(\($0))" }
+            bip49 = account("bip49", "49h/0h/0h").map { "sh(wpkh(\($0)))" }
+            bip84 = account("bip84", "84h/0h/0h").map { "wpkh(\($0))" }
+            bip48 = account("bip48_2", "48h/0h/0h/2h").map { "wsh(\($0))" }
+            bip86 = account("bip86", "86h/0h/0h").map { "tr(\($0))" }
             
         } else if let keystore = dictionary["keystore"] as? [String:Any],
                   let xpub = keystore["ckcc_xpub"] as? String,
                   let label = keystore["label"] as? String {
             
             let arr = label.split(separator: "(")
-            let xfp = "\(arr[1])".replacingOccurrences(of: ")", with: "")
-            bip84 = "wpkh([\(xfp)/84h/0h/0h]\(xpub)/0/*)"
-            bip49 = nil
-            bip44 = nil
-            bip48 = nil
-            bip86 = nil
+            if arr.count > 1 {
+                let xfp = "\(arr[1])".replacingOccurrences(of: ")", with: "")
+                let path = Self.origin(keystore["derivation"] as? String) ?? "84h/0h/0h"
+                bip84 = "wpkh([\(xfp)/\(path)]\(xpub)/0/*)"
+            }
             
         } else if let xfp = dictionary["xfp"] as? String,
-                    let p2wsh_deriv = dictionary["p2wsh_deriv"] as? String,
-                    let p2wsh = dictionary["p2wsh"] as? String,
+                  let p2wsh_deriv = dictionary["p2wsh_deriv"] as? String,
+                  let p2wsh = dictionary["p2wsh"] as? String,
                   let p2wshXpub = XpubConverter.convert(extendedKey: p2wsh) {
             
-            bip48 = "wsh([\(xfp)/48h/0h/0h/2h]\(p2wshXpub)/0/*)"
-            bip49 = nil
-            bip44 = nil
-            bip84 = nil
-            bip86 = nil
+            let path = Self.origin(p2wsh_deriv) ?? "48h/0h/0h/2h"
+            bip48 = "wsh([\(xfp)/\(path)]\(p2wshXpub)/0/*)"
             
-        } else {
-            bip49 = nil
-            bip44 = nil
-            bip84 = nil
-            bip48 = nil
-            bip86 = nil
+        } else if let extendedKey = dictionary["ExtPubKey"] as? String,
+                  let xfp = dictionary["MasterFingerprint"] as? String,
+                  let path = Self.origin(dictionary["AccountKeyPath"] as? String),
+                  let xpub = Self.xpub(extendedKey) {
+            
+            let key = "[\(xfp.lowercased())/\(path)]\(xpub)/0/*"
+            switch path.split(separator: "/").first {
+            case "44h": bip44 = "pkh(\(key))"
+            case "49h": bip49 = "sh(wpkh(\(key)))"
+            case "86h": bip86 = "tr(\(key))"
+            case "48h": bip48 = "wsh(\(key))"
+            default: bip84 = "wpkh(\(key))"
+            }
         }
+        
+        self.bip44 = bip44
+        self.bip49 = bip49
+        self.bip84 = bip84
+        self.bip48 = bip48
+        self.bip86 = bip86
+    }
+    
+    /// "m/84'/0'/0'" → "84h/0h/0h".
+    private static func origin(_ path: String?) -> String? {
+        guard let path = path?.trimmingCharacters(in: .whitespaces), !path.isEmpty else { return nil }
+        let steps = path.split(separator: "/").filter { $0 != "m" }
+        guard !steps.isEmpty else { return nil }
+        return steps.map { $0.replacingOccurrences(of: "'", with: "h") }.joined(separator: "/")
+    }
+    
+    /// xpub / tpub as is; ypub, zpub, vpub etc. converted.
+    private static func xpub(_ key: String?) -> String? {
+        guard let key = key else { return nil }
+        if key.hasPrefix("xpub") || key.hasPrefix("tpub") { return key }
+        return XpubConverter.convert(extendedKey: key)
     }
     
     public var description: String {

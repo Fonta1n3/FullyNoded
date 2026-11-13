@@ -53,8 +53,8 @@ class OnchainUtils {
         }
     }
     
-    static func importDescriptors(_ param: Import_Descriptors, completion: @escaping ((imported: Bool, message: String?)) -> Void) {
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .importdescriptors(param: param)) { (response, message) in
+    static func importDescriptors(_ param: Import_Descriptors, walletName: String? = nil, completion: @escaping ((imported: Bool, message: String?)) -> Void) {
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .importdescriptors(param: param), walletName: walletName) { (response, message) in
             guard let responseArray = response as? [[String:Any]] else {
                 completion((false, "Error importing descriptors: \(message ?? "unknown error")"))
                 return
@@ -184,7 +184,45 @@ class OnchainUtils {
         }
     }
     
-    static func getBalance(completion: @escaping ((balance: Double?, message: String?)) -> Void) {
+    /// The wallet's total balance and how much of it is still timelocked. Core counts outputs
+    /// under an unexpired `after(N)` as spendable, but they can't be spent until the lock passes,
+    /// so the app shows them separately. A lock is open once the chain's median time past is beyond N
+    /// (N >= 500,000,000) or the next block's height reaches it (smaller N), which is what consensus uses.
+    static func getBalanceBreakdown(walletName: String? = nil,
+                                    completion: @escaping ((total: Double?, locked: Double, message: String?)) -> Void) {
+        getBalance(walletName: walletName) { (total, message) in
+            guard let total = total else { completion((nil, 0, message)); return }
+            
+            MakeRPCCall.sharedInstance.executeRPCCommand(method: .listunspent(.init(["minconf": 0])), walletName: walletName) { (utxoResponse, _) in
+                MakeRPCCall.sharedInstance.executeRPCCommand(method: .getblockchaininfo) { (infoResponse, _) in
+                    guard let utxos = utxoResponse as? [[String: Any]],
+                          let info = infoResponse as? [String: Any],
+                          let height = info["blocks"] as? Int,
+                          let medianTime = info["mediantime"] as? Int else {
+                        // Can't tell: show the total rather than hide funds.
+                        completion((total, 0, nil))
+                        return
+                    }
+                    
+                    var locked = 0.0
+                    for utxo in utxos {
+                        guard let desc = utxo["desc"] as? String, let n = timelockValue(in: desc) else { continue }
+                        let isOpen = n >= 500_000_000 ? n < medianTime : n <= height
+                        if !isOpen { locked += (utxo["amount"] as? Double) ?? 0 }
+                    }
+                    completion((total, min(locked, total), nil))
+                }
+            }
+        }
+    }
+    
+    /// The N of an `after(N)` fragment in a descriptor, if any.
+    static func timelockValue(in desc: String) -> Int? {
+        guard let match = desc.range(of: #"after\((\d+)\)"#, options: .regularExpression) else { return nil }
+        return Int(desc[match].dropFirst(6).dropLast())
+    }
+    
+    static func getBalance(walletName: String? = nil, completion: @escaping ((balance: Double?, message: String?)) -> Void) {
         let gb_param = [
             "dummy": "*",
             "minconf": 0,
@@ -192,7 +230,7 @@ class OnchainUtils {
             "avoid_reuse": false
         ] as [String:Any]
         
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getbalance(param: .init(gb_param))) { (response, errorMessage) in
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .getbalance(param: .init(gb_param)), walletName: walletName) { (response, errorMessage) in
             guard let response = response as? Double else {
                 guard let responseInt = response as? Int else {
                     completion((nil, errorMessage))

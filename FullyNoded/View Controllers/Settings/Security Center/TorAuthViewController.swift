@@ -18,6 +18,8 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
         super.viewDidLoad()
         textField.delegate = self
         publickKeyLabel.text = ""
+        // Cypherpunk look (WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.apply(to: self, tint: .settings)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         view.addGestureRecognizer(tapGesture)
@@ -39,7 +41,7 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
         guard let pubkey = publickKeyLabel.text else { return }
         
         UIPasteboard.general.string = pubkey
-        showAlert(vc: self, title: "", message: "Pubkey copied ✓")
+        SuccessView.toast("Pubkey copied", in: self)
     }
     
     

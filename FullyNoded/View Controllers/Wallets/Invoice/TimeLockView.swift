@@ -32,8 +32,13 @@ final class TimelockViewController: UIViewController {
     
     private let instructionLabel: UILabel = {
         let label = UILabel()
-        label.text = "Choose a future date (timestamp mode)"
-        label.font = UIFont.systemFont(ofSize: 17)
+        label.text = """
+        Choose the date these coins unlock (latest: Jan 19, 2038).
+
+        Coins sent to this address can't be spent before then. The lock uses the same key as the receive address you were shown, so that key also appears on that ordinary address (reusing a key links the two on-chain).
+        """
+        label.numberOfLines = 0
+        label.font = UIFont.systemFont(ofSize: 14)
         label.textColor = .secondaryLabel
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -44,8 +49,12 @@ final class TimelockViewController: UIViewController {
         let picker = UIDatePicker()
         picker.datePickerMode = .date
         picker.preferredDatePickerStyle = .wheels
-        picker.minimumDate = Date() // Only future dates
-        picker.maximumDate = Calendar.current.date(from: DateComponents(year: 2105, month: 12, day: 31)) // Limit prior to the bitcoin killer bug.
+        // At least a day ahead: "today" gives a lock that has already expired (and the node
+        // compares against median time past, about an hour behind the clock).
+        picker.minimumDate = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+        // Miniscript's after() only accepts values below 2^31, so Jan 19, 2038 is the latest date
+        // that makes a valid descriptor (anything later fails with a confusing parse error).
+        picker.maximumDate = Date(timeIntervalSince1970: 2_147_483_647)
         picker.translatesAutoresizingMaskIntoConstraints = false
         return picker
     }()
@@ -102,6 +111,9 @@ final class TimelockViewController: UIViewController {
            setupUI()
            updateTimestamp(for: datePicker.date)
            datePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
+        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
+        WalletTheme.stylePrimary(doneActionButton, tint: .receive)
+        WalletTheme.apply(to: self, tint: .receive)
     }
     
     // MARK: - UI Setup

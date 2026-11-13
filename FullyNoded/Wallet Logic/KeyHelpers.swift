@@ -7,11 +7,10 @@
 //
 
 import Foundation
-import LibWally
+import BitcoinDevKit
+import P256K
 
 enum Keys {
-        
-    // TODO:  Remove Libwally as much as possible.
     
     static func validMnemonic(_ words: String) -> Bool {
         guard let _ = try? WalletLogic.BDKMnemonic.fromString(mnemonic: words) else {
@@ -103,161 +102,154 @@ enum Keys {
     
     
     
+    // MARK: - Extended keys (BitcoinDevKit)
+
+    /// A random receive address (0/0…0/99) of the donation xpub.
     static func donationAddress() -> String? {
         let randomInt = Int.random(in: 0..<100)
-        
-        guard let hdKey = try? HDKey(base58: "xpub6C1DcRZo4RfYHE5F4yiA2m26wMBLr33qP4xpVdzY1EkHyUdaxwHhAvAUpohwT4ajjd1N9nt7npHrjd3CLqzgfbEYPknaRW8crT2C9xmAy3G"),
-            let path = try? BIP32Path(string: "0/\(randomInt)"),
-              let address = try? hdKey.derive(using: path).address(type: .payToWitnessPubKeyHash) else { return nil }
-        
+        let xpub = "xpub6C1DcRZo4RfYHE5F4yiA2m26wMBLr33qP4xpVdzY1EkHyUdaxwHhAvAUpohwT4ajjd1N9nt7npHrjd3CLqzgfbEYPknaRW8crT2C9xmAy3G"
+
+        guard let descriptor = try? WalletLogic.BDKDescriptor(descriptor: "wpkh(\(xpub)/0/*)", networkKind: .main),
+              let address = try? descriptor.deriveAddress(index: UInt32(randomInt), network: .bitcoin) else { return nil }
+
         return address.description
     }
-    
+
+    /// Compressed public key (hex) of child 0/0 of `xpub` (xpub or tpub).
     static func childPubkey(xpub: String) -> String? {
-        guard let hdKey = try? HDKey(base58: xpub),
-            let path = try? BIP32Path(string: "0/0"),
-              let pubkey = try? hdKey.derive(using: path).pubKey.data.hex else { return nil }
-        
-        return pubkey
+        guard let key = try? DescriptorPublicKey.fromString(publicKey: xpub),
+              let path = try? WalletLogic.BDKDerivationPath(path: "m/0/0"),
+              let child = try? key.derive(path: path) else { return nil }
+
+        return extendedKeyPayload(plainExtendedKey(child.description))?.key.hexString
     }
-    
-    static func addresses(accountPubkey: String, accountPath: String, completion: @escaping (([[String:Any]]?)) -> Void) {
-        var addresses: [[String: Any]] = []
-            
-        guard let hdKey = try? HDKey(base58: accountPubkey) else {
-            completion((nil))
-            return
-        }
-        
-        for i in 0...999 {
-            guard let path = try? BIP32Path(string: "/0/\(i)") else {
-                completion((nil))
-                return
-            }
-            
-            guard let address = try? hdKey.derive(using: path).address(type: .payToWitnessPubKeyHash) else {
-                completion((nil))
-                return
-            }
-            
-            addresses.append(["address": address.description.addressExpanded, "used": false, "balance": 0.0, "derivation": "\(accountPath)/0/\(i)"])
-            
-            if i + 1 == 999 {
-                completion((addresses))
-            }
-        }
-    }
-    
+
     static func seedWords() -> String? {
         guard let entropy = Crypto.secret() else { return nil }
         
         return try? WalletLogic.BDKMnemonic.fromEntropy(entropy: entropy).description
     }
-    
+
+    /// Master extended private key (xprv for coin type "0", tprv otherwise) of a BIP39
+    /// mnemonic and passphrase.
     static func masterKey(words: String, coinType: String, passphrase: String) -> String? {
-        let chain: Network
-        
-        if coinType == "0" {
-            chain = .mainnet
-        } else {
-            chain = .testnet
-        }
-        
-        if let mnmemonic = try? BIP39Mnemonic(words: words) {
-            let seedHex = mnmemonic.seedHex(passphrase: passphrase)
-            if let hdMasterKey = try? HDKey(seed: seedHex, network: chain), let xpriv = hdMasterKey.xpriv {
-                return xpriv
-            }
-        }
-        
-        return nil
+        guard let mnemonic = try? WalletLogic.BDKMnemonic.fromString(mnemonic: words) else { return nil }
+
+        let master = DescriptorSecretKey(networkKind: coinType == "0" ? .main : .test,
+                                         mnemonic: mnemonic,
+                                         password: passphrase.isEmpty ? nil : passphrase)
+        return plainExtendedKey(master.description)
     }
-        
+
+    /// Master key fingerprint (8 lowercase hex characters) of an extended private key.
     static func fingerprint(masterKey: String) -> String? {
-        
-        guard let hdMasterKey = try? HDKey(base58: masterKey) else { return nil }
-        
-        return hdMasterKey.fingerprint.hexString
+        guard let key = try? DescriptorSecretKey.fromString(privateKey: masterKey) else { return nil }
+
+        return key.asPublic().masterFingerprint()
     }
-    
+
     static func bip84AccountXpub(masterKey: String, coinType: String, account: Int16) -> String? {
-        guard let hdMasterKey = try? HDKey(base58: masterKey),
-            let path = try? BIP32Path(string: "m/84h/\(coinType)h/\(account)h"),
-            let accountKey = try? hdMasterKey.derive(using: path) else { return nil }
-        
-        return accountKey.xpub
+        return xpub(path: "m/84h/\(coinType)h/\(account)h", masterKey: masterKey)
     }
-    
+
     static func bip86AccountXpub(masterKey: String, coinType: String, account: Int16) -> String? {
-        guard let hdMasterKey = try? HDKey(base58: masterKey),
-            let path = try? BIP32Path(string: "m/86h/\(coinType)h/\(account)h"),
-            let accountKey = try? hdMasterKey.derive(using: path) else { return nil }
-        
-        return accountKey.xpub
+        return xpub(path: "m/86h/\(coinType)h/\(account)h", masterKey: masterKey)
     }
-    
+
+    /// Extended public key at `path` ("m" for the master itself) of extended private key
+    /// `masterKey`. xpub for an xprv, tpub for a tprv.
     static func xpub(path: String, masterKey: String) -> String? {
-        if path == "m" {
-            return try? HDKey(base58: masterKey).xpub
-        } else {
-            guard let hdMasterKey = try? HDKey(base58: masterKey),
-                let path = try? BIP32Path(string: path),
-                let accountKey = try? hdMasterKey.derive(using: path) else { return nil }
-            
-            return accountKey.xpub
+        guard let key = try? DescriptorSecretKey.fromString(privateKey: masterKey) else { return nil }
+
+        guard normalizedPath(path) != "m" else {
+            return plainExtendedKey(key.asPublic().description)
         }
+
+        guard let derivationPath = try? WalletLogic.BDKDerivationPath(path: normalizedPath(path)),
+              let child = try? key.derive(path: derivationPath) else { return nil }
+
+        return plainExtendedKey(child.asPublic().description)
     }
-    
-    static func xprv(path: String, masterKey: String) -> String? {
-        if path == "m" {
-            return try? HDKey(base58: masterKey).xpriv
-        } else {
-            guard let hdMasterKey = try? HDKey(base58: masterKey),
-                let path = try? BIP32Path(string: path),
-                let accountKey = try? hdMasterKey.derive(using: path) else { return nil }
-            
-            return accountKey.xpriv
+
+    /// The extended public key of an extended private key (xprv → xpub, tprv → tpub).
+    static func xpub(fromXprv xprv: String) -> String? {
+        return xpub(path: "m", masterKey: xprv)
+    }
+
+    /// Just the base58 key from a descriptor key string: drops a "[fingerprint/path]"
+    /// origin and anything after the key ("/0/*", …).
+    static func plainExtendedKey(_ descriptorKey: String) -> String {
+        var key = Substring(descriptorKey)
+        if let close = key.lastIndex(of: "]") { key = key[key.index(after: close)...] }
+        if let slash = key.firstIndex(of: "/") { key = key[..<slash] }
+        return String(key).trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// "m/…" form of a BIP32 path ("84'/0'/0'", "/0/1" and "m/84h/0h/0h" all accepted).
+    static func normalizedPath(_ path: String) -> String {
+        var p = path.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "H", with: "h")
+        if p.hasPrefix("m") { p.removeFirst() }
+        while p.hasPrefix("/") { p.removeFirst() }
+        return p.isEmpty ? "m" : "m/" + p
+    }
+
+    /// Fields of a base58check extended key (78-byte payload, checksum verified).
+    static func extendedKeyPayload(_ base58: String) -> (version: UInt32, depth: UInt8, parentFingerprint: UInt32, childNumber: UInt32, chainCode: Data, key: Data)? {
+        let raw = Base58.decode(base58)
+        guard raw.count == 82 else { return nil }
+        let payload = Data(raw.prefix(78))
+        guard Crypto.sha256hash(Crypto.sha256hash(payload)).prefix(4) == Data(raw.suffix(4)) else { return nil }
+        let bytes = [UInt8](payload)
+        func uint32(_ at: Int) -> UInt32 {
+            bytes[at..<(at + 4)].reduce(0) { ($0 << 8) | UInt32($1) }
         }
+        return (uint32(0), bytes[4], uint32(5), uint32(9), Data(bytes[13..<45]), Data(bytes[45..<78]))
     }
-    
+
+    /// Base58check extended key: version | depth | parent fingerprint | child number |
+    /// chain code | key (33 bytes: 0x00 ‖ private key, or compressed public key).
+    static func serializeExtendedKey(version: UInt32,
+                                     depth: UInt8,
+                                     parentFingerprint: UInt32,
+                                     childNumber: UInt32,
+                                     chainCode: Data,
+                                     key: Data) -> String? {
+        guard chainCode.count == 32, key.count == 33 else { return nil }
+        func bigEndian(_ value: UInt32) -> [UInt8] {
+            [UInt8(value >> 24 & 0xff), UInt8(value >> 16 & 0xff), UInt8(value >> 8 & 0xff), UInt8(value & 0xff)]
+        }
+        var payload = Data(bigEndian(version))
+        payload.append(depth)
+        payload.append(contentsOf: bigEndian(parentFingerprint))
+        payload.append(contentsOf: bigEndian(childNumber))
+        payload.append(chainCode)
+        payload.append(key)
+        return WalletLogic.Base58Check.encode(payload)
+    }
+
+    /// Compressed (33-byte) public key of a 32-byte private key.
+    static func compressedPublicKey(privateKey: Data) -> Data? {
+        guard let key = try? P256K.Signing.PrivateKey(dataRepresentation: privateKey) else { return nil }
+        return Data(key.publicKey.dataRepresentation)
+    }
+
+    // MARK: - PSBT / transaction checks (BitcoinDevKit)
+
+    /// True for a base64 PSBT. BitcoinDevKit parses it; anything that at least has the
+    /// PSBT magic bytes is accepted too, so the node (which does the real decoding) gets
+    /// to see it.
     static func validPsbt(_ psbt: String) -> Bool {
-        guard let _ = try? PSBT(psbt: psbt, network: .mainnet) else {
-            
-            guard let _ = try? PSBT(psbt: psbt, network: .testnet) else {
-                return false
-            }
-            
-            return true
-        }
-        
-        return true
+        if (try? WalletLogic.BDKPsbt(psbtBase64: psbt)) != nil { return true }
+        guard let data = Data(base64Encoded: psbt) else { return false }
+        return data.starts(with: [0x70, 0x73, 0x62, 0x74, 0xff])   // "psbt" 0xff
     }
-    
+
+    /// True for a hex-encoded raw transaction.
     static func validTx(_ tx: String) -> Bool {
-        guard let _ = try? Transaction(hex: tx) else {
-            return false
-        }
-        
-        return true
+        guard tx.count % 2 == 0, let bytes = Data(hexString: tx) else { return false }
+        return (try? WalletLogic.BDKTransaction(transactionBytes: bytes)) != nil
     }
-    
-    static func addressString(_ childKey: HDKey, _ type: AddressType) -> String {
-        return childKey.address(type: type).description
-    }
-    
-    static func addressType(_ descriptorStruct: Descriptor) -> AddressType? {
-        var type:AddressType?
-        if descriptorStruct.isP2PKH {
-            type = .payToPubKeyHash
-            // Libwally does not directly support Taproot for now so using this hack.
-        } else if descriptorStruct.isP2WPKH || descriptorStruct.isP2TR {
-            type = .payToWitnessPubKeyHash
-        } else if descriptorStruct.isP2SHP2WPKH {
-            type = .payToScriptHashPayToWitnessPubKeyHash
-        }
-        return type
-    }
-    
+
     static func addressSignable(parentDesc: String, passphrase: String?, completion: @escaping ((signable: Bool, signer: String?)) -> Void) {
         // no path supplied for multisig.
         let fnParentDesc = Descriptor(parentDesc)
