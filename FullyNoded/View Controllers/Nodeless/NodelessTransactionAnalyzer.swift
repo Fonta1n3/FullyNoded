@@ -93,7 +93,6 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
     
     @objc private func dismissButtonTapped() {
         // Dismiss the view controller (animated)
-        //self.dismiss(animated: true, completion: nil)
         self.navigationController?.popToRootViewController(animated: true)
     }
     
@@ -256,8 +255,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                 let unknownInputs = tx.input()
                 // This psbt has been imported, we can check our saved utxos...
                 var totalInputAmount = 0.0
-                
-                
+
                 CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] savedUtxos in
                     guard let self = self else { return }
                     
@@ -442,28 +440,13 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
         return nil
     }
 
-    private func currentSigsExist(_ lines: [String]) -> Bool {
-        lines.contains { !$0.contains("0/") }
-    }
-    
     @objc private func exportPsbtTapped() {
         showQr()
     }
     
     func showQr() {
         promptQRDisplayFormat { format in
-            //var isBBQr = false
-            var isUr = false
-            
-            switch format {
-//            case .bbqr:
-//                isBBQr = true
-            case .ur:
-                isUr = true
-            case .plain:
-                isUr = false
-                //isBBQr = false
-            }
+            let isUr = format == .ur
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -485,8 +468,7 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
                     headerText = "Unsigned PSBT"
                     descriptionText = "Share or scan to sign elsewhere"
                 }
-                
-                
+
                 let qrVC = QRViewController(
                     text: transactionToExport,
                     headerText: headerText,
@@ -517,11 +499,6 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
             completion?(.ur)
         })
         
-        // BBQr Option (animated split parts)
-//        alert.addAction(UIAlertAction(title: "BBQr", style: .default) { _ in
-//            completion?(.bbqr)
-//        })
-        
         // Plain Text Option (static single QR)
         alert.addAction(UIAlertAction(title: "Plain Text (Static QR)", style: .default) { _ in
             completion?(.plain)
@@ -544,7 +521,6 @@ class PsbtReviewViewController: UIViewController, UINavigationControllerDelegate
 
     enum QRDisplayFormat {
         case ur
-        //case bbqr
         case plain
     }
         
@@ -828,19 +804,10 @@ extension PsbtReviewViewController: UITableViewDataSource, UITableViewDelegate {
         if let fiatAmount = item.amountFiat {
             config.secondaryText = btc + " / " + fiatAmount
         }
-        
-//        if sections[indexPath.section].type == .outputs && item.isChange {
-//            config.secondaryText! += " (change)"
-//        }
-        
+
         config.secondaryTextProperties.font = UIFont.systemFont(ofSize: 16)
         config.secondaryTextProperties.color = .secondaryLabel
         config.secondaryTextProperties.numberOfLines = 1
-        
-        // Highlight change outputs
-//        if sections[indexPath.section].type == .outputs && item.isChange {
-//            config.textProperties.color = .systemGreen
-//        }
         
         cell.contentConfiguration = config
         cell.backgroundColor = .secondarySystemBackground

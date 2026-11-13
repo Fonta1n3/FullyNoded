@@ -9,8 +9,15 @@
 import UIKit
 
 class AppIconSelectorTableViewController: UITableViewController {
-    
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
+
     var currentIcon: String? = nil
+
+    /// The picture of whichever icon the app is using now (nil is the app's original icon).
+    static var currentIconImage: UIImage? {
+        UIImage(named: UIApplication.shared.alternateIconName == nil ? "Original_Icon" : "Default_Icon")
+    }
 
     var appIcons: [[String?: UIImage]] = [
         ["AppIcon-6": UIImage(named: "Default_Icon")!],
@@ -19,6 +26,8 @@ class AppIconSelectorTableViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationItem.title = "App Icon"
+        tableView.register(AppIconCell.self, forCellReuseIdentifier: "appIconCell")
         // Cypherpunk look (WalletTheme in ActiveWalletViewController.swift).
         WalletTheme.apply(to: self, tint: .settings)
     }
@@ -44,16 +53,14 @@ class AppIconSelectorTableViewController: UITableViewController {
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
         return appIcons.count
     }
 
-    // MARK: - Get Current Icon (FIXED)
+    // MARK: - Get Current Icon
     func currentIconName(completion: @escaping (String?) -> Void) {
         let current = UIApplication.shared.alternateIconName
         DispatchQueue.main.async {
@@ -77,7 +84,7 @@ class AppIconSelectorTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "appIconCell", for: indexPath)
         cell.selectionStyle = .none
-        let icon = cell.viewWithTag(1) as! UIImageView
+        guard let icon = (cell as? AppIconCell)?.icon else { return cell }
         icon.layer.cornerRadius = 8
         icon.clipsToBounds = true
         let appIcon = appIcons[indexPath.row]
@@ -125,4 +132,24 @@ class AppIconSelectorTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         WalletTheme.styleCell(cell, in: tableView, tint: .settings)
     }
+}
+
+/// One app icon, 80pt.
+private final class AppIconCell: UITableViewCell {
+    let icon = UIImageView()
+
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        icon.contentMode = .scaleAspectFit
+        icon.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(icon)
+        NSLayoutConstraint.activate([
+            icon.widthAnchor.constraint(equalToConstant: 80),
+            icon.heightAnchor.constraint(equalToConstant: 80),
+            icon.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor, constant: 8),
+            icon.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+        ])
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 }

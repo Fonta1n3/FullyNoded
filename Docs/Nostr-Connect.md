@@ -51,8 +51,14 @@ Open **Nostr Connect** in the sidebar.
 - **Encrypt connections (wss://)** (on by default for new setups, macOS 15 or later): the Mac's
   relay uses TLS with a certificate it made for itself, and the pairing link pins it. Leave it on
   unless you have a reason not to.
-- **Away from home without a VPN:** under **Relays the bridge listens on**, add a public relay
-  (`wss://…`), or give the Mac's relay an outside address (ngrok, or a router port forward).
+- **Away from home without a VPN:** turn on **Tailscale Funnel** (Reach this relay from anywhere).
+  The Mac's relay gets a public `wss://<mac>.<tailnet>.ts.net` address with a trusted certificate,
+  and only the Mac needs Tailscale: nothing to install on the phone. Pairings made while it's on
+  use only that address, plus the public relays.
+- **Public relays** (`wss://…` under **Relays the bridge listens on**): `relay.damus.io`, `nos.lol`
+  and `relay.primal.net` are included by default, so a pairing keeps working when the Mac's relay
+  can't be reached from outside. Fully Noded connects to every relay in the link and uses whichever
+  answers.
 - Choose the **network**, then tap **Pair Fully Noded**. A QR appears, shown once.
 
 Add or change relays, and choose wss:// or ws://, *before* pairing: the link only includes the
@@ -75,8 +81,8 @@ with its SHA-256, when the Mac's relay uses wss://), with **Re-pair** to scan a 
 - **Nothing loads at home:** check the phone is on the same network as the Mac (or on the VPN), and
   that **Run a relay on this Mac** is on. If you added Tailscale after pairing, pair again so the
   link includes the VPN address.
-- **Works at home but not away:** the link only has your Mac's local address. Add a public relay
-  or an outside address in Fully Noded Server and pair again.
+- **Works at home but not away:** the link only has your Mac's local address. Turn on Tailscale
+  Funnel (or add a public relay) in Fully Noded Server and pair again.
 - **"Couldn't reach a Nostr Connect relay":** the relay in the link is down or unreachable. Re-pair
   with a relay that works.
 - **Stopped connecting after changing "Encrypt connections":** switching between wss:// and ws://

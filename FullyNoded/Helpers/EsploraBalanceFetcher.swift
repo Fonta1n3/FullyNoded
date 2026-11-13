@@ -9,11 +9,10 @@
 import Foundation
 import BitcoinDevKit
 
-/// The Esplora API (Blockstream's onion service; mempool.space's for testnet4, which
-/// Blockstream doesn't serve) every nodeless feature uses, over Tor:
-/// address utxos, transaction outputs, broadcasting.
+/// The Esplora API every nodeless feature uses, over Tor and only at an onion service: address
+/// utxos, transaction outputs, broadcasting. mempool.space's onion by default, or the user's own
+/// for a network (Settings ▸ Esplora).
 enum EsploraAPI {
-    static let blockstreamOnion = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion"
     static let mempoolOnion = "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion"
 
     enum APIError: LocalizedError {
@@ -24,7 +23,7 @@ enum EsploraAPI {
 
         var errorDescription: String? {
             switch self {
-            case .unsupportedNetwork: return "Nodeless features aren't available on regtest (there's no public Esplora server for it)."
+            case .unsupportedNetwork: return "Nodeless features need an Esplora server, and regtest has no public one. Add yours in Settings ▸ Esplora."
             case .badURL: return "Invalid Esplora URL."
             case .http(let status, let message): return message.isEmpty ? "HTTP \(status) from Esplora." : message
             case .badResponse(let message): return "Unexpected Esplora response: \(message)"
@@ -32,35 +31,87 @@ enum EsploraAPI {
         }
     }
 
-    /// "<host>[/testnet|/testnet4|/signet]/api", no trailing slash. nil on regtest.
-    static func apiBase(network: WalletLogic.BDKNetwork) -> String? {
+    /// mempool.space's API for `network`, "<onion>[/testnet|/testnet4|/signet]/api" with no
+    /// trailing slash. nil on regtest.
+    static func defaultBase(network: WalletLogic.BDKNetwork) -> String? {
         switch network {
-        case .bitcoin: return "\(blockstreamOnion)/api"
-        case .testnet: return "\(blockstreamOnion)/testnet/api"
-        case .signet: return "\(blockstreamOnion)/signet/api"
+        case .bitcoin: return "\(mempoolOnion)/api"
+        case .testnet: return "\(mempoolOnion)/testnet/api"
+        case .signet: return "\(mempoolOnion)/signet/api"
         case .testnet4: return "\(mempoolOnion)/testnet4/api"
         default: return nil
         }
     }
 
-    static func url(_ path: String, network: WalletLogic.BDKNetwork) throws -> URL {
+    private static func customKey(_ network: WalletLogic.BDKNetwork) -> String { "esploraOnion-\(network)" }
+
+    /// The user's own Esplora onion for `network`, if they set one.
+    static func customBase(network: WalletLogic.BDKNetwork) -> String? {
+        UserDefaults.standard.string(forKey: customKey(network))
+    }
+
+    /// Saves (or with nil clears) the user's own Esplora onion for `network`. Pass it through
+    /// `normalizedBase` first.
+    static func setCustomBase(_ base: String?, network: WalletLogic.BDKNetwork) {
+        UserDefaults.standard.set(base, forKey: customKey(network))
+    }
+
+    /// `text` as an API base ("http://<onion>/<path>", no trailing slash), or nil when it isn't an
+    /// onion service URL: third-party servers are only ever reached at onions.
+    static func normalizedBase(_ text: String) -> String? {
+        var text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !text.contains("://") { text = "http://" + text }
+        while text.hasSuffix("/") { text.removeLast() }
+        guard let url = URL(string: text), ["http", "https"].contains(url.scheme?.lowercased() ?? ""),
+              url.host?.lowercased().hasSuffix(".onion") == true else { return nil }
+        return text
+    }
+
+    /// The server for `network`: the user's own, else mempool.space's. nil on regtest without one.
+    static func apiBase(network: WalletLogic.BDKNetwork) -> String? {
+        customBase(network: network) ?? defaultBase(network: network)
+    }
+
+    /// `call` with the server for `network`.
+    static func withServer<T>(network: WalletLogic.BDKNetwork, _ call: (String) async throws -> T) async throws -> T {
         guard let base = apiBase(network: network) else { throw APIError.unsupportedNetwork }
-        guard let url = URL(string: "\(base)\(path)") else { throw APIError.badURL }
-        return url
+        return try await call(base)
+    }
+
+    /// `withServer` for callers already off the main thread (blocking).
+    static func withServerBlocking<T>(network: WalletLogic.BDKNetwork, _ call: (String) throws -> T) throws -> T {
+        guard let base = apiBase(network: network) else { throw APIError.unsupportedNetwork }
+        return try call(base)
+    }
+
+    /// The server's chain tip height: whether `base` is a working Esplora API.
+    static func tipHeight(base: String) async throws -> Int {
+        guard let url = URL(string: "\(base)/blocks/tip/height") else { throw APIError.badURL }
+        let text = String(data: try await get(url), encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard let height = Int(text) else { throw APIError.badResponse("no block height at \(base)/blocks/tip/height") }
+        return height
     }
 
     /// A one-off session with Tor's proxy settings. The shared Tor session keeps connections
     /// alive between requests, and the onion service closes idle ones: reusing one after a pause
     /// (e.g. while an address is typed) fails with "The network connection was lost". A fresh
-    /// session per request never reuses a stale connection. Invalidate it when done.
+    /// session per request never reuses a stale connection. Invalidate it when done. Its own
+    /// circuits, apart from the node's.
     static func freshSession() -> URLSession {
-        URLSession(configuration: TorClient.sharedInstance.session.configuration)
+        URLSession(configuration: TorClient.sharedInstance.configuration(for: .esplora))
     }
 
     /// GET, failing on anything but HTTP 200 (with Esplora's plain-text error as the message).
     /// Connection failures are retried twice (GETs are safe to repeat; Tor circuits drop).
     static func get(_ path: String, network: WalletLogic.BDKNetwork) async throws -> Data {
-        let request = URLRequest(url: try url(path, network: network), timeoutInterval: 60)
+        try await withServer(network: network) { base in
+            guard let url = URL(string: "\(base)\(path)") else { throw APIError.badURL }
+            return try await get(url)
+        }
+    }
+
+    private static func get(_ url: URL) async throws -> Data {
+        let request = URLRequest(url: url, timeoutInterval: 60)
         let retryable: Set<URLError.Code> = [.networkConnectionLost, .timedOut, .cannotConnectToHost, .cannotFindHost]
         var attempt = 0
         while true {
@@ -86,13 +137,12 @@ enum EsploraAPI {
     /// through it with CONNECT, which is the path that works reliably to the onion service;
     /// URLSession can't use it for http:// URLs (it sends plain proxied requests, which the
     /// tunnel rejects).
-    static let tunnelProxy = "http://localhost:9080"
+    static var tunnelProxy: String { "http://localhost:\(TorClient.httpTunnelPort)" }
 
-    /// BDK's Esplora client for `network`, through the Tor HTTP tunnel.
-    static func client(network: WalletLogic.BDKNetwork) throws -> EsploraClient {
-        guard let base = apiBase(network: network) else { throw APIError.unsupportedNetwork }
+    /// BDK's Esplora client for one server (`apiBase`), through the Tor HTTP tunnel.
+    static func client(base: String) -> EsploraClient {
         // No trailing slash: the client appends paths that start with "/".
-        return EsploraClient(url: base, proxy: tunnelProxy)
+        EsploraClient(url: base, proxy: tunnelProxy)
     }
 
     /// Runs a blocking client call off the main thread, retrying failures that are safe to
@@ -132,10 +182,11 @@ enum EsploraAPI {
 
     /// A funding transaction (blocking, retried on network failures).
     static func transaction(txid: String, network: WalletLogic.BDKNetwork) throws -> Transaction {
-        let client = try client(network: network)
         let id = try Txid.fromString(hex: txid)
         do {
-            guard let tx = try runBlocking(retries: 2, { try client.getTx(txid: id) }) else {
+            guard let tx = try withServerBlocking(network: network, { base in
+                try runBlocking(retries: 2, { try client(base: base).getTx(txid: id) })
+            }) else {
                 throw APIError.badResponse("transaction \(txid) not found")
             }
             return tx
@@ -165,7 +216,7 @@ enum EsploraAPI {
         let text: String
         switch error {
         case .HttpResponse(let status, let message) where status == 503 && message.isEmpty:
-            text = "Tor couldn't reach the Esplora onion service (HTTP 503 from the Tor tunnel). Try again in a moment."
+            text = "Tor couldn't reach the Esplora onion service (HTTP 503 from the Tor tunnel). Try again in a moment, or set another server in Settings ▸ Esplora."
         case .HttpResponse(let status, let message):
             text = "HTTP \(status)" + (message.isEmpty ? "" : ": \(message)")
         case .Minreq(let message):
@@ -190,10 +241,11 @@ enum EsploraAPI {
     }
 
     static func output(txid: String, vout: Int, network: WalletLogic.BDKNetwork) async throws -> TxOutput {
-        let client = try client(network: network)
         let id = try Txid.fromString(hex: txid)
         do {
-            guard let tx = try await run(retries: 2, { try client.getTx(txid: id) }) else {
+            guard let tx = try await withServer(network: network, { base in
+                try await run(retries: 2, { try client(base: base).getTx(txid: id) })
+            }) else {
                 throw APIError.badResponse("transaction \(txid) not found")
             }
             let outputs = tx.output()
@@ -211,12 +263,13 @@ enum EsploraAPI {
     /// Broadcasts a signed transaction (hex), returning its txid. Not retried: a failed attempt
     /// is reported as is.
     static func broadcast(rawTx: String, network: WalletLogic.BDKNetwork) async throws -> String {
-        let client = try client(network: network)
         guard let bytes = Data(hexString: rawTx.trimmingCharacters(in: .whitespacesAndNewlines)) else {
             throw APIError.badResponse("not a hex transaction")
         }
         let tx = try Transaction(transactionBytes: bytes)
-        try await run { try client.broadcast(transaction: tx) }
+        try await withServer(network: network) { base in
+            try await run { try client(base: base).broadcast(transaction: tx) }
+        }
         return tx.computeTxid().description
     }
 }

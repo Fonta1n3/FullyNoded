@@ -8,10 +8,8 @@
 
 import UIKit
 
-/// Signers list, built in code (purple SignerTheme). The storyboard scene is only the
-/// tab's root shell: the + button and the segues to Add Signer and from Create
-/// Multisig. Also used by Create Multisig to pick the signer to derive a cosigner xpub
-/// from (`isCreatingMsig`).
+/// Signers list, built in code (purple SignerTheme): the Signers tab's root. Also used
+/// by Create Multisig to pick the signer to derive a cosigner xpub from (`isCreatingMsig`).
 class SignersViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     /// A signer plus what its row shows (decrypted once per load).
@@ -42,7 +40,11 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        if isCreatingMsig { navigationItem.title = "Choose Signer" }
+        navigationItem.title = isCreatingMsig ? "Choose Signer" : "Signers"
+        let add = UIBarButtonItem(image: UIImage(systemName: "plus.rectangle"), style: .plain,
+                                  target: self, action: #selector(addSignerAction(_:)))
+        add.accessibilityLabel = "Add signer"
+        navigationItem.rightBarButtonItem = add
         buildLayout()
         applyTheme()
     }
@@ -78,7 +80,7 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
         tableView.estimatedRowHeight = 72
         tableView.sectionHeaderHeight = 0
         tableView.sectionFooterHeight = 0
-        if #available(iOS 15.0, *) { tableView.sectionHeaderTopPadding = 0 }
+        tableView.sectionHeaderTopPadding = 0
         tableView.register(ThemedRowCell.self, forCellReuseIdentifier: ThemedRowCell.reuseId)
         tableView.tableHeaderView = summaryHeader()
         tableView.tableFooterView = emptyFooter()
@@ -171,8 +173,8 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
 
-    @IBAction func addSignerAction(_ sender: Any) {
-        guard let _ = KeyChain.getData("UnlockPassword") else {
+    @objc func addSignerAction(_ sender: Any) {
+        guard AppAuthentication.hasAppPassword else {
             showAlert(vc: self, title: "You are not using the app securely...", message: "You can only add signers if the app has a lock/unlock password. Tap the lock button on the home screen to add a password.")
             
             return
@@ -275,7 +277,7 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
             guard let self = self else { return }
             self.rows = rows
             self.countLabel.text = "\(rows.count)"
-            self.lockWarning.isHidden = KeyChain.getData("UnlockPassword") != nil || self.isCreatingMsig
+            self.lockWarning.isHidden = AppAuthentication.hasAppPassword || self.isCreatingMsig
             self.emptyView.isHidden = !rows.isEmpty || self.isCreatingMsig
             self.tableView.reloadData()
             self.view.setNeedsLayout()
@@ -330,48 +332,9 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
         if !isCreatingMsig {
             seeDetails(indexPath.row)
         } else {
-            promptToDeriveFromSigner(rows[indexPath.row].signer)
-        }
-    }
-    
-    private func promptToDeriveFromSigner(_ signer: SignerStruct) {
-        
-        DispatchQueue.main.async { [unowned vc = self] in
-            var alertStyle = UIAlertController.Style.actionSheet
-            if (UIDevice.current.userInterfaceIdiom == .pad) {
-              alertStyle = UIAlertController.Style.alert
-            }
-            
-            guard var encryptedWords = signer.words,
-                    var words = Crypto.decrypt(encryptedWords),
-                    var arr = words.utf8String?.split(separator: " ") else { return }
-            
-            defer {
-                encryptedWords.secureZero()
-                words.secureZero()
-                arr.removeAll()
-            }
-            
-            for (i, _) in arr.enumerated() {
-                if i > 0 && i < arr.count - 1 {
-                    arr[i] = "******"
-                }
-            }
-            
-            let alert = UIAlertController(title: "Derive xpub from this signer?", message: arr.joined(separator: " "), preferredStyle: alertStyle)
-            
-            alert.addAction(UIAlertAction(title: "Derive xpub", style: .default, handler: { action in
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.signerSelected!(signer)
-                    self.navigationController?.popViewController(animated: true)
-                }
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true, completion: nil)
+            // Create Multisig derives the key once it's back on screen, so its alerts can show.
+            signerSelected?(rows[indexPath.row].signer)
+            navigationController?.popViewController(animated: true)
         }
     }
     

@@ -8,9 +8,7 @@
 
 import UIKit
 
-/// Home: a dashboard for the active node, built in code. The storyboard scene is only
-/// the tab's root shell (navigation item with the lock button, and the segues to the
-/// lock screen, first-run flow, unlock password and peer detail).
+/// Home: a dashboard for the active node, built in code.
 ///
 ///   ┌ > NODE ──────────────────────── MAIN ┐
 ///   │ My Node                              │
@@ -175,7 +173,11 @@ class MainMenuViewController: UIViewController {
                                     target: self, action: #selector(showOnboarding))
         guide.tintColor = tint.accent
         guide.accessibilityLabel = "Setup guide"
-        navigationItem.leftBarButtonItems = (navigationItem.leftBarButtonItems ?? []) + [guide]
+        let lock = UIBarButtonItem(image: UIImage(systemName: "lock"), style: .plain,
+                                   target: self, action: #selector(lockAction(_:)))
+        lock.accessibilityLabel = "Lock"
+        navigationItem.title = "Fully Noded"
+        navigationItem.leftBarButtonItems = [lock, guide]
 
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.alwaysBounceVertical = true
@@ -199,6 +201,16 @@ class MainMenuViewController: UIViewController {
         ])
         
         contentStack.addArrangedSubview(nodeCard())
+        let explorer = UIButton(type: .system)
+        explorer.configuration = WalletTheme.buttonConfiguration(title: "Block explorer", systemImage: "cube", filled: false, tint: tint)
+        explorer.addTarget(self, action: #selector(explorerTapped), for: .touchUpInside)
+        let dashboard = UIButton(type: .system)
+        dashboard.configuration = WalletTheme.buttonConfiguration(title: "Dashboard", systemImage: "chart.xyaxis.line", filled: false, tint: tint)
+        dashboard.addTarget(self, action: #selector(dashboardTapped), for: .touchUpInside)
+        let tools = UIStackView(arrangedSubviews: [explorer, dashboard])
+        tools.spacing = 12
+        tools.distribution = .fillEqually
+        contentStack.addArrangedSubview(tools)
         contentStack.addArrangedSubview(WalletTheme.caption("> NETWORK STATS", tint: tint))
         contentStack.setCustomSpacing(8, after: contentStack.arrangedSubviews.last!)
         
@@ -282,10 +294,20 @@ class MainMenuViewController: UIViewController {
         torStatusLabel.font = WalletTheme.mono(12, weight: .semibold)
         torStatusLabel.textColor = WalletTheme.dim
         torStatusLabel.text = "TOR …"
-        let torRow = UIStackView(arrangedSubviews: [torDot, torStatusLabel])
+        // Two lines for a Nostr Connect node (relay, then Tor): the dot stays on the first.
+        torStatusLabel.numberOfLines = 0
+        let torDotHolder = UIView()
+        torDotHolder.addSubview(torDot)
+        let torRow = UIStackView(arrangedSubviews: [torDotHolder, torStatusLabel])
         torRow.axis = .horizontal
-        torRow.alignment = .center
+        torRow.alignment = .fill
         torRow.spacing = 8
+        NSLayoutConstraint.activate([
+            torDotHolder.widthAnchor.constraint(equalToConstant: 8),
+            torDot.leadingAnchor.constraint(equalTo: torDotHolder.leadingAnchor),
+            torDot.centerYAnchor.constraint(equalTo: torStatusLabel.firstBaselineAnchor,
+                                            constant: -WalletTheme.mono(12, weight: .semibold).capHeight / 2)
+        ])
         
         nodeDot.translatesAutoresizingMaskIntoConstraints = false
         nodeDot.layer.cornerRadius = 4
@@ -534,6 +556,24 @@ class MainMenuViewController: UIViewController {
     
     // MARK: - Tile actions (raw RPC responses)
     
+    @objc private func explorerTapped() {
+        guard activeNode != nil else {
+            showAlert(vc: self, title: "No node", message: "Connect a node to explore its blocks.", kind: .notice)
+            return
+        }
+        impact()
+        navigationController?.pushViewController(BlockExplorerViewController(), animated: true)
+    }
+    
+    @objc private func dashboardTapped() {
+        guard activeNode != nil else {
+            showAlert(vc: self, title: "No node", message: "Connect a node to see its dashboard.", kind: .notice)
+            return
+        }
+        impact()
+        navigationController?.pushViewController(ChainDashboardViewController(), animated: true)
+    }
+    
     @objc private func peersTapped() {
         guard peerInfo != nil else { return }
         impact()
@@ -653,7 +693,7 @@ class MainMenuViewController: UIViewController {
         if mgr?.state != .started && mgr?.state != .connected  {
             showTorBootstrapping(progress: 0)
             
-            if KeyChain.getData("UnlockPassword") != nil {
+            if AppAuthentication.hasAppPassword {
                 if isUnlocked {
                     mgr?.start(delegate: self)
                 }
@@ -682,20 +722,19 @@ class MainMenuViewController: UIViewController {
             OnboardingViewController.presentAddNode(from: self.tabBarController ?? self, force: force)
         }
     }
-    
-        
+
     @objc private func showOnboarding() {
         OnboardingViewController.replay(from: tabBarController ?? self)
     }
 
-    @IBAction func lockAction(_ sender: Any) {
-        if KeyChain.getData("UnlockPassword") != nil {
+    @objc func lockAction(_ sender: Any) {
+        if AppAuthentication.hasAppPassword {
             showUnlockScreen()
         } else {
             DispatchQueue.main.async {[weak self] in
                 guard let self = self else { return }
                 
-                self.performSegue(withIdentifier: "segueToCreateUnlockPassword", sender: self)
+                self.navigationController?.pushViewController(AppPasswordViewController(), animated: true)
             }
         }
     }
@@ -769,6 +808,8 @@ class MainMenuViewController: UIViewController {
     
     private func checkIfNodesChanged(newNodeId: UUID) {
         if newNodeId != existingNodeID {
+            // Remember it, so coming back to the home view doesn't load it a second time.
+            existingNodeID = newNodeId
             loadTableData()
         }
     }
@@ -805,9 +846,9 @@ class MainMenuViewController: UIViewController {
     }
     
     func showUnlockScreen() {
-        if KeyChain.getData("UnlockPassword") != nil {
+        if AppAuthentication.hasAppPassword {
             DispatchQueue.main.async { [weak self] in
-                self?.performSegue(withIdentifier: "lockScreen", sender: self)
+                self?.presentLockScreen()
             }
         }
     }
@@ -1050,16 +1091,14 @@ class MainMenuViewController: UIViewController {
     }
     
     /// Tor line of the node card: connected (accent), disconnected (red), or starting.
-    /// A Nostr Connect node doesn't use Tor, so the line shows its relay instead.
+    /// A Nostr Connect node doesn't use Tor, so the line shows its relay, plus Tor's own state
+    /// (still used for exchange rates and payjoin).
     private func updateTorStatus() {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             if let node = activeNode, node.isNostrConnect {
                 torProgressView.isHidden = true
-                let relay = node.nostrConnectURI?.relaySummary ?? ""
-                torStatusLabel.text = relay.isEmpty ? "NOSTR CONNECT" : "NOSTR · \(relay)"
-                torStatusLabel.textColor = WalletTheme.dim
-                torDot.backgroundColor = tint.accent
+                showNostrStatus(node, tor: Self.torSummary(mgr?.state, progress: nil))
                 return
             }
             let state = mgr?.state
@@ -1072,7 +1111,7 @@ class MainMenuViewController: UIViewController {
                 torStatusLabel.text = "TOR DISCONNECTED"
                 torStatusLabel.textColor = WalletTheme.danger
                 torDot.backgroundColor = WalletTheme.danger
-            } else if state == .started || state == .refreshing {
+            } else if state == .started {
                 if torProgressView.isHidden {
                     torStatusLabel.text = "TOR STARTING…"
                 }
@@ -1082,11 +1121,34 @@ class MainMenuViewController: UIViewController {
         }
     }
     
+    /// "NOSTR · relay.example", and under it "TOR ✓" (exchange rates, payjoin).
+    private func showNostrStatus(_ node: NodeStruct, tor: (text: String, ok: Bool?)) {
+        let relay = node.nostrConnectURI?.relaySummary ?? ""
+        let base = relay.isEmpty ? "NOSTR CONNECT" : "NOSTR · \(relay)"
+        let text = NSMutableAttributedString(string: base + "\n", attributes: [.foregroundColor: WalletTheme.dim])
+        let torColor: UIColor = tor.ok == true ? tint.accent : (tor.ok == false ? WalletTheme.danger : WalletTheme.pending)
+        text.append(NSAttributedString(string: tor.text, attributes: [.foregroundColor: torColor]))
+        torStatusLabel.attributedText = text
+        torDot.backgroundColor = tint.accent
+    }
+
+    private static func torSummary(_ state: TorClient.TorState?, progress: Int?) -> (text: String, ok: Bool?) {
+        switch state {
+        case .connected?: return ("TOR ✓", true)
+        case .stopped?: return ("TOR OFF", false)
+        case .started?: return (progress.map { "TOR \($0)%" } ?? "TOR STARTING…", nil)
+        default: return ("TOR …", nil)
+        }
+    }
+
     private func showTorBootstrapping(progress: Int) {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            // Tor still starts for other traffic, but the node card is about the node's transport.
-            if activeNode?.isNostrConnect == true { return }
+            // Tor still starts for other traffic (exchange rates, payjoin): shown after the relay.
+            if let node = activeNode, node.isNostrConnect {
+                showNostrStatus(node, tor: Self.torSummary(.started, progress: progress))
+                return
+            }
             torProgressView.isHidden = false
             torProgressView.setProgress(Float(progress) / 100, animated: progress > 0)
             torStatusLabel.text = "TOR BOOTSTRAPPING \(progress)%"
@@ -1102,38 +1164,27 @@ class MainMenuViewController: UIViewController {
         }
     }
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-        switch segue.identifier {
+    private func presentLockScreen() {
+        let vc = LogInViewController()
+        vc.modalPresentationStyle = .fullScreen
+        vc.onDoneBlock = { [weak self] in
+            guard let self = self else { return }
             
-        case "segueToPeerInfo":
-            guard let vc = segue.destination as? PeersDetailTableViewController else { fallthrough }
+            self.isUnlocked = true                
             
-            vc.peerResponse = peerInfo
-            
-        case "lockScreen":
-            guard let vc = segue.destination as? LogInViewController else { fallthrough }
-            
-            vc.onDoneBlock = { [weak self] in
-                guard let self = self else { return }
+            if self.mgr?.state != .started && self.mgr?.state != .connected  {
+                self.mgr?.start(delegate: self)
                 
-                self.isUnlocked = true                
-                
-                if self.mgr?.state != .started && self.mgr?.state != .connected  {
-                    self.mgr?.start(delegate: self)
-                    
-                    if let node = self.activeNode {
-                        if isNotAnOnion() {
-                            loadNode(node: node)
-                        }
-                    } else {
-                        self.alertToAddNode()
+                if let node = self.activeNode {
+                    if isNotAnOnion() {
+                        loadNode(node: node)
                     }
+                } else {
+                    self.alertToAddNode()
                 }
             }
-        default:
-            break
         }
+        present(vc, animated: true)
     }
     
     //MARK: Helpers
@@ -1145,7 +1196,9 @@ class MainMenuViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            performSegue(withIdentifier: "segueToPeerInfo", sender: self)
+            let vc = PeersDetailTableViewController(style: .grouped)
+            vc.peerResponse = peerInfo
+            navigationController?.pushViewController(vc, animated: true)
         }
     }
     
@@ -1166,6 +1219,7 @@ extension MainMenuViewController: OnionManagerDelegate {
     }
     
     func torConnFinished() {
+        DispatchQueue.main.async { NotificationCenter.default.post(name: .torConnected, object: nil) }
         if let _ = activeNode {
             loadTable()
         } else {

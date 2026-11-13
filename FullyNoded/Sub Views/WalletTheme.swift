@@ -12,17 +12,17 @@ import UIKit
 /// Same structure as the green `Cypher` palette (home, wallet detail) and the purple
 /// `SignerTheme` (signers).
 ///
-/// Most screens are storyboard-built, so instead of rewriting each one the theme walks a
-/// view hierarchy and restyles standard UIKit controls in place:
+/// Screens build plain UIKit controls, and the theme walks the view hierarchy and restyles
+/// them in place:
 ///  - `WalletTheme.apply(to: self, tint:)` at the end of `viewDidLoad`
 ///  - `WalletTheme.styleCell(_:tint:)` from `tableView(_:willDisplay:forRowAt:)`
 ///  - `WalletTheme.styleHeader(_:tint:)` from `tableView(_:willDisplayHeaderView:forSection:)`
 ///  - `WalletTheme.stylePrimary(_:tint:)` for a screen's main action button
 enum WalletTheme {
 
-    /// Per-screen accent, all within the teal family so the wallet flow reads as one place.
+    /// Per-screen accent. The wallet flow stays within the teal family so it reads as one place.
     enum Tint {
-        case wallet, send, receive, utxo, create, transaction, settings, home, signer
+        case wallet, send, receive, utxo, create, transaction, settings, home, signer, explorer, dashboard, peers
         /// Status colours for alert cards (SuccessView): amber notices, red errors.
         case warning, danger
 
@@ -39,9 +39,15 @@ enum WalletTheme {
             case .create:
                 return UIColor(red: 0.30, green: 0.93, blue: 0.96, alpha: 1)   // aqua
             case .settings:
-                return UIColor(red: 1.0, green: 0.78, blue: 0.22, alpha: 1)    // terminal amber
+                return UIColor(red: 0.36, green: 0.58, blue: 1.0, alpha: 1)    // terminal blue
             case .home:
                 return UIColor(red: 0.25, green: 1.0, blue: 0.48, alpha: 1)    // terminal green
+            case .explorer:
+                return UIColor(red: 0.47, green: 0.76, blue: 1.0, alpha: 1)    // ice blue
+            case .dashboard:
+                return UIColor(red: 0.74, green: 0.64, blue: 1.0, alpha: 1)    // soft lavender
+            case .peers:
+                return UIColor(red: 1.0, green: 0.48, blue: 0.80, alpha: 1)    // network magenta
             case .signer:
                 return SignerTheme.accent                                      // deep purple
             case .warning:
@@ -187,7 +193,7 @@ enum WalletTheme {
 
     /// Cypherpunk tab bar: opaque near-black bar, a faint top hairline, dim icons, and each
     /// tab's selected icon in that section's own accent (home green, wallet teal, signers
-    /// purple, settings amber). The colours are baked into the items' images, so they're
+    /// purple, settings blue). The colours are baked into the items' images, so they're
     /// right however a tab gets selected (including `selectedIndex` set in code). Safe to
     /// call more than once.
     static func styleTabBar(_ tabBarController: UITabBarController) {
@@ -205,9 +211,7 @@ enum WalletTheme {
             layout.selected.titleTextAttributes = [.foregroundColor: Tint.home.accent, .font: mono(10, weight: .semibold)]
         }
         tabBar.standardAppearance = appearance
-        if #available(iOS 15.0, *) {
-            tabBar.scrollEdgeAppearance = appearance
-        }
+        tabBar.scrollEdgeAppearance = appearance
         tabBar.tintColor = Tint.home.accent
         tabBar.unselectedItemTintColor = dim
 
@@ -215,7 +219,7 @@ enum WalletTheme {
         for controller in tabBarController.viewControllers ?? [] {
             guard let item = controller.tabBarItem else { continue }
             let tint = tabTint(for: controller)
-            // Keep the storyboard symbol as the template, so restyling never re-tints a tinted copy.
+            // Keep the original symbol as the template, so restyling never re-tints a tinted copy.
             let base: UIImage?
             if let stored = objc_getAssociatedObject(item, tabImageKey) as? UIImage {
                 base = stored
@@ -243,7 +247,7 @@ enum WalletTheme {
         case is ActiveWalletViewController: return .wallet
         case is SignersViewController: return .signer
         case is SettingsViewController: return .settings
-        default: return .send   // nodeless wallets: cyan-teal
+        default: return .send
         }
     }
 
@@ -252,6 +256,12 @@ enum WalletTheme {
     static func styleNavigation(_ item: UINavigationItem, tint: Tint = .wallet) {
         let appearance = navigationAppearance(background: bg, line: tint.line, accent: tint.accent)
         appearance.doneButtonAppearance = appearance.buttonAppearance
+        // These share Home's navigation controller, whose bar tint would colour the chevron.
+        if tint == .explorer || tint == .dashboard,
+           let chevron = UIImage(systemName: "chevron.backward", withConfiguration: UIImage.SymbolConfiguration(pointSize: 17, weight: .medium))?
+            .withTintColor(tint.accent, renderingMode: .alwaysOriginal) {
+            appearance.setBackIndicatorImage(chevron, transitionMaskImage: chevron)
+        }
         setNavigationAppearance(appearance, on: item)
     }
 
@@ -347,7 +357,7 @@ enum WalletTheme {
         table.separatorStyle = .none
         table.indicatorStyle = .white
         table.layer.cornerRadius = 0
-        if #available(iOS 15.0, *) { table.sectionHeaderTopPadding = 0 }
+        table.sectionHeaderTopPadding = 0
         if table.style == .grouped, table.tableHeaderView == nil {
             // Grouped tables otherwise add ~35pt of empty space at the top.
             table.tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: CGFloat.leastNonzeroMagnitude))
@@ -428,7 +438,7 @@ enum WalletTheme {
         let isPrimary = button.layer.name == primaryMarker
 
         if var config = button.configuration {
-            // Only real, visible text counts as a title: storyboard / xib icon buttons can carry
+            // Only real, visible text counts as a title: icon buttons can carry
             // an empty attributed title, and those must stay borderless icons.
             let plainTitle = config.title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             let attributedTitle = config.attributedTitle.map { String($0.characters) }?
@@ -662,6 +672,28 @@ enum WalletTheme {
         return card
     }
 
+    /// "TITLE  value" on one line: a fixed-width dim title, then the value wrapping beside it.
+    /// Read by VoiceOver as one element.
+    static func infoRow(_ title: String, _ value: String, titleWidth: CGFloat = 104, wrapByCharacter: Bool = false) -> UIView {
+        let titleLabel = UILabel()
+        titleLabel.text = title.uppercased()
+        titleLabel.font = mono(10, weight: .bold)
+        titleLabel.textColor = dim
+        titleLabel.widthAnchor.constraint(equalToConstant: titleWidth).isActive = true
+        let valueLabel = UILabel()
+        valueLabel.text = value
+        valueLabel.font = mono(13)
+        valueLabel.textColor = text
+        valueLabel.numberOfLines = 0
+        if wrapByCharacter { valueLabel.lineBreakMode = .byCharWrapping }
+        let row = UIStackView(arrangedSubviews: [titleLabel, valueLabel])
+        row.spacing = 8
+        row.alignment = .firstBaseline
+        row.isAccessibilityElement = true
+        row.accessibilityLabel = "\(title): \(value)"
+        return row
+    }
+
     /// Small accent icon button for section headers.
     static func iconButton(_ systemName: String, target: Any, action: Selector, tint: Tint = .wallet) -> UIButton {
         let button = UIButton(type: .system)
@@ -736,7 +768,7 @@ enum WalletTheme {
         return background
     }
 
-    /// Restyles a table cell (storyboard, xib or code) as a card. Call it from
+    /// Restyles a table cell as a card. Call it from
     /// `tableView(_:willDisplay:forRowAt:)` so it runs after the cell is configured.
     static func styleCell(_ cell: UITableViewCell, in tableView: UITableView? = nil, tint: Tint = .wallet) {
         // Full-width cards in grouped / plain tables (the table itself is inset); a small

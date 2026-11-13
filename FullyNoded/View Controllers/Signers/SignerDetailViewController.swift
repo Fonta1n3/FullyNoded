@@ -245,7 +245,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     }
     
     @objc func showSignerAction(_ sender: Any) {
-        guard let _ = KeyChain.getData("UnlockPassword") else {
+        guard AppAuthentication.hasAppPassword else {
             showAlert(vc: self, title: "You are not using the app securely...", message: "You can only show signers if the app has a lock/unlock password. Tap the lock button on the home screen to add a password.")
             
             return
@@ -255,8 +255,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         AppAuthentication.authenticate(from: self, reason: "To show your seed words") { [weak self] success in
             guard let self = self, success else { return }
 
-            //self.tableDict[1]["censoredText"] = self.tableDict[1]["text"] as? String ?? "no seed words"
-            //tableDict.removeAll()
             self.showWords = true
             self.getData()
         }
@@ -358,8 +356,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let decryptedbip84xpub = Crypto.decrypt(encryptedbip84xpub),
                     let xpub = decryptedbip84xpub.utf8String {
                     let descriptor = "wpkh([\(xfp)/84h/0h/0h]\(xpub)/0/*)"
-                    //self.accountBip84Pubkey = xpub
-                    //self.bip84AccountPath = "m/84h/0h/0h"
                     self.tableDict[7]["text"] = descriptor
                     if let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) {
                         self.tableDict[7]["ur"] = singleSigCryptoAccount
@@ -370,8 +366,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let decryptedbip86xpub = Crypto.decrypt(encryptedbip86xpub),
                     let xpub = decryptedbip86xpub.utf8String {
                     let descriptor = "tr([\(xfp)/86h/0h/0h]\(xpub)/0/*)"
-                    //self.accountBip86Pubkey = xpub
-                    //self.bip86AccountPath = "m/86h/0h/0h"
                     self.tableDict[8]["text"] = descriptor
                     if let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) {
                         self.tableDict[8]["ur"] = singleSigCryptoAccount
@@ -393,8 +387,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let decryptedbip84tpub = Crypto.decrypt(encryptedbip84tpub),
                     let tpub = decryptedbip84tpub.utf8String {
                     let descriptor = "wpkh([\(xfp)/84h/1h/0h]\(tpub)/0/*)"
-                    //self.accountBip84Pubkey = tpub
-                    //self.bip84AccountPath = "m/84h/1h/0h"
                     self.tableDict[7]["text"] = descriptor
                     if let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) {
                         self.tableDict[7]["ur"] = singleSigCryptoAccount
@@ -405,8 +397,6 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                     let decryptedbip86tpub = Crypto.decrypt(encryptedbip86tpub),
                     let tpub = decryptedbip86tpub.utf8String {
                     let descriptor = "tr([\(xfp)/86h/1h/0h]\(tpub)/0/*)"
-                    //self.accountBip86Pubkey = tpub
-                    //self.bip86AccountPath = "m/86h/1h/0h"
                     self.tableDict[8]["text"] = descriptor
                     if let singleSigCryptoAccount = URHelper.descriptorToUrAccount(Descriptor(descriptor)) {
                         self.tableDict[8]["ur"] = singleSigCryptoAccount
@@ -625,15 +615,10 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         }
     }
     
-    @objc func exportQrNow(_ sender: UIButton) {
-        segueToQr()
-    }
-    
     private func segueToQr() {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self,
-                  let vc = UIStoryboard(name: "Main", bundle: nil)
-                    .instantiateViewController(withIdentifier: "QRDisplayer") as? QRDisplayerViewController else { return }
+            guard let self = self else { return }
+            let vc = QRDisplayerViewController()
             
             vc.descriptionText = self.descriptionText
             vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
@@ -646,9 +631,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     
     private func showMultisigCreator() {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self,
-                  let vc = UIStoryboard(name: "Main", bundle: nil)
-                    .instantiateViewController(withIdentifier: "MultisigCreator") as? CreateMultisigViewController else { return }
+            guard let self = self else { return }
+            let vc = CreateMultisigViewController()
             
             vc.cosigner = self.cosigner
             
@@ -658,9 +642,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     
     private func showNodeless() {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self,
-                  let vc = UIStoryboard(name: "Main", bundle: nil)
-                    .instantiateViewController(withIdentifier: "NodelessTable") as? NodelessTableViewController else { return }
+            guard let self = self else { return }
+            let vc = NodelessTableViewController(style: .plain)
             
             vc.signer = self.signer
             vc.primaryDescriptor = self.nodelessDescriptor
@@ -939,14 +922,16 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             self.getData()
         }
     }
-    
-//    private func setClipBoard(_ string: String) {
-//        let clipBoard = UIPasteboard.general
-//        clipBoard.string = string
-//        SuccessView.toast("Copied to clipboard", in: self)
-//    }
-    
+
     private func importAccountMap(_ descriptor: String, _ label: String, _ password: String) {
+        hideActivity()
+        presentImportReview(ImportReview(title: "Create wallet", source: "Signer: \(signer.label)",
+                                         receiveDescriptor: descriptor, label: label, confirmTitle: "Create wallet")) { [weak self] label in
+            self?.createWalletNow(descriptor, label, password)
+        }
+    }
+    
+    private func createWalletNow(_ descriptor: String, _ label: String, _ password: String) {
         showActivity("creating wallet...")
         
         OnchainUtils.getBlockchainInfo { [weak self] (blockchainInfo, message) in
@@ -1134,13 +1119,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             message: "Choose the desired format.",
             preferredStyle: .alert
         )
-        
-//        alert.addAction(UIAlertAction(title: "BBQR", style: .default) { [weak self] _ in
-//            guard let self = self else { return }
-//            self.isBbqr = true
-//            exportQr(isBbqr: true, plainText: false, section: sender.tag)
-//        })
-        
+
         alert.addAction(UIAlertAction(title: "UR", style: .default) { [weak self] _ in
             guard let self = self else { return }
             exportQr(isBbqr: false, plainText: false, section: sender.tag)
@@ -1180,7 +1159,7 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
     /// seed (with the signer's passphrase, like the address above) and handed straight to
     /// the QR screen: it is never stored or kept in this view.
     @objc func exportScanPrivateKey(_ sender: Any) {
-        guard let _ = KeyChain.getData("UnlockPassword") else {
+        guard AppAuthentication.hasAppPassword else {
             showAlert(vc: self, title: "You are not using the app securely...", message: "You can only export private keys if the app has a lock/unlock password. Tap the lock button on the home screen to add a password.")
             return
         }
@@ -1244,9 +1223,8 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
         }
         
         DispatchQueue.main.async { [weak self] in
-            guard let self = self,
-                  let vc = UIStoryboard(name: "Main", bundle: nil)
-                    .instantiateViewController(withIdentifier: "QRDisplayer") as? QRDisplayerViewController else { return }
+            guard let self = self else { return }
+            let vc = QRDisplayerViewController()
             
             vc.headerIcon = UIImage(systemName: "eye")
             if forServer, let link = SilentPaymentServerLink.make(address: address, scanKey: key) {
@@ -1318,19 +1296,13 @@ extension SignerDetailViewController: UITableViewDelegate {
         switch indexPath.section {
         case 0:
             editLabel(dict["text"] as? String ?? "")
-            
-//        case 2:
-//            setClipBoard(dict["text"] as? String ?? "")
-        
+
         case 3:
             promptToEditPassphrase()
             
         case Section.silentPaymentScanKey.rawValue:
             exportScanPrivateKey(self)
-            
-//        case 6, 7:
-//            setClipBoard(dict["text"] as? String ?? "")
-            
+
         default:
             break
         }

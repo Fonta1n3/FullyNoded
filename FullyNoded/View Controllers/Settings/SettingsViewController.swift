@@ -9,24 +9,25 @@
 import UIKit
 import Foundation
 
-/// Settings home, built in code. The storyboard scene is only the tab's root shell: it
-/// keeps the navigation-controller relationship and the Security / Currency / App Icon
-/// segues. Node Manager is pushed in code.
+/// Settings home, built in code: the Settings tab's root.
 class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     private enum Row {
-        case nodes, security, currency, appIcon
+        case nodes, wallets, security, esplora, currency, appIcon
     }
 
     private let sections: [(title: String, rows: [Row])] = [
         ("> NODES", [.nodes]),
+        ("> WALLETS", [.wallets]),
         ("> SECURITY", [.security]),
+        ("> SERVERS", [.esplora]),
         ("> DISPLAY", [.currency, .appIcon])
     ]
 
     private let tableView = UITableView(frame: .zero, style: .grouped)
     private var nodeCount = 0
     private var activeNodeLabel: String?
+    private var walletCount = 0
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,6 +58,18 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         loadNodeSummary()
+        loadWalletCount()
+    }
+
+    /// How many wallets Fully Noded has saved, for the Saved Wallets row.
+    private func loadWalletCount() {
+        CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] wallets in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.walletCount = wallets?.count ?? 0
+                self.tableView.reloadData()
+            }
+        }
     }
 
     /// Node count and the active node's label, for the Node Manager row.
@@ -115,13 +128,27 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             }
             cell.configure(icon: "server.rack", title: "Node Manager", subtitle: subtitle)
 
+        case .wallets:
+            let subtitle = walletCount == 0
+                ? "Wallets you create or import appear here"
+                : "\(walletCount) wallet\(walletCount == 1 ? "" : "s") · descriptors and nodeless spending"
+            cell.configure(icon: "square.stack", title: "Saved Wallets", subtitle: subtitle)
+
         case .security:
-            let locked = KeyChain.getData("UnlockPassword") != nil
+            let locked = AppAuthentication.hasAppPassword
             cell.configure(icon: "lock.shield",
                            title: "Security Center",
                            subtitle: locked ? "App lock on" : "No app lock set",
                            value: locked ? nil : "!",
                            valueIsWarning: !locked)
+
+        case .esplora:
+            let network = WalletLogic.shared.bdkNetwork() ?? .bitcoin
+            let isCustom = EsploraAPI.customBase(network: network) != nil
+            cell.configure(icon: "point.3.connected.trianglepath.dotted",
+                           title: "Esplora",
+                           subtitle: isCustom ? "Your onion · \(EsploraSettingsViewController.name(network))"
+                                              : "mempool.space onion · \(EsploraSettingsViewController.name(network))")
 
         case .currency:
             let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
@@ -157,17 +184,169 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         switch sections[indexPath.section].rows[indexPath.row] {
         case .nodes:
             navigationController?.pushViewController(NodesViewController(), animated: true)
+        case .wallets:
+            navigationController?.pushViewController(NodelessWalletsTableViewController(style: .plain), animated: true)
         case .security:
-            performSegue(withIdentifier: "goToSecurity", sender: self)
+            navigationController?.pushViewController(SecurityCenterViewController(), animated: true)
+        case .esplora:
+            navigationController?.pushViewController(EsploraSettingsViewController(), animated: true)
         case .currency:
-            performSegue(withIdentifier: "segueToCurrencies", sender: self)
+            navigationController?.pushViewController(CurrenciesTableViewController(style: .plain), animated: true)
         case .appIcon:
-            performSegue(withIdentifier: "segueToAppIconSelector", sender: self)
+            navigationController?.pushViewController(AppIconSelectorTableViewController(style: .plain), animated: true)
         }
     }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         WalletTheme.styleCell(cell, in: tableView, tint: .settings)
+    }
+}
+
+// MARK: - Esplora
+
+/// Settings ▸ Esplora: the onion service nodeless features use on the active network,
+/// mempool.space's or the user's own.
+final class EsploraSettingsViewController: UIViewController, UITextFieldDelegate {
+
+    private let network = WalletLogic.shared.bdkNetwork() ?? .bitcoin
+    private let field = UITextField()
+    private let status = UILabel()
+    private let saveButton = UIButton(type: .system)
+    private let resetButton = UIButton(type: .system)
+
+    static func name(_ network: WalletLogic.BDKNetwork) -> String {
+        switch network {
+        case .bitcoin: return "mainnet"
+        case .testnet: return "testnet"
+        case .testnet4: return "testnet4"
+        case .signet: return "signet"
+        case .regtest: return "regtest"
+        default: return "\(network)"
+        }
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        navigationItem.title = "Esplora"
+
+        field.text = EsploraAPI.customBase(network: network)
+        field.placeholder = EsploraAPI.defaultBase(network: network) ?? "http://<onion>/api"
+        field.font = WalletTheme.mono(13)
+        field.autocapitalizationType = .none
+        field.autocorrectionType = .no
+        field.keyboardType = .URL
+        field.returnKeyType = .done
+        field.clearButtonMode = .whileEditing
+        field.delegate = self
+        field.accessibilityLabel = "Esplora onion URL"
+        field.heightAnchor.constraint(greaterThanOrEqualToConstant: 40).isActive = true
+
+        status.font = WalletTheme.mono(12)
+        status.numberOfLines = 0
+        showCurrent()
+
+        saveButton.configuration = WalletTheme.buttonConfiguration(title: "Test and save", systemImage: "checkmark", filled: true, tint: .settings)
+        saveButton.addTarget(self, action: #selector(saveAction), for: .touchUpInside)
+        resetButton.configuration = WalletTheme.buttonConfiguration(title: "Use mempool.space", systemImage: "arrow.uturn.backward", filled: false, tint: .settings)
+        resetButton.addTarget(self, action: #selector(resetAction), for: .touchUpInside)
+        resetButton.isHidden = EsploraAPI.defaultBase(network: network) == nil
+
+        let card = WalletTheme.cardView([
+            Self.label("Your Esplora onion for \(Self.name(network)), e.g. a mempool or electrs/esplora server you run."
+                       + (EsploraAPI.defaultBase(network: network) == nil ? "" : " Leave it empty for mempool.space's onion."),
+                       size: 12, color: WalletTheme.dim),
+            field,
+            status,
+            saveButton,
+            resetButton
+        ], tint: .settings)
+
+        let note = Self.label("Only onion services: third-party servers are never reached through a Tor exit. Address lookups, transaction outputs and broadcasts for nodeless wallets, sweeps and the verifier's \"Ask Esplora\" go here.", size: 11, color: WalletTheme.dim)
+
+        let stack = UIStackView(arrangedSubviews: [WalletTheme.caption("> SERVER · \(Self.name(network).uppercased())", tint: .settings), card, note])
+        stack.axis = .vertical
+        stack.spacing = 10
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        let scroll = UIScrollView()
+        scroll.keyboardDismissMode = .interactive
+        scroll.translatesAutoresizingMaskIntoConstraints = false
+        scroll.addSubview(stack)
+        view.addSubview(scroll)
+        NSLayoutConstraint.activate([
+            scroll.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scroll.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scroll.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scroll.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor),
+            stack.topAnchor.constraint(equalTo: scroll.contentLayoutGuide.topAnchor, constant: 16),
+            stack.bottomAnchor.constraint(equalTo: scroll.contentLayoutGuide.bottomAnchor, constant: -24),
+            stack.leadingAnchor.constraint(equalTo: scroll.frameLayoutGuide.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: scroll.frameLayoutGuide.trailingAnchor, constant: -16)
+        ])
+
+        WalletTheme.apply(to: self, tint: .settings)
+    }
+
+    private static func label(_ text: String, size: CGFloat, color: UIColor) -> UILabel {
+        let label = UILabel()
+        label.text = text
+        label.font = WalletTheme.mono(size)
+        label.textColor = color
+        label.numberOfLines = 0
+        return label
+    }
+
+    private func showCurrent() {
+        if let custom = EsploraAPI.customBase(network: network) {
+            status.text = "Using your onion: \(custom)"
+        } else if EsploraAPI.defaultBase(network: network) != nil {
+            status.text = "Using mempool.space's onion."
+        } else {
+            status.text = "No Esplora server for \(Self.name(network)): nodeless features are off until you add one."
+        }
+        status.textColor = WalletTheme.dim
+    }
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        saveAction()
+        return true
+    }
+
+    /// Saves the onion only once it answers like an Esplora API (its tip height), over Tor.
+    @objc private func saveAction() {
+        field.resignFirstResponder()
+        let text = field.text ?? ""
+        guard !text.trimmingCharacters(in: .whitespaces).isEmpty else { resetAction(); return }
+        guard let base = EsploraAPI.normalizedBase(text) else {
+            status.text = "That isn't an onion service URL, e.g. http://<56 characters>.onion/api"
+            status.textColor = WalletTheme.danger
+            return
+        }
+        impact()
+        saveButton.isEnabled = false
+        status.text = "Asking \(base) for its chain tip over Tor…"
+        status.textColor = WalletTheme.dim
+        Task { @MainActor [weak self] in
+            guard let self = self else { return }
+            defer { self.saveButton.isEnabled = true }
+            do {
+                let height = try await EsploraAPI.tipHeight(base: base)
+                EsploraAPI.setCustomBase(base, network: self.network)
+                self.field.text = base
+                self.status.text = "Saved. It answered at block \(height)."
+                self.status.textColor = WalletTheme.Tint.settings.accent
+            } catch {
+                self.status.text = "Not saved: \(EsploraAPI.message(error))"
+                self.status.textColor = WalletTheme.danger
+            }
+        }
+    }
+
+    @objc private func resetAction() {
+        impact()
+        EsploraAPI.setCustomBase(nil, network: network)
+        field.text = nil
+        showCurrent()
     }
 }
 
@@ -251,6 +430,7 @@ final class ThemedRowCell: UITableViewCell {
     /// - value: short trailing text (e.g. "USD", "ACTIVE"); `valueIsWarning` shows it in red.
     /// - dimmed: inactive look (dim title and icon).
     /// - action: trailing icon button instead of the chevron.
+    /// - trailingSymbol: replaces the chevron (nil hides it), in the accent when `trailingHighlighted`.
     func configure(icon: String,
                    title: String,
                    subtitle: String?,
@@ -258,7 +438,9 @@ final class ThemedRowCell: UITableViewCell {
                    valueIsWarning: Bool = false,
                    dimmed: Bool = false,
                    tint: WalletTheme.Tint = .settings,
-                   action: (symbol: String, target: Any, selector: Selector, tag: Int)? = nil) {
+                   action: (symbol: String, target: Any, selector: Selector, tag: Int)? = nil,
+                   trailingSymbol: String? = "chevron.right",
+                   trailingHighlighted: Bool = false) {
         self.tint = tint
         let accent = dimmed ? tint.dim : tint.accent
 
@@ -288,8 +470,11 @@ final class ThemedRowCell: UITableViewCell {
             actionButton.addTarget(action.target, action: action.selector, for: .touchUpInside)
         } else {
             actionButton.isHidden = true
-            chevron.isHidden = false
-            chevron.tintColor = tint.dim
+            chevron.isHidden = trailingSymbol == nil
+            chevron.image = trailingSymbol.flatMap { UIImage(systemName: $0) }
+            chevron.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: trailingSymbol == "chevron.right" ? 12 : 18,
+                                                                              weight: .semibold)
+            chevron.tintColor = trailingHighlighted ? tint.accent : tint.dim
         }
     }
 }

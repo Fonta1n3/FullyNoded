@@ -118,13 +118,7 @@ extension VerifyTransactionViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            var documentPicker:UIDocumentPickerViewController!
-            
-            if #available(iOS 14.0, *) {
-                documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
-            } else {
-                documentPicker = UIDocumentPickerViewController(documentTypes: ["public.item"], in: .import)
-            }
+            let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
             documentPicker.delegate = self
             documentPicker.modalPresentationStyle = .formSheet
             self.present(documentPicker, animated: true, completion: nil)
@@ -248,8 +242,9 @@ extension VerifyTransactionViewController {
                     guard let self = self else { return }
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     markBroadcast()
-                    SuccessView.show(in: self, title: "Transaction sent",
-                                     subtitle: "Broadcast privately over Tor.", detail: self.txid) { [weak self] in
+                    SuccessView.show(in: self, title: self.payjoinUsed ? "Payjoin sent" : "Transaction sent",
+                                     subtitle: "Broadcast privately over Tor." + (self.payjoinUsed ? " The receiver's coin is in it, so on-chain it doesn't look like a payment from you." : ""),
+                                     detail: self.txid) { [weak self] in
                         self?.navigationController?.popToRootViewController(animated: true)
                     }
                 }
@@ -280,8 +275,9 @@ extension VerifyTransactionViewController {
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     self.finishActivity()
                     
-                    SuccessView.show(in: self, title: "Transaction sent",
-                                     subtitle: "Broadcast with your node.", detail: id) { [weak self] in
+                    SuccessView.show(in: self, title: self.payjoinUsed ? "Payjoin sent" : "Transaction sent",
+                                     subtitle: "Broadcast with your node." + (self.payjoinUsed ? " The receiver's coin is in it, so on-chain it doesn't look like a payment from you." : ""),
+                                     detail: id) { [weak self] in
                         self?.navigationController?.popToRootViewController(animated: true)
                     }
                 } else {
@@ -297,7 +293,7 @@ extension VerifyTransactionViewController {
             guard let self = self else { return }
             
             let alert = UIAlertController(title: "Broadcast transaction?",
-                                          message: "You can broadcast with your node or via Blockstreams Esplora onion. Broadcasting with Esplora is more private.",
+                                          message: "You can broadcast with your node or via your Esplora server's onion (Settings ▸ Esplora). Broadcasting with Esplora is more private.",
                                           preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Via my node", style: .default, handler: { action in
@@ -441,12 +437,8 @@ extension VerifyTransactionViewController {
         }
     }
 
-    static func storyboardViewController<T: UIViewController>(_ identifier: String, as type: T.Type) -> T? {
-        UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: identifier) as? T
-    }
-
     func showAddressQR() {
-        guard let vc = VerifyTransactionViewController.storyboardViewController("QRDisplayer", as: QRDisplayerViewController.self) else { return }
+        let vc = QRDisplayerViewController()
         vc.text = qrCodeStringToExport
         vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
         vc.headerText = "Address"
@@ -455,7 +447,7 @@ extension VerifyTransactionViewController {
     }
 
     func showExportQR() {
-        guard let vc = VerifyTransactionViewController.storyboardViewController("QRDisplayer", as: QRDisplayerViewController.self) else { return }
+        let vc = QRDisplayerViewController()
         vc.isUR = isUR
 
         if qrCodeStringToExport != "" {
@@ -484,7 +476,7 @@ extension VerifyTransactionViewController {
     }
 
     func presentLabelMemo() {
-        guard let vc = VerifyTransactionViewController.storyboardViewController("TransactionLabelMemo", as: TransactionLabelMemoViewController.self) else { return }
+        let vc = TransactionLabelMemoViewController()
         vc.txid = txid
         vc.labelText = labelText
 
@@ -502,47 +494,45 @@ extension VerifyTransactionViewController {
     }
 
     func presentScanner() {
-        if #available(macCatalyst 14.0, *) {
-            guard let vc = VerifyTransactionViewController.storyboardViewController("QRScanner", as: QRScannerViewController.self) else { return }
+        let vc = QRScannerViewController()
 
-            vc.fromSignAndVerify = true
+        vc.fromSignAndVerify = true
 
-            vc.onDoneBlock = { [weak self] tx in
-                guard let self = self, let tx = tx else { return }
+        vc.onDoneBlock = { [weak self] tx in
+            guard let self = self, let tx = tx else { return }
 
-                self.reset()
+            self.reset()
 
-                if Keys.validPsbt(tx) {
-                    self.processPsbt(tx)
-                } else if Keys.validTx(tx) {
-                    self.signedRawTx = tx
-                    self.load()
-                } else if tx.uppercased().hasPrefix("UR:BYTES") {
-                    guard let ur = URHelper.ur(tx) else {
-                        showAlert(vc: self, title: "", message: "Unable to convert ur string to ur.")
-                        return
-                    }
-
-                    guard let psbt = URHelper.bytesToData(ur) else { return }
-
-                    self.processPsbt(psbt.base64EncodedString())
-
-                } else if tx.uppercased().hasPrefix("UR:CRYPTO-PSBT") {
-                    guard let ur = URHelper.ur(tx) else {
-                        showAlert(vc: self, title: "", message: "Unable to convert ur string to ur.")
-                        return
-                    }
-
-                    guard let psbt = URHelper.psbtUrToBase64Text(ur) else {
-                        showAlert(vc: self, title: "", message: "Unable to convert ur to psbt.")
-                        return
-                    }
-
-                    self.processPsbt(psbt)
+            if Keys.validPsbt(tx) {
+                self.processPsbt(tx)
+            } else if Keys.validTx(tx) {
+                self.signedRawTx = tx
+                self.load()
+            } else if tx.uppercased().hasPrefix("UR:BYTES") {
+                guard let ur = URHelper.ur(tx) else {
+                    showAlert(vc: self, title: "", message: "Unable to convert ur string to ur.")
+                    return
                 }
-            }
 
-            present(vc, animated: true)
+                guard let psbt = URHelper.bytesToData(ur) else { return }
+
+                self.processPsbt(psbt.base64EncodedString())
+
+            } else if tx.uppercased().hasPrefix("UR:CRYPTO-PSBT") {
+                guard let ur = URHelper.ur(tx) else {
+                    showAlert(vc: self, title: "", message: "Unable to convert ur string to ur.")
+                    return
+                }
+
+                guard let psbt = URHelper.psbtUrToBase64Text(ur) else {
+                    showAlert(vc: self, title: "", message: "Unable to convert ur to psbt.")
+                    return
+                }
+
+                self.processPsbt(psbt)
+            }
         }
+
+        present(vc, animated: true)
     }
 }

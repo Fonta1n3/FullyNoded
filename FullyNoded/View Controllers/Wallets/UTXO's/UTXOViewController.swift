@@ -143,8 +143,8 @@ extension UTXOTraits.Timelock {
         case .height(let n):
             let title = "Timelocked until block \(n.formatted())"
             guard let tip = tip else { return .unknown(title: title, detail: unknownDetail) }
-            // Spendable in the block at height n, i.e. once the tip is n - 1 (same rule as the
-            // wallet's timelocked balance, which waits for the tip to reach n).
+            // A transaction with locktime n can go in block n + 1, so it's spendable once the tip
+            // reaches n (same rule as the wallet's timelocked balance).
             if n <= tip.height {
                 return .open(title: "Timelock passed", detail: "Was locked until block \(n.formatted()). It can be spent now.")
             }
@@ -199,6 +199,8 @@ struct UTXOItem {
     let utxo: UTXO
     let traits: UTXOTraits
     var timelockState: UTXOTraits.Timelock.State?
+    /// nil without a fee rate, or for a script whose size isn't known.
+    let spendCost: UTXOSpendCost?
 
     /// Can't be spent yet: a timelock that guards every spending path hasn't passed.
     var isTimelocked: Bool {
@@ -206,9 +208,11 @@ struct UTXOItem {
         return timelockState?.isLocked == true
     }
 
-    init(_ utxo: UTXO, tip: UTXOChainTip?) {
+    init(_ utxo: UTXO, tip: UTXOChainTip?, feeRate: Double? = nil) {
         self.utxo = utxo
-        traits = UTXOTraits(utxo)
+        let traits = UTXOTraits(utxo)
+        self.traits = traits
+        spendCost = feeRate.flatMap { UTXOSpendCost(amountBtc: utxo.amount, scriptType: traits.scriptType, feeRate: $0) }
         timelockState = traits.timelock?.state(confirmations: utxo.confirmations, tip: tip)
     }
 }
@@ -270,6 +274,8 @@ class UTXOViewController: UIViewController {
     private var utxos: [UTXO] = []
     private var items: [UTXOItem] = []
     private var tip: UTXOChainTip?
+    /// The node's estimate to confirm within about an hour, in sat/vB: what coins cost to spend.
+    private var spendFeeRate: Double?
     private var allCachedUtxos: [[String: Any]] = []
     private var filter: Filter = .all
     private var sort: Sort = .newest
@@ -391,7 +397,7 @@ class UTXOViewController: UIViewController {
     }
 
     private func loadUtxos() {
-        let param: List_Unspent = .init(["minconf": 0])
+        let param: List_Unspent = .init(["minconf": 0, "include_immature_coinbase": true])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .listunspent(param)) { [weak self] (response, errorDesc) in
             guard let self = self else { return }
 
@@ -423,8 +429,19 @@ class UTXOViewController: UIViewController {
         }
     }
 
+    private func loadSpendFeeRate() {
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .estimatesmartfee(param: Estimate_Smart_Fee_Param(["conf_target": 6]))) { [weak self] response, _ in
+            guard let rate = RPCValue.double((response as? [String: Any])?["feerate"]) else { return }
+            DispatchQueue.main.async {
+                self?.spendFeeRate = rate * 100_000
+                self?.rebuildItems()
+            }
+        }
+    }
+
     /// Height and median time past, so timelocks can be checked.
     private func loadChainTip() {
+        loadSpendFeeRate()
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .getblockchaininfo) { [weak self] (response, _) in
             guard let self = self,
                   let info = response as? [String: Any],
@@ -458,7 +475,7 @@ class UTXOViewController: UIViewController {
 
     /// Main queue.
     private func rebuildItems() {
-        var built = utxos.map { UTXOItem($0, tip: tip) }
+        var built = utxos.map { UTXOItem($0, tip: tip, feeRate: spendFeeRate) }
         switch sort {
         case .newest: built.sort { ($0.utxo.confirmations ?? 0) < ($1.utxo.confirmations ?? 0) }
         case .oldest: built.sort { ($0.utxo.confirmations ?? 0) > ($1.utxo.confirmations ?? 0) }
@@ -515,10 +532,10 @@ class UTXOViewController: UIViewController {
                 dict["witnessScript"] = witnessScript
             }
             // Silent payment tweaks stay encrypted at rest.
-            if let tweak = utxo.spTweakHex.flatMap({ SPHexFN.decode($0) }), let encrypted = Crypto.encrypt(tweak) {
+            if let tweak = utxo.spTweakHex.flatMap({ Hex.decode($0) }), let encrypted = Crypto.encrypt(tweak) {
                 dict["spTweak"] = encrypted
             }
-            if let label = utxo.spLabelTweakHex.flatMap({ SPHexFN.decode($0) }), let encrypted = Crypto.encrypt(label) {
+            if let label = utxo.spLabelTweakHex.flatMap({ Hex.decode($0) }), let encrypted = Crypto.encrypt(label) {
                 dict["spLabelTweak"] = encrypted
             }
             group.enter()
@@ -587,8 +604,7 @@ class UTXOViewController: UIViewController {
     // MARK: Actions
 
     private func spend(_ utxos: [UTXO]) {
-        guard let vc = UIStoryboard(name: "Main", bundle: nil)
-            .instantiateViewController(withIdentifier: "CreateRawTx") as? CreateRawTxViewController else { return }
+        let vc = CreateRawTxViewController()
         vc.inputs = utxos.map { ["txid": $0.txid, "vout": $0.vout, "sequence": 1] }
         vc.utxoTotal = utxos.reduce(0) { $0 + $1.amount }
         vc.address = ""
@@ -598,8 +614,7 @@ class UTXOViewController: UIViewController {
     }
 
     @objc private func showLocked() {
-        guard let vc = UIStoryboard(name: "Main", bundle: nil)
-            .instantiateViewController(withIdentifier: "LockedUtxos") as? LockedViewController else { return }
+        let vc = LockedViewController()
         navigationController?.pushViewController(vc, animated: true)
     }
 
@@ -844,7 +859,7 @@ extension UTXOViewController: UITableViewDataSource, UITableViewDelegate {
                 }
             })
             cell.configure(items: items, fxRate: fxRate, filter: filter, counts: counts, sortTitle: sort.title,
-                           sortMenu: sortMenu, lastUpdated: lastUpdated, tint: tint) { [weak self] newFilter in
+                           sortMenu: sortMenu, lastUpdated: lastUpdated, spendFeeRate: spendFeeRate, tint: tint) { [weak self] newFilter in
                 guard let self = self else { return }
                 self.filter = newFilter
                 self.tableView.reloadData()
@@ -1111,6 +1126,7 @@ final class UTXOSummaryCell: UITableViewCell {
                    sortTitle: String,
                    sortMenu: UIMenu,
                    lastUpdated: String?,
+                   spendFeeRate: Double? = nil,
                    tint: WalletTheme.Tint,
                    onFilter: @escaping (UTXOViewController.Filter) -> Void) {
         self.onFilter = onFilter
@@ -1143,6 +1159,17 @@ final class UTXOSummaryCell: UITableViewCell {
         addLine("eye.slash", "Silent payments", items.filter { $0.traits.silentPayment != nil }, UTXOCardCell.silentPaymentColor)
         addLine("hourglass", "Timelocked", items.filter { $0.isTimelocked }, WalletTheme.pending)
         addLine("clock", "Unconfirmed", items.filter { $0.traits.isUnconfirmed }, WalletTheme.pending)
+        // Coins whose script size isn't known aren't counted, so this is a floor for those wallets.
+        let spendCosts = items.compactMap(\.spendCost)
+        if let rate = spendFeeRate, !spendCosts.isEmpty {
+            let label = UILabel()
+            label.font = WalletTheme.mono(11, weight: .semibold)
+            label.textColor = WalletTheme.dim
+            label.numberOfLines = 0
+            let btc = spendCosts.reduce(0) { $0 + $1.sats } / 100_000_000
+            label.text = "~\(btc.btcBalanceWithSpaces) BTC to spend \(spendCosts.count == items.count ? "every coin" : "\(spendCosts.count) of these coins") at \(ExplorerFormat.feeRate(rate))"
+            breakdownStack.addArrangedSubview(label)
+        }
         breakdownStack.isHidden = breakdownStack.arrangedSubviews.isEmpty
 
         chipsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
@@ -1329,6 +1356,11 @@ final class UTXOCardCell: UITableViewCell {
         if traits.isUnconfirmed { badges.append(UTXOBadge("UNCONFIRMED", color: WalletTheme.pending)) }
         if traits.isUnsafe { badges.append(UTXOBadge("UNSAFE", color: WalletTheme.danger)) }
         if traits.isDust { badges.append(UTXOBadge("DUST", color: WalletTheme.danger)) }
+        if let cost = item.spendCost, cost.fraction >= UTXOSpendCost.warningFraction {
+            badges.append(cost.fraction >= 1
+                ? UTXOBadge("WORTH LESS THAN ITS FEE", color: WalletTheme.danger)
+                : UTXOBadge("\(Int(cost.fraction * 100))% FEE TO SPEND", color: WalletTheme.pending))
+        }
         if traits.isReused { badges.append(UTXOBadge("REUSED ADDRESS", color: WalletTheme.pending)) }
         if traits.isChange == true, sp == nil { badges.append(UTXOBadge("CHANGE", color: WalletTheme.dim)) }
         if let type = traits.scriptType { badges.append(UTXOBadge(type.rawValue, color: WalletTheme.dim)) }

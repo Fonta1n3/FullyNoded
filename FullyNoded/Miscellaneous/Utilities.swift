@@ -70,21 +70,6 @@ func showAlert(vc: UIViewController? = nil, title: String, message: String, kind
     }
 }
 
-/// Asks how long a new seed should be before one is generated: 12 or 24 words.
-func promptForSeedLength(vc: UIViewController, completion: @escaping (Int) -> Void) {
-    DispatchQueue.main.async {
-        let alert = UIAlertController(title: "How many words?",
-                                      message: "12 words are easier to write down and back up. 24 words have more entropy. Both are secure.",
-                                      preferredStyle: .alert)
-        for count in [12, 24] {
-            alert.addAction(UIAlertAction(title: "\(count) words", style: .default) { _ in completion(count) })
-        }
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.popoverPresentationController?.sourceView = vc.view
-        vc.present(alert, animated: true)
-    }
-}
-
 /// Classifies the app's existing alert texts, so the call sites don't change.
 enum AlertKind {
     private static let errorWords = ["error", "fail", "unable", "invalid", "can't", "cannot", "couldn't",
@@ -116,62 +101,9 @@ enum AlertKind {
     }
 }
 
-public func exportPsbtToURL(data: Data) -> URL? {
-    // Temporary folder, not Documents: Documents is visible in the Files app / Finder
-    // (UIFileSharingEnabled) and is backed up.
-    let documents: URL? = FileManager.default.temporaryDirectory
-    guard let path = documents?.appendingPathComponent("/FullyNodedPSBT.psbt") else {
-        return nil
-    }
-    do {
-        try data.write(to: path, options: .atomicWrite)
-        return path
-    } catch {
-        print(error.localizedDescription)
-        return nil
-    }
-}
-
-public func exportMultisigWalletToURL(data: Data) -> URL? {
-    // Temporary folder, not Documents: Documents is visible in the Files app / Finder
-    // (UIFileSharingEnabled) and is backed up.
-    let documents: URL? = FileManager.default.temporaryDirectory
-    guard let path = documents?.appendingPathComponent("/FullyNodedMultisig.txt") else {
-        return nil
-    }
-    do {
-        try data.write(to: path, options: .atomicWrite)
-        return path
-    } catch {
-        print(error.localizedDescription)
-        return nil
-    }
-}
-
-public func exportWalletJson(name: String, data: Data) -> URL? {
-    // Temporary folder, not Documents: Documents is visible in the Files app / Finder
-    // (UIFileSharingEnabled) and is backed up.
-    let documents: URL? = FileManager.default.temporaryDirectory
-    guard let path = documents?.appendingPathComponent("/\(name).json") else {
-        return nil
-    }
-    do {
-        try data.write(to: path, options: .atomicWrite)
-        return path
-    } catch {
-        print(error.localizedDescription)
-        return nil
-    }
-}
-
 public func impact() {
-    if #available(iOS 10.0, *) {
-        let impact = UIImpactFeedbackGenerator()
-        DispatchQueue.main.async {
-            impact.impactOccurred()
-        }
-    } else {
-        // Fallback on earlier versions
+    DispatchQueue.main.async {
+        UIImpactFeedbackGenerator().impactOccurred()
     }
 }
 
@@ -191,85 +123,30 @@ public func displayAlert(viewController: UIViewController?, isError: Bool, messa
     }
 }
 
-public func hexStringToUIColor(hex:String) -> UIColor {
-    var cString:String = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
-
-    if (cString.hasPrefix("#")) {
-        cString.remove(at: cString.startIndex)
-    }
-
-    if ((cString.count) != 6) {
-        return UIColor.gray
-    }
-
-    var rgbValue:UInt64 = 0
-    Scanner(string: cString).scanHexInt64(&rgbValue)
-
-    return UIColor(
-        red: CGFloat((rgbValue & 0xFF0000) >> 16) / 255.0,
-        green: CGFloat((rgbValue & 0x00FF00) >> 8) / 255.0,
-        blue: CGFloat(rgbValue & 0x0000FF) / 255.0,
-        alpha: CGFloat(1.0)
-    )
-}
-
 public func currentDate() -> String {
     return "NZdDCNBFTDqKPrUG9V80g0iVemSXLL0CuaWj12xqD00="
 }
 
-public var authTimeout: Int {
-    return 360
-}
-
-
-public let currencies:[[String:String]] = [
-    ["USD": "$"],
-    ["GBP": "£"],
-    ["EUR": "€"],
-    ["AUD":"$"],
-    ["BRL": "R$"],
-    ["CAD": "$"],
-    ["CHF": "CHF "],
-    ["CLP": "$"],
-    ["CNY": "¥"],
-    ["DKK": "kr"],
-    ["HKD": "$"],
-    ["INR": "₹"],
-    ["ISK": "kr"],
-    ["JPY": "¥"],
-    ["KRW": "₩"],
-    ["NZD": "$"],
-    ["PLN": "zł"],
-    ["RUB": "₽"],
-    ["SEK": "kr"],
-    ["SGD": "$"],
-    ["THB": "฿"],
-    ["TRY": "₺"],
-    ["TWD": "NT$"]
-]
-
 public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
-    var boolToReturn = Bool()
-    
     switch command {
     case .listdescriptors,
             .setlabel,
             .listtransactions,
             .getbalance,
+            .getbalances,
+            .listaddressgroupings,
+            .listreceivedbyaddress,
+            .listsinceblock,
+            .abandontransaction,
             .getnewaddress,
             .getwalletinfo,
-            //.getrawchangeaddress,
             .importmulti,
-            //.importprivkey,
             .rescanblockchain,
             .listunspent,
             .walletprocesspsbt,
             .gettransaction,
             .getaddressinfo,
             .bumpfee,
-            //.listaddressgroupings,
-            //.listlabels,
-            //.getaddressesbylabel,
             .listlockunspent,
             .lockunspent,
             .abortrescan,
@@ -280,13 +157,10 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
             .walletlock,
             .psbtbumpfee,
             .importdescriptors:
-        boolToReturn = true
-        
+        return true
     default:
-        boolToReturn = false
+        return false
     }
-    
-    return boolToReturn
 }
 
 public func shakeAlert(viewToShake: UIView) {
@@ -300,9 +174,4 @@ public func shakeAlert(viewToShake: UIView) {
     DispatchQueue.main.async {
         viewToShake.layer.add(animation, forKey: "position")
     }
-}
-
-public func getDocumentsDirectory() -> URL {
-    let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-    return paths[0]
 }

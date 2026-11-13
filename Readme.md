@@ -3,7 +3,7 @@
 
 <img src="./Images/fn_logo.png" alt="" width="100"/> <br/> [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586) <br/>
 
-<img src="./Images/home.png" alt="home" width="400"/> <img src="./Images/wallet.png" alt="home" width="400"/> <br/>
+<img src="./Images/home.png" alt="Home screen" width="300"/> <img src="./Images/wallet.png" alt="Wallet" width="300"/> <br/>
 
 Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own [Bitcoin Core](https://github.com/bitcoin/bitcoin) node as a backend. Providing an easy to use interface to interact with your node. Fully Noded wallets are powered by PSBT's and descriptors. Fully Noded acts as an offline signer using your node as a watch-only wallet as well as giving you access to your nodes existing wallets.
 
@@ -14,15 +14,32 @@ Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own 
 Want to run a node on your Mac? Download [Fully Noded Server](https://fullynoded.app/wp-content/uploads/2025/11/fullynoded-server-v0.2.1.zip), it installs and configures Bitcoin Core, Knots, Join Market and Tor to make getting Fully Noded a breeze.
 
 
+## Guides
+
+Connecting your node, creating a wallet, receiving, sending, backups and recovery, with
+screenshots: **[Docs](./Docs/README.md)**.
+
 ## Build from source
 
-<br/><img src="./Images/build_from_source.png" alt="" width="400"/><br/>
-* Download Xcode
+* Install Xcode and [CocoaPods](https://cocoapods.org)
 * `git clone https://github.com/Fonta1n3/FullyNoded.git`
 * `cd FullyNoded`
-* `pod update`
-* Double click `FullyNoded.xcworkspace`
-* Click the play button in the top left bar of Xcode to run the app
+* `pod install`
+* Open `FullyNoded.xcworkspace`
+* Pick the **FullyNoded** scheme and press ▶︎
+
+### Testing
+
+* **Unit tests** check everything Fully Noded does with private keys (seed words, key derivation,
+  encryption at rest, PSBT signing, silent payment keys) against the published BIP test vectors, plus
+  timelocked addresses, wallet recovery (from seed words, descriptors and wallet backups), the block
+  explorer's data and the wallet's privacy and fee checks.
+  Pick the **FullyNodedTests** scheme and press ⌘U. No node needed.
+* **UI tests** drive the app in the simulator against a local regtest node: node setup, wallet creation
+  and recovery, sending, silent payment sends, the block explorer and payjoin between two simulators, on
+  every Bitcoin Core / Knots build you have installed.
+
+How to run both, what they cover and how to add tests: [Docs/Testing.md](Docs/Testing.md).
 
 
 ## Support the app
@@ -42,11 +59,31 @@ Want to run a node on your Mac? Download [Fully Noded Server](https://fullynoded
 * **HWW Functionality.** FN Signers tab allows you to add BIP39 mnemonics and passphrases and stores the mnemonic double encrypted locally on your device. It signs transactions locally with no internet connection required.
 
 
+## Block explorer
+
+**See the chain through your own node.** Every block and transaction comes from your node, so nothing
+you look at reaches anyone else's server: a live strip of blocks, the block map, where a transaction's
+money goes, what kind of transaction it looks like, embedded data decoded, your own coins by block, and
+the chain's vitals. The verifier shows a transaction's flow and a privacy rating before you sign it.
+
+<img src="./Docs/Images/app-explorer.jpg" alt="Block explorer" width="300"/> <img src="./Docs/Images/app-explorer-tx.jpg" alt="A transaction" width="300"/>
+
+Guides: [Block explorer](./Docs/Block-Explorer.md), [Understanding your wallet](./Docs/Wallets/Wallet-Insights.md).
+
 ## Nostr Connect
 
 **The fast way to reach your node.** Pair Fully Noded with [Fully Noded Server](https://github.com/Fonta1n3/FullyNoded-Server) and its RPC calls travel through a nostr relay instead of Tor, end-to-end encrypted (NIP-44), so your node loads in about a second at home, over a VPN like Tailscale, or anywhere through a public relay. The relay only ever sees ciphertext, and only paired phones can use your node. The Mac's own relay can also run over `wss://` with a certificate pinned in the pairing link, so others on your network can't even see who's talking.
 
 Set up and how it works: [Docs/Nostr-Connect.md](./Docs/Nostr-Connect.md).
+
+## Payjoin (BIP78)
+
+**Pay and get paid with payjoins.** The payer and the receiver both put coins into the transaction, so it doesn't look like a payment and breaks the "all inputs belong to the sender" assumption chain analysis relies on.
+
+* **Pay** any payjoin invoice (`pj=`, e.g. BTCPay Server), over Tor by default. The receiver's proposal is checked against BIP78's sender rules and only your own inputs are signed. If anything fails, your normal payment goes through.
+* **Receive** payjoins straight from your phone: the invoice screen hosts a one-time onion address over Tor while it's open, and adds one of your coins automatically.
+
+How it works: [Docs/Payjoin.md](./Docs/Payjoin.md).
 
 ## Silent Payments (BIP352)
 
@@ -73,7 +110,7 @@ Silent payments give you **one static address you can share anywhere**, such as 
 
 * **Receive:** the wallet's *Silent payments* section and the signer detail screen show your `sp1…` address with a QR export, and the Receive screen can show it instead of a normal address. The address and scan key are saved on the signer, so they keep working if you delete its seed words (spending then isn't possible).
 * **Send:** paste an `sp1…` / `tsp1…` address (or a BIP321 request with `sp=`) in the send view, including *send all*. Fully Noded computes the one-time output and the PSBT goes through the normal transaction verifier.
-* **Scan:** in the wallet's *Silent payments* section tap **FN-SERVER LINK** (authentication required) and import it in Fully Noded Server (*Silent Payments* → *Import from Fully Noded*). One link carries the address, scan private key and wallet name. The server watches the chain with your own node and imports what it finds, watch-only, into your Fully Noded wallet.
+* **Scan:** on the wallet's Receive screen, pick *Silent payment* and tap **FN-Server link** (authentication required) and import it in Fully Noded Server (*Silent Payments* → *Import from Fully Noded*). One link carries the address, scan private key and wallet name. The server watches the chain with your own node and imports what it finds, watch-only, into your Fully Noded wallet.
 * **Spend:** the transaction verifier recognises silent payment inputs and signs them with the tweaked key; normal inputs are signed as usual. *Check SP info* on the UTXO screen proves an output is yours and saves its tweak, which also lets you sweep it without your node (*Sweep without node (Nodeless)*, over Tor to Esplora).
 
 For the full technical details see **[SilentPayments.md](./SilentPayments.md)**: key derivation, sending, scanning, rescans and spending, plus current limitations and caveats.

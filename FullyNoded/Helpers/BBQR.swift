@@ -185,8 +185,6 @@ enum BBQR {
         throw BBQRError.badPayload
     }
 
-    static func isBBQR(_ string: String) -> Bool { Header(string) != nil }
-
     private static func decode(_ payload: String, encoding: Encoding) throws -> Data {
         switch encoding {
         case .hex:

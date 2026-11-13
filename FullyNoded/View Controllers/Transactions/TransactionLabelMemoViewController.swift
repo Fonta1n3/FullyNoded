@@ -9,15 +9,18 @@
 import UIKit
 
 class TransactionLabelMemoViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate {
-    
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
+
     var txid = ""
     var labelText = ""
     var doneBlock:((String) -> Void)?
 
-    @IBOutlet weak var labelField: UITextField!
+    let labelField = UITextField()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        buildLayout()
         
         configureTapGesture()
         
@@ -31,7 +34,58 @@ class TransactionLabelMemoViewController: UIViewController, UITextViewDelegate, 
         WalletTheme.apply(to: self, tint: .transaction)
     }
     
-    @IBAction func saveAction(_ sender: Any) {
+    private func buildLayout() {
+        let close = UIButton(type: .close)
+        close.addTarget(self, action: #selector(closeAction(_:)), for: .touchUpInside)
+
+        let title = UILabel()
+        title.text = "Label:"
+        title.textColor = .secondaryLabel
+
+        labelField.font = .systemFont(ofSize: 14)
+        labelField.backgroundColor = .clear
+        labelField.autocorrectionType = .no
+        labelField.spellCheckingType = .no
+        labelField.smartDashesType = .no
+        labelField.smartQuotesType = .no
+        labelField.smartInsertDeleteType = .no
+        labelField.keyboardAppearance = .dark
+
+        let note = UILabel()
+        note.numberOfLines = 0
+        note.textColor = .tertiaryLabel
+        note.text = "This label is associated with the transaction ID and is saved by Fully Noded, not Bitcoin Core."
+
+        let save = UIButton(type: .system)
+        save.setTitle("Save", for: .normal)
+        save.backgroundColor = .systemFill
+        save.addTarget(self, action: #selector(saveAction(_:)), for: .touchUpInside)
+
+        for subview in [close, title, labelField, note, save] as [UIView] {
+            subview.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(subview)
+        }
+        let guide = view.safeAreaLayoutGuide
+        NSLayoutConstraint.activate([
+            close.topAnchor.constraint(equalTo: guide.topAnchor, constant: 15),
+            close.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            title.topAnchor.constraint(equalTo: guide.topAnchor, constant: 68),
+            title.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            labelField.topAnchor.constraint(equalTo: title.bottomAnchor, constant: 8),
+            labelField.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            labelField.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            labelField.heightAnchor.constraint(equalToConstant: 34),
+            note.topAnchor.constraint(equalTo: labelField.bottomAnchor, constant: 8),
+            note.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            note.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            save.topAnchor.constraint(equalTo: note.bottomAnchor, constant: 8),
+            save.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            save.widthAnchor.constraint(equalToConstant: 89),
+            save.heightAnchor.constraint(equalToConstant: 30)
+        ])
+    }
+    
+    @objc func saveAction(_ sender: Any) {
         guard let newLabel = labelField.text else { return }
         
         CoreDataService.retrieveEntity(entityName: .transactions) { transactions in
@@ -61,7 +115,7 @@ class TransactionLabelMemoViewController: UIViewController, UITextViewDelegate, 
         }
     }
     
-    @IBAction func closeAction(_ sender: Any) {
+    @objc func closeAction(_ sender: Any) {
         DispatchQueue.main.async {
             self.dismiss(animated: true, completion: nil)
         }
@@ -77,14 +131,5 @@ class TransactionLabelMemoViewController: UIViewController, UITextViewDelegate, 
         labelField.resignFirstResponder()
     }
     
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }

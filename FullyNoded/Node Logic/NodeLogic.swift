@@ -96,23 +96,6 @@ class NodeLogic {
         }
     }
     
-    func listOnchainTransactions(completion: @escaping ((response: ListTransactionsResponse?, errorMessage: String?)) -> Void) {
-        let param:List_Transactions = .init(["count": 100])
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .listtransactions(param)) { (response, errorMessage) in
-            guard let response = response as? NSArray else {
-                completion((nil, errorMessage ?? "Unable to cast listransactions rsponse as an NSArray."))
-                return
-            }
-            
-            guard let listTransactionsResponse = try? ListTransactionsResponse(from: response) else {
-                completion((nil, "Failed parsing listtransactions response."))
-                return
-            }
-            
-            completion((listTransactionsResponse, nil))
-        }
-    }
-    
     // MARK: Parsers
     
     private func parseMiningInfo(miningInfo: [String:Any], completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
@@ -135,21 +118,17 @@ class NodeLogic {
     
     private func parseNetworkInfo(networkInfo: [String:Any], completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         var networkInfoToReturn = [String:Any]()
-        let subversion = (networkInfo["subversion"] as! String)
-        networkInfoToReturn["subversion"] = subversion
-        let versionInt = networkInfo["version"] as! Int
-        UserDefaults.standard.set(versionInt, forKey: "version")
+        networkInfoToReturn["subversion"] = networkInfo["subversion"] as? String ?? ""
+        // Only store a version we actually read: other RPCs choose parameters by it.
+        if let versionInt = RPCValue.int(networkInfo["version"]) {
+            UserDefaults.standard.set(versionInt, forKey: "version")
+            PSBTVersion.nodeRejectedParam = false
+        }
         
-        let networks = networkInfo["networks"] as! NSArray
+        let networks = networkInfo["networks"] as? [[String: Any]] ?? []
         
-        for network in networks {
-            let dict = network as! [String:Any]
-            let name = dict["name"] as! String
-            
-            if name == "onion" {
-                let reachable = dict["reachable"] as! Bool
-                networkInfoToReturn["reachable"] = reachable
-            }
+        for network in networks where network["name"] as? String == "onion" {
+            networkInfoToReturn["reachable"] = RPCValue.bool(network["reachable"]) ?? false
         }
         
         networkInfoToReturn["rawData"] = networkInfo

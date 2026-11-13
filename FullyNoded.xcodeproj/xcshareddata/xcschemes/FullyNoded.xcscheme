@@ -47,6 +47,16 @@
                ReferencedContainer = "container:FullyNoded.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "AB51A0012F00000000000001"
+               BuildableName = "FullyNodedUITests.xctest"
+               BlueprintName = "FullyNodedUITests"
+               ReferencedContainer = "container:FullyNoded.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

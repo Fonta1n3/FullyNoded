@@ -356,10 +356,8 @@ class QRViewController: UIViewController {
         }
     }
     
-    // MARK: - QR Generation & Actions (unchanged logic)
+    // MARK: - QR Generation & Actions
     private func startQRGeneration() {
-        // ... your existing startQRGeneration(), showStaticQR(), animateUr(), showBbqrParts(), etc.
-        // All logic remains exactly the same
         if isBbqr {
             showActivity("generating QR...")
             let input = txn.isEmpty ? (text.isEmpty ? psbt : text) : txn
@@ -440,8 +438,6 @@ class QRViewController: UIViewController {
         qrGenerator.qrText = text
         return qrGenerator.getQRCode()
     }
-    
-    // Keep your existing animate(), animateUr(), showBbqrParts(), split(), etc.
     
     @objc private func closeAction() {
         dismiss(animated: true)

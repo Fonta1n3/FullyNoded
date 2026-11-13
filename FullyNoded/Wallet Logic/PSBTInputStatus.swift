@@ -24,11 +24,6 @@ enum PSBTInputStatus {
         let unsignedSigners: [String]
     }
     
-    static func sigsNeeded(from inputDict: [String: Any]) -> (present: Int, required: Int, needed: Int) {
-        let status = status(from: inputDict)
-        return (status.present, status.required, status.needed)
-    }
-    
     static func status(from inputDict: [String: Any]) -> Status {
         // Finalizing clears the scripts and partial signatures, so a finalized input is simply done.
         if let finalWitness = inputDict["final_scriptwitness"] as? [Any], !finalWitness.isEmpty {

@@ -5,190 +5,246 @@
 //  Created by Peter Denton on 1/5/26.
 //  Copyright © 2026 Fontaine. All rights reserved.
 //
+//  The date picker for a timelocked receive address (a sheet over the Receive screen): quick
+//  presets, a calendar, the unlock date with a countdown, the miniscript it becomes, and what a
+//  lock means before confirming.
+//
 
 import UIKit
 
-// Define the type of data you want to pass back
+/// (timestamp, afterFragment, displayDate), e.g. (1798761600, "after(1798761600)", "Dec 31, 2026 at …")
 typealias TimelockCompletion = (UInt32, String, String) -> Void
-// (timestamp: UInt64, afterFragment: String) e.g. (1798761600, "after(1798761600)")
 
 final class TimelockViewController: UIViewController {
-    
-    // MARK: - Public Properties
-    
-    /// Completion handler called when user confirms selection
-    var completion: TimelockCompletion?
-    
-    // MARK: - UI Elements
-    
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Select Timelock Date"
-        label.font = UIFont.boldSystemFont(ofSize: 28)
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    private let instructionLabel: UILabel = {
-        let label = UILabel()
-        label.text = """
-        Choose the date these coins unlock (latest: Jan 19, 2038).
 
-        Coins sent to this address can't be spent before then. The lock uses the same key as the receive address you were shown, so that key also appears on that ordinary address (reusing a key links the two on-chain).
-        """
-        label.numberOfLines = 0
-        label.font = UIFont.systemFont(ofSize: 14)
-        label.textColor = .secondaryLabel
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    private let datePicker: UIDatePicker = {
-        let picker = UIDatePicker()
-        picker.datePickerMode = .date
-        picker.preferredDatePickerStyle = .wheels
-        // At least a day ahead: "today" gives a lock that has already expired (and the node
-        // compares against median time past, about an hour behind the clock).
-        picker.minimumDate = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
-        // Miniscript's after() only accepts values below 2^31, so Jan 19, 2038 is the latest date
-        // that makes a valid descriptor (anything later fails with a confusing parse error).
-        picker.maximumDate = Date(timeIntervalSince1970: 2_147_483_647)
-        picker.translatesAutoresizingMaskIntoConstraints = false
-        return picker
-    }()
-    
-    private let timestampLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.monospacedSystemFont(ofSize: 18, weight: .semibold)
-        label.textAlignment = .center
-        label.numberOfLines = 0
-        label.backgroundColor = .secondarySystemBackground
-        label.layer.cornerRadius = 12
-        label.layer.masksToBounds = true
-        label.text = "Select a date →"
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    private lazy var doneButton: UIBarButtonItem = {
-        return UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneTapped))
-    }()
-    
-    private lazy var doneActionButton: UIButton = {
-        var config = UIButton.Configuration.filled()
-        config.title = "Confirm Timelock"
-        config.baseBackgroundColor = .systemBlue
-        config.baseForegroundColor = .white
-        config.cornerStyle = .large
-        
-        let button = UIButton(configuration: config)
-        button.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
-    
-    private lazy var cancelButton: UIBarButtonItem = {
-        return UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelTapped))
-    }()
-    
-    // MARK: - Lifecycle
-    
+    /// Called with the chosen date when the user confirms.
+    var completion: TimelockCompletion?
+    /// Preselected date (from a preset on the Receive screen).
+    var initialDate: Date?
+
+    private let tint: WalletTheme.Tint = .warning
+
+    /// At least a day ahead: "today" gives a lock that has already expired (and the node compares
+    /// against median time past, about an hour behind the clock).
+    static var earliest: Date { Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date() }
+    /// Miniscript's after() only accepts values below 2^31, so Jan 19, 2038 is the latest date that
+    /// makes a valid descriptor (anything later fails with a confusing parse error).
+    static let latest = Date(timeIntervalSince1970: 2_147_483_647)
+
+    /// Quick picks, shared with the Receive screen's timelock card.
+    static let presets: [(title: String, component: Calendar.Component, value: Int)] = [
+        ("1 month", .month, 1), ("6 months", .month, 6), ("1 year", .year, 1), ("4 years", .year, 4)
+    ]
+
+    static func date(for preset: (title: String, component: Calendar.Component, value: Int)) -> Date {
+        let date = Calendar.current.date(byAdding: preset.component, value: preset.value, to: Date()) ?? earliest
+        return min(max(date, earliest), latest)
+    }
+
+    /// "1 year, 2 months" until `date`.
+    static func countdown(to date: Date) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .full
+        formatter.allowedUnits = [.year, .month, .day]
+        formatter.maximumUnitCount = 2
+        return formatter.string(from: Date(), to: date) ?? ""
+    }
+
+    private let scrollView = UIScrollView()
+    private let datePicker = UIDatePicker()
+    private let dateLabel = UILabel()
+    private let countdownLabel = UILabel()
+    private let detailsLabel = UILabel()
+    private let confirmButton = UIButton(type: .system)
+    private var presetButtons: [UIButton] = []
+
+    // MARK: Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
-        navigationItem.leftBarButtonItem = cancelButton
-        navigationItem.rightBarButtonItem = doneButton
-        navigationItem.title = "Select Timelock Date"
-           
-           // Important for sheet presentation
-           if #available(iOS 15.0, *) {
-               // Ensures content extends under the grabber
-               view.insetsLayoutMarginsFromSafeArea = false
-           }
-           
-           setupUI()
-           updateTimestamp(for: datePicker.date)
-           datePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
-        // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
-        WalletTheme.stylePrimary(doneActionButton, tint: .receive)
         WalletTheme.apply(to: self, tint: .receive)
+        view.backgroundColor = WalletTheme.bg
+        overrideUserInterfaceStyle = .dark
+        buildLayout()
+        datePicker.date = min(max(initialDate ?? Self.date(for: Self.presets[2]), Self.earliest), Self.latest)
+        update()
     }
-    
-    // MARK: - UI Setup
-    
-    private func setupUI() {
-        view.addSubview(titleLabel)
-        view.addSubview(instructionLabel)
-        view.addSubview(datePicker)
-        view.addSubview(timestampLabel)
-        view.addSubview(doneActionButton) // Add this
-        
+
+    // MARK: Layout
+
+    private func buildLayout() {
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.alwaysBounceVertical = true
+        view.addSubview(scrollView)
+
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 14
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(stack)
+
+        let close = UIButton(type: .system)
+        close.setImage(UIImage(systemName: "xmark", withConfiguration: UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)), for: .normal)
+        close.tintColor = WalletTheme.dim
+        close.accessibilityLabel = "Cancel"
+        close.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
+        let title = UILabel()
+        title.text = "Timelock"
+        title.font = WalletTheme.mono(20, weight: .bold)
+        title.textColor = WalletTheme.text
+        let titleRow = UIStackView(arrangedSubviews: [title, UIView(), close])
+        titleRow.alignment = .center
+
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
-            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            
-            instructionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 12),
-            instructionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            instructionLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            
-            datePicker.topAnchor.constraint(equalTo: instructionLabel.bottomAnchor, constant: 20),
-            datePicker.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            timestampLabel.topAnchor.constraint(equalTo: datePicker.bottomAnchor, constant: 20),
-            timestampLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
-            timestampLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            timestampLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 80),
-            
-            // New: Done button at bottom
-            doneActionButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
-            doneActionButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
-            doneActionButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            doneActionButton.heightAnchor.constraint(equalToConstant: 56)
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            stack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 20),
+            stack.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.trailingAnchor, constant: -16),
+            stack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -24)
         ])
+
+        stack.addArrangedSubview(titleRow)
+        stack.addArrangedSubview(summaryCard())
+        stack.addArrangedSubview(pickerCard())
+        stack.addArrangedSubview(warningCard())
+
+        WalletTheme.styleHero(confirmButton, title: "Lock until…", systemImage: "lock.fill", tint: tint)
+        confirmButton.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
+        stack.addArrangedSubview(confirmButton)
     }
-    
-    // MARK: - Actions
-    
+
+    private func summaryCard() -> UIView {
+        let icon = UIImageView(image: UIImage(systemName: "hourglass", withConfiguration: UIImage.SymbolConfiguration(pointSize: 26, weight: .semibold)))
+        icon.tintColor = tint.accent
+        icon.contentMode = .scaleAspectFit
+        icon.widthAnchor.constraint(equalToConstant: 34).isActive = true
+        dateLabel.font = WalletTheme.mono(19, weight: .bold)
+        dateLabel.textColor = tint.accent
+        dateLabel.numberOfLines = 0
+        dateLabel.adjustsFontSizeToFitWidth = true
+        dateLabel.minimumScaleFactor = 0.7
+        countdownLabel.font = WalletTheme.mono(12, weight: .semibold)
+        countdownLabel.textColor = WalletTheme.text
+        countdownLabel.numberOfLines = 0
+        let texts = UIStackView(arrangedSubviews: [dateLabel, countdownLabel])
+        texts.axis = .vertical
+        texts.spacing = 4
+        let row = UIStackView(arrangedSubviews: [icon, texts])
+        row.spacing = 12
+        row.alignment = .center
+
+        detailsLabel.font = WalletTheme.mono(10)
+        detailsLabel.textColor = WalletTheme.dim
+        detailsLabel.numberOfLines = 0
+        let card = WalletTheme.cardView([WalletTheme.caption("> UNLOCKS", tint: tint), row, detailsLabel],
+                                        tint: tint, spacing: 10, background: tint.accent.withAlphaComponent(0.06))
+        card.layer.borderColor = tint.accent.cgColor
+        return card
+    }
+
+    private func pickerCard() -> UIView {
+        presetButtons = Self.presets.enumerated().map { index, preset in
+            let button = UIButton(type: .system)
+            button.tag = index
+            button.configuration = WalletTheme.chipConfiguration(title: preset.title, tint: tint, fontSize: 11, imageSize: 10, imagePadding: 0,
+                                                                 insets: NSDirectionalEdgeInsets(top: 8, leading: 6, bottom: 8, trailing: 6),
+                                                                 clipsTitle: true)
+            button.addTarget(self, action: #selector(presetTapped(_:)), for: .touchUpInside)
+            return button
+        }
+        let presets = UIStackView(arrangedSubviews: presetButtons)
+        presets.spacing = 6
+        presets.distribution = .fillEqually
+
+        datePicker.datePickerMode = .date
+        datePicker.preferredDatePickerStyle = .inline
+        datePicker.minimumDate = Self.earliest
+        datePicker.maximumDate = Self.latest
+        datePicker.tintColor = tint.accent
+        datePicker.overrideUserInterfaceStyle = .dark
+        datePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
+
+        return WalletTheme.cardView([WalletTheme.caption("> CHOOSE A DATE", tint: tint), presets, datePicker], tint: tint, spacing: 12)
+    }
+
+    private func warningCard() -> UIView {
+        let rows: [(String, String)] = [
+            ("lock.fill", "Coins sent to the timelocked address can't be spent before this date, not even by you."),
+            ("key.fill", "The lock uses the same key as the address you were shown, so that key also appears on that address (reusing a key links the two on-chain)."),
+            ("externaldrive.fill", "The timelocked address is added to your wallet backup: export a fresh one afterwards.")
+        ]
+        let list = UIStackView()
+        list.axis = .vertical
+        list.spacing = 10
+        for (symbol, text) in rows {
+            let icon = UIImageView(image: UIImage(systemName: symbol, withConfiguration: UIImage.SymbolConfiguration(pointSize: 11, weight: .semibold)))
+            icon.tintColor = tint.accent
+            icon.contentMode = .scaleAspectFit
+            icon.widthAnchor.constraint(equalToConstant: 18).isActive = true
+            let label = UILabel()
+            label.text = text
+            label.font = WalletTheme.mono(11)
+            label.textColor = WalletTheme.text
+            label.numberOfLines = 0
+            let row = UIStackView(arrangedSubviews: [icon, label])
+            row.spacing = 8
+            row.alignment = .firstBaseline
+            list.addArrangedSubview(row)
+        }
+        return WalletTheme.cardView([WalletTheme.caption("> BEFORE YOU LOCK", tint: tint), list], tint: tint, spacing: 10)
+    }
+
+    // MARK: Actions
+
+    @objc private func presetTapped(_ sender: UIButton) {
+        datePicker.setDate(Self.date(for: Self.presets[sender.tag]), animated: true)
+        UISelectionFeedbackGenerator().selectionChanged()
+        update()
+    }
+
     @objc private func dateChanged() {
-        updateTimestamp(for: datePicker.date)
+        update()
     }
-    
+
     @objc private func doneTapped() {
         let selectedDate = datePicker.date
-        let timestamp = UInt32(selectedDate.timeIntervalSince1970)
-        let afterFragment = "after(\(timestamp))"
-        
-        // Call the completion handler
-        completion?(timestamp, afterFragment, selectedDate.dateDisplay)
-        
-        // Dismiss the view controller
+        let timestamp = UInt32(min(selectedDate.timeIntervalSince1970, Self.latest.timeIntervalSince1970))
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        completion?(timestamp, "after(\(timestamp))", selectedDate.dateDisplay)
         dismiss(animated: true)
     }
-    
+
     @objc private func cancelTapped() {
         dismiss(animated: true)
     }
-    
-    // MARK: - Helpers
-    
-    private func updateTimestamp(for date: Date) {
-        let timestamp = UInt64(date.timeIntervalSince1970)
-        
-        timestampLabel.text = """
-        Timestamp:
-        \(timestamp)
-        
-        Miniscript fragment:
-        after(\(timestamp))
-        
-        Selected: \(date.dateDisplay)
-        """
+
+    // MARK: Display
+
+    private func update() {
+        let date = datePicker.date
+        let timestamp = UInt32(min(date.timeIntervalSince1970, Self.latest.timeIntervalSince1970))
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.timeStyle = .none
+        dateLabel.text = formatter.string(from: date)
+        countdownLabel.text = "in \(Self.countdown(to: date))"
+        detailsLabel.text = "Unix time \(timestamp) · miniscript after(\(timestamp)). Checked against the chain's median time, about an hour behind the clock."
+
+        let short = DateFormatter()
+        short.dateStyle = .medium
+        short.timeStyle = .none
+        WalletTheme.styleHero(confirmButton, title: "Lock until \(short.string(from: date))", systemImage: "lock.fill", tint: tint)
+
+        let calendar = Calendar.current
+        for (index, button) in presetButtons.enumerated() {
+            let selected = calendar.isDate(Self.date(for: Self.presets[index]), inSameDayAs: date)
+            button.configuration?.background.backgroundColor = selected ? tint.accent : WalletTheme.card
+            button.configuration?.baseForegroundColor = selected ? WalletTheme.bg : tint.accent
+        }
     }
-    
-    
 }
 
 extension Date {

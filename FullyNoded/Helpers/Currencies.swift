@@ -9,55 +9,53 @@
 import Foundation
 
 class Currencies {
+    /// The currency codes the app offers, in order.
+    static var codes: [String] { currenciesWithCircle.compactMap { $0.keys.first } }
+
+    /// Each currency's text symbol, shown before amounts ("CHF" after them, see `fiatString`).
+    static let symbols: [String: String] = [
+        "USD": "$",
+        "GBP": "£",
+        "EUR": "€",
+        "AUD": "$",
+        "BRL": "R$",
+        "CAD": "$",
+        "CHF": "CHF ",
+        "CLP": "$",
+        "CNY": "¥",
+        "DKK": "kr",
+        "HKD": "$",
+        "INR": "₹",
+        "ISK": "kr",
+        "JPY": "¥",
+        "KRW": "₩",
+        "NZD": "$",
+        "PLN": "zł",
+        "RUB": "₽",
+        "SEK": "kr",
+        "SGD": "$",
+        "THB": "฿",
+        "TRY": "₺",
+        "TWD": "NT$"
+    ]
+
+    /// The currencies mempool.space's onion has prices for (exchange rates only ever come from
+    /// onion services, see FiatConverter).
     static let currenciesWithCircle:[[String:String]] = [
         ["USD": "dollarsign.circle"],
         ["GBP": "sterlingsign.circle"],
         ["EUR": "eurosign.circle"],
         ["AUD":"dollarsign.circle"],
-        ["BRL": "brazilianrealsign.circle"],
         ["CAD": "dollarsign.circle"],
         ["CHF": "francsign.circle"],
-        ["CLP": "dollarsign.circle"],
-        ["CNY": "yensign.circle"],
-        ["DKK": "k.circle"],
-        ["HKD": "dollarsign.circle"],
-        ["INR": "indianrupeesign.circle"],
-        ["ISK": "k.circle"],
-        ["JPY": "yensign.circle"],
-        ["KRW": "wonsign.circle"],
-        ["NZD": "dollarsign.circle"],
-        ["PLN": "z.circle"],
-        ["RUB": "rublesign.circle"],
-        ["SEK": "k.circle"],
-        ["SGD": "dollarsign.circle"],
-        ["THB": "bahtsign.circle"],
-        ["TRY": "turkishlirasign.circle"],
-        ["TWD": "dollarsign.circle"]
+        ["JPY": "yensign.circle"]
     ]
-    
-    static let currenciesWithoutCircle:[[String:String]] = [
-        ["USD": "dollarsign"],
-        ["GBP": "sterlingsign"],
-        ["EUR": "eurosign"],
-        ["AUD":"dollarsign"],
-        ["BRL": "brazilianrealsign"],
-        ["CAD": "dollarsign"],
-        ["CHF": "francsign"],
-        ["CLP": "dollarsign"],
-        ["CNY": "yensign"],
-        ["DKK": "k"],
-        ["HKD": "dollarsign"],
-        ["INR": "indianrupeesign"],
-        ["ISK": "k"],
-        ["JPY": "yensign"],
-        ["KRW": "wonsign"],
-        ["NZD": "dollarsign"],
-        ["PLN": "z"],
-        ["RUB": "rublesign"],
-        ["SEK": "k"],
-        ["SGD": "dollarsign"],
-        ["THB": "bahtsign"],
-        ["TRY": "turkishlirasign"],
-        ["TWD": "dollarsign"]
-    ]
+
+    /// A currency picked before the list was cut to these has no rate any more: back to USD.
+    static func dropUnsupportedSelection() {
+        let defaults = UserDefaults.standard
+        if let currency = defaults.string(forKey: "currency"), !codes.contains(currency) {
+            defaults.set("USD", forKey: "currency")
+        }
+    }
 }

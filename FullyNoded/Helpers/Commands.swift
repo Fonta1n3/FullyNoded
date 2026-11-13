@@ -9,27 +9,34 @@
 public enum BTC_CLI_COMMAND {
     case getblock(_ param: Get_Block)
     case getblockhash(_ param: Get_Block_Hash)
+    case getblockheader(_ param: Get_Block_Header)
+    case getblockstats(_ param: Get_Block_Stats)
+    case getblocktemplate(_ param: Get_Block_Template)
+    case gettxout(_ param: Get_Tx_Out)
+    case getnettotals
+    case getbalances
+    case listaddressgroupings
+    case listreceivedbyaddress(_ param: List_Received_By_Address)
+    case listsinceblock(_ param: List_Since_Block)
+    case abandontransaction(_ param: Abandon_Transaction)
+    case getchaintips
+    case getnetworkhashps(_ param: Get_Network_Hash_PS)
+    case getmempoolentry(_ param: Get_Mempool_Entry)
+    case gettxspendingprevout(_ param: Get_Tx_Spending_Prevout)
     case listdescriptors
     case setban(_ param: Set_Ban)
     case scantxoutset(_ param: Scan_Tx_Out)
     case abortrescan
     case listlockunspent
     case lockunspent(_ param: Lock_Unspent)
-    //case getblock
-    //case getbestblockhash
-    //case getaddressesbylabel
-    //case listlabels
-    //case decodescript
     case combinepsbt
     case utxoupdatepsbt(_ param: Utxo_Update_Psbt)
-    //case listaddressgroupings
     case converttopsbt
     case getaddressinfo(param: Get_Address_Info)
     case analyzepsbt(param: Analyze_PSBT)
     case createpsbt(_ param: Create_Psbt)
     case joinpsbts(_ param: Join_Psbt)
     case getmempoolinfo
-    //case signrawtransactionwithkey
     case listwallets
     case unloadwallet(param: Unload_Wallet)
     case rescanblockchain(_ param: Rescan_Blockchain)
@@ -48,16 +55,12 @@ public enum BTC_CLI_COMMAND {
     case decoderawtransaction(param: Decode_Raw_Tx)
     case getnewaddress(param: Get_New_Address)
     case gettransaction(_ param: Get_Tx)
-    //case createrawtransaction
-    //case getrawchangeaddress
     case getwalletinfo
     case getblockchaininfo
     case getbalance(param: Get_Balance_Param)
-    //case sendtoaddress
     case listtransactions(_ param: List_Transactions)
     case listunspent(_ param: List_Unspent)
     case bumpfee(param: Bump_Fee)
-    //case importprivkey
     case getpeerinfo
     case getnetworkinfo
     case getmininginfo
@@ -79,6 +82,34 @@ public enum BTC_CLI_COMMAND {
             return "getblock"
         case .getblockhash:
             return "getblockhash"
+        case .getblockheader:
+            return "getblockheader"
+        case .getblockstats:
+            return "getblockstats"
+        case .getblocktemplate:
+            return "getblocktemplate"
+        case .gettxout:
+            return "gettxout"
+        case .getnettotals:
+            return "getnettotals"
+        case .getbalances:
+            return "getbalances"
+        case .listaddressgroupings:
+            return "listaddressgroupings"
+        case .listreceivedbyaddress:
+            return "listreceivedbyaddress"
+        case .listsinceblock:
+            return "listsinceblock"
+        case .abandontransaction:
+            return "abandontransaction"
+        case .getchaintips:
+            return "getchaintips"
+        case .getnetworkhashps:
+            return "getnetworkhashps"
+        case .getmempoolentry:
+            return "getmempoolentry"
+        case .gettxspendingprevout:
+            return "gettxspendingprevout"
         case .listdescriptors:
             return "listdescriptors"
         case .setban:
@@ -93,22 +124,10 @@ public enum BTC_CLI_COMMAND {
             return "listlockunspent"
         case .lockunspent:
             return "lockunspent"
-//        case .getblock:
-//            return "getblock"
-//        case .getbestblockhash:
-//            return "getbestblockhash"
-//        case .getaddressesbylabel:
-//            return "getaddressesbylabel"
-//        case .listlabels:
-//            return "listlabels"
-//        case .decodescript:
-//            return "decodescript"
         case .combinepsbt:
             return "combinepsbt"
         case .utxoupdatepsbt:
             return "utxoupdatepsbt"
-//        case .listaddressgroupings:
-//            return "listaddressgroupings"
         case .converttopsbt:
             return "converttopsbt"
         case .getaddressinfo:
@@ -121,8 +140,6 @@ public enum BTC_CLI_COMMAND {
             return "joinpsbts"
         case .getmempoolinfo:
             return "getmempoolinfo"
-//        case .signrawtransactionwithkey:
-//            return "signrawtransactionwithkey"
         case .listwallets:
             return "listwallets"
         case .unloadwallet:
@@ -157,24 +174,16 @@ public enum BTC_CLI_COMMAND {
             return "getnewaddress"
         case .gettransaction:
             return "gettransaction"
-//        case .createrawtransaction:
-//            return "createrawtransaction"
-//        case .getrawchangeaddress:
-//            return "getrawchangeaddress"
         case .getwalletinfo:
             return "getwalletinfo"
         case .getblockchaininfo:
             return "getblockchaininfo"
-//        case .sendtoaddress:
-//            return "sendtoaddress"
         case .listtransactions:
             return "listtransactions"
         case .listunspent:
             return "listunspent"
         case .bumpfee:
             return "bumpfee"
-//        case .importprivkey:
-//            return "importprivkey"
         case .getpeerinfo:
             return "getpeerinfo"
         case .getnetworkinfo:
@@ -214,6 +223,26 @@ public enum BTC_CLI_COMMAND {
             return getBlock.param
         case .getblockhash(param: let getBlockhash):
             return getBlockhash.param
+        case .getblockheader(let p):
+            return p.param
+        case .getblockstats(let p):
+            return p.param
+        case .getblocktemplate(let p):
+            return p.param
+        case .gettxout(let p):
+            return p.param
+        case .getnetworkhashps(let p):
+            return p.param
+        case .getmempoolentry(let p):
+            return p.param
+        case .listreceivedbyaddress(let p):
+            return p.param
+        case .listsinceblock(let p):
+            return p.param
+        case .abandontransaction(let p):
+            return p.param
+        case .gettxspendingprevout(let p):
+            return p.param
         case .setban(param: let setBan):
             return setBan.param
         case .setlabel(param: let setLabel):
@@ -293,11 +322,6 @@ public enum BTC_CLI_COMMAND {
         abortrescan,
         listlockunspent,
         lockunspent(.init([:])),
-//        getblock,
-//        getbestblockhash,
-//        getaddressesbylabel,
-//        listlabels,
-//        decodescript,
         combinepsbt,
         utxoupdatepsbt(.init([:])),
         //listaddressgroupings,
@@ -326,8 +350,6 @@ public enum BTC_CLI_COMMAND {
         decoderawtransaction(param: .init([:])),
         getnewaddress(param: .init([:])),
         gettransaction(.init([:])),
-//        createrawtransaction,
-//        getrawchangeaddress,
         getwalletinfo,
         getblockchaininfo,
         getbalance(param: .init([:])),

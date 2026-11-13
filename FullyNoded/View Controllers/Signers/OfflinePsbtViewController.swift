@@ -311,7 +311,7 @@ class OfflinePsbtViewController: UIViewController, UINavigationControllerDelegat
     }
 
     @objc private func scanPsbt() {
-        guard let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "QRScanner") as? QRScannerViewController else { return }
+        let vc = QRScannerViewController()
         vc.fromSignAndVerify = true
         vc.onDoneBlock = { [weak self] text in
             guard let self, let text else { return }

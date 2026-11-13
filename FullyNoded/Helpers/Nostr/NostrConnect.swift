@@ -23,35 +23,94 @@
 import Foundation
 import CryptoKit
 import Compression
+#if canImport(P256K)
 import P256K
+#endif
 
-// MARK: - Hex
+// MARK: - secp256k1
 
-enum NostrHex {
-    static func encode<D: Sequence>(_ bytes: D) -> String where D.Element == UInt8 {
-        bytes.map { String(format: "%02x", $0) }.joined()
+/// The three secp256k1 operations nostr needs: x-only public keys, BIP340 signatures and the
+/// ECDH point behind NIP-44. Fully Noded and FN-Server use the P256K package; Plasma uses the
+/// bundled libsecp256k1 (Plasma-c/secp256k1, through its bridging header).
+enum NostrSecp {
+    #if canImport(P256K)
+    static func xonlyPublicKey(secret: Data) -> Data? {
+        guard let key = try? P256K.Schnorr.PrivateKey(dataRepresentation: secret) else { return nil }
+        return Data(key.xonly.bytes)
     }
 
-    static func decode(_ hex: String) -> Data? {
-        let chars = Array(hex.lowercased().utf8)
-        guard chars.count % 2 == 0 else { return nil }
-        var out = Data(capacity: chars.count / 2)
-        var i = 0
-        while i < chars.count {
-            guard let hi = nibble(chars[i]), let lo = nibble(chars[i + 1]) else { return nil }
-            out.append(hi << 4 | lo)
-            i += 2
+    /// x coordinate of secret·P, where P is the even-y point with x = `xonly`.
+    static func sharedX(secret: Data, xonly: Data) -> Data? {
+        guard let pub = try? P256K.KeyAgreement.PublicKey(dataRepresentation: Data([0x02]) + xonly, format: .compressed),
+              let priv = try? P256K.KeyAgreement.PrivateKey(dataRepresentation: secret) else { return nil }
+        let shared = priv.sharedSecretFromKeyAgreement(with: pub, format: .compressed)
+        return Data(shared.withUnsafeBytes { Data($0) }.dropFirst())
+    }
+
+    static func sign(message: [UInt8], secret: Data, auxRand: [UInt8]) -> Data? {
+        guard let priv = try? P256K.Schnorr.PrivateKey(dataRepresentation: secret) else { return nil }
+        var message = message, aux = auxRand
+        guard let sig = try? aux.withUnsafeMutableBytes({ try priv.signature(message: &message, auxiliaryRand: $0.baseAddress, strict: true) }) else { return nil }
+        return sig.dataRepresentation
+    }
+
+    static func verify(signature: Data, message: [UInt8], xonly: Data) -> Bool {
+        guard let sig = try? P256K.Schnorr.SchnorrSignature(dataRepresentation: signature) else { return false }
+        var message = message
+        return P256K.Schnorr.XonlyKey(dataRepresentation: xonly).isValid(sig, for: &message)
+    }
+    #else
+    /// SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY (macros Swift doesn't import).
+    private static let context: OpaquePointer? = secp256k1_context_create(UInt32((1 << 0) | (1 << 8) | (1 << 9)))
+
+    private static func keypair(_ secret: Data) -> secp256k1_keypair? {
+        guard let context = context, secret.count == 32 else { return nil }
+        var keypair = secp256k1_keypair()
+        let ok = secret.withUnsafeBytes { secp256k1_keypair_create(context, &keypair, $0.bindMemory(to: UInt8.self).baseAddress!) }
+        return ok == 1 ? keypair : nil
+    }
+
+    static func xonlyPublicKey(secret: Data) -> Data? {
+        guard let context = context, var keypair = keypair(secret) else { return nil }
+        var xonly = secp256k1_xonly_pubkey()
+        guard secp256k1_keypair_xonly_pub(context, &xonly, nil, &keypair) == 1 else { return nil }
+        var out = [UInt8](repeating: 0, count: 32)
+        guard secp256k1_xonly_pubkey_serialize(context, &out, &xonly) == 1 else { return nil }
+        return Data(out)
+    }
+
+    static func sharedX(secret: Data, xonly: Data) -> Data? {
+        guard let context = context, secret.count == 32, xonly.count == 32 else { return nil }
+        var pubkey = secp256k1_pubkey()
+        let compressed = [UInt8]([0x02]) + [UInt8](xonly)
+        guard secp256k1_ec_pubkey_parse(context, &pubkey, compressed, 33) == 1 else { return nil }
+        var out = [UInt8](repeating: 0, count: 32)
+        // Keep the x coordinate as it is (the default hashes it, NIP-44 doesn't).
+        let copyX: secp256k1_ecdh_hash_function = { output, x32, _, _ in
+            guard let output = output, let x32 = x32 else { return 0 }
+            output.update(from: x32, count: 32)
+            return 1
         }
-        return out
+        let ok = secret.withUnsafeBytes {
+            secp256k1_ecdh(context, &out, &pubkey, $0.bindMemory(to: UInt8.self).baseAddress!, copyX, nil)
+        }
+        return ok == 1 ? Data(out) : nil
     }
 
-    private static func nibble(_ c: UInt8) -> UInt8? {
-        switch c {
-        case 48...57: return c - 48
-        case 97...102: return c - 87
-        default: return nil
-        }
+    static func sign(message: [UInt8], secret: Data, auxRand: [UInt8]) -> Data? {
+        guard let context = context, message.count == 32, auxRand.count == 32, var keypair = keypair(secret) else { return nil }
+        var sig = [UInt8](repeating: 0, count: 64)
+        guard secp256k1_schnorrsig_sign32(context, &sig, message, &keypair, auxRand) == 1 else { return nil }
+        return Data(sig)
     }
+
+    static func verify(signature: Data, message: [UInt8], xonly: Data) -> Bool {
+        guard let context = context, signature.count == 64, xonly.count == 32 else { return false }
+        var pubkey = secp256k1_xonly_pubkey()
+        guard secp256k1_xonly_pubkey_parse(context, &pubkey, [UInt8](xonly)) == 1 else { return false }
+        return secp256k1_schnorrsig_verify(context, [UInt8](signature), message, message.count, &pubkey) == 1
+    }
+    #endif
 }
 
 // MARK: - Keys
@@ -62,14 +121,13 @@ struct NostrKeys {
     let publicKey: String
 
     init?(secret: Data) {
-        guard secret.count == 32,
-              let key = try? P256K.Schnorr.PrivateKey(dataRepresentation: secret) else { return nil }
+        guard secret.count == 32, let xonly = NostrSecp.xonlyPublicKey(secret: secret) else { return nil }
         self.secret = secret
-        self.publicKey = NostrHex.encode(key.xonly.bytes)
+        self.publicKey = Hex.encode(xonly)
     }
 
     init?(secretHex: String) {
-        guard let data = NostrHex.decode(secretHex) else { return nil }
+        guard let data = Hex.decode(secretHex) else { return nil }
         self.init(secret: data)
     }
 
@@ -80,7 +138,7 @@ struct NostrKeys {
         return NostrKeys(secret: Data(bytes))
     }
 
-    var secretHex: String { NostrHex.encode(secret) }
+    var secretHex: String { Hex.encode(secret) }
 }
 
 // MARK: - NIP-44 v2
@@ -102,13 +160,10 @@ enum NIP44 {
 
     /// HKDF-extract(salt: "nip44-v2", IKM: x of secret·Pub).
     static func conversationKey(secret: Data, publicKey: String) throws -> Data {
-        guard let x = NostrHex.decode(publicKey), x.count == 32,
-              let pub = try? P256K.KeyAgreement.PublicKey(dataRepresentation: Data([0x02]) + x, format: .compressed),
-              let priv = try? P256K.KeyAgreement.PrivateKey(dataRepresentation: secret) else {
+        guard let x = Hex.decode(publicKey), x.count == 32,
+              let sharedX = NostrSecp.sharedX(secret: secret, xonly: x) else {
             throw Failure.invalidKey
         }
-        let shared = priv.sharedSecretFromKeyAgreement(with: pub, format: .compressed)
-        let sharedX = shared.withUnsafeBytes { Data($0) }.dropFirst()
         let prk = HMAC<CryptoKit.SHA256>.authenticationCode(for: sharedX, using: SymmetricKey(data: Data("nip44-v2".utf8)))
         return Data(prk)
     }
@@ -229,29 +284,27 @@ struct NostrEvent: Codable, Equatable {
     static func computeID(pubkey: String, createdAt: Int, kind: Int, tags: [[String]], content: String) -> String? {
         let array: [Any] = [0, pubkey, createdAt, kind, tags, content]
         guard let data = try? JSONSerialization.data(withJSONObject: array, options: [.withoutEscapingSlashes]) else { return nil }
-        return NostrHex.encode(CryptoKit.SHA256.hash(data: data))
+        return Hex.encode(CryptoKit.SHA256.hash(data: data))
     }
 
     /// A signed event from `keys`.
     static func make(keys: NostrKeys, kind: Int, tags: [[String]], content: String, createdAt: Int = Int(Date().timeIntervalSince1970)) -> NostrEvent? {
         guard let id = computeID(pubkey: keys.publicKey, createdAt: createdAt, kind: kind, tags: tags, content: content),
-              var message = NostrHex.decode(id).map(Array.init),
-              let priv = try? P256K.Schnorr.PrivateKey(dataRepresentation: keys.secret) else { return nil }
+              let message = Hex.decode(id).map(Array.init) else { return nil }
         var aux = [UInt8](repeating: 0, count: 32)
         guard SecRandomCopyBytes(kSecRandomDefault, 32, &aux) == errSecSuccess,
-              let sig = try? aux.withUnsafeMutableBytes({ try priv.signature(message: &message, auxiliaryRand: $0.baseAddress, strict: true) }) else { return nil }
+              let sig = NostrSecp.sign(message: message, secret: keys.secret, auxRand: aux) else { return nil }
         return NostrEvent(id: id, pubkey: keys.publicKey, created_at: createdAt, kind: kind, tags: tags,
-                          content: content, sig: NostrHex.encode(sig.dataRepresentation))
+                          content: content, sig: Hex.encode(sig))
     }
 
     /// The id matches the content and the signature is the author's.
     var isValid: Bool {
         guard id == Self.computeID(pubkey: pubkey, createdAt: created_at, kind: kind, tags: tags, content: content),
-              let pub = NostrHex.decode(pubkey), pub.count == 32,
-              let sigData = NostrHex.decode(sig), sigData.count == 64,
-              var message = NostrHex.decode(id).map(Array.init),
-              let signature = try? P256K.Schnorr.SchnorrSignature(dataRepresentation: sigData) else { return false }
-        return P256K.Schnorr.XonlyKey(dataRepresentation: pub).isValid(signature, for: &message)
+              let pub = Hex.decode(pubkey), pub.count == 32,
+              let sigData = Hex.decode(sig), sigData.count == 64,
+              let message = Hex.decode(id).map(Array.init) else { return false }
+        return NostrSecp.verify(signature: sigData, message: message, xonly: pub)
     }
 
     /// First value of the "p" tag.
@@ -279,7 +332,14 @@ struct NostrEvent: Codable, Equatable {
 // MARK: - Pairing link
 
 struct NostrConnectURI: Equatable {
+    /// Fully Noded ↔ the Mac's Bitcoin node.
     static let scheme = "nostr+fullynoded"
+    /// Plasma ↔ the Mac's Core Lightning (FN-Server answers with lightningd's RPC).
+    static let lightningScheme = "nostr+plasma"
+
+    /// A Core Lightning (Plasma) pairing rather than a Bitcoin node one.
+    var isLightning: Bool { scheme == Self.lightningScheme }
+    let scheme: String
 
     let bridgePubkey: String
     let relays: [String]
@@ -291,7 +351,7 @@ struct NostrConnectURI: Equatable {
 
     var string: String {
         var c = URLComponents()
-        c.scheme = Self.scheme
+        c.scheme = scheme
         c.host = bridgePubkey
         var items = relays.map { URLQueryItem(name: "relay", value: $0) }
         items.append(URLQueryItem(name: "secret", value: clientSecret))
@@ -304,7 +364,9 @@ struct NostrConnectURI: Equatable {
         return c.string ?? ""
     }
 
-    init(bridgePubkey: String, relays: [String], clientSecret: String, label: String?, chain: String?, certSHA256: String? = nil) {
+    init(bridgePubkey: String, relays: [String], clientSecret: String, label: String?, chain: String?, certSHA256: String? = nil,
+         lightning: Bool = false) {
+        self.scheme = lightning ? Self.lightningScheme : Self.scheme
         self.bridgePubkey = bridgePubkey.lowercased()
         self.relays = relays
         self.clientSecret = clientSecret.lowercased()
@@ -315,8 +377,9 @@ struct NostrConnectURI: Equatable {
 
     init?(_ raw: String) {
         let s = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let c = URLComponents(string: s), c.scheme?.lowercased() == Self.scheme,
-              let host = c.host?.lowercased(), host.count == 64, NostrHex.decode(host) != nil else { return nil }
+        guard let c = URLComponents(string: s), let scheme = c.scheme?.lowercased(),
+              scheme == Self.scheme || scheme == Self.lightningScheme,
+              let host = c.host?.lowercased(), host.count == 64, Hex.decode(host) != nil else { return nil }
         let items = c.queryItems ?? []
         let relays = items.filter { $0.name == "relay" }.compactMap { $0.value }
             .filter { $0.lowercased().hasPrefix("ws://") || $0.lowercased().hasPrefix("wss://") }
@@ -324,11 +387,11 @@ struct NostrConnectURI: Equatable {
               let secret = items.first(where: { $0.name == "secret" })?.value?.lowercased(),
               NostrKeys(secretHex: secret) != nil else { return nil }
         let cert = items.first { $0.name == "cert" }?.value?.lowercased()
-        guard cert == nil || (cert!.count == 64 && NostrHex.decode(cert!) != nil) else { return nil }
+        guard cert == nil || (cert!.count == 64 && Hex.decode(cert!) != nil) else { return nil }
         self.init(bridgePubkey: host, relays: relays, clientSecret: secret,
                   label: items.first { $0.name == "label" }?.value,
                   chain: items.first { $0.name == "chain" }?.value,
-                  certSHA256: cert)
+                  certSHA256: cert, lightning: scheme == Self.lightningScheme)
     }
 }
 
@@ -339,7 +402,7 @@ struct NostrConnectURI: Equatable {
 enum NostrTLS {
     /// SHA-256 (hex) of a certificate's DER bytes.
     static func fingerprint(_ certificate: SecCertificate) -> String {
-        NostrHex.encode(SHA256.hash(data: SecCertificateCopyData(certificate) as Data))
+        Hex.encode(SHA256.hash(data: SecCertificateCopyData(certificate) as Data))
     }
 
     static func evaluate(_ challenge: URLAuthenticationChallenge, pin: String?) -> (URLSession.AuthChallengeDisposition, URLCredential?) {

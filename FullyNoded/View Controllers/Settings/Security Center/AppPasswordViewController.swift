@@ -9,15 +9,19 @@
 import UIKit
 
 class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate, UIGestureRecognizerDelegate {
-    
-    @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var textField: UITextField!
-    @IBOutlet weak var buttonOutlet: UIButton!
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
+
+    let titleLabel = UILabel()
+    let textField = UITextField()
+    let buttonOutlet = UIButton(type: .custom)
     var firstPassword = ""
     var isResetting = Bool()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationItem.title = "App Password"
+        buildLayout()
         
         navigationController?.delegate = self
         textField.delegate = self
@@ -32,7 +36,7 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
         buttonOutlet.layer.cornerRadius = 8
         buttonOutlet.showsTouchWhenHighlighted = true
         
-        if KeyChain.getData("UnlockPassword") != nil {
+        if AppAuthentication.hasAppPassword {
             isResetting = true
             titleLabel.text = "Confirm existing password"
             buttonOutlet.setTitle("confirm", for: .normal)
@@ -47,6 +51,54 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
         WalletTheme.apply(to: self, tint: .settings)
     }
     
+    private func buildLayout() {
+        titleLabel.text = "Add unlock password"
+        textField.borderStyle = .roundedRect
+        textField.font = .systemFont(ofSize: 14)
+        textField.isSecureTextEntry = true
+        textField.textContentType = .newPassword
+        textField.autocorrectionType = .no
+        textField.spellCheckingType = .no
+        textField.smartDashesType = .no
+        textField.smartQuotesType = .no
+        textField.smartInsertDeleteType = .no
+        textField.returnKeyType = .next
+        textField.keyboardAppearance = .dark
+        buttonOutlet.setTitle("Save", for: .normal)
+        buttonOutlet.addTarget(self, action: #selector(buttonAction(_:)), for: .touchUpInside)
+
+        let info = UITextView()
+        info.isEditable = false
+        info.isSelectable = false
+        info.isScrollEnabled = false
+        info.backgroundColor = .clear
+        info.font = .systemFont(ofSize: 14)
+        info.textColor = .secondaryLabel
+        info.text = "This password is never saved to the device. Only the hash of the password is saved. That way even if your device is hacked the thief would not be able to extract a password from it."
+
+        for subview in [titleLabel, textField, buttonOutlet, info] as [UIView] {
+            subview.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(subview)
+        }
+        let guide = view.safeAreaLayoutGuide
+        NSLayoutConstraint.activate([
+            titleLabel.topAnchor.constraint(equalTo: guide.topAnchor, constant: 8),
+            titleLabel.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: guide.trailingAnchor, constant: -16),
+            textField.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
+            textField.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            textField.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            buttonOutlet.topAnchor.constraint(equalTo: textField.bottomAnchor, constant: 8),
+            buttonOutlet.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            buttonOutlet.widthAnchor.constraint(equalToConstant: 95),
+            buttonOutlet.heightAnchor.constraint(equalToConstant: 34),
+            info.topAnchor.constraint(equalTo: buttonOutlet.bottomAnchor, constant: 32),
+            info.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            info.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
+            info.bottomAnchor.constraint(lessThanOrEqualTo: guide.bottomAnchor, constant: -20)
+        ])
+    }
+    
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         textField.resignFirstResponder()
     }
@@ -58,7 +110,7 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
         return !touched.isDescendant(of: textField)
     }
     
-    @IBAction func buttonAction(_ sender: Any) {
+    @objc func buttonAction(_ sender: Any) {
         textField.resignFirstResponder()
         if !isResetting {
             setNewPassword()
@@ -81,53 +133,32 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
     }
     
     private func confirmExistsingMatches() {
-        guard let text = textField.text, text != "", let existingHash = exisitingPassword() else { return }
-                
-        /// Include to guarantee backwards compatibility
-        if text == existingHash.utf8String {
+        guard let text = textField.text, text != "" else { return }
+
+        if AppAuthentication.verifyAppPassword(text) {
             updateViewToAddNewPassword()
-            
         } else {
-            guard let hash = hash(text) else { return }
-            
-            if hash == existingHash {
-                updateViewToAddNewPassword()
-                
-            } else {
-                showAlert(vc: self, title: "Error", message: "That password does not match your existing password!")
-            }
+            showAlert(vc: self, title: "Error", message: "That password does not match your existing password!")
         }
-    }
-    
-    private func exisitingPassword() -> Data? {
-        return KeyChain.getData("UnlockPassword")
-    }
-    
-    private func hash(_ text: String) -> Data? {
-        return Data(hexString: Crypto.sha256hash(text))
     }
     
     private func setNewPassword() {
         if firstPassword != "" {
             /// We know we are confirming.
-            guard textField.text != "", let hex = hash(textField.text!)?.hexString, firstPassword == hex else {
+            guard let text = textField.text, text != "",
+                  AppAuthentication.passwordHash(text).hexString == firstPassword else {
                 showAlert(vc: self, title: "Error", message: "Passwords did not match!")
                 return
             }
                         
-            setPassword(hex)
+            setPassword(text)
         } else {
             setLockPassword()
         }
     }
     
-    private func setPassword(_ text: String) {
-        guard let data = Data(hexString: text) else {
-            showAlert(vc: self, title: "Invalid text", message: "")
-            return
-        }
-        
-        if KeyChain.set(data, forKey: "UnlockPassword") {
+    private func setPassword(_ password: String) {
+        if AppAuthentication.setAppPassword(password) {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
@@ -161,10 +192,7 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
             return
         }
         
-        guard let data = hash(newPassword) else {
-            shakeAlert(viewToShake: textField)
-            return
-        }
+        let data = AppAuthentication.passwordHash(newPassword)
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }

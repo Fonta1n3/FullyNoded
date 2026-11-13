@@ -15,6 +15,21 @@ extension NostrConnectURI {
         return u.port.map { "\(host):\($0)" } ?? host
     }
 
+    /// What a relay in the link is: the Mac's relay on the local network or a VPN, its public
+    /// Tailscale Funnel address, or a public relay.
+    static func relayKind(_ relay: String) -> String {
+        guard let host = URL(string: relay)?.host?.lowercased() else { return "relay" }
+        if host.hasSuffix(".ts.net") { return "Tailscale Funnel · from anywhere" }
+        let octets = host.split(separator: ".").compactMap { Int($0) }
+        if octets.count == 4 {
+            if octets[0] == 10 || (octets[0] == 172 && (16...31).contains(octets[1])) || (octets[0] == 192 && octets[1] == 168) {
+                return "Mac's relay · local network"
+            }
+            if octets[0] == 100 && (64...127).contains(octets[1]) { return "Mac's relay · VPN" }
+        }
+        return "public relay"
+    }
+
     /// The first relay, plus how many others: "100.101.102.103:8765 +1".
     var relaySummary: String {
         let first = relays.first.map(Self.displayHost) ?? ""

@@ -1,12 +1,11 @@
-////
-////  CreatePSBT.swift
-////  BitSense
-////
-////  Copyright © 2019 Fontaine. All rights reserved.
-////
 //
-import Foundation
+//  CreatePSBT.swift
+//  BitSense
+//
+//  Copyright © 2019 Fontaine. All rights reserved.
+//
 
+import Foundation
 
 class CreatePSBT {
 
@@ -95,13 +94,6 @@ class CreatePSBT {
             }
 
             return lock
-        }
-
-        func txLocktime(_ tx: Any) -> UInt32 {
-            if let n = (tx as AnyObject).value(forKey: "lockTime") as? UInt32 {
-                return n
-            }
-            return 0
         }
 
         requestPSBT(params: buildParams(inputs: inputs, locktime: nil)) { psbt, error in

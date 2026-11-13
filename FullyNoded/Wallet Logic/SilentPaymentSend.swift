@@ -119,7 +119,7 @@ enum SilentPaymentSend {
             }
             changeAddress = p
         }
-        let recipientPlaceholderScript = "5120" + SPHexFN.encode(recipient.spendPub.dropFirst())
+        let recipientPlaceholderScript = "5120" + Hex.encode(recipient.spendPub.dropFirst())
 
         CreatePSBT.create(inputs: inputs, outputs: [[placeholder: amount]], changeAddress: changeAddress,
                           subtractFeeFromOutputs: sweep ? [0] : nil) { firstPsbt, _, errorMessage in
@@ -162,7 +162,7 @@ enum SilentPaymentSend {
                             let xonly = try SPSender.outputKey(inputKeys: keys,
                                                                outpoints: decoded.inputs.map { $0.outpoint },
                                                                recipient: recipient)
-                            outputXonly = SPHexFN.encode(xonly)
+                            outputXonly = Hex.encode(xonly)
                             outputAddress = try SPAddress.p2tr(xonly: xonly)
                         } catch {
                             done(nil, error.localizedDescription)
@@ -233,7 +233,7 @@ enum SilentPaymentSend {
 
         // 36-byte serialized outpoint: txid (internal byte order) || vout LE.
         var outpoint: Data {
-            var d = Data((SPHexFN.decode(txid) ?? Data()).reversed())
+            var d = Data((Hex.decode(txid) ?? Data()).reversed())
             var le = UInt32(vout).littleEndian
             d.append(Data(bytes: &le, count: 4))
             return d
@@ -251,7 +251,7 @@ enum SilentPaymentSend {
         let param = Decode_Psbt(["psbt": psbt])
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .decodepsbt(param: param)) { response, errorDesc in
             guard let dict = response as? [String: Any],
-                  let tx = dict["tx"] as? [String: Any],
+                  let tx = PSBTVersion.tx(from: dict as NSDictionary) as? [String: Any],
                   let vin = tx["vin"] as? [[String: Any]],
                   let vout = tx["vout"] as? [[String: Any]],
                   let psbtInputs = dict["inputs"] as? [[String: Any]],
@@ -471,10 +471,10 @@ enum SPInputKeys {
     static func silentPaymentKey(input: SilentPaymentSend.DecodedInput,
                                  owned: SilentPaymentSpend.OwnedOutput,
                                  masters: [DescriptorSecretKey]) -> Key? {
-        guard let tweak = SPHexFN.decode(owned.tweakHex), tweak.count == 32, SPScalar.isValid(tweak) else { return nil }
+        guard let tweak = Hex.decode(owned.tweakHex), tweak.count == 32, SPScalar.isValid(tweak) else { return nil }
         var label: Data?
         if let labelHex = owned.labelTweakHex {
-            guard let l = SPHexFN.decode(labelHex), l.count == 32, SPScalar.isValid(l) else { return nil }
+            guard let l = Hex.decode(labelHex), l.count == 32, SPScalar.isValid(l) else { return nil }
             label = l
         }
         guard let path = try? BDKDerivationPathFN(path: SPSignerKeys.spendPath()) else { return nil }
@@ -491,7 +491,7 @@ enum SPInputKeys {
                 continue
             }
             let pub = Data(priv.publicKey.dataRepresentation)
-            guard "5120" + SPHexFN.encode(pub.dropFirst()) == input.scriptPubKey.lowercased() else {
+            guard "5120" + Hex.encode(pub.dropFirst()) == input.scriptPubKey.lowercased() else {
                 d.secureZero()   // another signer / passphrase
                 continue
             }
@@ -522,13 +522,13 @@ enum SPInputKeys {
                 switch kind {
                 case .p2wpkh, .p2shP2wpkh, .p2pkh:
                     // PSBT lists the compressed pubkey; it must match exactly.
-                    if SPHexFN.encode(pub) == deriv.pubkey {
+                    if Hex.encode(pub) == deriv.pubkey {
                         return Key(secret: secret)
                     }
 
                 case .p2tr:
                     // PSBT lists the x-only INTERNAL key.
-                    guard SPHexFN.encode(pub.dropFirst()) == deriv.pubkey else { break }
+                    guard Hex.encode(pub.dropFirst()) == deriv.pubkey else { break }
                     // BIP341 output key tweak:
                     //   d  = internal key, negated if P = d·G has odd Y
                     //   t  = hash_TapTweak(xonly(P) [|| merkle_root])   (root only with a script tree)
@@ -537,7 +537,7 @@ enum SPInputKeys {
                     if pub.first == 0x03 { d = SPScalar.negate(d) }
                     var tweakData = Data(pub.dropFirst())
                     if let rootHex = input.tapMerkleRoot {
-                        guard let root = SPHexFN.decode(rootHex), root.count == 32 else {
+                        guard let root = Hex.decode(rootHex), root.count == 32 else {
                             throw WalletLogic.SPError("Invalid taproot merkle root for input \(input.txid):\(input.vout).")
                         }
                         tweakData += root
@@ -551,7 +551,7 @@ enum SPInputKeys {
                     let qPub = Data(qPriv.publicKey.dataRepresentation)
                     if qPub.first == 0x03 { q = SPScalar.negate(q) }
                     // Safety: the tweaked key must be the output key in the prevout script.
-                    guard "5120" + SPHexFN.encode(qPub.dropFirst()) == input.scriptPubKey else {
+                    guard "5120" + Hex.encode(qPub.dropFirst()) == input.scriptPubKey else {
                         throw WalletLogic.SPError("Derived taproot key doesn't match input \(input.txid):\(input.vout). The PSBT may be missing the input's taproot merkle root.")
                     }
                     secret.secureZero()
@@ -680,8 +680,7 @@ enum SPScalar {
     static func isValid(_ a: Data) -> Bool { a.count == 32 && !isZero(a) && compare(limbs(a), n) < 0 }
 }
 
-
-// MARK: - Hash / hex helpers (FN-local names so they don't clash with WalletLogic.SPHex)
+// MARK: - Hash helpers
 
 enum SPHashFN {
     // BIP340 tagged hash.
@@ -694,11 +693,6 @@ enum SPHashFN {
     static func hash160(_ data: Data) -> Data {
         SPRIPEMD160.hash(Data(SHA256.hash(data: data)))
     }
-}
-
-enum SPHexFN {
-    static func decode(_ hex: String) -> Data? { WalletLogic.SPHex.decode(hex) }
-    static func encode<D: DataProtocol>(_ d: D) -> String { WalletLogic.SPHex.encode(Data(d)) }
 }
 
 /*

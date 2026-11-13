@@ -29,6 +29,10 @@ class AddressParser {
         var amount: Double?
         var label: String?
         var message: String?
+        /// BIP78 `pj=`: the receiver's payjoin endpoint (https, or an onion over Tor).
+        var payjoin: URL?
+        /// BIP78 `pjos=0`: the receiver must not substitute the payment output.
+        var payjoinOutputSubstitutionDisabled = false
     }
 
     /// BIP21 / BIP321: `bitcoin:[address][?amount=…&label=…&message=…&sp=…]`, or a bare
@@ -70,6 +74,16 @@ class AddressParser {
                     request.label = value
                 case "message":
                     request.message = value
+                case "pj", "req-pj":
+                    // BIP78 endpoint: https, or http(s) to an onion (Tor gives it its security).
+                    // A required payjoin this wallet can't use is refused, like any req- param.
+                    guard let url = Self.payjoinEndpoint(value) else {
+                        if item.name.lowercased() == "req-pj" { return nil }
+                        break
+                    }
+                    request.payjoin = url
+                case "pjos":
+                    request.payjoinOutputSubstitutionDisabled = value == "0"
                 case "sp":
                     // The first valid one (a wallet may only understand some versions).
                     if request.silentPayment == nil, let sp = processedAddress(value), SilentPaymentSend.isSilentPaymentAddress(sp) {
@@ -85,6 +99,15 @@ class AddressParser {
 
         guard request.address != nil || request.silentPayment != nil else { return nil }
         return request
+    }
+
+    /// A usable BIP78 endpoint: https://, or http(s):// to a .onion host. Anything else (plain
+    /// http to the clearnet, other schemes) is refused, as BIP78 requires.
+    static func payjoinEndpoint(_ raw: String) -> URL? {
+        guard let url = URL(string: raw), let scheme = url.scheme?.lowercased(), let host = url.host?.lowercased() else { return nil }
+        if scheme == "https" { return url }
+        if scheme == "http", host.hasSuffix(".onion") { return url }
+        return nil
     }
 
     /// The single address to pay (the silent payment address if one is offered), amount,

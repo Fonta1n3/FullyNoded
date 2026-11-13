@@ -25,7 +25,7 @@ public struct ImportDescriportsResponse: CustomStringConvertible {
     let error: [String: Any]?
     
     init(_ dictionary: [String: Any]) {
-        self.success = dictionary["success"] as! Bool
+        self.success = RPCValue.bool(dictionary["success"]) ?? false
         self.error = dictionary["error"] as? [String: Any]
     }
     

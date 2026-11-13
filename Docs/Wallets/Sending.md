@@ -1,122 +1,88 @@
-# Sending
+# Send
 
-<img src="./Images/send_view.png" alt="sending view" width="600"/><br/>
+Sending has three steps: **create** the transaction, **check and sign** it, **broadcast** it.
 
-Sending in Fully Noded is as simple as tapping the "send" button from the "Active Wallet" tab, inputting an amount, a recipient address and tapping the 🔗 button to create a normal (onchain) Bitcoin transaction. However there is more to it then that and you should be aware of all your options and what it all means.
+## 1. Create
 
-- [PSBT](#PSBT)
-- [Raw Transaction](#Raw-Transaction)
-- [Transaction fee](#Transaction-fee)
-- [Lightning](#Lightning)
-- [Donation](#Donation)
-- [Sweeping](#Sweeping)
-- [Batching](#Batching)
-- [BIP21](#BIP21)
-- [Currencies](#Currencies)
-- [Replace By Fee](#Replace-By-Fee)
+On the wallet tab tap **Send**:
 
-## PSBT
+<img src="../Images/app-send.jpg" alt="Send" width="300"/>
 
-<br/><img src="./Images/psbt_export.png" alt="" width="600"/><br/>
+- **Amount**: in BTC. **MAX** sends everything (sweeps the wallet).
+- **Recipient**: **Paste** an address or payment request, or scan one with the QR button (top
+  right). Silent payment (`sp1…`) addresses and payjoin invoices (`pj=`) work here too.
+  - **Wallet**: send to another of your wallets.
+  - **Batch**: add this recipient to a list and enter the next one, to pay several in one
+    transaction.
+  - **Donate**: fills in a donation address for Fully Noded development. Thank you!
+- **Fee**: your node's estimate, or type a fee rate in sat/vB.
 
-All psbt functionality is BIP174 compatible.
+Tap **Create transaction**. Your node builds a PSBT (an unsigned transaction) from your coins.
 
-Fully Noded is capable of creating either a fully signed raw transaction or psbt depending on whether the wallet is watch-only, hot, or multi-sig which can not be fully signed by the app itself.
+**Coin control**: to choose which coins to spend, open **UTXOs** on the wallet tab and tap
+**Spend** on a coin (or **Select** several). **Lock** keeps a coin from being spent.
 
-If Fully Noded and your node do not hold the private keys necessary to fully sign the transaction you will get presented with a psbt and have the option to export it in a number of formats.
+<img src="../Images/app-utxos.jpg" alt="UTXOs" width="300"/>
 
-You may also tap, double click, or airdrop a `.psbt` file to Fully Noded and it will automatically launch, attempting to sign the psbt and will either allow you to export the updated psbt again or if it is complete will finalize it and convert it to a raw transaction which can be broadcast.
+## 2. Check and sign
 
-## Raw Transaction
+The transaction verifier shows every input and output: amount, address, whether it's yours, your
+change, and the fee.
 
-<img src="./Images/broadcast.png" alt="" width="600"/><br/>
+<img src="../Images/app-verify.jpg" alt="Transaction verifier" width="300"/>
 
-If the transaction can be signed and is complete then Fully Noded will present you with a signed raw transaction in hex format. You may at any time tap, double click or airdrop a `.txn` file to your device or MacBook and Fully Noded will automatically launch and display the "Broadcaster" for you.
+Tap **Sign**. Fully Noded signs with the matching signer on your phone, then your node checks the
+transaction would be accepted (**Mempool accept**).
 
-<img src="./Images/verify.png" alt="" width="600"/><br/>
+If the keys aren't on this phone (a hardware wallet, or a multisig cosigner), tap **Export** to
+pass the PSBT on as a file, text or QR code. Open the signed PSBT in Fully Noded again (scan it,
+paste it or open the file) to finish.
 
-It is recommended to always use the "verify" button.
+Tap ⓘ (top right) for the raw `decodepsbt` output from your node.
 
-The verify button inspects and parses each input and output individually, displaying the amount and address associated with each as well as manually calculating the mining fee and the usd amount for each. This serves the purpose of allowing you to inspect the transaction and make sure nothing looks obviously out of whack.
+## 3. Broadcast
 
-Usually there will be a change output. You can confirm the change address is yours by copying it > "tools" tab > "wallet" > "get address info". It will automatically paste the address and fetch the address info, if you `solvable=1` in the returned data then you can rest assured the address is yours, this is only something you need to do if you are paranoid.
+<img src="../Images/app-verify-bottom.jpg" alt="Fee and send" width="300"/>
 
-There is no reason that you need to immediately broadcast the transaction. You can copy and paste it and save it for broadcasting later, which gives you ample time to inspect it.
+Check the **Mining fee**, then tap **Send** and choose:
 
-<img src="./Images/broadcast_tool.png" alt="broadcast tool" width="600"/><br/>
+- **Via my node**, or
+- **Via Esplora (Tor)**: mempool.space's onion service, or your own (Settings ▸ Esplora). More
+  private, since your node doesn't announce your own transaction first.
 
-<img src="./Images/broadcast_tool1.png" alt="broadcast tool" width="600"/><br/>
+## Read it before you sign
 
-You may broadcast any signed raw transaction with Fully Noded not just ones your wallet creates. This can be accessed as shown above by "tools" > "transactions" > "broadcast".
+<img src="../Images/app-verify-flow.jpg" alt="Flow and privacy rating" width="300"/>
 
-When ready you can tap "broadcast" (or the play button for the generic tool) and you may either broadcast the transaction with your own node, or by using Blockstream's Esplora API over Tor. Using someone else's node to broadcast your transaction is much more private than broadcasting it with your own node even though this may seem counterintuitive. Once the transaction has been successfully broadcast you will get a valid transaction ID and a success message and the transaction will appear in your transaction history.
+The top of the verifier shows:
 
-## Transaction fee
+- **Flow**: where the money goes. The amber ribbon is the fee. Tap a ribbon to go to that input or
+  output.
+- **Self transfer**: when every output comes back to this wallet, so only the fee leaves it.
+- **Next step**: for a PSBT, what it still needs and how many signatures are missing.
+- **Privacy**: a grade from common chain-analysis assumptions, such as spending several addresses
+  together or a change output that can be told apart. Tap it for the reasons. A good grade doesn't make
+  a transaction private, and how you broadcast it matters too.
 
-<img src="./Images/fee_slider.png" alt="" width="600"/><br/>
+An input with no **Sign** button is one no signer on this device can sign.
 
-At the bottom of the screen you will see a "Confirmation target" slider.
+## Will it confirm?
 
-The slider can be used to change the number of blocks in which we want our transaction to be confirmed (mined) in. Since each block takes about ten minutes to mine we can convert blocks to time, therefore setting the slider to two blocks will create a fee for your transaction which aims to get the transaction mined into a block within twenty minutes. The lower the number of blocks the higher your fee will be. **This is a rough target! It is not an exact science.** If you need the transaction to be confirmed quickly set it to the minimum target which is two blocks. This uses your node's built in fee estimation algorithm. Transactions are always RBF enabled in Fully Noded, however you always **need a balance** to utilize RBF. If you sweep your wallet (spend everything) and that transaction is not getting confirmed you will **NOT** be able to use RBF because you have no funds with which to RBF the transaction. Fully Noded is not yet capable of CPFP so please exercise caution when sweeping by setting a high mining fee.
+Tap an unconfirmed transaction to see its effective fee rate, counting any unconfirmed parents and
+children, and how that compares with your node's estimates and the block it would build now. On
+Core 32 or later it uses the rate miners actually work from (its chunk rate).
 
-## Lightning
+If your node no longer has it in its mempool, it may never confirm unless it's broadcast again. If
+it's your wallet's, you can **Abandon** it, so the wallet stops counting it and can spend its coins
+again. That doesn't cancel it: another node may still have it, and it can still confirm unless you
+spend those coins in a new transaction first.
 
-<img src="./Images/receiving_field.png" alt="receiving field" width="600"/><br/>
+## Bump the fee (RBF)
 
-You will see the ⚡️ button in a few places.
+Stuck transaction? Tap it on the wallet tab, tap **Bump fee**, then **Send** again. The new
+transaction replaces the old one.
 
-On the "Receiving address" field the ⚡️ button will fetch a funding address for your lightning wallet. You can think of this as a way to deposit funds to your lightning wallet.
+<img src="../Images/app-bump.jpg" alt="Fee bumped" width="300"/>
 
-<img src="./Images/top_buttons.png" alt="top buttons" width="300"/><br/>
-
-The larger ⚡️ button in the top right is for withdrawing funds from your lightning wallet to whichever address you specify.
-
-## Donation
-
-<img src="./Images/receiving_field.png" alt="receiving field" width="600"/><br/>
-
-The ♥️ button is for generating a donation address, this address is derived from a hard coded xpub in the app which I control and hold the seed words to. Your donations are greatly appreciated and support continued development of the app.
-
-## Sweeping
-
-<img src="./Images/sweep_button.png" alt="sweep button" width="300"/><br/>
-
-The sweep button will automatically sweep all your funds to the address provided. It is highly recommended to use a high fee setting when sweeping wallets as you will not be able to use RBF if fees spike while your transaction is unconfirmed.
-
-## Batching
-
-<img src="./Images/top_buttons.png" alt="top buttons" width="300"/><br/>
-
-<img src="./Images/batching.png" alt="batching" width="600"/><br/>
-
-The + button is for batching transactions, You can add a recipient address, an amount then tap the + button to add multiple outputs. This is great if you need to send multiple transactions at once and want to save on fees. Once you have added all the outputs you want just tap the 🔗 button to create the transaction.
-
-## BIP21
-
-<img src="./Images/top_buttons.png" alt="top buttons" width="300"/><br/>
-
-You can tap the QR scanner to scan BIP21 invoices or addresses. Generally if you are paying for something with btc on a website they will provide you with a QR code, this can be scanned or uploaded by tapping the QR button. Just tap the 🔗 button to create the transaction after scanning the invoice.
-
-## Currencies
-
-<img src="./Images/currencies.png" alt="currencies" width="600"/><br/>
-
-You can select denominations of `btc` (Bitcoin), `sats` (satoshis) and `usd`. Selecting `usd` will trigger the app to refresh the exchange rate and convert the dollar specified amount to an amount in btc, please be aware of Bitcoin's volatility and that by the time someone receives the btc the exchange rate may have changed.
-
-## Replace By Fee
-
-<img src="./Images/bump_button.png" alt="bump button" width="600"/><br/>
-
-**You always need a balance to utilize RBF, RBF will not work when you sweep a wallet**
-
-By default all transactions created by Fully Noded are [RBF](https://en.bitcoin.it/wiki/Replace_by_fee) enabled. To take advantage of this tap the transaction from the "Active Wallet" tab and then tap "bump fee" button.
-
-Under the hood an entirely new transaction is created with a higher fee, if Fully Noded can not completely sign the transaction it will present you with a psbt as normal, you will need to pass it to your signer and then back to Fully Noded to broadcast the higher fee transaction again and overwrite the original low fee transaction.
-
-<br/><img src="./Images/bump_broadcast.png" alt="bump broadcast" width="600"/><br/>
-
-If FN can complete the transaction it will automatically sign and broadcast the transaction at this point.
-
-<br/><img src="./Images/bumped_tx.png" alt="bumped transaction" width="600"/><br/>
-
-The final result will be multiple almost identical (only the fee will have changed) transactions on your "Active Wallet" tab.
+You need a coin to pay the higher fee with, so bumping doesn't work after sending everything
+(**MAX**). Use a higher fee when you sweep a wallet.

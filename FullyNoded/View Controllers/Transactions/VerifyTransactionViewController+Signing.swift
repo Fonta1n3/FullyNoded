@@ -88,20 +88,13 @@ extension VerifyTransactionViewController {
             guard let self = self else { return }
             
             if let rawTx = rawTx {
-                self.finishActivity()
-                SuccessView.show(
-                    in: self,
-                    title: "Transaction signed",
-                    subtitle: "Ready to broadcast. The transaction reloads so you can check it first.",
-                    onDismiss: { [weak self] in
-                        guard let self = self else { return }
-                        unsignedPsbt = ""
-                        reset()
-                        signedRawTx = rawTx
-                        enableSendButton()
-                        load()
-                    }
-                )
+                // A payjoin was offered: try it, keeping this signed payment as the fallback.
+                if let endpoint = self.payjoin, !self.payjoinAttempted, !self.payjoinOriginalPsbt.isEmpty {
+                    self.payjoinAttempted = true
+                    self.negotiatePayjoin(endpoint, signedRawTx: rawTx)
+                    return
+                }
+                self.showSigned(rawTx: rawTx)
             } else if let signedPsbt = signedPsbt {
                 // Signers only finalize the inputs of their own descriptor, so a transaction mixing
                 // descriptors (e.g. a timelocked output next to ordinary ones) can have every
@@ -124,6 +117,79 @@ extension VerifyTransactionViewController {
                 }
             }
         }
+    }
+
+    /// A watch-only wallet's payment for a payjoin invoice came back signed (imported): when it's
+    /// this payment, signed, start the payjoin with it. True when it started.
+    func startPayjoinWithImportedPayment() -> Bool {
+        guard let endpoint = payjoin, !payjoinAttempted, !signedRawTx.isEmpty, !payjoinOriginalPsbt.isEmpty,
+              (try? Payjoin.Original(unsignedPsbt: payjoinOriginalPsbt, signedRawTx: signedRawTx, paying: endpoint.address)) != nil else {
+            return false
+        }
+        payjoinAttempted = true
+        negotiatePayjoin(endpoint, signedRawTx: signedRawTx)
+        return true
+    }
+
+    /// The payjoin, step by step on its own screen: the normal signed payment is the fallback,
+    /// whatever happens (or if the user skips). A watch-only wallet signs the receiver's version
+    /// with its own signer, from that screen.
+    func negotiatePayjoin(_ endpoint: Payjoin.Endpoint, signedRawTx rawTx: String) {
+        finishActivity()
+        let negotiation = PayjoinNegotiationViewController(host: endpoint.url.host ?? endpoint.url.absoluteString, fallbackRawTx: rawTx,
+                                                           signedElsewhere: endpoint.signedElsewhere)
+        negotiation.onDone = { [weak self] finalTx, outcome, reason in
+            guard let self = self else { return }
+            if let outcome = outcome {
+                self.payjoinUsed = outcome.receiverInputs > 0
+                self.showPayjoinBanner(.used(receiverInputs: outcome.receiverInputs))
+            } else {
+                self.payjoinUsed = false
+                self.showPayjoinBanner(.fellBack(reason: reason ?? "The payjoin didn't work."))
+            }
+            self.loadSigned(rawTx: finalTx)
+        }
+        let original = payjoinOriginalPsbt
+        present(negotiation, animated: true) {
+            if endpoint.signedElsewhere {
+                Payjoin.propose(endpoint: endpoint, unsignedPsbt: original, signedRawTx: rawTx,
+                                progress: { [weak negotiation] stage in negotiation?.advance(stage) },
+                                completion: { [weak negotiation] result in
+                                    switch result {
+                                    case .success(let pending): negotiation?.awaitSignature(pending)
+                                    case .failure(let error): negotiation?.finish(.failure(error))
+                                    }
+                                })
+            } else {
+                Payjoin.attempt(endpoint: endpoint, unsignedPsbt: original, signedRawTx: rawTx, passphrase: self.passphrase,
+                                progress: { [weak negotiation] stage in negotiation?.advance(stage) },
+                                completion: { [weak negotiation] result in negotiation?.finish(result) })
+            }
+        }
+    }
+
+    /// Reloads the screen with a fully signed raw transaction.
+    func loadSigned(rawTx: String) {
+        unsignedPsbt = ""
+        reset()
+        signedRawTx = rawTx
+        enableSendButton()
+        load()
+    }
+
+    /// Fully signed: show it, then reload the screen with the raw transaction.
+    func showSigned(rawTx: String, kind: SuccessView.Kind = .success, title: String = "Transaction signed",
+                    subtitle: String = "Ready to broadcast. The transaction reloads so you can check it first.") {
+        finishActivity()
+        SuccessView.show(
+            in: self,
+            kind: kind,
+            title: title,
+            subtitle: subtitle,
+            onDismiss: { [weak self] in
+                self?.loadSigned(rawTx: rawTx)
+            }
+        )
     }
 
     /// Partially signed: still celebrate the signature, say how many are missing,

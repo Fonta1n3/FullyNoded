@@ -11,8 +11,8 @@ Noded wallet on your node. The same document lives in both repositories.
 
 | | Fully Noded | FN-Server |
 |---|---|---|
-| Derive SP keys / show `sp1…` address + QR | ✅ Signer detail, wallet detail | ✅ shows / shares the imported address |
-| Export for FN-Server (address + scan key + wallet, one QR / link) | ✅ Wallet detail → **FN-SERVER LINK**; signer → *Fully Noded Server QR* (auth required) | – |
+| Derive SP keys / show `sp1…` address + QR | ✅ Signer detail, Receive (*Silent payment*) | ✅ shows / shares the imported address |
+| Export for FN-Server (address + scan key + wallet, one QR / link) | ✅ Receive → *Silent payment* → **FN-Server link**; signer → *Fully Noded Server QR* (auth required) | – |
 | Export the scan private key alone (QR) | ✅ Signer detail → *Scan key only* (auth required) | – |
 | Import scan key + address | – | ✅ Silent Payments page → *Import from Fully Noded*, or field by field |
 | Scan the chain for payments to you | – | ✅ `SilentPaymentService` (background, parallel) |
@@ -43,12 +43,13 @@ Fully Noded signer (BIP39 seed)
                                          each tweak and signs with b_spend + t_k
 ```
 
-1. **Get your address.** In Fully Noded open the wallet (its *Silent payments*
-   section) or the signer (*Silent Payment Address*). It shows your `sp1…`
-   (mainnet) or `tsp1…` (test networks) address with a QR export. Share it
-   anywhere, or show it on the Receive screen (*Silent payment*).
-2. **Export for FN-Server.** In the wallet's *Silent payments* section tap
-   **FN-SERVER LINK** (Face ID / Touch ID or the app password). It's one QR /
+1. **Get your address.** In Fully Noded open the wallet's **Receive** screen
+   and pick *Silent payment*, or the signer (*Silent Payment Address*). It shows
+   your `sp1…` (mainnet) or `tsp1…` (test networks) address with a QR. Share it
+   anywhere.
+2. **Export for FN-Server.** On the Receive screen's *Silent payment* tab tap
+   **FN-Server link** (it needs an app lock password; then Face ID / Touch ID or
+   the app password). It's one QR /
    `fnsp://` link holding the address, the signer's scan private key and the
    wallet's name on your node. From a signer instead: *SP Scan Private Key* →
    *Fully Noded Server QR* (same link without the wallet name) or *Scan key only*;
@@ -121,7 +122,7 @@ without its words can't spend, by design.
 fnsp://import?v=1&address=<sp1… / tsp1…>&scankey=<b_scan, 64 hex>[&wallet=<Core wallet name>]
 ```
 
-`wallet` is present when exported from a wallet's detail screen (it tells
+`wallet` is present when exported from the wallet's Receive screen (it tells
 FN-Server which node wallet to import into). Made by `SilentPaymentServerLink`
 in Fully Noded and parsed by `SPKeyInput.importLink` in FN-Server.
 

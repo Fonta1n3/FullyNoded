@@ -323,6 +323,8 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
                                            "Multisig, miniscript timelocks, Taproot and silent payments. Keys stay encrypted on this device, or go watch-only and sign elsewhere."))
         content.addArrangedSubview(feature("network.badge.shield.half.filled", "Private by default",
                                            "Built-in Tor reaches your node over onion, from anywhere. Or pair with Fully Noded Server's Nostr Connect for a much faster, end-to-end encrypted link."))
+        content.addArrangedSubview(feature("arrow.triangle.merge", "Payjoin",
+                                           "Pay and get paid with payjoins: both sides add coins, so your payments don't look like payments. Received straight from your phone over Tor."))
 
         setActions(primary: "Get started", secondary: "Learn more at fullynoded.app")
     }
@@ -433,7 +435,7 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
         content.addArrangedSubview(WalletTheme.caption("> STEP 3 OF 3 · DONE", tint: tint))
         content.addArrangedSubview(title("You're all set"))
 
-        let hasLock = KeyChain.getData("UnlockPassword") != nil
+        let hasLock = AppAuthentication.hasAppPassword
         let activeLabel = connectedNodeLabel ?? savedActiveNodeLabel
         let others = savedNodeCount > 1 ? " \(savedNodeCount) nodes saved." : ""
         let nodeRow: UIView
@@ -495,13 +497,12 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
             close(addedNode: connectedNodeLabel != nil)
             return
         }
-        render(KeyChain.getData("UnlockPassword") == nil ? .secure : .done)
+        render(!AppAuthentication.hasAppPassword ? .secure : .done)
     }
 
     private func scanQuickConnect() {
-        guard !isShowingActivity,
-              let scanner = UIStoryboard(name: "Main", bundle: nil)
-                .instantiateViewController(withIdentifier: "QRScanner") as? QRScannerViewController else { return }
+        guard !isShowingActivity else { return }
+        let scanner = QRScannerViewController()
         scanner.isQuickConnect = true
         scanner.onDoneBlock = { [weak self] url in
             guard let self = self, let url = url else { return }
@@ -588,9 +589,7 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
             showAlert(vc: self, title: "Passwords don't match", message: "Enter the same password in both fields.")
             return
         }
-        // Same storage as AppPasswordViewController: sha256 of the password, in the keychain.
-        guard let data = Data(hexString: Crypto.sha256hash(password)),
-              KeyChain.set(data, forKey: "UnlockPassword") else {
+        guard AppAuthentication.setAppPassword(password) else {
             showAlert(vc: self, title: "Error", message: "We couldn't save your password.")
             return
         }
@@ -743,7 +742,7 @@ final class OnboardingViewController: UIViewController, UITextFieldDelegate {
 
             Each call to your node is encrypted on this phone for your server only (NIP-44) and sent as a short-lived nostr message through a relay. Fully Noded Server decrypts it, asks your node, and sends the encrypted answer back.
 
-            The relay only sees ciphertext, nothing is stored, and only paired phones can use your node. Use the Mac's own relay at home or over a VPN like Tailscale, or a public relay from anywhere.
+            The relay only sees ciphertext, nothing is stored, and only paired phones can use your node. Use the Mac's own relay at home, and turn on Tailscale Funnel in Fully Noded Server to reach it from anywhere (nothing to install on this phone), or add a public relay.
 
             Set up: Fully Noded Server › Nostr Connect › Pair Fully Noded, then scan its QR here.
             """, kind: .notice)

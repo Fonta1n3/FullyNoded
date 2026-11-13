@@ -45,12 +45,26 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var isUR = false
     var isPlainText = false
     var passphrase: String?
+    /// The payment request offered a BIP78 payjoin: tried once the payment is fully signed.
+    var payjoin: Payjoin.Endpoint?
+    var payjoinAttempted = false
+    /// The unsigned payment the payjoin is built from (BIP78's original, before signing).
+    var payjoinOriginalPsbt = ""
+    /// The transaction on screen is the receiver's payjoin (for the "sent" message).
+    var payjoinUsed = false
+    /// Top of the table while a payjoin is offered or was tried.
+    var payjoinBanner: PayjoinBanner?
+    /// Top of the table otherwise: will it confirm, or what a PSBT needs next (+Insight).
+    var insightCard: WalletInsightCard?
+    let insightService = BlockExplorerService()
     /// Silent payment outputs found for inputs of this transaction ("txid:vout" lowercase), so
     /// signing doesn't fetch and scan them again.
     var silentPaymentOwned: [String: SilentPaymentSpend.OwnedOutput] = [:]
     var initialLoad = true
     /// Set by the Send screen: show what to do next once the new transaction has loaded.
     var announceCreatedTransaction = false
+    /// Inputs (by index) whose unknown amounts are being asked of Esplora (+Analysis).
+    var esploraLookupsRunning = Set<Int>()
     /// Whether each bottom button should be enabled, regardless of activity.
     private var wantsEnabled: [ObjectIdentifier: Bool] = [:]
     /// True while a request is running: Send and Export are held disabled.
@@ -88,6 +102,36 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
         WalletTheme.stylePrimary(sendOutlet, tint: .transaction)
         WalletTheme.apply(to: self, tint: .transaction)
+        if let payjoin = payjoin {
+            let host = payjoin.url.host ?? payjoin.url.absoluteString
+            showPayjoinBanner(payjoin.signedElsewhere ? .offeredSignElsewhere(host: host) : .offered(host: host))
+            // Kept apart from unsignedPsbt, which importing the signed payment clears.
+            payjoinOriginalPsbt = unsignedPsbt
+        }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        sizeTableHeader()
+    }
+
+    func showPayjoinBanner(_ state: PayjoinBanner.State) {
+        let banner = payjoinBanner ?? PayjoinBanner()
+        payjoinBanner = banner
+        banner.update(state)
+        verifyTable.tableHeaderView = banner
+        insightCard = nil
+        sizeTableHeader(force: true)
+    }
+
+    /// Table header views don't size themselves: fit it to the table's width.
+    func sizeTableHeader(force: Bool = false) {
+        guard let banner: UIView = payjoinBanner ?? insightCard, verifyTable.bounds.width > 0 else { return }
+        let size = banner.systemLayoutSizeFitting(CGSize(width: verifyTable.bounds.width, height: UIView.layoutFittingCompressedSize.height),
+                                                  withHorizontalFittingPriority: .required, verticalFittingPriority: .fittingSizeLevel)
+        guard force || banner.frame.size != CGSize(width: verifyTable.bounds.width, height: size.height) else { return }
+        banner.frame = CGRect(x: 0, y: 0, width: verifyTable.bounds.width, height: size.height)
+        verifyTable.tableHeaderView = banner
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -126,6 +170,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         txid = ""
         inputArray.removeAll()
         inputTableArray.removeAll()
+        esploraLookupsRunning.removeAll()
         silentPaymentOwned.removeAll()
         outputArray.removeAll()
         index = 0

@@ -178,6 +178,7 @@ extension VerifyTransactionViewController {
             } else {
                 signButton.alpha = 0
             }
+            if Self.knownToHaveNoSigner(input) { signButton.alpha = 0 }
             signButton.isHidden = signButton.alpha < 0.01
             // Disabled only when we know no signer on this device can sign it.
             signButton.isEnabled = (input["canSign"] as? Bool) != false
@@ -190,6 +191,22 @@ extension VerifyTransactionViewController {
                 silentPaymentButton?.restorationIdentifier = outpoint
             }
             silentPaymentButton?.addTarget(self, action: #selector(fetchSilentPaymentInfo(_:)), for: .touchUpInside)
+            
+            // Only for an amount the node couldn't find, and only looked up on the user's tap.
+            let canAskEsplora = inputsEsploraCanLookUp.contains(indexPath.row)
+            inputCell.viewWithTag(VerifyCellTag.inputEsploraRow)?.isHidden = !canAskEsplora
+            (inputCell.viewWithTag(37) as? UIImageView).map {
+                $0.image = UIImage(systemName: "questionmark.circle")
+                $0.tintColor = .systemOrange
+            }
+            if canAskEsplora, let esploraButton = inputCell.viewWithTag(VerifyCellTag.inputEsploraButton) as? UIButton {
+                let asking = esploraLookupsRunning.contains(indexPath.row)
+                esploraButton.configuration?.title = asking ? "Asking…" : "Ask Esplora"
+                esploraButton.isEnabled = !asking
+                esploraButton.restorationIdentifier = "\(indexPath.row)"
+                esploraButton.accessibilityHint = "Looks this input's amount up with your Esplora server's onion over Tor. Esplora learns which transaction it comes from."
+                esploraButton.addTarget(self, action: #selector(lookUpInputWithEsplora(_:)), for: .touchUpInside)
+            }
             
             utxoLabel.text = label
             descTextView.text = desc
@@ -204,8 +221,7 @@ extension VerifyTransactionViewController {
             addressQrButton.restorationIdentifier = inputAddress
             getAddressInfoButton.restorationIdentifier = inputAddress
             signButton.restorationIdentifier = parentDesc
-            
-            
+
             copyAddressButton.addTarget(self, action: #selector(copyAddress(_:)), for: .touchUpInside)
             copyDescButton.addTarget(self, action: #selector(copyDesc(_:)), for: .touchUpInside)
             addressQrButton.addTarget(self, action: #selector(showAddressQr(_:)), for: .touchUpInside)
@@ -257,8 +273,6 @@ extension VerifyTransactionViewController {
                 
             } else {
                 inputTypeLabel.text = "Unknown type."
-                //backgroundView2.backgroundColor = .systemGray
-                //backgroundView1.backgroundColor = .systemGray
                 inputIsOursImage.image = UIImage(systemName: "questionmark.circle")
                 isChangeImageView.image = UIImage(systemName: "questionmark.circle")
                 inputIsOursImage.tintColor = .systemRed
@@ -350,23 +364,19 @@ extension VerifyTransactionViewController {
                 verifiedByFnLabel.text = "Owned by \(walletLabel)."
                 verifiedByFnImageView.image = UIImage(systemName: "checkmark.circle")
                 verifiedByFnImageView.tintColor = .systemGreen
-                //verifiedByFnBackgroundView.backgroundColor = .systemGreen
             } else {
                 verifyOwnerButton.alpha = 1
                 verifiedByFnLabel.text = "Not verified by Fully Noded."
                 verifiedByFnImageView.image = UIImage(systemName: "questionmark.circle")
                 verifiedByFnImageView.tintColor = .systemRed
-                //verifiedByFnBackgroundView.backgroundColor = .systemGray
             }
             
             if signable {
                 signableImageView.image = UIImage(systemName: "signature")
-                //signableBackgroundView.backgroundColor = .systemGreen
                 signerLabel.text = "Signable by \(signer)"
                 signableImageView.tintColor = .systemGreen
             } else {
                 signableImageView.image = UIImage(systemName: "signature")
-                //signableBackgroundView.backgroundColor = .systemRed
                 signerLabel.text = "Unable to determine."
                 signableImageView.tintColor = .systemOrange
             }
@@ -433,6 +443,16 @@ extension VerifyTransactionViewController {
         imageView.image = UIImage(systemName: isDust ? "exclamationmark.circle" : "checkmark.circle")
         imageView.tintColor = isDust ? .systemRed : .tintColor
         label?.text = isDust ? "Dust \(kind) (under 20,000 sats)." : "Not dust."
+    }
+
+    /// True only when the checks finished and ruled every signer out, so a Sign button could never
+    /// work. Not for "unable to determine", a hot wallet (the node has the keys), or the passphrase
+    /// prompt (the keys depend on what gets typed, which leaves canSign unset).
+    static func knownToHaveNoSigner(_ input: [String: Any]) -> Bool {
+        guard input["canSign"] as? Bool == false,
+              input["hotWallet"] as? Bool != true,
+              (input["signers"] as? [String])?.isEmpty == true else { return false }
+        return !(input["fingerprints"] as? [String] ?? []).isEmpty || input["spFetch"] as? String == "notFound"
     }
 
     /// Fills an input cell's "signable" row.
@@ -577,7 +597,6 @@ extension VerifyTransactionViewController {
         let label = labelCell.viewWithTag(1) as! UILabel
         let button = labelCell.viewWithTag(2) as! UIButton
         button.addTarget(self, action: #selector(updateLabelMemoAction), for: .touchUpInside)
-        //button.showsTouchWhenHighlighted = true
         label.text = labelText
         label.textColor = .label
         return labelCell
@@ -752,7 +771,7 @@ extension VerifyTransactionViewController: UITableViewDelegate {
             case 3:
                 textLabel.text = "Inputs"
                 textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
-                                
+
             case 4:
                 textLabel.text = "Outputs"
                 textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
@@ -795,8 +814,7 @@ extension VerifyTransactionViewController {
 
 // MARK: - Programmatic cells
 //
-// The cells keep the view tags the storyboard prototypes used, so the cell builders above
-// look their subviews up exactly as before. New: tag 30 (dust text) on inputs and outputs,
+// The cell builders above look the cells' subviews up by tag. New: tag 30 (dust text) on inputs and outputs,
 // and tags 31 / 32 (signable icon / signer text) on inputs.
 
 enum VerifyCellTag {
@@ -804,6 +822,9 @@ enum VerifyCellTag {
     static let inputSignableImage = 31
     static let inputSignerLabel = 32
     static let inputSilentPaymentButton = 33
+    /// The row offering an Esplora lookup of an input amount the node couldn't find.
+    static let inputEsploraRow = 34
+    static let inputEsploraButton = 35
 }
 
 private enum VerifyCellKit {
@@ -966,8 +987,16 @@ final class VerifyInputCell: UITableViewCell {
 
         let signButton = K.textButton(22, title: "Sign", systemImage: "signature")
 
+        let esploraLabel = K.label(36, size: 12, color: WalletTheme.dim)
+        esploraLabel.text = "Your node doesn't have this amount."
+        let esploraRow = K.statusRow(icon: K.icon(37), label: esploraLabel,
+                                     trailing: K.textButton(VerifyCellTag.inputEsploraButton, title: "Ask Esplora", systemImage: "magnifyingglass"))
+        esploraRow.tag = VerifyCellTag.inputEsploraRow
+        esploraRow.isHidden = true
+
         K.install([
             topRow,
+            esploraRow,
             K.hairline(),
             K.captionRow("ADDRESS", buttons: [K.iconButton(18, systemName: "doc.on.doc"),
                                               K.iconButton(20, systemName: "qrcode"),

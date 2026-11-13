@@ -121,14 +121,8 @@ class OnchainUtils {
         let param: Rescan_Blockchain = .init(["start_height": from])
         // current behavior of bitcoin core is to wait until the rescan completes before responding, which is terrible ux.
         // this command may fail, as a work around users need to refresh the home screen to see if it was successful.
-        MakeRPCCall.sharedInstance.executeRPCCommand(method: .rescanblockchain(param)) { (_, _) in
-//            guard let errorMess = errorMess else {
-//                completion((false, "unknown issue starting rescan."))
-//                return
-//            }
-        }
+        MakeRPCCall.sharedInstance.executeRPCCommand(method: .rescanblockchain(param)) { (_, _) in }
         completion((true, nil))
-        
     }
     
     static func createWallet(param: Create_Wallet_Param, completion: @escaping ((name: String?, message: String?)) -> Void) {
@@ -143,8 +137,7 @@ class OnchainUtils {
             completion((walletName, warning))
         }
     }
-    
-    
+
     static func deriveAddresses(param: Derive_Addresses, completion: @escaping ((addresses: [String]?, message: String?)) -> Void) {        
         MakeRPCCall.sharedInstance.executeRPCCommand(method: .deriveaddresses(param: param)) { (response, errorMessage) in
             guard let addresses = response as? [String] else {

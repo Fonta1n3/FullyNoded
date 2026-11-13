@@ -15,11 +15,39 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
     private override init() {}
     
     let torClient = TorClient.sharedInstance
-    var connected: Bool = false
-    var onDoneBlock: (((response: Any?, errorDesc: String?)) -> Void)?
-    var activeNode: NodeStruct?
+    var activeNode: NodeStruct? {
+        didSet {
+            let isOnion = activeNode.map(Self.isOnion) ?? false
+            guard isOnion != activeNodeIsOnion else { return }
+            activeNodeIsOnion = isOnion
+            torClient.syncOnionOnly()
+        }
+    }
+    /// The active node is reached at its onion: Tor goes onion only (TorClient.onionOnly).
+    private(set) var activeNodeIsOnion = false
+
+    private static func isOnion(_ node: NodeStruct) -> Bool {
+        guard node.nostrConnect == nil, let address = node.onionAddress.flatMap({ Crypto.decrypt($0)?.utf8String }) else { return false }
+        return address.lowercased().contains(".onion")
+    }
     let delegate = UserCertURLSessionDelegate()
-    
+    // One session per kind of connection. A session per call leaves its idle connections open, and
+    // new calls then wait for them to time out: seconds apart, on a local node.
+    private let plainSession = URLSession(configuration: .default)
+    private var certSession: (cert: String, session: URLSession)?
+    /// Calls start on any queue (often a previous call's completion), so `certSession` is guarded.
+    private let sessionLock = NSLock()
+
+    /// The session for a node with this self-signed cert, made once per cert.
+    private func session(forCert decryptedCert: String) -> URLSession {
+        sessionLock.lock()
+        defer { sessionLock.unlock() }
+        if let current = certSession, current.cert == decryptedCert { return current.session }
+        certSession?.session.finishTasksAndInvalidate()
+        let session = URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: .main)
+        certSession = (decryptedCert, session)
+        return session
+    }
     
     func getActiveNode(completion: @escaping ((NodeStruct?) -> Void)) {
         CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
@@ -27,15 +55,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
                 completion((nil))
                 return
             }
-            var activeNode: [String:Any]?
-            for node in nodes {
-                if let isActive = node["isActive"] as? Bool {
-                    if isActive {
-                        activeNode = node
-                    }
-                }
-            }
-            guard let active = activeNode else {
+            guard let active = nodes.last(where: { $0["isActive"] as? Bool == true }) else {
                 completion((nil))
                 return
             }
@@ -48,22 +68,41 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
     
     /// `walletName` targets a specific wallet for this one call; when nil the active wallet
     /// (UserDefaults "walletName") is used. Passing it avoids ever touching the active wallet.
-    func executeRPCCommand(method: BTC_CLI_COMMAND, walletName walletOverride: String? = nil, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
+    func executeRPCCommand(method: BTC_CLI_COMMAND, walletName walletOverride: String? = nil, completion done: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
+        // psbt_version only goes to nodes known to take it (Core 32+). If the node rejects it anyway
+        // (the stored version is from another node), stop sending it and try once more without.
+        let params = PSBTVersion.mustRequestV0 ? method.paramDict : PSBTVersion.stripped(method.paramDict)
+        var completion: ((response: Any?, errorDesc: String?)) -> Void = { [weak self] result in
+            if PSBTVersion.sends(params), PSBTVersion.isRejection(result.errorDesc), let self = self {
+                PSBTVersion.nodeRejectedParam = true
+                self.executeRPCCommand(method: method, walletName: walletOverride, completion: done)
+                return
+            }
+            done(result)
+        }
         #if DEBUG
         // Every call, over HTTP / Tor or Nostr Connect: the command, its wallet and arguments
         // going out, and how it came back. No credentials.
         let started = Date()
         let rpcWallet = isWalletRPC(command: method) ? (walletOverride ?? UserDefaults.standard.object(forKey: "walletName") as? String) : nil
-        print("[rpc] → \(method.stringValue)\(rpcWallet.map { " (wallet \($0))" } ?? "") params: \(method.paramDict)")
-        let completion: ((response: Any?, errorDesc: String?)) -> Void = { result in
+        print("[rpc] → \(method.stringValue)\(rpcWallet.map { " (wallet \($0))" } ?? "") params: \(params)")
+        let finish = completion
+        completion = { result in
             let ms = Int(Date().timeIntervalSince(started) * 1000)
             print("[rpc] ← \(method.stringValue) \(result.errorDesc.map { "error: \($0)" } ?? "ok") (\(ms) ms)")
-            completion(result)
+            finish(result)
         }
         #endif
         guard let node = activeNode else {
             completion((nil, "No active Bitcoin Core node."))
             return
+        }
+        
+        let walletName = walletOverride ?? UserDefaults.standard.object(forKey: "walletName") as? String
+        var walletPath = ""
+        if isWalletRPC(command: method), let walletName = walletName {
+            let allowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
+            walletPath = "/wallet/" + (walletName.addingPercentEncoding(withAllowedCharacters: allowed) ?? walletName)
         }
         
         // Nostr Connect node: the same JSON-RPC request, through Fully Noded Server's relay.
@@ -72,18 +111,12 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
                 completion((nil, "error decrypting node credentials"))
                 return
             }
-            let walletName = walletOverride ?? UserDefaults.standard.object(forKey: "walletName") as? String
-            var path = ""
-            if isWalletRPC(command: method), let walletName = walletName {
-                let allowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
-                path = "/wallet/" + (walletName.addingPercentEncoding(withAllowedCharacters: allowed) ?? walletName)
-            }
-            let dict: [String: Any] = ["jsonrpc": "1.0", "id": UUID().uuidString, "method": method.stringValue, "params": method.paramDict]
+            let dict: [String: Any] = ["jsonrpc": "1.0", "id": UUID().uuidString, "method": method.stringValue, "params": params]
             guard let body = try? JSONSerialization.data(withJSONObject: dict) else {
                 completion((nil, "Unable to encode the request."))
                 return
             }
-            NostrRPC.shared.send(body: body, path: path, timeout: timeout(for: method), link: link) { [weak self] result in
+            NostrRPC.shared.send(body: body, path: walletPath, timeout: timeout(for: method), link: link) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
                 case .success(let response):
@@ -96,15 +129,8 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
             return
         }
         
-        var encryptedCert: Data?
-        var decryptedCert: String?
-        var cert: SecCertificate?
-        
-        if let _ = node.cert {
-            encryptedCert = node.cert!
-            decryptedCert = decryptedValue(encryptedCert!)
-            cert = CertificateManager.shared.base64ToCert(base64: decryptedCert!)
-        }
+        let decryptedCert = node.cert.map(decryptedValue) ?? ""
+        let cert = decryptedCert.isEmpty ? nil : CertificateManager.shared.base64ToCert(base64: decryptedCert)
         
         guard let encAddress = node.onionAddress,
               let encUser = node.rpcuser,
@@ -122,17 +148,8 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
             return
         }
         
-        var walletUrl = "http://\(rpcusername):\(rpcpassword)@\(onionAddress)"
-        
-        if decryptedCert != "" && decryptedCert != nil {
-            walletUrl = "https://\(rpcusername):\(rpcpassword)@\(onionAddress)"
-        }
-                        
-        let walletName = walletOverride ?? UserDefaults.standard.object(forKey: "walletName") as? String
-        
-        if isWalletRPC(command: method), let walletName = walletName {
-            walletUrl += "/wallet/" + walletName
-        }
+        let scheme = decryptedCert.isEmpty ? "http" : "https"
+        let walletUrl = "\(scheme)://\(rpcusername):\(rpcpassword)@\(onionAddress)\(walletPath)"
         
         guard let url = URL(string: walletUrl) else {
             completion((nil, "url error"))
@@ -156,20 +173,17 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
             "jsonrpc": "1.0",
             "id": id,
             "method": method.stringValue,
-            "params": method.paramDict
+            "params": params
         ]
         
         guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted) else {
-            #if DEBUG
-            print("Converting to jsonData failing...")
-            #endif
+            completion((nil, "Unable to encode the request."))
             return
         }
         
         request.httpBody = jsonData
         
-        
-        var sesh = URLSession(configuration: .default)
+        var sesh = plainSession
         
         if onionAddress.contains("onion") {
             sesh = self.torClient.session
@@ -183,7 +197,7 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
                     return
                 }
                 
-                sesh = URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: .main)
+                sesh = session(forCert: decryptedCert)
             }
         }
         
@@ -210,6 +224,10 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
     private func timeout(for method: BTC_CLI_COMMAND) -> Double {
         switch method {
         case .gettxoutsetinfo: return 1000.0
+        // Reads the whole UTXO set: over a minute on a fast node, more on a small one.
+        case .scantxoutset: return 600.0
+        // A full block or template is many megabytes, slow over Tor.
+        case .getblock, .getblocktemplate: return 300.0
         case .importdescriptors: return 180.0
         default: return 60.0
         }
@@ -235,7 +253,8 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         }
         
         #if DEBUG
-        print("json: \(json)")
+        // Whole blocks are tens of megabytes: printing one stalls the app.
+        if urlContent.count < 100_000 { print("json: \(json)") }
         #endif
         
         guard let errorCheck = json["error"] as? NSDictionary else {
@@ -273,21 +292,3 @@ class MakeRPCCall: NSObject, URLSessionDelegate {
         }
     }
 }
-
-extension String {
-    func split(by length: Int) -> [String] {
-        var startIndex = self.startIndex
-        var results = [Substring]()
-        
-        while startIndex < self.endIndex {
-            let endIndex = self.index(startIndex, offsetBy: length, limitedBy: self.endIndex) ?? self.endIndex
-            results.append(self[startIndex..<endIndex])
-            startIndex = endIndex
-        }
-        
-        return results.map { String($0) }
-    }
-}
-
-
-

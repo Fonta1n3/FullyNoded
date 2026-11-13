@@ -9,7 +9,9 @@
 import UIKit
 
 final class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UINavigationControllerDelegate {
-    
+    // Pushed full height, without the tab bar.
+    override var hidesBottomBarWhenPushed: Bool { get { true } set {} }
+
     private let detailTable = UITableView(frame: .zero, style: .grouped)
     
     var walletId: UUID!
@@ -44,17 +46,11 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     private var labelButton: UIButton!
     private var cellHeights = [IndexPath: CGFloat]()
     /// Stored signers (with seed words) whose fingerprint appears in this wallet's descriptors.
-    private var walletSigners: [(label: String, xfp: String, signer: SignerStruct, spAddress: String?)] = []
-    /// Signers whose silent payment address is available for this wallet: those with seed words,
-    /// plus those whose words were deleted after the address and scan key were saved.
-    private var spSigners: [(label: String, xfp: String, signer: SignerStruct, spAddress: String?)] = []
-    /// The signer the silent payment section shows (when several can sign).
-    private var spSignerIndex = 0
+    private var walletSigners: [(label: String, xfp: String, signer: SignerStruct)] = []
 
     private enum Section: Int, CaseIterable {
         case label
         case signers
-        case silentPayment
         case backupText
         case walletExport
         case exportFile
@@ -108,7 +104,11 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         rescan.tintColor = Cypher.green
         rescan.setTitleTextAttributes([.font: Cypher.mono(13, weight: .semibold)], for: .normal)
 
-        navigationItem.rightBarButtonItems = [delete, rescan, info]
+        let privacy = UIBarButtonItem(image: UIImage(systemName: "checkmark.shield"), style: .plain, target: self, action: #selector(privacyAction))
+        privacy.tintColor = Cypher.green
+        privacy.accessibilityLabel = "Privacy checkup"
+
+        navigationItem.rightBarButtonItems = [delete, rescan, info, privacy]
     }
     
     private func configureTable() {
@@ -216,6 +216,10 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         }
     }
     
+    @objc private func privacyAction() {
+        navigationController?.pushViewController(WalletPrivacyViewController(), animated: true)
+    }
+
     @objc func rescanAction() {
         promptToRescan()
     }
@@ -411,33 +415,25 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         guard !fingerprints.isEmpty else { return }
 
         CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
-            var matches: [(label: String, xfp: String, signer: SignerStruct, spAddress: String?)] = []
-            var spMatches: [(label: String, xfp: String, signer: SignerStruct, spAddress: String?)] = []
-            let mainnet = self?.coinType == "0"
+            var matches: [(label: String, xfp: String, signer: SignerStruct)] = []
             for dict in signers ?? [] {
                 let signer = SignerStruct(dictionary: dict)
                 guard let encrypted = signer.xfp,
                       let xfp = Crypto.decrypt(encrypted)?.utf8String?.lowercased(),
                       fingerprints.contains(xfp) else { continue }
-                let spAddress = SignerSilentPayment.info(for: signer, mainnet: mainnet)?.address
                 if signer.words != nil, !matches.contains(where: { $0.xfp == xfp }) {
-                    matches.append((signer.label, xfp, signer, spAddress))
-                }
-                if spAddress != nil, !spMatches.contains(where: { $0.xfp == xfp }) {
-                    spMatches.append((signer.label, xfp, signer, spAddress))
+                    matches.append((signer.label, xfp, signer))
                 }
             }
 
             DispatchQueue.main.async {
                 guard let self else { return }
                 self.walletSigners = matches
-                self.spSigners = spMatches
-                self.detailTable.reloadSections(IndexSet([Section.signers.rawValue, Section.silentPayment.rawValue]), with: .automatic)
+                self.detailTable.reloadSections(IndexSet(integer: Section.signers.rawValue), with: .automatic)
             }
         }
     }
-    
-    
+
     private func applyLocalWallet(_ walletStruct: Wallet) {
         wallet = walletStruct
         originalLabel = wallet.label
@@ -670,14 +666,24 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     }
     
     private func showQr() {
-        //let vc = QRDisplayerViewController()
-        
-        //navigationController?.pushViewController(vc, animated: true)
-        
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.performSegue(withIdentifier: "segueToAccountMap", sender: self)
+            let vc = QRDisplayerViewController()
+            vc.text = self.textToShow
+            
+            if self.outputDescFormat {
+                vc.headerText = "UR Wallet Export Descriptor"
+                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                vc.isUR = true
+            }
+            
+            if self.urBytesFormat {
+                vc.headerText = "Wallet Export UR Bytes"
+                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                vc.isUR = true
+            }
+            self.navigationController?.pushViewController(vc, animated: true)
         }
     }
     
@@ -715,7 +721,6 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         switch Section(rawValue: indexPath.section) {
         case .label: content = labelContent()
         case .signers: content = signersContent()
-        case .silentPayment: content = silentPaymentContent()
         case .backupText: content = walletInfoContent()
         case .walletExport: content = exportWalletContent()
         case .exportFile: content = backupFileExportContent()
@@ -796,156 +801,6 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         return styledCard(rows)
     }
     
-    /// The silent payment address of the selected signer (shown, as a QR, exportable) and the
-    /// Fully Noded Server link for this wallet.
-    private func silentPaymentContent() -> UIView {
-        let index = min(spSignerIndex, spSigners.count - 1)
-        let entry = spSigners[index]
-        var views: [UIView] = []
-        
-        if spSigners.count > 1 {
-            let control = UISegmentedControl(items: spSigners.map { $0.label })
-            WalletTheme.style(control)
-            control.selectedSegmentIndex = index
-            control.addTarget(self, action: #selector(spSignerChanged(_:)), for: .valueChanged)
-            control.heightAnchor.constraint(equalToConstant: 32).isActive = true
-            views.append(control)
-        }
-        
-        let title = UILabel()
-        title.text = "\(entry.label) [\(entry.xfp)] · \(coinType == "0" ? "mainnet" : "testnet / signet")"
-        title.font = Cypher.mono(11)
-        title.textColor = Cypher.dim
-        title.numberOfLines = 0
-        views.append(title)
-        
-        guard let address = entry.spAddress else {
-            let label = UILabel()
-            label.text = "Unable to derive the silent payment address for this signer."
-            label.font = Cypher.mono(13)
-            label.textColor = Cypher.dim
-            label.numberOfLines = 0
-            views.append(label)
-            return styledCard(views)
-        }
-        
-        let addressView = makeTextView(address)
-        addressView.isScrollEnabled = false
-        addressView.textContainerInset = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
-        addressView.setContentCompressionResistancePriority(.required, for: .vertical)
-        views.append(addressView)
-        
-        let generator = QRGenerator()
-        generator.qrText = address
-        let qr = UIImageView(image: generator.getQRCode())
-        qr.contentMode = .scaleAspectFit
-        qr.layer.magnificationFilter = .nearest
-        qr.isUserInteractionEnabled = true
-        qr.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(exportSilentPaymentAddress)))
-        qr.widthAnchor.constraint(equalToConstant: 200).isActive = true
-        qr.heightAnchor.constraint(equalToConstant: 200).isActive = true
-        let qrRow = UIStackView(arrangedSubviews: [UIView(), qr, UIView()])
-        qrRow.axis = .horizontal
-        qrRow.distribution = .equalCentering
-        views.append(qrRow)
-        
-        let export = makeExportButton()
-        export.removeTarget(nil, action: nil, for: .allEvents)
-        export.addTarget(self, action: #selector(exportSilentPaymentAddress), for: .touchUpInside)
-        export.setContentHuggingPriority(.required, for: .horizontal)
-        let exportRow = UIStackView(arrangedSubviews: [UIView(), export])
-        exportRow.axis = .horizontal
-        exportRow.alignment = .center
-        views.append(exportRow)
-        
-        let divider = UIView()
-        divider.backgroundColor = Cypher.line
-        divider.heightAnchor.constraint(equalToConstant: 1).isActive = true
-        views.append(divider)
-        
-        let note = UILabel()
-        note.text = "Fully Noded Server link: sets up silent payment scanning for this wallet in one step. It holds this address, the signer's scan private key and this wallet's name on your node (\(wallet.name))."
-        note.numberOfLines = 0
-        note.font = Cypher.mono(11)
-        note.textColor = Cypher.dim
-        views.append(note)
-        
-        let server = UIButton(type: .system)
-        server.setTitle("FN-SERVER LINK", for: .normal)
-        server.setImage(UIImage(systemName: "eye"), for: .normal)
-        server.titleLabel?.font = Cypher.mono(12, weight: .semibold)
-        server.tintColor = Cypher.green
-        server.setTitleColor(Cypher.green, for: .normal)
-        server.layer.borderWidth = 1
-        server.layer.borderColor = Cypher.green.cgColor
-        server.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
-        server.imageEdgeInsets = UIEdgeInsets(top: 0, left: -4, bottom: 0, right: 4)
-        server.addTarget(self, action: #selector(silentPaymentServerLinkAction), for: .touchUpInside)
-        server.setContentHuggingPriority(.required, for: .horizontal)
-        let serverRow = UIStackView(arrangedSubviews: [UIView(), server])
-        serverRow.axis = .horizontal
-        serverRow.alignment = .center
-        views.append(serverRow)
-        
-        return styledCard(views)
-    }
-    
-    @objc private func spSignerChanged(_ sender: UISegmentedControl) {
-        spSignerIndex = sender.selectedSegmentIndex
-        detailTable.reloadSections(IndexSet(integer: Section.silentPayment.rawValue), with: .none)
-    }
-    
-    /// The silent payment address as a QR (with copy / share): public, so no authentication.
-    @objc private func exportSilentPaymentAddress() {
-        guard !spSigners.isEmpty else { return }
-        let entry = spSigners[min(spSignerIndex, spSigners.count - 1)]
-        guard let address = entry.spAddress,
-              let vc = UIStoryboard(name: "Main", bundle: nil)
-                .instantiateViewController(withIdentifier: "QRDisplayer") as? QRDisplayerViewController else { return }
-        vc.headerIcon = UIImage(systemName: "eye.slash")
-        vc.headerText = "Silent Payment Address"
-        vc.descriptionText = "BIP352 silent payment address of \(entry.label) [\(entry.xfp)]. Share it to receive silent payments; Fully Noded Server (or another scanner with the scan key) finds them."
-        vc.text = address
-        navigationController?.pushViewController(vc, animated: true)
-    }
-    
-    /// Fully Noded Server quick connect for silent payments, for this wallet: the signer's
-    /// silent payment address and scan private key plus this wallet's Bitcoin Core name, so the
-    /// server imports what it finds straight into this wallet.
-    @objc private func silentPaymentServerLinkAction() {
-        guard !spSigners.isEmpty else { return }
-        authenticateForServerLink(spSigners[min(spSignerIndex, spSigners.count - 1)].signer)
-    }
-    
-    private func authenticateForServerLink(_ signer: SignerStruct) {
-        AppAuthentication.authenticate(from: self, reason: "To export your silent payment scan private key") { [weak self] success in
-            guard let self, success else { return }
-            self.showServerLink(signer)
-        }
-    }
-
-    private func showServerLink(_ signer: SignerStruct) {
-        // The wallet's own network (xpub → mainnet), not the node the app is pointed at. From the
-        // seed words, or the copy saved before they were deleted.
-        let mainnet = coinType == "0"
-        guard let info = SignerSilentPayment.info(for: signer, mainnet: mainnet),
-              let link = SilentPaymentServerLink.make(address: info.address, scanKey: info.scanKey, wallet: wallet.name) else {
-            showAlert(vc: self, title: "", message: "Unable to derive the silent payment address and scan private key.")
-            return
-        }
-
-        DispatchQueue.main.async { [weak self] in
-            guard let self,
-                  let vc = UIStoryboard(name: "Main", bundle: nil)
-                    .instantiateViewController(withIdentifier: "QRDisplayer") as? QRDisplayerViewController else { return }
-            vc.headerIcon = UIImage(systemName: "eye")
-            vc.headerText = "Fully Noded Server"
-            vc.descriptionText = "In Fully Noded Server, open Silent Payments and use Import from Fully Noded: Paste link (tap Copy Text here; Universal Clipboard brings it to your Mac) or QR image… (Share QR, then save or AirDrop the image). It sets up silent payment scanning for \"\(self.wallet.label)\" in one step: the silent payment address and scan private key of \(signer.label) (\(mainnet ? "mainnet" : "testnet / signet")), and this wallet's name on your node. It can't spend your bitcoin, but it reveals every silent payment you receive. Only use it with a server you control."
-            vc.text = link
-            self.navigationController?.pushViewController(vc, animated: true)
-        }
-    }
-
     private func walletInfoContent() -> UIView {
         let tv = makeTextView(backupFileText)
         tv.isScrollEnabled = false
@@ -972,7 +827,6 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         let label = UILabel()
         label.text = "This wallet backup file export is for Fully Noded usage only. It is your wallet's descriptors in JSON data format, encoded as a hex string."
         label.numberOfLines = 0
-        //label.font = .systemFont(ofSize: 15)
         label.font = Cypher.mono(13)
         label.textColor = Cypher.text//.label
 
@@ -995,7 +849,6 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     private func filenameContent() -> UIView {
         let label = UILabel()
         label.text = wallet.name + ".dat"
-        //label.tintColor = Cypher.text
         label.textColor = Cypher.text
         label.numberOfLines = 0
         label.lineBreakMode = .byWordWrapping
@@ -1093,37 +946,8 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         return styledCard([field])
     }
     
-    private func textExportContent(_ text: String, section: Section, showExport: Bool) -> UIView {
-        let tv = makeTextView(text)
-        tv.isScrollEnabled = false
-        tv.textContainerInset = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
-        tv.setContentCompressionResistancePriority(.required, for: .vertical)
-
-        var views: [UIView] = [tv]
-        if showExport {
-            let export = makeExportButton()
-            export.tag = section.rawValue
-            export.setContentHuggingPriority(.required, for: .horizontal)
-
-            let exportRow = UIStackView(arrangedSubviews: [UIView(), export])
-            exportRow.axis = .horizontal
-            exportRow.alignment = .center
-            views.append(exportRow)
-        }
-
-        let stack = UIStackView(arrangedSubviews: views)
-        stack.axis = .vertical
-        stack.spacing = 8
-        stack.alignment = .fill
-
-        return styledCard([stack])
-    }
-    
     private func descriptorContent(_ text: String, section: Section, isActive: Bool) -> UIView {
         let status = UILabel()
-        //status.font = .systemFont(ofSize: 15, weight: .medium)
-        //status.text = isActive ? "Active" : "Inactive"
-        //status.textColor = isActive ? Cypher.text : .secondaryLabel
         status.setContentCompressionResistancePriority(.required, for: .vertical)
         status.font = Cypher.mono(13, weight: .semibold)
         status.text = isActive ? "ACTIVE" : "INACTIVE"
@@ -1233,7 +1057,7 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch Section(rawValue: indexPath.section) {
         case .nextIndexExternal, .nextIndexInternal, .label, .externalRange, .internalRange: return 50
-        case .signers, .silentPayment, .filename, .exportFile, .backupText, .walletExport, .receiveDesc, .changeDesc, .listdescriptors, .addressExplorer:
+        case .signers, .filename, .exportFile, .backupText, .walletExport, .receiveDesc, .changeDesc, .listdescriptors, .addressExplorer:
             return UITableView.automaticDimension
         default: return 0
         }
@@ -1245,10 +1069,9 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
 
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? { nil }
 
-    /// The signers and silent payment sections only show when a stored signer can sign for this wallet.
+    /// The signers section only shows when a stored signer can sign for this wallet.
     private func isHidden(_ section: Int) -> Bool {
-        let kind = Section(rawValue: section)
-        return (kind == .signers && walletSigners.isEmpty) || (kind == .silentPayment && spSigners.isEmpty)
+        Section(rawValue: section) == .signers && walletSigners.isEmpty
     }
 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -1527,7 +1350,6 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         case .backupText: return ("Wallet Info", UIImage(systemName: "info.circle")!)
         case .label: return ("Label", UIImage(systemName: "rectangle.and.paperclip")!)
         case .signers: return (walletSigners.count == 1 ? "Signer" : "Signers", UIImage(systemName: "signature")!)
-        case .silentPayment: return ("Silent payments", UIImage(systemName: "eye.slash")!)
         case .walletExport: return ("Wallet export", UIImage(systemName: "square.and.arrow.up")!)
         case .exportFile: return ("Backup file", UIImage(systemName: "folder")!)
         case .filename: return ("Bitcoin Core filename", UIImage(systemName: "rectangle.and.paperclip")!)
@@ -1539,37 +1361,6 @@ final class WalletDetailViewController: UIViewController, UITextFieldDelegate, U
         case .externalRange: return ("Receive address range", UIImage(systemName: "list.number")!)
         case .internalRange: return ("Change address range", UIImage(systemName: "list.number")!)
         case .addressExplorer: return ("Address explorer", UIImage(systemName: "list.number")!)
-        }
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-        switch segue.identifier {
-        case "segueToAccountMap":
-            if let vc = segue.destination as? QRDisplayerViewController {
-                vc.text = textToShow
-                
-                if outputDescFormat {
-                    vc.headerText = "UR Wallet Export Descriptor"
-                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                    vc.isUR = true
-                }
-                
-                if urBytesFormat {
-                    vc.headerText = "Wallet Export UR Bytes"
-                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                    vc.isUR = true
-                }
-            }
-        case"segueToNodelessFromWalletDetail":
-            guard let vc = segue.destination as? NodelessTableViewController else { fallthrough }
-            
-            vc.primaryDescriptor = wallet.receiveDescriptor
-            vc.changeDescriptor = wallet.changeDescriptor
-            
-        default:
-            break
         }
     }
 }

@@ -48,6 +48,8 @@ final class NostrRPC: NSObject {
     private var pending: [String: Pending] = [:]
     /// Requests waiting for a relay to connect.
     private var waitingForRelay: [() -> Void] = []
+    /// Why each relay last failed to connect (kept after it's dropped, for the error message).
+    private var relayFailures: [String: String] = [:]
     /// Events sent and not yet accepted, for retrying ones a relay turns away.
     private var unconfirmed: [String: (message: [Any], relay: Relay, attempts: Int, sent: Date)] = [:]
     private var tickScheduled = false
@@ -203,6 +205,7 @@ final class NostrRPC: NSObject {
             return
         }
         guard let uri = uri else { action("no pairing"); return }
+        relayFailures = relayFailures.filter { uri.relays.contains($0.key) }
         for url in uri.relays where relays[url] == nil {
             guard let u = URL(string: url) else { continue }
             let task = session.webSocketTask(with: u)
@@ -221,14 +224,24 @@ final class NostrRPC: NSObject {
         queue.asyncAfter(deadline: .now() + 8) { [weak self] in
             guard let self = self, !done else { return }
             done = true
-            let reasons = self.relays.values.compactMap { $0.lastError.map { "\($0)" } }
-            action(reasons.first ?? "timed out connecting to \(uri.relays.joined(separator: ", "))")
+            // Each relay with what went wrong ("timed out" when it never answered).
+            let reasons = uri.relays.map { url in
+                "\(Self.shortHost(url)): \(self.relayFailures[url] ?? "timed out")"
+            }
+            action(reasons.joined(separator: "; "))
         }
+    }
+
+    /// "mac.tail1234.ts.net" or "192.168.1.5:7777" from a relay URL, for messages.
+    private static func shortHost(_ relay: String) -> String {
+        guard let u = URL(string: relay), let host = u.host else { return relay }
+        return u.port.map { "\(host):\($0)" } ?? host
     }
 
     private func didOpen(_ relay: Relay) {
         relay.open = true
         relay.lastError = nil
+        relayFailures[relay.url] = nil
         log("relay open: \(relay.url)")
         guard let uri = uri, let keys = keys else { return }
         let filter: [String: Any] = ["kinds": [NostrEvent.rpcKind], "authors": [uri.bridgePubkey],
@@ -243,6 +256,7 @@ final class NostrRPC: NSObject {
         if relay.open { log("relay closed: \(relay.url) (\(reason))") }
         relay.open = false
         relay.lastError = reason
+        relayFailures[relay.url] = reason
         if relays[relay.url] === relay { relays[relay.url] = nil }
     }
 

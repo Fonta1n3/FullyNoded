@@ -16,7 +16,6 @@ struct ColdcardSparrowExport : Codable {
     let bip44 : Bip44?
     let bip49 : Bip49?
     let bip84 : Bip84?
-    //let bip48_1 : Bip48_1?
     let bip48_2 : Bip48_2?
     let bip45 : Bip45?
 
@@ -29,7 +28,6 @@ struct ColdcardSparrowExport : Codable {
         case bip44 = "bip44"
         case bip49 = "bip49"
         case bip84 = "bip84"
-        //case bip48_1 = "bip48_1"
         case bip48_2 = "bip48_2"
         case bip45 = "bip45"
     }
@@ -43,13 +41,11 @@ struct ColdcardSparrowExport : Codable {
         bip44 = try values.decodeIfPresent(Bip44.self, forKey: .bip44)
         bip49 = try values.decodeIfPresent(Bip49.self, forKey: .bip49)
         bip84 = try values.decodeIfPresent(Bip84.self, forKey: .bip84)
-        //bip48_1 = try values.decodeIfPresent(Bip48_1.self, forKey: .bip48_1)
         bip48_2 = try values.decodeIfPresent(Bip48_2.self, forKey: .bip48_2)
         bip45 = try values.decodeIfPresent(Bip45.self, forKey: .bip45)
     }
 
 }
-
 
 struct Bip44 : Codable {
     let name : String?
@@ -83,7 +79,6 @@ struct Bip44 : Codable {
 
 }
 
-
 struct Bip45 : Codable {
     let name : String?
     let xfp : String?
@@ -112,38 +107,6 @@ struct Bip45 : Codable {
     }
 
 }
-
-
-//struct Bip48_1 : Codable {
-//    let name : String?
-//    let xfp : String?
-//    let deriv : String?
-//    let xpub : String?
-//    let desc : String?
-//    let _pub : String?
-//
-//    enum CodingKeys: String, CodingKey {
-//
-//        case name = "name"
-//        case xfp = "xfp"
-//        case deriv = "deriv"
-//        case xpub = "xpub"
-//        case desc = "desc"
-//        case _pub = "_pub"
-//    }
-//
-//    init(from decoder: Decoder) throws {
-//        let values = try decoder.container(keyedBy: CodingKeys.self)
-//        name = try values.decodeIfPresent(String.self, forKey: .name)
-//        xfp = try values.decodeIfPresent(String.self, forKey: .xfp)
-//        deriv = try values.decodeIfPresent(String.self, forKey: .deriv)
-//        xpub = try values.decodeIfPresent(String.self, forKey: .xpub)
-//        desc = try values.decodeIfPresent(String.self, forKey: .desc)
-//        _pub = try values.decodeIfPresent(String.self, forKey: ._pub)
-//    }
-//
-//}
-
 
 struct Bip48_2 : Codable {
     let name : String?
@@ -183,7 +146,6 @@ struct Bip48_2 : Codable {
 
 }
 
-
 struct Bip49 : Codable {
     let name : String?
     let xfp : String?
@@ -219,7 +181,6 @@ struct Bip49 : Codable {
 
 }
 
-
 struct Bip84 : Codable {
     let name : String?
     let xfp : String?
@@ -239,7 +200,6 @@ struct Bip84 : Codable {
         case desc = "desc"
         case _pub = "_pub"
         case first = "first"
-        //case standardDesc =
     }
 
     init(from decoder: Decoder) throws {
@@ -274,12 +234,10 @@ extension String {
     func removeChecksum() -> String {
         let descArray = self.split(separator: "#")
         if descArray.count > 0 {
-            //print("descArray[0] = \("\(descArray[0])".replacingOccurrences(of: "<0;1>", with: "0"))")
             return "\(descArray[0])".replacingOccurrences(of: "<0;1>", with: "0")
         } else {
             return self.replacingOccurrences(of: "<0;1>", with: "0")
         }
     }
 }
-
 
