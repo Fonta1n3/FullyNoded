@@ -14,6 +14,8 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     @IBOutlet weak var balanceFiatLabel: UILabel!
     @IBOutlet weak var totalBalanceLabel: UILabel!
     @IBOutlet weak var walletsTable: UITableView!
+    /// Off until the balances have loaded.
+    @IBOutlet weak var externalWalletsButton: UIButton!
     
     var wallets = [[String:Any]]()
     var externalWallets = [Wallet]()
@@ -39,6 +41,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         balanceFiatLabel.text = ""
         fxRateLabel.alpha = 0
         fxRateLabel.text = ""
+        externalWalletsButton.isEnabled = false
         existingActiveWalletName = UserDefaults.standard.object(forKey: "walletName") as? String ?? ""
         initialLoad = true
         // Cypherpunk teal look (see WalletTheme in ActiveWalletViewController.swift).
@@ -71,6 +74,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
             self.navigationController?.interactivePopGestureRecognizer?.isEnabled = false
             self.tabBarController?.tabBar.isUserInteractionEnabled = false
             self.walletsTable.isUserInteractionEnabled = false
+            self.externalWalletsButton.isEnabled = false
         }
     }
     
@@ -84,6 +88,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
             self.navigationController?.interactivePopGestureRecognizer?.isEnabled = true
             self.tabBarController?.tabBar.isUserInteractionEnabled = true
             self.walletsTable.isUserInteractionEnabled = true
+            self.externalWalletsButton.isEnabled = true
             self.walletsTable.reloadData()
         }
         hideActivity()

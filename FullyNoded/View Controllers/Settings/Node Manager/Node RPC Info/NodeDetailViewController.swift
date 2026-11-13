@@ -13,6 +13,8 @@ import UniformTypeIdentifiers
 class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
             
     var selectedNode: NodeStruct?
+    /// Set when the node was just added from a scanned QR, to confirm a Nostr Connect pairing.
+    var justScanned = false
     
     private let scrollView = UIScrollView()
     private let masterStackView = UIStackView()
@@ -27,6 +29,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     private let rpcAuthLabel = UILabel()
     private let saveButton = UIButton(type: .system)
     
+    // Nostr Connect nodes (paired with Fully Noded Server): no RPC credentials, cert or rpcauth.
+    private var nostrURI: NostrConnectURI?
+    private let relaysLabel = UILabel()
+    private let networkLabel = UILabel()
+    private let serverKeyLabel = UILabel()
+    private let tlsLabel = UILabel()
+    private var isNostr: Bool { selectedNode?.isNostrConnect == true }
+    
     init() {
         super.init(nibName: nil, bundle: nil)
         hidesBottomBarWhenPushed = true
@@ -40,14 +50,19 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        title = selectedNode == nil ? "Add Node" : "Node Credentials"
+        nostrURI = selectedNode?.nostrConnectURI
+        title = selectedNode == nil ? "Add Node" : (isNostr ? "Nostr Connect" : "Node Credentials")
         navigationController?.delegate = self
         navigationItem.rightBarButtonItems = [
             UIBarButtonItem(image: UIImage(systemName: "questionmark.circle"), style: .plain, target: self, action: #selector(showHelpAction(_:))),
             UIBarButtonItem(image: UIImage(systemName: "book"), style: .plain, target: self, action: #selector(showGuideAction(_:)))
         ]
         
-        setupUI()
+        if isNostr {
+            setupNostrUI()
+        } else {
+            setupUI()
+        }
         configureTapGesture()
         
         [nodeLabel, rpcPassword, rpcUserField, onionAddressField, certField].forEach {
@@ -68,10 +83,19 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         WalletTheme.apply(to: self, tint: .settings)
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        if justScanned && isNostr {
+            justScanned = false
+            SuccessView.toast("Paired with Fully Noded Server over Nostr Connect", in: self)
+        }
+    }
+    
     // MARK: - Layout
     
-    /// Four cards (connection, RPC credentials, RPC auth, SSL certificate) and Save.
-    private func setupUI() {
+    /// Scroll view holding the vertical stack of cards.
+    private func setupScrollStack() {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.alwaysBounceVertical = true
         scrollView.keyboardDismissMode = .interactive
@@ -96,6 +120,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             masterStackView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -32),
             masterStackView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -32)
         ])
+    }
+    
+    /// Four cards (connection, RPC credentials, RPC auth, SSL certificate) and Save.
+    private func setupUI() {
+        setupScrollStack()
         
         let tint = WalletTheme.Tint.settings
         
@@ -162,6 +191,127 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         masterStackView.addArrangedSubview(saveButton)
     }
     
+    /// Two cards (connection, Nostr Connect pairing) and Save. The pairing is read only:
+    /// Fully Noded Server issues it, so changing it means scanning a new one.
+    private func setupNostrUI() {
+        setupScrollStack()
+        
+        let tint = WalletTheme.Tint.settings
+        
+        // CONNECTION
+        prepare(nodeLabel, placeholder: "My Node")
+        transportHint.font = WalletTheme.mono(11)
+        transportHint.numberOfLines = 0
+        masterStackView.addArrangedSubview(WalletTheme.cardView([
+            WalletTheme.caption("> CONNECTION", tint: tint),
+            fieldLabel("Label"), nodeLabel,
+            transportHint
+        ], tint: tint, spacing: 8))
+        
+        // NOSTR CONNECT
+        [relaysLabel, networkLabel, serverKeyLabel, tlsLabel].forEach {
+            $0.font = WalletTheme.mono(13)
+            $0.textColor = WalletTheme.text
+            $0.numberOfLines = 0
+            $0.lineBreakMode = .byCharWrapping
+        }
+        masterStackView.addArrangedSubview(WalletTheme.cardView([
+            WalletTheme.caption("> NOSTR CONNECT", tint: tint),
+            fieldLabel("Relay"), relaysLabel,
+            fieldLabel("Network"), networkLabel,
+            fieldLabel("Fully Noded Server key"), serverKeyLabel,
+            fieldLabel("Relay certificate"), tlsLabel,
+            hintLabel("Paired in Fully Noded Server → Nostr Connect. To change relays or reconnect, pair again there and scan the new QR."),
+            buttonRow([
+                makeButton(title: "Copy relay", systemImage: "doc.on.doc", action: #selector(copyRelayAction(_:))),
+                makeButton(title: "Re-pair", systemImage: "qrcode.viewfinder", action: #selector(repairAction(_:)))
+            ])
+        ], tint: tint, spacing: 8))
+        
+        WalletTheme.styleHero(saveButton, title: "Save Label", systemImage: "checkmark", tint: tint)
+        saveButton.addTarget(self, action: #selector(save(_:)), for: .touchUpInside)
+        masterStackView.setCustomSpacing(20, after: masterStackView.arrangedSubviews.last ?? masterStackView)
+        masterStackView.addArrangedSubview(saveButton)
+    }
+    
+    /// Fills the Nostr Connect card from `nostrURI`.
+    private func renderNostrDetails() {
+        guard let uri = nostrURI else {
+            relaysLabel.text = "This pairing can't be read. Pair again in Fully Noded Server and tap Re-pair."
+            relaysLabel.textColor = WalletTheme.danger
+            networkLabel.text = "—"
+            serverKeyLabel.text = "—"
+            tlsLabel.text = "—"
+            return
+        }
+        
+        relaysLabel.text = uri.relays.joined(separator: "\n")
+        relaysLabel.textColor = WalletTheme.text
+        networkLabel.text = uri.networkName ?? "—"
+        serverKeyLabel.text = "\(uri.bridgePubkey.prefix(12))…\(uri.bridgePubkey.suffix(12))"
+        if let pin = uri.certSHA256 {
+            tlsLabel.text = "Pinned · SHA-256 \(pin.prefix(12))…\(pin.suffix(8))\nwss:// to the Mac's relay accepts only this certificate."
+        } else {
+            tlsLabel.text = uri.relays.contains { $0.lowercased().hasPrefix("ws://") }
+                ? "None: ws:// to the Mac's relay (messages are still end-to-end encrypted)."
+                : "Standard TLS (public relays)."
+        }
+    }
+    
+    @objc private func copyRelayAction(_ sender: Any) {
+        guard let relay = nostrURI?.relays.first else { return }
+        
+        UIPasteboard.general.string = relay
+        SuccessView.toast("Relay copied", in: self)
+    }
+    
+    /// Scans a new pairing from Fully Noded Server and swaps it in for this node.
+    @objc private func repairAction(_ sender: Any) {
+        guard let vc = UIStoryboard(name: "Main", bundle: nil)
+                .instantiateViewController(withIdentifier: "QRScanner") as? QRScannerViewController else { return }
+        
+        vc.isQuickConnect = true
+        vc.onDoneBlock = { [weak self] text in
+            guard let self, let text else { return }
+            Task { @MainActor in
+                await self.repair(with: text)
+            }
+        }
+        present(vc, animated: true)
+    }
+    
+    @MainActor
+    private func repair(with text: String) async {
+        guard let node = selectedNode, let id = node.id else { return }
+        
+        guard let uri = NostrConnectURI(text) else {
+            showAlert(vc: self, title: "Not a Nostr Connect QR", message: "In Fully Noded Server open Nostr Connect, tap Pair Fully Noded and scan the QR it shows.")
+            return
+        }
+        
+        guard let encLink = Crypto.encrypt(Data(uri.string.utf8)),
+              let encAddress = Crypto.encrypt(Data(uri.relays[0].utf8)) else {
+            showAlert(vc: self, title: "", message: "Error encrypting the pairing.")
+            return
+        }
+        
+        do {
+            try await updateNodeValue(id: id, keyToUpdate: "nostrConnect", newValue: encLink)
+            try await updateNodeValue(id: id, keyToUpdate: "onionAddress", newValue: encAddress)
+        } catch {
+            showAlert(vc: self, title: "", message: error.localizedDescription)
+            return
+        }
+        
+        if node.isActive {
+            NostrRPC.shared.reset()
+        }
+        nostrURI = uri
+        renderNostrDetails()
+        updateTransportHint()
+        SuccessView.toast("Re-paired with Fully Noded Server", in: self)
+    }
+    
     private func prepare(_ field: UITextField, placeholder: String) {
         field.placeholder = placeholder
         field.autocapitalizationType = .none
@@ -224,6 +374,12 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     /// How the app will reach the node, from the address.
     private func updateTransportHint() {
+        if isNostr {
+            transportHint.text = "NOSTR · end-to-end encrypted (NIP-44) through Fully Noded Server's relay over WebSockets. No Tor needed."
+            transportHint.textColor = WalletTheme.Tint.settings.accent
+            return
+        }
+        
         let address = onionAddressField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let hasCert = !(certField.text ?? "").isEmpty
         
@@ -397,6 +553,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     @IBAction func save(_ sender: Any) {
         Task { @MainActor in
+            if isNostr {
+                await saveNostrLabel()
+                return
+            }
+            
             // 1. Validate required fields
             guard let address = onionAddressField.text?.trimmingCharacters(in: .whitespacesAndNewlines), !address.isEmpty else {
                 showAlert(vc: self, title: "", message: "You need to add an address first.")
@@ -499,6 +660,24 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
+    /// A Nostr Connect node only has its label to edit.
+    @MainActor
+    private func saveNostrLabel() async {
+        guard let id = selectedNode?.id else { return }
+        
+        guard let label = nodeLabel.text?.trimmingCharacters(in: .whitespacesAndNewlines), !label.isEmpty else {
+            showAlert(vc: self, title: "", message: "You need to add a label first.")
+            return
+        }
+        
+        do {
+            try await updateNodeValue(id: id, keyToUpdate: "label", newValue: label)
+            SuccessView.show(in: self, title: "Node updated")
+        } catch {
+            showAlert(vc: self, title: "", message: error.localizedDescription)
+        }
+    }
+    
     @MainActor
     func updateNodeValues(id: UUID, label: String, encUser: Data, encPass: Data, encAddress: Data, encCert: Data?) async {
         do {
@@ -559,6 +738,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     @IBAction func showHelpAction(_ sender: Any) {
+        if isNostr {
+            showAlert(vc: self,
+                      title: "Nostr Connect",
+                      message: "This node is reached through Fully Noded Server's Nostr Connect relay instead of Tor. Requests and responses are end-to-end encrypted, the relay only passes on ciphertext.\n\nThe relay must be reachable from this device: on the same network, over a VPN such as Tailscale, or a public relay added in Fully Noded Server.\n\nTo reconnect or change relays, pair again in Fully Noded Server → Nostr Connect and tap Re-pair here.")
+            return
+        }
+        
         showAlert(vc: self,
                   title: "How to connect?",
                   message: "Step 1: Add an rpc user, password (tap the refresh button to create a secure rpc password).\n\nStep 2: Add the address for your node (xxxx.onion:8332 or localhost:8332), tap save.\n\nStep 3: Export the rpc auth text to your bitcoin.conf, save your bitcoin.conf.\n\nStep 4: Restart your node.\n\nStep 5: Ensure the node is activated by tapping it on the Node Manager view. Navigate back to the home screen and tap refresh to connect to your node.")
@@ -601,6 +787,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         // Existing node
         nodeLabel.text = node.label.isEmpty ? nil : node.label
+        
+        if isNostr {
+            renderNostrDetails()
+            return
+        }
         
         // Credentials
         let user = decrypted(node.rpcuser)

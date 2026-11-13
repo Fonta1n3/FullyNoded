@@ -92,7 +92,15 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
                                        action: #selector(showSignerAction(_:)))
         showItem.tintColor = SignerTheme.accent
         
-        navigationItem.rightBarButtonItems = [deleteItem, showItem]
+        // Review / sign a PSBT offline with this signer.
+        let psbtItem = UIBarButtonItem(image: UIImage(systemName: "signature"),
+                                       style: .plain,
+                                       target: self,
+                                       action: #selector(reviewPsbtAction(_:)))
+        psbtItem.tintColor = SignerTheme.accent
+        psbtItem.accessibilityLabel = "Review or sign a PSBT"
+        
+        navigationItem.rightBarButtonItems = [deleteItem, showItem, psbtItem]
         
         segmentedControl.addTarget(self, action: #selector(switchNetwork(_:)), for: .valueChanged)
         SignerTheme.style(segmentedControl)
@@ -252,6 +260,11 @@ class SignerDetailViewController: UIViewController, UINavigationControllerDelega
             self.showWords = true
             self.getData()
         }
+    }
+    
+    @objc func reviewPsbtAction(_ sender: Any) {
+        guard let id else { return }
+        navigationController?.pushViewController(OfflinePsbtViewController(signerId: id), animated: true)
     }
     
     @objc func deleteAction(_ sender: Any) {

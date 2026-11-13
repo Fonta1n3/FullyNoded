@@ -22,6 +22,8 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     var dict = [String:Any]()
     var isTaproot = false
     var isSegwit = false
+    /// 12 or 24, chosen before this screen opens.
+    var wordCount = 24
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -104,7 +106,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     private func getWords() {
         showActivity("creating Fully Noded wallet...")
         
-        guard let seed = Keys.seedWords() else {
+        guard let seed = Keys.seedWords(wordCount: wordCount) else {
             showError(error: "Error deriving seed")
             return
         }

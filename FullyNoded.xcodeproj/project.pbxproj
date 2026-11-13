@@ -49,6 +49,9 @@
 		0A64634428FDC01B0079C5DB /* NostrResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64634328FDC01B0079C5DB /* NostrResponse.swift */; };
 		0A64634628FDC06B0079C5DB /* NostrRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64634528FDC06B0079C5DB /* NostrRequest.swift */; };
 		0A64634828FDC0940079C5DB /* NostrFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64634728FDC0940079C5DB /* NostrFilter.swift */; };
+		CBE2505D71080F9FACBF455A /* NostrConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50494768A63A26CBE2C24D98 /* NostrConnect.swift */; };
+		B28927A1755D37F295A130FB /* NostrRPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10E17438B90E6F2A4BBAC3ED /* NostrRPC.swift */; };
+		29EA464047C09D8B20438D67 /* NostrConnectDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF2013530A0E2D6D76831A39 /* NostrConnectDisplay.swift */; };
 		0A64634A28FDC0ED0079C5DB /* NostrEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64634928FDC0ED0079C5DB /* NostrEvent.swift */; };
 		0A64634E28FDC2990079C5DB /* NostrKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A64634D28FDC2990079C5DB /* NostrKind.swift */; };
 		0A6B365B27B1AA0C00CD4F3A /* AddressInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A6B365A27B1AA0B00CD4F3A /* AddressInfo.swift */; };
@@ -87,6 +90,7 @@
 		59A81B173011F7620027AE96 /* NodelessWalletsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59A81B163011F7620027AE96 /* NodelessWalletsTableViewController.swift */; };
 		59C8DBCD3065AF490074762F /* SilentPaymentSend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C8DBCC3065AF490074762F /* SilentPaymentSend.swift */; };
 		59C8DBD03065AF490074762F /* SilentPaymentSpend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C8DBCF3065AF490074762F /* SilentPaymentSpend.swift */; };
+		56416BD5B1BC9FE02F872215 /* OfflinePsbt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22D8ED495E20D302AFDEEBC9 /* OfflinePsbt.swift */; };
 		59D7BB0D30282D3100530445 /* Security.md in Resources */ = {isa = PBXBuildFile; fileRef = 59D7BB0C30282D3100530445 /* Security.md */; };
 		59DEFD92301497230021F041 /* Timelocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59DEFD91301497230021F041 /* Timelocks.swift */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
@@ -157,6 +161,7 @@
 		D09F9E4C24B0673C006B588C /* SignersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09F9E4B24B0673C006B588C /* SignersViewController.swift */; };
 		D09F9E4E24B06A63006B588C /* SignerStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09F9E4D24B06A63006B588C /* SignerStruct.swift */; };
 		D09F9E5024B1BAC3006B588C /* SignerDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09F9E4F24B1BAC3006B588C /* SignerDetailViewController.swift */; };
+		D913CB7BA81AEF38C0088A97 /* OfflinePsbtViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86BD2D60DE74CBF38D87C80 /* OfflinePsbtViewController.swift */; };
 		D09F9E5224B1F8DE006B588C /* AddSignerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */; };
 		D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A2918E225114670099A2F3 /* MakeRPCCall.swift */; };
 		D0A7CF73227967F900B683A0 /* AddressParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A7CF72227967F900B683A0 /* AddressParser.swift */; };
@@ -256,6 +261,9 @@
 		0A64634328FDC01B0079C5DB /* NostrResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrResponse.swift; sourceTree = "<group>"; };
 		0A64634528FDC06B0079C5DB /* NostrRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrRequest.swift; sourceTree = "<group>"; };
 		0A64634728FDC0940079C5DB /* NostrFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrFilter.swift; sourceTree = "<group>"; };
+		50494768A63A26CBE2C24D98 /* NostrConnect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrConnect.swift; sourceTree = "<group>"; };
+		10E17438B90E6F2A4BBAC3ED /* NostrRPC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrRPC.swift; sourceTree = "<group>"; };
+		EF2013530A0E2D6D76831A39 /* NostrConnectDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrConnectDisplay.swift; sourceTree = "<group>"; };
 		0A64634928FDC0ED0079C5DB /* NostrEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrEvent.swift; sourceTree = "<group>"; };
 		0A64634D28FDC2990079C5DB /* NostrKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NostrKind.swift; sourceTree = "<group>"; };
 		0A6B365A27B1AA0B00CD4F3A /* AddressInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressInfo.swift; sourceTree = "<group>"; };
@@ -294,6 +302,7 @@
 		59A81B163011F7620027AE96 /* NodelessWalletsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodelessWalletsTableViewController.swift; sourceTree = "<group>"; };
 		59C8DBCC3065AF490074762F /* SilentPaymentSend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilentPaymentSend.swift; sourceTree = "<group>"; };
 		59C8DBCF3065AF490074762F /* SilentPaymentSpend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilentPaymentSpend.swift; sourceTree = "<group>"; };
+		22D8ED495E20D302AFDEEBC9 /* OfflinePsbt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflinePsbt.swift; sourceTree = "<group>"; };
 		59D7BB0C30282D3100530445 /* Security.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Security.md; sourceTree = "<group>"; };
 		59DEFD91301497230021F041 /* Timelocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Timelocks.swift; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
@@ -370,6 +379,7 @@
 		D09F9E4B24B0673C006B588C /* SignersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignersViewController.swift; sourceTree = "<group>"; };
 		D09F9E4D24B06A63006B588C /* SignerStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignerStruct.swift; sourceTree = "<group>"; };
 		D09F9E4F24B1BAC3006B588C /* SignerDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignerDetailViewController.swift; sourceTree = "<group>"; };
+		B86BD2D60DE74CBF38D87C80 /* OfflinePsbtViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflinePsbtViewController.swift; sourceTree = "<group>"; };
 		D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSignerViewController.swift; sourceTree = "<group>"; };
 		D0A2918E225114670099A2F3 /* MakeRPCCall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeRPCCall.swift; sourceTree = "<group>"; };
 		D0A7CF72227967F900B683A0 /* AddressParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressParser.swift; sourceTree = "<group>"; };
@@ -459,6 +469,7 @@
 			children = (
 				D09F9E4B24B0673C006B588C /* SignersViewController.swift */,
 				D09F9E4F24B1BAC3006B588C /* SignerDetailViewController.swift */,
+				B86BD2D60DE74CBF38D87C80 /* OfflinePsbtViewController.swift */,
 				D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */,
 			);
 			path = Signers;
@@ -580,6 +591,9 @@
 				0A64634528FDC06B0079C5DB /* NostrRequest.swift */,
 				0A64634728FDC0940079C5DB /* NostrFilter.swift */,
 				0A64634928FDC0ED0079C5DB /* NostrEvent.swift */,
+				10E17438B90E6F2A4BBAC3ED /* NostrRPC.swift */,
+				EF2013530A0E2D6D76831A39 /* NostrConnectDisplay.swift */,
+				50494768A63A26CBE2C24D98 /* NostrConnect.swift */,
 				0A64634D28FDC2990079C5DB /* NostrKind.swift */,
 			);
 			path = Nostr;
@@ -946,6 +960,7 @@
 			children = (
 				59C8DBCC3065AF490074762F /* SilentPaymentSend.swift */,
 				59C8DBCF3065AF490074762F /* SilentPaymentSpend.swift */,
+				22D8ED495E20D302AFDEEBC9 /* OfflinePsbt.swift */,
 				D0855FC922B0CEA800DBBFC2 /* CreatePSBT.swift */,
 				D09A32FE24A8419C009FA0B2 /* KeyHelpers.swift */,
 				D09A330224A86C7C009FA0B2 /* Signer.swift */,
@@ -1196,6 +1211,7 @@
 				D0C20ED424A6DFE600C62AA4 /* PeerInfo.swift in Sources */,
 				0A83EB3E2C4838BB00502806 /* ColdCardSparrowExport.swift in Sources */,
 				D09F9E5024B1BAC3006B588C /* SignerDetailViewController.swift in Sources */,
+				D913CB7BA81AEF38C0088A97 /* OfflinePsbtViewController.swift in Sources */,
 				0A40118D2ECA3A5F00FC9BA8 /* CurrenciesTableViewController.swift in Sources */,
 				0A64634628FDC06B0079C5DB /* NostrRequest.swift in Sources */,
 				0ABEC2132F0D766F00092FCE /* SuccessView.swift in Sources */,
@@ -1266,6 +1282,7 @@
 				D00F851B24949691008D7CD3 /* AppPasswordViewController.swift in Sources */,
 				59C8DBCD3065AF490074762F /* SilentPaymentSend.swift in Sources */,
 				59C8DBD03065AF490074762F /* SilentPaymentSpend.swift in Sources */,
+				56416BD5B1BC9FE02F872215 /* OfflinePsbt.swift in Sources */,
 				D03968B1246F6CBA0010D821 /* Crypto.swift in Sources */,
 				0ABEC1FD2F02743500092FCE /* NodelessTransactionCreator.swift in Sources */,
 				0A2B4D702716ABCB00B607EE /* WalletImport.swift in Sources */,
@@ -1279,6 +1296,9 @@
 				D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */,
 				844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */,
 				0A64634A28FDC0ED0079C5DB /* NostrEvent.swift in Sources */,
+				B28927A1755D37F295A130FB /* NostrRPC.swift in Sources */,
+				29EA464047C09D8B20438D67 /* NostrConnectDisplay.swift in Sources */,
+				CBE2505D71080F9FACBF455A /* NostrConnect.swift in Sources */,
 				D0233F262361EA380041FFBA /* StringExtension.swift in Sources */,
 				0A40118F2ECB2F3400FC9BA8 /* FirstTimeHereViewController.swift in Sources */,
 				AC7100032E9F000100A1B2C3 /* OnboardingViewController.swift in Sources */,

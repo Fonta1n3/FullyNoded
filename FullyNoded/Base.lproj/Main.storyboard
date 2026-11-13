@@ -854,7 +854,6 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                         </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <segue destination="G0V-te-kek" kind="show" identifier="addSignerSegue" id="cXu-ZW-bhg"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="rsb-bT-QAF" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1031,6 +1030,7 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                     <navigationItem key="navigationItem" title="Wallets" id="cM0-GQ-Lg4"/>
                     <connections>
                         <outlet property="balanceFiatLabel" destination="Aqf-UJ-YIL" id="f4l-fV-ZxM"/>
+                        <outlet property="externalWalletsButton" destination="OGe-8g-Qaj" id="eXw-Bt-n1O"/>
                         <outlet property="fxRateLabel" destination="56s-IU-Kua" id="rSw-X7-5Po"/>
                         <outlet property="totalBalanceLabel" destination="9ci-C0-8XZ" id="2sg-tI-Lvx"/>
                         <outlet property="walletsTable" destination="e5J-1l-ENr" id="Sd0-P0-SpZ"/>
@@ -1041,104 +1041,6 @@ If you are using a node package such as Parmanode, NODL, MyNode, Start 9, Umbrel
                 <placeholder placeholderIdentifier="IBFirstResponder" id="nwO-su-x3c" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-9434" y="365"/>
-        </scene>
-        <!--Add Signer-->
-        <scene sceneID="CwE-wI-fCR">
-            <objects>
-                <viewController title="Add Signer" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="G0V-te-kek" customClass="AddSignerViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="kaf-Tr-9T9">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="IHZ-XQ-St6">
-                                <rect key="frame" x="8" y="82" width="304" height="466"/>
-                                <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="3xd-ni-TOq">
-                                        <rect key="frame" x="0.0" y="0.0" width="304" height="34"/>
-                                        <subviews>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5Ld-xD-lht">
-                                                <rect key="frame" x="0.0" y="0.0" width="24" height="34"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" constant="24" id="OdR-ZP-fTU"/>
-                                                    <constraint firstAttribute="height" constant="34" id="gjh-Zk-tHM"/>
-                                                </constraints>
-                                                <color key="tintColor" systemColor="systemPinkColor"/>
-                                                <state key="normal" image="minus.rectangle" catalog="system"/>
-                                                <connections>
-                                                    <action selector="removeWordAction:" destination="G0V-te-kek" eventType="touchUpInside" id="Egk-wD-om9"/>
-                                                </connections>
-                                            </button>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="CXh-rg-Y6f">
-                                                <rect key="frame" x="52" y="0.0" width="200" height="34"/>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" constant="200" id="JZX-Zo-3Wg"/>
-                                                    <constraint firstAttribute="height" constant="34" id="faz-zg-gdb"/>
-                                                </constraints>
-                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
-                                            </textField>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="aWx-tf-Q2j">
-                                                <rect key="frame" x="280" y="0.0" width="24" height="34"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" constant="24" id="7iI-eU-TT4"/>
-                                                    <constraint firstAttribute="height" constant="34" id="GAo-d5-kA8"/>
-                                                </constraints>
-                                                <color key="tintColor" systemColor="systemGreenColor"/>
-                                                <state key="normal" image="plus.rectangle" catalog="system"/>
-                                                <connections>
-                                                    <action selector="addWordAction:" destination="G0V-te-kek" eventType="touchUpInside" id="89g-7v-ctz"/>
-                                                </connections>
-                                            </button>
-                                        </subviews>
-                                    </stackView>
-                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zy5-5j-O77">
-                                        <rect key="frame" x="0.0" y="42" width="304" height="376"/>
-                                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
-                                        <color key="textColor" systemColor="systemGreenColor"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                                    </textView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GaP-Ag-v0V">
-                                        <rect key="frame" x="0.0" y="426" width="304" height="40"/>
-                                        <color key="backgroundColor" systemColor="systemFillColor"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="40" id="9Qw-1A-KAa"/>
-                                        </constraints>
-                                        <state key="normal" title="Save"/>
-                                        <connections>
-                                            <action selector="addSignerAction:" destination="G0V-te-kek" eventType="touchUpInside" id="lll-hg-HBV"/>
-                                        </connections>
-                                    </button>
-                                </subviews>
-                            </stackView>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="plJ-ZH-hJj"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <constraints>
-                            <constraint firstItem="plJ-ZH-hJj" firstAttribute="bottom" secondItem="IHZ-XQ-St6" secondAttribute="bottom" constant="20" id="5cm-pn-fUR"/>
-                            <constraint firstAttribute="trailing" secondItem="IHZ-XQ-St6" secondAttribute="trailing" constant="8" id="6EJ-fe-hSO"/>
-                            <constraint firstItem="IHZ-XQ-St6" firstAttribute="top" secondItem="plJ-ZH-hJj" secondAttribute="top" constant="8" id="bcI-6j-vGM"/>
-                            <constraint firstItem="IHZ-XQ-St6" firstAttribute="leading" secondItem="plJ-ZH-hJj" secondAttribute="leading" constant="8" id="ru9-FS-wSK"/>
-                        </constraints>
-                    </view>
-                    <navigationItem key="navigationItem" id="Skj-se-LO2">
-                        <barButtonItem key="rightBarButtonItem" image="arrow.triangle.2.circlepath" catalog="system" id="ovZ-3P-GHi">
-                            <color key="tintColor" systemColor="tintColor"/>
-                            <connections>
-                                <action selector="generateSignerAction:" destination="G0V-te-kek" id="6t0-mx-1Oa"/>
-                            </connections>
-                        </barButtonItem>
-                    </navigationItem>
-                    <connections>
-                        <outlet property="addSignerOutlet" destination="GaP-Ag-v0V" id="4go-yC-r2M"/>
-                        <outlet property="textView" destination="CXh-rg-Y6f" id="AT7-ZV-CO8"/>
-                        <outlet property="wordView" destination="zy5-5j-O77" id="AJu-nx-oRF"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="Zqn-cy-ARX" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-3624" y="422"/>
         </scene>
         <!--Wallet Info-->
         <scene sceneID="qgF-W8-mAf">

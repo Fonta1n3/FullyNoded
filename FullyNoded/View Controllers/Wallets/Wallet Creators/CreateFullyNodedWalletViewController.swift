@@ -30,6 +30,8 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     let jsonDecoder = JSONDecoder()
     var isSegwit = false
     var isTaproot = false
+    /// Length of the seed the single sig creator generates (12 or 24 words).
+    private var seedWordCount = 24
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -74,14 +76,16 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                     guard let self = self else { return }
                     
                     isSegwit = true
-                    segueToSingleSigCreator()
+                    isTaproot = false
+                    promptForSeedLengthThenCreate()
                 }))
                 
                 alert.addAction(UIAlertAction(title: "Taproot (BIP86)", style: .default, handler: { [weak self] action in
                     guard let self = self else { return }
                     
                     isTaproot = true
-                    segueToSingleSigCreator()
+                    isSegwit = false
+                    promptForSeedLengthThenCreate()
                 }))
                 
                 alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
@@ -167,6 +171,13 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         promptForSingleSigFormat()
     }
         
+    private func promptForSeedLengthThenCreate() {
+        promptForSeedLength(vc: self) { [weak self] wordCount in
+            self?.seedWordCount = wordCount
+            self?.segueToSingleSigCreator()
+        }
+    }
+    
     private func segueToSingleSigCreator() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -962,6 +973,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             
             vc.isSegwit = isSegwit
             vc.isTaproot = isTaproot
+            vc.wordCount = seedWordCount
             
         case "segueToScanner":
             if #available(macCatalyst 14.0, *) {

@@ -101,6 +101,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>btcrpc</string>
+				<string>nostr+fullynoded</string>
 			</array>
 		</dict>
 		<dict>
@@ -143,6 +144,8 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Fully Noded connects to your node, and to Fully Noded Server's Nostr Connect relay, on your local network.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Fully Noded uses the camera to scan QR codes, such as addresses, PSBTs and node connections.</string>
 	<key>NSFaceIDUsageDescription</key>

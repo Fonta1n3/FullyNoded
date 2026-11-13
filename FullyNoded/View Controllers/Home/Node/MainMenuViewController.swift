@@ -26,7 +26,7 @@ class MainMenuViewController: UIViewController {
     
     weak var mgr = TorClient.sharedInstance
     let ud = UserDefaults.standard
-    var activeNode: NodeStruct?
+    var activeNode: NodeStruct? { didSet { updateTorStatus() } }
     var existingNodeID: UUID!
     var initialLoad = false
     let spinner = UIActivityIndicatorView(style: .medium)
@@ -1050,9 +1050,18 @@ class MainMenuViewController: UIViewController {
     }
     
     /// Tor line of the node card: connected (accent), disconnected (red), or starting.
+    /// A Nostr Connect node doesn't use Tor, so the line shows its relay instead.
     private func updateTorStatus() {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
+            if let node = activeNode, node.isNostrConnect {
+                torProgressView.isHidden = true
+                let relay = node.nostrConnectURI?.relaySummary ?? ""
+                torStatusLabel.text = relay.isEmpty ? "NOSTR CONNECT" : "NOSTR · \(relay)"
+                torStatusLabel.textColor = WalletTheme.dim
+                torDot.backgroundColor = tint.accent
+                return
+            }
             let state = mgr?.state
             if state == .connected {
                 torStatusLabel.text = "TOR CONNECTED"
@@ -1076,6 +1085,8 @@ class MainMenuViewController: UIViewController {
     private func showTorBootstrapping(progress: Int) {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
+            // Tor still starts for other traffic, but the node card is about the node's transport.
+            if activeNode?.isNostrConnect == true { return }
             torProgressView.isHidden = false
             torProgressView.setProgress(Float(progress) / 100, animated: progress > 0)
             torStatusLabel.text = "TOR BOOTSTRAPPING \(progress)%"
@@ -1167,7 +1178,9 @@ extension MainMenuViewController: OnionManagerDelegate {
     }
     
     func torConnDifficulties() {
-        displayAlert(viewController: self, isError: true, message: "We are having issues connecting tor.")
+        if activeNode?.isNostrConnect != true {
+            displayAlert(viewController: self, isError: true, message: "We are having issues connecting tor.")
+        }
         removeTorStatus()
         updateTorStatus()
         

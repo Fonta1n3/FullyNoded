@@ -157,7 +157,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             return (nil, bdkPsbt.serialize())
         }
         
-        return (rawTx.description, nil)
+        // Hex, not `description` (BDK's debug text, which bitcoind can't decode).
+        return (rawTx.serialize().hex, nil)
     }
     
     func processPsbt(_ psbt: String) {

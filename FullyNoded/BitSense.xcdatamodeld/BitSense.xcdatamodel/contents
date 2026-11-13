@@ -10,6 +10,7 @@
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="isActive" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="label" optional="YES" attributeType="String"/>
+        <attribute name="nostrConnect" optional="YES" attributeType="Binary"/>
         <attribute name="onionAddress" optional="YES" attributeType="Binary"/>
         <attribute name="rpcpassword" optional="YES" attributeType="Binary"/>
         <attribute name="rpcuser" optional="YES" attributeType="Binary"/>

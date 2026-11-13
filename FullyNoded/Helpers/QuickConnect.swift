@@ -17,6 +17,10 @@ class QuickConnect {
     
     
     class func addNode(url: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+        if url.lowercased().hasPrefix(NostrConnectURI.scheme + "://") {
+            addNostrNode(link: url, completion: completion)
+            return
+        }
         var newNode = [String:Any]()
         newNode["id"] = UUID()
         var label = "Node"
@@ -64,6 +68,34 @@ class QuickConnect {
         newNode["isActive"] = true
         
         processNode(newNode, url, completion: completion)
+    }
+    
+    /// A Fully Noded Server Nostr Connect pairing (nostr+fullynoded://…): RPC goes through its relay.
+    private class func addNostrNode(link: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+        guard let uri = NostrConnectURI(link) else {
+            completion((false, "That Nostr Connect link isn't valid. Pair again in Fully Noded Server."))
+            return
+        }
+        // The relay goes in the address field so the node list shows where it connects, and
+        // (not being an onion) the node loads without waiting for Tor.
+        guard let encLink = Crypto.encrypt(Data(uri.string.utf8)),
+              let encAddress = Crypto.encrypt(Data(uri.relays[0].utf8)),
+              let encUser = Crypto.encrypt(Data("nostr".utf8)),
+              let encPassword = Crypto.encrypt(Data("nostr".utf8)) else {
+            completion((false, "error encrypting your credentials"))
+            return
+        }
+        NostrRPC.shared.reset()
+        let newNode: [String: Any] = [
+            "id": UUID(),
+            "label": uri.label ?? "Nostr Connect",
+            "onionAddress": encAddress,
+            "rpcuser": encUser,
+            "rpcpassword": encPassword,
+            "nostrConnect": encLink,
+            "isActive": true
+        ]
+        processNode(newNode, link, completion: completion)
     }
     
     private class func processNode(_ newNode: [String:Any], _ url: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
